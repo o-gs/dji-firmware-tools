@@ -41,6 +41,84 @@ class FwPkgEntry(Structure):
               ('dt_alloclen', c_uint),
               ('dt_md5', c_char * 16),
               ('dt_2ndhash', c_char * 16)]
+  def target_name(self):
+    tg_kind = ord(getattr(self, 'target')) & 31
+    tg_model = (ord(getattr(self, 'target')) >> 5) & 7
+    if   (tg_kind == 1):
+      return "camera model {:02d}".format(tg_model)
+    elif (tg_kind == 3):
+      if ((tg_model%2) > 0):
+        return "main controller mdl {:02d} ldr".format(tg_model)
+      else:
+        return "main controller mdl {:02d} app".format(tg_model-1)
+    elif (tg_kind == 4):
+        return "gimbal model {:02d}".format(tg_model)
+    elif (tg_kind == 5):
+        return "central board model {:02d}".format(tg_model)
+    elif (tg_kind == 8):
+      if (tg_model == 0):
+        return "video encoder '{:s}'".format("DaVinci Dm365 Linux")
+      elif (tg_model == 1):
+        return "video encoder '{:s}'".format("IG810 LB2_ENC")
+      else:
+        return "video encoder {:02d}".format(tg_model)
+    elif (tg_kind == 9):
+      if (tg_model == 0):
+        return "MCU '{:s}'".format("NXP LPC1765")
+      else:
+        return "MCU model {:02d}".format(tg_model)
+    elif (tg_kind == 11):
+        return "battery controller {:02d} app".format(tg_model)
+    elif (tg_kind == 10):
+        return "battery {:02d} fw".format(tg_model)
+    elif (tg_kind == 12):
+        return "electronic speed control {:02d}".format(tg_model)
+    elif (tg_kind == 13):
+      if (tg_model == 0):
+        return "video decoder '{:s}'".format("DaVinci Dm365 Linux")
+      elif (tg_model == 1):
+        return "video decoder '{:s}'".format("DaVinci Dm385 Linux")
+      else:
+        return "video decoder {:02d}".format(tg_model)
+    elif (tg_kind == 14):
+      if (tg_model == 0):
+        return "device kind {:02d} '{:s}'".format(tg_kind,"LPC1765 GROUND LB2")
+      else:
+        return "device kind {:02d} model {:02d}".format(tg_kind,tg_model)
+    elif (tg_kind == 15):
+      if (tg_model == 1):
+        return "radio transmitter '{:s}'".format("IG810 LB2_68013_TX")
+      else:
+        return "radio transmitter model {:02d}".format(tg_model)
+    elif (tg_kind == 16):
+      if (tg_model == 1):
+        return "radio receiver '{:s}'".format("IG810 LB2_68013_RX ground")
+      else:
+        return "radio receiver model {:02d}".format(tg_model)
+    elif (tg_kind == 17):
+      if (tg_model == 0):
+        return "vps component '{:s}'".format("camera")
+      elif (tg_model == 1):
+        return "vps component '{:s}'".format("sonar")
+      else:
+        return "vps component model {:02d}".format(tg_model)
+    elif (tg_kind == 19):
+      return "FPGA air model {:02d}".format(tg_model)
+    elif (tg_kind == 20):
+      if (tg_model == 3):
+        return "FPGA ground '{:s}'".format("LB2")
+      else:
+        return "FPGA ground model {:02d}".format(tg_model)
+    elif (tg_kind == 25):
+      return "IMU model {:02d}".format(tg_model)
+    elif (tg_kind == 29):
+      if ((tg_model%2) > 0):
+        return "PMU model {:02d} ldr".format(tg_model)
+      else:
+        return "PMU model {:02d} app".format(tg_model-1)
+    else:
+      return "device kind {:02} model {:02}".format(tg_kind,tg_model)
+
   def __repr__(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
@@ -53,8 +131,11 @@ class FwPkgEntry(Structure):
     d[varkey] = "".join("{:02x}".format(x) for x in d[varkey])
     varkey = 'target'
     d[varkey] = "m{:02d}{:02d}".format(ord(d[varkey])&31, (ord(d[varkey])>>5)&7)
+    varkey = 'target_name'
+    d[varkey] = self.target_name()
     from pprint import pformat
-    return pformat(d, indent=4, width=1)
+    return pformat(d, indent=4, width=64)
+
 
 def dji_extract(po, fwpkgfile):
   pkghead = FwPkgHeader()
