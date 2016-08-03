@@ -2,8 +2,8 @@
 
 import sys
 import getopt
+import os
 from ctypes import *
-from os.path import basename
 
 class ProgOptions:
   fwpkgfile = ''
@@ -45,6 +45,14 @@ class FwPkgEntry(Structure):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
+    varkey = 'version'
+    d[varkey] = "{:02d}.{:02d}.{:d}".format((d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey])&65535)
+    varkey = 'dt_md5'
+    d[varkey] = "".join("{:02x}".format(x) for x in d[varkey])
+    varkey = 'dt_2ndhash'
+    d[varkey] = "".join("{:02x}".format(x) for x in d[varkey])
+    varkey = 'target'
+    d[varkey] = "m{:02d}{:02d}".format(ord(d[varkey])&31, (ord(d[varkey])>>5)&7)
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
@@ -92,7 +100,8 @@ def dji_extract(po, fwpkgfile):
           fwitmfile.write(copy_buffer)
 
 def dji_create(po, fwpkgfile):
-    raise NotImplementedError('NOT IMPLEMENTED')
+  pkghead = FwPkgHeader()
+  raise NotImplementedError('NOT IMPLEMENTED')
 
 def main(argv):
   # Parse command line options
@@ -126,7 +135,7 @@ def main(argv):
      elif opt in ("-a", "--add"):
         po.command = 'a'
   if len(po.fwpkgfile) > 0 and len(po.dcprefix) == 0:
-      po.dcprefix = os.path.splitext(basename(po.fwpkgfile))[0]
+      po.dcprefix = os.path.splitext(os.path.basename(po.fwpkgfile))[0]
 
   if (po.command == 'x'):
 
