@@ -48,26 +48,72 @@ class FwPkgEntry(Structure):
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
+def dji_extract(po, fwpkgfile):
+  pkghead = FwPkgHeader()
+  if fwpkgfile.readinto(pkghead) != sizeof(pkghead):
+      raise EOFError("Couldn't read firmware package file header.")
+  if (po.verbose > 1):
+      print("{}: Header:".format(po.fwpkgfile))
+      print(pkghead)
+
+  pkgentries = []
+  for i in range(pkghead.entry_count):
+      e = FwPkgEntry()
+      if fwpkgfile.readinto(e) != sizeof(e):
+          raise EOFError("Couldn't read firmware package file entry.")
+      if (po.verbose > 1):
+          print("{}: Entry {}".format(po.fwpkgfile,i))
+          print(e)
+      if e.dt_length != e.dt_alloclen:
+          raise RuntimeWarning("Entry size mismatch, {} instead of {}.".format(e.dt_length,e.dt_alloclen))
+      pkgentries.append(e)
+
+  pkghead_checksum = c_ushort()
+  if (po.verbose > 1):
+      print("{}: Headers checksum {}".format(po.fwpkgfile,pkghead_checksum))
+
+  if fwpkgfile.readinto(pkghead_checksum) != sizeof(pkghead_checksum):
+      raise EOFError("Couldn't read firmware package file header checksum.")
+
+  if fwpkgfile.tell() != pkghead.hdrend_offs:
+      raise RuntimeWarning("Header end offset does not match; should end at {}, ends at {}.".format(pkghead.hdrend_offs,fwpkgfile.tell()))
+
+  for i, e in enumerate(pkgentries):
+      if (po.verbose > 0):
+          print("{}: Extracting entry {}, {} bytes".format(po.fwpkgfile,i,e.dt_length))
+      fwitmfile = open("{}_{}.bin".format(po.dcprefix,i), "wb")
+      fwpkgfile.seek(e.dt_offs)
+      n = 0
+      while n < e.dt_length:
+          copy_buffer = fwpkgfile.read(min(1024 * 1024, e.dt_length - n))
+          if not copy_buffer:
+              break
+          n += len(copy_buffer)
+          fwitmfile.write(copy_buffer)
+
+def dji_create(po, fwpkgfile):
+    raise NotImplementedError('NOT IMPLEMENTED')
+
 def main(argv):
   # Parse command line options
   po = ProgOptions()
   try:
      opts, args = getopt.getopt(argv,"hxvp:m:",["help","version","fwpkg=","mdprefix="])
   except getopt.GetoptError:
-     print 'Unrecognized options; check dji_fwcon.py --help'
+     print("Unrecognized options; check dji_fwcon.py --help")
      sys.exit(2)
   for opt, arg in opts:
      if opt in ("-h", "--help"):
-        print 'dji_fwcon.py <-x|-a> [-v] -p <fwpkgfile> [-d <dcprefix>]'
-        print "  -p <fwpkgfile> - name of the firmware package file"
-        print "  -m <mdprefix> - file name prefix for the single decomposed firmware modules"
-        print "                  defaults to base name of firmware package file"
-        print "  -x - extract firmware package into modules"
-        print "  -a - add module files to firmware package"
-        print "  -v - increases verbosity level; max level is set by -vvv"
+        print("dji_fwcon.py <-x|-a> [-v] -p <fwpkgfile> [-d <dcprefix>]")
+        print("  -p <fwpkgfile> - name of the firmware package file")
+        print("  -m <mdprefix> - file name prefix for the single decomposed firmware modules")
+        print("                  defaults to base name of firmware package file")
+        print("  -x - extract firmware package into modules")
+        print("  -a - add module files to firmware package")
+        print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
-        print 'dji_fwcon.py version 0.1.0'
+        print("dji_fwcon.py version 0.1.0")
         sys.exit()
      elif opt == '-v':
         po.verbose += 1
@@ -82,57 +128,29 @@ def main(argv):
   if len(po.fwpkgfile) > 0 and len(po.dcprefix) == 0:
       po.dcprefix = os.path.splitext(basename(po.fwpkgfile))[0]
 
-  if (po.command != 'x'):
-      raise NotImplementedError('NOT IMPLEMENTED')
+  if (po.command == 'x'):
 
-  if (po.verbose > 0):
-      print "{}: Opening".format(po.fwpkgfile)
-  fwpkgfile = open(po.fwpkgfile, "rb")
+    if (po.verbose > 0):
+      print("{}: Opening".format(po.fwpkgfile))
+    fwpkgfile = open(po.fwpkgfile, "rb")
 
-  pkghead = FwPkgHeader()
-  if fwpkgfile.readinto(pkghead) != sizeof(pkghead):
-      raise EOFError("Couldn't read firmware package file header.")
-  if (po.verbose > 1):
-      print "{}: Header:".format(po.fwpkgfile)
-      print pkghead
+    dji_extract(po,fwpkgfile)
 
-  pkgentries = []
-  for i in range(pkghead.entry_count):
-      e = FwPkgEntry()
-      if fwpkgfile.readinto(e) != sizeof(e):
-          raise EOFError("Couldn't read firmware package file entry.")
-      if (po.verbose > 1):
-          print "{}: Entry {}".format(po.fwpkgfile,i)
-          print e
-      if e.dt_length != e.dt_alloclen:
-          raise RuntimeWarning("Entry size mismatch, {} instead of {}.".format(e.dt_length,e.dt_alloclen))
-      pkgentries.append(e)
+    fwpkgfile.close();
 
-  pkghead_checksum = c_ushort()
-  if (po.verbose > 1):
-      print "{}: Headers checksum {}".format(po.fwpkgfile,pkghead_checksum)
+  elif (po.command == 'a'):
 
-  if fwpkgfile.readinto(pkghead_checksum) != sizeof(pkghead_checksum):
-      raise EOFError("Couldn't read firmware package file header checksum.")
+    if (po.verbose > 0):
+      print("{}: Opening".format(po.fwpkgfile))
+    fwpkgfile = open(po.fwpkgfile, "wb")
 
-  if fwpkgfile.tell() != pkghead.hdrend_offs:
-      raise RuntimeWarning("Header end offset does not match; should end at {}, ends at {}.".format(pkghead.hdrend_offs,fwpkgfile.tell()))
+    dji_create(po,fwpkgfile)
 
-  for i, e in enumerate(pkgentries):
-      if (po.verbose > 0):
-          print "{}: Extracting entry {}, {} bytes".format(po.fwpkgfile,i,e.dt_length)
-      fwitmfile = open("{}_{}.bin".format(po.dcprefix,i), "wb")
-      fwpkgfile.seek(e.dt_offs)
-      n = 0
-      while n < e.dt_length:
-          copy_buffer = fwpkgfile.read(min(1024 * 1024, e.dt_length - n))
-          if not copy_buffer:
-              break
-          n += len(copy_buffer)
-          fwitmfile.write(copy_buffer)
+    fwpkgfile.close();
 
-  
-  fwpkgfile.close();
+  else:
+
+    raise NotImplementedError('Unsupported command.')
 
 if __name__ == "__main__":
    main(sys.argv[1:])
