@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import sys
 import getopt
 import os
+import hashlib
 from ctypes import *
+
+def eprint(*args, **kwargs):
+  print(*args, file=sys.stderr, **kwargs)
 
 class ProgOptions:
   fwpkgfile = ''
@@ -39,13 +44,18 @@ class FwPkgEntry(Structure):
               ('dt_offs', c_uint),
               ('dt_length', c_uint),
               ('dt_alloclen', c_uint),
-              ('dt_md5', c_char * 16),
-              ('dt_2ndhash', c_char * 16)]
+              ('dt_md5', c_ubyte * 16),
+              ('dt_2ndhash', c_ubyte * 16)]
   def target_name(self):
     tg_kind = ord(getattr(self, 'target')) & 31
     tg_model = (ord(getattr(self, 'target')) >> 5) & 7
     if   (tg_kind == 1):
-      return "camera model {:02d}".format(tg_model)
+      if (tg_model == 0):
+        return "camera '{:s}'".format("Ambarella A9SE mdl 00")
+      elif (tg_model == 1):
+        return "camera '{:s}'".format("Ambarella A9SE mdl 01")
+      else:
+        return "camera model {:02d}".format(tg_model)
     elif (tg_kind == 3):
       if ((tg_model%2) > 0):
         return "main controller mdl {:02d} ldr".format(tg_model)
@@ -119,6 +129,10 @@ class FwPkgEntry(Structure):
     else:
       return "device kind {:02} model {:02}".format(tg_kind,tg_model)
 
+  def hex_md5(self):
+    varkey = 'dt_md5'
+    return "".join("{:02x}".format(x) for x in getattr(self, varkey))
+
   def __repr__(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
@@ -154,7 +168,7 @@ def dji_extract(po, fwpkgfile):
           print("{}: Entry {}".format(po.fwpkgfile,i))
           print(e)
       if e.dt_length != e.dt_alloclen:
-          raise RuntimeWarning("Entry size mismatch, {} instead of {}.".format(e.dt_length,e.dt_alloclen))
+          eprint("{}: Warning: Entry size mismatch, {:d} instead of {:d}.".format(po.fwpkgfile,e.dt_length,e.dt_alloclen))
       pkgentries.append(e)
 
   pkghead_checksum = c_ushort()
@@ -165,12 +179,13 @@ def dji_extract(po, fwpkgfile):
       raise EOFError("Couldn't read firmware package file header checksum.")
 
   if fwpkgfile.tell() != pkghead.hdrend_offs:
-      raise RuntimeWarning("Header end offset does not match; should end at {}, ends at {}.".format(pkghead.hdrend_offs,fwpkgfile.tell()))
+      eprint("{}: Warning: Header end offset does not match; should end at {}, ends at {}.".format(po.fwpkgfile,pkghead.hdrend_offs,fwpkgfile.tell()))
 
   for i, e in enumerate(pkgentries):
       if (po.verbose > 0):
           print("{}: Extracting entry {}, {} bytes".format(po.fwpkgfile,i,e.dt_length))
-      fwitmfile = open("{}_{}.bin".format(po.dcprefix,i), "wb")
+      chksum = hashlib.md5()
+      fwitmfile = open("{:s}_{:02d}.bin".format(po.dcprefix,i), "wb")
       fwpkgfile.seek(e.dt_offs)
       n = 0
       while n < e.dt_length:
@@ -179,6 +194,12 @@ def dji_extract(po, fwpkgfile):
               break
           n += len(copy_buffer)
           fwitmfile.write(copy_buffer)
+          chksum.update(copy_buffer);
+      if (chksum.hexdigest() != e.hex_md5()):
+          eprint("{}: Warning: Entry {:d} checksum mismatch; got {:s}, expected {:s}.".format(po.fwpkgfile,i,chksum.hexdigest(),e.hex_md5()))
+      if (po.verbose > 1):
+          print("{}: Entry {:d} checksum {:s}".format(po.fwpkgfile,i,chksum.hexdigest()))
+
 
 def dji_create(po, fwpkgfile):
   pkghead = FwPkgHeader()
@@ -194,6 +215,7 @@ def main(argv):
      sys.exit(2)
   for opt, arg in opts:
      if opt in ("-h", "--help"):
+        print("DJI Firmware Container tool")
         print("dji_fwcon.py <-x|-a> [-v] -p <fwpkgfile> [-d <dcprefix>]")
         print("  -p <fwpkgfile> - name of the firmware package file")
         print("  -m <mdprefix> - file name prefix for the single decomposed firmware modules")
