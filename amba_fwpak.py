@@ -50,10 +50,27 @@ class FwModEntry(LittleEndianStructure):
     varkey = 'build_date'
     d[varkey] = "{:02d}.{:02d}.{:d}".format((d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey])&65535)
     varkey = 'crc32'
+    d[varkey] = "{:08X}".format(d[varkey])
+    varkey = 'padding'
     d[varkey] = "".join("{:02x}".format(x) for x in d[varkey])
     from pprint import pformat
     return pformat(d, indent=4, width=64)
 
+def amba_extract_part_head(po, e, i):
+  fwpartfile = open("{:s}_part{:02d}.a9h".format(po.ptprefix,i), "w")
+  fwpartfile.write("# Ambarella Firmware Packer section header file. Loosly based on AFT format.\n")
+  fwpartfile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
+  fwpartfile.write("crc32={:08X}\n".format(e.crc32))
+  fwpartfile.write("majorversion={:d}\n".format((e.version>>16)&65535))
+  fwpartfile.write("minorversion={:d}\n".format((e.version)&65535))
+  fwpartfile.write("build_date={:04d}.{:02d}.{:02d}\n".format((e.build_date>>16)&65535, (e.build_date>>8)&255, (e.build_date)&255))
+  fwpartfile.write("len={:d}\n".format(e.dt_len))
+  fwpartfile.write("loadaddress={:08X}\n".format(e.dt_mem))
+  fwpartfile.write("flag={:08X}\n".format(e.flag1))
+  fwpartfile.write("flag2={:08X}\n".format(e.flag2))
+  fwpartfile.write("sectionmagic={:08X}\n".format(e.magic))
+  #fwpartfile.write("padding={:s}\n".format("".join("{:02x}".format(x) for x in e.padding)))
+  fwpartfile.close()
 
 def amba_extract(po, fwmdlfile):
   modhead = FwModA9Header()
@@ -62,53 +79,49 @@ def amba_extract(po, fwmdlfile):
   if (po.verbose > 1):
       print("{}: Header:".format(po.fwmdlfile))
       print(modhead)
-
-  modentries = []
-  for i in range(modhead.entry_count):
-      e = FwPkgEntry()
-      if fwmdlfile.readinto(e) != sizeof(e):
-          raise EOFError("Couldn't read firmware package file entry.")
-      if (po.verbose > 1):
-          print("{}: Entry {}".format(po.fwmdlfile,i))
-          print(e)
-      if e.dt_length != e.dt_alloclen:
-          eprint("{}: Warning: Entry size mismatch, {:d} instead of {:d}.".format(po.fwmdlfile,e.dt_length,e.dt_alloclen))
-      modentries.append(e)
-
-  modhead_checksum = c_ushort()
-  if (po.verbose > 1):
-      print("{}: Headers checksum {}".format(po.fwmdlfile,modhead_checksum))
-
-  if fwmdlfile.readinto(modhead_checksum) != sizeof(modhead_checksum):
-      raise EOFError("Couldn't read firmware package file header checksum.")
-
-  if fwmdlfile.tell() != modhead.hdrend_offs:
-      eprint("{}: Warning: Header end offset does not match; should end at {}, ends at {}.".format(po.fwmdlfile,modhead.hdrend_offs,fwmdlfile.tell()))
-
-  for i, e in enumerate(modentries):
-      if (po.verbose > 0):
-          print("{}: Extracting entry {}, {} bytes".format(po.fwmdlfile,i,e.dt_length))
-      chksum = hashlib.md5()
-      fwpartfile = open("{:s}_{:02d}.bin".format(po.ptprefix,i), "wb")
-      fwmdlfile.seek(e.dt_offs)
-      n = 0
-      while n < e.dt_length:
-          copy_buffer = fwmdlfile.read(min(1024 * 1024, e.dt_length - n))
-          if not copy_buffer:
-              break
-          n += len(copy_buffer)
-          fwpartfile.write(copy_buffer)
-          chksum.update(copy_buffer);
-      fwpartfile.close()
-      if (chksum.hexdigest() != e.hex_md5()):
-          eprint("{}: Warning: Entry {:d} checksum mismatch; got {:s}, expected {:s}.".format(po.fwmdlfile,i,chksum.hexdigest(),e.hex_md5()))
-      if (po.verbose > 1):
-          print("{}: Entry {:d} checksum {:s}".format(po.fwmdlfile,i,chksum.hexdigest()))
+  fwpartfile = open("{:s}_header.a9s".format(po.ptprefix), "wb")
+  fwpartfile.write(modhead)
+  fwpartfile.close()
+  i = 0
+  while True:
+    epos = fwmdlfile.tell()
+    e = FwModEntry()
+    n = fwmdlfile.readinto(e)
+    if (n is None) or (n == 0):
+      # End Of File, correct ending
+      break
+    if n != sizeof(e):
+      raise EOFError("Couldn't read firmware package partition header, got {:d} out of {:d}.".format(n,sizeof(e)))
+    if (po.verbose > 1):
+      print("{}: Entry {}".format(po.fwmdlfile,i))
+      print(e)
+    if (e.dt_len < 16) or (e.dt_len > 128*1024*1024):
+      eprint("{}: Warning: entry at {:d} has bad size, {:d} bytes".format(po.fwmdlfile,epos,e.dt_len))
+    print("{}: Extracting entry {:2d}, pos {:8d}, len {:8d} bytes".format(po.fwmdlfile,i,epos,e.dt_len))
+    amba_extract_part_head(po, e, i)
+    fwpartfile = open("{:s}_part{:02d}.a9s".format(po.ptprefix,i), "wb")
+    n = 0
+    while n < e.dt_len:
+      copy_buffer = fwmdlfile.read(min(1024 * 1024, e.dt_len - n))
+      if not copy_buffer:
+          break
+      n += len(copy_buffer)
+      fwpartfile.write(copy_buffer)
+    fwpartfile.close()
+    if (n < e.dt_len):
+      eprint("{}: Warning: partition {:d} truncated, {:d} out of {:d} bytes".format(po.fwmdlfile,i,n,e.dt_len))
+    i += 1
+    #TODO: verify checksum
+    #if (chksum.hexdigest() != e.hex_md5()):
+    #    eprint("{}: Warning: Entry {:d} checksum mismatch; got {:s}, expected {:s}.".format(po.fwmdlfile,i,chksum.hexdigest(),e.hex_md5()))
+    #if (po.verbose > 1):
+    #    print("{}: Entry {:d} checksum {:s}".format(po.fwmdlfile,i,chksum.hexdigest()))
 
 def amba_search_extract(po, fwmdlfile):
   fwmdlmm = mmap.mmap(fwmdlfile.fileno(), length=0, access=mmap.ACCESS_READ)
-  modentries_pos = []
   epos = -sizeof(FwModEntry)
+  prev_dtlen = 0
+  prev_dtpos = 0
   i = 0
   while True:
     epos = fwmdlmm.find(b'\x90\xEB\x24\xA3', epos+sizeof(FwModEntry))
@@ -120,27 +133,17 @@ def amba_search_extract(po, fwmdlfile):
     dtpos = epos+sizeof(FwModEntry)
     e = FwModEntry.from_buffer_copy(fwmdlmm[epos:dtpos]);
     if (e.dt_len < 16) or (e.dt_len > 128*1024*1024) or (e.dt_len > fwmdlmm.size()-dtpos):
-      print("{}: False positive - entry at {:d} too large, {:d} bytes".format(po.fwmdlfile,epos,e.dt_len))
+      print("{}: False positive - entry at {:d} has bad size, {:d} bytes".format(po.fwmdlfile,epos,e.dt_len))
       continue
     print("{}: Extracting entry {:2d}, pos {:8d}, len {:8d} bytes".format(po.fwmdlfile,i,epos,e.dt_len))
-    fwpartfile = open("{:s}_part{:02d}.a9h".format(po.ptprefix,i), "w")
-    fwpartfile.write("# Ambarella Firmware Packer section header file. Loosly based on AFT format.\n")
-    fwpartfile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
-    fwpartfile.write("crc32={:08X}\n".format(e.crc32))
-    fwpartfile.write("majorversion={:d}\n".format((e.version>>16)&65535))
-    fwpartfile.write("minorversion={:d}\n".format((e.version)&65535))
-    fwpartfile.write("build_date={:04d}.{:02d}.{:02d}\n".format((e.build_date>>16)&65535, (e.build_date>>8)&255, (e.build_date)&255))
-    fwpartfile.write("len={:d}\n".format(e.dt_len))
-    fwpartfile.write("loadaddress={:08X}\n".format(e.dt_mem))
-    fwpartfile.write("flag={:08X}\n".format(e.flag1))
-    fwpartfile.write("flag2={:08X}\n".format(e.flag2))
-    fwpartfile.write("sectionmagic={:08X}\n".format(e.magic))
-    #fwpartfile.write("padding={:s}\n".format("".join("{:02x}".format(x) for x in e.padding)))
-    fwpartfile.close()
+    if (prev_dtpos+prev_dtlen > epos):
+      eprint("{}: Partition {:d} overlaps with previous by {:d} bytes".format(po.fwmdlfile,i,prev_dtpos+prev_dtlen - epos))
+    amba_extract_part_head(po, e, i)
     fwpartfile = open("{:s}_part{:02d}.a9s".format(po.ptprefix,i), "wb")
     fwpartfile.write(fwmdlmm[epos+sizeof(FwModEntry):epos+sizeof(FwModEntry)+e.dt_len])
     fwpartfile.close()
-    modentries_pos.append(epos)
+    prev_dtlen = e.dt_len
+    prev_dtpos = dtpos
     i += 1
   #TODO: verify checksum
 
