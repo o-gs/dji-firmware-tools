@@ -16,7 +16,7 @@ class ProgOptions:
   verbose = 0
   command = ''
 
-class FwPkgHeader(Structure):
+class FwPkgHeader(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('magic', c_char * 6),
               ('hdrend_offs', c_ushort),
@@ -35,7 +35,7 @@ class FwPkgHeader(Structure):
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
-class FwPkgEntry(Structure):
+class FwPkgEntry(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('target', c_char),
               ('spcoding', c_char),
@@ -46,6 +46,7 @@ class FwPkgEntry(Structure):
               ('dt_alloclen', c_uint),
               ('dt_md5', c_ubyte * 16),
               ('dt_2ndhash', c_ubyte * 16)]
+
   def target_name(self):
     tg_kind = ord(getattr(self, 'target')) & 31
     tg_model = (ord(getattr(self, 'target')) >> 5) & 7
@@ -195,6 +196,7 @@ def dji_extract(po, fwpkgfile):
           n += len(copy_buffer)
           fwitmfile.write(copy_buffer)
           chksum.update(copy_buffer);
+      fwitmfile.close()
       if (chksum.hexdigest() != e.hex_md5()):
           eprint("{}: Warning: Entry {:d} checksum mismatch; got {:s}, expected {:s}.".format(po.fwpkgfile,i,chksum.hexdigest(),e.hex_md5()))
       if (po.verbose > 1):
@@ -209,7 +211,7 @@ def main(argv):
   # Parse command line options
   po = ProgOptions()
   try:
-     opts, args = getopt.getopt(argv,"hxvp:m:",["help","version","fwpkg=","mdprefix="])
+     opts, args = getopt.getopt(argv,"hxavp:m:",["help","version","extract","add","fwpkg=","mdprefix="])
   except getopt.GetoptError:
      print("Unrecognized options; check dji_fwcon.py --help")
      sys.exit(2)
@@ -225,7 +227,7 @@ def main(argv):
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
-        print("dji_fwcon.py version 0.1.0")
+        print("dji_fwcon.py version 0.1.1")
         sys.exit()
      elif opt == '-v':
         po.verbose += 1
@@ -243,7 +245,7 @@ def main(argv):
   if (po.command == 'x'):
 
     if (po.verbose > 0):
-      print("{}: Opening".format(po.fwpkgfile))
+      print("{}: Opening for extraction".format(po.fwpkgfile))
     fwpkgfile = open(po.fwpkgfile, "rb")
 
     dji_extract(po,fwpkgfile)
@@ -253,7 +255,7 @@ def main(argv):
   elif (po.command == 'a'):
 
     if (po.verbose > 0):
-      print("{}: Opening".format(po.fwpkgfile))
+      print("{}: Opening for creation".format(po.fwpkgfile))
     fwpkgfile = open(po.fwpkgfile, "wb")
 
     dji_create(po,fwpkgfile)
