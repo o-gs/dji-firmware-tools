@@ -116,12 +116,17 @@ def amba_extract(po, fwmdlfile):
       print(modhead)
   i = 0
   modentries = []
-  while (i < 5):#TODO: 5 is not const
-    e = FwModEntry()
-    if fwmdlfile.readinto(e) != sizeof(e):
+  while (True):
+    hde = FwModEntry()
+    if fwmdlfile.readinto(hde) != sizeof(hde):
       raise EOFError("Couldn't read firmware package file header entries.")
-    modentries.append(e)
+    if (hde.dt_len == 0x00000800) and (hde.crc32 == 0x00040000):
+      fwmdlfile.seek(-sizeof(hde),1)
+      break
+    modentries.append(hde)
     i += 1
+    if (i > 128):
+      raise EOFError("Couldn't find header entries end marking.")
   if (po.verbose > 1):
       print("{}: Entries:".format(po.fwmdlfile))
       print(modentries)
@@ -134,8 +139,17 @@ def amba_extract(po, fwmdlfile):
       print("{}: Post Header:".format(po.fwmdlfile))
       print(modposthd)
   amba_extract_mod_head(po, modhead, modposthd)
-  i = 0
+  i = -1
   while True:
+    i += 1
+    # Skip unused modentries
+    if (i < len(modentries)):
+      hde = modentries[i]
+      if (hde.dt_len < 1):
+        continue
+    else:
+      # Do not show warning yet - maybe the file is at EOF
+      hde = FwModEntry()
     epos = fwmdlfile.tell()
     e = FwModPartHeader()
     n = fwmdlfile.readinto(e)
@@ -149,6 +163,11 @@ def amba_extract(po, fwmdlfile):
       print(e)
     if (e.dt_len < 16) or (e.dt_len > 128*1024*1024):
       eprint("{}: Warning: entry at {:d} has bad size, {:d} bytes".format(po.fwmdlfile,epos,e.dt_len))
+    # Warn if no more module entries were expected
+    if (i >= len(modentries)):
+      eprint("{}: Warning: Data continues after parsing all {:d} known partitions; header inconsistent.".format(po.fwmdlfile,i))
+    #elif (e.crc32 != hde.crc32): #TODO: add partition header CRC
+    #  eprint("{}: Warning: entry at {:d} has CRC {:08X} not matching header CRC {:08X}".format(po.fwmdlfile,epos,e.crc32,hde.crc32))
     print("{}: Extracting entry {:2d}, pos {:8d}, len {:8d} bytes".format(po.fwmdlfile,i,epos,e.dt_len))
     amba_extract_part_head(po, e, i)
     fwpartfile = open("{:s}_part{:02d}.a9s".format(po.ptprefix,i), "wb")
@@ -162,7 +181,6 @@ def amba_extract(po, fwmdlfile):
     fwpartfile.close()
     if (n < e.dt_len):
       eprint("{}: Warning: partition {:d} truncated, {:d} out of {:d} bytes".format(po.fwmdlfile,i,n,e.dt_len))
-    i += 1
     #TODO: verify checksum
     #if (chksum.hexdigest() != e.hex_md5()):
     #    eprint("{}: Warning: Entry {:d} checksum mismatch; got {:s}, expected {:s}.".format(po.fwmdlfile,i,chksum.hexdigest(),e.hex_md5()))
