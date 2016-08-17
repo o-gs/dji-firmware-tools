@@ -18,6 +18,9 @@ class ProgOptions:
   verbose = 0
   command = ''
 
+part_entry_type_id = ["bst", "bld", "hal", "pri", "rfs", "dsp"]
+part_entry_type_name = ["Bootstrap setup", "AMBoot loader", "Hw Abstr Layer", "RTOS image", "Filesystem", "DSP microcode"]
+
 class FwModA9Header(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('description', c_char * 36),
@@ -82,8 +85,8 @@ class FwModPartHeader(LittleEndianStructure):
     from pprint import pformat
     return pformat(d, indent=4, width=64)
 
-def amba_extract_part_head(po, e, i):
-  fwpartfile = open("{:s}_part{:02d}.a9h".format(po.ptprefix,i), "w")
+def amba_extract_part_head(po, e, ptyp):
+  fwpartfile = open("{:s}_part_{:s}.a9h".format(po.ptprefix,ptyp), "w")
   fwpartfile.write("# Ambarella Firmware Packer section header file. Loosly based on AFT format.\n")
   fwpartfile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
   fwpartfile.write("crc32={:08X}\n".format(e.crc32))
@@ -99,7 +102,7 @@ def amba_extract_part_head(po, e, i):
   fwpartfile.close()
 
 def amba_extract_mod_head(po, modhead, modposthd):
-  fwpartfile = open("{:s}_header.a9s".format(po.ptprefix), "w")
+  fwpartfile = open("{:s}_header.a9h".format(po.ptprefix), "w")
   fwpartfile.write("# Ambarella Firmware Packer module header file. Loosly based on AFT format.\n")
   fwpartfile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
   fwpartfile.write("crc32={:08X}\n".format(modhead.crc32))
@@ -169,8 +172,12 @@ def amba_extract(po, fwmdlfile):
     #elif (e.crc32 != hde.crc32): #TODO: add partition header CRC
     #  eprint("{}: Warning: entry at {:d} has CRC {:08X} not matching header CRC {:08X}".format(po.fwmdlfile,epos,e.crc32,hde.crc32))
     print("{}: Extracting entry {:2d}, pos {:8d}, len {:8d} bytes".format(po.fwmdlfile,i,epos,e.dt_len))
-    amba_extract_part_head(po, e, i)
-    fwpartfile = open("{:s}_part{:02d}.a9s".format(po.ptprefix,i), "wb")
+    if (i < len(part_entry_type_id)):
+      ptyp = part_entry_type_id[i]
+    else:
+      ptyp = "{:02d}".format(i)
+    amba_extract_part_head(po, e, ptyp)
+    fwpartfile = open("{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp), "wb")
     n = 0
     while n < e.dt_len:
       copy_buffer = fwmdlfile.read(min(1024 * 1024, e.dt_len - n))
@@ -208,8 +215,9 @@ def amba_search_extract(po, fwmdlfile):
     print("{}: Extracting entry {:2d}, pos {:8d}, len {:8d} bytes".format(po.fwmdlfile,i,epos,e.dt_len))
     if (prev_dtpos+prev_dtlen > epos):
       eprint("{}: Partition {:d} overlaps with previous by {:d} bytes".format(po.fwmdlfile,i,prev_dtpos+prev_dtlen - epos))
-    amba_extract_part_head(po, e, i)
-    fwpartfile = open("{:s}_part{:02d}.a9s".format(po.ptprefix,i), "wb")
+    ptyp = "{:02d}".format(i)
+    amba_extract_part_head(po, e, ptyp)
+    fwpartfile = open("{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp), "wb")
     fwpartfile.write(fwmdlmm[epos+sizeof(FwModPartHeader):epos+sizeof(FwModPartHeader)+e.dt_len])
     fwpartfile.close()
     prev_dtlen = e.dt_len
