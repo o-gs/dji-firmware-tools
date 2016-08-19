@@ -6,6 +6,7 @@ import getopt
 import os
 import hashlib
 import mmap
+import zlib
 from ctypes import *
 from time import gmtime, strftime
 
@@ -84,6 +85,12 @@ class FwModPartHeader(LittleEndianStructure):
     d[varkey] = "".join("{:02x}".format(x) for x in d[varkey])
     from pprint import pformat
     return pformat(d, indent=4, width=64)
+
+def amba_calculate_crc32_part(buf, pcrc):
+  return zlib.crc32(buf, pcrc) & 0xffffffff
+
+def amba_calculate_crc32(buf):
+  return amba_calculate_crc32_part(buf, 0)
 
 def amba_extract_part_head(po, e, ptyp):
   fwpartfile = open("{:s}_part_{:s}.a9h".format(po.ptprefix,ptyp), "w")
@@ -178,6 +185,7 @@ def amba_extract(po, fwmdlfile):
       ptyp = "{:02d}".format(i)
     amba_extract_part_head(po, e, ptyp)
     fwpartfile = open("{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp), "wb")
+    crc = 0
     n = 0
     while n < e.dt_len:
       copy_buffer = fwmdlfile.read(min(1024 * 1024, e.dt_len - n))
@@ -185,14 +193,14 @@ def amba_extract(po, fwmdlfile):
           break
       n += len(copy_buffer)
       fwpartfile.write(copy_buffer)
+      crc = amba_calculate_crc32_part(copy_buffer, crc)
     fwpartfile.close()
     if (n < e.dt_len):
       eprint("{}: Warning: partition {:d} truncated, {:d} out of {:d} bytes".format(po.fwmdlfile,i,n,e.dt_len))
-    #TODO: verify checksum
-    #if (chksum.hexdigest() != e.hex_md5()):
-    #    eprint("{}: Warning: Entry {:d} checksum mismatch; got {:s}, expected {:s}.".format(po.fwmdlfile,i,chksum.hexdigest(),e.hex_md5()))
-    #if (po.verbose > 1):
-    #    print("{}: Entry {:d} checksum {:s}".format(po.fwmdlfile,i,chksum.hexdigest()))
+    if (crc != e.crc32):
+        eprint("{}: Warning: Entry {:d} checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,i,crc,e.crc32))
+    if (po.verbose > 1):
+        print("{}: Entry {:2d} checksum {:08X}".format(po.fwmdlfile,i,crc))
 
 def amba_search_extract(po, fwmdlfile):
   fwmdlmm = mmap.mmap(fwmdlfile.fileno(), length=0, access=mmap.ACCESS_READ)
@@ -220,11 +228,14 @@ def amba_search_extract(po, fwmdlfile):
     fwpartfile = open("{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp), "wb")
     fwpartfile.write(fwmdlmm[epos+sizeof(FwModPartHeader):epos+sizeof(FwModPartHeader)+e.dt_len])
     fwpartfile.close()
+    crc = amba_calculate_crc32(fwmdlmm[epos+sizeof(FwModPartHeader):epos+sizeof(FwModPartHeader)+e.dt_len])
+    if (crc != e.crc32):
+        eprint("{}: Warning: Entry {:d} checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,i,crc,e.crc32))
+    if (po.verbose > 1):
+        print("{}: Entry {:2d} checksum {:08X}".format(po.fwmdlfile,i,crc))
     prev_dtlen = e.dt_len
     prev_dtpos = dtpos
     i += 1
-  #TODO: verify checksum
-
 
 def amba_create(po, fwmdlfile):
   raise NotImplementedError('NOT IMPLEMENTED')
