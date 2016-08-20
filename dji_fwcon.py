@@ -6,6 +6,7 @@ import getopt
 import os
 import hashlib
 from ctypes import *
+from time import gmtime, strftime
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
@@ -28,17 +29,36 @@ class FwPkgHeader(LittleEndianStructure):
               ('reserved2E', c_int),
               ('reserved32', c_int),
               ('reserved36', c_char * 10)]
-  def __repr__(self):
+
+  def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
+    varkey = 'version'
+    d[varkey] = "{:d}".format(d[varkey])
+    return d
+
+  def ini_export(self, fp):
+    d = self.dict_export()
+    fp.write("# DJI Firmware Container main header file.\n")
+    fp.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
+    varkey = 'hdrend_offs'
+    fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
+    varkey = 'reserved8'
+    fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
+    varkey = 'version'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    #TODO
+
+  def __repr__(self):
+    d = self.dict_export()
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
 class FwPkgEntry(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('target', c_char),
-              ('spcoding', c_char),
+  _fields_ = [('target', c_ubyte),
+              ('spcoding', c_ubyte),
               ('reserved2', c_ushort),
               ('version', c_uint),
               ('dt_offs', c_uint),
@@ -48,8 +68,8 @@ class FwPkgEntry(LittleEndianStructure):
               ('dt_2ndhash', c_ubyte * 16)]
 
   def target_name(self):
-    tg_kind = ord(getattr(self, 'target')) & 31
-    tg_model = (ord(getattr(self, 'target')) >> 5) & 7
+    tg_kind = getattr(self, 'target') & 31
+    tg_model = (getattr(self, 'target') >> 5) & 7
     if   (tg_kind == 1):
       if (tg_model == 0):
         return "camera '{:s}'".format("Ambarella A9SE mdl 00")
@@ -134,7 +154,7 @@ class FwPkgEntry(LittleEndianStructure):
     varkey = 'dt_md5'
     return "".join("{:02x}".format(x) for x in getattr(self, varkey))
 
-  def __repr__(self):
+  def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
@@ -145,11 +165,45 @@ class FwPkgEntry(LittleEndianStructure):
     varkey = 'dt_2ndhash'
     d[varkey] = "".join("{:02x}".format(x) for x in d[varkey])
     varkey = 'target'
-    d[varkey] = "m{:02d}{:02d}".format(ord(d[varkey])&31, (ord(d[varkey])>>5)&7)
+    d[varkey] = "m{:02d}{:02d}".format(d[varkey]&31, (d[varkey]>>5)&7)
     varkey = 'target_name'
     d[varkey] = self.target_name()
+    return d
+
+  def ini_export(self, fp):
+    d = self.dict_export()
+    fp.write("# DJI Firmware Container entry header file.\n")
+    fp.write("# Stores firmware for {:s}\n".format(d['target_name']))
+    fp.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
+    varkey = 'target'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    varkey = 'version'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    varkey = 'spcoding'
+    fp.write("{:s}={:02X}\n".format(varkey,d[varkey]))
+    varkey = 'reserved2'
+    fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
+    varkey = 'dt_length'
+    fp.write("{:s}={:d}\n".format('length',d[varkey]))
+    varkey = 'dt_md5'
+    fp.write("{:s}={:s}\n".format('md5',d[varkey]))
+
+
+  def __repr__(self):
+    d = self.dict_export()
     from pprint import pformat
     return pformat(d, indent=4, width=64)
+
+
+def dji_write_fwpkg_head(po, pkghead):
+  fwheadfile = open("{:s}_head.ini".format(po.dcprefix), "w")
+  pkghead.ini_export(fwheadfile)
+  fwheadfile.close()
+
+def dji_write_fwentry_head(po, i, e):
+  fwheadfile = open("{:s}_{:02d}.ini".format(po.dcprefix,i), "w")
+  e.ini_export(fwheadfile)
+  fwheadfile.close()
 
 
 def dji_extract(po, fwpkgfile):
@@ -173,19 +227,22 @@ def dji_extract(po, fwpkgfile):
       pkgentries.append(e)
 
   pkghead_checksum = c_ushort()
-  if (po.verbose > 1):
-      print("{}: Headers checksum {}".format(po.fwpkgfile,pkghead_checksum))
-
   if fwpkgfile.readinto(pkghead_checksum) != sizeof(pkghead_checksum):
       raise EOFError("Couldn't read firmware package file header checksum.")
 
+  if (po.verbose > 1):
+      print("{}: Headers checksum {:04X}".format(po.fwpkgfile,pkghead_checksum.value))
+
   if fwpkgfile.tell() != pkghead.hdrend_offs:
       eprint("{}: Warning: Header end offset does not match; should end at {}, ends at {}.".format(po.fwpkgfile,pkghead.hdrend_offs,fwpkgfile.tell()))
+
+  dji_write_fwpkg_head(po, pkghead)
 
   for i, e in enumerate(pkgentries):
       if (po.verbose > 0):
           print("{}: Extracting entry {}, {} bytes".format(po.fwpkgfile,i,e.dt_length))
       chksum = hashlib.md5()
+      dji_write_fwentry_head(po, i, e)
       fwitmfile = open("{:s}_{:02d}.bin".format(po.dcprefix,i), "wb")
       fwpkgfile.seek(e.dt_offs)
       n = 0
