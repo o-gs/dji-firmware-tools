@@ -48,13 +48,13 @@ class FwModEntry(LittleEndianStructure):
 
 class FwModA9PostHeader(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('params', c_ubyte * 60)]
+  _fields_ = [('params', c_uint * 15)]
   def __repr__(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
     varkey = 'params'
-    d[varkey] = "".join("{:02x}".format(x) for x in d[varkey])
+    d[varkey] = " ".join("{:08x}".format(x) for x in d[varkey])
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
@@ -114,7 +114,7 @@ def amba_extract_mod_head(po, modhead, modposthd):
   fwpartfile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
   fwpartfile.write("crc32={:08X}\n".format(modhead.crc32))
   fwpartfile.write("description={:s}\n".format(modhead.description.decode("utf-8")))
-  fwpartfile.write("params={:s}\n".format("".join("{:02x}".format(x) for x in modposthd.params)))
+  fwpartfile.write("params={:s}\n".format(" ".join("{:08X}".format(x) for x in modposthd.params)))
   fwpartfile.close()
 
 def amba_extract(po, fwmdlfile):
@@ -171,13 +171,12 @@ def amba_extract(po, fwmdlfile):
     if (po.verbose > 1):
       print("{}: Entry {}".format(po.fwmdlfile,i))
       print(e)
+    hdcrc = amba_calculate_crc32_part((c_ubyte * sizeof(e)).from_buffer_copy(e), 0)
     if (e.dt_len < 16) or (e.dt_len > 128*1024*1024):
       eprint("{}: Warning: entry at {:d} has bad size, {:d} bytes".format(po.fwmdlfile,epos,e.dt_len))
     # Warn if no more module entries were expected
     if (i >= len(modentries)):
       eprint("{}: Warning: Data continues after parsing all {:d} known partitions; header inconsistent.".format(po.fwmdlfile,i))
-    #elif (e.crc32 != hde.crc32): #TODO: add partition header CRC
-    #  eprint("{}: Warning: entry at {:d} has CRC {:08X} not matching header CRC {:08X}".format(po.fwmdlfile,epos,e.crc32,hde.crc32))
     print("{}: Extracting entry {:2d}, pos {:8d}, len {:8d} bytes".format(po.fwmdlfile,i,epos,e.dt_len))
     if (i < len(part_entry_type_id)):
       ptyp = part_entry_type_id[i]
@@ -185,7 +184,7 @@ def amba_extract(po, fwmdlfile):
       ptyp = "{:02d}".format(i)
     amba_extract_part_head(po, e, ptyp)
     fwpartfile = open("{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp), "wb")
-    crc = 0
+    ptcrc = 0
     n = 0
     while n < e.dt_len:
       copy_buffer = fwmdlfile.read(min(1024 * 1024, e.dt_len - n))
@@ -193,14 +192,17 @@ def amba_extract(po, fwmdlfile):
           break
       n += len(copy_buffer)
       fwpartfile.write(copy_buffer)
-      crc = amba_calculate_crc32_part(copy_buffer, crc)
+      ptcrc = amba_calculate_crc32_part(copy_buffer, ptcrc)
+      #hdcrc = amba_calculate_crc32_part(copy_buffer, hdcrc)
     fwpartfile.close()
     if (n < e.dt_len):
       eprint("{}: Warning: partition {:d} truncated, {:d} out of {:d} bytes".format(po.fwmdlfile,i,n,e.dt_len))
-    if (crc != e.crc32):
-        eprint("{}: Warning: Entry {:d} checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,i,crc,e.crc32))
+    if (ptcrc != e.crc32):
+        eprint("{}: Warning: Entry {:d} data checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,i,ptcrc,e.crc32))
+    #if (hdcrc != hde.crc32): #TODO: fix and add partition header CRC verification
+    #  eprint("{}: Warning: Entry {:d} XXX???XXX checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,i,hdcrc,hde.crc32))
     if (po.verbose > 1):
-        print("{}: Entry {:2d} checksum {:08X}".format(po.fwmdlfile,i,crc))
+        print("{}: Entry {:2d} checksum {:08X}".format(po.fwmdlfile,i,ptcrc))
 
 def amba_search_extract(po, fwmdlfile):
   fwmdlmm = mmap.mmap(fwmdlfile.fileno(), length=0, access=mmap.ACCESS_READ)
@@ -259,6 +261,7 @@ def main(argv):
         print("  -s - search for partitions within firmware module and extract them")
         print("       (works similar to -x, but uses brute-force search for partitions)")
         print("  -a - add partition files to firmware module file")
+        print("       (works only on data created with -x; the -s is insufficient)")
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
