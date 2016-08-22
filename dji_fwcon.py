@@ -28,7 +28,7 @@ class FwPkgHeader(LittleEndianStructure):
               ('entry_count', c_ushort),
               ('reserved2E', c_int),
               ('reserved32', c_int),
-              ('reserved36', c_char * 10)]
+              ('padding', c_ubyte * 10)]
 
   def dict_export(self):
     d = dict()
@@ -36,6 +36,8 @@ class FwPkgHeader(LittleEndianStructure):
         d[varkey] = getattr(self, varkey)
     varkey = 'version'
     d[varkey] = "{:d}".format(d[varkey])
+    varkey = 'padding'
+    d[varkey] = "".join("{:02X}".format(x) for x in d[varkey])
     return d
 
   def ini_export(self, fp):
@@ -47,6 +49,8 @@ class FwPkgHeader(LittleEndianStructure):
     varkey = 'reserved8'
     fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
     varkey = 'version'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    varkey = 'padding'
     fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
     #TODO
 
@@ -188,11 +192,10 @@ class FwPkgEntry(LittleEndianStructure):
     varkey = 'dt_md5'
     fp.write("{:s}={:s}\n".format('md5',d[varkey]))
 
-
   def __repr__(self):
     d = self.dict_export()
     from pprint import pformat
-    return pformat(d, indent=4, width=64)
+    return pformat(d, indent=4, width=1)
 
 
 def dji_write_fwpkg_head(po, pkghead):

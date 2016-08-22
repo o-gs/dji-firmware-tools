@@ -26,10 +26,15 @@ class FwModA9Header(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('description', c_char * 36),
               ('crc32', c_uint)]
-  def __repr__(self):
+
+  def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
+    return d
+
+  def __repr__(self):
+    d = self.dict_export()
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
@@ -37,27 +42,36 @@ class FwModEntry(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('dt_len', c_uint),
               ('crc32', c_uint)]
-  def __repr__(self):
+
+  def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
     varkey = 'crc32'
     d[varkey] = "{:08X}".format(d[varkey])
+    return d
+
+  def __repr__(self):
+    d = self.dict_export()
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
 class FwModA9PostHeader(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('params', c_uint * 15)]
-  def __repr__(self):
+
+  def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
     varkey = 'params'
     d[varkey] = " ".join("{:08x}".format(x) for x in d[varkey])
+    return d
+
+  def __repr__(self):
+    d = self.dict_export()
     from pprint import pformat
     return pformat(d, indent=4, width=1)
-
 
 class FwModPartHeader(LittleEndianStructure):
   _pack_ = 1
@@ -71,7 +85,7 @@ class FwModPartHeader(LittleEndianStructure):
               ('flag2', c_uint),
               ('padding', c_ubyte * 224)]
 
-  def __repr__(self):
+  def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
@@ -83,8 +97,12 @@ class FwModPartHeader(LittleEndianStructure):
     d[varkey] = "{:08X}".format(d[varkey])
     varkey = 'padding'
     d[varkey] = "".join("{:02x}".format(x) for x in d[varkey])
+    return d
+
+  def __repr__(self):
+    d = self.dict_export()
     from pprint import pformat
-    return pformat(d, indent=4, width=64)
+    return pformat(d, indent=4, width=1)
 
 def amba_calculate_crc32_part(buf, pcrc):
   return zlib.crc32(buf, pcrc) & 0xffffffff
