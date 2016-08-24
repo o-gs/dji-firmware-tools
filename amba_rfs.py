@@ -46,6 +46,9 @@ class RFSFileEntry(LittleEndianStructure):
               ('length', c_uint),
               ('magic', c_uint)]
 
+  def filename_str(self):
+    return cast(self.filename, c_char_p).value.decode('utf-8')
+
   def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
@@ -58,11 +61,11 @@ class RFSFileEntry(LittleEndianStructure):
     return pformat(d, indent=4, width=1)
 
 def rfs_extract_filesystem_head(po, fshead, fsentries):
-  fwpartfile = open("{:s}_header.a9t".format(po.ptprefix), "w")
-  fwpartfile.write("# Ambarella Firmware RFS header file. Loosly based on AFT format.\n")
-  fwpartfile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
-  fwpartfile.write("filelist={:s}\n".format(",".join("{:s}".format(x.filename) for x in fsentries)))
-  fwpartfile.close()
+  inifile = open("{:s}_header.a9t".format(po.ptprefix), "w")
+  inifile.write("# Ambarella Firmware RFS header file. Loosly based on AFT format.\n")
+  inifile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
+  inifile.write("filelist={:s}\n".format(",".join("{:s}".format(x.filename_str()) for x in fsentries)))
+  inifile.close()
 
 def rfs_extract(po, fwpartfile):
   fshead = RFSPartitionHeader()
@@ -91,10 +94,10 @@ def rfs_extract(po, fwpartfile):
       eprint("{}: Warning: entry {:d} has invalid file name; skipping.".format(po.fwpartfile,i))
       continue
     if (fe.length < 0) or (fe.length > 128*1024*1024):
-      eprint("{}: Warning: entry {:d} has bad size, {:d} bytes; skipping.".format(po.fwmdlfile,i,fe.length))
+      eprint("{}: Warning: entry {:d} has bad size, {:d} bytes; skipping.".format(po.fwpartfile,i,fe.length))
       continue
     if (fe.offset < 0) or (fe.offset > 128*1024*1024):
-      eprint("{}: Warning: entry {:d} has bad offset, {:d} bytes; skipping.".format(po.fwmdlfile,i,fe.offset))
+      eprint("{}: Warning: entry {:d} has bad offset, {:d} bytes; skipping.".format(po.fwpartfile,i,fe.offset))
       continue
     fsentries.append(fe)
 
@@ -104,55 +107,21 @@ def rfs_extract(po, fwpartfile):
 
   rfs_extract_filesystem_head(po, fshead, fsentries)
 
-  raise NotImplementedError('Unsupported command.')
-  i = -1
-  while True:
-    i += 1
-    # Skip unused fsentries
-    if (i < len(fsentries)):
-      fe = fsentries[i]
-      if (fe.dt_len < 1):
-        continue
-    else:
-      # Do not show warning yet - maybe the file is at EOF
-      fe = FwModEntry()
-    epos = fwpartfile.tell()
-    e = FwModPartHeader()
-    n = fwpartfile.readinto(e)
-    if (n is None) or (n == 0):
-      # End Of File, correct ending
-      break
-    if n != sizeof(e):
-      raise EOFError("Couldn't read firmware package partition header, got {:d} out of {:d}.".format(n,sizeof(e)))
-    if (po.verbose > 1):
-      print("{}: Entry {}".format(po.fwpartfile,i))
-      print(e)
-    hdcrc = rfs_calculate_crc32_part((c_ubyte * sizeof(e)).from_buffer_copy(e), 0)
-    if (e.dt_len < 16) or (e.dt_len > 128*1024*1024):
-      eprint("{}: Warning: entry at {:d} has bad size, {:d} bytes".format(po.fwpartfile,epos,e.dt_len))
-    # Warn if no more module entries were expected
-    if (i >= len(fsentries)):
-      eprint("{}: Warning: Data continues after parsing all {:d} known partitions; header inconsistent.".format(po.fwpartfile,i))
-    print("{}: Extracting entry {:2d}, pos {:8d}, len {:8d} bytes".format(po.fwpartfile,i,epos,e.dt_len))
-    if (i < len(part_entry_type_id)):
-      ptyp = part_entry_type_id[i]
-    else:
-      ptyp = "{:02d}".format(i)
-    rfs_extract_part_head(po, e, ptyp)
-    singlefile = open("{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp), "wb")
-    ptcrc = 0
+  for i, fe in enumerate(fsentries):
+    if (po.verbose > 0):
+      print("{}: Extracting entry {:d}: {:s}, {:d} bytes".format(po.fwpartfile,i,fe.filename_str(),fe.length))
+    fwpartfile.seek(fe.offset,0)
+    singlefile = open(fe.filename_str(), "wb")
     n = 0
-    while n < e.dt_len:
-      copy_buffer = singlefile.read(min(1024 * 1024, e.dt_len - n))
+    while n < fe.length:
+      copy_buffer = fwpartfile.read(min(1024 * 1024, fe.length - n))
       if not copy_buffer:
           break
       n += len(copy_buffer)
       singlefile.write(copy_buffer)
-      ptcrc = rfs_calculate_crc32_part(copy_buffer, ptcrc)
-      #hdcrc = rfs_calculate_crc32_part(copy_buffer, hdcrc)
     singlefile.close()
-    if (n < e.dt_len):
-      eprint("{}: Warning: partition {:d} truncated, {:d} out of {:d} bytes".format(po.fwpartfile,i,n,e.dt_len))
+    if (n < fe.length):
+      eprint("{}: Warning: file {:d} truncated, {:d} out of {:d} bytes".format(po.fwpartfile,i,n,fe.length))
 
 def rfs_search_extract(po, fwpartfile):
   raise NotImplementedError('NOT IMPLEMENTED')
