@@ -60,6 +60,7 @@ class RFSFileEntry(LittleEndianStructure):
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
+
 def rfs_extract_filesystem_head(po, fshead, fsentries):
   fname = "{:s}/{:s}".format(po.snglfdir,"_header.a9t")
   os.makedirs(os.path.dirname(fname), exist_ok=True)
@@ -68,6 +69,26 @@ def rfs_extract_filesystem_head(po, fshead, fsentries):
   inifile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
   inifile.write("filelist={:s}\n".format(",".join("{:s}".format(x.filename_str()) for x in fsentries)))
   inifile.close()
+
+
+def rfs_extract_filesystem_entry(po, fwpartfile, i, fe):
+  if (po.verbose > 0):
+    print("{}: Extracting entry {:d}: {:s}, {:d} bytes".format(po.fwpartfile,i,fe.filename_str(),fe.length))
+  fwpartfile.seek(fe.offset,0)
+  fname = "{:s}/{:s}".format(po.snglfdir,fe.filename_str())
+  os.makedirs(os.path.dirname(fname), exist_ok=True)
+  singlefile = open(fname, "wb")
+  n = 0
+  while n < fe.length:
+    copy_buffer = fwpartfile.read(min(1024 * 1024, fe.length - n))
+    if not copy_buffer:
+        break
+    n += len(copy_buffer)
+    singlefile.write(copy_buffer)
+  singlefile.close()
+  if (n < fe.length):
+    eprint("{}: Warning: file {:d} truncated, {:d} out of {:d} bytes".format(po.fwpartfile,i,n,fe.length))
+
 
 def rfs_extract(po, fwpartfile):
   fshead = RFSPartitionHeader()
@@ -103,35 +124,56 @@ def rfs_extract(po, fwpartfile):
       continue
     fsentries.append(fe)
 
-  if (po.verbose > 1):
+  if (po.verbose > 2):
       print("{}: Entries:".format(po.fwpartfile))
       print(fsentries)
 
   rfs_extract_filesystem_head(po, fshead, fsentries)
 
   for i, fe in enumerate(fsentries):
-    if (po.verbose > 0):
-      print("{}: Extracting entry {:d}: {:s}, {:d} bytes".format(po.fwpartfile,i,fe.filename_str(),fe.length))
-    fwpartfile.seek(fe.offset,0)
-    fname = "{:s}/{:s}".format(po.snglfdir,fe.filename_str())
-    os.makedirs(os.path.dirname(fname), exist_ok=True)
-    singlefile = open(fname, "wb")
-    n = 0
-    while n < fe.length:
-      copy_buffer = fwpartfile.read(min(1024 * 1024, fe.length - n))
-      if not copy_buffer:
-          break
-      n += len(copy_buffer)
-      singlefile.write(copy_buffer)
-    singlefile.close()
-    if (n < fe.length):
-      eprint("{}: Warning: file {:d} truncated, {:d} out of {:d} bytes".format(po.fwpartfile,i,n,fe.length))
+    rfs_extract_filesystem_entry(po, fwpartfile, i, fe)
+
 
 def rfs_search_extract(po, fwpartfile):
-  raise NotImplementedError('NOT IMPLEMENTED')
+  fshead = RFSPartitionHeader()
+  fwpartmm = mmap.mmap(fwpartfile.fileno(), length=0, access=mmap.ACCESS_READ)
+  fsentries = []
+  epos = -sizeof(RFSFileEntry)
+  prev_dtlen = 0
+  prev_dtpos = 0
+  i = 0
+  while True:
+    epos = fwpartmm.find(b'\x76\xAB\x87\x23', epos+sizeof(RFSFileEntry))
+    if (epos < 0):
+      break
+    epos -= 124 # pos of 'magic' within FwModPartHeader
+    if (epos < 0):
+      continue
+    fe = RFSFileEntry.from_buffer_copy(fwpartmm[epos:epos+sizeof(RFSFileEntry)]);
+    dtpos = fe.offset
+    if (fe.length < 0) or (fe.length > 128*1024*1024) or (fe.length > fwpartmm.size()-dtpos):
+      print("{}: False positive - entry at {:d} has bad size, {:d} bytes".format(po.fwpartfile,epos,fe.length))
+      continue
+    if (prev_dtpos < dtpos+fe.length) and (prev_dtpos+prev_dtlen > dtpos):
+      eprint("{}: File {:d} data overlaps with previous by {:d} bytes".format(po.fwpartfile,i,prev_dtpos+prev_dtlen - dtpos))
+    fsentries.append(fe)
+    prev_dtlen = fe.length
+    prev_dtpos = dtpos
+    i += 1
+
+  if (po.verbose > 2):
+      print("{}: Entries:".format(po.fwpartfile))
+      print(fsentries)
+
+  rfs_extract_filesystem_head(po, fshead, fsentries)
+
+  for i, fe in enumerate(fsentries):
+    rfs_extract_filesystem_entry(po, fwpartfile, i, fe)
+
 
 def rfs_create(po, fwpartfile):
   raise NotImplementedError('NOT IMPLEMENTED')
+
 
 def main(argv):
   # Parse command line options
