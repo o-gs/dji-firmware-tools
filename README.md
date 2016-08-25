@@ -13,3 +13,7 @@ Documentation of the formware format is held within [phantom-licensecheck](https
 # Tools
 
 dji_fwcon.py - DJI Firmware Container tool; allows extracting modules from package file, or creating container by merging firmware modules.
+
+amba_fwpak.py - Ambarella A7/A9 firmware pack tool; allows extracting partitions from the firmware, or merging them back.
+
+amba_rfs.py - Ambarella A7/A9 firmware RFS filesystem tool; allows extracting single files from RFS filesystem file, or rebuilding filesystem from the single files.
