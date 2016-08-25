@@ -16,7 +16,7 @@ def eprint(*args, **kwargs):
 
 class ProgOptions:
   fwpartfile = ''
-  ptprefix = ''
+  snglfdir = ''
   verbose = 0
   command = ''
 
@@ -61,7 +61,9 @@ class RFSFileEntry(LittleEndianStructure):
     return pformat(d, indent=4, width=1)
 
 def rfs_extract_filesystem_head(po, fshead, fsentries):
-  inifile = open("{:s}_header.a9t".format(po.ptprefix), "w")
+  fname = "{:s}/{:s}".format(po.snglfdir,"_header.a9t")
+  os.makedirs(os.path.dirname(fname), exist_ok=True)
+  inifile = open(fname, "w")
   inifile.write("# Ambarella Firmware RFS header file. Loosly based on AFT format.\n")
   inifile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
   inifile.write("filelist={:s}\n".format(",".join("{:s}".format(x.filename_str()) for x in fsentries)))
@@ -111,7 +113,9 @@ def rfs_extract(po, fwpartfile):
     if (po.verbose > 0):
       print("{}: Extracting entry {:d}: {:s}, {:d} bytes".format(po.fwpartfile,i,fe.filename_str(),fe.length))
     fwpartfile.seek(fe.offset,0)
-    singlefile = open(fe.filename_str(), "wb")
+    fname = "{:s}/{:s}".format(po.snglfdir,fe.filename_str())
+    os.makedirs(os.path.dirname(fname), exist_ok=True)
+    singlefile = open(fname, "wb")
     n = 0
     while n < fe.length:
       copy_buffer = fwpartfile.read(min(1024 * 1024, fe.length - n))
@@ -133,22 +137,21 @@ def main(argv):
   # Parse command line options
   po = ProgOptions()
   try:
-     opts, args = getopt.getopt(argv,"hxsavt:p:",["help","version","extract","search","add","fwpart=","ptprefix="])
+     opts, args = getopt.getopt(argv,"hxsavd:p:",["help","version","extract","search","add","fwpart=","snglfdir="])
   except getopt.GetoptError:
      print("Unrecognized options; check amba_rfs.py --help")
      sys.exit(2)
   for opt, arg in opts:
      if opt in ("-h", "--help"):
         print("Ambarella Firmware RFS tool")
-        print("amba_rfs.py <-x|-s|-a> [-v] -m <fwmdfile> [-t <ptprefix>]")
+        print("amba_rfs.py <-x|-s|-a> [-v] -m <fwmdfile> [-t <snglfdir>]")
         print("  -p <fwpartfile> - name of the firmware partition file")
-        print("  -t <ptprefix> - file name prefix for the single decomposed partitions")
-        print("                  defaults to base name of firmware module file")
-        print("  -x - extract firmware module file into partitions")
-        print("  -s - search for partitions within firmware module and extract them")
-        print("       (works similar to -x, but uses brute-force search for partitions)")
-        print("  -a - add partition files to firmware module file")
-        print("       (works only on data created with -x; the -s is insufficient)")
+        print("  -d <snglfdir> - directory for the single extracted files")
+        print("                  defaults to base name of firmware partition file")
+        print("  -x - extract partition file into single files")
+        print("  -s - search for files within partition and extract them")
+        print("       (works similar to -x, but uses brute-force search for file entries)")
+        print("  -a - add single files to partition file")
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
@@ -158,16 +161,16 @@ def main(argv):
         po.verbose += 1
      elif opt in ("-p", "--fwpart"):
         po.fwpartfile = arg
-     elif opt in ("-t", "--ptprefix"):
-        po.ptprefix = arg
+     elif opt in ("-d", "--snglfdir"):
+        po.snglfdir = arg
      elif opt in ("-x", "--extract"):
         po.command = 'x'
      elif opt in ("-s", "--search"):
         po.command = 's'
      elif opt in ("-a", "--add"):
         po.command = 'a'
-  if len(po.fwpartfile) > 0 and len(po.ptprefix) == 0:
-      po.ptprefix = os.path.splitext(os.path.basename(po.fwpartfile))[0]
+  if len(po.fwpartfile) > 0 and len(po.snglfdir) == 0:
+      po.snglfdir = os.path.splitext(os.path.basename(po.fwpartfile))[0]
 
   if (po.command == 'x'):
 
