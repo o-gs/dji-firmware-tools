@@ -8,6 +8,8 @@ import hashlib
 import mmap
 import zlib
 import re
+import configparser
+import itertools
 from ctypes import *
 from time import gmtime, strftime
 
@@ -19,6 +21,14 @@ class ProgOptions:
   snglfdir = ''
   verbose = 0
   command = ''
+
+# The RFS file consists of 3 sections:
+# 1. Main header, padded
+# 2. File entries, padded at end only
+# 3. File data, padded after each entry
+# Note that padding is a bit unusual - if a file
+# length is exact multiplication of 2048, the
+# entry is still padded (with another 2048 bytes).
 
 class RFSPartitionHeader(LittleEndianStructure):
   _pack_ = 1
@@ -61,6 +71,12 @@ class RFSFileEntry(LittleEndianStructure):
     return pformat(d, indent=4, width=1)
 
 
+def rfs_padded_size(content_offs):
+  #if (content_offs % 2048) != 0: - no, padding is not done this way
+  return content_offs + 2048 - (content_offs % 2048);
+  
+
+
 def rfs_extract_filesystem_head(po, fshead, fsentries):
   fname = "{:s}/{:s}".format(po.snglfdir,"_header.a9t")
   os.makedirs(os.path.dirname(fname), exist_ok=True)
@@ -69,6 +85,48 @@ def rfs_extract_filesystem_head(po, fshead, fsentries):
   inifile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
   inifile.write("filelist={:s}\n".format(",".join("{:s}".format(x.filename_str()) for x in fsentries)))
   inifile.close()
+
+
+def rfs_read_filesystem_head(po):
+  fshead = RFSPartitionHeader()
+  fsentries = []
+  fname = "{:s}/{:s}".format(po.snglfdir,"_header.a9t")
+  parser = configparser.ConfigParser()
+  with open(fname, "r") as lines:
+    lines = itertools.chain(("[asection]",), lines)  # This line adds section header to ini
+    parser.read_file(lines)
+  singlefnames = parser.get("asection", "filelist").split(",")
+  for sfname in singlefnames:
+    fe = RFSFileEntry()
+    fe.filename = sfname.encode('utf-8')
+    fe.offset = sizeof(fshead)
+    fe.magic = 0x2387AB76
+    fsentries.append(fe)
+  fshead.magic = 0x66FC328A
+  fshead.file_count = len(fsentries)
+  for i in range(len(fshead.padding)):
+    fshead.padding[i] = 0xff
+  del parser
+  return fshead, fsentries
+
+
+def rfs_recompute_filesystem_lengths(po, fshead, fsentries):
+  for i, fe in enumerate(fsentries):
+    fname = "{:s}/{:s}".format(po.snglfdir,fe.filename_str())
+    fe.length = os.stat(fname).st_size
+  fshead.file_count = len(fsentries)
+  return fshead, fsentries
+
+
+def rfs_recompute_filesystem_offsets(po, fshead, fsentries):
+  content_offs = sizeof(fshead)
+  # RFSPartitionHeader is already padded, no need for action
+  content_offs = rfs_padded_size( content_offs + len(fsentries) * sizeof(RFSFileEntry) )
+  for i, fe in enumerate(fsentries):
+    fe.offset = content_offs;
+    content_offs = rfs_padded_size( content_offs + fe.length )
+  fshead.file_count = len(fsentries)
+  return fshead, fsentries
 
 
 def rfs_extract_filesystem_entry(po, fwpartfile, i, fe):
@@ -88,6 +146,28 @@ def rfs_extract_filesystem_entry(po, fwpartfile, i, fe):
   singlefile.close()
   if (n < fe.length):
     eprint("{}: Warning: file {:d} truncated, {:d} out of {:d} bytes".format(po.fwpartfile,i,n,fe.length))
+
+
+def rfs_write_filesystem_entry(po, fwpartfile, i, fe):
+  if (po.verbose > 0):
+    print("{}: Writing entry {:d}: {:s}, {:d} bytes".format(po.fwpartfile,i,fe.filename_str(),fe.length))
+  while (fwpartfile.tell() < fe.offset):
+    fwpartfile.write(b'\xFF')
+  fname = "{:s}/{:s}".format(po.snglfdir,fe.filename_str())
+  singlefile = open(fname, "rb")
+  n = 0
+  while n < fe.length:
+    copy_buffer = singlefile.read(min(1024 * 1024, fe.length - n))
+    if not copy_buffer:
+        break
+    n += len(copy_buffer)
+    fwpartfile.write(copy_buffer)
+  singlefile.close()
+  if (n < fe.length):
+    eprint("{}: Warning: file {:d} truncated, {:d} out of {:d} bytes".format(po.fwpartfile,i,n,fe.length))
+  content_offs = rfs_padded_size( fwpartfile.tell() )
+  while (fwpartfile.tell() < content_offs):
+    fwpartfile.write(b'\xFF')
 
 
 def rfs_extract(po, fwpartfile):
@@ -172,7 +252,19 @@ def rfs_search_extract(po, fwpartfile):
 
 
 def rfs_create(po, fwpartfile):
-  raise NotImplementedError('NOT IMPLEMENTED')
+  fshead, fsentries = rfs_read_filesystem_head(po)
+  if (po.verbose > 2):
+      print("{}: Entries:".format(po.fwpartfile))
+      print(fsentries)
+  fshead, fsentries = rfs_recompute_filesystem_lengths(po, fshead, fsentries)
+  fshead, fsentries = rfs_recompute_filesystem_offsets(po, fshead, fsentries)
+  if fwpartfile.write(fshead) != sizeof(fshead):
+    raise EOFError("Couldn't write RFS partition file main header.")
+  for i, fe in enumerate(fsentries):
+    if fwpartfile.write(fe) != sizeof(fe):
+      raise EOFError("Couldn't write RFS partition file entry header.")
+  for i, fe in enumerate(fsentries):
+    rfs_write_filesystem_entry(po, fwpartfile, i, fe)
 
 
 def main(argv):
