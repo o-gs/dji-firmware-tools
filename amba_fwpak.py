@@ -19,12 +19,35 @@ class ProgOptions:
   verbose = 0
   command = ''
 
-part_entry_type_id = ["bst", "bld", "hal", "pri", "rfs", "dsp"]
-part_entry_type_name = ["Bootstrap setup", "AMBoot loader", "Hw Abstr Layer", "RTOS image", "Filesystem", "DSP microcode"]
+part_entry_type_id = ["pri", "dsp", "rfs", "sec", "lnx"]
+part_entry_type_name = ["System Software", "DSP uCode", "System ROM Data", "Linux Kernel", "Linux Root FS"]
+
+# The Ambarella firmware file consists of 3 elements:
+# 1. Main header, containing array of partitions
+# 2. Partition header, before each partition
+# 3. Partition data, for each partition
+#
+# The Main header is made of:
+# - model_name - text description of the device model
+# - ver_info - version info, set to 0 in DJI camera FW
+# - crc32 - sum of checksums of all modules (?)
+# - fw module entries - array of FwModEntry, with amount of entries hard-coded
+#   for specific component
+# - partition sizes - array of int, sizes of the partitions in partition table,
+#   with 15 entries (amount of partitions is larger than the amount of modules)
+#
+# For a specific component, main header of Ambarella firmware has constant
+# size. But DJI uses several camera types all developed on Ambarella - amount
+# of module entries is different for each of them. To guess the amount of
+# modules in a file, we're assuming the partition sizes are multiplication of
+# 1024. This way we can detect beginning of the sizes array, as crc value and
+# partition length are very unlikely to both divide by 1024.
+
 
 class FwModA9Header(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('description', c_char * 36),
+  _fields_ = [('model_name', c_char * 32),
+              ('ver_info', c_uint),
               ('crc32', c_uint)]
 
   def dict_export(self):
@@ -58,13 +81,13 @@ class FwModEntry(LittleEndianStructure):
 
 class FwModA9PostHeader(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('params', c_uint * 15)]
+  _fields_ = [('part_size', c_uint * 15)]
 
   def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
-    varkey = 'params'
+    varkey = 'part_size'
     d[varkey] = " ".join("{:08x}".format(x) for x in d[varkey])
     return d
 
@@ -79,7 +102,7 @@ class FwModPartHeader(LittleEndianStructure):
               ('version', c_uint),
               ('build_date', c_uint),
               ('dt_len', c_uint),
-              ('dt_mem', c_uint),
+              ('mem_addr', c_uint),
               ('flag1', c_uint),
               ('magic', c_uint),
               ('flag2', c_uint),
@@ -119,7 +142,7 @@ def amba_extract_part_head(po, e, ptyp):
   fwpartfile.write("minorversion={:d}\n".format((e.version)&65535))
   fwpartfile.write("build_date={:04d}.{:02d}.{:02d}\n".format((e.build_date>>16)&65535, (e.build_date>>8)&255, (e.build_date)&255))
   fwpartfile.write("len={:d}\n".format(e.dt_len))
-  fwpartfile.write("loadaddress={:08X}\n".format(e.dt_mem))
+  fwpartfile.write("loadaddress={:08X}\n".format(e.mem_addr))
   fwpartfile.write("flag={:08X}\n".format(e.flag1))
   fwpartfile.write("flag2={:08X}\n".format(e.flag2))
   fwpartfile.write("sectionmagic={:08X}\n".format(e.magic))
@@ -131,8 +154,8 @@ def amba_extract_mod_head(po, modhead, modposthd):
   fwpartfile.write("# Ambarella Firmware Packer module header file. Loosly based on AFT format.\n")
   fwpartfile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
   fwpartfile.write("crc32={:08X}\n".format(modhead.crc32))
-  fwpartfile.write("description={:s}\n".format(modhead.description.decode("utf-8")))
-  fwpartfile.write("params={:s}\n".format(" ".join("{:08X}".format(x) for x in modposthd.params)))
+  fwpartfile.write("model_name={:s}\n".format(modhead.model_name.decode("utf-8")))
+  fwpartfile.write("part_size={:s}\n".format(" ".join("{:08X}".format(x) for x in modposthd.part_size)))
   fwpartfile.close()
 
 def amba_extract(po, fwmdlfile):
@@ -148,7 +171,8 @@ def amba_extract(po, fwmdlfile):
     hde = FwModEntry()
     if fwmdlfile.readinto(hde) != sizeof(hde):
       raise EOFError("Couldn't read firmware package file header entries.")
-    if (hde.dt_len == 0x00000800) and (hde.crc32 == 0x00040000):
+    # If both values are multiplications of 1024, then assume we're past end
+    if ((hde.dt_len & 0x3ff) == 0) and ((hde.crc32 & 0x3ff) == 0):
       fwmdlfile.seek(-sizeof(hde),1)
       break
     modentries.append(hde)
