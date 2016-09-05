@@ -79,6 +79,8 @@ class FwPkgEntry(LittleEndianStructure):
         return "camera '{:s}'".format("Ambarella A9SE mdl 00")
       elif (tg_model == 1):
         return "camera '{:s}'".format("Ambarella A9SE mdl 01")
+      elif (tg_model == 6):
+        return "camera '{:s}'".format("Xilinx Zynq 7020")
       else:
         return "camera model {:02d}".format(tg_model)
     elif (tg_kind == 3):
