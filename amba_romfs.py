@@ -22,7 +22,7 @@ class ProgOptions:
   verbose = 0
   command = ''
 
-# The RFS file consists of 3 sections:
+# The ROMFS file consists of 3 sections:
 # 1. Main header, padded
 # 2. File entries, padded at end only
 # 3. File data, padded after each entry
@@ -30,7 +30,7 @@ class ProgOptions:
 # length is exact multiplication of 2048, the
 # entry is still padded (with another 2048 bytes).
 
-class RFSPartitionHeader(LittleEndianStructure):
+class ROMFSPartitionHeader(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('file_count', c_uint), # Amount of files stored
               ('magic', c_uint), # magic identifier, 66FC328A
@@ -49,7 +49,7 @@ class RFSPartitionHeader(LittleEndianStructure):
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
-class RFSFileEntry(LittleEndianStructure):
+class ROMFSFileEntry(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('filename', c_char * 116),
               ('offset', c_uint),
@@ -71,24 +71,24 @@ class RFSFileEntry(LittleEndianStructure):
     return pformat(d, indent=4, width=1)
 
 
-def rfs_padded_size(content_offs):
+def romfs_padded_size(content_offs):
   #if (content_offs % 2048) != 0: - no, padding is not done this way
   return content_offs + 2048 - (content_offs % 2048);
   
 
 
-def rfs_extract_filesystem_head(po, fshead, fsentries):
+def romfs_extract_filesystem_head(po, fshead, fsentries):
   fname = "{:s}/{:s}".format(po.snglfdir,"_header.a9t")
   os.makedirs(os.path.dirname(fname), exist_ok=True)
   inifile = open(fname, "w")
-  inifile.write("# Ambarella Firmware RFS header file. Loosly based on AFT format.\n")
+  inifile.write("# Ambarella Firmware ROMFS header file. Loosly based on AFT format.\n")
   inifile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
   inifile.write("filelist={:s}\n".format(",".join("{:s}".format(x.filename_str()) for x in fsentries)))
   inifile.close()
 
 
-def rfs_read_filesystem_head(po):
-  fshead = RFSPartitionHeader()
+def romfs_read_filesystem_head(po):
+  fshead = ROMFSPartitionHeader()
   fsentries = []
   fname = "{:s}/{:s}".format(po.snglfdir,"_header.a9t")
   parser = configparser.ConfigParser()
@@ -97,7 +97,7 @@ def rfs_read_filesystem_head(po):
     parser.read_file(lines)
   singlefnames = parser.get("asection", "filelist").split(",")
   for sfname in singlefnames:
-    fe = RFSFileEntry()
+    fe = ROMFSFileEntry()
     fe.filename = sfname.encode('utf-8')
     fe.offset = sizeof(fshead)
     fe.magic = 0x2387AB76
@@ -110,7 +110,7 @@ def rfs_read_filesystem_head(po):
   return fshead, fsentries
 
 
-def rfs_recompute_filesystem_lengths(po, fshead, fsentries):
+def romfs_recompute_filesystem_lengths(po, fshead, fsentries):
   for i, fe in enumerate(fsentries):
     fname = "{:s}/{:s}".format(po.snglfdir,fe.filename_str())
     fe.length = os.stat(fname).st_size
@@ -118,18 +118,18 @@ def rfs_recompute_filesystem_lengths(po, fshead, fsentries):
   return fshead, fsentries
 
 
-def rfs_recompute_filesystem_offsets(po, fshead, fsentries):
+def romfs_recompute_filesystem_offsets(po, fshead, fsentries):
   content_offs = sizeof(fshead)
-  # RFSPartitionHeader is already padded, no need for action
-  content_offs = rfs_padded_size( content_offs + len(fsentries) * sizeof(RFSFileEntry) )
+  # ROMFSPartitionHeader is already padded, no need for action
+  content_offs = romfs_padded_size( content_offs + len(fsentries) * sizeof(ROMFSFileEntry) )
   for i, fe in enumerate(fsentries):
     fe.offset = content_offs;
-    content_offs = rfs_padded_size( content_offs + fe.length )
+    content_offs = romfs_padded_size( content_offs + fe.length )
   fshead.file_count = len(fsentries)
   return fshead, fsentries
 
 
-def rfs_extract_filesystem_entry(po, fwpartfile, i, fe):
+def romfs_extract_filesystem_entry(po, fwpartfile, i, fe):
   if (po.verbose > 0):
     print("{}: Extracting entry {:d}: {:s}, {:d} bytes".format(po.fwpartfile,i,fe.filename_str(),fe.length))
   fwpartfile.seek(fe.offset,0)
@@ -148,7 +148,7 @@ def rfs_extract_filesystem_entry(po, fwpartfile, i, fe):
     eprint("{}: Warning: file {:d} truncated, {:d} out of {:d} bytes".format(po.fwpartfile,i,n,fe.length))
 
 
-def rfs_write_filesystem_entry(po, fwpartfile, i, fe):
+def romfs_write_filesystem_entry(po, fwpartfile, i, fe):
   if (po.verbose > 0):
     print("{}: Writing entry {:d}: {:s}, {:d} bytes".format(po.fwpartfile,i,fe.filename_str(),fe.length))
   while (fwpartfile.tell() < fe.offset):
@@ -165,21 +165,21 @@ def rfs_write_filesystem_entry(po, fwpartfile, i, fe):
   singlefile.close()
   if (n < fe.length):
     eprint("{}: Warning: file {:d} truncated, {:d} out of {:d} bytes".format(po.fwpartfile,i,n,fe.length))
-  content_offs = rfs_padded_size( fwpartfile.tell() )
+  content_offs = romfs_padded_size( fwpartfile.tell() )
   while (fwpartfile.tell() < content_offs):
     fwpartfile.write(b'\xFF')
 
 
-def rfs_extract(po, fwpartfile):
-  fshead = RFSPartitionHeader()
+def romfs_extract(po, fwpartfile):
+  fshead = ROMFSPartitionHeader()
   if fwpartfile.readinto(fshead) != sizeof(fshead):
-    raise EOFError("Couldn't read RFS partition file header.")
+    raise EOFError("Couldn't read ROMFS partition file header.")
   if (po.verbose > 1):
     print("{}: Header:".format(po.fwpartfile))
     print(fshead)
   if (fshead.magic != 0x66FC328A):
     eprint("{}: Warning: magic value is {:08X} instead of {:08X}.".format(po.fwpartfile,fshead.magic,0x66FC328A))
-    raise EOFError("Invalid magic value in main header. The file does not store a RFS filesystem.")
+    raise EOFError("Invalid magic value in main header. The file does not store a ROMFS filesystem.")
   if (fshead.file_count < 1) or (fshead.file_count > 16*1024):
     eprint("{}: Warning: filesystem stores alarming amount of files, which is {:d}".format(po.fwpartfile,fshead.file_count))
   # verify if padding area is completely filled with 0xff
@@ -188,7 +188,7 @@ def rfs_extract(po, fwpartfile):
 
   fsentries = []
   for i in range(fshead.file_count):
-    fe = RFSFileEntry()
+    fe = ROMFSFileEntry()
     if fwpartfile.readinto(fe) != sizeof(fe):
       raise EOFError("Couldn't read filesystem file header entries.")
     if (fe.magic != 0x2387AB76):
@@ -208,28 +208,28 @@ def rfs_extract(po, fwpartfile):
       print("{}: Entries:".format(po.fwpartfile))
       print(fsentries)
 
-  rfs_extract_filesystem_head(po, fshead, fsentries)
+  romfs_extract_filesystem_head(po, fshead, fsentries)
 
   for i, fe in enumerate(fsentries):
-    rfs_extract_filesystem_entry(po, fwpartfile, i, fe)
+    romfs_extract_filesystem_entry(po, fwpartfile, i, fe)
 
 
-def rfs_search_extract(po, fwpartfile):
-  fshead = RFSPartitionHeader()
+def romfs_search_extract(po, fwpartfile):
+  fshead = ROMFSPartitionHeader()
   fwpartmm = mmap.mmap(fwpartfile.fileno(), length=0, access=mmap.ACCESS_READ)
   fsentries = []
-  epos = -sizeof(RFSFileEntry)
+  epos = -sizeof(ROMFSFileEntry)
   prev_dtlen = 0
   prev_dtpos = 0
   i = 0
   while True:
-    epos = fwpartmm.find(b'\x76\xAB\x87\x23', epos+sizeof(RFSFileEntry))
+    epos = fwpartmm.find(b'\x76\xAB\x87\x23', epos+sizeof(ROMFSFileEntry))
     if (epos < 0):
       break
     epos -= 124 # pos of 'magic' within FwModPartHeader
     if (epos < 0):
       continue
-    fe = RFSFileEntry.from_buffer_copy(fwpartmm[epos:epos+sizeof(RFSFileEntry)]);
+    fe = ROMFSFileEntry.from_buffer_copy(fwpartmm[epos:epos+sizeof(ROMFSFileEntry)]);
     dtpos = fe.offset
     if (fe.length < 0) or (fe.length > 128*1024*1024) or (fe.length > fwpartmm.size()-dtpos):
       print("{}: False positive - entry at {:d} has bad size, {:d} bytes".format(po.fwpartfile,epos,fe.length))
@@ -245,26 +245,26 @@ def rfs_search_extract(po, fwpartfile):
       print("{}: Entries:".format(po.fwpartfile))
       print(fsentries)
 
-  rfs_extract_filesystem_head(po, fshead, fsentries)
+  romfs_extract_filesystem_head(po, fshead, fsentries)
 
   for i, fe in enumerate(fsentries):
-    rfs_extract_filesystem_entry(po, fwpartfile, i, fe)
+    romfs_extract_filesystem_entry(po, fwpartfile, i, fe)
 
 
-def rfs_create(po, fwpartfile):
-  fshead, fsentries = rfs_read_filesystem_head(po)
+def romfs_create(po, fwpartfile):
+  fshead, fsentries = romfs_read_filesystem_head(po)
   if (po.verbose > 2):
       print("{}: Entries:".format(po.fwpartfile))
       print(fsentries)
-  fshead, fsentries = rfs_recompute_filesystem_lengths(po, fshead, fsentries)
-  fshead, fsentries = rfs_recompute_filesystem_offsets(po, fshead, fsentries)
+  fshead, fsentries = romfs_recompute_filesystem_lengths(po, fshead, fsentries)
+  fshead, fsentries = romfs_recompute_filesystem_offsets(po, fshead, fsentries)
   if fwpartfile.write(fshead) != sizeof(fshead):
-    raise EOFError("Couldn't write RFS partition file main header.")
+    raise EOFError("Couldn't write ROMFS partition file main header.")
   for i, fe in enumerate(fsentries):
     if fwpartfile.write(fe) != sizeof(fe):
-      raise EOFError("Couldn't write RFS partition file entry header.")
+      raise EOFError("Couldn't write ROMFS partition file entry header.")
   for i, fe in enumerate(fsentries):
-    rfs_write_filesystem_entry(po, fwpartfile, i, fe)
+    romfs_write_filesystem_entry(po, fwpartfile, i, fe)
 
 
 def main(argv):
@@ -273,12 +273,12 @@ def main(argv):
   try:
      opts, args = getopt.getopt(argv,"hxsavd:p:",["help","version","extract","search","add","fwpart=","snglfdir="])
   except getopt.GetoptError:
-     print("Unrecognized options; check amba_rfs.py --help")
+     print("Unrecognized options; check amba_romfs.py --help")
      sys.exit(2)
   for opt, arg in opts:
      if opt in ("-h", "--help"):
-        print("Ambarella Firmware RFS tool")
-        print("amba_rfs.py <-x|-s|-a> [-v] -m <fwmdfile> [-t <snglfdir>]")
+        print("Ambarella Firmware ROMFS tool")
+        print("amba_romfs.py <-x|-s|-a> [-v] -m <fwmdfile> [-t <snglfdir>]")
         print("  -p <fwpartfile> - name of the firmware partition file")
         print("  -d <snglfdir> - directory for the single extracted files")
         print("                  defaults to base name of firmware partition file")
@@ -289,7 +289,7 @@ def main(argv):
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
-        print("amba_rfs.py version 0.1.0")
+        print("amba_romfs.py version 0.1.1")
         sys.exit()
      elif opt == '-v':
         po.verbose += 1
@@ -312,7 +312,7 @@ def main(argv):
       print("{}: Opening for extraction".format(po.fwpartfile))
     fwpartfile = open(po.fwpartfile, "rb")
 
-    rfs_extract(po,fwpartfile)
+    romfs_extract(po,fwpartfile)
 
     fwpartfile.close();
 
@@ -322,7 +322,7 @@ def main(argv):
       print("{}: Opening for search".format(po.fwpartfile))
     fwpartfile = open(po.fwpartfile, "rb")
 
-    rfs_search_extract(po,fwpartfile)
+    romfs_search_extract(po,fwpartfile)
 
     fwpartfile.close();
 
@@ -332,7 +332,7 @@ def main(argv):
       print("{}: Opening for creation".format(po.fwpartfile))
     fwpartfile = open(po.fwpartfile, "wb")
 
-    rfs_create(po,fwpartfile)
+    romfs_create(po,fwpartfile)
 
     fwpartfile.close();
 
