@@ -54,7 +54,22 @@ class FwModA9Header(LittleEndianStructure):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
+    varkey = 'ver_info'
+    d[varkey] = "{:d}.{:d}-{:04X}".format((d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey])&65535)
+    varkey = 'crc32'
+    d[varkey] = "{:08X}".format(d[varkey])
     return d
+
+  def ini_export(self, fp):
+    d = self.dict_export()
+    fp.write("# Ambarella Firmware Packer module header file. Loosly based on AFT format.\n")
+    fp.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
+    varkey = 'model_name'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8")))
+    varkey = 'ver_info'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    varkey = 'crc32'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
 
   def __repr__(self):
     d = self.dict_export()
@@ -91,6 +106,12 @@ class FwModA9PostHeader(LittleEndianStructure):
     d[varkey] = " ".join("{:08x}".format(x) for x in d[varkey])
     return d
 
+  def ini_export(self, fp):
+    d = self.dict_export()
+    # No header - this is a continuation of FwModA9Header export
+    varkey = 'part_size'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+
   def __repr__(self):
     d = self.dict_export()
     from pprint import pformat
@@ -106,21 +127,46 @@ class FwModPartHeader(LittleEndianStructure):
               ('flag1', c_uint),
               ('magic', c_uint),
               ('flag2', c_uint),
-              ('padding', c_ubyte * 224)]
+              ('padding', c_uint * 56)]
 
   def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
+    varkey = 'mem_addr'
+    d[varkey] = "{:08X}".format(d[varkey])
     varkey = 'version'
     d[varkey] = "{:d}.{:d}".format((d[varkey]>>16)&65535, (d[varkey])&65535)
     varkey = 'build_date'
-    d[varkey] = "{:02d}.{:02d}.{:d}".format((d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey])&65535)
+    d[varkey] = "{:d}-{:02d}-{:02d}".format((d[varkey]>>16)&65535, (d[varkey]>>8)&255, (d[varkey])&255)
+    varkey = 'flag1'
+    d[varkey] = "{:08X}".format(d[varkey])
+    varkey = 'flag2'
+    d[varkey] = "{:08X}".format(d[varkey])
+    varkey = 'magic'
+    d[varkey] = "{:08X}".format(d[varkey])
     varkey = 'crc32'
     d[varkey] = "{:08X}".format(d[varkey])
     varkey = 'padding'
-    d[varkey] = "".join("{:02x}".format(x) for x in d[varkey])
+    d[varkey] = " ".join("{:08x}".format(x) for x in d[varkey])
     return d
+
+  def ini_export(self, fp):
+    d = self.dict_export()
+    fp.write("# Ambarella Firmware Packer section header file. Loosly based on AFT format.\n")
+    fp.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
+    varkey = 'mem_addr'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    varkey = 'version'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    varkey = 'build_date'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    varkey = 'flag1'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    varkey = 'flag2'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    varkey = 'crc32'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
 
   def __repr__(self):
     d = self.dict_export()
@@ -135,27 +181,13 @@ def amba_calculate_crc32(buf):
 
 def amba_extract_part_head(po, e, ptyp):
   fwpartfile = open("{:s}_part_{:s}.a9h".format(po.ptprefix,ptyp), "w")
-  fwpartfile.write("# Ambarella Firmware Packer section header file. Loosly based on AFT format.\n")
-  fwpartfile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
-  fwpartfile.write("crc32={:08X}\n".format(e.crc32))
-  fwpartfile.write("majorversion={:d}\n".format((e.version>>16)&65535))
-  fwpartfile.write("minorversion={:d}\n".format((e.version)&65535))
-  fwpartfile.write("build_date={:04d}.{:02d}.{:02d}\n".format((e.build_date>>16)&65535, (e.build_date>>8)&255, (e.build_date)&255))
-  fwpartfile.write("len={:d}\n".format(e.dt_len))
-  fwpartfile.write("loadaddress={:08X}\n".format(e.mem_addr))
-  fwpartfile.write("flag={:08X}\n".format(e.flag1))
-  fwpartfile.write("flag2={:08X}\n".format(e.flag2))
-  fwpartfile.write("sectionmagic={:08X}\n".format(e.magic))
-  #fwpartfile.write("padding={:s}\n".format("".join("{:02x}".format(x) for x in e.padding)))
+  e.ini_export(fwpartfile)
   fwpartfile.close()
 
 def amba_extract_mod_head(po, modhead, modposthd):
   fwpartfile = open("{:s}_header.a9h".format(po.ptprefix), "w")
-  fwpartfile.write("# Ambarella Firmware Packer module header file. Loosly based on AFT format.\n")
-  fwpartfile.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
-  fwpartfile.write("crc32={:08X}\n".format(modhead.crc32))
-  fwpartfile.write("model_name={:s}\n".format(modhead.model_name.decode("utf-8")))
-  fwpartfile.write("part_size={:s}\n".format(" ".join("{:08X}".format(x) for x in modposthd.part_size)))
+  modhead.ini_export(fwpartfile)
+  modposthd.ini_export(fwpartfile)
   fwpartfile.close()
 
 def amba_extract(po, fwmdlfile):
@@ -182,7 +214,6 @@ def amba_extract(po, fwmdlfile):
   if (po.verbose > 1):
       print("{}: Entries:".format(po.fwmdlfile))
       print(modentries)
-
 
   modposthd = FwModA9PostHeader()
   if fwmdlfile.readinto(modposthd) != sizeof(modposthd):
@@ -307,7 +338,7 @@ def main(argv):
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
-        print("amba_fwpak.py version 0.1.0")
+        print("amba_fwpak.py version 0.1.1")
         sys.exit()
      elif opt == '-v':
         po.verbose += 1
