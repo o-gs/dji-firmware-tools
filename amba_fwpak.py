@@ -17,9 +17,10 @@ class ProgOptions:
   fwmdlfile = ''
   ptprefix = ''
   verbose = 0
+  binhead = False
   command = ''
 
-part_entry_type_id = ["pri", "dsp", "rfs", "sec", "lnx"]
+part_entry_type_id = ["sys", "dsp_fw", "rom_fw", "lnx", "rfs"]
 part_entry_type_name = ["System Software", "DSP uCode", "System ROM Data", "Linux Kernel", "Linux Root FS"]
 
 # The Ambarella firmware file consists of 3 elements:
@@ -30,9 +31,11 @@ part_entry_type_name = ["System Software", "DSP uCode", "System ROM Data", "Linu
 # The Main header is made of:
 # - model_name - text description of the device model
 # - ver_info - version info, set to 0 in DJI camera FW
-# - crc32 - sum of checksums of all modules (?)
+# - crc32 - cummulative checksum of all modules with headers, equal to last
+#   module cummulative checksum xor -1
 # - fw module entries - array of FwModEntry, with amount of entries hard-coded
-#   for specific component
+#   for specific component; the crc32 here is a cummulative checksum of data
+#   with header, and initial value of -1
 # - partition sizes - array of int, sizes of the partitions in partition table,
 #   with 15 entries (amount of partitions is larger than the amount of modules)
 #
@@ -197,6 +200,7 @@ def amba_extract(po, fwmdlfile):
   if (po.verbose > 1):
       print("{}: Header:".format(po.fwmdlfile))
       print(modhead)
+  hdcrc = 0xffffffff
   i = 0
   modentries = []
   while (True):
@@ -244,7 +248,7 @@ def amba_extract(po, fwmdlfile):
     if (po.verbose > 1):
       print("{}: Entry {}".format(po.fwmdlfile,i))
       print(e)
-    hdcrc = amba_calculate_crc32_part((c_ubyte * sizeof(e)).from_buffer_copy(e), 0)
+    hdcrc = amba_calculate_crc32_part((c_ubyte * sizeof(e)).from_buffer_copy(e), hdcrc)
     if (e.dt_len < 16) or (e.dt_len > 128*1024*1024):
       eprint("{}: Warning: entry at {:d} has bad size, {:d} bytes".format(po.fwmdlfile,epos,e.dt_len))
     # Warn if no more module entries were expected
@@ -257,6 +261,8 @@ def amba_extract(po, fwmdlfile):
       ptyp = "{:02d}".format(i)
     amba_extract_part_head(po, e, ptyp)
     fwpartfile = open("{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp), "wb")
+    if (po.binhead):
+      fwpartfile.write((c_ubyte * sizeof(e)).from_buffer_copy(e))
     ptcrc = 0
     n = 0
     while n < e.dt_len:
@@ -266,16 +272,24 @@ def amba_extract(po, fwmdlfile):
       n += len(copy_buffer)
       fwpartfile.write(copy_buffer)
       ptcrc = amba_calculate_crc32_part(copy_buffer, ptcrc)
-      #hdcrc = amba_calculate_crc32_part(copy_buffer, hdcrc)
+      hdcrc = amba_calculate_crc32_part(copy_buffer, hdcrc)
     fwpartfile.close()
     if (n < e.dt_len):
-      eprint("{}: Warning: partition {:d} truncated, {:d} out of {:d} bytes".format(po.fwmdlfile,i,n,e.dt_len))
+        eprint("{}: Warning: partition {:d} truncated, {:d} out of {:d} bytes".format(po.fwmdlfile,i,n,e.dt_len))
     if (ptcrc != e.crc32):
         eprint("{}: Warning: Entry {:d} data checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,i,ptcrc,e.crc32))
-    #if (hdcrc != hde.crc32): #TODO: fix and add partition header CRC verification
-    #  eprint("{}: Warning: Entry {:d} XXX???XXX checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,i,hdcrc,hde.crc32))
-    if (po.verbose > 1):
-        print("{}: Entry {:2d} checksum {:08X}".format(po.fwmdlfile,i,ptcrc))
+    elif (po.verbose > 1):
+        print("{}: Entry {:2d} data checksum {:08X} matched OK".format(po.fwmdlfile,i,ptcrc))
+    #if (hdcrc != hde.crc32):
+    #    eprint("{}: Warning: Entry {:d} cummulative checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,i,hdcrc,hde.crc32))
+    #elif (po.verbose > 1):
+    #    print("{}: Entry {:2d} cummulative checksum {:08X} matched OK".format(po.fwmdlfile,i,hdcrc))
+  # Now verify checksum in main header
+  hdcrc = hdcrc ^ 0xffffffff
+  #if (hdcrc != modhead.crc32):
+  #    eprint("{}: Warning: Total cummulative checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,hdcrc,modhead.crc32))
+  #elif (po.verbose > 1):
+  #    print("{}: Total cummulative checksum {:08X} matched OK".format(po.fwmdlfile,hdcrc))
 
 def amba_search_extract(po, fwmdlfile):
   fwmdlmm = mmap.mmap(fwmdlfile.fileno(), length=0, access=mmap.ACCESS_READ)
@@ -319,7 +333,7 @@ def main(argv):
   # Parse command line options
   po = ProgOptions()
   try:
-     opts, args = getopt.getopt(argv,"hxsavt:m:",["help","version","extract","search","add","fwmdl=","ptprefix="])
+     opts, args = getopt.getopt(argv,"hxsabvt:m:",["help","version","extract","search","add","binhead","fwmdl=","ptprefix="])
   except getopt.GetoptError:
      print("Unrecognized options; check amba_fwpak.py --help")
      sys.exit(2)
@@ -335,6 +349,10 @@ def main(argv):
         print("       (works similar to -x, but uses brute-force search for partitions)")
         print("  -a - add partition files to firmware module file")
         print("       (works only on data created with -x; the -s is insufficient)")
+        print("  -b - leave (-x) or use (-a) binary header in front of partition")
+        print("       this leaves the original binary header before each partition")
+        print("       on extraction, and uses that header on module file creation;")
+        print("       you normally should have no need to use it")
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
@@ -342,6 +360,8 @@ def main(argv):
         sys.exit()
      elif opt == '-v':
         po.verbose += 1
+     elif opt in ("-b", "--binhead"):
+        po.binhead = True
      elif opt in ("-m", "--fwmdl"):
         po.fwmdlfile = arg
      elif opt in ("-t", "--ptprefix"):
