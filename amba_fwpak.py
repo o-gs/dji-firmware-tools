@@ -3,6 +3,7 @@
 from __future__ import print_function
 import sys
 import getopt
+import re
 import os
 import hashlib
 import mmap
@@ -73,8 +74,8 @@ class FwModA9Header(LittleEndianStructure):
     fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8")))
     varkey = 'ver_info'
     fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
-    varkey = 'crc32'
-    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    #varkey = 'crc32'
+    #fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
 
   def __repr__(self):
     d = self.dict_export()
@@ -190,8 +191,8 @@ class FwModPartHeader(LittleEndianStructure):
     fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
     varkey = 'flag2'
     fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
-    varkey = 'crc32'
-    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    #varkey = 'crc32'
+    #fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
 
   def __repr__(self):
     d = self.dict_export()
@@ -244,6 +245,11 @@ crc32_tab = [
         0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 ]
 
+def amba_a9_part_entry_type_id(i):
+  if (i >= len(part_entry_type_id)):
+    return "{:02d}".format(i)
+  return part_entry_type_id[i]
+
 def amba_calculate_crc32h_part(buf, pcrc):
   """A twist on crc32 hashing algorithm, probably different from original CRC32 due to a programming mistake."""
   crc = pcrc
@@ -258,14 +264,36 @@ def amba_calculate_crc32b_part(buf, pcrc):
 def amba_calculate_crc32(buf):
   return amba_calculate_crc32b_part(buf, 0)
 
+# We really need both i and ptyp params
 def amba_extract_part_head(po, e, i, ptyp):
   fwpartfile = open("{:s}_part_{:s}.a9h".format(po.ptprefix,ptyp), "w")
   e.ini_export(fwpartfile, i)
   fwpartfile.close()
 
-def amba_extract_mod_head(po, modhead, modposthd):
+def amba_read_part_head(po, i, ptyp):
+  e = FwModPartHeader()
+  fname = "{:s}_part_{:s}.a9h".format(po.ptprefix,ptyp)
+  parser = configparser.ConfigParser()
+  with open(fname, "r") as lines:
+    lines = itertools.chain(("[asection]",), lines)  # This line adds section header to ini
+    parser.read_file(lines)
+    e.mem_addr = int(parser.get("asection", "mem_addr"),16)
+    e.flag1 = int(parser.get("asection", "flag1"),16)
+    e.flag2 = int(parser.get("asection", "flag2"),16)
+    version_s = parser.get("asection", "version")
+    version_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)', version_s)
+    e.version = ((int(version_m.group("major"),10)&0xffff)<<16) + (int(version_m.group("minor"),10)%0xffff)
+    build_date_s = parser.get("asection", "build_date")
+    build_date_m = re.search('(?P<year>[0-9]+)[-](?P<month>[0-9]+)[-](?P<day>[0-9]+)', build_date_s)
+    e.build_date = ((int(build_date_m.group("year"),10)&0xffff)<<16) + ((int(build_date_m.group("month"),10)&0xff)<<8) + (int(build_date_m.group("day"),10)&0xff)
+  del parser
+  return e
+
+
+def amba_extract_mod_head(po, modhead, ptyp_names, modposthd):
   fwpartfile = open("{:s}_header.a9h".format(po.ptprefix), "w")
   modhead.ini_export(fwpartfile)
+  fwpartfile.write("part_load={:s}\n".format(",".join("{:s}".format(x) for x in ptyp_names)))
   modposthd.ini_export(fwpartfile)
   fwpartfile.close()
 
@@ -277,11 +305,17 @@ def amba_read_mod_head(po):
   with open(fname, "r") as lines:
     lines = itertools.chain(("[asection]",), lines)  # This line adds section header to ini
     parser.read_file(lines)
-  #singlefnames = parser.get("asection", "filelist").split(",")
-  #modhead.
-  #modposthd.
+  ptyp_names = parser.get("asection", "part_load").split(",")
+  part_sizes_s = parser.get("asection", "part_size").split(" ")
+  part_sizes = [int(n,16) for n in part_sizes_s]
+  ver_info_s = parser.get("asection", "ver_info")
+  ver_info_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[-](?P<svn>[0-9A-Fa-f]+)', ver_info_s)
+  modhead.model_name = parser.get("asection", "model_name").encode("utf-8")
+  modhead.ver_info = ((int(ver_info_m.group("major"),10)&0xff)<<24) + ((int(ver_info_m.group("minor"),10)%0xff)<<16) + (int(ver_info_m.group("svn"),16)%0xffff)
+  for i,n in enumerate(part_sizes):
+    modposthd.part_size[i] = n
   del parser
-  return (modhead, modposthd)
+  return (modhead, ptyp_names, modposthd)
 
 def amba_extract(po, fwmdlfile):
   modhead = FwModA9Header()
@@ -293,6 +327,7 @@ def amba_extract(po, fwmdlfile):
   hdcrc = 0xffffffff
   i = 0
   modentries = []
+  ptyp_names = []
   while (True):
     hde = FwModEntry()
     if fwmdlfile.readinto(hde) != sizeof(hde):
@@ -302,6 +337,8 @@ def amba_extract(po, fwmdlfile):
       fwmdlfile.seek(-sizeof(hde),1)
       break
     modentries.append(hde)
+    if (hde.dt_len > 0):
+      ptyp_names.append(amba_a9_part_entry_type_id(i))
     i += 1
     if (i > 128):
       raise EOFError("Couldn't find header entries end marking.")
@@ -315,7 +352,7 @@ def amba_extract(po, fwmdlfile):
   if (po.verbose > 1):
       print("{}: Post Header:".format(po.fwmdlfile))
       print(modposthd)
-  amba_extract_mod_head(po, modhead, modposthd)
+  amba_extract_mod_head(po, modhead, ptyp_names, modposthd)
   i = -1
   while True:
     i += 1
@@ -345,10 +382,7 @@ def amba_extract(po, fwmdlfile):
     if (i >= len(modentries)):
       eprint("{}: Warning: Data continues after parsing all {:d} known partitions; header inconsistent.".format(po.fwmdlfile,i))
     print("{}: Extracting entry {:2d}, pos {:8d}, len {:8d} bytes".format(po.fwmdlfile,i,epos,e.dt_len))
-    if (i < len(part_entry_type_id)):
-      ptyp = part_entry_type_id[i]
-    else:
-      ptyp = "{:02d}".format(i)
+    ptyp = amba_a9_part_entry_type_id(i)
     amba_extract_part_head(po, e, i, ptyp)
     fwpartfile = open("{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp), "wb")
     if (po.binhead):
@@ -414,7 +448,7 @@ def amba_search_extract(po, fwmdlfile):
     if (prev_dtpos+prev_dtlen > epos):
       eprint("{}: Partition {:d} overlaps with previous by {:d} bytes".format(po.fwmdlfile,i,prev_dtpos+prev_dtlen - epos))
     ptyp = "{:02d}".format(i)
-    amba_extract_part_head(po, e, ptyp)
+    amba_extract_part_head(po, e, i, ptyp)
     fwpartfile = open("{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp), "wb")
     fwpartfile.write(fwmdlmm[epos+sizeof(FwModPartHeader):epos+sizeof(FwModPartHeader)+e.dt_len])
     fwpartfile.close()
@@ -429,18 +463,28 @@ def amba_search_extract(po, fwmdlfile):
 
 def amba_create(po, fwmdlfile):
   # Read headers from INI files
-  (modhead, modposthd) = amba_read_mod_head(po)
+  (modhead, ptyp_names, modposthd) = amba_read_mod_head(po)
   modentries = []
-  # Assume all partitions are there
-  for ptyp in part_entry_type_id:
+  # Get amount of partition slots to allocate
+  modentry_max = 0
+  for ptyp in ptyp_names:
+    if ptyp not in part_entry_type_id:
+      raise ValueError("Unrecognized partition name in 'part_load' option.")
+    i = part_entry_type_id.index(ptyp)
+    if (modentry_max < i):
+      modentry_max = i
+  # Create module entry for each partition
+  for i in range(modentry_max+1):
     hde = FwModEntry()
+    ptyp = amba_a9_part_entry_type_id(i)
+    fname = "{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp)
+    hde.dt_len = os.stat(fname).st_size
     modentries.append(hde)
+  fwmdlfile.write((c_ubyte * sizeof(modhead)).from_buffer_copy(modhead))
   # Check which partitions really exist
   for hde in modentries:
     fwmdlfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
-  #TODO
   # Write the unfinished headers
-  fwmdlfile.write((c_ubyte * sizeof(modhead)).from_buffer_copy(modhead))
   for hde in modentries:
     fwmdlfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
   fwmdlfile.write((c_ubyte * sizeof(modposthd)).from_buffer_copy(modposthd))
@@ -454,7 +498,8 @@ def amba_create(po, fwmdlfile):
     hde = modentries[i]
     if (hde.dt_len < 1):
       continue
-    e = FwModPartHeader()
+    ptyp = amba_a9_part_entry_type_id(i)
+    e = amba_read_part_head(po, i, ptyp)
     fwmdlfile.write((c_ubyte * sizeof(e)).from_buffer_copy(e))
   raise NotImplementedError('NOT IMPLEMENTED')
 
