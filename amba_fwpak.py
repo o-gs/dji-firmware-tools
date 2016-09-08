@@ -7,6 +7,8 @@ import os
 import hashlib
 import mmap
 import zlib
+import configparser
+import itertools
 from ctypes import *
 from time import gmtime, strftime
 
@@ -132,6 +134,21 @@ class FwModPartHeader(LittleEndianStructure):
               ('flag2', c_uint),
               ('padding', c_uint * 56)]
 
+  def build_date_year(self):
+    return (self.build_date>>16)&65535
+
+  def build_date_month(self):
+    return (self.build_date>>8)&255
+
+  def build_date_day(self):
+    return (self.build_date)&255
+
+  def version_major(self):
+    return (self.version>>16)&65535
+
+  def version_minor(self):
+    return (self.version)&65535
+
   def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
@@ -139,9 +156,9 @@ class FwModPartHeader(LittleEndianStructure):
     varkey = 'mem_addr'
     d[varkey] = "{:08X}".format(d[varkey])
     varkey = 'version'
-    d[varkey] = "{:d}.{:d}".format((d[varkey]>>16)&65535, (d[varkey])&65535)
+    d[varkey] = "{:d}.{:d}".format(self.version_major(), self.version_minor())
     varkey = 'build_date'
-    d[varkey] = "{:d}-{:02d}-{:02d}".format((d[varkey]>>16)&65535, (d[varkey]>>8)&255, (d[varkey])&255)
+    d[varkey] = "{:d}-{:02d}-{:02d}".format(self.build_date_year(), self.build_date_month(), self.build_date_day())
     varkey = 'flag1'
     d[varkey] = "{:08X}".format(d[varkey])
     varkey = 'flag2'
@@ -154,9 +171,14 @@ class FwModPartHeader(LittleEndianStructure):
     d[varkey] = " ".join("{:08x}".format(x) for x in d[varkey])
     return d
 
-  def ini_export(self, fp):
+  def ini_export(self, fp, i):
     d = self.dict_export()
+    if (i < len(part_entry_type_name)):
+      ptyp_name = part_entry_type_name[i]
+    else:
+      ptyp_name = "type {:02d}".format(i)
     fp.write("# Ambarella Firmware Packer section header file. Loosly based on AFT format.\n")
+    fp.write("# Stores partition with {:s}\n".format(ptyp_name))
     fp.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
     varkey = 'mem_addr'
     fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
@@ -236,9 +258,9 @@ def amba_calculate_crc32b_part(buf, pcrc):
 def amba_calculate_crc32(buf):
   return amba_calculate_crc32b_part(buf, 0)
 
-def amba_extract_part_head(po, e, ptyp):
+def amba_extract_part_head(po, e, i, ptyp):
   fwpartfile = open("{:s}_part_{:s}.a9h".format(po.ptprefix,ptyp), "w")
-  e.ini_export(fwpartfile)
+  e.ini_export(fwpartfile, i)
   fwpartfile.close()
 
 def amba_extract_mod_head(po, modhead, modposthd):
@@ -246,6 +268,20 @@ def amba_extract_mod_head(po, modhead, modposthd):
   modhead.ini_export(fwpartfile)
   modposthd.ini_export(fwpartfile)
   fwpartfile.close()
+
+def amba_read_mod_head(po):
+  modhead = FwModA9Header()
+  modposthd = FwModA9PostHeader()
+  fname = "{:s}_header.a9h".format(po.ptprefix)
+  parser = configparser.ConfigParser()
+  with open(fname, "r") as lines:
+    lines = itertools.chain(("[asection]",), lines)  # This line adds section header to ini
+    parser.read_file(lines)
+  #singlefnames = parser.get("asection", "filelist").split(",")
+  #modhead.
+  #modposthd.
+  del parser
+  return (modhead, modposthd)
 
 def amba_extract(po, fwmdlfile):
   modhead = FwModA9Header()
@@ -313,7 +349,7 @@ def amba_extract(po, fwmdlfile):
       ptyp = part_entry_type_id[i]
     else:
       ptyp = "{:02d}".format(i)
-    amba_extract_part_head(po, e, ptyp)
+    amba_extract_part_head(po, e, i, ptyp)
     fwpartfile = open("{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp), "wb")
     if (po.binhead):
       #fwmdlfile.seek(-sizeof(e),1)
@@ -341,6 +377,14 @@ def amba_extract(po, fwmdlfile):
         eprint("{}: Warning: Entry {:d} cummulative checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,i,hdcrc,hde.crc32))
     elif (po.verbose > 1):
         print("{}: Entry {:2d} cummulative checksum {:08X} matched OK".format(po.fwmdlfile,i,hdcrc))
+    # Check if the date makes sense
+    if (e.build_date_year() < 1970) or (e.build_date_month() < 1) or (e.build_date_month() > 12) or (e.build_date_day() < 1) or (e.build_date_day() > 31):
+        eprint("{}: Warning: Entry {:d} date makes no sense.".format(po.fwmdlfile,i))
+    elif (e.build_date_year() < 2004):
+        eprint("{}: Warning: Entry {:d} date is from before Ambarella formed as company.".format(po.fwmdlfile,i))
+    # verify if padding area is completely filled with 0x00000000
+    if (e.padding[0] != 0x00000000) or (len(set(e.padding)) != 1):
+      eprint("{}: Warning: partition {:d} header uses values from padded area in an unknown manner.".format(po.fwpartfile,i))
   # Now verify checksum in main header
   hdcrc = hdcrc ^ 0xffffffff
   if (hdcrc != modhead.crc32):
@@ -384,6 +428,34 @@ def amba_search_extract(po, fwmdlfile):
     i += 1
 
 def amba_create(po, fwmdlfile):
+  # Read headers from INI files
+  (modhead, modposthd) = amba_read_mod_head(po)
+  modentries = []
+  # Assume all partitions are there
+  for ptyp in part_entry_type_id:
+    hde = FwModEntry()
+    modentries.append(hde)
+  # Check which partitions really exist
+  for hde in modentries:
+    fwmdlfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
+  #TODO
+  # Write the unfinished headers
+  fwmdlfile.write((c_ubyte * sizeof(modhead)).from_buffer_copy(modhead))
+  for hde in modentries:
+    fwmdlfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
+  fwmdlfile.write((c_ubyte * sizeof(modposthd)).from_buffer_copy(modposthd))
+  # Write the partitions
+  i = -1
+  while True:
+    i += 1
+    if (i >= len(modentries)):
+      break
+    # Skip unused modentries
+    hde = modentries[i]
+    if (hde.dt_len < 1):
+      continue
+    e = FwModPartHeader()
+    fwmdlfile.write((c_ubyte * sizeof(e)).from_buffer_copy(e))
   raise NotImplementedError('NOT IMPLEMENTED')
 
 def main(argv):
