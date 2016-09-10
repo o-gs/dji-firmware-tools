@@ -335,7 +335,7 @@ def amba_extract(po, fwmdlfile):
       raise EOFError("Couldn't read firmware package file header entries.")
     # If both values are multiplications of 1024, then assume we're past end
     if ((hde.dt_len & 0x3ff) == 0) and ((hde.crc32 & 0x3ff) == 0):
-      fwmdlfile.seek(-sizeof(hde),1)
+      fwmdlfile.seek(-sizeof(hde),os.SEEK_CUR)
       break
     modentries.append(hde)
     if (hde.dt_len > 0):
@@ -387,7 +387,7 @@ def amba_extract(po, fwmdlfile):
     amba_extract_part_head(po, e, i, ptyp)
     fwpartfile = open("{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp), "wb")
     if (po.binhead):
-      #fwmdlfile.seek(-sizeof(e),1)
+      #fwmdlfile.seek(-sizeof(e),os.SEEK_CUR)
       #copy_buffer = fwmdlfile.read(sizeof(e))
       #fwpartfile.write(copy_buffer)
       fwpartfile.write((c_ubyte * sizeof(e)).from_buffer_copy(e))
@@ -484,6 +484,7 @@ def amba_create(po, fwmdlfile):
     fwmdlfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
   fwmdlfile.write((c_ubyte * sizeof(modposthd)).from_buffer_copy(modposthd))
   # Write the partitions
+  part_heads = []
   i = -1
   while True:
     i += 1
@@ -495,6 +496,8 @@ def amba_create(po, fwmdlfile):
     # Skip unused modentries
     if (os.stat(fname).st_size < 1):
       eprint("{}: Warning: partition {:d} empty".format(po.fwmdlfile,i))
+      e = FwModPartHeader()
+      part_heads.append(e)
       continue
     e = amba_read_part_head(po, i, ptyp)
     epos = fwmdlfile.tell()
@@ -514,20 +517,47 @@ def amba_create(po, fwmdlfile):
     e.dt_len = n
     e.crc32 = ptcrc
     if (po.verbose > 1):
-        print("{}: Entry {:2d} checksum {:08X}".format(po.fwmdlfile,i,ptcrc))
+      print("{}: Entry {:2d} checksum {:08X}".format(po.fwmdlfile,i,ptcrc))
+    part_heads.append(e)
     # Write final header
     npos = fwmdlfile.tell()
-    fwmdlfile.seek(epos,0)
+    fwmdlfile.seek(epos,os.SEEK_SET)
     fwmdlfile.write((c_ubyte * sizeof(e)).from_buffer_copy(e))
-    fwmdlfile.seek(npos,0)
+    fwmdlfile.seek(npos,os.SEEK_SET)
     hde.dt_len = sizeof(e) + e.dt_len
     modentries[i] = hde
-  hdcrc = 0xffffffff
-  #TODO compute the CRC
+  # Compute cummulative CRC32
   if (po.verbose > 1):
-      print("{}: Total cummulative checksum {:08X}".format(po.fwmdlfile,hdcrc))
+    print("{}: Recomputing checksums".format(po.fwmdlfile))
+  hdcrc = 0xffffffff
+  i = -1
+  while True:
+    i += 1
+    if (i >= len(modentries)):
+      break
+    hde = modentries[i]
+    ptyp = amba_a9_part_entry_type_id(i)
+    fname = "{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp)
+    if (hde.dt_len < 1):
+      continue
+    fwpartfile = open(fname, "rb")
+    e = part_heads[i]
+    hdcrc = amba_calculate_crc32h_part((c_ubyte * sizeof(e)).from_buffer_copy(e), hdcrc)
+    n = 0
+    while n < e.dt_len:
+      copy_buffer = fwpartfile.read(min(1024 * 1024, e.dt_len - n))
+      if not copy_buffer:
+          break
+      n += len(copy_buffer)
+      hdcrc = amba_calculate_crc32h_part(copy_buffer, hdcrc)
+    hde.crc32 = hdcrc
+    modentries[i] = hde
+  hdcrc = hdcrc ^ 0xffffffff
+  modhead.crc32 = hdcrc
+  if (po.verbose > 1):
+    print("{}: Total cummulative checksum {:08X}".format(po.fwmdlfile,hdcrc))
   # Write all headers again
-  fwmdlfile.seek(0,0)
+  fwmdlfile.seek(0,os.SEEK_SET)
   fwmdlfile.write((c_ubyte * sizeof(modhead)).from_buffer_copy(modhead))
   for hde in modentries:
     fwmdlfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
