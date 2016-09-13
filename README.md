@@ -6,14 +6,28 @@ Tools for extracting, modding and re-packaging [DJI Phantom 3](http://www.dji.co
 
 This is an alternative implementation to parser from [phantom-licensecheck](https://github.com/probonopd/phantom-licensecheck), more focused on hacking.
 
+# Step by step instruction
+
+Such instruction will not be provided. These tools are for engineers with vast
+hardware and software knowledge. You need to know what you're doing to achieve
+anything with these tools.
+
+This is to make sure the tools won't be used by script kiddies to disable
+security mechanisms and to allow breaking the law.
+
+If you can't understand how the tools work, you should not use them. If any
+warnings are shown, you must investigate the cause to make sure final firmware
+will not be damaged. You are using the tools on your own risk.
+
 # Firmware structure
 
-Documentation of the formware format is held within [phantom-licensecheck](https://github.com/probonopd/phantom-licensecheck) project.
+Documentation of the firmware format is held within [phantom-licensecheck](https://github.com/probonopd/phantom-licensecheck) project.
 Some details can be checked by looking inside the scripts in this repository.
 
 # Tools
 
-Below the specific tools are described in short.
+Below the specific tools are described in short. Running them without parameters
+will give you details on supported commands in each of them.
 
 ### dji_fwcon.py
 
