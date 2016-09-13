@@ -42,8 +42,8 @@ Example: ```./dji_fwcon.py -vv -x -p P3X_FW_V01.08.0080.bin```
 Ambarella A7/A9 firmware pack tool; allows extracting partitions from the
 firmware, or merging them back. Use this to extract Ambarella firmware from
 files created after DJI firmware is extracted. You can recognize the Ambarella
-firmware by a lot of "Amba" strings within, or in case of Phantom 3 by "FC300X"
-string at the beginning of the file.
+firmware by a lot of "Amba" strings within, or by a 32-char zero-padded string
+at the beginning of the file.
 
 Example: ```./amba_fwpak.py -vv -x -m P3X_FW_V01.08.0080_12.bin```
 
@@ -61,6 +61,7 @@ Example: ```./amba_romfs.py -vv -x -p P3X_FW_V01.08.0080_12_part_rom_fw.a9s```
 
 Linux script for mounting UBIFS partition from the Ambarella firmware. After
 mounting, the files can be copied or modified. Use this after the Ambarella
-firmware is extracted.
+firmware is extracted. The file containing UBIFS can be easily recognized
+by "UBI#" at the beginning of the file.
 
 Example: ```sudo ./amba_ubifs.sh P3X_FW_V01.08.0080_12_part_rfs.a9s```
