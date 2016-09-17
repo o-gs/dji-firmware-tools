@@ -8,6 +8,7 @@ import hashlib
 import mmap
 import zlib
 import re
+import subprocess
 import configparser
 import itertools
 from ctypes import *
@@ -18,7 +19,10 @@ def eprint(*args, **kwargs):
 
 class ProgOptions:
   fwpartfile = ''
-  snglfdir = ''
+  outfile = ''
+  inifile = ''
+  section_pos = { '.text': 0x0, '.ARM.exidx': -2, '.dsp_buf': -3, '.data': -4, 'no_init': -5 }
+  elftemplate='amba_sys2elf_template.elf'
   verbose = 0
   command = ''
 
@@ -59,22 +63,36 @@ class ProgOptions:
 
 
 def syssw_bin2elf(po, fwpartfile):
-  fsentries = []
-  raise NotImplementedError('NOT IMPLEMENTED')
-
+  # TODO detect offsets
+  # TODO read base address
+  # TODO Prepare array of addresses
+  # TODO set sizes of uninitialized sections
+  # prepare objcopy command line
+  objcopy_cmd = '/usr/bin/arm-none-eabi-objcopy'
+  objcopy_cmd += ' --update-section "{0:s}={1:s}" --change-section-address "{0:s}=0x{2:08x}"'.format(".text","amba_app_test-sec_text.bin",0xa0001000)
+  objcopy_cmd += ' --update-section ".ARM.exidx=amba_app_test-sec_ARMexidx.bin"  --change-section-address ".ARM.exidx=0xa03e7820"'
+  objcopy_cmd += ' --update-section ".dsp_buf=amba_app_test-sec_dspbuf.bin" --change-section-address ".dsp_buf=0xa03e7840"'
+  objcopy_cmd += ' --update-section ".data=amba_app_test-sec_data.bin" --change-section-address ".data=0xa044c920"'
+  objcopy_cmd += ' --update-section "no_init=amba_app_test-sec_noinit.bin" --change-section-address "no_init=0xa04b0b60"'
+  objcopy_cmd += ' --change-section-address ".bss.noinit=0xa04b4000"'
+  objcopy_cmd += ' --change-section-address ".bss=0xa0858000"'
+  objcopy_cmd += ' "{:s}" "{:s}"'.format(po.elftemplate, po.outfile)
+  # execute the objcopy command
+  objcopy_cmd = "echo "+objcopy_cmd
+  retcode = subprocess.call(objcopy_cmd, shell=True)
 
 def main(argv):
   # Parse command line options
   po = ProgOptions()
   try:
-     opts, args = getopt.getopt(argv,"hevd:p:",["help","version","elf","fwpart=","sect="])
+     opts, args = getopt.getopt(argv,"hevt:p:s:o:",["help","version","mkelf","fwpart=","template","section=","output="])
   except getopt.GetoptError:
      print("Unrecognized options; check amba_sys2elf.py --help")
      sys.exit(2)
   for opt, arg in opts:
      if opt in ("-h", "--help"):
         print("Ambarella Firmware SYS partiton to ELF converter")
-        print("amba_sys2elf.py <-e> [-v] -m <fwmdfile> [-t <snglfdir>]")
+        print("amba_sys2elf.py <-e> [-v] -p <fwmdfile> [-t <tmpltfile>]")
         print("  -p <fwpartfile> - name of the firmware partition file")
         print("  -e - make ELF file from a binary image within partition file")
         print("  -v - increases verbosity level; max level is set by -vvv")
@@ -86,13 +104,20 @@ def main(argv):
         po.verbose += 1
      elif opt in ("-p", "--fwpart"):
         po.fwpartfile = arg
-     elif opt in ("-d", "--snglfdir"):
-        po.snglfdir = arg
-     elif opt in ("-e", "--elf"):
+     elif opt in ("-o", "--output"):
+        po.outfile = arg
+     elif opt in ("-t", "--template"):
+        po.elftemplate = arg
+     elif opt in ("-s", "--section"):
+        arg_m = re.search('(?P<name>[0-9A-Za-z._-]+)@(?P<pos>[Xx0-9]+)', arg)
+        # Convert to integer, detect base from prefix
+        po.section_pos[arg_m.group("name")] = int(arg_m.group("pos"),0)
+     elif opt in ("-e", "--mkelf"):
         po.command = 'e'
-  if len(po.fwpartfile) > 0 and len(po.snglfdir) == 0:
-      po.snglfdir = os.path.splitext(os.path.basename(po.fwpartfile))[0]
-
+  if len(po.fwpartfile) > 0 and len(po.inifile) == 0:
+      po.inifile = os.path.splitext(os.path.basename(po.fwpartfile))[0] + ".a9h"
+  if len(po.fwpartfile) > 0 and len(po.outfile) == 0:
+      po.outfile = os.path.splitext(os.path.basename(po.fwpartfile))[0] + ".elf"
   if (po.command == 'e'):
 
     if (po.verbose > 0):
