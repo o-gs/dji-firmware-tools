@@ -21,7 +21,7 @@ class ProgOptions:
   fwpartfile = ''
   outfile = ''
   inifile = ''
-  section_pos = { '.text': 0x0, '.ARM.exidx': -2, '.dsp_buf': -3, '.data': -4, 'no_init': -5 }
+  section_pos = { '.text': 0x0, '.ARM.exidx': -2, '.dsp_buf': -3, '.data': -4, 'no_init': -5, '.bss.noinit': -6, '.bss': -7 }
   elftemplate='amba_sys2elf_template.elf'
   verbose = 0
   command = ''
@@ -60,22 +60,64 @@ class ProgOptions:
 # Note that the last command converts a linked ELF file into a binary memory
 # image. The purpose of this tool is to revert that last operation, which makes
 # it a lot easier to use tols like objdump or IDA Pro.
+#
+# The script uses an ELF template, which was prepared from example Ambarella SDK
+# application by the command (mock_sect.bin is a random file with 32 bytes size):
+#  /usr/bin/arm-none-eabi-objcopy \
+#   --remove-section ".comment" \
+#   --update-section ".text=mock_sect.bin" --change-section-address ".text=0xa0001000" \
+#   --change-section-address ".ARM.exidx=0xa0001020" \
+#   --update-section ".dsp_buf=mock_sect.bin" --change-section-address ".dsp_buf=0xa0001020" \
+#   --update-section ".data=mock_sect.bin" --change-section-address ".data=0xa0001040" \
+#   --change-section-address "no_init=0xa0001060" \
+#   --change-section-address ".bss.noinit=0xa0004000" \
+#   --change-section-address ".bss=0xa03a8000" \
+#   amba_app.elf amba_sys2elf_template.elf
 
+def section_is_bss(sectname):
+  return sectname.startswith('.bss')
 
 def syssw_bin2elf(po, fwpartfile):
-  # TODO detect offsets
   # TODO read base address
-  # TODO Prepare array of addresses
-  # TODO set sizes of uninitialized sections
+  memaddr_base = 0xa0001000
+  # TODO detect offsets
+  # set positions for bss sections too - to the place
+  # where they yould be if they existed
+  # Prepare list of sections in the order of position
+  sections_order = []
+  for sortpos in sorted(po.section_pos.values()):
+    for sectname, pos in po.section_pos.iteritems():
+      if pos == sortpos:
+        sections_order.append(sectname)
+  # Prepare list of section sizes
+  sections_size = {}
+  fwpartfile.seek(0, os.SEEK_END)
+  sectpos_next = fwpartfile.tell()
+  for sectname in reversed(sections_order):
+    sections_size[sectname] = sectpos_next - po.section_pos[sectname]
+    sectpos_next = po.section_pos[sectname]
+  # Extract sections to separate files
+  for sectname in sections_order:
+    if section_is_bss(sectname):
+      continue
+    fwpartfile.seek(po.section_pos[sectname], os.SEEK_SET)
+    #TODO
+  # Prepare array of addresses
+  sections_address = {}
+  memaddr = memaddr_base
+  for sectname in sections_order:
+    # align the address
+    if (memaddr % 0x20) != 0:
+      memaddr += 0x20 - (memaddr % 0x20)
+    # add section address to array
+    sections_address[sectname] = memaddr
+    memaddr += sections_size[sectname]
   # prepare objcopy command line
   objcopy_cmd = '/usr/bin/arm-none-eabi-objcopy'
-  objcopy_cmd += ' --update-section "{0:s}={1:s}" --change-section-address "{0:s}=0x{2:08x}"'.format(".text","amba_app_test-sec_text.bin",0xa0001000)
-  objcopy_cmd += ' --update-section ".ARM.exidx=amba_app_test-sec_ARMexidx.bin"  --change-section-address ".ARM.exidx=0xa03e7820"'
-  objcopy_cmd += ' --update-section ".dsp_buf=amba_app_test-sec_dspbuf.bin" --change-section-address ".dsp_buf=0xa03e7840"'
-  objcopy_cmd += ' --update-section ".data=amba_app_test-sec_data.bin" --change-section-address ".data=0xa044c920"'
-  objcopy_cmd += ' --update-section "no_init=amba_app_test-sec_noinit.bin" --change-section-address "no_init=0xa04b0b60"'
-  objcopy_cmd += ' --change-section-address ".bss.noinit=0xa04b4000"'
-  objcopy_cmd += ' --change-section-address ".bss=0xa0858000"'
+  for sectname in sections_order:
+    if not section_is_bss(sectname):
+      objcopy_cmd += ' --update-section "{0:s}={1:s}"'.format(sectname,"amba_app_test-sec_text.bin")
+    objcopy_cmd += ' --change-section-address "{0:s}=0x{1:08x}"'.format(sectname,sections_address[sectname])
   objcopy_cmd += ' "{:s}" "{:s}"'.format(po.elftemplate, po.outfile)
   # execute the objcopy command
   objcopy_cmd = "echo "+objcopy_cmd
@@ -109,7 +151,7 @@ def main(argv):
      elif opt in ("-t", "--template"):
         po.elftemplate = arg
      elif opt in ("-s", "--section"):
-        arg_m = re.search('(?P<name>[0-9A-Za-z._-]+)@(?P<pos>[Xx0-9]+)', arg)
+        arg_m = re.search('(?P<name>[0-9A-Za-z._-]+)@(?P<pos>[Xx0-9A-Fa-f]+)', arg)
         # Convert to integer, detect base from prefix
         po.section_pos[arg_m.group("name")] = int(arg_m.group("pos"),0)
      elif opt in ("-e", "--mkelf"):

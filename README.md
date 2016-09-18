@@ -69,7 +69,7 @@ Example: ```sudo ./amba_ubifs.sh P3X_FW_V01.08.0080_12_part_rfs.a9s```
 
 ### amba_sys2elf.py
 
-Ambarella A7/A9 firmware "System Software" partition converted. The partition
+Ambarella A7/A9 firmware "System Software" partition converter. The partition
 contains a binary image of executable file, and this tool wraps it with ELF
 header. The ELF format can be then easily disassembled, as most debuggers can
 read ELF files.
