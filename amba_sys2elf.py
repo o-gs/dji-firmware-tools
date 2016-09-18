@@ -97,11 +97,22 @@ def syssw_bin2elf(po, fwpartfile):
     sections_size[sectname] = sectpos_next - po.section_pos[sectname]
     sectpos_next = po.section_pos[sectname]
   # Extract sections to separate files
+  sections_fname = {}
   for sectname in sections_order:
     if section_is_bss(sectname):
       continue
+    fname = "{:s}_sect_{:s}.bin".format(os.path.basename(po.fwpartfile),re.sub('[\W_]+', '', sectname))
+    sections_fname[sectname] = fname
+    sectfile = open(fname, "wb")
     fwpartfile.seek(po.section_pos[sectname], os.SEEK_SET)
-    #TODO
+    n = 0
+    while (n < sections_size[sectname]):
+      copy_buffer = fwpartfile.read(min(1024 * 1024, sections_size[sectname] - n))
+      if not copy_buffer:
+          break
+      n += len(copy_buffer)
+      sectfile.write(copy_buffer)
+    sectfile.close()
   # Prepare array of addresses
   sections_address = {}
   memaddr = memaddr_base
@@ -116,7 +127,7 @@ def syssw_bin2elf(po, fwpartfile):
   objcopy_cmd = '/usr/bin/arm-none-eabi-objcopy'
   for sectname in sections_order:
     if not section_is_bss(sectname):
-      objcopy_cmd += ' --update-section "{0:s}={1:s}"'.format(sectname,"amba_app_test-sec_text.bin")
+      objcopy_cmd += ' --update-section "{0:s}={1:s}"'.format(sectname,sections_fname[sectname])
     objcopy_cmd += ' --change-section-address "{0:s}=0x{1:08x}"'.format(sectname,sections_address[sectname])
   objcopy_cmd += ' "{:s}" "{:s}"'.format(po.elftemplate, po.outfile)
   # execute the objcopy command
