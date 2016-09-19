@@ -65,6 +65,7 @@ class ProgOptions:
 #
 # The script uses an ELF template, which was prepared from example Ambarella SDK
 # application by the command (mock_sect.bin is a random file with 32 bytes size):
+#  echo "MockDataToUpdateUsingObjcopy" > mock_sect.bin
 #  /usr/bin/arm-none-eabi-objcopy \
 #   --remove-section ".comment" \
 #   --update-section ".text=mock_sect.bin" --change-section-address ".text=0xa0001000" \
@@ -76,8 +77,50 @@ class ProgOptions:
 #   --change-section-address ".bss=0xa03a8000" \
 #   amba_app.elf amba_sys2elf_template.elf
 
+class ExIdxEntry(LittleEndianStructure):
+  _pack_ = 1
+  _fields_ = [('tboffs', c_uint),
+              ('entry', c_uint)]
+  def dict_export(self):
+    d = dict()
+    for (varkey, vartype) in self._fields_:
+        val = getattr(self, varkey)
+        d[varkey] = "{:08X}".format(val)
+    return d
+  def __repr__(self):
+    d = self.dict_export()
+    from pprint import pformat
+    return pformat(d, indent=4, width=1)
+
+class ExIdxPaddedEntry(LittleEndianStructure):
+  _pack_ = 1
+  _fields_ = [('tboffs', c_uint),
+              ('entry', c_uint),
+              ('padding', c_ubyte * 24)]
+  def dict_export(self):
+    d = dict()
+    for (varkey, vartype) in self._fields_:
+        val = getattr(self, varkey)
+        d[varkey] = "{:08X}".format(val)
+    return d
+  def __repr__(self):
+    d = self.dict_export()
+    from pprint import pformat
+    return pformat(d, indent=4, width=1)
+
 def section_is_bss(sectname):
   return sectname.startswith('.bss')
+
+def sign_extend(value, bits):
+  sign_bit = 1 << (bits - 1)
+  return (value & (sign_bit - 1)) - (value & sign_bit)
+
+# Convert a prel31 symbol to an absolute address
+def prel31_to_addr(ptr,refptr):
+  # sign-extend to 32 bits
+  offset = sign_extend(ptr, 31)
+  #offset = (c_int(ptr) << 1) >> 1
+  return c_uint(refptr + offset).value
 
 def syssw_read_base_address(po):
   mem_addr = 0
@@ -92,14 +135,51 @@ def syssw_read_base_address(po):
   del parser
   return mem_addr
 
+def syssw_detect_sect_ARMexidx(po, fwpartfile,  memaddr_base, start_pos, loose):
+  sectname = ".ARM.exidx"
+  eexidx = ExIdxPaddedEntry()
+  matches = 0
+  loose = False
+  pos = start_pos
+  while (True):
+    fwpartfile.seek(pos, os.SEEK_SET)
+    if fwpartfile.readinto(eexidx) != sizeof(eexidx):
+      break
+    glob_offs = prel31_to_addr(eexidx.tboffs, memaddr_base+pos)
+    # Check if offset falls into ".text" section
+    if (glob_offs > memaddr_base) and (glob_offs < memaddr_base+pos):
+      # Check if entry contains EXIDX_CANTUNWIND value (0x01)
+      if (eexidx.entry == 0x01):
+        # verify if padding area is completely filled with 0x00
+        if (eexidx.padding[0] == 0x00) and (len(set(eexidx.padding)) == 1) or loose:
+          if (po.verbose > 1):
+            print("Matching '{:s}' entry at 0x{:08x}: 0x{:08x} 0x{:08x}".format(sectname,pos,glob_offs,eexidx.entry))
+          matches += 1
+    pos += 0x20
+  if (matches > 1):
+    eprint("{}: Warning: multiple matches found for section '{:s}'".format(po.fwpartfile,sectname))
+    return -1, 0
+  return pos, sizeof(ExIdxEntry)
+
 def syssw_bin2elf(po, fwpartfile):
   # read base address from INI file which should be there after AMBA extraction
   memaddr_base = syssw_read_base_address(po)
   if (po.verbose > 0):
     print("{}: Memory base address set to 0x{:08x}".format(po.fwpartfile,memaddr_base))
   # detect position of each section in the binary file
+  sections_size = {}
   if (po.verbose > 1):
     print("{}: Searching for sections".format(po.fwpartfile))
+  sectname = ".ARM.exidx"
+  if (po.section_pos[sectname] < 0):
+    sect_pos, sect_len = syssw_detect_sect_ARMexidx(po, fwpartfile,  memaddr_base, 0, False)
+    if (sect_pos < 0):
+      sect_pos, sect_len = syssw_detect_sect_ARMexidx(po, fwpartfile,  memaddr_base, 0, True)
+    if (sect_pos < 0):
+      raise EOFError("Warning: no matches found for section '{:s}' in binary file.".format(sectname))
+    po.section_pos[sectname] = sect_pos
+    if (sect_len > 0):
+      sections_size[sectname] = sect_len
   # TODO
   # set positions for bss sections too - to the place
   # where they yould be if they existed
@@ -111,11 +191,15 @@ def syssw_bin2elf(po, fwpartfile):
       if pos == sortpos:
         sections_order.append(sectname)
   # Prepare list of section sizes
-  sections_size = {}
   fwpartfile.seek(0, os.SEEK_END)
   sectpos_next = fwpartfile.tell()
   for sectname in reversed(sections_order):
-    sections_size[sectname] = sectpos_next - po.section_pos[sectname]
+    if sectname in sections_size.keys():
+      if (sections_size[sectname] > sectpos_next - po.section_pos[sectname]):
+        eprint("{}: Warning: section section '{:s}' size reduced due to overlapping".format(po.fwpartfile,sectname))
+        sections_size[sectname] = sectpos_next - po.section_pos[sectname]
+    else:
+      sections_size[sectname] = sectpos_next - po.section_pos[sectname]
     sectpos_next = po.section_pos[sectname]
   # Extract sections to separate files
   sections_fname = {}
@@ -170,10 +254,13 @@ def syssw_bin2elf(po, fwpartfile):
   if (retcode != 0):
     raise EnvironmentError("Execution of objcopy returned with error {:d}.".format(retcode))
   # update entry point in the ELF header
-  elffile = open(po.outfile, "r+b")
-  elffile.seek(16+2*4, os.SEEK_SET) # position of e_entry within ELF header
-  elffile.write(c_uint(memaddr_base))
-  elffile.close()
+  if (po.verbose > 0):
+    print("{}: Updating entry point".format(po.fwpartfile))
+  if not po.dry_run:
+    elffile = open(po.outfile, "r+b")
+    elffile.seek(16+2*4, os.SEEK_SET) # position of e_entry within ELF header
+    elffile.write(c_uint(memaddr_base))
+    elffile.close()
 
 def main(argv):
   # Parse command line options
