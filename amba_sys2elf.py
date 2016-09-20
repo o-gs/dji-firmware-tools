@@ -135,10 +135,16 @@ def syssw_read_base_address(po):
   del parser
   return mem_addr
 
+# Finds position and size of .ARM.exidx section. That section contains entries
+# described in detail in "Exception Handling ABI for the ARM Architecture"
+# document. The function currently does many assumptions. It can only find
+# section which uses only one entry of CANTUNWIND type. It seem to be enough
+# for Phantom 3 firmware, but might not be enough for others.
 def syssw_detect_sect_ARMexidx(po, fwpartfile,  memaddr_base, start_pos, loose):
   sectname = ".ARM.exidx"
   eexidx = ExIdxPaddedEntry()
-  matches = 0
+  match_count = 0
+  match_pos = -1
   loose = False
   pos = start_pos
   while (True):
@@ -154,12 +160,14 @@ def syssw_detect_sect_ARMexidx(po, fwpartfile,  memaddr_base, start_pos, loose):
         if (eexidx.padding[0] == 0x00) and (len(set(eexidx.padding)) == 1) or loose:
           if (po.verbose > 1):
             print("Matching '{:s}' entry at 0x{:08x}: 0x{:08x} 0x{:08x}".format(sectname,pos,glob_offs,eexidx.entry))
-          matches += 1
+          match_pos = pos
+          match_count += 1
     pos += 0x20
-  if (matches > 1):
-    eprint("{}: Warning: multiple matches found for section '{:s}'".format(po.fwpartfile,sectname))
+  if (match_count > 1):
+    eprint("{}: Warning: multiple ({:d}) matches found for section '{:s}'".format(po.fwpartfile,match_count,sectname))
+  if (match_count < 1):
     return -1, 0
-  return pos, sizeof(ExIdxEntry)
+  return match_pos, sizeof(ExIdxEntry)
 
 def syssw_bin2elf(po, fwpartfile):
   # read base address from INI file which should be there after AMBA extraction
