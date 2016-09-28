@@ -15,6 +15,7 @@
  0000:000000F8       Exception_HandlerAddr
  0000:00000104       __AmbaProgramStart
  0000:00000200       arr_count_up_a
+ 0000:00013A8C       __udivsi3
  0000:00014C6C       memset_zero
  0000:000187C8       nullsub_50
  0000:00019EB0       nullsub_51
@@ -1575,11 +1576,103 @@
  0000:0003744C       aSite_init
  0000:00037458       aWarp_1
  0000:00037460       aDji_cal_mgrRet
+ 0000:00037478       aInit_8
+ 0000:00037480       aInitImageKernel
+ 0000:00037494       aSinfo
+ 0000:0003749C       aVinSensorInfo
+ 0000:000374AC       aBlc_0
+ 0000:000374B4       aBlackLevelCorrectionSetup
+ 0000:000374D4       aWb_0
+ 0000:000374D8       aWbGainSetup
+ 0000:000374E8       aR2y
+ 0000:000374F0       aRgbToYuvSetup
+ 0000:00037504       aCc
+ 0000:00037508       aColorCorrectionSetup
+ 0000:00037520       aTone
+ 0000:00037528       aToneCurveSetup
+ 0000:0003753C       aDpc
+ 0000:00037544       aDynamicBadPixelCorrectionSetup
+ 0000:00037568       aFpn
+ 0000:00037570       aFpnCorrectionSetup
+ 0000:00037588       aAa
+ 0000:0003758C       aAntialisingSetup
+ 0000:000375A0       aLk
+ 0000:000375A4       aLeakageFilterSetup
+ 0000:000375BC       aCnf
+ 0000:000375C4       aCfaNoiseFilterSetup
+ 0000:000375DC       aVnc_0
+ 0000:000375E4       aVignetteCompensationSetup
+ 0000:00037600       aLe
+ 0000:00037604       aLocalExposureSetup
+ 0000:0003761C       aCs
+ 0000:00037620       aChromaScaleSetup
+ 0000:00037634       aCmf
+ 0000:0003763C       aChromaMedianFilterSetup
+ 0000:00037658       aCc_reg
+ 0000:00037660       aColorCorrectionRegisterSetup
+ 0000:00037680       aShp
+ 0000:00037688       aHarpeningFilterSetup
+ 0000:000376A0       aDms
+ 0000:000376A8       aDemosaicSetup
+ 0000:000376B8       aMctf_1
+ 0000:000376C0       aMctfConfigurationSetupVideo
+ 0000:000376E4       aCdnr_0
+ 0000:000376EC       aColorDependentNoiseReductionSetup
+ 0000:00037714       aAsf
+ 0000:0003771C       aAdvanceSpatialFilterSetup
+ 0000:0003773C       aDefblc
+ 0000:00037744       aDzoom
+ 0000:0003774C       aDzoomSetup
+ 0000:00037758       aWarp_2
+ 0000:00037760       aWarpSetup
+ 0000:0003776C       aCa_0
+ 0000:00037770       aCawarpSetup
+ 0000:00037780       aStat
+ 0000:00037788       aAaaStatisticsSetup
+ 0000:000377A0       aFloat
+ 0000:000377A8       aFloatingAaaStatisticsSetup
+ 0000:000377C8       aIdsp
+ 0000:000377D0       aIdspDebugUtilities
+ 0000:000377E8       aRawenc
+ 0000:000377F0       aRawEncode
+ 0000:000377FC       aRaw_0
+ 0000:00037804       aRawCapture_0
+ 0000:00037810       aLowiso
+ 0000:00037818       aLowIsoVerificationFunction
+ 0000:00037838       aItuner
+ 0000:00037840       aItunerVerificationFunction
+ 0000:00037860       aMsc
+ 0000:00037869       aOnfigMsc
+ 0000:00037874       aClean_0
+ 0000:0003787C       aCf
+ 0000:00037880       aChromaFilterSetup
+ 0000:00037894       aMode_3
+ 0000:0003789C       aTestModeSetup
+ 0000:000378AC       aHighiso
+ 0000:000378B8       aHighIsoVerificationFunction
+ 0000:000378D8       aIdspcfg
+ 0000:000378E4       aIdspConfigurationInfo
+ 0000:000378FC       aRash
+ 0000:00037904       aRecursiveAmbaShell
+ 0000:0003791C       aFlow
+ 0000:00037924       aChangeModeAndChangeOption
+ 0000:00037944       aVrawenc
+ 0000:00037950       aVideoRawEncode
+ 0000:00037964       aShow_cmd
+ 0000:00037970       aShowImageParametersOfInputCommand
+ 0000:00037998       aStat_ex
+ 0000:000379A4       aAaaStatisticsExtensionSetup
+ 0000:000379C4       aGmv
+ 0000:000379CD       aMvSetup
  0000:000379D8       aTest_is2_initT
  0000:00037A04       aTest_is2_initA
  0000:00037A38       aTest_is2_ini_0
  0000:00037A88       aCurrentVinSens
  0000:00037ADC       aUsageTSSinfoGe
+ 0000:00037B14       aCurrentModePipeDAlgomodeDFuncmodeDContextidDB
+ 0000:00037B70       aUsageTSModeGetTheCurrentModeTSModePipe
+ 0000:00037C04       aCurrentBlackLevelDDDD
+ 0000:00037C28       aUsageTSBlcGetTheCurrentBlackLevelTSBlc
  0000:00037CA8       aCurrentWbGainR
  0000:00037CCC       aUsageTSWbGetTh
  0000:00037D40       aCurrentR2yMatr
@@ -1663,8 +1756,11 @@
  0000:00038BE8       aFpnSizeInfoFpn
  0000:00038C18       aFpnBypassMode
  0000:00038C28       aUsageTSFpnGetT
+ 0000:00038D80       aCurrentAntialiasingStrengthD
+ 0000:00038DA4       aUsageTSAaGetTheCurrentAntialiasingStrengthT
  0000:00038E20       aCurrentLeakage
  0000:00038E8C       aUsageTSLkGetTh
+ 0000:00038F2C       aUsageTSMscGetTheCurrentLeakageFilterSettings
  0000:00038FB0       aCurrentCfaNois
  0000:00038FE0       aNoise_levelRDG
  0000:00038FFC       aOriginal_blend
@@ -3310,6 +3406,7 @@
  0000:00049350       aAppmtpd_cbobje
  0000:00049368       aSObjectSendSta
  0000:0004939C       aSObjectLengthD
+ 0000:000493B8       aTransferCanceled
  0000:000493CC       aAppmtpd_cbob_0
  0000:000493E8       aSOpenS
  0000:000493F8       aSFailedToOpe_0
@@ -3341,6 +3438,7 @@
  0000:00049728       aSCanTWriteFile
  0000:00049750       aMtp_amagedatag
  0000:00049764       aSDCallAmbatu_5
+ 0000:00049788       aMtp_amagedatasend
  0000:0004979C       aAppmtpd_vendor
  0000:000497C0       aSActualLenD
  0000:000497D8       aSIncompleteTra
@@ -3354,6 +3452,24 @@
  0000:00049900       aSBufferIsNullS
  0000:00049928       aAppmtpd_allocd
  0000:00049940       aSAlreadyHaving
+ 0000:00049978       aAppmtpd_initsystem
+ 0000:0004998C       aSCanTCreateBufferForDeviceProperties_
+ 0000:000499C0       aMtpObjectScanTakesDMs
+ 0000:000499DC       aTotalObjectsD
+ 0000:000499F0       aAmbausb_mtp_init
+ 0000:00049A04       aSCanTWaitSdCardReady__0
+ 0000:00049A28       aAmbarella_0
+ 0000:00049A3C       a20140603t150105
+ 0000:00049A5C       aA9MtpDevice_0
+ 0000:00049A78       aUnknown_6
+ 0000:00049A88       aDatetimeDefault
+ 0000:00049A9C       aDatetimeCurrent
+ 0000:00049AB0       aAppmtpd_cbdevicepropvalueset
+ 0000:00049AD0       aSValueLengthD255ForDatetime_
+ 0000:00049AFC       aSValueLengthD255ForSyncpartner_
+ 0000:00049B2C       aSValueLengthD255ForDevicefriendlyname_
+ 0000:00049B60       aSValueLengthDDForSessionInitiatorVersionInfo_
+ 0000:00049BA0       aSValueLengthD4ForPerceivedDeviceType_
  0000:00049BD8       aFillpropdesc_s
  0000:00049BF4       aSCanTAlloca_12
  0000:00049C14       aFillpropdesc_l
@@ -9386,6 +9502,8 @@
  0000:0008CC28       aWarnUnsupportM
  0000:0008CC40       aAmbadsp_imgc_1
  0000:0008CD08       aWarning_Pwarpc
+ 0000:0008CDC8       aSetDebugForWarpcompensationOn
+ 0000:0008CDEC       aSetDebugForWarpcompensationOff
  0000:0008CE10       aErrorPwarpdzoo
  0000:0008CE40       aErrorPwarpdz_0
  0000:0008CE84       aErrorPwarpdz_1
@@ -10572,6 +10690,8 @@
  0000:00097088       aPf_setupfsiFai
  0000:0009709C       aAmbafs_sdprf_0
  0000:000970D4       aClearDirtyBitF
+ 0000:000970EC       aAmbafs_sdprf2formatdrive
+ 0000:00097108       aPf_formatFailed
  0000:0009711C       aAmbafs_sdprf_2
  0000:00097138       aAmbafs_sdprf_1
  0000:00097150       aAmbafs_sdprf2f
@@ -12232,6 +12352,8 @@
  0000:000AD9A4       aUdc_class_rele
  0000:000ADA7C       aWarningNoReset
  0000:000ADAAC       aErrorSNoSystem
+ 0000:000ADADC       aAmbausb_system_setconnect
+ 0000:000ADAF8       aSNotSupportNowPleaseUseAmbausbd_system_setsoftwarecon
  0000:000ADB48       aDefaultdevices
  0000:000ADB68       aErrorSCanTAllo
  0000:000ADBA8       aDefaultdevic_0
@@ -12297,6 +12419,18 @@
  0000:000AE1E8       aUx_no_device_c
  0000:000AE200       aUnknown_0
  0000:000AE208       aUnsupportOwner
+ 0000:000AE250       aClassmsc_mediaread
+ 0000:000AE264       aSMaxDataLengthD128kbNoCacheRead_
+ 0000:000AE29C       aReadDSectorButFail
+ 0000:000AE2B8       aFailToTakeReadCacheFlag0x2x
+ 0000:000AE2DC       aSReadDSectorButFail_
+ 0000:000AE2FC       aReadMediaErrorDBlocks_0
+ 0000:000AE31C       aWriteDSectorButFail
+ 0000:000AE338       aWriteMediaErrorDBlocks_0
+ 0000:000AE358       aStatusErrDD
+ 0000:000AE36C       aDriveDCardIsNotPresent
+ 0000:000AE390       aAmbausb_class_msc_setpropInvalidDriveD
+ 0000:000AE3C0       aAmbausb_class_msc_mountInvalidDriveD
  0000:000AE6E4       aMtpClassFailTo
  0000:000AE714       aMtpClassFail_0
  0000:000AE748       aMtpClassFail_1
@@ -15206,6 +15340,9 @@
  0000:000D701C       aColumn_numberO
  0000:000D709C       aK_assertAtS_10
  0000:000D70B0       aAmbafs_nullprf
+ 0000:000D70C8       aPdm_open_diskFailed
+ 0000:000D70E0       aPdm_open_partitionFailed
+ 0000:000D70FC       aNoName_0
  0000:000D7908       aUsageSDriveOp
  0000:000D7920       aValidOps
  0000:000D7930       aInfoInformatio
@@ -15689,6 +15826,7 @@
  0000:000E1DF4       AmbaImg_CtrlFunc_Get_Mem_CtrlAddr
  0000:000E1EB0       AmbaImg_CtrlFunc_MemMgr_Init
  0000:000E1F94       AmbaImg_CtrlFunc_Param_Init
+ 0000:000E7170       AmbaPrintk_Flush
  0000:000E71A0       AmbaPrintk
  0000:000E7554       AmbaPrint
  0000:000E7ABC       str
@@ -15701,6 +15839,7 @@
  0000:000F0BE4       img_dsp_core_utility_get_context
  0000:000F0D70       img_dsp_core_utility_get_context_mutex
  0000:000F3590       DSP_ImgUtilityGetConfig
+ 0000:000F3740       AmbaDSP_ImgUtilityInitArch
  0000:000F38CC       AmbaDSP_ImgInitCtx
  0000:000F3CF4       AmbaDSP_ImgInitCfg
  0000:000F3DE4       AmbaDSP_ImgUtilityCfgPostExe
@@ -15785,6 +15924,7 @@
  0000:001427E0       AmbaDSP_ImgGetChromaMedianFilter
  0000:00142B4C       AmbaDSP_ImgGetColorDependentNoiseReduction
  0000:00142B54       AmbaDSP_ImgSetCDNRToneCurveSelect
+ 0000:00143E60       aS_31
  0000:00144FE0       AmbaDSP_ImgGet1stLumaProcessingMode
  0000:0014B0E0       AmbaDSP_ImgGetGbGrMismatch
  0000:0014BE48       nullsub_5
@@ -15792,9 +15932,124 @@
  0000:0014BE50       nullsub_7
  0000:0014BE54       nullsub_8
  0000:0014BE58       nullsub_9
+ 0000:00155F8C       AmbaDSP_ImgGetHighIsoMedSharpenNoiseSharpenFir
+ 0000:001560D8       AmbaDSP_ImgGetHighIsoMedSharpenNoiseSharpenCoringIndexScale
+ 0000:00156228       AmbaDSP_ImgGetHighIsoMedSharpenNoiseSharpenMinCoringResult
+ 0000:00156374       AmbaDSP_ImgGetHighIsoMedSharpenNoiseSharpenScaleCoring
+ 0000:001566CC       SetHighIsoLiso1SharpenNoiseNoise
+ 0000:00156790       SetHighIsoLiso1SharpenNoiseSharpenFir
+ 0000:001567D8       SetHighIsoLiso1SharpenNoiseSharpenCoringIndexScale
+ 0000:001567FC       SetHighIsoLiso1SharpenNoiseSharpenScaleCoring
+ 0000:00156820       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseMaxChange
+ 0000:001568C0       AmbaDSP_ImgPrintSetHighIsoLiso1SharpenNoiseNoise
+ 0000:00156948       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseSharpenCoring
+ 0000:001569B0       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseSharpenFir
+ 0000:00156A18       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseSharpenMinCoringResult
+ 0000:00156A80       aFir
+ 0000:00156A84       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseSharpenCoringIndexScale
+ 0000:00156AEC       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseSharpenScaleCoring
+ 0000:00156B54       SetHighIsoLiso2SharpenNoiseBoth
+ 0000:00156CC0       SetHighIsoLiso2SharpenNoiseNoise
+ 0000:00156CFC       SetHighIsoLiso2SharpenNoiseSharpenCoring
+ 0000:00156D84       SetHighIsoLiso2SharpenNoiseSharpenFir
+ 0000:00156DA8       SetHighIsoLiso2SharpenNoiseSharpenMinCoringResult
+ 0000:00156DCC       SetHighIsoLiso2SharpenNoiseSharpenCoringIndexScale
+ 0000:00156DF0       SetHighIsoLiso2SharpenNoiseSharpenScaleCoring
+ 0000:00156E14       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseMaxChange
+ 0000:00156EB4       AmbaDSP_ImgPrintSetHighIsoLiso2SharpenNoiseNoise
+ 0000:00156F3C       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseSharpenCoring
+ 0000:00156FA4       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseSharpenFir
+ 0000:0015700C       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseSharpenMinCoringResult
+ 0000:00157078       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseSharpenCoringIndexScale
+ 0000:001570E0       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseSharpenScaleCoring
+ 0000:0015715C       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseBoth
+ 0000:00157394       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseNoise
+ 0000:00157580       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseSharpenCoring_0
+ 0000:0015772C       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseSharpenFir_0
+ 0000:001578F8       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseSharpenCoringIndexScale_0
+ 0000:00157AA0       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseSharpenMinCoringResult_0
+ 0000:00157C5C       AmbaDSP_ImgSetHighIsoLiso1SharpenNoiseSharpenScaleCoring_0
+ 0000:00157E08       AmbaDSP_ImgGetHighIsoLiso1SharpenNoiseBoth
+ 0000:00157F58       AmbaDSP_ImgGetHighIsoLiso1SharpenNoiseNoise
+ 0000:001580B0       AmbaDSP_ImgGetHighIsoLiso1SharpenNoiseSharpenCoring
+ 0000:001581F8       AmbaDSP_ImgGetHighIsoLiso1SharpenNoiseSharpenFir
+ 0000:00158348       AmbaDSP_ImgGetHighIsoLiso1SharpenNoiseSharpenCoringIndexScale
+ 0000:00158498       AmbaDSP_ImgGetHighIsoLiso1SharpenNoiseSharpenMinCoringResult
+ 0000:001585E4       AmbaDSP_ImgGetHighIsoLiso1SharpenNoiseSharpenScaleCoring
+ 0000:00158738       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseBoth
+ 0000:00158970       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseNoise
+ 0000:00158B2C       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseSharpenCoring_0
+ 0000:00158CE0       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseSharpenFir_0
+ 0000:00158EA4       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseSharpenCoringIndexScale_0
+ 0000:00159058       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseSharpenMinCoringResult_0
+ 0000:00159208       AmbaDSP_ImgSetHighIsoLiso2SharpenNoiseSharpenScaleCoring_0
+ 0000:001593B4       AmbaDSP_ImgGetHighIsoLiso2SharpenNoiseBoth
+ 0000:00159508       AmbaDSP_ImgGetHighIsoLiso2SharpenNoiseNoise
+ 0000:00159660       AmbaDSP_ImgGetHighIsoLiso2SharpenNoiseSharpenCoring
+ 0000:001597A8       AmbaDSP_ImgGetHighIsoLiso2SharpenNoiseSharpenFir
+ 0000:001598F4       AmbaDSP_ImgGetHighIsoLiso2SharpenNoiseSharpenCoringIndexScale
+ 0000:00159A48       AmbaDSP_ImgGetHighIsoLiso2SharpenNoiseSharpenMinCoringResult
+ 0000:00159B94       AmbaDSP_ImgGetHighIsoLiso2SharpenNoiseSharpenScaleCoring
+ 0000:00159F8C       AmbaDSP_ImgHighIsoSetChromaFilterHigh
  0000:0015A08C       AmbaDSP_ImgHighIsoSetChromaFilterLowVeryLow
+ 0000:0015A100       HighIsoSetChromaFilterPre
  0000:0015A2A0       AmbaDSP_ImgHighIsoSetChromaFilterPre
+ 0000:0015A31C       HighIsoSetChromaFilterMed
  0000:0015A4BC       AmbaDSP_ImgHighIsoSetChromaFilterMed
+ 0000:0015A538       HighIsoSetChromaFilterLow
+ 0000:0015A6D8       AmbaDSP_ImgHighIsoSetChromaFilterLow
+ 0000:0015A754       HighIsoSetChromaFilterVeryLow
+ 0000:0015A8F4       AmbaDSP_ImgHighIsoSetChromaFilterVeryLow
+ 0000:0015A978       AmbaDSP_ImgHighIsoSetChromaFilterHigh_0
+ 0000:0015AB28       AmbaDSP_ImgHighIsoGetChromaFilterHigh
+ 0000:0015AC80       AmbaDSP_ImgHighIsoSetChromaFilterLowVeryLow_0
+ 0000:0015AE30       AmbaDSP_ImgHighIsoGetChromaFilterLowVeryLow
+ 0000:0015AF8C       AmbaDSP_ImgHighIsoSetChromaFilterPre_0
+ 0000:0015B148       AmbaDSP_ImgHighIsoGetChromaFilterPre
+ 0000:0015B2A0       AmbaDSP_ImgHighIsoSetChromaFilterMed_0
+ 0000:0015B44C       AmbaDSP_ImgHighIsoGetChromaFilterMed
+ 0000:0015B5A4       AmbaDSP_ImgHighIsoSetChromaFilterLow_0
+ 0000:0015B754       AmbaDSP_ImgHighIsoGetChromaFilterLow
+ 0000:0015B8B0       AmbaDSP_ImgHighIsoSetChromaFilterVeryLow_0
+ 0000:0015BA60       AmbaDSP_ImgHighIsoGetChromaFilterVeryLow
+ 0000:0015BC44       HighIsoSetLumaNoiseCombine
+ 0000:0015BE34       AmbaDSP_ImgHighIsoSetLumaNoiseCombine
+ 0000:0015BEE8       HighIsoSetLowASFCombine
+ 0000:0015C0D8       AmbaDSP_ImgHighIsoSetLowASFCombine
+ 0000:0015C18C       HighIsoSetChromaFilterMedCombine
+ 0000:0015C53C       AmbaDSP_ImgHighIsoSetChromaFilterMedCombine
+ 0000:0015C634       HighIsoSetChromaFilterLowCombine
+ 0000:0015C9EC       AmbaDSP_ImgHighIsoSetChromaFilterLowCombine
+ 0000:0015CB28       HighIsoSetChromaFilterVeryLowCombine
+ 0000:0015CEE0       AmbaDSP_ImgHighIsoSetChromaFilterVeryLowCombine
+ 0000:0015D024       AmbaDSP_ImgHighIsoSetHighIsoFreqRecover
+ 0000:0015D0C0       aFir_0
+ 0000:0015D0F8       HighIsoSetHighIsoCombine
+ 0000:0015D67C       AmbaDSP_ImgHighIsoSetHighIsoCombine
+ 0000:0015D7BC       HighIsoSetHighIsoLumaBlend
+ 0000:0015D824       AmbaDSP_ImgHighIsoSetHighIsoLumaBlend_0
+ 0000:0015D888       HighIsoSetHighIsoBlendLumaLevel
+ 0000:0015D8AC       AmbaDSP_ImgHighIsoSetHighIsoBlendLumaLevel_0
+ 0000:0015D934       AmbaDSP_ImgHighIsoSetLumaNoiseCombine_0
+ 0000:0015DB2C       AmbaDSP_ImgHighIsoGetLumaNoiseCombine
+ 0000:0015DC88       AmbaDSP_ImgHighIsoSetLowASFCombine_0
+ 0000:0015DE84       AmbaDSP_ImgHighIsoGetLowASFCombine
+ 0000:0015DFE0       AmbaDSP_ImgHighIsoSetChromaFilterMedCombine_0
+ 0000:0015E1D4       AmbaDSP_ImgHighIsoGetChromaFilterMedCombine
+ 0000:0015E334       AmbaDSP_ImgHighIsoSetChromaFilterLowCombine_0
+ 0000:0015E52C       AmbaDSP_ImgHighIsoGetChromaFilterLowCombine
+ 0000:0015E688       AmbaDSP_ImgHighIsoSetChromaFilterVeryLowCombine_0
+ 0000:0015E87C       AmbaDSP_ImgHighIsoGetChromaFilterVeryLowCombine
+ 0000:0015E9D4       AmbaDSP_ImgHighIsoSetHighIsoFreqRecover_0
+ 0000:0015EB84       AmbaDSP_ImgHighIsoGetHighIsoFreqRecover
+ 0000:0015ECE4       AmbaDSP_ImgHighIsoSetHighIsoCombine_0
+ 0000:0015EED0       AmbaDSP_ImgHighIsoGetHighIsoCombine
+ 0000:0015F02C       AmbaDSP_ImgHighIsoSetHighIsoLumaBlend
+ 0000:0015F1D4       AmbaDSP_ImgHighIsoGetHighIsoLumaBlend
+ 0000:0015F32C       AmbaDSP_ImgHighIsoSetHighIsoBlendLumaLevel
+ 0000:0015F4D8       AmbaDSP_ImgHighIsoGetHighIsoBlendLumaLevel
+ 0000:0015F870       _SdHostGetStatus
+ 0000:00161174       strncpy
  0000:001636D8       _svfprintf_r
  0000:00164D14       aHjltzl
  0000:00164D1C       aNan
@@ -15815,6 +16070,10 @@
  0000:00184E2C       AmbaDSP_Img3aSetAeStatInfo
  0000:00188560       AmbaDSP_StillGenerateCleanRaw
  0000:0018ACCC       DSP_ImgCoreProcessRgbToYuvMatrix
+ 0000:00192D78       AmbaSD_GetHost
+ 0000:00192E1C       AmbaSD_CardINSlot
+ 0000:0019B984       AmbaRTSL_SdGetHost
+ 0000:0019C540       AmbaRTSL_SDGetWriteProtect
  0000:001A09C8       NftlSearchErasedBlock
  0000:001A0C60       NftlSearchErasedBlockCb
  0000:001A1628       NftlBadBlockHandler
@@ -15845,8 +16104,25 @@
  0000:001A4F08       AmbaNFTL_GetBBMStatus
  0000:001A78EC       a__1
  0000:001A78F0       a__
+ 0000:001AF5D4       pdm_open_disk
+ 0000:001AF604       pdm_open_partition
+ 0000:001AF6E4       AmbaFS_SdPrf2CheckMedia
+ 0000:001AF804       AmbaFS_SdPrf2CheckFormat
+ 0000:001AF9EC       AmbaFS_SdPrf2FormatDrive
+ 0000:001AFABC       AmbaFS_SdPrf2InitDriveTable
+ 0000:001AFB04       AmbaFS_SdPrf2DriveInit
+ 0000:001AFB4C       AmbaFS_SdPrf2Finalize
+ 0000:001AFBB0       AmbaFS_SdPrf2Mount
+ 0000:001AFBF0       AmbaFS_SdPrf2Unmount
+ 0000:001AFFA8       aLl
+ 0000:001B0204       aLl_0
+ 0000:001B0208       AmbaFS_SdPrf2GetDiskInfo
+ 0000:001B0404       AmbaFS_SdPrf2init
+ 0000:001B08A4       AmbaFS_NullPrFileinit
  0000:001B0F2C       AmbaSysInitPreOS
  0000:001B58C8       nullsub_18
+ 0000:001B58D4       AmbaDSP_ImgSetVinSensorInfo
+ 0000:001B5ADC       AmbaDSP_ImgGetVinSensorInfo
  0000:001B5C44       ImgWarpCore_GetCalibCtx.isra.3
  0000:001B5D40       ImgWarpCore_GetParamCtx.isra.1
  0000:001B6754       ImgWarpCore_CalcActWin
@@ -15875,7 +16151,10 @@
  0000:001C4FC8       AmbaDSP_ImgGetWarpCompensation
  0000:001CB0E4       nullsub_45
  0000:001CB0E8       nullsub_19
+ 0000:001CF724       AmbaRTSL_GpioConfigInput
+ 0000:001CFE64       AmbaRTSL_GpioGetPinInfo
  0000:001ED998       nullsub_20
+ 0000:001EF8C4       pf_setupfsi
  0000:001F04B8       AmbaRTSL_TimerGet
  0000:001F0D9C       nullsub_21
  0000:001F0DAC       AmbaRPC_MSG_Init
@@ -16294,6 +16573,7 @@
  0000:00312754       aS_27
  0000:00312774       IPC_Rpc_Cln_Init
  0000:00312E7C       DjiIpcInit
+ 0000:00321324       AmbaShell_MemAlloc
  0000:00327D10       DjiExifGPSEnStatGet
  0000:00327FD8       DjiExifOp_InfoSet
  0000:00329FD4       DjiExifXmpInfoSet
@@ -16448,11 +16728,73 @@
  0000:00431C8C       AmbaRPC_MSG_Reg_CB
  0000:00431CB4       AmbaRPC_MSG_Send
  0000:00433908       test_is2_init
+ 0000:004341BC       test_is2_Rash
+ 0000:00434680       aR_3
+ 0000:00434838       _video_raw_enc_program_get_raw_id
+ 0000:00434E4C       a422
+ 0000:00434E50       a420
+ 0000:00434E54       aC_7
+ 0000:00434E58       _feed_data_pre_process
+ 0000:00434FFC       aWb_1
+ 0000:0043506C       test_is2_video_rawenc
+ 0000:00435DE4       aR_4
+ 0000:00437990       aR_5
+ 0000:00437AD0       aW_6
+ 0000:00438218       aWct
+ 0000:0043B254       aAwb_1
+ 0000:0043B31C       aAf_0
+ 0000:0043B3A8       aAll_1
+ 0000:0043B3AC       aW_7
+ 0000:0043CAB0       aAe_0
+ 0000:0043CB44       aS_32
+ 0000:0043CDBC       aAwb_2
+ 0000:0043CDC8       aS_33
+ 0000:0043D128       aAf_1
+ 0000:0043D1FC       aS_34
+ 0000:0043D884       aS_35
+ 0000:0043DE08       aAe_1
+ 0000:0043DE0C       aAwb_3
+ 0000:0043E848       aW_8
  0000:0043EEDC       test_is2_raw
  0000:0043F044       test_is2_rawenc
  0000:0043F12C       test_is2_lowiso
  0000:0043F2F4       test_is2_ituner
+ 0000:0043F820       aS_36
  0000:0043FBE0       pFmt
+ 0000:0043FD04       aW_9
+ 0000:00440BB8       aOn_4
+ 0000:00440BBC       aOff_4
+ 0000:00440BC0       aSbp
+ 0000:00440BC4       aVig
+ 0000:00440BC8       aCa_1
+ 0000:00440BCC       aCc_1
+ 0000:00440BD0       aSbl
+ 0000:00440BD4       aDbl
+ 0000:00440F5C       aDbp
+ 0000:00440F60       aOn_6
+ 0000:00440F64       aOff_6
+ 0000:00440F68       aLk_0
+ 0000:00440F6C       aCfa
+ 0000:00440F70       aAa_0
+ 0000:00440F74       aWb_2
+ 0000:00440F78       aDgs
+ 0000:00440F7C       aLe_0
+ 0000:00440F80       aTc
+ 0000:00440F84       aR2y_0
+ 0000:0044130C       aCs_0
+ 0000:00441310       aOn_7
+ 0000:00441314       aOff_7
+ 0000:00441318       aCmf_0
+ 0000:0044131C       aDms_0
+ 0000:00441320       aCf_0
+ 0000:00441324       aAsf_0
+ 0000:004416A0       aMbt
+ 0000:004416A4       aOn_8
+ 0000:004416A8       aOff_8
+ 0000:00441A38       aOn_9
+ 0000:00441A3C       aOff_9
+ 0000:00441DC4       aOn_10
+ 0000:00441DC8       aOff_5
  0000:0044215C       aOn_2
  0000:00442160       aOff_1
  0000:0044253C       aOn_1
@@ -16466,12 +16808,62 @@
  0000:00443774       AppCdcAcmMultid_LogDump
  0000:0044385C       AppCdcAcmMultid_CalculateLogMemorySize
  0000:004438DC       AppCdcAcmMultid_SendLog
+ 0000:00443AE0       AppCdcAcmMultid_ReleaseLogMem
+ 0000:00443B38       AppCdcAcmMultid_CreateLogMem
+ 0000:00443BDC       AppCdcAcmMultid_SendTask
+ 0000:00443C80       AppCdcAcmMultid_RecvTask
  0000:00443D74       AppCdcAcmMultid_Start
  0000:004440A0       AppCdcAcmMultid_Stop
+ 0000:00444364       AmbaHidReportSendTask
+ 0000:00444400       stck
+ 0000:00444410       MixStorage_AllocateRamdisk
+ 0000:00444744       aR_6
+ 0000:00444AD4       AppMtpd_ParseExifObject
  0000:00444E14       AppMtpd_CbObjectNumberGet
  0000:00444E4C       aNg_0
  0000:00444E50       aR_1
  0000:00444EDC       AppMtpd_CbObjectInfoGet
+ 0000:00444FCC       AppMtpd_CbObjectThumbGet
+ 0000:00445154       aR_7
+ 0000:00445158       AppMtpd_CbObjectDataGet
+ 0000:004453A4       aR_8
+ 0000:004453A8       AppMtpd_CbObjectInfoSend
+ 0000:004455FC       AppMtpd_CbObjectDataSend
+ 0000:004458B4       MTP_AmageDataGet
+ 0000:00445948       MTP_AmageDataSend
+ 0000:004459B4       aW_10
+ 0000:004459C0       AppMtpd_VendorSetLongDataCommand
+ 0000:00445AB0       AppMtpd_VendorGetLongDataCommand
+ 0000:00445BD4       AppMtpd_CbVendorProcess
+ 0000:00445C8C       AppMtpd_ReAllocDataBuffer
+ 0000:00445D44       AppMtpd_AllocDataBuffer
+ 0000:00445E28       AppMtpd_InitSystem
+ 0000:004460B4       aC_8
+ 0000:0044613C       AmbaUSB_MTP_Init
+ 0000:004462F4       MtpPreParseThreadEntry
+ 0000:0044642C       AppMtpd_PreParseThreadDestroy
+ 0000:004464D4       AppMtpd_PreParseThreadCreate
+ 0000:004466F4       AppMtpd_PreParseBufDoubleCapacity
+ 0000:00446BD4       AppMtpd_DbGetAttributeFromHandle
+ 0000:00446C18       AppMtpd_DbDoubleCapacity
+ 0000:00446D6C       aJpg
+ 0000:00446D70       AppMtpd_DbAddHandle
+ 0000:00446EA4       aMov
+ 0000:00446EC8       AppMtpd_DbInsertHandle
+ 0000:00447178       AppMtpd_DbIsObjectHandleValid
+ 0000:004471EC       AppMtpd_DbGetFileNameFromHandle
+ 0000:0044727C       aR_9
+ 0000:004472A0       AppMtpd_DbGetFilePathFromHandle
+ 0000:004473EC       AppMtpd_DbGetParentHandle
+ 0000:00447438       AppMtpd_DbGetNumberOfObjects
+ 0000:004474E4       AppMtpd_DbFillObjectHandles
+ 0000:0044762C       aR_10
+ 0000:004476E4       AppMtpd_DbScanDirectory
+ 0000:00447A28       AppMtpd_DbScan
+ 0000:00447D68       aW_11
+ 0000:00447D80       AppMtpd_DbDeleteObject
+ 0000:004480F8       nullsub_52
+ 0000:004483C0       AppMtpd_CbDevicePropValueSet
  0000:00449FD4       AppMtpd_CbObjectPropValueGet
  0000:0044AEB4       AppMtpd_FillPropListAll
  0000:0044B46C       Simple_VendorRequest
@@ -16636,6 +17028,15 @@
  0000:0078608C       aUbi_mtd8RootUb
  0000:007860DC       a23697071727374
  0000:0078C0D0       AmbaDSP_ImgArchConfig
+ 0000:007A98BC       aAmbarell
+ 0000:007A98C8       aA9DscEvkPlatform
+ 0000:007A98DC       a1000
+ 0000:007A9924       aAmbarella
+ 0000:007A9930       aA9MtpDevice
+ 0000:007A9940       a1_0_0_0
+ 0000:007A9948       aV1_0
+ 0000:007A9950       aA9MtpClientDiskVolume
+ 0000:007A996C       aA9MtpClientSdSlot
  0000:007A9A34       aCAmba_mtp_txt
  0000:007B4D40       aFc300x_2
  0000:007B9FA4       aJ
