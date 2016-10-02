@@ -159,7 +159,7 @@ def syssw_detect_sect_ARMexidx(po, fwpartfile,  memaddr_base, start_pos, loose):
         # verify if padding area is completely filled with 0x00
         if (eexidx.padding[0] == 0x00) and (len(set(eexidx.padding)) == 1) or loose:
           if (po.verbose > 1):
-            print("Matching '{:s}' entry at 0x{:08x}: 0x{:08x} 0x{:08x}".format(sectname,pos,glob_offs,eexidx.entry))
+            print("{}: Matching '{:s}' entry at 0x{:08x}: 0x{:08x} 0x{:08x}".format(po.fwpartfile,sectname,pos,glob_offs,eexidx.entry))
           match_pos = pos
           match_count += 1
     pos += 0x20
@@ -168,6 +168,16 @@ def syssw_detect_sect_ARMexidx(po, fwpartfile,  memaddr_base, start_pos, loose):
   if (match_count < 1):
     return -1, 0
   return match_pos, sizeof(ExIdxEntry)
+
+# Finds position and size of no_init section. That section is filled with
+# zeros, and most likely has 1024 bytes, as is used only by DoPrintDsp().
+# But here we will just make it zero size, so that everything is take into
+# .data section.
+def syssw_detect_sect_no_init(po, fwpartfile,  memaddr_base, start_pos, loose):
+  sectname = "no_init"
+  fwpartfile.seek(0, os.SEEK_END)
+  match_pos = fwpartfile.tell()
+  return match_pos, 0
 
 def syssw_bin2elf(po, fwpartfile):
   # read base address from INI file which should be there after AMBA extraction
@@ -178,33 +188,111 @@ def syssw_bin2elf(po, fwpartfile):
   sections_size = {}
   if (po.verbose > 1):
     print("{}: Searching for sections".format(po.fwpartfile))
+  # ARM exceprions index section is easy to find
   sectname = ".ARM.exidx"
   if (po.section_pos[sectname] < 0):
     sect_pos, sect_len = syssw_detect_sect_ARMexidx(po, fwpartfile,  memaddr_base, 0, False)
     if (sect_pos < 0):
       sect_pos, sect_len = syssw_detect_sect_ARMexidx(po, fwpartfile,  memaddr_base, 0, True)
     if (sect_pos < 0):
-      raise EOFError("Warning: no matches found for section '{:s}' in binary file.".format(sectname))
+      raise EOFError("No matches found for section '{:s}' in binary file.".format(sectname))
     po.section_pos[sectname] = sect_pos
     if (sect_len > 0):
       sections_size[sectname] = sect_len
-  # TODO
-  # set positions for bss sections too - to the place
-  # where they yould be if they existed
-  # TODO
+  else:
+    sect_pos = po.section_pos[sectname]
+    sect_len = 0x20
+  if (po.verbose > 1):
+    print("{}: Set '{:s}' section at file pos 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname],sections_size[sectname]))
+  # Now let's assume that the .ARM.exidx section is located after .text section. Also, the .text section
+  # is first because it contains interrupt table located at offset 0
+  sectname = ".text"
+  if (po.section_pos[sectname] < 0):
+    if (sect_pos > 0x20):
+      po.section_pos[sectname] = 0x0
+    else:
+      raise EOFError("No place for '{:s}' section before the '{:s}' section in binary file.".format(sectname,".ARM.exidx"))
+  # After the .ARM.exidx section come two data sections - .dsp_buf and .data. Since they are quite similar,
+  # we can safely make one of them zero-sized, and use all the size for second one.
+  sectname = ".dsp_buf"
+  if (po.section_pos[sectname] < 0):
+    sect_pos += sect_len
+    sect_len = 0
+    if (sect_pos % 0x20) != 0:
+      sect_pos += 0x20 - (sect_pos % 0x20)
+    po.section_pos[sectname] = sect_pos
+    sections_size[sectname] = 0
+  else:
+    sect_pos = po.section_pos[sectname]
+    sect_len = 0
+  # same goes to no_init section behind the data section - make it zero size
+  sectname = "no_init"
+  if (po.section_pos[sectname] < 0):
+    last_sect_pos, last_sect_len = syssw_detect_sect_no_init(po, fwpartfile,  memaddr_base, sect_pos, False)
+    po.section_pos[sectname] = last_sect_pos
+    sections_size[sectname] = last_sect_len
+  else:
+    last_sect_pos = po.section_pos[sectname]
+    last_sect_len = 0
+  # Now we can make the .data section take everything .dsp_buf and no_init
+  sectname = ".data"
+  if (po.section_pos[sectname] < 0):
+    sect_pos += sect_len
+    sect_len = last_sect_pos - sect_pos
+    if (sect_pos % 0x20) != 0:
+      sect_pos += 0x20 - (sect_pos % 0x20)
+    po.section_pos[sectname] = sect_pos
+    sections_size[sectname] = sect_len
+  if (po.verbose > 1):
+    print("{}: Set '{:s}' section at file pos 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname],sections_size[sectname]))
+  # Set positions for bss sections too - to the place
+  # where they should be if they existed
+  sect_pos = last_sect_pos
+  sect_len = last_sect_len
+  sectname = ".bss.noinit"
+  if (po.section_pos[sectname] < 0):
+    sect_pos += sect_len
+    if (sect_pos % 0x20) != 0:
+      sect_pos += 0x20 - (sect_pos % 0x20)
+    sect_len = 0x400000
+    po.section_pos[sectname] = sect_pos
+    sections_size[sectname] = sect_len
+  else:
+    sect_pos = po.section_pos[sectname]
+    sect_len = 0
+  if (po.verbose > 1):
+    print("{}: Set '{:s}' section at file pos 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname],sections_size[sectname]))
+  sectname = ".bss"
+  if (po.section_pos[sectname] < 0):
+    sect_pos += sect_len
+    if (sect_pos % 0x20) != 0:
+      sect_pos += 0x20 - (sect_pos % 0x20)
+    sect_len = 0x2000000 - sect_pos
+    po.section_pos[sectname] = sect_pos
+    sections_size[sectname] = sect_len
+  if (po.verbose > 1):
+    print("{}: Set '{:s}' section at file pos 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname],sections_size[sectname]))
+
   # Prepare list of sections in the order of position
   sections_order = []
-  for sortpos in sorted(po.section_pos.values()):
+  for sortpos in sorted(set(po.section_pos.values())):
+    # First add sections with size equal zero
     for sectname, pos in po.section_pos.iteritems():
       if pos == sortpos:
-        sections_order.append(sectname)
+        if sectname in sections_size.keys():
+          if (sections_size[sectname] < 1):
+            sections_order.append(sectname)
+    # The non-zero sized section should be last
+    for sectname, pos in po.section_pos.iteritems():
+      if pos == sortpos:
+        if sectname not in sections_order:
+          sections_order.append(sectname)
   # Prepare list of section sizes
-  fwpartfile.seek(0, os.SEEK_END)
-  sectpos_next = fwpartfile.tell()
+  sectpos_next = 0x2000000 # max size is larger than bin file size due to uninitialized sections (bss)
   for sectname in reversed(sections_order):
     if sectname in sections_size.keys():
       if (sections_size[sectname] > sectpos_next - po.section_pos[sectname]):
-        eprint("{}: Warning: section section '{:s}' size reduced due to overlapping".format(po.fwpartfile,sectname))
+        eprint("{}: Warning: section '{:s}' size reduced due to overlapping".format(po.fwpartfile,sectname))
         sections_size[sectname] = sectpos_next - po.section_pos[sectname]
     else:
       sections_size[sectname] = sectpos_next - po.section_pos[sectname]
@@ -269,6 +357,7 @@ def syssw_bin2elf(po, fwpartfile):
     elffile.seek(16+2*4, os.SEEK_SET) # position of e_entry within ELF header
     elffile.write(c_uint(memaddr_base))
     elffile.close()
+  #TODO make updating of .bss sections sizes (objcopy can't do that)
 
 def main(argv):
   # Parse command line options
@@ -287,7 +376,7 @@ def main(argv):
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
-        print("amba_sys2elf.py version 0.1.0")
+        print("amba_sys2elf.py version 0.1.1")
         sys.exit()
      elif opt == "-v":
         po.verbose += 1
