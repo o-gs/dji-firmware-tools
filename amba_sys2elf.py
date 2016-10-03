@@ -14,6 +14,13 @@ import itertools
 from ctypes import *
 from time import gmtime, strftime
 
+# This tool requires version of pyelftools with elf write support.
+# Get it from https://github.com/mefistotelis/pyelftools.git
+# clone to upper level folder, as the path below indicates.
+sys.path.insert(0, '../pyelftools')
+#import elftools
+import elftools.elf.elffile
+
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
 
@@ -335,6 +342,7 @@ def syssw_bin2elf(po, fwpartfile):
     if (po.verbose > 0):
       print("{}: Section '{:s}' memory address set to 0x{:08x}".format(po.fwpartfile,sectname,sections_address[sectname]))
   # prepare objcopy command line
+  #TODO use elftools library instead of calling external executable
   objcopy_cmd = '/usr/bin/arm-none-eabi-objcopy'
   for sectname in sections_order:
     if not section_is_bss(sectname):
@@ -351,13 +359,17 @@ def syssw_bin2elf(po, fwpartfile):
     raise EnvironmentError("Execution of objcopy returned with error {:d}.".format(retcode))
   # update entry point in the ELF header
   if (po.verbose > 0):
-    print("{}: Updating entry point".format(po.fwpartfile))
+    print("{}: Updating entry point and section headers".format(po.fwpartfile))
   if not po.dry_run:
-    elffile = open(po.outfile, "r+b")
-    elffile.seek(16+2*4, os.SEEK_SET) # position of e_entry within ELF header
-    elffile.write(c_uint(memaddr_base))
-    elffile.close()
+    elf_fh = open(po.outfile, "r+b")
+  else:
+    elf_fh = open(po.outfile, "rb")
+  elfobj = elftools.elf.elffile.ELFFile(elf_fh)
+  elfobj.header['e_entry'] = memaddr_base
   #TODO make updating of .bss sections sizes (objcopy can't do that)
+  if not po.dry_run:
+    elfobj.write_changes()
+  elf_fh.close()
 
 def main(argv):
   # Parse command line options
