@@ -20,6 +20,7 @@ from time import gmtime, strftime
 sys.path.insert(0, '../pyelftools')
 #import elftools
 import elftools.elf.elffile
+import elftools.elf.sections
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
@@ -366,7 +367,14 @@ def syssw_bin2elf(po, fwpartfile):
     elf_fh = open(po.outfile, "rb")
   elfobj = elftools.elf.elffile.ELFFile(elf_fh)
   elfobj.header['e_entry'] = memaddr_base
-  #TODO make updating of .bss sections sizes (objcopy can't do that)
+  # update section sizes, including the uninitialized (.bss*) sections
+  for sectname in sections_order:
+    sect = elfobj.get_section_by_name(sectname)
+    sect.header['sh_addr'] = sections_address[sectname]
+    # for non-bss sections, size will be updated automatically when replacing data sect.set_data(data_buf)
+    if section_is_bss(sectname):
+      sect.header['sh_size'] = sections_size[sectname]
+    elfobj.set_section_by_name(sectname, sect)
   if not po.dry_run:
     elfobj.write_changes()
   elf_fh.close()
