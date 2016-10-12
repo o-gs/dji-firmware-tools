@@ -35,6 +35,7 @@
  0001:00028174       aS
  0001:00028190       aStillmodeDShin
  0001:000281D4       aAmba_adjpivcon
+ 0001:000281FC       aSStart_4
  0001:00028208       aSWbgainGainr5d
  0001:00028240       aPivStillmodeDS
  0001:00028288       aSEnd
@@ -3301,6 +3302,7 @@
  0001:00048010       aMismatchgr_gbG
  0001:0004802C       aDefault
  0001:00048034       a_usbhdlr_set_b
+ 0001:0004804C       aBin_pkgSend
  0001:0004805C       aColorcorrect_0
  0001:00048074       aFromUsb
  0001:00048080       a_usbhdlr_set_w
@@ -7866,13 +7868,40 @@
  0001:000767B0       aDjisdop_usab_0
  0001:000767C8       aDjisdopinit
  0001:000767D4       aDji_sdopSMutex
+ 0001:000767F8       aVer_1
+ 0001:000767FC       aShowFirmwareAndHardwareVersion_
+ 0001:00076820       aDbg
+ 0001:00076824       aSetDebugLevelTDjiDbgLevel_EgTDji
+ 0001:00076858       aFreq
  0001:00076860       aShowCurrentFre
  0001:00076894       aTemp
  0001:0007689C       aShowTemperatur
+ 0001:000768E4       aSus
+ 0001:000768E8       aSuspendDspTDjiSusFreqdivshift_Eg
+ 0001:00076920       aRes
+ 0001:00076924       aResumeDspTDjiRes_EgTDjiRes
  0001:0007694C       aMode_2
  0001:00076954       aSwitchModeTDji
  0001:000769A0       aHdmi_1
  0001:000769A8       aReconnectHdmiB
+ 0001:000769E0       aWdg
+ 0001:000769E4       aDisableWatchDogStopAutoFeedStart
+ 0001:00076A3C       aOsd
+ 0001:00076A40       aVideoRecordOsdTestTDjiOsdFxFyFwF
+ 0001:00076AB4       aMemtest
+ 0001:00076ABC       aMemoryTestTDjiMemtestTestTimesOp
+ 0001:00076B38       a3a
+ 0001:00076B3C       a3aTestEntryTDji3aXxx_EgTDji3a___
+ 0001:00076B6C       aReboot
+ 0001:00076B74       aSystemRebootWdtSoftResetTDjiRebo
+ 0001:00076BBC       aRommisc
+ 0001:00076BC4       aMiscRomDataSaveLoadTestTDjiRommi
+ 0001:00076C34       aFlush_1
+ 0001:00076C3C       aFlushLogTDjiFlush_EgTDjiFlush
+ 0001:00076C64       aUpdater
+ 0001:00076C6C       aFirmwareCamera368UpdateTestTDjiU
+ 0001:00076CB8       aConsole
+ 0001:00076CC0       aConsoleOnOffControl_TDjiConsole0
  0001:00076D18       aReason
  0001:00076D20       aPrintResetReas
  0001:00076D54       aAfrgb
@@ -7897,6 +7926,28 @@
  0001:0007701C       aShowMemConfig
  0001:0007702C       aLogfile
  0001:00077034       aLogfiletest_tD
+ 0001:0007706C       aMac
+ 0001:00077070       aSetAuthorizedMac_TDjiMacXxXxXxXx
+ 0001:000770A0       aUst
+ 0001:000770A4       aUserSettingsRelatedTestCommands_
+ 0001:000770CC       aSto
+ 0001:000770D0       aStorageRelatedTestCommands_
+ 0001:000770F0       aMsg
+ 0001:000770F4       aMessageHandlerRelatedTestCommand
+ 0001:0007711C       aUeg
+ 0001:00077120       aUpdateEngineRelatedTestCommands_
+ 0001:00077148       aShm
+ 0001:0007714C       aShmooRelatedTestCommands_
+ 0001:0007716C       aLed
+ 0001:00077170       aLedRelatedTestCommands_
+ 0001:0007718C       aRename
+ 0001:00077194       aFileRenameTDjiRenameOldNameNewNa
+ 0001:000771EC       aEncrypt
+ 0001:000771F4       aEncryptRelatedTestCommands
+ 0001:00077214       aPb
+ 0001:00077218       aPlaybackRelatedTestCommands
+ 0001:00077238       aAfif
+ 0001:00077240       aAfInterface
  0001:00077250       aLoaderVersionS
  0001:00077264       aFirmwareVersio
  0001:0007727C       aHardwareVersio
@@ -11673,6 +11724,8 @@
  0001:0009A288       aTimer
  0001:0009A290       aGdma
  0001:0009A298       aHdmi
+ 0001:0009A2A8       aStg
+ 0001:0009A2AC       aStg2_0
  0001:0009A2C0       aAmbanand_markb
  0001:0009A2D4       aK_assertAtS_13
  0001:0009A2E8       aUnknownSpareSi
@@ -11734,8 +11787,14 @@
  0001:0009A9B0       aDspUcode
  0001:0009A9BC       aSystemRomData
  0001:0009A9CC       aLinuxKernel
+ 0001:0009A9DC       aLinuxRootFs
+ 0001:0009A9EC       aLinuxHibernationImage
+ 0001:0009AA04       aStorage1_0
  0001:0009AA10       aStorage2
  0001:0009AA1C       aIndexForVideoR
+ 0001:0009AA38       aUserSettings
+ 0001:0009AA48       aCalibrationData
+ 0001:0009AA5C       aAll
  0001:0009AA70       aAmbanand_setpt
  0001:0009AA80       aSGetMetaFailed
  0001:0009AA98       aSetPtbFailed
@@ -16440,6 +16499,15 @@
  0001:000D859C       aNftl_idx_0
  0001:000D85A8       aNftl_prf_0
  0001:000D85B4       aNftl_cal_0
+ 0001:000D85C0       aRs
+ 0001:000D85C4       aWs
+ 0001:000D85C8       aVerify
+ 0001:000D85D0       aPr
+ 0001:000D85D4       aPw
+ 0001:000D85D8       aErase_1
+ 0001:000D85E0       aErase_lba
+ 0001:000D85EC       aThruput_0
+ 0001:000D85F4       aInit_7
  0001:000D85FC       aDeinit
  0001:000D8604       aStatus_2
  0001:000D860C       aRclm_bb
@@ -16553,6 +16621,7 @@
  0001:000D91B8       aNumberOfUnused
  0001:000D91E0       aTotalNumberOfP
  0001:000D9208       aValidTestTar_0
+ 0001:000D922C       aS_22
  0001:000D9234       aReady
  0001:000D923C       aCompleted
  0001:000D9248       aTerminated
@@ -17143,6 +17212,7 @@
  0001:000E0240       _Decide_PivAdjTableNo
  0001:000E098C       fmt
  0001:000E0990       Amba_AdjPivControl
+ 0001:000E0C2C       imgproc_adjapptest
  0001:000E12E4       str2
  0001:000E1330       memcpy
  0001:000E1344       AmbaDSP_ImgSetToneCurve_CheckArgs
@@ -17156,7 +17226,10 @@
  0001:000E7170       AmbaPrintk_Flush
  0001:000E71A0       AmbaPrintk
  0001:000E7554       AmbaPrint
+ 0001:000E7AB4       pStackBase
+ 0001:000E7AB8       EntryFunction
  0001:000E7ABC       str
+ 0001:000E7AC0       pTask
  0001:000E87E4       AmbaImg_Proc_Cmd
  0001:000EEDA8       memset_0
  0001:000EEDD4       strcmp
@@ -17233,6 +17306,7 @@
  0001:00134FF8       _txe_thread_create
  0001:00135214       _txe_thread_delete
  0001:001352F4       _txe_thread_resume
+ 0001:0013555C       _tx_thread_identify
  0001:001359EC       _txe_thread_suspend
  0001:00135CB4       _txe_mutex_get
  0001:00135D64       _txe_mutex_put
@@ -17240,6 +17314,7 @@
  0001:00136020       _txe_event_flags_set
  0001:00137DC4       AmbaDSP_WaitPreviewStart
  0001:00137E8C       AmbaDSP_GetOpMode
+ 0001:001383E8       pTaskName
  0001:0013971C       nullsub_4
  0001:0013E5F0       AmbaDSP_ImgGetCfaLeakageFilter
  0001:0013ED04       AmbaDSP_ImgGetRgbToYuvMatrix
@@ -17451,13 +17526,16 @@
  0001:001B5ADC       AmbaDSP_ImgGetVinSensorInfo
  0001:001B5C44       ImgWarpCore_GetCalibCtx.isra.3
  0001:001B5D40       ImgWarpCore_GetParamCtx.isra.1
+ 0001:001B62B0       AmbaDSP_WarpCore_SetCalibWarpInfo
  0001:001B6754       ImgWarpCore_CalcActWin
  0001:001B6AC0       ImgWarpCore_CalcDmyWin
  0001:001B6FC8       ImgWarpCore_CalcCfaOutWin
  0001:001B7524       ImgWarpCore_CalcWindowInfo
  0001:001B7670       ImgWarpCore_TuneOutputWinWithoutTinyScaling.isra.7
+ 0001:001B78C0       AmbaDSP_WarpCore_CalcWindowInfo
  0001:001B79FC       AmbaDSP_WarpCore_GetWindowInfo
  0001:001B7AAC       AmbaDSP_WarpCore_CalcDspCawarp
+ 0001:001B7DE0       AmbaDSP_WarpCore_CalcDspWarp
  0001:001B8010       AmbaPLL_GetIdspClk
  0001:001B804C       AmbaPLL_GetDdrClk
  0001:001B8084       AmbaPLL_GetCoreClk
@@ -17500,15 +17578,22 @@
  0001:001F8DA0       DjiUstIsoSet
  0001:001F91E0       DjiUstWbSet
  0001:001F94CC       DjiUstAeMeterModeSet
+ 0001:002022F0       DjiUstModeDialSetCallBack
  0001:00203C74       DjiUstUserSettingsGet
  0001:00203F1C       DjiUstUserSettingsGetNoBlock
+ 0001:00204D64       AmbaPrintk_Disabled
+ 0001:00205CB4       DjiCheckRTCTest
+ 0001:002062A4       aSpi
+ 0001:002062EC       DjiCheckingInit
  0001:0020657C       DjiAgingGetFunItem
  0001:002066C0       DjiAgingRecoverScript
+ 0001:002069CC       DjiAgingCreateBoardFile
  0001:002072E8       DjiAgingOpenResultFile
  0001:00207430       DjiAgingLoadResultFileToBuf
  0001:0020754C       DjiAgingRecoverResultFile
  0001:00207650       DjiAgingCreateCheckFile
  0001:00208328       DjiAging
+ 0001:00208BC4       DjiAging_0
  0001:00209248       DjiAgingTestRecord
  0001:00209460       DjiAgingTaskDelete
  0001:0020957C       AmbaDSP_sub_E80957C
@@ -17545,11 +17630,16 @@
  0001:00217120       DjiCmmStorageTimesIncrease
  0001:00217C10       DjiCmmDoDzoom
  0001:00217CEC       DjiCmmDzoomGuiHandle
+ 0001:002181FC       DjiPushStop
  0001:0021828C       DjiCmmPushTaskEntry
+ 0001:00218E7C       DjiCmmCCapInit
+ 0001:00219194       DjiCmmOsdMutexTry
+ 0001:0021AE1C       DjiCmmPushStateSet
  0001:0021B4C4       DjiCmmCreateOsdTask
  0001:0021BE98       DjiCmmMonAssistTaskEntry
  0001:0021DFC0       str1
  0001:0022A9A8       AmbaIPC_RegisterChannel
+ 0001:0022CF38       EntryArg
  0001:00232F0C       AmbaSysProfile_GetTimeStamp
  0001:00233964       Liveview_SuperViewLoadWarpTable
  0001:00233B48       Liveview_SuperViewReSetupWarpTable
@@ -17578,17 +17668,23 @@
  0001:0023FED4       DjiMsgCaptureParamPush
  0001:00241368       DjiMsgHistogramPush
  0001:00241474       DjiFileInfoPush
+ 0001:00241834       DjiMsgUpdateStatusPush
  0001:00242004       DjiMsgUpdateSoundPush
  0001:0024213C       DjiMsgPushOut
  0001:00242340       DjiUegDm368StreamControl
  0001:00242444       DjiMsgNavigationModeCtrl
  0001:00242550       DjiMsgJoystickSubModeCtrl
+ 0001:00242674       DjiMsgStHditOsdSet
+ 0001:00242850       DjiMsgStHditOsdGet
+ 0001:00242914       DjiMsgStSubtitlesLogSet
+ 0001:00242AC0       DjiMsgStHomeDataSet
  0001:00242DB0       DjiMsgStGimbalOsdGet
  0001:00242E4C       DjiMsgStUpdateSoundSet
  0001:00242F18       DjiMsgStUpdateSoundGet
  0001:00242FC0       DjiMsgStCodeDiscItemSet
  0001:0024328C       DjiMsgStCodeDiscItemGet
  0001:002435DC       DjiMsgStCodeDiscGearSet
+ 0001:002444C0       DjiMsgStSelfTestGet
  0001:00244BFC       DjiMsgStAtvStatusGet
  0001:00244EDC       DjiMsgDeviceVersionGet
  0001:00245804       DjiMsgMultiParamSet
@@ -17726,7 +17822,9 @@
  0001:0027AABC       nullsub_24
  0001:0027EF98       DjiPictureDisplay_Handler
  0001:00291978       DjiCamReverseConfig
+ 0001:00291AAC       DjiCameraReverseHandle
  0001:00292418       DjiXcodingVideoPrivateInfoSet
+ 0001:00295AE8       DjiLedStateSetById
  0001:002987C8       AmbaExceptionHandler
  0001:00298B30       AmbaPLL_SetIdspClk
  0001:0029982C       DjiUegFpgaFinishHandle
@@ -17782,8 +17880,10 @@
  0001:002A2908       DjiUegFwRxTransmitHandle
  0001:002A32D0       DjiUegFwRxFinishHandle
  0001:002A3F70       DjiUegFwUpdateById
+ 0001:002A49C0       DjiUegFwUpdateById_0
  0001:002A5468       DjiUegFwOrderControl
  0001:002A55A0       DjiUegFwUpdateProc
+ 0001:002A58A4       DjiUegGetPacketInfo
  0001:002A59FC       DjiUegPktStageSet
  0001:002A5B0C       DjiUegPktStageGet
  0001:002A5FF0       DjiUegPktSelect
@@ -17800,6 +17900,7 @@
  0001:002A9E98       DjiUegPktUserConfirm
  0001:002AA3EC       DjiUegPktUpdate
  0001:002ABF8C       DjiUegPktUpdateProc
+ 0001:002AC36C       DjiUegUpdateProc
  0001:002AC380       DjiUegUpdateStageInit
  0001:002AC510       DjiUegInit
  0001:002ACAD4       DjiUegTestShowStage
@@ -17866,6 +17967,7 @@
  0001:002CB764       test_hdmi
  0001:002CB784       AmbaTest_RegisterHwTests
  0001:002D0AD8       AppMainTask_RegisterCommands
+ 0001:002D0DAC       imgproc_enableaeb
  0001:002D103C       Capture_Start
  0001:002D1BC8       Capture_RawDataEventHandler
  0001:002D1E10       Capture_YuvDataEventHandler
@@ -17880,6 +17982,7 @@
  0001:002D44F4       DjiExifGenerate
  0001:002D4914       StorageTaskEntry
  0001:002D60D0       AmbaCaptureStorageTask
+ 0001:002D7FE8       VideoTuner_RawCapTaskDelete
  0001:002D9BB0       VideoTuner_VidEncSwitchMode
  0001:002D9DA8       VideoTuner_VidEncStart
  0001:002DA128       VideoTuner_VidEncFeedRaw
@@ -17917,6 +18020,10 @@
  0001:002EE4F0       DjiEntriesCtrlAlloc
  0001:002EE644       DjiQueueCtrLHeadInit
  0001:002EE738       DjiXcodeInit
+ 0001:002F4108       DjiShmDdrTest
+ 0001:002F42C4       DjiShmShmooByte
+ 0001:002F49B0       DjiShmShmooProgram
+ 0001:002F5CE8       DjiShmShmooEntry
  0001:002F6848       nullsub_59
  0001:002F684C       nullsub_32
  0001:002F68A0       nullsub_33
@@ -17960,6 +18067,11 @@
  0001:00327D10       DjiExifGPSEnStatGet
  0001:00327FD8       DjiExifOp_InfoSet
  0001:00329FD4       DjiExifXmpInfoSet
+ 0001:0032D0E8       FirmwareUpdater
+ 0001:0032D468       sd_update_A
+ 0001:0032D47C       sd_update_B
+ 0001:0032D490       FwUpdater_CheckImgHeader
+ 0001:0032D5DC       FwUpdater_ParseFwHeader
  0001:0032DE54       DjiAudioDemuxGetWritePointer
  0001:0032DEE4       DjiAudioDecGetReadPointer
  0001:0032E07C       nullsub_55
@@ -17974,19 +18086,45 @@
  0001:0033340C       nullsub_52
  0001:0033355C       a2316
  0001:00333564       aHttpAmbtwsvn_2
+ 0001:0033FD78       AmbaImageMainAe_SnapDspDgc
  0001:00341E88       nullsub_36
+ 0001:00341EB8       ItunerRawEnc_RawDataEventHandler
+ 0001:00341EF4       ItunerRawEnc_YuvDataEventHandler
+ 0001:00341F30       ItunerRawEnc_JpegDataEventHandler
  0001:003421F8       AppLibStillEnc_IdspParamSetup
+ 0001:0034377C       ItunerRawEnc_TaskCreate
  0001:00344338       AppLib_CalibSiteInit
+ 0001:0034660C       yy_create_buffer
+ 0001:00346798       yyensure_buffer_stack
  0001:003468D0       MyMalloc
+ 0001:00347764       aS_20
+ 0001:00347768       aOk_0
  0001:0034776C       AmbaShell_CmdMalloc
  0001:00347C70       _AmbaTUNE_Check_Mutex_Created
  0001:00347CB0       AmbaTUNE_Init
  0001:00347D64       AmbaTUNE_Change_Parser_Mode
  0001:00347DD4       AmbaTUNE_Save_IDSP
  0001:00347E5C       AmbaTUNE_Load_IDSP
+ 0001:00347EDC       AmbaTUNE_Save_Data
+ 0001:00347F68       AmbaTUNE_Load_Data
  0001:00347FF4       AmbaTUNE_Execute_IDSP
+ 0001:0034807C       AmbaTUNE_Get_SystemInfo
+ 0001:003480FC       AmbaTUNE_Set_SystemInfo
+ 0001:0034817C       AmbaTUNE_Get_AeInfo
+ 0001:003481FC       AmbaTUNE_Set_AeInfo
+ 0001:0034827C       AmbaTUNE_Get_WbSimInfo
+ 0001:003482FC       AmbaTUNE_Set_WbSimInfo
  0001:0034837C       AmbaTUNE_Get_ItunerInfo
  0001:00348458       atof
+ 0001:0034BE00       udc_driver_init
+ 0001:0034BF3C       AmbaUSB_Drv_WaitIsrOperationEmpty
+ 0001:0034C014       udc_add_isr_operation_ex
+ 0001:0034C0B4       AmbaUSB_Drv_EndpointMapCreate
+ 0001:0034C22C       AmbaUSB_Drv_EndpointMapGet
+ 0001:0034C298       udc_dma_memory_allocate
+ 0001:0034C8DC       udc_dma_memory_destroy
+ 0001:0034CCB4       udc_isr_task_entry
+ 0001:0034CF90       udc_isr_task_destroy
  0001:0034DB98       a_ux_system_ini
  0001:0034DBB0       aUx_mutex
  0001:0034DBBC       aErrorSCanTCrea
@@ -17999,11 +18137,13 @@
  0001:0034E8D8       aSCanTFindInter
  0001:0034E900       aUsbxBufferSize
  0001:0034E930       aUx_transfer__0
+ 0001:0034E950       ux_slave_class_uvc
  0001:0034E9FC       aUsbxFailedTo_4
  0001:0034EA38       aUsbxFinishIn_0
  0001:0034EA60       aAmbausbd_uvc_r
  0001:0034EA74       aSFailedToCle_0
  0001:0034EA94       aSUvcClassClean
+ 0001:0034EC68       ux_slave_class_hid
  0001:0034ED30       aUdc_hid_defaul
  0001:0034ED50       aSStart_
  0001:0034ED60       aReportidD
@@ -18017,11 +18157,14 @@
  0001:0034EE5C       aAmbausbd_hid_r
  0001:0034EE70       aSFailedToClear
  0001:0034EE98       aHidClassClearS
+ 0001:0034F750       ux_slave_class_storage
  0001:0034FA50       ClassPicbridge_Entry
  0001:0034FAE4       AmbaUSB_Class_Pictbridge_Start
  0001:0034FB50       AmbaUSB_Class_Pictbridge_Reset
  0001:00350138       MtpReadCacheThreadEntry
  0001:003505DC       AmbaUSB_Class_Mtp_Start
+ 0001:00350D80       ux_slave_class_cdc_acm
+ 0001:00350DEC       AmbaUSB_Class_CDC_ACM_Reset
  0001:00350E40       aFailedToInit_4
  0001:00350E70       aFinishInitUs_3
  0001:00350E90       aAmbausb_clas_5
@@ -18039,6 +18182,7 @@
  0001:003511F0       aSFailedToCle_2
  0001:0035121C       aCdcAcmClassC_0
  0001:00351460       aFailedToInit_1
+ 0001:00351500       ux_slave_class_simple
  0001:00351594       aSimpleClassIsA
  0001:003515B0       aSimpleClassIsD
  0001:003515D0       aUsbxFailedTo_5
@@ -18057,6 +18201,10 @@
  0001:00361230       aCcn
  0001:00362B9C       AppLibBLC_UTFunc
  0001:00363858       AppLibWB_UTFunc
+ 0001:00363C50       AppLibCalibWarp_SelectWarpTable
+ 0001:00364850       AppLibCalibWarp_Init
+ 0001:003649AC       AmpUTCalibWarp_GenWarpFromSpec
+ 0001:00366A64       pCalibWarpInfo
  0001:00369410       AppLibWarp_UTFunc
  0001:0036D004       AppLibCA_UTFunc
  0001:00373DB8       a2191
@@ -18069,9 +18217,16 @@
  0001:00375794       aHttpAmbtwsvn_5
  0001:003757D4       a2316_0
  0001:0037BA3C       AmbaDSP_ImgGetWbGain
+ 0001:0037D608       _USBHdlr_Get_SHPA_ASF
+ 0001:0037D8E8       _USBHdlr_Get_SHPB
+ 0001:0037DD94       _USBHdlr_Set_BIN_PKG
+ 0001:0037E44C       _USBHdlr_Set_White_Balance
+ 0001:0037E54C       _USBHdlr_Set_SHPA_ASF
+ 0001:0037E830       _USBHdlr_Set_SHPB
  0001:0037EBB8       aAfhm
  0001:0037F0D4       a0369BehKQnT
  0001:0037F4D4       _TextHdlr_Get_Driver_Letter
+ 0001:0037F6B0       _TextHdlr_Lookup_Tuning_Mode
  0001:00386658       a_ux_utility_pr
  0001:00386670       aSCanTCreatePri
  0001:00386698       aSCanTCreateP_0
@@ -18431,9 +18586,31 @@
  0001:004638F4       ambsh_date_usage
  0001:00463918       ambsh_date
  0001:004647A4       nullsub_40
+ 0001:00465134       ambsh_nftl_read_sector
+ 0001:004655C0       ambsh_nftl_write_sector
+ 0001:00465954       ambsh_nftl_verify_sector
  0001:00465F14       ambsh_nftl_pread
  0001:004664C0       ambsh_nftl_pwrite
+ 0001:00466954       aStg_0
+ 0001:00466980       aM
+ 0001:00466984       aMe
+ 0001:00466988       aS_21
+ 0001:0046698C       aInc
+ 0001:00466990       aDec_1
+ 0001:00466994       ambsh_nftl_erase
+ 0001:00466B10       ambsh_nftl_erase_lba
  0001:00466CFC       ambsh_nftl_thruput
+ 0001:00467340       ambsh_nftl_init
+ 0001:00467534       ambsh_nftl_deinit
+ 0001:00467708       ambsh_nftl_get_status
+ 0001:004679D0       ambsh_nftl_reclaim_bb
+ 0001:00467C40       ambsh_nftl_bbm
+ 0001:00468160       ambsh_nftl_log2phy
+ 0001:00468544       ambsh_nftl_phy2log
+ 0001:004688F0       ambsh_nftl_used_lba
+ 0001:00468B6C       ambsh_nftl_unused_pba
+ 0001:00468DC0       ambsh_nftl_usage
+ 0001:00468E4C       ambsh_nftl
  0001:0046BE88       nullsub_61
  0001:0046C1D0       nullsub_62
  0001:0046C8D4       nullsub_41
@@ -18445,6 +18622,57 @@
  0001:0047FCB0       aI_0
  0001:0047FCB2       aO_0
  0001:0047FCC4       aUAd
+ 0001:004815D0       _ux_pictbridge_xml_function_input_getcapability_capability_layouts
+ 0001:00481700       _ux_pictbridge_xml_function_input_getcapability_capability_papertypes
+ 0001:0048178C       _ux_pictbridge_xml_function_input_notifydevicestatus_capabilitychanged
+ 0001:004817DC       _ux_pictbridge_xml_function_input_notifydevicestatus_disconnectenable
+ 0001:0048182C       _ux_pictbridge_xml_function_input_notifydevicestatus_dpsprintservicestatus
+ 0001:00481888       _ux_pictbridge_xml_function_input_notifydevicestatus_errorreason
+ 0001:0048192C       _ux_pictbridge_xml_function_input_notifydevicestatus_errorstatus
+ 0001:00481988       _ux_pictbridge_xml_function_input_notifydevicestatus_jobendreason
+ 0001:004819FC       _ux_pictbridge_xml_function_input_notifydevicestatus_newjobok
+ 0001:00481A4C       _ux_pictbridge_xml_function_input_startjob
+ 0001:00481AA8       _ux_pictbridge_xml_function_input_startjob_jobconfig_cropping
+ 0001:00481AD8       _ux_pictbridge_xml_function_input_startjob_jobconfig_dateprint
+ 0001:00481B08       _ux_pictbridge_xml_function_input_startjob_jobconfig_filenameprint
+ 0001:00481B38       _ux_pictbridge_xml_function_input_startjob_jobconfig_filetype
+ 0001:00481B68       _ux_pictbridge_xml_function_input_startjob_jobconfig_fixedsize
+ 0001:00481B98       _ux_pictbridge_xml_function_input_startjob_jobconfig_imageoptimize
+ 0001:00481BC8       _ux_pictbridge_xml_function_input_startjob_jobconfig_layout
+ 0001:00481BF8       _ux_pictbridge_xml_function_input_startjob_jobconfig_papersize
+ 0001:00481C28       _ux_pictbridge_xml_function_input_startjob_jobconfig_papertype
+ 0001:00481C58       _ux_pictbridge_xml_function_input_startjob_jobconfig_quality
+ 0001:00481CEC       _ux_pictbridge_xml_function_input_startjob_printinfo_copies
+ 0001:00481DB4       _ux_pictbridge_xml_function_input_startjob_printinfo_copyid
+ 0001:00481DE8       _ux_pictbridge_xml_function_input_startjob_printinfo_croppingarea
+ 0001:00481F28       _ux_pictbridge_xml_function_input_startjob_printinfo_date
+ 0001:00481F68       _ux_pictbridge_xml_function_input_startjob_printinfo_fileid
+ 0001:00481F9C       _ux_pictbridge_xml_function_input_startjob_printinfo_filename
+ 0001:00481FDC       _ux_pictbridge_xml_function_input_startjob_printinfo_filepath
+ 0001:0048201C       _ux_pictbridge_xml_function_input_startjob_printinfo_prtpid
+ 0001:00482050       _ux_pictbridge_xml_function_null
+ 0001:00482058       _ux_pictbridge_xml_function_output_getcapability_capability_croppings
+ 0001:00482178       _ux_pictbridge_xml_function_output_getcapability_capability_dateprints
+ 0001:0048219C       _ux_pictbridge_xml_function_output_getcapability_capability_filenameprints
+ 0001:004821C0       _ux_pictbridge_xml_function_output_getcapability_capability_filetypes
+ 0001:004821E4       _ux_pictbridge_xml_function_output_getcapability_capability_fixedsizes
+ 0001:00482208       _ux_pictbridge_xml_function_output_getcapability_capability_imageoptimizes
+ 0001:0048222C       _ux_pictbridge_xml_function_output_getcapability_capability_layouts
+ 0001:00482250       _ux_pictbridge_xml_function_output_getcapability_capability_papersizes
+ 0001:00482270       _ux_pictbridge_xml_function_output_getcapability_capability_papertypes
+ 0001:00482290       _ux_pictbridge_xml_function_output_getcapability_capability_qualities
+ 0001:004822B0       _ux_pictbridge_xml_function_output_getdevicestatus_capabilitychanged
+ 0001:00482300       _ux_pictbridge_xml_function_output_getdevicestatus_disconnectenable
+ 0001:00482350       _ux_pictbridge_xml_function_output_getdevicestatus_dpsprintservicestatus
+ 0001:004823AC       _ux_pictbridge_xml_function_output_getdevicestatus_errorreason
+ 0001:00482450       _ux_pictbridge_xml_function_output_getdevicestatus_errorstatus
+ 0001:004824AC       _ux_pictbridge_xml_function_output_getdevicestatus_jobendreason
+ 0001:00482520       _ux_pictbridge_xml_function_output_getdevicestatus_newjobok
+ 0001:00482570       _ux_pictbridge_xml_function_output_result
+ 0001:004825A0       _ux_pictbridge_xml_function_root_dps
+ 0001:00482634       _ux_pictbridge_xml_function_root_input
+ 0001:00482644       _ux_pictbridge_xml_function_root_output
+ 0001:00482654       _ux_pictbridge_xml_function_root_xml
  0001:00483018       notifyDeviceStatus
  0001:00483740       _tx_thread_shell_entry
  0001:00483810       _tx_thread_timeout
@@ -18767,75 +18995,6 @@
  0001:007BD43C       _TestSpiConfig
  0001:007BD448       _TestSpiProtocol
  0001:007BD51C       aBbt23tbb
- 0001:007BD638       aDBinsH01_mctf_
- 0001:007BD684       aDBinsH02_mctf_
- 0001:007BD6D0       aDBinsH03_mctf_
- 0001:007BD71C       aDBinsH04_mctf_
- 0001:007BD768       aDBinsH05_mctf_
- 0001:007BD7B4       aDBinsH06_mctf_
- 0001:007BD800       aDBinsH07_mctf_
- 0001:007BD84C       aDBinsH08_mctf_
- 0001:007BD930       aDBinsH11_mctf_
- 0001:007BD97C       aDBinsH12_mctf_
- 0001:007BD9C8       aDBinsH13_sec_c
- 0001:007BDA60       aDBinsH15_sec_c
- 0001:007BDAAC       aDBinsH16_cc_re
- 0001:007BDAF8       aDBinsH17_cc_3d
- 0001:007BDB44       aDBinsH18_cc_3d
- 0001:007BDC28       aDBinsH21_hot_t
- 0001:007BDC74       aDBinsH22_dark_
- 0001:007BDCC0       aDBinsH23_hot_t
- 0001:007BDD0C       aDBinsH24_local
- 0001:007BDD58       aDBinsH25_chrom
- 0001:007BDDA4       aDBinsH26_chrom
- 0001:007BDDF0       aDBinsH27_chrom
- 0001:007BDE3C       aDBinsH28_lnl_t
- 0001:007BDE88       aDBinsH29_fir1_
- 0001:007BDED4       aDBinsH30_fir2_
- 0001:007BDF6C       aDBinsH32_fir1_
- 0001:007BDFB8       aDBinsH33_fir2_
- 0001:007BE004       aDBinsH34_corin
- 0001:007BE050       aDBinsH35_fir1_
- 0001:007BE09C       aDBinsH36_fir2_
- 0001:007BE0E8       aDBinsH37_corin
- 0001:007BE134       aDBinsH38_fir1_
- 0001:007BE180       aDBinsH39_fir2_
- 0001:007BE1CC       aDBinsH40_corin
- 0001:007BE218       aDBinsH41_fir1_
- 0001:007BE264       aDBinsH42_fir2_
- 0001:007BE2B0       aDBinsH43_corin
- 0001:007BE2FC       aDBinsH44_fir1_
- 0001:007BE348       aDBinsH45_fir2_
- 0001:007BE394       aDBinsH46_corin
- 0001:007BE3E0       aDBinsH47_fir1_
- 0001:007BE42C       aDBinsH48_fir2_
- 0001:007BE478       aDBinsH49_corin
- 0001:007BE4C4       aDBinsH50_fir1_
- 0001:007BE510       aDBinsH51_fir2_
- 0001:007BE55C       aDBinsH52_corin
- 0001:007BE5A8       aDBinsH53_3d_le
- 0001:007BE5F4       aDBinsH54_3d_le
- 0001:007BE640       aDBinsH55_3d_le
- 0001:007BE68C       aDBinsH56_vigne
- 0001:007BE6D8       aDBinsH57_ca_wa
- 0001:007BE724       aDBinsH58_ca_wa
- 0001:007BE770       aDBinsH59_geo_w
- 0001:007BE7BC       aDBinsH60_geo_w
- 0001:007BE808       aDBinsH61_fpn_m
- 0001:007BE854       aDBinsH62_fpn_l
- 0001:007BE8A0       aDBinsH63_3d_le
- 0001:007BE8EC       aDBinsH64_3d_le
- 0001:007BE938       aDBinsH65_3d_le
- 0001:007BE984       aDBinsH66_3d_le
- 0001:007BE9D0       aDBinsL01_mctfs
- 0001:007BEA1C       aDBinsL02_ccreg
- 0001:007BEA68       aDBinsL03_cc3du
- 0001:007BEAB4       aDBinsL04_darkt
- 0001:007BEB00       aDBinsL05_hotth
- 0001:007BEB4C       aDBinsL06_fir1u
- 0001:007BEB98       aDBinsL07_fir2u
- 0001:007BEBE4       aDBinsL08_corin
- 0001:007BEC30       aDBinsL09_lnlto
  0001:007BF150       a2014AmbarellaU
  0001:007F41E0       aUx_slave_cla_8
  0001:007F41F8       aUx_slave_cla_5
@@ -18844,73 +19003,44 @@
  0001:007F4238       aUx_slave_cla_9
  0001:007F4250       aUx_slave_cla_7
  0001:007F4264       aExpressl
- 0001:007F4270       aUsbxStorageDev
+ 0001:007F4270       _ux_system_slave_class_storage_product_id
  0001:007F4284       a2001
  0001:007F4318       aCopyrightC1996
  0001:007F4380       _tx_thread_system_state
- 0001:007F4384       aFiletype_0
- 0001:007F44C4       aFileids
- 0001:007F45B4       aFileid_0
- 0001:007F46F4       aBytesread
- 0001:007F4794       aFileid_1
- 0001:007F4834       aBytesread_0
- 0001:007F48D4       aFileid_2
- 0001:007F4974       aBytesread_1
- 0001:007F4A14       aFileid_3
- 0001:007F4AB4       aFiletype_1
- 0001:007F4C44       aBasepathid
- 0001:007F4D34       aBasepathid_0
- 0001:007F4E24       aDpsprintservic
- 0001:007F50A4       aPrtpid
- 0001:007F5284       aAbortstyle
- 0001:007F5324       aQuality_0
- 0001:007F5694       aCroppingarea
- 0001:007F5964       aJobconfig_0
- 0001:007F59B4       aPrintinfo_0
- 0001:007F5A54       aDpsprintserv_0
- 0001:007F5CD4       aPrtpid_0
- 0001:007F5EB4       aQualities_0
- 0001:007F6274       aCapability_0
- 0001:007F6314       aQualities_1
- 0001:007F66D4       aCapability_1
- 0001:007F6774       aDpsversions_0
- 0001:007F6954       aPrintserviceav
- 0001:007F69A4       aDpsversions_1
- 0001:007F69F4       aVendorname_0
- 0001:007F6A44       aVendorspecif_0
- 0001:007F6A94       aProductname_0
- 0001:007F6AE4       aSerialno_0
- 0001:007F6B84       aConfigurepri_0
- 0001:007F6BD4       aGetcapabilit_0
- 0001:007F6C24       aGetdevicesta_0
- 0001:007F6C74       aGetjobstatus
- 0001:007F6CC4       aStartjob_0
- 0001:007F6D64       aContinuejob_0
- 0001:007F6DB4       aNotifyjobsta_0
- 0001:007F6EA4       aGetfileinfo
- 0001:007F6EF4       aGetfile
- 0001:007F6F44       aGetpartialfile
- 0001:007F6F94       aGetfilelist
- 0001:007F6FE4       aGetthumb
- 0001:007F7084       aResult_0
- 0001:007F70D4       aConfigurepri_1
- 0001:007F7124       aGetcapabilit_1
- 0001:007F7174       aGetdevicesta_1
- 0001:007F71C4       aGetjobstatus_0
- 0001:007F7214       aStartjob_1
- 0001:007F7264       aAbortjob_0
- 0001:007F72B4       aContinuejob_1
- 0001:007F7304       aNotifyjobsta_1
- 0001:007F7354       aNotifydevice_0
- 0001:007F73A4       aGetfileid
- 0001:007F73F4       aGetfileinfo_0
- 0001:007F7444       aGetfile_0
- 0001:007F7494       aGetpartialfi_0
- 0001:007F74E4       aGetfilelist_0
- 0001:007F7534       aGetthumb_0
- 0001:007F7674       aInput_0
- 0001:007F76C4       aOutput_2
- 0001:007F77A4       aPimaClientStor
+ 0001:007F4384       _ux_pictbridge_xml_item_input_getfilelist
+ 0001:007F44C4       _ux_pictbridge_xml_item_output_getfilelist
+ 0001:007F45B4       _ux_pictbridge_xml_item_input_getpartialfile
+ 0001:007F46F4       _ux_pictbridge_xml_item_output_getpartialfile
+ 0001:007F4794       _ux_pictbridge_xml_item_input_getfile
+ 0001:007F4834       _ux_pictbridge_xml_item_output_getfile
+ 0001:007F48D4       _ux_pictbridge_xml_item_input_getthumb
+ 0001:007F4974       _ux_pictbridge_xml_item_output_getthumb
+ 0001:007F4A14       _ux_pictbridge_xml_item_input_getfileinfo
+ 0001:007F4AB4       _ux_pictbridge_xml_item_output_getfileinfo
+ 0001:007F4C44       _ux_pictbridge_xml_item_input_getfileid
+ 0001:007F4D34       _ux_pictbridge_xml_item_output_getfileid
+ 0001:007F4E24       _ux_pictbridge_xml_item_input_notifydevicestatus
+ 0001:007F50A4       _ux_pictbridge_xml_item_input_notifyjobstatus
+ 0001:007F5284       _ux_pictbridge_xml_item_input_abortjob
+ 0001:007F5324       _ux_pictbridge_xml_item_input_startjob_jobconfig
+ 0001:007F5694       _ux_pictbridge_xml_item_input_startjob_printinfo
+ 0001:007F5964       _ux_pictbridge_xml_item_input_startjob
+ 0001:007F5A54       _ux_pictbridge_xml_item_output_getdevicestatus
+ 0001:007F5CD4       _ux_pictbridge_xml_item_output_getjobstatus
+ 0001:007F5EB4       _ux_pictbridge_xml_item_input_getcapability_capability
+ 0001:007F6274       _ux_pictbridge_xml_item_input_getcapability
+ 0001:007F6314       _ux_pictbridge_xml_item_output_getcapability_capability
+ 0001:007F66D4       _ux_pictbridge_xml_item_output_getcapability
+ 0001:007F6774       _ux_pictbridge_xml_item_input_configureprintservice
+ 0001:007F6954       _ux_pictbridge_xml_item_output_configureprintservice
+ 0001:007F6B84       _ux_pictbridge_xml_item_input
+ 0001:007F7084       _ux_pictbridge_xml_item_output
+ 0001:007F75D4       _ux_pictbridge_xml_item_root
+ 0001:007F7764       aDdiscvry_dps
+ 0001:007F7774       aHdiscvry_dps
+ 0001:007F7784       aDrequest_dps
+ 0001:007F7794       aDrsponse_dps
+ 0001:007F77A4       aPimaClientStorageVolume
  0001:007F77C0       aPimaClientSt_0
  0001:007F77DC       aXmlVersion1_0
  0001:007F77F0       aDpsXmlnsHttpWw
@@ -18961,6 +19091,7 @@
  0001:007F7A40       aXmlns
  0001:007F7A48       aHttpWww_cipa_j
  0002:00001CB0       aStgStg2IdxPrfC
+ 0002:00001CDC       ambsh_nftl_list
  0002:00003868       aMicrosoft_com1
  0002:00006940       aSyvzsyvz_0
  0002:00021BA0       aSyvzsyvz
@@ -18975,5 +19106,6 @@
  0002:000245EC       a98765443210_
  0002:000247EC       aSg
  0002:00025120       a98765443210__0
+ 0004:00000000       unused_after_end
 
 Program entry point at 0001:00000000
