@@ -7540,8 +7540,16 @@
  0001:00072CA4       aDji_misSDetect
  0001:00072CE8       aDji_misSCamera
  0001:00072D20       aDjilog2sd
+ 0001:00072D3C       aFc300xVer_c
+ 0001:00072D4C       aFc300sVer_b
  0001:00072D68       aFc300c
  0001:00072D74       aFc350_1
+ 0001:00072D80       aFc300x_5
+ 0001:00072D8C       aFc350_2
+ 0001:00072D98       aFc350z
+ 0001:00072DA4       aFc550
+ 0001:00072DB0       aCv900
+ 0001:00072DBC       aFc300s_0
  0001:00072E24       aSMicronMt29f2g
  0001:00072FA4       aVitualButtonTD
  0001:00072FEC       aVitualButton_0
@@ -8028,6 +8036,9 @@
  0001:00077C98       aDji_shlSShel_1
  0001:00077CBC       aShow_5
  0001:00077CC4       aShowShmooInfoT
+ 0001:00077CE8       aClr
+ 0001:00077CEC       aClearShmooInfoTDjiShmClr_
+ 0001:00077D10       aDbg_0
  0001:00077D14       aSetShmooDebugT
  0001:00077D48       aDjishminfoget
  0001:00077D58       aDji_shmSGetMna
@@ -8076,6 +8087,12 @@
  0001:000783DC       aDjishmtestshow
  0001:000783EC       aDjishmtestdebu
  0001:000783FC       aDji_shmSArgnum
+ 0001:00078448       aSd
+ 0001:0007844C       aGps
+ 0001:00078450       aVideo_8
+ 0001:00078458       aDcf
+ 0001:0007845C       aCap
+ 0001:00078460       aBpc
  0001:00078464       aPrint_fs_dev_i
  0001:00078490       aSdTotalCluster
  0001:000784A8       aSdUnusedCluste
@@ -8113,6 +8130,11 @@
  0001:000787BC       aMemory
  0001:000787C4       aUnknown_3
  0001:000787CC       aSdCardTypeS
+ 0001:000787E0       aClass0
+ 0001:000787E8       aClass2
+ 0001:000787F0       aClass4
+ 0001:000787F8       aClass6
+ 0001:00078800       aClass10
  0001:0007880C       aSdCardSpeedS
  0001:00078820       aSdUhsValueD
  0001:00078834       aSdStatusD
@@ -17223,8 +17245,11 @@
  0001:000E1DF4       AmbaImg_CtrlFunc_Get_Mem_CtrlAddr
  0001:000E1EB0       AmbaImg_CtrlFunc_MemMgr_Init
  0001:000E1F94       AmbaImg_CtrlFunc_Param_Init
+ 0001:000E6B70       aS_23
+ 0001:000E6B74       AmbaPrintTask_Entry
  0001:000E7170       AmbaPrintk_Flush
  0001:000E71A0       AmbaPrintk
+ 0001:000E72EC       AmbaPrintTask_Init
  0001:000E7554       AmbaPrint
  0001:000E7AB4       pStackBase
  0001:000E7AB8       EntryFunction
@@ -17260,10 +17285,11 @@
  0001:000F49BC       DSP_ImgCoreProcessToneCurve
  0001:000F85C4       AmbaImg_AeTask_MemMgr_Init
  0001:000F868C       AmbaImg_AeTask
- 0001:000F8748       AmbaImgAeCtrlTask
+ 0001:000F8748       AmbaImg_AeCtrlTask_Init
  0001:000F8884       AmbaImg_AwbTask_MemMgr_Init
  0001:000F894C       AmbaImg_AwbTask
  0001:000F8A08       AmbaImg_AwbTask_Init
+ 0001:000F8C18       AmbaImg_AdjTask
  0001:000F8CD4       AmbaImg_AdjTask_Init
  0001:0010ED7C       Awb_Control_Init
  0001:0011E5EC       AmbaFS_fopen
@@ -17312,6 +17338,8 @@
  0001:00135D64       _txe_mutex_put
  0001:00135DD0       _txe_event_flags_create
  0001:00136020       _txe_event_flags_set
+ 0001:001378E4       AmbaDSP_MsgDispatchTask
+ 0001:00137910       AmbaDSP_MsgDispatchTask_Init
  0001:00137DC4       AmbaDSP_WaitPreviewStart
  0001:00137E8C       AmbaDSP_GetOpMode
  0001:001383E8       pTaskName
@@ -17458,6 +17486,8 @@
  0001:00164D24       aInf
  0001:00164D28       aInf_0
  0001:00164D2C       a0
+ 0001:00165838       AmbaDSP_ArmCommTask
+ 0001:00165AD4       AmbaDSP_ArmCommTask_Init
  0001:0017623C       AmbaDSP_ImgGetCfaNoiseFilter
  0001:00177B44       nullsub_10
  0001:0017E100       _tx_thread_system_preempt_check
@@ -17560,8 +17590,11 @@
  0001:001ED998       nullsub_20
  0001:001EF8C4       pf_setupfsi
  0001:001F04B8       AmbaRTSL_TimerGet
+ 0001:001F0C50       AmbaLink_Entry
  0001:001F0D9C       nullsub_21
  0001:001F0DAC       AmbaRPC_MSG_Init
+ 0001:001F0E18       AmbaLink_Init
+ 0001:001F1020       AmbaLink_Boot
  0001:001F1798       AmbaSPI_Transfer
  0001:001F464C       _tx_execution_thread_enter
  0001:001F46BC       _tx_execution_thread_exit
@@ -17578,12 +17611,15 @@
  0001:001F8DA0       DjiUstIsoSet
  0001:001F91E0       DjiUstWbSet
  0001:001F94CC       DjiUstAeMeterModeSet
+ 0001:00201684       DjiUstTakeEffect
  0001:002022F0       DjiUstModeDialSetCallBack
  0001:00203C74       DjiUstUserSettingsGet
  0001:00203F1C       DjiUstUserSettingsGetNoBlock
+ 0001:002046F0       DjiUstInit
  0001:00204D64       AmbaPrintk_Disabled
  0001:00205CB4       DjiCheckRTCTest
  0001:002062A4       aSpi
+ 0001:002062A8       DjiCheckingEntry
  0001:002062EC       DjiCheckingInit
  0001:0020657C       DjiAgingGetFunItem
  0001:002066C0       DjiAgingRecoverScript
@@ -17595,6 +17631,8 @@
  0001:00208328       DjiAging
  0001:00208BC4       DjiAging_0
  0001:00209248       DjiAgingTestRecord
+ 0001:00209364       DjiVideoCheckingEntry
+ 0001:002093FC       DjiVideoCheckingInit
  0001:00209460       DjiAgingTaskDelete
  0001:0020957C       AmbaDSP_sub_E80957C
  0001:002096F4       AmbaBufferInit
@@ -17602,6 +17640,7 @@
  0001:0020A3B8       DjiAdcVoltageGet
  0001:0020A4D4       DjiAdcUserStringGet
  0001:0020A5EC       DjiAdcScanInfoGet
+ 0001:0020A7B0       DjiHardwareVerInit
  0001:0020A9D0       DjiHardwareVersionGet
  0001:0020AA88       DjiFirmWareVersionGet
  0001:0020AB34       DjiModelNameAreaGet
@@ -17614,9 +17653,16 @@
  0001:0020B718       DjiRomDataMiscSave
  0001:0020BA84       DjiRomDataMiscLoad
  0001:0020C484       DjiRomDataMiscInit
- 0001:0020D2D8       DjiLog2Sd
+ 0001:0020C6C8       DjiMiscInit
+ 0001:0020C7C4       DjiRTCInit
+ 0001:0020C9B8       DjiLinuxRelatedPartsInit
+ 0001:0020CE7C       DjiLog2Sd
+ 0001:0020D2D8       DjiLog2Sd_Init
+ 0001:0020D410       Dji_sub_E80D410
  0001:0020D694       DjiInitStage
  0001:0020D808       DjiSysBootUpTaskDelete
+ 0001:0020D938       DjiBootUp
+ 0001:0020DA2C       DjiMainInit
  0001:00211D24       BeepPlaybackTask
  0001:00211DD8       AmpBeepAudioOutputGetLofCB
  0001:00211E7C       AmpBeep_Init
@@ -17638,6 +17684,8 @@
  0001:0021B4C4       DjiCmmCreateOsdTask
  0001:0021BE98       DjiCmmMonAssistTaskEntry
  0001:0021DFC0       str1
+ 0001:0021E6F0       DjiCmmInit
+ 0001:0021F578       DjiCmmRebootInit
  0001:0022A9A8       AmbaIPC_RegisterChannel
  0001:0022CF38       EntryArg
  0001:00232F0C       AmbaSysProfile_GetTimeStamp
@@ -17778,6 +17826,7 @@
  0001:00266A4C       DjiMsgSendTask
  0001:00266FB0       DjiMsgHandleTask
  0001:00268E1C       DjiMsgTaskInit
+ 0001:00269330       DjiMsgInit
  0001:00269B2C       a37Cgkosw_ggggg
  0001:00269FF0       DjiMsgTestCmdUT
  0001:0026AE54       DjiMsgTestFlagCtrl
@@ -17817,13 +17866,17 @@
  0001:00274680       AmbaMovieRecord_TaskOpen
  0001:0027487C       AmbaMovieRecord_TaskClose
  0001:00275CA4       DjiSdOp_SDFormat
+ 0001:00276E1C       DjiSdOpInit
  0001:00279864       DjiDCF_GetFileType
  0001:0027AA60       nullsub_23
  0001:0027AABC       nullsub_24
  0001:0027EF98       DjiPictureDisplay_Handler
+ 0001:00285484       DjiPlaybackInit
+ 0001:0028FB0C       DjiVideoInit
  0001:00291978       DjiCamReverseConfig
  0001:00291AAC       DjiCameraReverseHandle
  0001:00292418       DjiXcodingVideoPrivateInfoSet
+ 0001:00295848       DjiLedInit
  0001:00295AE8       DjiLedStateSetById
  0001:002987C8       AmbaExceptionHandler
  0001:00298B30       AmbaPLL_SetIdspClk
@@ -18008,9 +18061,11 @@
  0001:002DE640       aSOwnerError
  0001:002E6FD0       a2
  0001:002E6FD6       aO
+ 0001:002E81CC       DjiAaaInit
  0001:002E9EA8       DjiTrackingInit
  0001:002E9F7C       DjiTrackingEnable
  0001:002EA37C       DjiTrackingSetStartPos
+ 0001:002EB73C       DjiShlTrackingTest
  0001:002EBAD8       DjiXcodeExeEntryEnQueue
  0001:002EBB68       DjiXcodeExeEntryDeQueue
  0001:002EC704       DjiMovieTranscodeConfig
@@ -18020,10 +18075,17 @@
  0001:002EE4F0       DjiEntriesCtrlAlloc
  0001:002EE644       DjiQueueCtrLHeadInit
  0001:002EE738       DjiXcodeInit
+ 0001:002F18DC       DjiGimbalRotateInit
+ 0001:002F2160       DjiPanoInit
+ 0001:002F3920       DjiShlGimbalTest
+ 0001:002F3BB4       DjiShlPanoTest
  0001:002F4108       DjiShmDdrTest
  0001:002F42C4       DjiShmShmooByte
  0001:002F49B0       DjiShmShmooProgram
  0001:002F5CE8       DjiShmShmooEntry
+ 0001:002F5FD4       DjiShlPrintShmoo
+ 0001:002F613C       DjiShlClearShmoo
+ 0001:002F6160       DjiShlSetShmooDbgTest
  0001:002F6848       nullsub_59
  0001:002F684C       nullsub_32
  0001:002F68A0       nullsub_33
@@ -18064,8 +18126,10 @@
  0001:00317B20       AmbaMovMuxer_Destroy
  0001:00321324       AmbaShell_MemAlloc
  0001:003265D4       DjiDNG_LocInfoGet
+ 0001:003278FC       DjiDNGInit
  0001:00327D10       DjiExifGPSEnStatGet
  0001:00327FD8       DjiExifOp_InfoSet
+ 0001:003291C8       DjiExifInit
  0001:00329FD4       DjiExifXmpInfoSet
  0001:0032D0E8       FirmwareUpdater
  0001:0032D468       sd_update_A
@@ -18434,15 +18498,49 @@
  0001:0044B020       AppMtpd_CbObjectPropListGet
  0001:0044B400       AmbaUSB_Class_Pictbridge_SetInfo
  0001:0044B46C       Simple_VendorRequest
+ 0001:0044BBE4       DjiShlPrintFwHwVersion
+ 0001:0044BC98       DjiShlSystemPrintLevel
+ 0001:0044BF10       DjiShlPrintFrequency
+ 0001:0044C4F0       DjiShlUserSettingsTest
+ 0001:0044C514       DjiShlMessageTest
+ 0001:0044C538       DjiShlUegTest
+ 0001:0044C55C       DjiShlShmooTest
+ 0001:0044C580       DjiShlLEDTest
+ 0001:0044C5A4       DjiShlEncryptTest
+ 0001:0044C5C8       DjiShlPlaybackTest
+ 0001:0044C5EC       DjiShlAfInterface
+ 0001:0044C610       DjiShlPrintTemperature
+ 0001:0044C714       DjiShlSuspendDSP
+ 0001:0044C980       DjiShlResumeDSP
+ 0001:0044CA6C       DjiShlSwitchMode
+ 0001:0044CB4C       DjiShl3aTest
+ 0001:0044CB5C       DjiShlSystemReboot
+ 0001:0044CB88       DjiShlPrintMemConfig
+ 0001:0044CB98       DjiShlMiscROMTest
+ 0001:0044CC6C       DjiShlFirmwareUpdateTest
+ 0001:0044CE0C       DjiShlConsoleControl
+ 0001:0044CE58       DjiShlPrintResetReason
+ 0001:0044CE68       DjiShlCircularBufTest
+ 0001:0044D088       DjiShlAutoRebootCtrl
+ 0001:0044D1BC       DjiShlFlushLog
  0001:0044D1E0       DjiShlHdmiReconnect
  0001:0044D2D8       DjiShlWdgCtrl
+ 0001:0044D514       DjiShlVodeoOSDTest
+ 0001:0044D5F4       DjiShlMemoryTest
+ 0001:0044D770       DjiShlStorageTest
  0001:0044D77C       DjiShlRename
+ 0001:0044D8F4       DjiShlAfRgbCount
+ 0001:0044D990       DjiShlAfCfaCount
+ 0001:0044DA24       DjiShlAfInfo
  0001:0044DB04       DjiShlLogTest
+ 0001:0044DD64       DjiShlUpdateMAC
+ 0001:0044DE74       DjiShlAfZone
  0001:0044E0D4       DjiShlCmdInit
  0001:0044E2A8       Print_FS_Dev_INFO
  0001:0044E474       Print_SD_Factoryinfo
  0001:0044E4E0       PrintSDInfo
  0001:0044E74C       DjiTestSD
+ 0001:0044ECD8       DjiTestGPSUsage
  0001:0044EE2C       DjiTestGPS
  0001:0044F7B0       DjiFileExistChk
  0001:0044F9C8       DjiTestVideo
@@ -18990,6 +19088,30 @@
  0001:007B4D40       aFc300x_2
  0001:007B8324       aDji_app_0
  0001:007B9FA4       aJ
+ 0001:007BA63A       aFc300x_6
+ 0001:007BA67A       aPfc300xfw3_bin
+ 0001:007BA6F6       aEsc0
+ 0001:007BA736       aPesc0fw3_bin
+ 0001:007BA7B2       aEsc1
+ 0001:007BA7F2       aPesc1fw3_bin
+ 0001:007BA86E       aEsc2
+ 0001:007BA8AE       aPesc2fw3_bin
+ 0001:007BA92A       aEsc3
+ 0001:007BA96A       aPesc3fw3_bin
+ 0001:007BA9E6       aMcapp
+ 0001:007BAA26       aPmcappfw3_bin
+ 0001:007BAAA2       aMcldr
+ 0001:007BAAE2       aPmcldrfw3_bin
+ 0001:007BAB5E       aMvom4
+ 0001:007BAB9E       aPmvom4fw3_bin
+ 0001:007BAC1A       aMvom0
+ 0001:007BAC5A       aPmvom0fw3_bin
+ 0001:007BACD6       aCenter_0
+ 0001:007BAD16       aPcenterfw3_bin
+ 0001:007BAD92       a1765
+ 0001:007BADD2       aP1765fw3_bin
+ 0001:007BAE4E       aFpga
+ 0001:007BAE8E       aPfpgafw3_bin
  0001:007BC634       aCa9_0
  0001:007BC654       aCode
  0001:007BD43C       _TestSpiConfig
