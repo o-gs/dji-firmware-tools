@@ -3,7 +3,7 @@
  0001:00000000 000803620H .text                  CODE
  0002:00000000 0000D3800H .data                  DATA
  0003:00000000 000400000H .bss.noinit            BSS
- 0004:00000000 0013291C0H .bss                   BSS
+ 0004:00000000 0053291C0H .bss                   BSS
 
 
   Address         Publics by Value
@@ -77,6 +77,15 @@
  0001:000286EC       aDspWorkAreaD
  0001:00028700       aPhotoLiveview
  0001:00028710       aAmbadsp_stillc
+ 0001:00028738       aMoveRec
+ 0001:00028744       aAmbadsp_videorecmemD
+ 0001:0002876C       aStillPlayback
+ 0001:0002877C       aAmbadsp_stillpbmemD
+ 0001:000287A4       aVideoPlayback
+ 0001:000287B4       aAmbadsp_videopbmemD
+ 0001:000287DC       aXcode_2
+ 0001:000287E4       aAmbadsp_videoxcodememD
+ 0001:00028810       aTuing
  0001:00028818       aAmbadsp_videot
  0001:00028844       aBufferForUserc
  0001:00028864       aAmbadsp_tota_0
@@ -90,6 +99,15 @@
  0001:000289F4       aBppUNbppU
  0001:00028A1C       aNoDataPrgbdata
  0001:00028A44       aTbppUAfdatafv2
+ 0001:00028AB8       a4k2kLiveview
+ 0001:00028AC8       aRawCapture
+ 0001:00028AD4       aVideoTuner
+ 0001:00028AE0       a4k2kMctf
+ 0001:00028AEC       aXcodeTo720p
+ 0001:00028AFC       aXcodeToWvga
+ 0001:00028B0C       aXcodeToWqvga
+ 0001:00028B1C       a12m_4000x3000
+ 0001:00028B2C       a8m_3264x2448
  0001:00028B3C       a5m_2592x1944
  0001:00028B4C       a9m_4000x2250
  0001:00028B5C       a6m_3264x1836
@@ -228,6 +246,8 @@
  0001:0002A1A4       aBaoDbgClearH_0
  0001:0002A1D8       aErrCreatingG_a
  0001:0002A204       aAmbacapturesto
+ 0001:0002A21C       aBurstStop
+ 0001:0002A228       aNumcaptureD
  0001:0002A238       aCurrentModeDoe
  0001:0002A25C       aCapture_start
  0001:0002A270       aActiveRawHDVD
@@ -387,6 +407,9 @@
  0001:0002B614       aDbgcaptest_tim
  0001:0002B634       aDbgcaptest_dzo
  0001:0002B654       aStop_4
+ 0001:0002B65C       aDcim
+ 0001:0002B664       aMedia
+ 0001:0002B66C       aDji_
  0001:0002B674       aDjidcf_dmfmode
  0001:0002B688       aSDjiustuserset
  0001:0002B6B8       aDjidcf_dmffids
@@ -678,6 +701,7 @@
  0001:0002DDCC       aItunerrawenc_j
  0001:0002DDF0       aStillRawEncode
  0001:0002DE18       aStillRawEnco_0
+ 0001:0002DE40       aItunerS
  0001:0002DE4C       aItunerrawenc_i
  0001:0002DE64       aInitializeImag
  0001:0002DE84       aInitializeIm_0
@@ -876,12 +900,19 @@
  0001:0002F824       aSlock
  0001:0002F82C       aMutex
  0001:0002F834       aRpmsg
+ 0001:0002F83C       aRpc
+ 0001:0002F840       aRfs
+ 0001:0002F844       aTrans_0
+ 0001:0002F84C       aUsb_owner
  0001:0002F858       aTest_4
  0001:0002F860       aSupportedTestC
  0001:0002F87C       aSlockNLockN
  0001:0002F894       aSlockNUnlockN
  0001:0002F8B0       aSlockNLockAndT
  0001:0002F8E0       aTrySpinlockD
+ 0001:0002F8F4       aDone_1
+ 0001:0002F8FC       aSpinlockDIsLocked
+ 0001:0002F914       aSpinlockDIsUnlocked
  0001:0002F930       aMutexNTimeoutL
  0001:0002F954       aMutexNUnlockN
  0001:0002F970       aMutexNLockAndT
@@ -1003,6 +1034,10 @@
  0001:000305D4       aRpcSendChnidLe
  0001:000305F8       aRpcSendsynChni
  0001:00030620       aRpcShow
+ 0001:00030630       aTest_12
+ 0001:00030638       aSupportedTransCommands
+ 0001:00030654       aTransRpc
+ 0001:00030664       aTransRpmsg
  0001:00030678       aReadUByteLog
  0001:0003068C       aSetDebugFlag0x
  0001:000306A4       aProduceAListTr
@@ -1026,6 +1061,10 @@
  0001:000308F4       aDji_test
  0001:00030900       aEcho_cortex
  0001:0003090C       aSAmbaipc_all_4
+ 0001:00030928       aA9_cc_reg_bin
+ 0001:00030938       aImg_default_0
+ 0001:00030944       aAaa_default_0
+ 0001:00030950       aAdj_still_default_00
  0001:00030968       aAdj_still_de_0
  0001:00030980       aAdj_hiso_sti_0
  0001:0003099C       aAdj_video_de_0
@@ -1094,6 +1133,12 @@
  0001:000310BC       aAmbaiqparami_2
  0001:000310F0       aAmbaiqparami_3
  0001:00031114       aImx117_a9
+ 0001:00031120       a0_9_138
+ 0001:000311AC       aBt1120
+ 0001:000311B4       aSend_0
+ 0001:000311BC       aParamsizeD
+ 0001:000311CC       aParam_0
+ 0001:000311D8       a02x_2
  0001:000311E0       aMsg_blkInfo
  0001:000311F0       aPriorityX
  0001:00031200       aSrcmqidX
@@ -1182,7 +1227,6 @@
  0001:00032000       aPrevcfaXNowX
  0001:00032018       aPrevrgbXNowX
  0001:00032030       aErrLoadMultiCh
- 0001:00032068       aVF
  0001:00032098       aNoLcdLiveview
  0001:000320A8       aLiveview_super
  0001:000320C8       aSDGetNonCatchM
@@ -1213,6 +1257,7 @@
  0001:000324CC       aDjiustuserse_5
  0001:00032510       aNtsc
  0001:00032518       aVideomodetable
+ 0001:00032540       aDji_printOriginalHdmivide
  0001:00032578       aDji_printAdjus
  0001:00032618       aAmbaliveview_s
  0001:00032658       aStartSensorCon
@@ -1226,6 +1271,7 @@
  0001:00032758       aSAmba_tv_outpu
  0001:00032774       aSFramerate_tim
  0001:00032790       aAmbaliveview_0
+ 0001:000327B0       aMcD
  0001:000327B8       aInAmbapll_seto
  0001:000327D4       aOutAmbapll_set
  0001:000327F4       aAllocateFovRaw
@@ -1381,6 +1427,7 @@
  0001:00033A9C       aSReceiveAudioG
  0001:00033AC4       aMovieplaybac_1
  0001:00033AE0       aAmbafs_fseek_0
+ 0001:00033B0C       aSEof
  0001:00033B20       aMovieplaybac_2
  0001:00033B38       aSEndOfFile
  0001:00033B48       aSAudioEnd
@@ -1485,7 +1532,9 @@
  0001:000346C8       a1AudioQueueFul
  0001:000346DC       a1FreeSpaceIsnT
  0001:000346F8       aMovierecordt_0
+ 0001:00034710       a1ForceOut
  0001:00034720       a1BufferOrQueue
+ 0001:0003473C       aStopRecord
  0001:0003474C       aDjiPrintRecSto
  0001:00034780       aM1TotalEncoded
  0001:000347BC       a1OverThreshold
@@ -1627,6 +1676,9 @@
  0001:00035EA0       aSLDThisIsAnErr
  0001:00035EC0       aAmbamovmuxer_w
  0001:00035ED4       aSBufferFull
+ 0001:00035F20       aCAutoexec_ash
+ 0001:00035F30       aDAutoexec_ash
+ 0001:00035F40       aCUcodeOrccode_bin
  0001:00035F58       aCUcodeOrcme_bi
  0001:00035F6C       aCUcodeOrcmdxf_
  0001:00035F84       aCUcodeDefault_
@@ -1733,24 +1785,97 @@
  0001:000373EC       aWbAmbaBlackLev
  0001:00037410       aWarpWarpCalibr
  0001:0003742C       aAmbacalib_test
+ 0001:00037440       aSCmdS
+ 0001:0003744C       aSite_init
+ 0001:00037458       aWarp_1
  0001:00037460       aDji_cal_mgrRet
+ 0001:00037478       aInit_8
+ 0001:00037480       aInitImageKernel
+ 0001:00037494       aSinfo
+ 0001:0003749C       aVinSensorInfo
+ 0001:000374AC       aBlc
  0001:000374B4       aBlackLevelCorr
+ 0001:000374D4       aWb
+ 0001:000374D8       aWbGainSetup
+ 0001:000374E8       aR2y
  0001:000374F0       aRgbToYuvSetup
+ 0001:00037504       aCc
+ 0001:00037508       aColorCorrectionSetup
+ 0001:00037520       aTone
+ 0001:00037528       aToneCurveSetup
+ 0001:0003753C       aDpc
  0001:00037544       aDynamicBadPixe
+ 0001:00037568       aFpn
  0001:00037570       aFpnCorrectionS
+ 0001:00037588       aAa
+ 0001:0003758C       aAntialisingSetup
+ 0001:000375A0       aLk
+ 0001:000375A4       aLeakageFilterSetup
+ 0001:000375BC       aCnf
  0001:000375C4       aCfaNoiseFilter
  0001:000375E4       aVignetteCompen
  0001:00037600       aLe
  0001:00037604       aLocalExposureS
+ 0001:0003761C       aCs
+ 0001:00037620       aChromaScaleSetup
+ 0001:00037634       aCmf
  0001:0003763C       aChromaMedianFi
+ 0001:00037658       aCc_reg
+ 0001:00037660       aColorCorrectionRegisterSetup
+ 0001:00037680       aShp
  0001:00037688       aHarpeningFilte
+ 0001:000376A0       aDms
+ 0001:000376A8       aDemosaicSetup
+ 0001:000376B8       aMctf_1
+ 0001:000376C0       aMctfConfigurationSetupVideo
+ 0001:000376E4       aCdnr_0
+ 0001:000376EC       aColorDependentNoiseReductionSet
+ 0001:00037714       aAsf
  0001:0003771C       aAdvanceSpatial
+ 0001:0003773C       aDefblc
+ 0001:00037744       aDzoom
+ 0001:0003774C       aDzoomSetup
+ 0001:00037758       aWarp_2
+ 0001:00037760       aWarpSetup
+ 0001:0003776C       aCa
+ 0001:00037770       aCawarpSetup
+ 0001:00037780       aStat
+ 0001:00037788       aAaaStatisticsSetup
+ 0001:000377A0       aFloat
+ 0001:000377A8       aFloatingAaaStatisticsSetup
+ 0001:000377C8       aIdsp
+ 0001:000377D0       aIdspDebugUtilities
+ 0001:000377E8       aRawenc
+ 0001:000377F0       aRawEncode
+ 0001:000377FC       aRaw
+ 0001:00037804       aRawCapture_0
+ 0001:00037810       aLowiso
+ 0001:00037818       aLowIsoVerificationFunction
+ 0001:00037838       aItuner
+ 0001:00037840       aItunerVerificationFunction
+ 0001:00037860       aMsc_0
+ 0001:00037868       aConfigMsc
+ 0001:00037874       aClean_0
+ 0001:0003787C       aCf
+ 0001:00037880       aChromaFilterSetup
+ 0001:00037894       aMode_3
+ 0001:0003789C       aTestModeSetup
+ 0001:000378AC       aHighiso
  0001:000378B8       aHighIsoVerific
+ 0001:000378D8       aIdspcfg
  0001:000378E4       aIdspConfigurat
  0001:000378FC       aRash
  0001:00037904       aRecursiveAmbaS
+ 0001:0003791C       aFlow
+ 0001:00037924       aChangeModeAndChangeOption
+ 0001:00037944       aVrawenc
  0001:00037950       aVideoRawEncode
+ 0001:00037964       aShow_cmd
+ 0001:00037970       aShowImageParametersOfInputComma
+ 0001:00037998       aStat_ex
  0001:000379A4       aAaaStatisticsE
+ 0001:000379C4       aGmv
+ 0001:000379CC       aGmvSetup
  0001:000379D8       aTest_is2_initT
  0001:00037A04       aTest_is2_initA
  0001:00037A38       aTest_is2_ini_0
@@ -1976,7 +2101,12 @@
  0001:0003AC2C       aDD
  0001:0003AC38       aTest2xDzoom
  0001:0003AC48       aTest2xDzoomWit
+ 0001:0003AC70       aTest1xDzoom
+ 0001:0003AC80       aTestOnly2xDzoomWithWarpEffect
+ 0001:0003ACA4       aExtraEffectRotate
  0001:0003ACC0       aCalcGridNumb_0
+ 0001:0003ACF8       aPDD
+ 0001:0003AD04       aExtraEffect
  0001:0003AD34       aTmpchannelinde
  0001:0003AD4C       aImgmode_batchi
  0001:0003AD64       aNoThisPattern
@@ -2422,8 +2552,15 @@
  0001:0003EC7C       aAmbaimg_testcm
  0001:0003EC94       aMyTestAmbaimg_
  0001:0003ECB0       aS1
+ 0001:0003ECB4       aS2
+ 0001:0003ECB8       aRec
+ 0001:0003ECBC       aDel
+ 0001:0003ECC0       aMode_4
+ 0001:0003ECC8       aUp
+ 0001:0003ECCC       aDown_0
  0001:0003ECD4       aLeft
  0001:0003ECDC       aRight
+ 0001:0003ECE4       aOk_1
  0001:0003ECE8       aNotInRecordMod
  0001:0003ED00       aMaximumCardFul
  0001:0003ED24       aDonTHaveEnough
@@ -2929,7 +3066,13 @@
  0001:0004287C       a_vignette_gain
  0001:00042890       a_warp_table_bi
  0001:000428A0       a_ca_table_bin
+ 0001:000428B0       a_cc_reg_bin
+ 0001:000428BC       a_cc_3d_bin
+ 0001:000428C8       a_first_sharpen_table_bin
  0001:000428E4       a_final_sharpen
+ 0001:00042900       a_asf_table_bin
+ 0001:00042910       a_hiso_asf_table_bin
+ 0001:00042924       a_hiso_high_asf_table_bin
  0001:00042940       a_hiso_low_asf_
  0001:00042958       a_hiso_med1_asf
  0001:00042974       a_hiso_med2_asf
@@ -3293,6 +3436,15 @@
  0001:00047E64       aSharpeningbGet
  0001:00047E74       aExposurecontro
  0001:00047E88       aBlacklevelcorr
+ 0001:00047EA4       aTonecurveGet
+ 0001:00047EB4       aRgbtoyuvmatrixGet
+ 0001:00047EC8       aWhitebalancegainsGet
+ 0001:00047EE0       aDgainsaturaionlevelGet
+ 0001:00047EF8       aLocalexposureGet
+ 0001:00047F0C       aChromascaleGet
+ 0001:00047F1C       aFpncorrectionGet
+ 0001:00047F30       aBadpixelcorrectionGet
+ 0001:00047F48       aCfaleakagefilterGet
  0001:00047F60       aAntialiasingfi
  0001:00047F78       aCfanoisefilt_0
  0001:00047F8C       aChromamedian_0
@@ -3300,7 +3452,9 @@
  0001:00047FB0       aColordepende_0
  0001:00047FD0       aChromanoisefil
  0001:00047FE8       aConfigaaacontr
+ 0001:00048000       aDemosaicGet
  0001:00048010       aMismatchgr_gbG
+ 0001:00048024       aJpgGet
  0001:0004802C       aDefault
  0001:00048034       a_usbhdlr_set_b
  0001:0004804C       aBin_pkgSend
@@ -3321,6 +3475,9 @@
  0001:000481A4       aImg_mode_previ
  0001:000481B8       aItuner_fileSen
  0001:000481CC       aBlacklevelco_0
+ 0001:000481E8       aTonecurveSend
+ 0001:000481F8       aRgbtoyuvmatrixSend
+ 0001:0004820C       aDgainsaturaionlevelSend
  0001:00048228       aLocalexposureS
  0001:0004823C       aBadpixelcorrec
  0001:00048254       aCfaleakagefi_0
@@ -3331,8 +3488,14 @@
  0001:000482C4       aColordepende_1
  0001:000482E8       aChromanoisef_0
  0001:00048300       aConfigaaacon_0
+ 0001:00048318       aDemosaicSend
+ 0001:00048328       aMismatchgr_gbSend
+ 0001:0004833C       aFpnSend
  0001:00048348       aFpnMapAddr0x_8
+ 0001:00048360       aVignetteSend
+ 0001:00048370       aWarpSend
  0001:0004837C       aChromaAberrati
+ 0001:00048394       aRawDataSend
  0001:000483A4       aReceiveAmageco
  0001:000483C0       aP10xXP20xXP30x
  0001:00048414       aLengthD_1
@@ -3363,6 +3526,7 @@
  0001:000486A0       aCustom
  0001:000486A8       aStream
  0001:000486B0       aSimple
+ 0001:000486B8       aMixStorage
  0001:000486C4       aUnknown
  0001:000486CC       aUsb_deviceclas
  0001:000486E4       aUsbClassDS_
@@ -3388,6 +3552,10 @@
  0001:000489BC       aAppcdcacmd_tas
  0001:000489CC       aSStart_3
  0001:000489D8       aSBulkSendTimeo
+ 0001:000489F4       aSEnd_6
+ 0001:00048A00       aAppcdcacmd_rcvtask
+ 0001:00048A14       aSBulkRecvTimeout_0xX
+ 0001:00048A34       aAppcdcacmd_start
  0001:00048A48       aErrorSCanNot_0
  0001:00048A78       aErrorSCanNot_1
  0001:00048AAC       aCreatUsbcdcacm
@@ -3436,6 +3604,7 @@
  0001:000490F4       aAmbahidreports
  0001:0004910C       aMixstorage_all
  0001:00049128       aErrorSCanNot_8
+ 0001:0004915C       aCWiniso_iso
  0001:0004916C       aCanNotOpenS
  0001:0004917C       aFileCopyErrorE
  0001:000491B0       aReadLba0xXWith
@@ -3624,7 +3793,10 @@
  0001:0004A920       aSCanTRemoveFol
  0001:0004A954       aSCanTRemoveFil
  0001:0004A988       aSPathSHandle0x
+ 0001:0004A9B0       aOpenS
  0001:0004A9B8       aFailedToOpenS
+ 0001:0004A9CC       aCloseFile
+ 0001:0004A9D8       aCloseFileFail
  0001:0004A9E8       aAmbausb_clas_0
  0001:0004AA20       aSimple_vendorr
  0001:0004AA38       aSRequest_in0xX
@@ -3695,6 +3867,8 @@
  0001:0004B2B4       aBmpFileSaved
  0001:0004B2C4       aBufindexDXDYDV
  0001:0004B2EC       aPbpcbufBuffera
+ 0001:0004B308       aNotAllocated
+ 0001:0004B318       aBadpixel_1
  0001:0004B324       aReserved_0
  0001:0004B33C       aBpcPageInforma
  0001:0004B368       aPageD
@@ -3868,6 +4042,17 @@
  0001:0004CBF4       aSensormodeSens
  0001:0004CC1C       aDebug_6
  0001:0004CC24       aSensor_status
+ 0001:0004CC38       aOutputInfoStartxD
+ 0001:0004CC50       aOutputInfoStartyD
+ 0001:0004CC68       aOutputInfoWidthD
+ 0001:0004CC80       aOutputInfoHeightD
+ 0001:0004CC98       aInputInfoStartxD
+ 0001:0004CCB0       aInputInfoStartyD
+ 0001:0004CCC8       aInputInfoWidthD
+ 0001:0004CCE0       aInputInfoHeightD
+ 0001:0004CCF8       aModeD_4
+ 0001:0004CD04       aFlipD_4
+ 0001:0004CD10       aHFactornumD
  0001:0004CD24       aHFactordenD
  0001:0004CD38       aVFactornumD
  0001:0004CD4C       aVFactordenD
@@ -3875,6 +4060,7 @@
  0001:0004CD6C       aTestFunctionFo
  0001:0004CDAC       aOffsetDSectorn
  0001:0004CDC8       aSensor_flip
+ 0001:0004CDD8       aChannelDModeDFlipD
  0001:0004CDFC       aTCalBpcSensor_
  0001:0004CE38       aAe_target
  0001:0004CE44       aEnable_5
@@ -4001,6 +4187,14 @@
  0001:0004E254       aAmbafs_fclos_1
  0001:0004E26C       aAmbafs_fopenSC
  0001:0004E28C       aDefineGrid_w
+ 0001:0004E2A0       a5d_3
+ 0001:0004E2A8       aDefineGrid_h
+ 0001:0004E2BC       aInt32Calibcaheaderspec64
+ 0001:0004E2DC       a0xX_1
+ 0001:0004E2E4       a5d_4
+ 0001:0004E2EC       aInt16Calib_ca_table_specHorizon
+ 0001:0004E330       aInt16Calib_ca_table_specVertica
+ 0001:0004E374       aAmbafs_fcloseFail_3
  0001:0004E38C       aAmbafs_fclos_2
  0001:0004E3A0       aGenCaSucceed_
  0001:0004E3B0       aTest_3
@@ -4132,6 +4326,7 @@
  0001:0004F0E8       aCVigcal_gain_g
  0001:0004F0FC       aCVigcal_gain_0
  0001:0004F110       aCVigcal_gain_b
+ 0001:0004F124       aCVigcal_info
  0001:0004F138       aVignetteGeomet
  0001:0004F158       aVignetteGeom_0
  0001:0004F178       aVignetteGeom_1
@@ -4175,6 +4370,7 @@
  0001:0004F99C       aDisable3a_0
  0001:0004F9A8       aVignetteCali_7
  0001:0004F9F0       aCVigcal_raw
+ 0001:0004FA00       aWb_0
  0001:0004FA04       aAmputcalibvi_0
  0001:0004FA20       aAmpvig_utDum_0
  0001:0004FA54       aStartToDoRaw_0
@@ -8463,14 +8659,15 @@
  0001:0007B568       aDji_transSLU_5
  0001:0007B58C       aDji_transSLU_6
  0001:0007B5C4       aTranssrv_msg_0
+ 0001:0007B5DC       aDji_transSLU_7
  0001:0007B610       aTranssrv_msg_1
  0001:0007B624       aDji_transSLUNu
  0001:0007B648       aDji_transSLUFr
  0001:0007B670       aTranssrv_datab
- 0001:0007B688       aDji_transSLU_7
+ 0001:0007B688       aDji_transSLU_8
  0001:0007B6C0       aDji_transSLUTr
  0001:0007B704       aTranssrv_dat_0
- 0001:0007B71C       aDji_transSLU_8
+ 0001:0007B71C       aDji_transSLU_9
  0001:0007B740       aDji_transSLUDa
  0001:0007B768       aTranssrv_dat_1
  0001:0007B784       aTranssrv_dat_2
@@ -8481,169 +8678,168 @@
  0001:0007B84C       aTranssrv_dat_5
  0001:0007B868       aTranssrv_dat_6
  0001:0007B888       aDji_transSLURe
- 0001:0007B8C4       aDji_transSLU_9
+ 0001:0007B8C4       aDji_transSL_10
  0001:0007B900       aTranssrv_dat_7
- 0001:0007B920       aDji_transSL_10
+ 0001:0007B920       aDji_transSL_11
  0001:0007B948       aTranssrv_queue
- 0001:0007B95C       aDji_transSL_11
+ 0001:0007B95C       aDji_transSL_12
  0001:0007B988       aTranssrv_que_0
  0001:0007B99C       aDji_transSLUQu
  0001:0007B9C0       aTranssrv_que_1
- 0001:0007B9D4       aDji_transSL_12
+ 0001:0007B9D4       aDji_transSL_13
  0001:0007B9F8       aTranssrv_windo
- 0001:0007BA0C       aDji_transSL_13
+ 0001:0007BA0C       aDji_transSL_14
  0001:0007BA40       aTranssrv_win_4
+ 0001:0007BA58       aDji_transSLUWi
  0001:0007BA7C       aTranssrv_win_0
- 0001:0007BA90       aDji_transSLUWi
- 0001:0007BABC       aDji_transSL_14
- 0001:0007BAE0       aDji_transSL_15
+ 0001:0007BA90       aDji_transSL_15
+ 0001:0007BABC       aDji_transSL_16
+ 0001:0007BAE0       aDji_transSL_17
  0001:0007BB24       aTranssrv_win_1
- 0001:0007BB38       aDji_transSL_16
- 0001:0007BB5C       aDji_transSL_17
+ 0001:0007BB38       aDji_transSL_18
+ 0001:0007BB5C       aDji_transSL_19
  0001:0007BB88       aTranssrv_win_2
- 0001:0007BBA0       aDji_transSL_18
+ 0001:0007BBA0       aDji_transSL_20
  0001:0007BBDC       aSearchSeqUU
  0001:0007BBF4       aTranssrv_win_3
- 0001:0007BC08       aDji_transSL_19
- 0001:0007BC30       aDji_transSL_20
+ 0001:0007BC08       aDji_transSL_21
+ 0001:0007BC30       aDji_transSL_22
  0001:0007BC68       aTranssrv_recvd
- 0001:0007BC7C       aDji_transSL_21
+ 0001:0007BC7C       aDji_transSL_23
  0001:0007BCB4       aDji_transSLUGe
  0001:0007BCE0       aDji_transSLUDe
  0001:0007BD08       aDji_transSLUDj
- 0001:0007BD3C       aDji_transSL_22
+ 0001:0007BD3C       aDji_transSL_24
  0001:0007BD70       aDji_transSLUAm
- 0001:0007BDA4       aDji_transSL_23
- 0001:0007BDD4       aDji_transSL_24
+ 0001:0007BDA4       aDji_transSL_25
+ 0001:0007BDD4       aDji_transSL_26
  0001:0007BE08       aTranssrv_recvm
- 0001:0007BE1C       aDji_transSL_25
- 0001:0007BE54       aDji_transSL_26
+ 0001:0007BE1C       aDji_transSL_27
+ 0001:0007BE54       aDji_transSL_28
  0001:0007BE80       aTranssrv_sends
- 0001:0007BE98       aDji_transSL_27
- 0001:0007BED4       aDji_transSL_28
+ 0001:0007BE98       aDji_transSL_29
+ 0001:0007BED4       aDji_transSL_30
  0001:0007BF04       aTranssrv_setst
+ 0001:0007BF1C       aDji_transSL_31
+ 0001:0007BF4C       aDji_transSLUSe
  0001:0007BF7C       aTranssrv_sendm
- 0001:0007BFBC       aDji_transSL_32
+ 0001:0007BF90       aDji_transSL_32
+ 0001:0007BFBC       aDji_transSL_33
  0001:0007BFEC       aTranssrv_sendd
- 0001:0007C000       aDji_transSLUSe
- 0001:0007C038       aDji_transSL_29
- 0001:0007C064       aDji_transSL_30
- 0001:0007C090       aDji_transSL_31
+ 0001:0007C000       aDji_transSL_34
+ 0001:0007C038       aDji_transSL_35
+ 0001:0007C064       aDji_transSL_36
+ 0001:0007C090       aDji_transSL_37
  0001:0007C0C4       aTranssrv_sendf
  0001:0007C0D8       aTranssrv_set_0
+ 0001:0007C0FC       aDji_transSL_38
  0001:0007C12C       aSetBandWidthCo
  0001:0007C154       aBandWidthUCont
  0001:0007C178       aTranssrv_setli
- 0001:0007C194       aDji_transSL_33
+ 0001:0007C194       aDji_transSL_39
  0001:0007C1C4       aSetDebugFlag_0
  0001:0007C1DC       aTranssrv_resen
- 0001:0007C1F4       aDji_transSL_34
- 0001:0007C220       aDji_transSL_35
- 0001:0007C25C       aDji_transSL_36
- 0001:0007C288       aDji_transSL_37
- 0001:0007C2C8       aDji_transSL_38
+ 0001:0007C1F4       aDji_transSL_40
+ 0001:0007C220       aDji_transSL_41
+ 0001:0007C25C       aDji_transSL_42
+ 0001:0007C288       aDji_transSL_43
+ 0001:0007C2C8       aDji_transSL_44
  0001:0007C2F4       aTranssrv_res_0
- 0001:0007C30C       aDji_transSL_39
- 0001:0007C338       aDji_transSL_40
+ 0001:0007C30C       aDji_transSL_45
+ 0001:0007C338       aDji_transSL_46
  0001:0007C364       aDji_transSLUSu
- 0001:0007C390       aDji_transSL_41
+ 0001:0007C390       aDji_transSL_47
  0001:0007C3BC       aTranssrv_dores
- 0001:0007C3D0       aDji_transSL_42
- 0001:0007C3F0       aDji_transSL_43
- 0001:0007C430       aDji_transSL_44
- 0001:0007C45C       aDji_transSL_45
- 0001:0007C488       aDji_transSL_46
+ 0001:0007C3D0       aDji_transSL_48
+ 0001:0007C3F0       aDji_transSL_49
+ 0001:0007C430       aDji_transSL_50
+ 0001:0007C45C       aDji_transSL_51
+ 0001:0007C488       aDji_transSL_52
  0001:0007C4B0       aDji_transSLUOf
- 0001:0007C4D8       aDji_transSL_47
- 0001:0007C520       aDji_transSL_48
- 0001:0007C548       aDji_transSL_49
- 0001:0007C578       aDji_transSL_50
- 0001:0007C5A4       aDji_transSL_51
- 0001:0007C5D8       aDji_transSL_52
- 0001:0007C610       aDji_transSL_53
- 0001:0007C644       aDji_transSL_55
- 0001:0007C670       aDji_transSL_56
- 0001:0007C6A0       aDji_transSL_54
+ 0001:0007C4D8       aDji_transSL_53
+ 0001:0007C520       aDji_transSL_54
+ 0001:0007C548       aDji_transSL_55
+ 0001:0007C578       aDji_transSL_56
+ 0001:0007C5A4       aDji_transSL_57
+ 0001:0007C5D8       aDji_transSL_58
+ 0001:0007C610       aDji_transSL_59
+ 0001:0007C644       aDji_transSL_60
+ 0001:0007C670       aDji_transSL_61
+ 0001:0007C6A0       aDji_transSL_62
  0001:0007C6C8       aDji_transSLUId
  0001:0007C6F4       aDji_transSLUUU
- 0001:0007C720       aDji_transSL_57
- 0001:0007C750       aDji_transSL_58
- 0001:0007C77C       aDji_transSL_59
- 0001:0007C7AC       aDji_transSL_60
+ 0001:0007C720       aDji_transSL_63
+ 0001:0007C750       aDji_transSL_64
+ 0001:0007C77C       aDji_transSL_65
+ 0001:0007C7AC       aDji_transSL_66
  0001:0007C7F0       aItemSizeUError
- 0001:0007C818       aDji_transSL_61
+ 0001:0007C818       aDji_transSL_67
  0001:0007C844       aTranssrv_sendp
+ 0001:0007C85C       aDji_transSL_68
  0001:0007C880       aTranssrv_senda
+ 0001:0007C898       aDji_transSL_69
  0001:0007C8BC       aTranssrv_getjp
  0001:0007C8D4       aDji_transSLUOp
- 0001:0007C900       aDji_transSL_62
- 0001:0007C92C       aDji_transSL_63
+ 0001:0007C900       aDji_transSL_70
+ 0001:0007C92C       aDji_transSL_71
  0001:0007C968       aDji_transSLUJp
  0001:0007C998       aDji_transSLUEx
  0001:0007C9DC       aDji_transSLUIf
  0001:0007CA24       aDji_transSLUJu
  0001:0007CA5C       aDji_transSLUFi
  0001:0007CAA4       aDji_transSLUTi
- 0001:0007CAD4       aDji_transSL_64
+ 0001:0007CAD4       aDji_transSL_72
  0001:0007CB04       aDji_transSLUCa
- 0001:0007CB3C       aDji_transSL_65
+ 0001:0007CB3C       aDji_transSL_73
  0001:0007CB78       aDji_transSLUTh
  0001:0007CBB8       aTranssrv_get_0
  0001:0007CBD0       aDji_transSLUFo
- 0001:0007CBFC       aDji_transSL_66
- 0001:0007CC30       aDji_transSL_67
+ 0001:0007CBFC       aDji_transSL_74
+ 0001:0007CC30       aDji_transSL_75
  0001:0007CC70       aDji_transSLUMp
  0001:0007CCB4       aDji_transSLUSc
  0001:0007CCF4       aTranssrv_getdn
  0001:0007CD0C       aDji_transSLUDn
  0001:0007CD34       aTranssrv_get_1
- 0001:0007CD4C       aDji_transSL_68
- 0001:0007CD84       aDji_transSL_69
- 0001:0007CDB4       aDji_transSL_70
- 0001:0007CDE4       aDji_transSL_71
+ 0001:0007CD4C       aDji_transSL_76
+ 0001:0007CD84       aDji_transSL_77
+ 0001:0007CDB4       aDji_transSL_78
+ 0001:0007CDE4       aDji_transSL_79
  0001:0007CE10       aTranssrv_getth
  0001:0007CE28       aDji_transSLUSN
- 0001:0007CE58       aDji_transSL_72
+ 0001:0007CE58       aDji_transSL_80
  0001:0007CE88       aCMiscThm_0
- 0001:0007CE98       aDji_transSL_73
+ 0001:0007CE98       aDji_transSL_81
  0001:0007CECC       aDji_transSLUUn
  0001:0007CF00       aTranssrv_getsc
- 0001:0007CF18       aDji_transSL_74
+ 0001:0007CF18       aDji_transSL_82
  0001:0007CF4C       aTranssrv_msgch
  0001:0007CF60       aDji_transSLUMe
- 0001:0007CF94       aDji_transSL_75
- 0001:0007CFCC       aDji_transSL_76
- 0001:0007CFFC       aDji_transSL_77
- 0001:0007D034       aDji_transSL_78
- 0001:0007D068       aDji_transSL_79
+ 0001:0007CF94       aDji_transSL_83
+ 0001:0007CFCC       aDji_transSL_84
+ 0001:0007CFFC       aDji_transSL_85
+ 0001:0007D034       aDji_transSL_86
+ 0001:0007D068       aDji_transSL_87
  0001:0007D098       aTranssrv_getfi
- 0001:0007D0B0       aDji_transSL_80
- 0001:0007D0D8       aDji_transSL_81
- 0001:0007D110       aDji_transSL_82
- 0001:0007D13C       aDji_transSL_83
- 0001:0007D168       aDji_transSL_84
- 0001:0007D1B0       aDji_transSL_85
- 0001:0007D1E0       aDji_transSL_86
+ 0001:0007D0B0       aDji_transSL_88
+ 0001:0007D0D8       aDji_transSL_89
+ 0001:0007D110       aDji_transSL_90
+ 0001:0007D13C       aDji_transSL_91
+ 0001:0007D168       aDji_transSL_92
+ 0001:0007D1B0       aDji_transSL_93
+ 0001:0007D1E0       aDji_transSL_94
  0001:0007D210       aDji_transSLUFa
  0001:0007D264       aDji_transSLUCl
- 0001:0007D288       aDji_transSL_87
- 0001:0007D2AC       aDji_transSL_88
+ 0001:0007D288       aDji_transSL_95
+ 0001:0007D2AC       aDji_transSL_96
  0001:0007D2EC       aDji_transSLUSi
- 0001:0007D334       aDji_transSL_89
- 0001:0007D374       aDji_transSL_90
+ 0001:0007D334       aDji_transSL_97
+ 0001:0007D374       aDji_transSL_98
  0001:0007D3AC       aTranssrv_endfi
  0001:0007D3EC       aTranssrv_sen_1
  0001:0007D510       aTranssrv_getli
- 0001:0007D528       aDji_transSL_91
- 0001:0007D558       aDji_transSL_92
  0001:0007D578       aDji_transSLUIn
- 0001:0007D5A8       aDji_transSL_94
- 0001:0007D5DC       aDji_transSL_95
- 0001:0007D618       aDji_transSL_93
- 0001:0007D650       aDji_transSL_96
- 0001:0007D688       aDji_transSL_98
  0001:0007D6C0       aDji_transSLUTo
- 0001:0007D700       aDji_transSL_97
  0001:0007D73C       aTranssrv_endli
  0001:0007D77C       aTranssrv_sendl
  0001:0007D810       aTranssrv_getst
@@ -10088,23 +10284,51 @@
  0001:0008AD88       aErrorIncorre_4
  0001:0008ADAC       aWarning_Ptaaas
  0001:0008ADD0       aAmbadsp_img3ag
+ 0001:0008ADF8       aWarning_Amba_1
  0001:0008AE38       aAmbadsp_img3as
+ 0001:0008AE60       aWarning_Amba_2
  0001:0008AEA0       aAmbadsp_img3_0
  0001:0008AEC4       aAmbadsp_img3_1
+ 0001:0008AEEC       aWarning_Amba_3
  0001:0008AF2C       aAmbadsp_img3_2
  0001:0008AF50       aAmbadsp_img3_3
+ 0001:0008AF78       aWarning_Amba_4
  0001:0008AFB8       aAmbadsp_img3_4
  0001:0008AFDC       aWarning_Pafsta
  0001:0008AFFC       aAmbadsp_img3_5
+ 0001:0008B024       aWarning_Amba_5
  0001:0008B068       aAmbadsp_img3_6
  0001:0008B090       aAmbadsp_img3_7
+ 0001:0008B0B8       aWarning_Amba_6
  0001:0008B0F8       aAmbadsp_img3_8
  0001:0008B11C       aWarning_Paaast
+ 0001:0008B138       aWarning_Amba_7
  0001:0008B178       aAmbadsp_img3_9
+ 0001:0008B19C       aAmbadsp_img_10
+ 0001:0008B1C8       aWarning_Amba_8
+ 0001:0008B210       aAmbadsp_img_11
  0001:0008B23C       aWarning_Paaafl
+ 0001:0008B264       aAmbadsp_img_12
+ 0001:0008B290       aWarning_Amba_9
+ 0001:0008B2D8       aAmbadsp_img_13
  0001:0008B304       aWarning_Paaa_0
+ 0001:0008B32C       aAmbadsp_img_14
+ 0001:0008B360       aWarning_Amb_10
+ 0001:0008B3B0       aAmbadsp_img_15
+ 0001:0008B3E4       aAmbadsp_img_16
+ 0001:0008B40C       aWarning_Amb_11
+ 0001:0008B44C       aAmbadsp_img_17
  0001:0008B470       aWarning_Paaaps
+ 0001:0008B490       aAmbadsp_img_18
+ 0001:0008B4B8       aWarning_Amb_12
+ 0001:0008B4F8       aAmbadsp_img_19
+ 0001:0008B51C       aAmbadsp_img_20
+ 0001:0008B548       aWarning_Amb_13
+ 0001:0008B58C       aAmbadsp_img_21
  0001:0008B5B4       aWarning_Paaaea
+ 0001:0008B5D8       aAmbadsp_img_22
+ 0001:0008B604       aWarning_Amb_14
+ 0001:0008B648       aAmbadsp_img_23
  0001:0008B670       aFullViewGeoInf
  0001:0008B68C       aStart_xD
  0001:0008B69C       aStart_yD
@@ -10157,16 +10381,28 @@
  0001:0008BDF4       aHeightD_12
  0001:0008BE18       aHsubsampleDD_3
  0001:0008BE3C       aVsubsampleDD_3
+ 0001:0008BE60       aAmbadsp_imgs_2
  0001:0008BE8C       aWarning_Can_37
  0001:0008BEB0       aAmbadsp_imgc_6
+ 0001:0008BEE0       aWarning_Amb_15
  0001:0008BF28       aTransformed_vi
  0001:0008BF48       aTransformed__0
  0001:0008BF70       aTransformed__1
  0001:0008BF98       aTransformed__2
  0001:0008BFBC       aAmbadsp_imgc_7
+ 0001:0008BFEC       aAmbadsp_imgs_3
+ 0001:0008C01C       aWarning_Amb_16
+ 0001:0008C064       aAmbadsp_imgs_4
  0001:0008C094       aWarning_Pvigne
+ 0001:0008C0BC       aAmbadsp_imgg_1
+ 0001:0008C0EC       aWarning_Amb_17
+ 0001:0008C134       aAmbadsp_imgg_2
+ 0001:0008C164       aAmbadsp_imgs_5
+ 0001:0008C198       aWarning_Amb_18
+ 0001:0008C1E8       aAmbadsp_imgs_6
  0001:0008C21C       aSetDebugForVig
  0001:0008C244       aSetDebugForV_0
+ 0001:0008C26C       aAmbadsp_imgs_7
  0001:0008C28C       aPipeDAlgoDF_26
  0001:0008C2C8       aErrorWarpVersi
  0001:0008C2F0       aErrorHorgridnu
@@ -10236,9 +10472,16 @@
  0001:0008CB68       aHorskewphasein
  0001:0008CB94       aWarning_Can_34
  0001:0008CBB8       aAmbadsp_imgc_0
+ 0001:0008CBE4       aWarning_Amb_19
  0001:0008CC28       aWarnUnsupportM
  0001:0008CC40       aAmbadsp_imgc_1
+ 0001:0008CC6C       aAmbadsp_imgs_8
+ 0001:0008CC98       aWarning_Amb_20
+ 0001:0008CCDC       aAmbadsp_imgs_9
  0001:0008CD08       aWarning_Pwarpc
+ 0001:0008CD2C       aAmbadsp_imgg_3
+ 0001:0008CD58       aWarning_Amb_21
+ 0001:0008CD9C       aAmbadsp_imgg_4
  0001:0008CDC8       aSetDebugForWar
  0001:0008CDEC       aSetDebugForW_0
  0001:0008CE10       aErrorPwarpdzoo
@@ -10249,8 +10492,16 @@
  0001:0008CF88       aErrorInStillMo
  0001:0008CFE8       aErrorInStill_0
  0001:0008D048       aErrorPmodePipe
+ 0001:0008D070       aAmbadsp_img_24
+ 0001:0008D0A0       aWarning_Amb_22
  0001:0008D10C       aWarning_Pwarpd
+ 0001:0008D134       aAmbadsp_imgg_5
+ 0001:0008D164       aWarning_Amb_23
+ 0001:0008D1B0       aAmbadsp_imgg_6
  0001:0008D1E0       aError_CanBeOnl
+ 0001:0008D210       aAmbadsp_imgg_7
+ 0001:0008D248       aWarning_Amb_24
+ 0001:0008D29C       aAmbadsp_imgg_8
  0001:0008D2D4       aErrorPipenumDE
  0001:0008D304       aErrorTheDThPpi
  0001:0008D32C       aWarning_Incorr
@@ -10351,56 +10602,56 @@
  0001:0008E47C       aAmbadsp_imgu_5
  0001:0008E4A4       aAmbadsp_imgu_6
  0001:0008E4D0       aAmbadsp_imgu_7
- 0001:0008E4FC       aAmbadsp_imgs_2
+ 0001:0008E4FC       aAmbadsp_img_25
  0001:0008E520       aWarning_videoP
- 0001:0008E570       aWarning_Amba_1
- 0001:0008E5AC       aAmbadsp_imgs_3
- 0001:0008E5D0       aAmbadsp_imgs_4
- 0001:0008E5F4       aWarning_Amba_2
- 0001:0008E630       aAmbadsp_imgs_5
- 0001:0008E654       aAmbadsp_imgg_1
- 0001:0008E678       aWarning_Amba_3
- 0001:0008E6B4       aAmbadsp_imgg_2
+ 0001:0008E570       aWarning_Amb_25
+ 0001:0008E5AC       aAmbadsp_img_26
+ 0001:0008E5D0       aAmbadsp_img_27
+ 0001:0008E5F4       aWarning_Amb_26
+ 0001:0008E630       aAmbadsp_img_28
+ 0001:0008E654       aAmbadsp_imgg_9
+ 0001:0008E678       aWarning_Amb_27
+ 0001:0008E6B4       aAmbadsp_img_29
  0001:0008E6D8       aWarningStrengt
- 0001:0008E718       aAmbadsp_img_19
+ 0001:0008E718       aAmbadsp_img_30
  0001:0008E734       aPipeDAlgoDFu_4
  0001:0008E770       aStrengthD
  0001:0008E79C       aWarning_Can_10
- 0001:0008E7C0       aAmbadsp_img_20
- 0001:0008E7E8       aWarning_Amb_16
- 0001:0008E828       aAmbadsp_img_21
+ 0001:0008E7C0       aAmbadsp_img_31
+ 0001:0008E7E8       aWarning_Amb_28
+ 0001:0008E828       aAmbadsp_img_32
  0001:0008E850       aWarning_Pstren
- 0001:0008E870       aAmbadsp_img_22
- 0001:0008E898       aWarning_Amb_17
- 0001:0008E8D8       aAmbadsp_img_23
+ 0001:0008E870       aAmbadsp_img_33
+ 0001:0008E898       aWarning_Amb_29
+ 0001:0008E8D8       aAmbadsp_img_34
  0001:0008E900       aWarningEnbDSho
  0001:0008E940       aWarningSaturat
- 0001:0008E990       aAmbadsp_imgs_9
+ 0001:0008E990       aAmbadsp_img_35
  0001:0008E9B0       aPipeDAlgoDFu_1
  0001:0008E9EC       aEnbDAlpharrDAl
  0001:0008EA4C       aWarning_Cann_7
- 0001:0008EA70       aAmbadsp_img_10
- 0001:0008EA9C       aWarning_Amb_10
- 0001:0008EAE0       aAmbadsp_img_11
+ 0001:0008EA70       aAmbadsp_img_36
+ 0001:0008EA9C       aWarning_Amb_30
+ 0001:0008EAE0       aAmbadsp_img_37
  0001:0008EB0C       aWarning_Pcfale
- 0001:0008EB2C       aAmbadsp_imgg_5
- 0001:0008EB58       aWarning_Amb_11
- 0001:0008EB9C       aAmbadsp_imgg_6
+ 0001:0008EB2C       aAmbadsp_img_38
+ 0001:0008EB58       aWarning_Amb_31
+ 0001:0008EB9C       aAmbadsp_img_39
  0001:0008EBC8       aWarningEnbDS_0
  0001:0008EC10       aWarningCorrect
  0001:0008EC68       aWarningHotpixe
  0001:0008ECC0       aWarningDarkpix
- 0001:0008ED18       aAmbadsp_img_24
+ 0001:0008ED18       aAmbadsp_img_40
  0001:0008ED44       aPipeDAlgoDFu_5
  0001:0008ED80       aEnbDHotpixelst
  0001:0008EDE4       aWarning_Can_11
- 0001:0008EE08       aAmbadsp_img_25
- 0001:0008EE3C       aWarning_Amb_18
- 0001:0008EE8C       aAmbadsp_img_26
+ 0001:0008EE08       aAmbadsp_img_41
+ 0001:0008EE3C       aWarning_Amb_32
+ 0001:0008EE8C       aAmbadsp_img_42
  0001:0008EEC0       aWarning_Pdbpco
- 0001:0008EEDC       aAmbadsp_img_27
- 0001:0008EF10       aWarning_Amb_19
- 0001:0008EF5C       aAmbadsp_img_28
+ 0001:0008EEDC       aAmbadsp_img_43
+ 0001:0008EF10       aWarning_Amb_33
+ 0001:0008EF5C       aAmbadsp_img_44
  0001:0008EF90       aErrorFactors_1
  0001:0008EFE0       aErrorSbpCorrec
  0001:0008F00C       aSensorWindowWi
@@ -10410,6 +10661,7 @@
  0001:0008F09C       aBypassFpnMapWi
  0001:0008F0CC       aBypassFpnPitch
  0001:0008F0FC       aBypassPmapIsAN
+ 0001:0008F11C       aAmbadsp_img_45
  0001:0008F144       aAmba_dsp_img_m
  0001:0008F160       aPipeDAlgoDF_28
  0001:0008F19C       aAmba_dsp_img_s
@@ -10432,27 +10684,45 @@
  0001:0008F3A8       aHsubsampleDD_0
  0001:0008F3CC       aVsubsampleDD_0
  0001:0008F3F0       aWarning_Can_36
+ 0001:0008F414       aAmbadsp_img_46
+ 0001:0008F448       aWarning_Amb_34
+ 0001:0008F494       aAmbadsp_img_47
  0001:0008F4E8       aWarning_Psbpco
+ 0001:0008F504       aAmbadsp_img_48
+ 0001:0008F538       aWarning_Amb_35
+ 0001:0008F584       aAmbadsp_img_49
+ 0001:0008F5B8       aAmbadsp_img_50
+ 0001:0008F5F0       aWarning_Amb_36
+ 0001:0008F644       aAmbadsp_img_51
  0001:0008F67C       aWarning_Psbp_0
+ 0001:0008F6A0       aAmbadsp_img_52
+ 0001:0008F6D8       aWarning_Amb_37
+ 0001:0008F72C       aAmbadsp_img_53
  0001:0008F764       aSetDebugForSta
  0001:0008F790       aSetDebugForS_0
  0001:0008F7BC       aWarningBlackbD
  0001:0008F808       aWarningBlackgb
  0001:0008F854       aWarningBlackgr
  0001:0008F8A0       aWarningBlackrD
- 0001:0008F8EC       aAmbadsp_img_15
+ 0001:0008F8EC       aAmbadsp_img_54
  0001:0008F90C       aPipeDAlgoDFu_3
  0001:0008F948       aBlackrDBlackgr
  0001:0008F990       aWarning_Cann_9
- 0001:0008F9B4       aAmbadsp_img_16
- 0001:0008F9E0       aWarning_Amb_14
- 0001:0008FA24       aAmbadsp_img_17
+ 0001:0008F9B4       aAmbadsp_img_55
+ 0001:0008F9E0       aWarning_Amb_38
+ 0001:0008FA24       aAmbadsp_img_56
  0001:0008FA50       aWarning_Pblack
- 0001:0008FA70       aAmbadsp_imgg_9
- 0001:0008FA9C       aWarning_Amb_15
- 0001:0008FAE0       aAmbadsp_img_18
+ 0001:0008FA70       aAmbadsp_img_57
+ 0001:0008FA9C       aWarning_Amb_39
+ 0001:0008FAE0       aAmbadsp_img_58
  0001:0008FB18       aWarning_Can_33
+ 0001:0008FB3C       aAmbadsp_img_59
+ 0001:0008FB64       aWarning_Amb_40
+ 0001:0008FBA4       aAmbadsp_img_60
  0001:0008FBC8       aWarning_Pvinse
+ 0001:0008FBEC       aAmbadsp_img_61
+ 0001:0008FC14       aWarning_Amb_41
+ 0001:0008FC54       aAmbadsp_img_62
  0001:0008FC78       aVoutIdxD
  0001:0008FC88       aVout_mixer_s_0
  0001:0008FCB4       aInterlacedD_0
@@ -10946,6 +11216,7 @@
  0001:000935FC       aMinimunTimeF_0
  0001:00093634       aUsrLocalShar_0
  0001:00093678       aUsrLocalShar_1
+ 0001:000936B0       aSdcardhandleex
  0001:000936E4       aUsrLocalShareS
  0001:00093708       aAmbaipc_rpcsyn
  0001:00093728       aUsrLocalShar_2
@@ -12057,11 +12328,22 @@
  0001:0009C604       aDmywingeo_he_0
  0001:0009C620       aCfawindim_wi_0
  0001:0009C638       aCfawindim_he_0
+ 0001:0009C654       aAmbadsp_img_63
  0001:0009C690       aWarning_Can_35
  0001:0009C6B4       aAmbadsp_imgc_3
+ 0001:0009C6E0       aWarning_Amb_42
  0001:0009C728       aWarnUnsuppor_0
  0001:0009C740       aAmbadsp_imgc_4
+ 0001:0009C770       aAmbadsp_img_64
+ 0001:0009C79C       aWarning_Amb_43
+ 0001:0009C7E4       aAmbadsp_img_65
  0001:0009C810       aWarning_Pcacal
+ 0001:0009C830       aAmbadsp_img_66
+ 0001:0009C85C       aWarning_Amb_44
+ 0001:0009C8A4       aAmbadsp_img_67
+ 0001:0009C8D0       aAmbadsp_img_68
+ 0001:0009C904       aWarning_Amb_45
+ 0001:0009C950       aAmbadsp_img_69
  0001:0009C984       aSetDebugForCaw
  0001:0009C9A8       aSetDebugForC_0
  0001:0009C9D0       aWarningEnbDS_6
@@ -12074,22 +12356,34 @@
  0001:0009CBF0       aWarningSelec_4
  0001:0009CC4C       aWarningSelec_5
  0001:0009CCAC       aWarningSelec_6
+ 0001:0009CD0C       aAmbadsp_img_70
  0001:0009CD2C       aPipeDAlgoDF_25
  0001:0009CD68       aEnbDNoiselev_0
  0001:0009CDBC       aExtentfineDD_0
  0001:0009CE2C       aWarning_Can_31
+ 0001:0009CE50       aAmbadsp_img_71
+ 0001:0009CE78       aWarning_Amb_46
+ 0001:0009CEBC       aAmbadsp_img_72
  0001:0009CEE4       aWarning_Pcfano
+ 0001:0009CF04       aAmbadsp_img_73
+ 0001:0009CF2C       aWarning_Amb_47
+ 0001:0009CF70       aAmbadsp_img_74
  0001:0009CF98       aWarningEnabl_4
  0001:0009CFD8       aWarningOrigina
  0001:0009D02C       aWarningOrigi_0
  0001:0009D080       aWarningRadiu_0
+ 0001:0009D0C8       aAmbadsp_img_75
  0001:0009D0E4       aPipeDAlgoDF_16
  0001:0009D120       aEnableDNoisele
  0001:0009D150       aOriginalblends
  0001:0009D1A8       aWarning_Can_22
+ 0001:0009D1CC       aAmbadsp_img_76
  0001:0009D1F4       aWarning_Amb_95
+ 0001:0009D234       aAmbadsp_img_77
  0001:0009D25C       aWarning_Pchr_1
+ 0001:0009D280       aAmbadsp_img_78
  0001:0009D2A8       aWarning_Amb_96
+ 0001:0009D2E8       aAmbadsp_img_79
  0001:0009D310       aWarningEnabl_0
  0001:0009D354       aWarningCbadapt
  0001:0009D3A8       aWarningCradapt
@@ -12097,72 +12391,64 @@
  0001:0009D450       aWarningCrnonad
  0001:0009D4A4       aWarningCbada_0
  0001:0009D4F4       aWarningCrada_0
- 0001:0009D544       aAmbadsp_img_54
+ 0001:0009D544       aAmbadsp_img_80
  0001:0009D568       aPipeDAlgoDF_11
  0001:0009D5A4       aEnableD
  0001:0009D5B4       aCbadaptivestre
  0001:0009D5E8       aCbnonadaptives
  0001:0009D620       aCbadaptiveamou
  0001:0009D668       aWarning_Can_17
- 0001:0009D68C       aAmbadsp_img_55
- 0001:0009D6B8       aWarning_Amb_30
- 0001:0009D700       aAmbadsp_img_56
+ 0001:0009D68C       aAmbadsp_img_81
+ 0001:0009D6B8       aWarning_Amb_48
+ 0001:0009D700       aAmbadsp_img_82
  0001:0009D72C       aWarning_Pchr_0
- 0001:0009D750       aAmbadsp_img_57
- 0001:0009D77C       aWarning_Amb_31
- 0001:0009D7C4       aAmbadsp_img_58
+ 0001:0009D750       aAmbadsp_img_83
+ 0001:0009D77C       aWarning_Amb_49
+ 0001:0009D7C4       aAmbadsp_img_84
  0001:0009D7F0       aWarningEnbDS_1
  0001:0009D82C       aWarningGainc_0
- 0001:0009D874       aAmbadsp_img_49
+ 0001:0009D874       aAmbadsp_img_85
  0001:0009D890       aPipeDAlgoDF_10
  0001:0009D8CC       aEnbDGaincurve
  0001:0009D8E8       a6d_0
  0001:0009D900       aWarning_Can_16
- 0001:0009D924       aAmbadsp_img_50
- 0001:0009D948       aWarning_Amb_28
- 0001:0009D988       aAmbadsp_img_51
+ 0001:0009D924       aAmbadsp_img_86
+ 0001:0009D948       aWarning_Amb_50
+ 0001:0009D988       aAmbadsp_img_87
  0001:0009D9B0       aWarning_Pchrom
- 0001:0009D9D0       aAmbadsp_img_52
- 0001:0009D9F4       aWarning_Amb_29
- 0001:0009DA34       aAmbadsp_img_53
- 0001:0009DA5C       aAmbadsp_img_44
+ 0001:0009D9D0       aAmbadsp_img_88
+ 0001:0009D9F4       aWarning_Amb_51
+ 0001:0009DA34       aAmbadsp_img_89
+ 0001:0009DA5C       aAmbadsp_img_90
  0001:0009DA7C       aPipeDAlgoDFu_9
  0001:0009DAB8       aMatrixthreedta
  0001:0009DAE8       aWarning_Can_15
- 0001:0009DB0C       aAmbadsp_img_45
- 0001:0009DB34       aWarning_Amb_26
- 0001:0009DB78       aAmbadsp_img_46
+ 0001:0009DB0C       aAmbadsp_img_91
+ 0001:0009DB34       aWarning_Amb_52
+ 0001:0009DB78       aAmbadsp_img_92
  0001:0009DBA4       aWarning_Pcol_0
- 0001:0009DBC4       aAmbadsp_img_47
- 0001:0009DBEC       aWarning_Amb_27
- 0001:0009DC30       aAmbadsp_img_48
- 0001:0009DC5C       aAmbadsp_img_39
+ 0001:0009DBC4       aAmbadsp_img_93
+ 0001:0009DBEC       aWarning_Amb_53
+ 0001:0009DC30       aAmbadsp_img_94
+ 0001:0009DC5C       aAmbadsp_img_95
  0001:0009DC80       aPipeDAlgoDFu_8
  0001:0009DCBC       aRegsettingaddr
  0001:0009DCDC       aWarning_Can_14
- 0001:0009DD00       aAmbadsp_img_40
- 0001:0009DD2C       aWarning_Amb_24
- 0001:0009DD74       aAmbadsp_img_41
+ 0001:0009DD00       aAmbadsp_img_96
+ 0001:0009DD2C       aWarning_Amb_54
+ 0001:0009DD74       aAmbadsp_img_97
  0001:0009DDA0       aWarning_Pcolor
- 0001:0009DDC4       aAmbadsp_img_42
- 0001:0009DDF0       aWarning_Amb_25
- 0001:0009DE38       aAmbadsp_img_43
+ 0001:0009DDC4       aAmbadsp_img_98
+ 0001:0009DDF0       aWarning_Amb_55
  0001:0009DE64       aWarningCdnrmod
  0001:0009DEB4       aWarningCdnrstr
- 0001:0009DF0C       aAmbadsp_img_59
  0001:0009DF38       aPipeDAlgoDF_12
  0001:0009DF74       aCdnrmodeDCdnrs
  0001:0009DF98       aWarning_Can_18
- 0001:0009DFBC       aAmbadsp_img_60
- 0001:0009DFE8       aWarning_Amb_32
- 0001:0009E030       aAmbadsp_img_61
- 0001:0009E0A0       aAmbadsp_img_62
- 0001:0009E0D8       aWarning_Amb_33
- 0001:0009E128       aAmbadsp_img_63
+ 0001:0009DFE8       aWarning_Amb_56
+ 0001:0009E0D8       aWarning_Amb_57
  0001:0009E160       aWarning_PcdnrI
- 0001:0009E17C       aAmbadsp_img_64
- 0001:0009E1B4       aWarning_Amb_34
- 0001:0009E204       aAmbadsp_img_65
+ 0001:0009E1B4       aWarning_Amb_58
  0001:0009E23C       aWarningEnableD
  0001:0009E27C       aWarningRadiusD
  0001:0009E2BC       aWarningLumawei
@@ -12170,34 +12456,24 @@
  0001:0009E350       aWarningLumaw_1
  0001:0009E398       aWarningLumaw_2
  0001:0009E3E4       aWarningGaincur
- 0001:0009E434       aAmbadsp_img_29
  0001:0009E454       aPipeDAlgoDFu_6
  0001:0009E490       aEnbDRadiusDLum
  0001:0009E4F4       aGaincurvetable
  0001:0009E50C       a6d
  0001:0009E52C       aWarning_Can_12
- 0001:0009E550       aAmbadsp_img_30
- 0001:0009E578       aWarning_Amb_20
- 0001:0009E5B8       aAmbadsp_img_31
+ 0001:0009E578       aWarning_Amb_59
  0001:0009E5E0       aWarning_Plocal
- 0001:0009E604       aAmbadsp_img_32
- 0001:0009E62C       aWarning_Amb_21
- 0001:0009E66C       aAmbadsp_img_33
+ 0001:0009E62C       aWarning_Amb_60
  0001:0009E694       aWarningMatrixv
  0001:0009E6E8       aWarningYoffset
  0001:0009E734       aWarningUoffset
  0001:0009E77C       aWarningVoffset
- 0001:0009E7C4       aAmbadsp_img_12
  0001:0009E7E4       aPipeDAlgoDFu_2
  0001:0009E820       aMatrixvaluesDD
  0001:0009E894       aWarning_Cann_8
- 0001:0009E8B8       aAmbadsp_img_13
- 0001:0009E8E0       aWarning_Amb_12
- 0001:0009E924       aAmbadsp_img_14
+ 0001:0009E8E0       aWarning_Amb_61
  0001:0009E94C       aWarning_Prgbto
- 0001:0009E96C       aAmbadsp_imgg_7
- 0001:0009E994       aWarning_Amb_13
- 0001:0009E9D8       aAmbadsp_imgg_8
+ 0001:0009E994       aWarning_Amb_62
  0001:0009EA00       aWarningYcombin
  0001:0009EA48       aWarningChaninf
  0001:0009EA98       aWarningChani_0
@@ -12246,17 +12522,31 @@
  0001:0009F5E8       aWarning_Can_24
  0001:0009F60C       aWarning_Dsp__5
  0001:0009F64C       aWarning__ambad
+ 0001:0009F690       aWarning_Amb_63
+ 0001:0009F714       aWarning_Amb_64
  0001:0009F774       aWarning_Pmctfi
+ 0001:0009F7B8       aWarning_Amb_65
+ 0001:0009F850       aWarning_Amb_66
  0001:0009F8BC       aWarning_Pmctfl
+ 0001:0009F904       aWarning_Amb_67
+ 0001:0009F9AC       aWarning_Amb_68
+ 0001:0009FA50       aWarning_Amb_69
  0001:0009FAC0       aWarning_PenbIs
+ 0001:0009FB18       aWarning_Amb_70
+ 0001:0009FBD0       aWarning_Amb_71
+ 0001:0009FC8C       aWarning_Amb_72
+ 0001:0009FD4C       aWarning_Amb_73
  0001:0009FDC0       aWarning_Pzmven
+ 0001:0009FE08       aWarning_Amb_74
  0001:0009FE7C       aWarningGainr0x
  0001:0009FED0       aWarningGaing0x
  0001:0009FF24       aWarningGainb0x
  0001:0009FF90       aPipeDAlgoDF_30
  0001:0009FFCC       aGainrDGaingDGa
  0001:000A0008       aWarning_Can_38
+ 0001:000A004C       aWarning_Amb_75
  0001:000A00A8       aWarning_Pwbgai
+ 0001:000A00E4       aWarning_Amb_76
  0001:000A0120       aAmbadsp_imamba
  0001:000A0154       aS_warp_enableD
  0001:000A0168       aS_warp_horz_gr
@@ -12619,7 +12909,7 @@
  0001:000A29B8       aAmbadsp_imghig
  0001:000A29E0       aWarning_Cann_5
  0001:000A2A04       aAmbadsp_imgh_0
- 0001:000A2A30       aWarning_Amba_6
+ 0001:000A2A30       aWarning_Amb_77
  0001:000A2A74       aAmbadsp_imgh_1
  0001:000A2AA0       aAmbadsp_imgh_2
  0001:000A2ACC       aDsp_imghighi_0
@@ -12632,7 +12922,7 @@
  0001:000A2B74       aCBinsH_dbg_ste
  0001:000A2B9C       aCBinsH_dbg_s_0
  0001:000A2BC4       aAmbadsp_imgh_3
- 0001:000A2BE8       aWarning_Amba_7
+ 0001:000A2BE8       aWarning_Amb_78
  0001:000A2C28       aError_Ambads_0
  0001:000A2C74       aAmbadsp_imgh_4
  0001:000A2CA4       aErrorIncorre_0
@@ -12685,7 +12975,7 @@
  0001:000A31F4       aCBinsL_dbg_s_0
  0001:000A321C       aWarning_Cann_2
  0001:000A3240       aAmbadsp_imglow
- 0001:000A3268       aWarning_Amba_4
+ 0001:000A3268       aWarning_Amb_79
  0001:000A32AC       aAmbadsp_imgl_0
  0001:000A32D8       aAmbadsp_imgl_1
  0001:000A3304       aWarning_Cann_3
@@ -12838,14 +13128,16 @@
  0001:000A4464       aLnltonecurveus
  0001:000A4480       aAmbadsp_imgl_2
  0001:000A44A8       aAmbadsp_imgl_3
- 0001:000A44CC       aWarning_Amba_5
+ 0001:000A44CC       aWarning_Amb_80
  0001:000A450C       aError_Ambadsp_
  0001:000A4558       aAmbadsp_imgl_4
  0001:000A457C       aWarningEnab_18
  0001:000A45E4       aPipeDAlgoDF_31
  0001:000A4620       aEnbD_1
  0001:000A465C       aWarning_Can_39
+ 0001:000A46AC       aWarning_Amb_81
  0001:000A4720       aWarning_Pdefbl
+ 0001:000A4768       aWarning_Amb_82
  0001:000A47DC       aItuner_system_
  0001:000A47F0       aItuner_interna
  0001:000A4808       aItuner_aaa_fun
@@ -14876,6 +15168,7 @@
  0001:000BC004       aAmbarpdev_clk
  0001:000BC014       aSAmbaipc_alloc
  0001:000BC044       aErrorDsp_im_98
+ 0001:000BC098       aErrorDsp_img_1
  0001:000BC0EC       aErrorDsp_im_74
  0001:000BC134       aErrorDsp_im_75
  0001:000BC17C       aDsp_imgcorepro
@@ -15486,73 +15779,38 @@
  0001:000C5118       aSet1stsharpe_4
  0001:000C5130       aNoiseFir
  0001:000C513C       aLevel_str_adju
- 0001:000C5150       aAmbadsp_img_66
  0001:000C5178       aPipeDAlgoDF_13
  0001:000C51B4       aSelectD
- 0001:000C51C4       aAmbadsp_img_67
- 0001:000C51F0       aAmbadsp_img_68
  0001:000C521C       aSharpen_fir
- 0001:000C5228       aAmbadsp_img_69
  0001:000C5260       aMin_coring_res
- 0001:000C5274       aAmbadsp_img_70
  0001:000C52AC       aCoring_index_s
- 0001:000C52C0       aAmbadsp_img_71
  0001:000C52F4       aScale_coring
- 0001:000C5304       aAmbadsp_img_72
  0001:000C5328       aEnableDModeDEd
  0001:000C5360       aThreed
  0001:000C5368       aUp5x5DDown5x5D
- 0001:000C538C       aAmbadsp_img_73
  0001:000C53B4       aMaxchangeupDMa
  0001:000C53DC       aNoise_fir
  0001:000C53E8       aWarning_Can_19
- 0001:000C540C       aAmbadsp_img_74
- 0001:000C543C       aWarning_Amb_35
- 0001:000C5484       aAmbadsp_img_75
+ 0001:000C543C       aWarning_Amb_83
  0001:000C54B4       aWarning_Pselec
- 0001:000C54D0       aAmbadsp_img_76
- 0001:000C5500       aWarning_Amb_36
- 0001:000C5548       aAmbadsp_img_77
- 0001:000C5580       aAmbadsp_img_78
- 0001:000C55B8       aWarning_Amb_37
- 0001:000C5608       aAmbadsp_img_79
+ 0001:000C5500       aWarning_Amb_84
+ 0001:000C55B8       aWarning_Amb_85
  0001:000C5640       aWarning_Pcorin
- 0001:000C565C       aAmbadsp_img_80
- 0001:000C5694       aWarning_Amb_38
- 0001:000C56E4       aAmbadsp_img_81
- 0001:000C5724       aAmbadsp_img_82
- 0001:000C5758       aWarning_Amb_39
- 0001:000C57A4       aAmbadsp_img_83
+ 0001:000C5694       aWarning_Amb_86
+ 0001:000C5758       aWarning_Amb_87
  0001:000C57D8       aWarning_PfirIs
- 0001:000C57F0       aAmbadsp_img_84
- 0001:000C5824       aWarning_Amb_40
- 0001:000C5870       aAmbadsp_img_85
- 0001:000C58B4       aAmbadsp_img_86
- 0001:000C58F4       aWarning_Amb_41
- 0001:000C594C       aAmbadsp_img_87
+ 0001:000C5824       aWarning_Amb_88
+ 0001:000C58F4       aWarning_Amb_89
  0001:000C598C       aWarning_Plevel
- 0001:000C59A8       aAmbadsp_img_88
- 0001:000C59E8       aWarning_Amb_42
- 0001:000C5A40       aAmbadsp_img_89
- 0001:000C5A90       aAmbadsp_img_90
- 0001:000C5AD0       aWarning_Amb_43
- 0001:000C5B2C       aAmbadsp_img_91
- 0001:000C5B6C       aAmbadsp_img_92
- 0001:000C5BAC       aWarning_Amb_44
- 0001:000C5C08       aAmbadsp_img_93
- 0001:000C5C58       aAmbadsp_img_94
- 0001:000C5C94       aWarning_Amb_45
- 0001:000C5CE8       aAmbadsp_img_95
- 0001:000C5D24       aAmbadsp_img_96
- 0001:000C5D60       aWarning_Amb_46
- 0001:000C5DB4       aAmbadsp_img_97
- 0001:000C5E10       aAmbadsp_img_98
- 0001:000C5E3C       aWarning_Amb_47
+ 0001:000C59E8       aWarning_Amb_90
+ 0001:000C5AD0       aWarning_Amb_91
+ 0001:000C5BAC       aWarning_Amb_92
+ 0001:000C5C94       aWarning_Amb_93
+ 0001:000C5D60       aWarning_Amb_94
+ 0001:000C5E3C       aWarning_Amb_97
  0001:000C5EB0       aWarning_PbothI
- 0001:000C5EF8       aWarning_Amb_48
- 0001:000C5FB0       aWarning_Amb_49
+ 0001:000C5EF8       aWarning_Amb_98
  0001:000C6028       aWarning_Psharp
- 0001:000C607C       aWarning_Amb_50
  0001:000C60F4       aErrorDsp_im_78
  0001:000C6138       aErrorDsp_im_79
  0001:000C617C       aErrorDsp_im_80
@@ -15561,11 +15819,15 @@
  0001:000C625C       aErrorDsp_im_83
  0001:000C62A8       aErrorDsp_im_84
  0001:000C62F4       aErrorDsp_im_85
+ 0001:000C634C       aErrorDsp_img_2
+ 0001:000C638C       aErrorDsp_im_15
  0001:000C63D0       aWarning_GainDD
  0001:000C6400       aIncorrectWbGai
  0001:000C6414       aIncorrectDgain
  0001:000C6434       aIncorrectGloba
  0001:000C6614       aHighisoPostExe
+ 0001:000C6668       aErrorDsp_im_16
+ 0001:000C66B4       aErrorDsp_im_27
  0001:000C67A4       aFunctionname_0
  0001:000C67B4       aWarningEnabl_2
  0001:000C67E8       aAdapt_threed
@@ -15603,9 +15865,7 @@
  0001:000C6C6C       aSetadvancespat
  0001:000C6CA8       aPipeDAlgoDF_14
  0001:000C6CE4       aWarning_Can_20
- 0001:000C6D38       aWarning_Amb_51
  0001:000C6DB0       aWarning_PasfIs
- 0001:000C6DF8       aWarning_Amb_52
  0001:000C6E70       aWarningActivit
  0001:000C6EB4       aWarningActiv_0
  0001:000C6F04       aWarningGradcli
@@ -15614,33 +15874,19 @@
  0001:000C6FEC       aWarningZippe_0
  0001:000C7044       aWarningBlackwh
  0001:000C7094       aWarningClampdi
- 0001:000C70E4       aAmbadsp_img_34
  0001:000C70FC       aPipeDAlgoDFu_7
  0001:000C7138       aActivitythresh
  0001:000C7194       aZippernoisedif
  0001:000C722C       aWarning_Can_13
- 0001:000C7250       aAmbadsp_img_35
- 0001:000C7274       aWarning_Amb_22
- 0001:000C72B0       aAmbadsp_img_36
  0001:000C72D4       aWarning_Pdemos
- 0001:000C72F4       aAmbadsp_img_37
- 0001:000C7318       aWarning_Amb_23
- 0001:000C7354       aAmbadsp_img_38
  0001:000C7378       aWarningLevelbl
  0001:000C73C8       aWarningLevelgr
  0001:000C741C       aWarningLevel_0
  0001:000C7470       aWarningLevelre
- 0001:000C74BC       aAmbadsp_imgs_6
  0001:000C74E0       aPipeDAlgoDFu_0
  0001:000C751C       aLevelredDLevel
  0001:000C7568       aWarning_Cann_6
- 0001:000C758C       aAmbadsp_imgs_7
- 0001:000C75BC       aWarning_Amba_8
- 0001:000C7604       aAmbadsp_imgs_8
  0001:000C7634       aWarning_Pdgain
- 0001:000C7654       aAmbadsp_imgg_3
- 0001:000C7684       aWarning_Amba_9
- 0001:000C76CC       aAmbadsp_imgg_4
  0001:000C76FC       aWarningCorin_0
  0001:000C7754       aSetfinalsharpe
  0001:000C7774       aSetfinalshar_0
@@ -15669,53 +15915,11 @@
  0001:000C7BD0       aMaxchangeupD_0
  0001:000C7BF8       aNoise_fir_0
  0001:000C7C14       aWarning_Can_21
- 0001:000C7C70       aWarning_Amb_53
- 0001:000C7CD0       aWarning_Amb_54
- 0001:000C7D30       aWarning_Amb_55
  0001:000C7DBC       aWarning_Pcor_0
- 0001:000C7E10       aWarning_Amb_56
- 0001:000C7E70       aWarning_Amb_57
- 0001:000C7ED0       aWarning_Amb_58
- 0001:000C7F98       aWarning_Amb_59
- 0001:000C7FF8       aWarning_Amb_60
- 0001:000C8058       aWarning_Amb_61
  0001:000C80E0       aWarning_Pfir_0
- 0001:000C812C       aWarning_Amb_62
- 0001:000C818C       aWarning_Amb_63
- 0001:000C81EC       aWarning_Amb_64
- 0001:000C82C4       aWarning_Amb_65
- 0001:000C8330       aWarning_Amb_66
- 0001:000C839C       aWarning_Amb_67
  0001:000C843C       aWarning_Plev_0
- 0001:000C8498       aWarning_Amb_68
- 0001:000C8504       aWarning_Amb_69
- 0001:000C8570       aWarning_Amb_70
- 0001:000C8664       aWarning_Amb_71
- 0001:000C86D0       aWarning_Amb_72
- 0001:000C873C       aWarning_Amb_73
- 0001:000C8820       aWarning_Amb_74
- 0001:000C888C       aWarning_Amb_75
- 0001:000C88F8       aWarning_Amb_76
- 0001:000C89E4       aWarning_Amb_77
- 0001:000C8A4C       aWarning_Amb_78
- 0001:000C8AB4       aWarning_Amb_79
- 0001:000C8B88       aWarning_Amb_80
- 0001:000C8BF0       aWarning_Amb_81
- 0001:000C8C58       aWarning_Amb_82
- 0001:000C8D30       aWarning_Amb_83
- 0001:000C8D88       aWarning_Amb_84
- 0001:000C8DE0       aWarning_Amb_85
  0001:000C8E58       aWarning_Pmaxbo
- 0001:000C8EA4       aWarning_Amb_86
- 0001:000C8EFC       aWarning_Amb_87
- 0001:000C8F54       aWarning_Amb_88
- 0001:000C9004       aWarning_Amb_89
- 0001:000C905C       aWarning_Amb_90
- 0001:000C90B4       aWarning_Amb_91
  0001:000C9130       aWarning_Psha_0
- 0001:000C9184       aWarning_Amb_92
- 0001:000C91DC       aWarning_Amb_93
- 0001:000C9234       aWarning_Amb_94
  0001:000C92B0       aWarningNarrowe
  0001:000C92F0       aWarningWideena
  0001:000C932C       aWarningWidesaf
@@ -15723,9 +15927,7 @@
  0001:000C93DC       aPipeDAlgoDF_17
  0001:000C9418       aGbgrmismatchNa
  0001:000C946C       aWarning_Can_23
- 0001:000C94B8       aWarning_Amb_97
  0001:000C9520       aWarning_Pgbgrm
- 0001:000C956C       aWarning_Amb_98
  0001:000C95D4       aSethighisoadva
  0001:000C95F4       aSethighisohigh
  0001:000C9618       aSethighisolowa
@@ -17118,72 +17320,67 @@
  0001:000DBF10       aDebug_7
  0001:000DBF18       aSystemCmdLoad
  0001:000DBF28       aImageSystemDeb
- 0001:000DBF74       aErrorDsp_im_27
- 0001:000DBFCC       aErrorDsp_im_28
+ 0001:000DBF74       aErrorDsp_im_28
+ 0001:000DBFCC       aErrorDsp_im_29
  0001:000DC024       aWarningDsp_img
- 0001:000DC084       aErrorDsp_im_29
- 0001:000DC0D8       aErrorDsp_im_30
+ 0001:000DC084       aErrorDsp_im_30
+ 0001:000DC0D8       aErrorDsp_im_31
  0001:000DC12C       aWarningDsp_i_0
- 0001:000DC188       aErrorDsp_im_31
- 0001:000DC1E8       aErrorDsp_im_32
+ 0001:000DC188       aErrorDsp_im_32
+ 0001:000DC1E8       aErrorDsp_im_33
  0001:000DC248       aWarningDsp_i_1
- 0001:000DC2B0       aErrorDsp_im_33
- 0001:000DC310       aErrorDsp_im_34
+ 0001:000DC2B0       aErrorDsp_im_34
+ 0001:000DC310       aErrorDsp_im_35
  0001:000DC374       aWarningDsp_i_2
- 0001:000DC3DC       aErrorDsp_im_35
- 0001:000DC438       aErrorDsp_im_36
+ 0001:000DC3DC       aErrorDsp_im_36
+ 0001:000DC438       aErrorDsp_im_37
  0001:000DC494       aWarningDsp_i_3
- 0001:000DC4F8       aErrorDsp_im_37
- 0001:000DC548       aErrorDsp_im_38
+ 0001:000DC4F8       aErrorDsp_im_38
+ 0001:000DC548       aErrorDsp_im_39
  0001:000DC598       aWarningDsp_i_4
- 0001:000DC5F0       aErrorDsp_im_39
- 0001:000DC640       aErrorDsp_im_40
+ 0001:000DC5F0       aErrorDsp_im_40
+ 0001:000DC640       aErrorDsp_im_41
  0001:000DC690       aWarningDsp_i_5
- 0001:000DC6E8       aErrorDsp_im_41
- 0001:000DC738       aErrorDsp_im_42
+ 0001:000DC6E8       aErrorDsp_im_42
+ 0001:000DC738       aErrorDsp_im_43
  0001:000DC830       aErrorUndefin_1
  0001:000DC854       aErrorUndefin_0
- 0001:000DC874       aErrorDsp_img_1
- 0001:000DC8C4       aErrorDsp_img_2
- 0001:000DC914       aErrorDsp_im_15
- 0001:000DC958       aErrorDsp_im_16
+ 0001:000DC874       aErrorDsp_im_44
+ 0001:000DC8C4       aErrorDsp_im_45
+ 0001:000DC914       aErrorDsp_im_46
+ 0001:000DC958       aErrorDsp_im_47
  0001:000DC99C       aErrorDsp_im_76
  0001:000DC9E4       aErrorDsp_im_77
  0001:000DCA2C       aErrorDsp_im_88
  0001:000DCA80       aErrorDsp_im_89
  0001:000DCAD4       aUsePincc3dhi_0
- 0001:000DCAF8       aErrorDsp_im_43
- 0001:000DCB38       aErrorDsp_im_44
- 0001:000DCB7C       aErrorDsp_im_45
- 0001:000DCBC4       aErrorDsp_im_46
- 0001:000DCC0C       aErrorDsp_im_47
- 0001:000DCC54       aErrorDsp_im_48
- 0001:000DCC9C       aErrorDsp_im_49
- 0001:000DCCE4       aErrorDsp_im_50
- 0001:000DCD34       aErrorDsp_im_51
- 0001:000DCD7C       aErrorDsp_im_52
- 0001:000DCDC8       aErrorDsp_im_53
- 0001:000DCE14       aErrorDsp_im_54
- 0001:000DCE68       aErrorDsp_im_55
- 0001:000DCEBC       aErrorDsp_im_56
- 0001:000DCF10       aErrorDsp_im_57
- 0001:000DCF68       aErrorDsp_im_58
- 0001:000DCFB4       aErrorDsp_im_59
+ 0001:000DCAF8       aErrorDsp_im_48
+ 0001:000DCB38       aErrorDsp_im_49
+ 0001:000DCB7C       aErrorDsp_im_50
+ 0001:000DCBC4       aErrorDsp_im_51
+ 0001:000DCC0C       aErrorDsp_im_52
+ 0001:000DCC54       aErrorDsp_im_53
+ 0001:000DCC9C       aErrorDsp_im_54
+ 0001:000DCCE4       aErrorDsp_im_55
+ 0001:000DCD34       aErrorDsp_im_56
+ 0001:000DCD7C       aErrorDsp_im_57
+ 0001:000DCDC8       aErrorDsp_im_58
+ 0001:000DCE14       aErrorDsp_im_59
+ 0001:000DCE68       aErrorDsp_im_60
+ 0001:000DCEBC       aErrorDsp_im_61
+ 0001:000DCF10       aErrorDsp_im_62
+ 0001:000DCF68       aErrorDsp_im_63
+ 0001:000DCFB4       aErrorDsp_im_64
  0001:000DD004       aErrorAmbadsp_0
- 0001:000DD054       aErrorDsp_im_60
- 0001:000DD0AC       aErrorDsp_im_61
- 0001:000DD108       aErrorDsp_im_62
- 0001:000DD160       aErrorDsp_im_63
- 0001:000DD1B8       aErrorDsp_im_64
- 0001:000DD21C       aErrorDsp_im_65
- 0001:000DD280       aErrorDsp_im_66
- 0001:000DD2E4       aErrorDsp_im_67
- 0001:000DD348       aErrorDsp_im_68
- 0001:000DD3A8       aErrorDsp_im_69
- 0001:000DD408       aErrorDsp_im_70
- 0001:000DD458       aErrorDsp_im_71
- 0001:000DD4A8       aErrorDsp_im_72
- 0001:000DD4F8       aErrorDsp_im_73
+ 0001:000DD054       aErrorDsp_im_65
+ 0001:000DD0AC       aErrorDsp_im_66
+ 0001:000DD108       aErrorDsp_im_67
+ 0001:000DD160       aErrorDsp_im_68
+ 0001:000DD1B8       aErrorDsp_im_69
+ 0001:000DD21C       aErrorDsp_im_70
+ 0001:000DD280       aErrorDsp_im_71
+ 0001:000DD2E4       aErrorDsp_im_72
+ 0001:000DD348       aErrorDsp_im_73
  0001:000DD550       aUvcDefaultUnkn
  0001:000DD578       aUvc_it_process
  0001:000DD5A8       aSOut_of_rangeI
@@ -17310,8 +17507,10 @@
  0001:000F45B8       AmbaKAL_MutexTake
  0001:000F45F0       AmbaKAL_MutexGive
  0001:000F45FC       AmbaKAL_EventFlagCreate
+ 0001:000F461C       AmbaKAL_EventFlagTake
  0001:000F4670       AmbaKAL_EventFlagGive
  0001:000F4680       AmbaKAL_EventFlagClear
+ 0001:000F46D0       AmbaMoviePlayback_MsgQueueCreate
  0001:000F4754       AmbaKAL_MsgQueueSend
  0001:000F49BC       DSP_ImgCoreProcessToneCurve
  0001:000F85C4       AmbaImg_AeTask_MemMgr_Init
@@ -17345,10 +17544,12 @@
  0001:0011F56C       AmbaFS_Chdmod
  0001:0011F5F8       AmbaFS_Format
  0001:0011F734       AmbaFS_ftell
+ 0001:0011F7A4       AmbaFS_feof
  0001:0011F7EC       AmbaFS_CleanDir
  0001:0011F894       AmbaFS_ChmodDir
  0001:0011FAD0       AmbaFS_GetFileInstance
  0001:0011FB2C       AmbaFS_FreeFileInstance
+ 0001:0011FCB4       AmbaFS_GetError
  0001:0011FD20       vsprintf
  0001:0011FD68       snprintf
  0001:0011FE8C       AmbaRTSL_TimerGetTickCount
@@ -17546,6 +17747,7 @@
  0001:0018ACCC       DSP_ImgCoreProcessRgbToYuvMatrix
  0001:00192D78       AmbaSD_GetHost
  0001:00192E1C       AmbaSD_CardINSlot
+ 0001:00192E38       AmbaSD_InitCard
  0001:0019A348       AmbaSD_Erase
  0001:0019A4CC       AmbaSD_ReadSector
  0001:0019A91C       AmbaSD_WriteSector
@@ -17628,6 +17830,7 @@
  0001:001C0EBC       _tx_timer_system_deactivate
  0001:001C47F0       AmbaDSP_ImgCalcCawarpCompensation
  0001:001C4FC8       AmbaDSP_ImgGetWarpCompensation
+ 0001:001CAC90       DjiUsbClassInit
  0001:001CB0E4       nullsub_63
  0001:001CB0E8       nullsub_19
  0001:001CF724       AmbaRTSL_GpioConfigInput
@@ -17708,19 +17911,27 @@
  0001:0020D808       DjiSysBootUpTaskDelete
  0001:0020D938       DjiBootUp
  0001:0020DA2C       DjiMainInit
+ 0001:0020E82C       LoadROMImageTable
  0001:0020ED20       AmbaRTC_sub_E80ED20
  0001:0020EE00       AmbaRTC_sub_E80EE00
  0001:0020F040       RTC_GetSystemTime
  0001:0020F2DC       AmbaRTC_GetSystemTime
+ 0001:0020F498       DjiIsEjectSet
+ 0001:0020F52C       DjiIsEjectGet
  0001:0020F59C       DjiSd1InsertHandle
  0001:0020FA00       DjiSd1EjectHandle
+ 0001:0020FB5C       AmbaMonitor_SDInsert_Entry
+ 0001:0020FC10       AmbaMonitor_SDOther_Entry
+ 0001:0020FFBC       AmbaMonitor_SdInit
  0001:00211D24       BeepPlaybackTask
  0001:00211DD8       AmpBeepAudioOutputGetLofCB
  0001:00211E7C       AmpBeep_Init
+ 0001:0021217C       AmbaAudioOutputStart
+ 0001:002121E8       AmbaAudioOutputStop
  0001:00212594       AmbaAudio_sub_E812594
  0001:00212BAC       DjiOpModeInit
  0001:00212C44       AppMainTask_Entry
- 0001:002137B4       AmbaOpModeCtrlTask
+ 0001:002137B4       AmbaOpModeCtrlTaskCreate
  0001:0021396C       DjiUsbDeviceClass
  0001:002139FC       DeviceSystemStart
  0001:00213A10       DeviceSystemRelease
@@ -17761,12 +17972,19 @@
  0001:0022A9A8       AmbaIPC_RegisterChannel
  0001:0022BC34       AmbaIPC_RpcSyncRtc
  0001:0022CF38       EntryArg
+ 0001:0022D6D0       AmbaIPC_LinkCtrlSuspend
  0001:00232F0C       AmbaSysProfile_GetTimeStamp
+ 0001:00233514       LiveviewSync_Entry
+ 0001:002336D4       Liveview_Entry
  0001:00233964       Liveview_SuperViewLoadWarpTable
  0001:00233B48       Liveview_SuperViewReSetupWarpTable
  0001:00235668       AmbaLiveview_SensorConfig
+ 0001:00235928       AmbaLiveview_LowDelayCtrl
  0001:00235B14       AmbaLiveview_LiveviewStart
  0001:00237CF0       AmbaLiveview_LiveviewStop
+ 0001:002386A0       AmbaFovRawDecompress_Entry
+ 0001:00238828       DjiUstVideoStarndardSetCallback
+ 0001:0023893C       AmbaGuiTask_Entry
  0001:00239504       nullsub_22
  0001:00239600       DjiTimerGetTickCount
  0001:0023AABC       DjiFileCopy
@@ -18210,12 +18428,28 @@
  0001:002AD46C       DjiUegTestLoopTest
  0001:002AD634       DjiUegTestVersionLink
  0001:002ADFA8       AmbaMovieRecord_Init
+ 0001:002AE428       AmbaMovieRecord_Start
+ 0001:002AE5D0       AmbaMovieRecord_Stop
+ 0001:002AE7E4       AmbaMovieRecord_Pause
+ 0001:002AE968       AmbaMovieRecord_Resume
  0001:002AF1CC       MovieRecordKeyTaskEntry
+ 0001:002AFAC0       MovieRecordVideoSetup
+ 0001:002AFEA4       MovieRecordVideoStart
  0001:002B05E0       DjiDCF_DmfModeGet
  0001:002B062C       DjiDCF_DmfFIdSet
  0001:002B0670       DjiDCF_DmfFIdGet
  0001:002B0C40       AmbaDCF_GetFileAmount
+ 0001:002B2358       AmbaDCF_CreateFileName
  0001:002B294C       AmbaDCF_DeleteFile
+ 0001:002B5208       DjiDCF_FirstFileIdxGet
+ 0001:002B53F0       DjiDCF_LastFileIdxGet
+ 0001:002B55E4       DjiDCF_CurFileIdxGet
+ 0001:002B594C       DjiDCF_PreFileIdxGet
+ 0001:002B6460       DjiDCF_FNameGetByIdx
+ 0001:002B68DC       DjiDCF_GetFullFileName
+ 0001:002B6AF8       DjiDCF_FSInfoGet
+ 0001:002B6B50       DjiDCF_FileIdxGetByOffset
+ 0001:002B6E10       DjiDCF_RootPathGet
  0001:002B7E94       AmbaAudio_DecMaxConfigSize.part.1
  0001:002B7F40       nullsub_51
  0001:002B9248       AmbaAudio_DecTaskEntry
@@ -18226,6 +18460,7 @@
  0001:002B9D94       AmbaAudio_Combine
  0001:002B9EC8       AmbaAudio_BufferSizeQuery
  0001:002B9F58       AmbaAudio_BufferCreate
+ 0001:002BA29C       AmbaAudio_DecOpenOutputIoNode
  0001:002BB370       AmbaAudio_EventHandlerCtrlConfig
  0001:002BB414       AmbaAudio_RegisterEventHandler
  0001:002BB78C       AmbaAudio_TaskResourceSizeQuery
@@ -18235,18 +18470,34 @@
  0001:002BB930       nullsub_28
  0001:002BB934       nullsub_29
  0001:002BB938       nullsub_30
+ 0001:002BD358       AmbaMonitor_ADC_Entry
  0001:002BD870       AmbaLink_Malloc
  0001:002BD890       AmbaTest_RegisterCommand
  0001:002BD9CC       nullsub_31
+ 0001:002BEA08       AmbaEis_TaskCreate
  0001:002BEAC8       AmbaEis_Active
+ 0001:002BEB4C       AmbaEis_Entry
  0001:002BEBDC       AppLib_CalibGetObj
  0001:002BEC48       AppLib_CalibGetNandStatus
+ 0001:002BECE0       AmpUT_CalibGetSiteStatus
+ 0001:002BEE58       AmpUT_CalibMemReset
+ 0001:002BEF08       AmpUT_CalibResetPartial
+ 0001:002BEF78       AmpUT_CalibNandLoadTableHead
+ 0001:002BF00C       AmpUT_CalibNandLoadTable
+ 0001:002BF270       AmpUT_CalibNandLoad
+ 0001:002BF4A8       AmpUT_CalibSDCardLoad
+ 0001:002BF7FC       AmpUT_CalibNandSave
+ 0001:002BF97C       AmpUT_CalibSDCardSave
+ 0001:002BFBDC       AmpUT_CalibInitLoadSimple
+ 0001:002BFCC4       AmpUT_CalibInitSimple
+ 0001:002BFD44       AmpUT_CalibInit
  0001:002C0EF4       AmbaPictureDisplay_TaskCreate
  0001:002C1B28       AmbaPictureDisplay_SingleViewStart
  0001:002C2B6C       PicDisp_DecodeScreennail
  0001:002C3BF0       PicDisp_ParseFile
  0001:002C3FBC       AmbaPictureDisplay_YuvToRgbTest
  0001:002C4798       XCodeDisplay_Handler
+ 0001:002C4974       AmbaMonitor_HDMI_Entry
  0001:002C740C       AmbaShell_GetEnv
  0001:002C7478       AmbaShell_Print
  0001:002C74F0       AmbaShell_Printf
@@ -18313,9 +18564,33 @@
  0001:002EB73C       DjiShlTrackingTest
  0001:002EBAD8       DjiXcodeExeEntryEnQueue
  0001:002EBB68       DjiXcodeExeEntryDeQueue
+ 0001:002EBC0C       DjiXcodeExeEntryResetQueue
+ 0001:002EBCB4       DjiXcodeFTreeInsert
+ 0001:002EBD98       DjiXcodeFTreeUpdate
+ 0001:002EBEC0       DjiXcodeFTreeEntryGet
+ 0001:002EBFB4       DjiXcodeFTreeEntryGetById
+ 0001:002EC0D8       DjiXcodeFTreeSpecStateUpdate
+ 0001:002EC188       DjiXcodeExeEntryTake
+ 0001:002EC1D4       DjiCtrlEntryGet
+ 0001:002EC2C4       DjiCtrlEntryClr
+ 0001:002EC3C8       DjiCtrlEntryFullChk
+ 0001:002EC490       AmbaMovieTranscode_Start
  0001:002EC704       DjiMovieTranscodeConfig
+ 0001:002ECC24       DjiMovieTranscodePbPause
+ 0001:002ECC60       DjiMovieTranscodePbResume
  0001:002ECD20       DjiTranscodeStateSet
+ 0001:002ECDD0       DjiXCodeFile
+ 0001:002ECEA4       DjiTranscodeResValidChk
+ 0001:002ECF08       DjiTranscodeResSet
+ 0001:002ECFF4       DjiTranscodeResGet
+ 0001:002ED0A4       DjiTranscodeSrcDurationSet
+ 0001:002ED108       DjiTranscodeDesStateSet
+ 0001:002ED3E0       DjiTranscodeStoreFpsSet
+ 0001:002ED4DC       DjiTranscodeFpsGet
+ 0001:002ED5E0       DjiXcodeFnumSet
+ 0001:002ED65C       DjiXcodedFnumIncrease
  0001:002ED8CC       DjiXcodeTaskEntry
+ 0001:002EDEF0       DjiXcodeCtrlTaskEntry
  0001:002EE36C       DjiXcodeCommandCallback
  0001:002EE4F0       DjiEntriesCtrlAlloc
  0001:002EE644       DjiQueueCtrLHeadInit
@@ -18345,12 +18620,21 @@
  0001:002FA8AC       AppLibCalibBPC_BMPSave
  0001:002FAAAC       AppLibCalibBPC_SetPixelValue
  0001:002FACCC       AppLibCalibBPC_Info
+ 0001:002FB080       AmpUTCalibBPC_MapDecompress
  0001:002FB3AC       AppLibCalibBPC_MapUpdate
  0001:002FB768       AppLibCalibBPC_Reload
  0001:002FB814       AppLibCalibBPC_Init
- 0001:002FCAFC       AppLibCalibBPC_RawCap
+ 0001:002FC37C       AmpUTCalibBPC_BadPixelSave
+ 0001:002FCAFC       AmpUTCalibBPC_SaveRawImage
+ 0001:002FCD64       AmpUTCalibBPC_Detect
+ 0001:002FD388       AmpUTCalibBPC_LoadScript
+ 0001:002FD66C       AmpUTCalibBPC_Cluster_Detect
  0001:002FDE68       AppLibCalibBPC_Enable
  0001:002FE0C0       AppLibCalibBPC_UTFunc
+ 0001:002FEF28       DjiBPCBmpDataGet
+ 0001:002FF210       DjiBPCModeInfoGet
+ 0001:003023E0       AmpUTCalibVig_sub_E9023E0
+ 0001:003027F4       AmpUTCalibVig_sub_E9027F4
  0001:00302DDC       AppLibVignette_UTFunc
  0001:00303638       AmbaImageMainEis_Init
  0001:00303A1C       nullsub_35
@@ -18365,14 +18649,42 @@
  0001:0031201C       IPC_Rpmsg_Alloc
  0001:00312774       IPC_Rpc_Cln_Init
  0001:00312E7C       DjiIpcInit
+ 0001:00313A94       MoviePlaybackTaskEntry
+ 0001:00313F08       AmbaMoviePlayback_TaskCreate
+ 0001:00314204       AmbaMoviePlayback_TaskDelete
+ 0001:00314300       AmbaMoviePlayback_Open
+ 0001:0031463C       AmbaMoviePlayback_Close
+ 0001:003146D8       AmbaMoviePlayback_Start
+ 0001:00314A54       AmbaMoviePlayback_Stop
+ 0001:00314B40       AmbaMoviePlayback_Pause
+ 0001:00314C40       AmbaMoviePlayback_Resume
+ 0001:00314E18       AmbaMoviePlayback_Forward
+ 0001:00314EC4       AmbaMoviePlayback_Backward
+ 0001:00314F80       AmbaMoviePlayback_TimeSearch
+ 0001:0031518C       MoviePlayback_AudioGetLofHandler
  0001:00315ECC       MoviePlayback_FeedAudio
  0001:00316000       DjiMovieTransFeedAudio
  0001:0031625C       DjiMovieRecordAudioByPass
  0001:00316490       MoviePlayback_SyncAudio
+ 0001:00316C10       MoviePlayback_CalcLatestDTS
+ 0001:00316C84       MoviePlayback_CalcLastPTS
  0001:00316E88       MoviePlayback_Preload
  0001:003170C0       MoviePlayback_ReloadAudio
+ 0001:003175AC       DjiMoviePlayback_TimeSearchMs
  0001:00317764       AmbaMovMuxer_Create
  0001:00317B20       AmbaMovMuxer_Destroy
+ 0001:0031D4A4       AmbaMovDemuxer
+ 0001:0031D58C       AmbaMovParseKeyFrame
+ 0001:0031DC5C       AmbaMovLoadKeyFrame
+ 0001:003202C0       FileWriteTask_Entry
+ 0001:00320948       AmbaFileWrite_Flush
+ 0001:00320E04       AmbaFileOp_GetByte
+ 0001:00320E5C       AmbaFileOp_GetLe16
+ 0001:00320EBC       AmbaFileOp_GetLe32
+ 0001:00320F2C       AmbaFileOp_GetBe16
+ 0001:00320F8C       AmbaFileOp_GetBe32
+ 0001:00321120       AmbaFileOp_FileWriteFromBuf
+ 0001:003211AC       AmbaFileOp_CircularWrite
  0001:00321324       AmbaShell_MemAlloc
  0001:003265D4       DjiDNG_LocInfoGet
  0001:003278FC       DjiDNGInit
@@ -18388,6 +18700,11 @@
  0001:0032DE54       DjiAudioDemuxGetWritePointer
  0001:0032DEE4       DjiAudioDecGetReadPointer
  0001:0032E07C       nullsub_55
+ 0001:0032FD64       MovieRecord2ndTask_Entry
+ 0001:00330118       AmbaMovieRecord_2ndTaskCreate
+ 0001:003301D8       AmbaMovieRecord_2ndTaskDelete
+ 0001:00330250       AmbaMovieRecord_2ndTaskOpen
+ 0001:00330428       AmbaMovieRecord_2ndTaskClose
  0001:00331568       a2140
  0001:00331570       aHttpAmbtwsvn2S
  0001:00332200       a2243
@@ -18399,7 +18716,11 @@
  0001:0033340C       nullsub_52
  0001:0033355C       a2316
  0001:00333564       aHttpAmbtwsvn_2
+ 0001:0033DFC0       AmbaImageMainAe_Task
+ 0001:0033EA74       AmbaImageMainAe_Snap
  0001:0033FD78       AmbaImageMainAe_SnapDspDgc
+ 0001:00340584       AmbaImageMainAwb_Entry
+ 0001:00340E64       AmbaImageMainAf_Entry
  0001:00341E88       nullsub_36
  0001:00341EB8       ItunerRawEnc_RawDataEventHandler
  0001:00341EF4       ItunerRawEnc_YuvDataEventHandler
@@ -18429,6 +18750,9 @@
  0001:003482FC       AmbaTUNE_Set_WbSimInfo
  0001:0034837C       AmbaTUNE_Get_ItunerInfo
  0001:00348458       atof
+ 0001:00349C64       AmbaExifFormatter
+ 0001:0034A4F0       PutMPFHeader
+ 0001:0034A67C       WriteStream
  0001:0034BE00       udc_driver_init
  0001:0034BF3C       AmbaUSB_Drv_WaitIsrOperationEmpty
  0001:0034C014       udc_add_isr_operation_ex
@@ -18511,9 +18835,12 @@
  0001:0035AA58       AmbaDSP_ImgSetStaticBadPixel
  0001:0035AEA8       AmbaDSP_ImgGetStaticBadPixelCorrection
  0001:0035B290       AmbaDSP_ImgGetStaticBadPixelCorrectionByPass
+ 0001:0035C374       AmpCalib_VigCalFromRaw
  0001:0035E904       AmbaDSP_ImgGetVignetteCompensation
  0001:00361228       aHjltzl_0
  0001:00361230       aCcn
+ 0001:00361EF8       AmpUT_CalibPathIf
+ 0001:0036221C       AmpUTCalibBlc_SaveRawImage
  0001:00362B9C       AppLibBLC_UTFunc
  0001:00363858       AppLibWB_UTFunc
  0001:00363C50       AppLibCalibWarp_SelectWarpTable
@@ -18521,6 +18848,8 @@
  0001:003649AC       AmpUTCalibWarp_GenWarpFromSpec
  0001:00366A64       pCalibWarpInfo
  0001:00369410       AppLibWarp_UTFunc
+ 0001:0036969C       AmpUTCalibCa_SelectCaTable
+ 0001:0036A50C       AmpUTCalibCa_GenCaFromSpec
  0001:0036D004       AppLibCA_UTFunc
  0001:00373DB8       a2191
  0001:00373DC0       aHttpAmbtwsvn_3
@@ -18532,6 +18861,75 @@
  0001:00375794       aHttpAmbtwsvn_5
  0001:003757D4       a2316_0
  0001:0037BA3C       AmbaDSP_ImgGetWbGain
+ 0001:0037BBEC       _USBHdlr_Lookup_Tuning_Mode
+ 0001:0037BC5C       _USBHdlr_Lookup_Tuning_Mode_Ext
+ 0001:0037BF7C       _usbhdlr_read_line
+ 0001:0037C020       _USBHdlr_Load_Text
+ 0001:0037C120       USBHdlr_Save_IDSP
+ 0001:0037C30C       _USBHdlr_Load_Raw
+ 0001:0037C370       _USBHldr_Load_Vignette
+ 0001:0037C448       _USBHdlr_sub_E97C448
+ 0001:0037C450       _USBHdlr_Load_Warp_Table
+ 0001:0037C528       _USBHdlr_sub_E97C528
+ 0001:0037C530       _USBHdlr_sub_E97C530
+ 0001:0037C538       _USBHdlr_Load_Ca_Table
+ 0001:0037C628       _USBHdlr_sub_E97C628
+ 0001:0037C630       _USBHdlr_sub_E97C630
+ 0001:0037C638       _USBHdlr_Load_FPN_Map
+ 0001:0037C710       _USBHdlr_sub_E97C710
+ 0001:0037C718       _USBHdlr_Load_CC_Reg
+ 0001:0037C7A4       _USBHdlr_Load_CC_ThreeD
+ 0001:0037C830       _USBHdlr_Load_FIRST_SHARPEN_ThreeD_Table
+ 0001:0037C894       _USBHdlr_Load_FINAL_SHARPEN_ThreeD_Table
+ 0001:0037C8F8       _USBHdlr_Load_ASF_ThreeD_Table
+ 0001:0037C95C       _USBHdlr_Load_HISO_ASF_ThreeD_Table
+ 0001:0037C9E0       _USBHdlr_Load_HISO_HIGH_ASF_ThreeD_Table
+ 0001:0037CA64       _USBHdlr_Load_HISO_LOW_ASF_ThreeD_Table
+ 0001:0037CAE0       _USBHdlr_Load_HISO_MED1_ASF_ThreeD_Table
+ 0001:0037CB64       _USBHdlr_Load_HISO_MED2_ASF_ThreeD_Table
+ 0001:0037CBEC       _USBHdlr_Load_HISO_LI2ND_ASF_ThreeD_Table
+ 0001:0037CC74       _USBHdlr_Load_HISO_CHROMA_ASF_ThreeD_Table
+ 0001:0037CCF0       _USBHdlr_Load_HISO_HIGH_SHARPEN_ThreeD_Table
+ 0001:0037CDAC       _USBHdlr_Load_HISO_MED_SHARPEN_ThreeD_Table
+ 0001:0037CE6C       _USBHdlr_Load_HISO_LISO1_SHARPEN_ThreeD_Table
+ 0001:0037CF28       _USBHdlr_Load_HISO_LISO2_SHARPEN_ThreeD_Table
+ 0001:0037CFE0       _USBHdlr_Load_HISO_CHROMA_MED_COMBINE_ThreeD_Table
+ 0001:0037D064       _USBHdlr_Load_HISO_CHROMA_LOW_COMBINE_ThreeD_Table
+ 0001:0037D0E4       _USBHdlr_Load_HISO_CHROMA_VERYLOW_COMBINE_ThreeD_Table
+ 0001:0037D170       _USBHdlr_Load_HISO_LUMA_NOISE_COMBINE_ThreeD_Table
+ 0001:0037D1EC       _USBHdlr_Load_LOW_ASF_COMBINE_ThreeD_Table
+ 0001:0037D268       _USBHdlr_Load_HISO_COMBINE_ThreeD_Table
+ 0001:0037D308       _USBHdlr_sub_E97D308
+ 0001:0037D310       _USBHdlr_sub_E97D310
+ 0001:0037D318       _USBHdlr_sub_E97D318
+ 0001:0037D320       _USBHdlr_sub_E97D320
+ 0001:0037D328       _USBHdlr_sub_E97D328
+ 0001:0037D330       _USBHdlr_sub_E97D330
+ 0001:0037D338       _USBHdlr_sub_E97D338
+ 0001:0037D340       _USBHdlr_sub_E97D340
+ 0001:0037D348       _USBHdlr_sub_E97D348
+ 0001:0037D350       _USBHdlr_sub_E97D350
+ 0001:0037D358       _USBHdlr_sub_E97D358
+ 0001:0037D360       _USBHdlr_sub_E97D360
+ 0001:0037D368       _USBHdlr_sub_E97D368
+ 0001:0037D370       _USBHdlr_sub_E97D370
+ 0001:0037D378       _USBHdlr_sub_E97D378
+ 0001:0037D380       _USBHdlr_sub_E97D380
+ 0001:0037D388       _USBHdlr_sub_E97D388
+ 0001:0037D390       _USBHdlr_sub_E97D390
+ 0001:0037D398       _USBHdlr_sub_E97D398
+ 0001:0037D3A0       _USBHdlr_sub_E97D3A0
+ 0001:0037D3A8       _USBHdlr_sub_E97D3A8
+ 0001:0037D3B0       _USBHdlr_sub_E97D3B0
+ 0001:0037D3B8       _USBHdlr_sub_E97D3B8
+ 0001:0037D3C0       _USBHdlr_sub_E97D3C0
+ 0001:0037D3C8       _USBHdlr_sub_E97D3C8
+ 0001:0037D3D0       _USBHdlr_sub_E97D3D0
+ 0001:0037D3D8       _USBHdlr_Save_Jpg
+ 0001:0037D450       _USBHdlr_sub_E97D450
+ 0001:0037D47C       _USBHdlr_Save_and_Load_Dummy
+ 0001:0037D4A0       USBHdlr_Load_Data
+ 0001:0037D51C       USBHdlr_Save_Data
  0001:0037D608       _USBHdlr_Get_SHPA_ASF
  0001:0037D8E8       _USBHdlr_Get_SHPB
  0001:0037DD94       _USBHdlr_Set_BIN_PKG
@@ -18541,7 +18939,84 @@
  0001:0037EBB8       aAfhm
  0001:0037F0D4       a0369BehKQnT
  0001:0037F4D4       _TextHdlr_Get_Driver_Letter
+ 0001:0037F554       _TextHdlr_Change_System_Drive
  0001:0037F6B0       _TextHdlr_Lookup_Tuning_Mode
+ 0001:0037F720       _TextHdlr_Lookup_Tuning_Mode_Ext
+ 0001:0037F790       _read_line
+ 0001:0037F88C       _TextHdlr_Load_Text
+ 0001:0037FB30       TextHdlr_Load_IDSP
+ 0001:0037FBA0       _TextHdlr_Check_Param_Completeness
+ 0001:003801BC       _TextHdlr_Save_Raw
+ 0001:003802D4       _TextHdlr_Load_Raw
+ 0001:0038046C       _TextHldr_Load_Vignette
+ 0001:00380574       _TextHldr_Load_Bypass_Vignette
+ 0001:0038069C       _TextHdlr_Load_Warp_Table
+ 0001:003807B8       _TextHdlr_Load_Bypass_Horizontal_Table
+ 0001:00380948       _TextHdlr_Load_Bypass_Vertical_Table
+ 0001:00380AC8       _TextHdlr_Load_Ca_Table
+ 0001:00380BE4       _TextHldr_Load_Bypass_Ca_Horizontal_Table
+ 0001:00380DA8       _TextHdlr_Load_Bypass_Ca_Vertical_Table
+ 0001:00380F4C       _TextHdlr_Load_FPN_Map
+ 0001:00381054       _TextHdlr_Load_Bypass_FPN_Map
+ 0001:00381158       _TextHdlr_Load_CC_Reg
+ 0001:00381208       _TextHdlr_Load_CC_ThreeD
+ 0001:003812D0       _TextHdlr_Load_FIRST_SHARPEN_ThreeD_Table
+ 0001:003813E0       _TextHdlr_Load_FINAL_SHARPEN_ThreeD_Table
+ 0001:003814EC       _TextHdlr_Load_ASF_ThreeD_Table
+ 0001:003815C0       _TextHdlr_Load_HISO_ASF_ThreeD_Table
+ 0001:00381698       _TextHdlr_Load_HISO_HIGH_ASF_ThreeD_Table
+ 0001:00381768       _TextHdlr_Load_HISO_LOW_ASF_ThreeD_Table
+ 0001:00381838       _TextHdlr_Load_HISO_MED1_ASF_ThreeD_Table
+ 0001:00381908       _TextHdlr_Load_HISO_MED2_ASF_ThreeD_Table
+ 0001:003819DC       _TextHdlr_Load_HISO_LI2ND_ASF_ThreeD_Table
+ 0001:00381AB0       _TextHdlr_Load_HISO_CHROMA_ASF_ThreeD_Table
+ 0001:00381B80       _TextHdlr_Load_HISO_HIGH_SHARPEN_ThreeD_Table
+ 0001:00381C88       _TextHdlr_Load_HISO_MED_SHARPEN_ThreeD_Table
+ 0001:00381D98       _TextHdlr_Load_HISO_LISO1_SHARPEN_ThreeD_Table
+ 0001:00381EA4       _TextHdlr_Load_HISO_LISO2_SHARPEN_ThreeD_Table
+ 0001:00381FAC       _TextHdlr_Load_HISO_CHROMA_MED_COMBINE_ThreeD_Table
+ 0001:00382080       _TextHdlr_Load_HISO_CHROMA_LOW_COMBINE_ThreeD_Table
+ 0001:00382148       _TextHdlr_Load_HISO_CHROMA_VERYLOW_COMBINE_ThreeD_Table
+ 0001:00382218       _TextHdlr_Load_HISO_LUMA_NOISE_COMBINE_ThreeD_Table
+ 0001:003822E0       _TextHdlr_Load_LOW_ASF_COMBINE_ThreeD_Table
+ 0001:003823A4       _TextHdlr_Load_HISO_COMBINE_ThreeD_Table
+ 0001:00382480       _TextHdlr_Save_FPN_Map
+ 0001:00382590       _TextHdlr_Save_Bypass_FPN_Map
+ 0001:00382698       _TextHdlr_Save_Vignette
+ 0001:0038288C       _TextHdlr_Save_Warp_Table
+ 0001:00382984       _TextHdlr_Save_Ca_Table
+ 0001:00382A80       _TextHdlr_Save_CC_Reg
+ 0001:00382B54       _TextHdlr_Save_CC_ThreeD
+ 0001:00382C18       _TextHdlr_Save_FIRST_SHARPEN_ThreeD_Table
+ 0001:00382D0C       _TextHdlr_Save_FINAL_SHARPEN_ThreeD_Table
+ 0001:00382DC8       _TextHdlr_Save_ASF_ThreeD_Table
+ 0001:00382E8C       _TextHdlr_Save_HISO_ASF_ThreeD_Table
+ 0001:00382F48       _TextHdlr_Save_HISO_HIGH_ASF_ThreeD_Table
+ 0001:00383004       _TextHdlr_Save_HISO_LOW_ASF_ThreeD_Table
+ 0001:003830C0       _TextHdlr_Save_HISO_MED1_ASF_ThreeD_Table
+ 0001:0038317C       _TextHdlr_Save_HISO_MED2_ASF_ThreeD_Table
+ 0001:0038323C       _TextHdlr_Save_HISO_LI2ND_ASF_ThreeD_Table
+ 0001:003832FC       _TextHdlr_Save_HISO_CHROMA_ASF_ThreeD_Table
+ 0001:003833C0       _TextHdlr_Save_HISO_HIGH_SHARPEN_ThreeD_Table
+ 0001:00383480       _TextHdlr_Save_HISO_MED_SHARPEN_ThreeD_Table
+ 0001:00383540       _TextHdlr_Save_HISO_LISO1_SHARPEN_ThreeD_Table
+ 0001:003835F8       _TextHdlr_Save_HISO_LISO2_SHARPEN_ThreeD_Table
+ 0001:003836B8       _TextHdlr_Save_HISO_CHROMA_MED_COMBINE_ThreeD_Table
+ 0001:00383778       _TextHdlr_Save_HISO_CHROMA_LOW_COMBINE_ThreeD_Table
+ 0001:00383840       _TextHdlr_Save_HISO_CHROMA_VERYLOW_COMBINE_ThreeD_Table
+ 0001:00383900       _TextHdlr_Save_HISO_LUMA_NOISE_COMBINE_ThreeD_Table
+ 0001:003839B4       _TextHdlr_Save_LOW_ASF_COMBINE_ThreeD_Table
+ 0001:00383A7C       _TextHdlr_Save_HISO_COMBINE_ThreeD_Table
+ 0001:00383B50       _TextHdlr_Save_Jpg
+ 0001:00383D1C       _TextHdlr_Save_Y
+ 0001:00383ED8       _TextHdlr_Save_UV
+ 0001:0038407C       _TextHdlr_Save_YUV
+ 0001:0038416C       _TextHdlr_Save_and_Load_Dummy
+ 0001:00384190       TextHdlr_Load_Data
+ 0001:0038420C       TextHdlr_Save_Data
+ 0001:00384294       _TextHdlr_load_Ext_file
+ 0001:0038438C       _TextHdlr_Save_Ext_File
+ 0001:003844D8       _TextHdlr_Fill_Ext_File_Path
  0001:003865A8       _ux_utility_print
  0001:00386658       a_ux_utility_pr
  0001:00386670       aSCanTCreatePri
@@ -18598,6 +19073,10 @@
  0001:00388898       aUdc_cdc_acm_ge
  0001:003888B8       aSInstanceDReac
  0001:00388C88       j__txe_mutex_put
+ 0001:00388CF4       AmbaIQParamImx117_A9_Get_Adj_Photo_Param
+ 0001:00388D30       AmbaIQParamImx117_A9_Get_Adj_Still_Low_Iso_param
+ 0001:00388D6C       AmbaIQParamImx117_A9_Get_Adj_Still_High_Iso_param
+ 0001:00388DB0       AmbaIQParamImx117_A9_Get_Scene_Data
  0001:0038A668       a0123456789ab_0
  0001:0038B21C       nullsub_37
  0001:0038E7B0       nullsub_38
@@ -18608,6 +19087,15 @@
  0001:003B3188       _AmbaItuner_Check_Filter
  0001:003B56F0       AmbaItuner_Execute
  0001:003B9EF8       AmbaItuner_Refresh
+ 0001:003BC674       TUNE_Parser_Create
+ 0001:003BC708       TUNE_Parser_Add_Reg
+ 0001:003BC758       TUNE_Parser_Set_Reglist_Valid
+ 0001:003BC830       TUNE_Parser_Get_Reg
+ 0001:003BC8EC       TUNE_Parser_Lookup_Reg
+ 0001:003BC984       TUNE_Parser_Lookup_Param
+ 0001:003BCB20       TUNE_Parser_Generate_Line
+ 0001:003BCC98       TUNE_Parser_Get_LineBuf
+ 0001:003BCD18       TUNE_Parser_Parse_Line
  0001:003C35BC       a0123456789ab_1
  0001:003C3638       _ux_utility_thread_suspend
  0001:003C363C       _ux_utility_thread_delete
@@ -18659,11 +19147,14 @@
  0001:00431B00       AmbaLink_RPCInit
  0001:00431C8C       AmbaRPC_MSG_Reg_CB
  0001:00431CB4       AmbaRPC_MSG_Send
+ 0001:00432D50       IMX117_Enable
  0001:00433908       test_is2_init
  0001:004341BC       test_is2_Rash
  0001:00434838       _video_raw_enc_program_get_raw_id
+ 0001:00434B60       _yuv_data_post_process
  0001:00434E58       _feed_data_pre_process
  0001:0043506C       test_is2_video_rawenc
+ 0001:0043A9B4       test_is2_stat
  0001:0043EEDC       test_is2_raw
  0001:0043F044       test_is2_rawenc
  0001:0043F12C       test_is2_lowiso
@@ -18672,6 +19163,7 @@
  0001:0043FBFC       pMode
  0001:004429CC       ishelp
  0001:00442AB0       AmbaIMG_TestCmd
+ 0001:004430B0       AppCdcAcmd_CreateLogMem
  0001:0044313C       AppCdcAcmd_Task
  0001:004431D0       AppCdcAcmd_RcvTask
  0001:00443280       AppCdcAcmd_Start
@@ -18969,13 +19461,6 @@
  0001:0046C1D0       nullsub_62
  0001:0046C8D4       nullsub_41
  0001:00475730       nullsub_42
- 0001:0047FC94       aGgggggaarr
- 0001:0047FCAA       aP
- 0001:0047FCAC       aI
- 0001:0047FCAE       aV
- 0001:0047FCB0       aI_0
- 0001:0047FCB2       aO_0
- 0001:0047FCC4       aUAd
  0001:004815D0       _ux_pictbridge_xml_function_input_getcapability_capability_layouts
  0001:00481700       _ux_pictbridge_xml_function_input_getcapability_capability_papertypes
  0001:0048178C       _ux_pictbridge_xml_function_input_notifydevicestatus_capabilitychanged
@@ -19050,6 +19535,7 @@
  0001:0048E887       aInvalidState
  0001:0048E895       aMemoryAllocati
  0001:0049298C       aSystem_0
+ 0001:0049310C       aDeferred_black
  0001:006B69D4       aAmbademo
  0001:006B84E4       aFc300x_1
  0001:006B8504       aDji
@@ -19166,102 +19652,118 @@
  0001:006FC7EC       aR_6
  0001:006FC81C       aR_7
  0001:006FC84C       aR_8
- 0001:007062A4       aA_27
- 0001:007062A6       aA_28
- 0001:007062A8       aA_29
- 0001:00706304       aA_30
- 0001:00706306       aA_31
- 0001:00706308       aA_32
- 0001:00706364       aA_33
- 0001:00706366       aA_34
- 0001:00706368       aA_35
- 0001:007063C4       aA_36
- 0001:007063C6       aA_37
- 0001:007063C8       aA_38
- 0001:00706424       aA_39
- 0001:00706426       aA_40
- 0001:00706428       aA_41
- 0001:00706484       aA_42
- 0001:00706486       aA_43
- 0001:00706488       aA_44
- 0001:007064E4       aA_45
- 0001:007064E6       aA_46
- 0001:007064E8       aA_47
- 0001:00706544       aA_48
- 0001:00706546       aA_49
- 0001:00706548       aA_50
- 0001:007065A4       aA_51
- 0001:007065A6       aA_52
- 0001:007065A8       aA_53
- 0001:00706604       aA_54
- 0001:00706606       aA_55
- 0001:00706608       aA_56
- 0001:00709528       aA_57
- 0001:0070952A       aA_58
+ 0001:007062A0       aA_27
+ 0001:007062A4       aA_28
+ 0001:007062A6       aA_29
+ 0001:007062A8       aA_30
+ 0001:00706300       aA_31
+ 0001:00706304       aA_32
+ 0001:00706306       aA_33
+ 0001:00706308       aA_34
+ 0001:00706360       aA_35
+ 0001:00706364       aA_36
+ 0001:00706366       aA_37
+ 0001:00706368       aA_38
+ 0001:007063C0       aA_39
+ 0001:007063C4       aA_40
+ 0001:007063C6       aA_41
+ 0001:007063C8       aA_42
+ 0001:00706420       aA_43
+ 0001:00706424       aA_44
+ 0001:00706426       aA_45
+ 0001:00706428       aA_46
+ 0001:00706480       aA_47
+ 0001:00706484       aA_48
+ 0001:00706486       aA_49
+ 0001:00706488       aA_50
+ 0001:007064E0       aA_51
+ 0001:007064E4       aA_52
+ 0001:007064E6       aA_53
+ 0001:007064E8       aA_54
+ 0001:00706540       aA_55
+ 0001:00706544       aA_56
+ 0001:00706546       aA_57
+ 0001:00706548       aA_58
+ 0001:007065A0       aA_59
+ 0001:007065A4       aA_60
+ 0001:007065A6       aA_61
+ 0001:007065A8       aA_62
+ 0001:00706600       aA_63
+ 0001:00706604       aA_64
+ 0001:00706606       aA_65
+ 0001:00706608       aA_66
+ 0001:00709520       aA_67
+ 0001:00709528       aA_68
+ 0001:0070952A       aA_69
  0001:00709550       aCkc
- 0001:00709558       aA_59
- 0001:0070955A       aA_60
+ 0001:00709558       aA_70
+ 0001:0070955A       aA_71
  0001:00709580       aCkc_0
- 0001:00709588       aA_61
- 0001:0070958A       aA_62
- 0001:00709708       aA_63
- 0001:0070970A       aA_64
+ 0001:00709588       aA_72
+ 0001:0070958A       aA_73
+ 0001:00709700       aA_74
+ 0001:00709708       aA_75
+ 0001:0070970A       aA_76
  0001:00709730       aCkc_1
- 0001:00709738       aA_65
- 0001:0070973A       aA_66
+ 0001:00709738       aA_77
+ 0001:0070973A       aA_78
  0001:00709760       aCkc_2
- 0001:00709768       aA_67
- 0001:0070976A       aA_68
- 0001:007170C4       aA_69
- 0001:007170C6       aA_70
+ 0001:00709768       aA_79
+ 0001:0070976A       aA_80
+ 0001:007170BC       aA_81
+ 0001:007170C4       aA_82
+ 0001:007170C6       aA_83
  0001:007170EC       aCkc_3
- 0001:007170F4       aA_71
- 0001:007170F6       aA_72
+ 0001:007170F4       aA_84
+ 0001:007170F6       aA_85
  0001:0071711C       aCkc_4
- 0001:00717124       aA_73
- 0001:00717126       aA_74
- 0001:007172A4       aA_75
- 0001:007172A6       aA_76
+ 0001:00717124       aA_86
+ 0001:00717126       aA_87
+ 0001:0071729C       aA_88
+ 0001:007172A4       aA_89
+ 0001:007172A6       aA_90
  0001:007172CC       aCkc_5
- 0001:007172D4       aA_77
- 0001:007172D6       aA_78
+ 0001:007172D4       aA_91
+ 0001:007172D6       aA_92
  0001:007172FC       aCkc_6
- 0001:00717304       aA_79
- 0001:00717306       aA_80
+ 0001:00717304       aA_93
+ 0001:00717306       aA_94
  0001:00724A48       aTtt_3
  0001:00724A78       aDdd_3
- 0001:00724A80       aA_81
- 0001:00724A82       aA_82
+ 0001:00724A80       aA_95
+ 0001:00724A82       aA_96
  0001:00724AD8       aQq
  0001:00724C28       aTtt_4
  0001:00724C58       aDdd_4
- 0001:00724C60       aA_83
- 0001:00724C62       aA_84
+ 0001:00724C60       aA_97
+ 0001:00724C62       aA_98
  0001:00724CB8       aQq_0
  0001:00732B54       aTtt_5
  0001:00732B84       aDdd_5
- 0001:00732B8C       aA_85
- 0001:00732B8E       aA_86
  0001:00732BB4       aXx_3
  0001:00732BBC       a2_4
  0001:00732D34       aTtt_6
  0001:00732D64       aDdd_6
- 0001:00732D6C       aA_87
- 0001:00732D6E       aA_88
  0001:00732D94       aXx_4
  0001:00732D9C       a2_5
  0001:00740C60       aTtt_7
  0001:00740C90       aTtt_8
- 0001:00740C98       aA_89
- 0001:00740C9A       aA_90
  0001:00740CC0       aXxx
  0001:00740CF0       aXxx_0
  0001:00740E40       aTtt_9
  0001:00740E70       aTtt_10
- 0001:00740E78       aA_91
- 0001:00740E7A       aA_92
  0001:00740EA0       aXxx_1
  0001:00740ED0       aXxx_2
+ 0001:00783D84       aDdd_7
+ 0001:00783DB4       aDdd_8
+ 0001:00783DE4       aDdd_9
+ 0001:00783E14       aDdd_10
+ 0001:00783E44       aDdd_11
+ 0001:00784234       aDdd_12
+ 0001:00784264       aDdd_13
+ 0001:00784294       aDdd_14
+ 0001:007842C4       aDdd_15
+ 0001:007842F4       aDdd_16
  0001:00786084       test_lists
  0001:0078608C       aUbi_mtd8RootUb
  0001:007860DC       a23697071727374
@@ -19355,6 +19857,7 @@
  0001:007BC654       aCode
  0001:007BC6B4       _AmbaSysLogCtrl__State
  0001:007BC78C       _AmbaRTC_DaysOfMonth
+ 0001:007BC850       aD_4
  0001:007BD43C       _TestSpiConfig
  0001:007BD448       _TestSpiProtocol
  0001:007BD51C       aBbt23tbb
@@ -19470,5 +19973,12 @@
  0002:00025120       a98765443210__0
  0003:000ED700       SdHostAmb
  0004:00000000       unused_after_end
+ 0004:0143A46C       _DjiDspImgFirData
+ 0004:02FC1D8C       _DSP_StillCapMem
+ 0004:02FC1EFC       _DSP_VideoTuningMem
+ 0004:02FC1F18       _DSP_TotalCacheMemSize
+ 0004:02FC1F1C       _DSP_TotalNonCachedMemSize
+ 0004:02FC1F20       _DSP_TotalUsedNonCachedMem
+ 0004:02FC1F24       _UserCameraMode_Buf
 
 Program entry point at 0001:00000000
