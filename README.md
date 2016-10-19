@@ -74,4 +74,4 @@ contains a binary image of executable file, and this tool wraps it with ELF
 header. The ELF format can be then easily disassembled, as most debuggers can
 read ELF files.
 
-Example: ```./amba_sys2elf.py -vv -e -p P3X_FW_V01.08.0080_12_part_sys.a9s```
+Example: ```./amba_sys2elf.py -vv -e -l 0x6000000 -p P3X_FW_V01.08.0080_12_part_sys.a9s```

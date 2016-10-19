@@ -32,6 +32,7 @@ class ProgOptions:
   inifile = ''
   section_pos = { '.text': 0x0, '.ARM.exidx': -2, '.dsp_buf': -3, '.data': -4, 'no_init': -5, '.bss.noinit': -6, '.bss': -7 }
   elftemplate='amba_sys2elf_template.elf'
+  address_space_len=0x2000000 # 32MB
   verbose = 0
   dry_run = False
   command = ''
@@ -275,7 +276,7 @@ def syssw_bin2elf(po, fwpartfile):
     sect_pos += sect_len
     if (sect_pos % 0x20) != 0:
       sect_pos += 0x20 - (sect_pos % 0x20)
-    sect_len = 0x2000000 - sect_pos
+    sect_len = po.address_space_len - sect_pos
     po.section_pos[sectname] = sect_pos
     sections_size[sectname] = sect_len
   if (po.verbose > 1):
@@ -296,7 +297,7 @@ def syssw_bin2elf(po, fwpartfile):
         if sectname not in sections_order:
           sections_order.append(sectname)
   # Prepare list of section sizes
-  sectpos_next = 0x2000000 # max size is larger than bin file size due to uninitialized sections (bss)
+  sectpos_next = po.address_space_len # max size is larger than bin file size due to uninitialized sections (bss)
   for sectname in reversed(sections_order):
     if sectname in sections_size.keys():
       if (sections_size[sectname] > sectpos_next - po.section_pos[sectname]):
@@ -383,7 +384,7 @@ def main(argv):
   # Parse command line options
   po = ProgOptions()
   try:
-     opts, args = getopt.getopt(argv,"hevt:p:s:o:",["help","version","mkelf","dry-run","fwpart=","template","section=","output="])
+     opts, args = getopt.getopt(argv,"hevt:p:l:s:o:",["help","version","mkelf","dry-run","fwpart=","template","addrsplen=","section=","output="])
   except getopt.GetoptError:
      print("Unrecognized options; check amba_sys2elf.py --help")
      sys.exit(2)
@@ -393,6 +394,7 @@ def main(argv):
         print("amba_sys2elf.py <-e> [-v] -p <fwmdfile> [-t <tmpltfile>]")
         print("  -p <fwpartfile> - name of the firmware partition file")
         print("  -e - make ELF file from a binary image within partition file")
+        print("  -l - set address space length; influences size of last section")
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
@@ -408,6 +410,8 @@ def main(argv):
         po.outfile = arg
      elif opt in ("-t", "--template"):
         po.elftemplate = arg
+     elif opt in ("-l", "--addrsplen"):
+        po.address_space_len = int(arg,0)
      elif opt in ("-s", "--section"):
         arg_m = re.search('(?P<name>[0-9A-Za-z._-]+)@(?P<pos>[Xx0-9A-Fa-f]+)', arg)
         # Convert to integer, detect base from prefix
