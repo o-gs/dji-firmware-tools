@@ -21,21 +21,22 @@ class FwPkgHeader(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('magic', c_char * 6),
               ('hdrend_offs', c_ushort),
-              ('reserved8', c_ushort),
-              ('version', c_ushort),
+              ('reserved8', c_int),
               ('manufacturer', c_char * 16),
               ('model', c_char * 16),
               ('entry_count', c_ushort),
-              ('reserved2E', c_int),
-              ('reserved32', c_int),
+              ('ver_latest_enc', c_int),
+              ('ver_rollbk_enc', c_int),
               ('padding', c_ubyte * 10)]
 
   def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
-    varkey = 'version'
-    d[varkey] = "{:d}".format(d[varkey])
+    varkey = 'ver_latest'
+    d[varkey] = d['reserved8'] ^ d[varkey+"_enc"]  ^ 0x5127A564;
+    varkey = 'ver_rollbk'
+    d[varkey] = d['reserved8'] ^ d[varkey+"_enc"]  ^ 0x5127A564;
     varkey = 'padding'
     d[varkey] = "".join("{:02X}".format(x) for x in d[varkey])
     return d
@@ -47,9 +48,11 @@ class FwPkgHeader(LittleEndianStructure):
     varkey = 'hdrend_offs'
     fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
     varkey = 'reserved8'
-    fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
-    varkey = 'version'
-    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    fp.write("{:s}={:08X}\n".format(varkey,d[varkey]))
+    varkey = 'ver_latest'
+    fp.write("{:s}={:02d}.{:02d}.{:04d}\n".format(varkey, (d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey])&65535))
+    varkey = 'ver_rollbk'
+    fp.write("{:s}={:02d}.{:02d}.{:04d}\n".format(varkey, (d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey])&65535))
     varkey = 'padding'
     fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
     #TODO
@@ -165,7 +168,7 @@ class FwPkgEntry(LittleEndianStructure):
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
     varkey = 'version'
-    d[varkey] = "{:02d}.{:02d}.{:d}".format((d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey])&65535)
+    d[varkey] = "{:02d}.{:02d}.{:04d}".format((d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey])&65535)
     varkey = 'dt_md5'
     d[varkey] = "".join("{:02x}".format(x) for x in d[varkey])
     varkey = 'dt_2ndhash'
