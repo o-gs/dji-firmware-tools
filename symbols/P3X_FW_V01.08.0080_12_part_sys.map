@@ -23,7 +23,9 @@
  0001:0000F958       nullsub_46
  0001:000106E8       nullsub_47
  0001:00012CBC       nullsub_48
+ 0001:00013A60       __div_variant1
  0001:00013A8C       __udivsi3
+ 0001:00014B98       pf_memcpy
  0001:00014C6C       memset_zero
  0001:000187C8       nullsub_49
  0001:00019EB0       nullsub_50
@@ -6086,6 +6088,7 @@
  0001:0005D978       aDjiserialnumge
  0001:0005D990       aSCreateMutex_0
  0001:0005D9A8       aSTakeMutexFail
+ 0001:0005DAC0       _crc16_tab
  0001:0005E100       aDjidng_entryid
  0001:0005E114       aDji_dngSLUTheI
  0001:0005E144       aDjidng_exififd
@@ -17764,6 +17767,7 @@
  0001:000E0990       Amba_AdjPivControl
  0001:000E0C2C       imgproc_adjapptest
  0001:000E12E4       str2
+ 0001:000E1314       s
  0001:000E1330       memcpy
  0001:000E1344       AmbaDSP_ImgSetToneCurve_CheckArgs
  0001:000E14B8       AmbaDSP_ImgSetToneCurve_PrintInfo
@@ -17873,6 +17877,8 @@
  0001:0011B448       Iqt_MemMgr_Init
  0001:0011B4D8       Iqt_Param_Init
  0001:0011C200       Sc_Scene_Detect
+ 0001:0011CE94       __div_variant2
+ 0001:0011D004       memcmp
  0001:0011E3F4       AmbaFS_Chdir
  0001:0011E5EC       AmbaFS_fopen
  0001:0011E700       AmbaFS_fclose
@@ -17888,6 +17894,8 @@
  0001:0011EE7C       AmbaFS_NextDirEnt
  0001:0011EFC4       AmbaFS_Mkdir
  0001:0011F04C       AmbaFS_Rmdir
+ 0001:0011F0D4       s1
+ 0001:0011F0D8       s2
  0001:0011F0EC       AmbaFS_Stat
  0001:0011F348       AmbaFS_SetVol
  0001:0011F3B0       AmbaFS_GetVol
@@ -17899,6 +17907,8 @@
  0001:0011F7A4       AmbaFS_feof
  0001:0011F7EC       AmbaFS_CleanDir
  0001:0011F894       AmbaFS_ChmodDir
+ 0001:0011FA78       AmbaFS_GetCodeMode
+ 0001:0011FA84       AmbaFS_GetDrive
  0001:0011FAD0       AmbaFS_GetFileInstance
  0001:0011FB2C       AmbaFS_FreeFileInstance
  0001:0011FCB4       AmbaFS_GetError
@@ -17934,11 +17944,29 @@
  0001:00135268       _txe_thread_terminate
  0001:001352BC       _txe_thread_suspend
  0001:001352F4       _txe_thread_resume
+ 0001:0013532C       _tx_sub_E73532C
  0001:0013555C       _tx_thread_identify
+ 0001:001356C8       _tx_sub_E7356C8
+ 0001:00135840       _tx_sub_E735840
+ 0001:00135974       _tx_sub_E735974
+ 0001:001359EC       _tx_sub_E7359EC
+ 0001:00135AF0       _tx_sub_E735AF0
+ 0001:00135C3C       _tx_sub_E735C3C
  0001:00135CB4       _txe_mutex_get
  0001:00135D64       _txe_mutex_put
  0001:00135DD0       _txe_event_flags_create
+ 0001:00135EFC       _tx_sub_E735EFC
+ 0001:00135F74       _tx_sub_E735F74
  0001:00136020       _txe_event_flags_set
+ 0001:001360BC       _tx_sub_E7360BC
+ 0001:00136248       _tx_sub_E736248
+ 0001:001362F8       _tx_sub_E7362F8
+ 0001:00136388       _tx_sub_E736388
+ 0001:00136468       _tx_sub_E736468
+ 0001:00136660       _tx_sub_E736660
+ 0001:001366CC       _tx_sub_E7366CC
+ 0001:0013682C       _tx_sub_E73682C
+ 0001:00136910       _tx_sub_E736910
  0001:001378E4       AmbaDSP_MsgDispatchTask
  0001:00137910       AmbaDSP_MsgDispatchTask_Init
  0001:00137B34       AmbaDSP_WaitJpegEncodeDone
@@ -18329,7 +18357,13 @@
  0001:0015F32C       AmbaDSP_ImgHighIsoSetHighIsoBlendLumaLevel
  0001:0015F4D8       AmbaDSP_ImgHighIsoGetHighIsoBlendLumaLevel
  0001:0015F870       _SdHostGetStatus
+ 0001:001603BC       AmbaFS_PfUnicodeFsexec
+ 0001:00160408       AmbaFS_PfUnicodeFsfirst
  0001:00160868       FSGetFreeSpace
+ 0001:00160C9C       AmbaFS_GetFSType
+ 0001:00161050       pf2_fappend
+ 0001:0016107C       w_strcpy
+ 0001:00161094       pf_strcpy
  0001:00161174       strncpy
  0001:00161A50       AmbaFS_CreateFat
  0001:00161CB4       CreateSystemArea
@@ -18402,8 +18436,37 @@
  0001:0017E100       _tx_thread_system_preempt_check
  0001:0017E214       _tx_thread_create
  0001:0017E570       _tx_thread_delete
+ 0001:0017E778       _tx_thread_terminate
+ 0001:0017EC08       _tx_thread_resume
  0001:0017EE2C       _tx_thread_system_suspend
+ 0001:0017F5DC       _tx_sub_E77F5DC
+ 0001:0017F7F0       _tx_sub_E77F7F0
+ 0001:0017FA88       _tx_sub_E77FA88
+ 0001:0017FCF4       _tx_sub_E77FCF4
+ 0001:0017FF24       _tx_sub_E77FF24
+ 0001:001800F0       _tx_sub_E7800F0
+ 0001:00180318       _tx_sub_E780318
+ 0001:00180634       _tx_sub_E780634
+ 0001:00180920       _tx_sub_E780920
+ 0001:00180E34       _tx_sub_E780E34
+ 0001:00181040       _tx_sub_E781040
+ 0001:001812D8       _tx_sub_E7812D8
  0001:0018157C       _tx_event_flags_set
+ 0001:00181A74       _tx_sub_E781A74
+ 0001:00181C48       _tx_sub_E781C48
+ 0001:00181E74       _tx_sub_E781E74
+ 0001:0018210C       _tx_sub_E78210C
+ 0001:0018238C       _tx_sub_E78238C
+ 0001:0018283C       _tx_sub_E78283C
+ 0001:00182BE8       _tx_sub_E782BE8
+ 0001:00182DC8       _tx_sub_E782DC8
+ 0001:00182FE8       _tx_sub_E782FE8
+ 0001:00183180       _tx_sub_E783180
+ 0001:00183400       _tx_sub_E783400
+ 0001:0018357C       _tx_sub_E78357C
+ 0001:00183800       _tx_sub_E783800
+ 0001:00183AB4       _tx_sub_E783AB4
+ 0001:00183DAC       _tx_sub_E783DAC
  0001:001842A8       nullsub_11
  0001:001842AC       nullsub_12
  0001:001842B0       nullsub_13
@@ -18494,6 +18557,7 @@
  0001:0019C798       AmbaRTSL_SDSetIos
  0001:0019CA08       SdDataDone
  0001:0019D494       AmbaNand_SetDevInfo
+ 0001:0019D5BC       AmbaRTSL_NandGetHost
  0001:0019DAF0       NftlGetPartObj
  0001:0019DD20       NftlReadTInfo
  0001:0019E00C       NftlWriteTInfo
@@ -18606,6 +18670,7 @@
  0001:001C05B4       _tx_trace_object_register
  0001:001C0850       _tx_thread_system_resume
  0001:001C0EBC       _tx_timer_system_deactivate
+ 0001:001C11EC       _tx_sub_E7C11EC
  0001:001C3F8C       AmbaDSP_ImgSetWarpCompensation
  0001:001C43E8       AmbaDSP_ImgCalcWarpCompensation
  0001:001C47F0       AmbaDSP_ImgCalcWarpCompensation_0
@@ -18655,12 +18720,17 @@
  0001:001D0F9C       NandBbtRead
  0001:001D106C       NandBbtWrite
  0001:001D128C       NandBbtCreate
+ 0001:001D15C0       AmbaNandBBT_IsBadBlock
  0001:001D16E8       AmbaNAND_MarkBlock
  0001:001D188C       NandPseudoCBRead
  0001:001D1AEC       NandPseudoCBWrite
  0001:001D1D58       NandPseudoCB
+ 0001:001D2A00       AmbaNAND_GetMainSize
+ 0001:001D2A10       AmbaNAND_GetPagesPerBlock
  0001:001D2A24       AmbaNAND_LoadPartition
+ 0001:001D2ECC       AmbaNAND_WritePartition
  0001:001D30B8       AmbaNAND_Copyback
+ 0001:001D3194       pMeta
  0001:001D319C       AmbaNAND_Erase
  0001:001D3334       AmbaNAND_Read
  0001:001D368C       AmbaNAND_ReadSector
@@ -18674,6 +18744,7 @@
  0001:001F04B8       AmbaRTSL_TimerGet
  0001:001F0C50       AmbaLink_Entry
  0001:001F0D9C       nullsub_21
+ 0001:001F0DA0       AmbaLink_Free
  0001:001F0DAC       AmbaRPC_MSG_Init
  0001:001F0E18       AmbaLink_Init
  0001:001F1020       AmbaLink_Boot
@@ -18687,6 +18758,8 @@
  0001:001F3D94       AmbaDSP_ImgSetCawarpCompensationByPass
  0001:001F464C       _tx_execution_thread_enter
  0001:001F46BC       _tx_execution_thread_exit
+ 0001:001F4764       _tx_sub_E7F4764
+ 0001:001F4888       _tx_sub_E7F4888
  0001:001F4A08       _tx_thread_schedule
  0001:001F4AB0       tx_thread_vfp_enable
  0001:001F4AD8       tx_thread_vfp_disable
@@ -18807,6 +18880,7 @@
  0001:002046F0       DjiUstInit
  0001:00204D64       AmbaPrintk_Disabled
  0001:00205CB4       DjiCheckRTCTest
+ 0001:00205F0C       pFileName
  0001:002062A4       aSpi
  0001:002062A8       DjiCheckingEntry
  0001:002062EC       DjiCheckingInit
@@ -18828,11 +18902,13 @@
  0001:00208050       DjiAgingVideoOk
  0001:00208328       DjiAging
  0001:00208690       DjiAging_sub_E808690
+ 0001:00208B9C       pBuf
  0001:00208BC4       DjiAging_0
  0001:00209248       DjiAgingTestRecord
  0001:00209364       DjiVideoCheckingEntry
  0001:002093FC       DjiVideoCheckingInit
  0001:00209460       DjiAgingTaskDelete
+ 0001:00209514       p_str
  0001:0020957C       AmbaDSP_sub_E80957C
  0001:002096F4       AmbaBufferInit
  0001:0020A12C       DjiNonCachedBufAlloc
@@ -18851,10 +18927,13 @@
  0001:0020B41C       DjiReboot
  0001:0020B718       DjiRomDataMiscSave
  0001:0020BA84       DjiRomDataMiscLoad
+ 0001:0020C134       ShlResetReasonPrintLine
+ 0001:0020C2A4       _ShlPrintResetReason
  0001:0020C360       DjiDspAssertionHandlerInit
  0001:0020C484       DjiRomDataMiscInit
  0001:0020C6C8       DjiMiscInit
  0001:0020C7C4       DjiRTCInit
+ 0001:0020C920       DjiPrintResetReason
  0001:0020C9B8       DjiLinuxRelatedPartsInit
  0001:0020CAD8       DjiReset68013
  0001:0020CD20       DjiPreviousStateCleanUp
@@ -18938,6 +19017,7 @@
  0001:00218DE0       DjiCCapTaskEntry
  0001:00218E7C       DjiCmmCCapInit
  0001:00218FB8       DjiStateFlagsClear
+ 0001:00219038       DjiStateFlagsGet
  0001:00219194       DjiCmmOsdMutexTry
  0001:0021922C       DjiCmmSrtStart
  0001:00219400       DjiCmmSrtRecord
@@ -18952,6 +19032,8 @@
  0001:0021B4C4       DjiCmmCreateOsdTask
  0001:0021B584       DjiCmmOsdInit
  0001:0021B71C       DjiCmmMonSensorAddAll
+ 0001:0021B8B0       DjiUegSet_sub_E81B8B0
+ 0001:0021B908       DjiUegGet_sub_E81B908
  0001:0021B9A8       DjiCmmMonThresholdGet
  0001:0021BA98       DjiCmmMonReport
  0001:0021BC68       DjiCmmMonCurStatusGet
@@ -18976,6 +19058,7 @@
  0001:0021DC80       DjiCmmTemperatureFatal
  0001:0021DE3C       DjiCmmTemperatureMonitorInit
  0001:0021DFC0       str1
+ 0001:0021DFD0       DjiDetectProcs
  0001:0021DFF4       DjiCmmUpdateEngineInit
  0001:0021E110       DjiWdgTaskEntry
  0001:0021E18C       DjiCmmWdgStart
@@ -18989,8 +19072,14 @@
  0001:0021F18C       DjiMovieRecordBufferGood
  0001:0021F468       DjiCmmBufferInit
  0001:0021F578       DjiCmmRebootInit
+ 0001:0021F7CC       AmbaIPC_SpinLock
+ 0001:0021F804       AmbaIPC_SpinUnlock
+ 0001:0021F864       AmbaIPC_SpinLockIrqSave
+ 0001:0021F8C0       AmbaIPC_SpinUnlockIrqRestore
  0001:0021F8F8       AmbaIPC_SpinInit
+ 0001:0022027C       AmbaNAND_GetPtb
  0001:00220390       AmbaNAND_SetPtb
+ 0001:002204A8       AmbaNAND_GetMeta
  0001:0022060C       AmbaNAND_SetMeta
  0001:0022A990       AmbaIPC_Alloc
  0001:0022A9A8       AmbaIPC_RegisterChannel
@@ -19018,6 +19107,7 @@
  0001:0022DE68       HiberNand_ReadHeader
  0001:0022E2AC       HiberNand_Save
  0001:0022E39C       HiberNand_Restore
+ 0001:0022E48C       Hiber_GetPartInfo
  0001:0022E50C       Hiber_Return
  0001:0022E5F8       AmbaIPC_HiberSaveRpmsgInfo
  0001:0022E828       AmbaIPC_HiberRestoreRpmsgInfo
@@ -19041,6 +19131,8 @@
  0001:0023893C       AmbaGuiTask_Entry
  0001:00239504       nullsub_22
  0001:00239600       DjiTimerGetTickCount
+ 0001:00239744       CalculateCRC16
+ 0001:00239998       DjiUegPkgVerifyCrc
  0001:0023AABC       DjiFileCopy
  0001:0023ADFC       DjiCirBufInit
  0001:0023B0E0       DjiSerialNumGenerate
@@ -19051,6 +19143,7 @@
  0001:0023BDF0       DjiMsgAtvStatusSet
  0001:0023BF94       DjiMsgAtvStatusGet
  0001:0023C364       DjiMsgRcTimeSyncHandle
+ 0001:0023C45C       r1_0
  0001:0023C50C       DjiMsgEncConfig
  0001:0023CDF4       DjiMsgEncIndirectVertify
  0001:0023CEC4       DjiMsgOpModeCheck
@@ -19238,10 +19331,13 @@
  0001:0025EE3C       DjiMsgGimbalOsdSet
  0001:0025F100       DjiMsgRcRtcSync
  0001:0025F2E0       DjiMsgAuthorizedMac
+ 0001:0025F524       DjiMsg_sub_E85F524
  0001:0025F534       DjiMsgTransDel
  0001:0025F814       DjiCheckSensorTest
  0001:0025FF00       DjiMsgIfCali
+ 0001:002604B0       DjiMsg_sub_E8604B0
  0001:002604D0       DjiMsgAuthorLevelSet
+ 0001:0026056C       DjiMsgAuthorLevelGet
  0001:002607E0       DjiMsgSeqNumCreate
  0001:00260918       DjiMsgSeqNumEQ
  0001:00260D40       DjiMsgSeqNumDQ
@@ -19262,6 +19358,7 @@
  0001:00265814       DjiMsgFlagCtrl
  0001:00265A48       DjiMsgRecvUserHandle
  0001:002662D0       DjiMsgAdjustTask
+ 0001:002663E0       DjiMsgIsAdjustTaskFinished
  0001:0026642C       DjiMsgRecvTask
  0001:00266A4C       DjiMsgSendTask
  0001:00266FB0       DjiMsgHandleTask
@@ -19333,6 +19430,7 @@
  0001:00274608       AmbaMovieRecord_TaskDelete
  0001:00274680       AmbaMovieRecord_TaskOpen
  0001:0027487C       AmbaMovieRecord_TaskClose
+ 0001:00274C7C       dst
  0001:00274CAC       DjiSdStatGet
  0001:00274E40       DjiSdStatSet
  0001:0027549C       DjiSdFullChk
@@ -19397,6 +19495,22 @@
  0001:0027EF98       DjiPictureDisplay_Handler
  0001:00280F64       DjiThumbnailDisplay_Handler
  0001:002844F0       DjiVideoDisplay_Handler
+ 0001:00284EE4       DjiShlPbVideo
+ 0001:00284FA8       DjiShlPbButton
+ 0001:00284FF0       DjiShlPbMode
+ 0001:0028502C       DjiShlPbUp
+ 0001:00285068       DjiShlPbDown
+ 0001:002850A4       DjiShlPbLeft
+ 0001:002850E0       DjiShlPbRight
+ 0001:0028511C       DjiShlPbOk
+ 0001:00285164       DjiShlPbBack
+ 0001:002851A4       DjiShlPbZoomIn
+ 0001:002851E0       DjiShlPbZoomOut
+ 0001:00285220       DjiShlPbPrevPage
+ 0001:00285264       DjiShlPbNextPage
+ 0001:002852AC       DjiShlPbCancel
+ 0001:002852F0       DjiShlPbEnterMultiDisp
+ 0001:0028532C       DjiShlPbDownloadOffset
  0001:00285380       DjiPlaybackStatusCheck
  0001:00285484       DjiPlaybackInit
  0001:00285E54       DjiGetCurSingleDispFileName
@@ -19480,6 +19594,7 @@
  0001:002962F4       DjiLed0StateSet
  0001:0029630C       DjiLedTestColorSet
  0001:002964C8       DjiLedTestStateSet
+ 0001:00296618       DjiLedTestLedShow
  0001:00296BBC       AmbaAudio_InputCachedSizeQuery
  0001:00296C28       AmbaAudio_InputNonCachedSizeQuery
  0001:00296C7C       AmbaAudio_InputCreate
@@ -19500,6 +19615,7 @@
  0001:00298578       AmbaAudio_OutputTaskStop
  0001:002987C8       AmbaExceptionHandler
  0001:00298B30       AmbaPLL_SetIdspClk
+ 0001:00298E5C       HiberTest_HiberStandby
  0001:00299020       DjiUegEsc0VersionHandle
  0001:0029903C       DjiUegEsc0EntryHandle
  0001:00299054       DjiUegEsc0ConfirmHandle
@@ -19593,6 +19709,7 @@
  0001:002999D4       DjiUegWifiVersionHandle
  0001:002999F0       DjiUegWifiFinishHandle
  0001:00299A08       DjiUegWifiRebootHandle
+ 0001:00299A28       DjiUegPktGetDrive
  0001:00299B3C       DjiUegFwUpdateDeleteHistory
  0001:00299D4C       aLog
  0001:00299D50       DjiUegUpdateLogRecord
@@ -19647,6 +19764,7 @@
  0001:002A14E8       DjiUegFwRebootProc
  0001:002A174C       DjiUegFwSucceedHandle
  0001:002A1B1C       DjiUegFwFailHandle
+ 0001:002A1D00       DjiUegFinishFailedAtResume
  0001:002A1E88       DjiUegFwRxReceiveWrite
  0001:002A2004       DjiUegFwRxEntryHandle
  0001:002A263C       DjiUegFwRxConfirmHandle
@@ -19656,16 +19774,28 @@
  0001:002A49C0       DjiUegFwUpdateById_0
  0001:002A5468       DjiUegFwOrderControl
  0001:002A55A0       DjiUegFwUpdateProc
- 0001:002A58A4       DjiUegGetPacketInfo
+ 0001:002A5898       DjiFwGetFileNameInfo
+ 0001:002A58A4       DjiUegGetPacketBuffer
+ 0001:002A58B0       DjiUegPacketFileNamePrefix
+ 0001:002A58D8       DjiUegGetPacketFileNameInfo
+ 0001:002A5938       DjiUegGetPacketFileNameWildcard
+ 0001:002A5998       DjiUegGetPacketFileNameFmt
  0001:002A59FC       DjiUegPktStageSet
  0001:002A5B0C       DjiUegPktStageGet
+ 0001:002A5BCC       DjiUeg_sub_E8A5BCC
  0001:002A5FF0       DjiUegPktSelect
+ 0001:002A65CC       a_ENDL_1
+ 0001:002A6608       DjiUeg_sub_E8A6608
+ 0001:002A6DFC       aENDL
  0001:002A6E24       DjiUegPktHeaderGet
+ 0001:002A7290       aR_10
  0001:002A729C       DjiUegPktVersionLinkSet
  0001:002A7574       DjiUegPktVersionLinkGet
  0001:002A77D0       DjiUegPktVersionLinkUpdate
  0001:002A7924       DjiUegPktFlowTypeGet
  0001:002A7D5C       DjiUegPktHeaderCheck
+ 0001:002A824C       aDji_0
+ 0001:002A8290       aP3x
  0001:002A84F0       DjiUegPktPercentFactorGet
  0001:002A867C       DjiUegPktVersionCheck
  0001:002A9354       DjiUegPktFwInfoInit
@@ -19674,6 +19804,7 @@
  0001:002A9E98       DjiUegPktUserConfirm
  0001:002AA3EC       DjiUegPktUpdate
  0001:002ABF8C       DjiUegPktUpdateProc
+ 0001:002AC1E0       DjiUegDetectProc
  0001:002AC36C       DjiUegUpdateProc
  0001:002AC380       DjiUegUpdateStageInit
  0001:002AC510       DjiUegInit
@@ -19801,6 +19932,7 @@
  0001:002C4798       XCodeDisplay_Handler
  0001:002C4974       AmbaMonitor_HDMI_Entry
  0001:002C5BBC       StringRemoveChar
+ 0001:002C6B68       pName
  0001:002C71CC       AmbaShellEntry
  0001:002C740C       AmbaShell_GetEnv
  0001:002C7478       AmbaShell_Print
@@ -20079,6 +20211,7 @@
  0001:002F5FD4       DjiShlPrintShmoo
  0001:002F613C       DjiShlClearShmoo
  0001:002F6160       DjiShlSetShmooDbgTest
+ 0001:002F62E0       _tx_sub_E8F62E0
  0001:002F6848       nullsub_59
  0001:002F684C       nullsub_32
  0001:002F68A0       nullsub_33
@@ -20111,6 +20244,7 @@
  0001:003027F4       AmpUTCalibVig_sub_E9027F4
  0001:00302DDC       AppLibVignette_UTFunc
  0001:00303638       AmbaImageMainEis_Init
+ 0001:00303748       AmbaImageMainEis_SetAdcSamplingRate
  0001:00303A1C       nullsub_35
  0001:00303D04       AmbaImageMainEis_SetDummy
  0001:00303D84       AmbaImageMainEis_GyroParamInit
@@ -20118,6 +20252,7 @@
  0001:00304134       AmbaImgEisCtrl_ModeInit
  0001:00304BF0       AmbaImageMainEis_RangeUpdate
  0001:003056F4       AmbaImageMainEis_Enable
+ 0001:003083D0       sscanf
  0001:00308558       TRANSSRV_MemInit
  0001:00308610       TRANSSRV_MemAlloc
  0001:003088C8       TRANSSRV_MemFree
@@ -20225,6 +20360,7 @@
  0001:003175AC       DjiMoviePlayback_TimeSearchMs
  0001:00317764       AmbaMovMuxer_Create
  0001:00317B20       AmbaMovMuxer_Destroy
+ 0001:0031C46C       AmbaStillDec_TaskCreate
  0001:0031D4A4       AmbaMovDemuxer
  0001:0031D58C       AmbaMovParseKeyFrame
  0001:0031DC5C       AmbaMovLoadKeyFrame
@@ -20291,6 +20427,7 @@
  0001:0032D47C       sd_update_B
  0001:0032D490       FwUpdater_CheckImgHeader
  0001:0032D5DC       FwUpdater_ParseFwHeader
+ 0001:0032D908       pTable
  0001:0032DE54       DjiAudioDemuxGetWritePointer
  0001:0032DEE4       DjiAudioDecGetReadPointer
  0001:0032DFD0       AmbaAudio_EncMaxConfigSize
@@ -20463,6 +20600,7 @@
  0001:00351634       aAmbausb_clas_7
  0001:00351650       aSFailedToCle_3
  0001:0035167C       aSimpleClassCle
+ 0001:003517F0       _ux_utility_memory_set
  0001:00351A34       a_ux_utility_ge
  0001:00351A54       aSNoSystemCache
  0001:00351AC8       _ux_device_stack_transfer_request
@@ -20478,6 +20616,8 @@
  0001:00352E2C       DjiAfIfSetFStop
  0001:00353158       DjiAfIfSetFocusValue
  0001:0035332C       DjiAfGetBufferIndex
+ 0001:0035947C       _tx_sub_E95947C
+ 0001:003595EC       _tx_sub_E9595EC
  0001:0035A8F4       AmbaDSP_ImgSetStaticBadPixelCorrectionInfo
  0001:0035AA58       AmbaDSP_ImgSetStaticBadPixelCorrectionHighlightMode
  0001:0035AB90       AmbaDSP_ImgSetStaticBadPixelCorrection
@@ -20497,8 +20637,10 @@
  0001:0035F848       AmbaUTVigControllerStillVigStrength
  0001:0035F93C       AmbaUTVigControllerVigMain
  0001:0035FB5C       AmbaUTVigControllerInit
+ 0001:0035FFF4       sscanf_sub1
  0001:00361228       aHjltzl_0
  0001:00361230       aCcn
+ 0001:00361238       DjiCalMgr_sub_E961238
  0001:00361EF8       AmpUT_CalibPathIf
  0001:0036221C       AmpUTCalibBlc_SaveRawImage
  0001:00362B9C       AppLibBLC_UTFunc
@@ -20686,6 +20828,7 @@
  0001:00384294       _TextHdlr_load_Ext_file
  0001:0038438C       _TextHdlr_Save_Ext_File
  0001:003844D8       _TextHdlr_Fill_Ext_File_Path
+ 0001:0038626C       _tx_sub_E98626C
  0001:003865A8       _ux_utility_print
  0001:00386658       a_ux_utility_pr
  0001:00386670       aSCanTCreatePri
@@ -20703,6 +20846,8 @@
  0001:00387110       aUdc_handler_en
  0001:0038712C       aSCanTGetEndpoi
  0001:00387154       aUdc_handler__0
+ 0001:0038716C       _tx_sub_E98716C
+ 0001:003872F4       j__tx_sub_E735C3C
  0001:00387310       _ux_device_stack_class_register
  0001:00387824       aUx_pictbridge_
  0001:00387844       aUx_pictbridg_0
@@ -20742,7 +20887,9 @@
  0001:00388868       aSet_control_li
  0001:00388898       aUdc_cdc_acm_ge
  0001:003888B8       aSInstanceDReac
+ 0001:00388B38       j__tx_sub_E735974
  0001:00388C88       j__txe_mutex_put
+ 0001:00388C8C       j__tx_sub_E73532C
  0001:00388CF4       AmbaIQParamImx117_A9_Get_Adj_Photo_Param
  0001:00388D30       AmbaIQParamImx117_A9_Get_Adj_Still_Low_Iso_param
  0001:00388D6C       AmbaIQParamImx117_A9_Get_Adj_Still_High_Iso_param
@@ -20784,6 +20931,7 @@
  0001:003C4C18       AmbaUSB_sub_E9C4C18
  0001:003C5694       _ux_utility_string_length_get
  0001:003C56B4       j__txe_event_flags_set
+ 0001:003C56C0       j__tx_sub_E735EFC
  0001:003D27BC       nullsub_54
  0001:003D7AD0       aLibopusUnknown
  0001:003E028C       AmbaDSP_ImgSetDeferredBlackLevelInfo
@@ -20791,6 +20939,9 @@
  0001:003E02F8       AmbaDSP_ImgSetDeferredBlackLevel
  0001:003E0BDC       AmbaDSP_ImgGetDeferredBlackLevel
  0001:003E110C       aUsbAmbausb_drv
+ 0001:003E1134       _ux_pictbridge_object_tag_line_add
+ 0001:003E13FC       _ux_pictbridge_dpsclient_input_object_configure_print_service
+ 0001:003E15DC       _ux_device_class_pima_object_add
  0001:003E26FC       a_ux_device_c_0
  0001:003E2728       aSCanTAllocateM
  0001:003E2B34       a_ux_device_c_1
@@ -20817,12 +20968,25 @@
  0001:0042AA2C       PrepareLisoFiltersAndIsoCfg
  0001:0042B018       PrepareHisoFiltersAndIsoCfg
  0001:0042B5E8       AmbaCaptureYuvGenTask
+ 0001:0042CC98       AppLib_HiberTestEntry
+ 0001:0042CEC0       aD_4
+ 0001:0042EAA0       IpcTestSlock
+ 0001:0042EB9C       IpcTestMutex
+ 0001:0042ECF8       aU_0
+ 0001:0042ECFC       aLu
+ 0001:0042EDE4       IpcTestRpc
+ 0001:0042F2E8       IpcTestRpmsg
+ 0001:004300D4       IpcTestRfs
+ 0001:00430250       IpcTestUsb
+ 0001:00430864       IpcTestTrans
+ 0001:00430A18       IpcTestTest
+ 0001:0043157C       _IPCInit_IpcTestEntry
  0001:00431638       AmbaIPC_TestInit
  0001:004317A0       print_paramdata
  0001:004318A4       show_msgblk
  0001:004318DC       rpc_msg_receiver
  0001:00431954       rpc_msg_send
- 0001:00431A48       IpcTestEntry
+ 0001:00431A48       _RPCInit_IpcTestEntry
  0001:00431B00       AmbaLink_RPCInit
  0001:00431C8C       AmbaRPC_MSG_Reg_CB
  0001:00431CB4       AmbaRPC_MSG_Send
@@ -20898,6 +21062,7 @@
  0001:00447D80       AppMtpd_DbDeleteObject
  0001:004480F8       nullsub_60
  0001:004483C0       AppMtpd_CbDevicePropValueSet
+ 0001:00448534       src
  0001:00448580       AmbaUSB_MSC_DoMount
  0001:00448640       FillPropDesc_ShortNoForm
  0001:004486DC       FillPropDesc_LongNoForm
@@ -20985,8 +21150,10 @@
  0001:00451B04       DjiTestBpc
  0001:00451DAC       _tx_initialize_low_level
  0001:00451DB0       __tx_irq_handler
+ 0001:00451DB4       _tx_sub_EA51DB4
  0001:00451DBC       __tx_fiq_handler
  0001:00451DD0       __tx_irq_handler_0
+ 0001:00451FA8       _tx_sub_EA51FA8
  0001:004521B0       main
  0001:004521C0       tx_application_define
  0001:00452228       _tx_initialize_kernel_enter
@@ -21064,6 +21231,9 @@
  0001:0045BDEC       aSNoActionForDi
  0001:0045BE10       aSNoActionForEn
  0001:0045C478       aMscReadCdFaile
+ 0001:0045CAC8       j__tx_sub_EA5CAF0
+ 0001:0045CAF0       _tx_sub_EA5CAF0
+ 0001:0045CB24       _tx_sub_EA5CB24
  0001:0045CF24       ClassMtp_VendorRequest
  0001:0045CF98       delete_interrupt_thread
  0001:0045D02C       _ux_device_class_pima_reset
@@ -21097,6 +21267,7 @@
  0001:0045E220       aUsbxEpDRxError
  0001:0045E268       a0xXRxSemaOutEr
  0001:0045E2B8       aUsbxEpDRxErr_0
+ 0001:0045E440       j__tx_sub_E7359EC
  0001:0045E4B8       ux_slave_class_cdc_acm_in_mutex
  0001:0045E54C       aUx_slave_cl_12
  0001:0045E56C       aUx_slave_cl_13
@@ -21177,6 +21348,8 @@
  0001:0046C1D0       nullsub_62
  0001:0046C8D4       nullsub_41
  0001:00475730       nullsub_42
+ 0001:0048101C       atoi_detect_base
+ 0001:00481088       aX_4
  0001:004815D0       _ux_pictbridge_xml_function_input_getcapability_capability_layouts
  0001:00481700       _ux_pictbridge_xml_function_input_getcapability_capability_papertypes
  0001:0048178C       _ux_pictbridge_xml_function_input_notifydevicestatus_capabilitychanged
@@ -21229,7 +21402,13 @@
  0001:00482634       _ux_pictbridge_xml_function_root_input
  0001:00482644       _ux_pictbridge_xml_function_root_output
  0001:00482654       _ux_pictbridge_xml_function_root_xml
- 0001:00483018       notifyDeviceStatus
+ 0001:00483018       _ux_pictbridge_dpsclient_thread
+ 0001:00483280       _tx_sub_EA83280
+ 0001:00483344       _tx_sub_EA83344
+ 0001:00483410       _tx_sub_EA83410
+ 0001:004834CC       _tx_sub_EA834CC
+ 0001:004835A0       _tx_sub_EA835A0
+ 0001:0048367C       _tx_sub_EA8367C
  0001:00483740       _tx_thread_shell_entry
  0001:00483810       _tx_thread_timeout
  0001:00483934       _ux_device_class_uvc_thread
@@ -21261,20 +21440,62 @@
  0001:0048E86F       aRequestNotImpl
  0001:0048E887       aInvalidState
  0001:0048E895       aMemoryAllocati
+ 0001:0048E8B2       aEmpty_3
+ 0001:0048E8B3       aEmpty_4
  0001:0048E8B4       aEmpty_0
  0001:0048E8B5       aEmpty_1
  0001:0048E8B6       aEmpty_2
- 0001:0049298C       aSystem_0
- 0001:0049310C       aDeferred_black
+ 0001:0048F1C0       USB_MscDescFs
+ 0001:0048F200       USB_MscDescHs
+ 0001:0048F240       USB_UnknStr10
+ 0001:0048F280       USB_UnknDescXs12
+ 0001:0048F2C0       USB_UnknDescXs26
+ 0001:0048F320       USB_UnknStr12
+ 0001:0048F360       USB_UnknDescXs13
+ 0001:0048F3A0       USB_UnknDescXs14
+ 0001:0048F400       USB_UnknStr13
+ 0001:0048F440       USB_UnknDescXs15
+ 0001:0048F4A0       USB_UnknDescXs20
+ 0001:0048F520       USB_CdcAcmStr2
+ 0001:0048F560       USB_UnknDescXs19
+ 0001:0048F600       USB_UnknDescXs18
+ 0001:0048F6C0       USB_CdcAcmStr3
+ 0001:0048F720       USB_MscDescFs2
+ 0001:0048F780       USB_UnknDescXs17
+ 0001:0048F7E0       USB_AmbaMixStr
+ 0001:0048F840       USB_UnknDescXs21
+ 0001:0048F880       USB_UnknDescXs22
+ 0001:0048F8E0       USB_SimpleStr
+ 0001:0048F940       USB_UnknDescXs27
+ 0001:0048F980       USB_UnknDescXs25
+ 0001:0048F9C0       USB_UnknStr16
+ 0001:0048FA00       USB_UnknDescXs23
+ 0001:0048FA40       USB_UnknDescXs24
+ 0001:0048FAA0       USB_MtpStr1
+ 0001:0048FB20       USB_PictBridgeDescHs
+ 0001:0048FBC0       USB_UnknDescXs29
+ 0001:0048FC20       USB_UnknDescXs38
+ 0001:0048FCA0       USB_CdcAcmStr1
+ 0001:0048FD00       USB_UnknDescXs30
+ 0001:0048FD60       USB_HidStr
+ 0001:0048FDA0       USB_UnknDescXs31
+ 0001:0048FDE0       USB_UnknDescXs37
+ 0001:0048FE80       USB_UnknDescXs33
+ 0001:0048FEE0       USB_UnknDescXs34
+ 0001:0048FF40       USB_IapInterfcStr
+ 0001:0048FFA0       USB_UnknDescXs35
+ 0001:004900C0       USB_UnknDescXs36
+ 0001:004901E0       USB_VideoStr
  0001:006B69D4       aAmbademo
  0001:006B84E4       aFc300x_1
  0001:006B8504       aDji
  0001:006B8524       aV01_30_5036_2
  0001:006BA15C       aAmba_dsp_img_a
- 0001:006BA18C       aO_mode_liso
- 0001:006BA1AC       aO_mode_hiso
+ 0001:006BA17C       aAmba_dsp_img_algo_mode_liso
+ 0001:006BA19C       aAmba_dsp_img_algo_mode_hiso
  0001:006BA1BC       aAmba_dsp_yuv42
  0001:006BA1CC       aAmba_dsp_yuv_0
+ 0001:006BA284       test_lists_ipc
  0001:006BE244       aTtt
  0001:006BE274       aDdd
  0001:006BE27C       aA_0
@@ -21484,17 +21705,7 @@
  0001:00740E70       aTtt_10
  0001:00740EA0       aXxx_1
  0001:00740ED0       aXxx_2
- 0001:00783D84       aDdd_7
- 0001:00783DB4       aDdd_8
- 0001:00783DE4       aDdd_9
- 0001:00783E14       aDdd_10
- 0001:00783E44       aDdd_11
- 0001:00784234       aDdd_12
- 0001:00784264       aDdd_13
- 0001:00784294       aDdd_14
- 0001:007842C4       aDdd_15
- 0001:007842F4       aDdd_16
- 0001:00786084       test_lists
+ 0001:00786084       test_lists_rpc
  0001:0078608C       aUbi_mtd8RootUb
  0001:007860DC       a23697071727374
  0001:0078AF14       aSuperviewwarpt
@@ -21574,21 +21785,16 @@
  0001:007A9A50       aA9_dsc_platfor
  0001:007A9A60       a6668828
  0001:007A9C70       aStatus_3
+ 0001:007B4C34       aDjiPrivate
  0001:007B4D40       aFc300x_2
  0001:007B8324       aDji_app_0
- 0001:007B9FA4       aJ
+ 0001:007B8C14       struct_EDB8C14
  0001:007BA638       firmwares
- 0001:007BBE75       aP3x_fw_v___bin
- 0001:007BBEB5       aP3x_fw_vD_D_D_bin
- 0001:007BBEF6       aP3x_fw_v____bin
- 0001:007BBF36       aP3x_fw_vD_D_D___bin
- 0001:007BBFF8       aP3x
  0001:007BC0A8       dji_ust_properties
  0001:007BC634       aCa9_0
  0001:007BC654       aCode
  0001:007BC6B4       _AmbaSysLogCtrl__State
  0001:007BC78C       _AmbaRTC_DaysOfMonth
- 0001:007BC850       aD_4
  0001:007BD43C       _TestSpiConfig
  0001:007BD448       _TestSpiProtocol
  0001:007BD51C       aBbt23tbb
@@ -21636,21 +21842,21 @@
  0001:007F7764       aDdiscvry_dps
  0001:007F7774       aHdiscvry_dps
  0001:007F7784       aDrequest_dps
- 0001:007F7794       aDrsponse_dps
+ 0001:007F7794       _ux_pictbridge_drsponse_dps
  0001:007F77A4       aPimaClientStorageVolume
  0001:007F77C0       aPimaClientSt_0
- 0001:007F77DC       aXmlVersion1_0
- 0001:007F77F0       aDpsXmlnsHttpWw
- 0001:007F781C       aDps
- 0001:007F7820       aOutput_0
+ 0001:007F77DC       _ux_pictbridge_xml_tag_line_xmlversion
+ 0001:007F77F0       _ux_pictbridge_xml_tag_line_dpsxmlns
+ 0001:007F781C       _ux_pictbridge_xml_tag_line_dps
+ 0001:007F7820       _ux_pictbridge_xml_tag_line_output
  0001:007F7828       aInput
- 0001:007F7830       aResult
- 0001:007F7838       aConfigureprint
- 0001:007F7850       aDpsversions
- 0001:007F785C       aVendorname
- 0001:007F7868       aVendorspecific
- 0001:007F7880       aProductname
- 0001:007F788C       aSerialno
+ 0001:007F7830       _ux_pictbridge_xml_tag_line_result
+ 0001:007F7838       _ux_pictbridge_xml_tag_line_configureprintservice
+ 0001:007F7850       _ux_pictbridge_xml_tag_line_dpsversions
+ 0001:007F785C       _ux_pictbridge_xml_tag_line_vendorname
+ 0001:007F7868       _ux_pictbridge_xml_tag_line_vendorspecificversion
+ 0001:007F7880       _ux_pictbridge_xml_tag_line_productname
+ 0001:007F788C       _ux_pictbridge_xml_tag_line_serialno
  0001:007F7898       aCapability
  0001:007F78A4       aGetcapability
  0001:007F78B4       aQualities
@@ -21665,8 +21871,8 @@
  0001:007F7924       aCroppings
  0001:007F7930       aCharrepertoire
  0001:007F7940       aGetdevicestatu
- 0001:007F7950       aNotifydevicest
- 0001:007F7964       aNotifyjobstatu
+ 0001:007F7950       _ux_pictbridge_xml_tag_line_notifydevicest
+ 0001:007F7964       _ux_pictbridge_xml_tag_line_notifyjobstatus
  0001:007F7974       aStartjob
  0001:007F7980       aAbortjob
  0001:007F798C       aContinuejob
@@ -21705,12 +21911,48 @@
  0003:000ED700       SdHostAmb
  0004:00000000       unused_after_end
  0004:0143A46C       _DjiDspImgFirData
+ 0004:016F9278       _msg_author_level
+ 0004:016F9298       _msg_adjust_task_finished
+ 0004:017E1810       upgrade_log_mutex
+ 0004:017E1A18       _DjiUegPktUpdateProc_taskName
+ 0004:017E9A58       dji_ueg_packet_buffer
+ 0004:017E9FC4       _fw_upd_buffer
+ 0004:018F6844       _fw_upd_loop
+ 0004:018F6848       _fw_upd_debug_lv1
+ 0004:018F684C       _fw_upd_debug_lv2
  0004:018F6850       _printk_buf
+ 0004:018F6C50       _upgrade_log_buf
+ 0004:018F7054       _ueg_update_in_progress
+ 0004:0232C294       g_AmbaFSMutex
+ 0004:0232C6C8       g_AmbaFSCodeMode
+ 0004:02339CB8       AmbaEMMC_Boot
+ 0004:02361F94       EisEnableDlyCnt
+ 0004:0236314C       EisObj
+ 0004:023631E8       EisSensorStatus
+ 0004:02363258       BiasAdjustBitShift
+ 0004:02363420       Sec2ProcLinesPerSample
+ 0004:023650CC       NandPartitionMutex
+ 0004:02365100       _nand_PageBuf
+ 0004:02365900       _nand_SpareBuf
+ 0004:02366180       _nand_CheckBuf
+ 0004:0255088C       _tx_thread_current_ptr
+ 0004:02550890       _tx_thread_execute_ptr
+ 0004:02550CE8       _tx_thread_preempt_disable
+ 0004:02550CEC       _tx_thread_mutex_release
+ 0004:02551278       _tx_trace_buffer_current_ptr
+ 0004:0255127C       _tx_trace_event_enable_bits
+ 0004:02551280       _tx_trace_simulated_time
+ 0004:0256AB17       CurrFrameTime
+ 0004:0256AB1D       EisUpdateEndTime1
+ 0004:0256AB1E       EisUpdateEndTime2
+ 0004:0256AB1F       DefEisUpdateEndTime
+ 0004:02F807C0       PageData
  0004:02FC1D8C       _DSP_StillCapMem
  0004:02FC1EFC       _DSP_VideoTuningMem
  0004:02FC1F18       _DSP_TotalCacheMemSize
  0004:02FC1F1C       _DSP_TotalNonCachedMemSize
  0004:02FC1F20       _DSP_TotalUsedNonCachedMem
  0004:02FC1F24       _UserCameraMode_Buf
+ 0004:0413AE64       AmbaFsSlot
 
 Program entry point at 0001:00000000
