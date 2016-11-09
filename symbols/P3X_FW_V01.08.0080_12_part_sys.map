@@ -11007,7 +11007,7 @@
  0001:00090B64       aB_0
  0001:00090B68       aC_7
  0001:00090B6C       aD_2
- 0001:00090B70       a1
+ 0001:00090B70       md5
  0001:00090B78       a2_11
  0001:00090B80       a3_4
  0001:00090B88       a4_1
@@ -17879,6 +17879,8 @@
  0001:0011C200       Sc_Scene_Detect
  0001:0011CE94       __div_variant2
  0001:0011D004       memcmp
+ 0001:0011D078       _convert_ae_index
+ 0001:0011D1EC       Amba_Img_Exif_Compute_AAA_Exif
  0001:0011E3F4       AmbaFS_Chdir
  0001:0011E5EC       AmbaFS_fopen
  0001:0011E700       AmbaFS_fclose
@@ -17948,7 +17950,7 @@
  0001:0013555C       _tx_thread_identify
  0001:001356C8       _tx_sub_E7356C8
  0001:00135840       _tx_sub_E735840
- 0001:00135974       _tx_sub_E735974
+ 0001:00135974       _txe_semaphore_delete
  0001:001359EC       _tx_sub_E7359EC
  0001:00135AF0       _tx_sub_E735AF0
  0001:00135C3C       _tx_sub_E735C3C
@@ -17956,7 +17958,7 @@
  0001:00135D64       _txe_mutex_put
  0001:00135DD0       _txe_event_flags_create
  0001:00135EFC       _tx_sub_E735EFC
- 0001:00135F74       _tx_sub_E735F74
+ 0001:00135F74       _txe_event_flags_get
  0001:00136020       _txe_event_flags_set
  0001:001360BC       _tx_sub_E7360BC
  0001:00136248       _tx_sub_E736248
@@ -18361,6 +18363,7 @@
  0001:00160408       AmbaFS_PfUnicodeFsfirst
  0001:00160868       FSGetFreeSpace
  0001:00160C9C       AmbaFS_GetFSType
+ 0001:00160FE8       pf2_fread
  0001:00161050       pf2_fappend
  0001:0016107C       w_strcpy
  0001:00161094       pf_strcpy
@@ -18440,17 +18443,17 @@
  0001:0017EC08       _tx_thread_resume
  0001:0017EE2C       _tx_thread_system_suspend
  0001:0017F5DC       _tx_sub_E77F5DC
- 0001:0017F7F0       _tx_sub_E77F7F0
+ 0001:0017F7F0       _tx_semaphore_delete
  0001:0017FA88       _tx_sub_E77FA88
- 0001:0017FCF4       _tx_sub_E77FCF4
+ 0001:0017FCF4       _tx_semaphore_put
  0001:0017FF24       _tx_sub_E77FF24
  0001:001800F0       _tx_sub_E7800F0
- 0001:00180318       _tx_sub_E780318
+ 0001:00180318       _tx_mutex_delete
  0001:00180634       _tx_sub_E780634
- 0001:00180920       _tx_sub_E780920
+ 0001:00180920       _tx_mutex_put
  0001:00180E34       _tx_sub_E780E34
- 0001:00181040       _tx_sub_E781040
- 0001:001812D8       _tx_sub_E7812D8
+ 0001:00181040       _tx_event_flags_delete
+ 0001:001812D8       _tx_event_flags_get
  0001:0018157C       _tx_event_flags_set
  0001:00181A74       _tx_sub_E781A74
  0001:00181C48       _tx_sub_E781C48
@@ -18465,7 +18468,7 @@
  0001:00183400       _tx_sub_E783400
  0001:0018357C       _tx_sub_E78357C
  0001:00183800       _tx_sub_E783800
- 0001:00183AB4       _tx_sub_E783AB4
+ 0001:00183AB4       _tx_byte_release
  0001:00183DAC       _tx_sub_E783DAC
  0001:001842A8       nullsub_11
  0001:001842AC       nullsub_12
@@ -18531,22 +18534,51 @@
  0001:001915A8       DSP_ImgCoreProcessVideoMctfEnable
  0001:00191678       DSP_ImgCoreProcessVideoMctfCompressionEnable
  0001:0019172C       SDPowerCycle
+ 0001:001917F4       AmbaSD_sub_E7917F4
+ 0001:00191B7C       AmbaSD_sub_E791B7C
  0001:00191F38       SDSetupSdioCard
  0001:001920E0       Mmc4DetermineBusWidth
  0001:001921B8       SDSetupMmc4Card
  0001:001923AC       SDSetupMmcCard
  0001:001926AC       SDSetupUhsMode
  0001:001928E8       SdSetupSdmemCard
+ 0001:00192D60       AmbaSD_Isr
  0001:00192D78       AmbaSD_GetHost
  0001:00192E1C       AmbaSD_CardINSlot
  0001:00192E38       AmbaSD_InitCard
+ 0001:00193710       AmbaSD_GoIdleState
+ 0001:00193ABC       AmbaSD_sub_E793ABC
+ 0001:00193E68       AmbaSD_sub_E793E68
+ 0001:0019421C       AmbaSD_sub_E79421C
+ 0001:001945C8       AmbaSD_sub_E7945C8
+ 0001:00194994       AmbaSD_sub_E794994
+ 0001:00194DB8       AmbaSD_sub_E794DB8
+ 0001:00195150       AmbaSD_sub_E795150
+ 0001:001954E4       AmbaSD_sub_E7954E4
+ 0001:001958E0       AmbaSD_sub_E7958E0
+ 0001:00195C8C       AmbaSD_sub_E795C8C
+ 0001:001960B8       AmbaSD_sub_E7960B8
+ 0001:00196470       AmbaSD_sub_E796470
  0001:00196810       AmbaSD_ReadSingleBlock
  0001:00196C7C       AmbaSD_ReadMultipleBlock
+ 0001:00197160       AmbaSD_sub_E797160
  0001:0019756C       AmbaSD_WriteSingleBlock
  0001:001979E0       AmbaSD_WriteMultipleBlock
+ 0001:00197E84       AmbaSD_sub_E797E84
+ 0001:00198224       AmbaSD_sub_E798224
+ 0001:001985C8       AmbaSD_sub_E7985C8
+ 0001:0019896C       AmbaSD_sub_E79896C
+ 0001:00198D10       AmbaSD_sub_E798D10
+ 0001:00199160       AmbaSD_sub_E799160
+ 0001:00199544       AmbaSD_sub_E799544
+ 0001:0019995C       AmbaSD_sub_E79995C
+ 0001:00199D60       AmbaSD_sub_E799D60
+ 0001:0019A148       AmbaSD_sub_E79A148
  0001:0019A348       AmbaSD_Erase
  0001:0019A4CC       AmbaSD_ReadSector
  0001:0019A91C       AmbaSD_WriteSector
+ 0001:0019ADA4       AmbaSD_CardEject
+ 0001:0019B0D0       AmbaSD_sub_E79B0D0
  0001:0019B2EC       SDSetCmdReg
  0001:0019B984       AmbaRTSL_SdGetHost
  0001:0019BA58       AmbaRTSL_SDWriteData
@@ -18554,6 +18586,7 @@
  0001:0019C3BC       AmbaRTSL_SDSendCmd
  0001:0019C504       AmbaRTSL_SDCardINSlot
  0001:0019C540       AmbaRTSL_SDGetWriteProtect
+ 0001:0019C628       AmbaRTSL_SDResume
  0001:0019C798       AmbaRTSL_SDSetIos
  0001:0019CA08       SdDataDone
  0001:0019D494       AmbaNand_SetDevInfo
@@ -19133,6 +19166,19 @@
  0001:00239600       DjiTimerGetTickCount
  0001:00239744       CalculateCRC16
  0001:00239998       DjiUegPkgVerifyCrc
+ 0001:00239A50       ComputeSum16
+ 0001:00239A84       ComputeSum16_FilePart
+ 0001:00239BE0       MD5_Init
+ 0001:00239C14       MD5_Update
+ 0001:00239CF4       MD5_Final
+ 0001:00239D6C       aR_13
+ 0001:00239D78       MD5_IntToBuf
+ 0001:00239DE4       MD5_BufToInt
+ 0001:00239E38       MD5_Transform
+ 0001:0023A86C       MD5_FilePart
+ 0001:0023A9E4       aR_11
+ 0001:0023A9E8       buf
+ 0001:0023AA18       MD5_MemBuffer
  0001:0023AABC       DjiFileCopy
  0001:0023ADFC       DjiCirBufInit
  0001:0023B0E0       DjiSerialNumGenerate
@@ -19715,8 +19761,11 @@
  0001:00299D50       DjiUegUpdateLogRecord
  0001:00299FA4       DjiUegUpdateResultRecord
  0001:0029A1C4       DjiUegPathPostfixAdd
+ 0001:0029A3EC       DjiUegEventFlagTake
+ 0001:0029A40C       DjiUegEventFlagGive
+ 0001:0029A420       DjiUegEventFlagClear
  0001:0029A434       DjiUegGetFirmwareTypeById
- 0001:0029A484       DjiUeg_sub_E89A484
+ 0001:0029A484       DjiUegGetTargetFirmwareTypeInfo
  0001:0029A4E8       DjiUegFwConfigCheck
  0001:0029A658       DjiUegFwMsgHandler
  0001:0029A870       DjiUegFwInfoGetById
@@ -19732,6 +19781,7 @@
  0001:0029B5E4       DjiUegFwFlagGive
  0001:0029B6CC       DjiUegFwFlagWait
  0001:0029B990       DjiUegFwIsEncFile
+ 0001:0029BE68       aR_12
  0001:0029C0B4       DjiUegFwCheck
  0001:0029C5D8       DjiUegFwDetectById
  0001:0029CB80       DjiUegFwMsgVersionSend
@@ -20211,6 +20261,7 @@
  0001:002F5FD4       DjiShlPrintShmoo
  0001:002F613C       DjiShlClearShmoo
  0001:002F6160       DjiShlSetShmooDbgTest
+ 0001:002F62A4       _tx_timer_expiration_process
  0001:002F62E0       _tx_sub_E8F62E0
  0001:002F6848       nullsub_59
  0001:002F684C       nullsub_32
@@ -21341,7 +21392,9 @@
  0001:00469670       ambsh_rm
  0001:00469914       ambsh_savebin
  0001:00469B88       ambsh_sleep
+ 0001:00469BD8       _ambsh_suspend_usage
  0001:00469BFC       ambsh_suspend
+ 0001:00469CA0       aSr
  0001:00469CAC       ambsh_true
  0001:00469CDC       ambsh_vol
  0001:0046BE88       nullsub_61
@@ -21403,7 +21456,7 @@
  0001:00482644       _ux_pictbridge_xml_function_root_output
  0001:00482654       _ux_pictbridge_xml_function_root_xml
  0001:00483018       _ux_pictbridge_dpsclient_thread
- 0001:00483280       _tx_sub_EA83280
+ 0001:00483280       _tx_byte_pool_cleanup
  0001:00483344       _tx_sub_EA83344
  0001:00483410       _tx_sub_EA83410
  0001:004834CC       _tx_sub_EA834CC
@@ -21416,6 +21469,7 @@
  0001:004839DC       a_ux_device__18
  0001:004839F8       aSWaitSemaphore
  0001:00483A1C       a_udc_uvc_event
+ 0001:00483A34       _ux_device_class_hid_interrupt_thread
  0001:00483AE8       aUsbxCanTSendHi
  0001:00483C80       init_vfpv3
  0001:00487FE4       aRr
@@ -21795,6 +21849,7 @@
  0001:007BC654       aCode
  0001:007BC6B4       _AmbaSysLogCtrl__State
  0001:007BC78C       _AmbaRTC_DaysOfMonth
+ 0001:007BD3D4       g_SdCmdTimeout
  0001:007BD43C       _TestSpiConfig
  0001:007BD448       _TestSpiProtocol
  0001:007BD51C       aBbt23tbb
@@ -21914,6 +21969,7 @@
  0004:016F9278       _msg_author_level
  0004:016F9298       _msg_adjust_task_finished
  0004:017E1810       upgrade_log_mutex
+ 0004:017E1934       djiueg_event_flags
  0004:017E1A18       _DjiUegPktUpdateProc_taskName
  0004:017E9A58       dji_ueg_packet_buffer
  0004:017E9FC4       _fw_upd_buffer
@@ -21931,10 +21987,12 @@
  0004:023631E8       EisSensorStatus
  0004:02363258       BiasAdjustBitShift
  0004:02363420       Sec2ProcLinesPerSample
+ 0004:023646DC       g_AmbaSD_EventFlag
  0004:023650CC       NandPartitionMutex
  0004:02365100       _nand_PageBuf
  0004:02365900       _nand_SpareBuf
  0004:02366180       _nand_CheckBuf
+ 0004:02550780       _ux_system_slave
  0004:0255088C       _tx_thread_current_ptr
  0004:02550890       _tx_thread_execute_ptr
  0004:02550CE8       _tx_thread_preempt_disable
@@ -21946,6 +22004,7 @@
  0004:0256AB1D       EisUpdateEndTime1
  0004:0256AB1E       EisUpdateEndTime2
  0004:0256AB1F       DefEisUpdateEndTime
+ 0004:0256AB45       CurDspSysState
  0004:02F807C0       PageData
  0004:02FC1D8C       _DSP_StillCapMem
  0004:02FC1EFC       _DSP_VideoTuningMem
