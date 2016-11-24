@@ -3,8 +3,11 @@
 from __future__ import print_function
 import sys
 import getopt
+import re
 import os
 import hashlib
+import configparser
+import itertools
 from ctypes import *
 from time import gmtime, strftime
 
@@ -19,9 +22,10 @@ class ProgOptions:
 
 class FwPkgHeader(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('magic', c_char * 6),
+  _fields_ = [('magic', c_uint),
+              ('magic_ver', c_ushort),
               ('hdrend_offs', c_ushort),
-              ('reserved8', c_int),
+              ('salt', c_int),
               ('manufacturer', c_char * 16),
               ('model', c_char * 16),
               ('entry_count', c_ushort),
@@ -29,14 +33,20 @@ class FwPkgHeader(LittleEndianStructure):
               ('ver_rollbk_enc', c_int),
               ('padding', c_ubyte * 10)]
 
+  def set_ver_latest(self, ver):
+    self.ver_latest_enc = self.salt ^ ver  ^ 0x5127A564;
+
+  def set_ver_rollbk(self, ver):
+    self.ver_rollbk_enc = self.salt ^ ver  ^ 0x5127A564;
+
   def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
     varkey = 'ver_latest'
-    d[varkey] = d['reserved8'] ^ d[varkey+"_enc"]  ^ 0x5127A564;
+    d[varkey] = d['salt'] ^ d[varkey+"_enc"]  ^ 0x5127A564;
     varkey = 'ver_rollbk'
-    d[varkey] = d['reserved8'] ^ d[varkey+"_enc"]  ^ 0x5127A564;
+    d[varkey] = d['salt'] ^ d[varkey+"_enc"]  ^ 0x5127A564;
     varkey = 'padding'
     d[varkey] = "".join("{:02X}".format(x) for x in d[varkey])
     return d
@@ -45,17 +55,20 @@ class FwPkgHeader(LittleEndianStructure):
     d = self.dict_export()
     fp.write("# DJI Firmware Container main header file.\n")
     fp.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
-    varkey = 'hdrend_offs'
-    fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
-    varkey = 'reserved8'
+    varkey = 'manufacturer'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8")))
+    varkey = 'model'
+    fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8")))
+    #varkey = 'hdrend_offs'
+    #fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
+    varkey = 'salt'
     fp.write("{:s}={:08X}\n".format(varkey,d[varkey]))
     varkey = 'ver_latest'
     fp.write("{:s}={:02d}.{:02d}.{:04d}\n".format(varkey, (d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey])&65535))
     varkey = 'ver_rollbk'
     fp.write("{:s}={:02d}.{:02d}.{:04d}\n".format(varkey, (d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey])&65535))
-    varkey = 'padding'
-    fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
-    #TODO
+    #varkey = 'padding'
+    #fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
 
   def __repr__(self):
     d = self.dict_export()
@@ -181,7 +194,7 @@ class FwPkgEntry(LittleEndianStructure):
 
   def ini_export(self, fp):
     d = self.dict_export()
-    fp.write("# DJI Firmware Container entry header file.\n")
+    fp.write("# DJI Firmware Container module header file.\n")
     fp.write("# Stores firmware for {:s}\n".format(d['target_name']))
     fp.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
     varkey = 'target'
@@ -192,10 +205,6 @@ class FwPkgEntry(LittleEndianStructure):
     fp.write("{:s}={:02X}\n".format(varkey,d[varkey]))
     varkey = 'reserved2'
     fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
-    varkey = 'dt_length'
-    fp.write("{:s}={:d}\n".format('length',d[varkey]))
-    varkey = 'dt_md5'
-    fp.write("{:s}={:s}\n".format('md5',d[varkey]))
 
   def __repr__(self):
     d = self.dict_export()
@@ -203,16 +212,61 @@ class FwPkgEntry(LittleEndianStructure):
     return pformat(d, indent=4, width=1)
 
 
-def dji_write_fwpkg_head(po, pkghead):
-  fwheadfile = open("{:s}_head.ini".format(po.dcprefix), "w")
+def dji_write_fwpkg_head(po, pkghead, minames):
+  fname = "{:s}_head.ini".format(po.dcprefix)
+  fwheadfile = open(fname, "w")
   pkghead.ini_export(fwheadfile)
+  fwheadfile.write("{:s}={:s}\n".format("modules",' '.join(minames)))
   fwheadfile.close()
 
-def dji_write_fwentry_head(po, i, e):
-  fwheadfile = open("{:s}_{:02d}.ini".format(po.dcprefix,i), "w")
+def dji_read_fwpkg_head(po):
+  pkghead = FwPkgHeader()
+  pkghead.magic = 0x12345678
+  pkghead.magic_ver = 0x0001
+  fname = "{:s}_head.ini".format(po.dcprefix)
+  parser = configparser.ConfigParser()
+  with open(fname, "r") as lines:
+    lines = itertools.chain(("[asection]",), lines)  # This line adds section header to ini
+    parser.read_file(lines)
+  pkghead.manufacturer = parser.get("asection", "manufacturer").encode("utf-8")
+  pkghead.model = parser.get("asection", "model").encode("utf-8")
+  pkghead.salt = int(parser.get("asection", "salt"),16)
+  ver_latest_s = parser.get("asection", "ver_latest")
+  ver_latest_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<svn>[0-9A-Fa-f]+)', ver_latest_s)
+  pkghead.set_ver_latest( ((int(ver_latest_m.group("major"),10)&0xff)<<24) + ((int(ver_latest_m.group("minor"),10)%0xff)<<16) + (int(ver_latest_m.group("svn"),16)%0xffff) )
+  ver_rollbk_s = parser.get("asection", "ver_rollbk")
+  ver_rollbk_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<svn>[0-9A-Fa-f]+)', ver_rollbk_s)
+  pkghead.set_ver_rollbk( ((int(ver_rollbk_m.group("major"),10)&0xff)<<24) + ((int(ver_rollbk_m.group("minor"),10)%0xff)<<16) + (int(ver_rollbk_m.group("svn"),16)%0xffff) )
+  minames_s = parser.get("asection", "modules")
+  minames = minames_s.split(' ')
+  pkghead.entry_count = len(minames)
+  pkghead.hdrend_offs = sizeof(pkghead) + sizeof(FwPkgEntry)*pkghead.entry_count
+  del parser
+  return (pkghead, minames)
+
+def dji_write_fwentry_head(po, i, e, miname):
+  fname = "{:s}_{:s}.ini".format(po.dcprefix,miname)
+  fwheadfile = open(fname, "w")
   e.ini_export(fwheadfile)
   fwheadfile.close()
 
+def dji_read_fwentry_head(po, i, miname):
+  e = FwPkgEntry()
+  fname = "{:s}_{:s}.ini".format(po.dcprefix,miname)
+  parser = configparser.ConfigParser()
+  with open(fname, "r") as lines:
+    lines = itertools.chain(("[asection]",), lines)  # This line adds section header to ini
+    parser.read_file(lines)
+  target_s = parser.get("asection", "target")
+  target_m = re.search('m(?P<kind>[0-9]{2})(?P<model>[0-9]{2})', target_s)
+  e.target = ((int(target_m.group("kind"),10)&0x1f)) + ((int(target_m.group("model"),10)%0x07)<<5)
+  version_s = parser.get("asection", "version")
+  version_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<svn>[0-9A-Fa-f]+)', version_s)
+  e.version = ((int(version_m.group("major"),10)&0xff)<<24) + ((int(version_m.group("minor"),10)%0xff)<<16) + (int(version_m.group("svn"),16)%0xffff)
+  e.spcoding = int(parser.get("asection", "spcoding"),16)
+  e.reserved2 = int(parser.get("asection", "reserved2"),16)
+  del parser
+  return (e)
 
 def dji_extract(po, fwpkgfile):
   pkghead = FwPkgHeader()
@@ -222,17 +276,17 @@ def dji_extract(po, fwpkgfile):
       print("{}: Header:".format(po.fwpkgfile))
       print(pkghead)
 
-  pkgentries = []
+  pkgmodules = []
   for i in range(pkghead.entry_count):
-      e = FwPkgEntry()
-      if fwpkgfile.readinto(e) != sizeof(e):
+      hde = FwPkgEntry()
+      if fwpkgfile.readinto(hde) != sizeof(hde):
           raise EOFError("Couldn't read firmware package file entry.")
       if (po.verbose > 1):
-          print("{}: Entry {}".format(po.fwpkgfile,i))
-          print(e)
-      if e.dt_length != e.dt_alloclen:
-          eprint("{}: Warning: Entry size mismatch, {:d} instead of {:d}.".format(po.fwpkgfile,e.dt_length,e.dt_alloclen))
-      pkgentries.append(e)
+          print("{}: Module index {}".format(po.fwpkgfile,i))
+          print(hde)
+      if hde.dt_length != hde.dt_alloclen:
+          eprint("{}: Warning: module size mismatch, {:d} instead of {:d}.".format(po.fwpkgfile,hde.dt_length,hde.dt_alloclen))
+      pkgmodules.append(hde)
 
   pkghead_checksum = c_ushort()
   if fwpkgfile.readinto(pkghead_checksum) != sizeof(pkghead_checksum):
@@ -244,32 +298,84 @@ def dji_extract(po, fwpkgfile):
   if fwpkgfile.tell() != pkghead.hdrend_offs:
       eprint("{}: Warning: Header end offset does not match; should end at {}, ends at {}.".format(po.fwpkgfile,pkghead.hdrend_offs,fwpkgfile.tell()))
 
-  dji_write_fwpkg_head(po, pkghead)
+  minames = ["0"]*len(pkgmodules)
+  for i, hde in enumerate(pkgmodules):
+      if hde.dt_length > 0:
+          minames[i] = "mi{:02d}".format(i)
 
-  for i, e in enumerate(pkgentries):
+  dji_write_fwpkg_head(po, pkghead, minames)
+
+  for i, hde in enumerate(pkgmodules):
+      if minames[i] == "0":
+          if (po.verbose > 0):
+              print("{}: Skipping module index {}, {} bytes".format(po.fwpkgfile,i,hde.dt_length))
+          continue
       if (po.verbose > 0):
-          print("{}: Extracting entry {}, {} bytes".format(po.fwpkgfile,i,e.dt_length))
+          print("{}: Extracting module index {}, {} bytes".format(po.fwpkgfile,i,hde.dt_length))
       chksum = hashlib.md5()
-      dji_write_fwentry_head(po, i, e)
-      fwitmfile = open("{:s}_{:02d}.bin".format(po.dcprefix,i), "wb")
+      dji_write_fwentry_head(po, i, hde, minames[i])
+      fwitmfile = open("{:s}_{:s}.bin".format(po.dcprefix,minames[i]), "wb")
       fwpkgfile.seek(e.dt_offs)
       n = 0
-      while n < e.dt_length:
-          copy_buffer = fwpkgfile.read(min(1024 * 1024, e.dt_length - n))
+      while n < hde.dt_length:
+          copy_buffer = fwpkgfile.read(min(1024 * 1024, hde.dt_length - n))
           if not copy_buffer:
               break
           n += len(copy_buffer)
           fwitmfile.write(copy_buffer)
           chksum.update(copy_buffer);
       fwitmfile.close()
-      if (chksum.hexdigest() != e.hex_md5()):
-          eprint("{}: Warning: Entry {:d} checksum mismatch; got {:s}, expected {:s}.".format(po.fwpkgfile,i,chksum.hexdigest(),e.hex_md5()))
+      if (chksum.hexdigest() != hde.hex_md5()):
+          eprint("{}: Warning: Module index {:d} checksum mismatch; got {:s}, expected {:s}.".format(po.fwpkgfile,i,chksum.hexdigest(),hde.hex_md5()))
       if (po.verbose > 1):
-          print("{}: Entry {:d} checksum {:s}".format(po.fwpkgfile,i,chksum.hexdigest()))
+          print("{}: Module index {:d} checksum {:s}".format(po.fwpkgfile,i,chksum.hexdigest()))
 
 
 def dji_create(po, fwpkgfile):
-  pkghead = FwPkgHeader()
+  # Read headers from INI files
+  (pkghead, minames) = dji_read_fwpkg_head(po)
+  pkgmodules = []
+  # Create module entry for each partition
+  for i, miname in enumerate(minames):
+    if miname == "0":
+        hde = FwPkgEntry()
+    else:
+        hde = dji_read_fwentry_head(po, i, miname)
+    pkgmodules.append(hde)
+  # Write the unfinished headers
+  fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+  for hde in pkgmodules:
+    fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
+  #fwmdlfile.write((c_ubyte * sizeof(modposthd)).from_buffer_copy(modposthd))
+  # Write module data
+  for i, hde in enumerate(pkgmodules):
+      if minames[i] == "0":
+          if (po.verbose > 0):
+              print("{}: Empty module index {:d}".format(po.fwpkgfile,i))
+          continue
+      if (po.verbose > 0):
+          print("{}: Copying module index {:d}".format(po.fwpkgfile,i))
+      fname = "{:s}_{:s}.bin".format(po.dcprefix,minames[i])
+      # Skip unused pkgmodules
+      if (os.stat(fname).st_size < 1):
+          eprint("{}: Warning: module index {:d} empty".format(po.fwmdlfile,i))
+          continue
+      epos = fwpkgfile.tell()
+      # Wrie unfinished header
+      fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
+      # Copy partition data and compute CRC
+      fwitmfile = open(fname, "rb")
+      ptcrc = 0
+      n = 0
+      while True:
+        copy_buffer = fwitmfile.read(1024 * 1024)
+        if not copy_buffer:
+            break
+        n += len(copy_buffer)
+        fwpkgfile.write(copy_buffer)
+      fwitmfile.close()
+
+  # TODO
   raise NotImplementedError('NOT IMPLEMENTED')
 
 def main(argv):
