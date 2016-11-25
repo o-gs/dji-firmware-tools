@@ -34,10 +34,10 @@ class FwPkgHeader(LittleEndianStructure):
               ('padding', c_ubyte * 10)]
 
   def set_ver_latest(self, ver):
-    self.ver_latest_enc = self.salt ^ ver  ^ 0x5127A564;
+    self.ver_latest_enc = 0x5127A564 ^ ver ^ self.salt;
 
   def set_ver_rollbk(self, ver):
-    self.ver_rollbk_enc = self.salt ^ ver  ^ 0x5127A564;
+    self.ver_rollbk_enc = 0x5127A564 ^ ver ^ self.salt;
 
   def dict_export(self):
     d = dict()
@@ -59,8 +59,6 @@ class FwPkgHeader(LittleEndianStructure):
     fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8")))
     varkey = 'model'
     fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8")))
-    #varkey = 'hdrend_offs'
-    #fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
     varkey = 'salt'
     fp.write("{:s}={:08X}\n".format(varkey,d[varkey]))
     varkey = 'ver_latest'
@@ -233,14 +231,14 @@ def dji_read_fwpkg_head(po):
   pkghead.salt = int(parser.get("asection", "salt"),16)
   ver_latest_s = parser.get("asection", "ver_latest")
   ver_latest_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<svn>[0-9A-Fa-f]+)', ver_latest_s)
-  pkghead.set_ver_latest( ((int(ver_latest_m.group("major"),10)&0xff)<<24) + ((int(ver_latest_m.group("minor"),10)%0xff)<<16) + (int(ver_latest_m.group("svn"),16)%0xffff) )
+  pkghead.set_ver_latest( ((int(ver_latest_m.group("major"),10)&0xff)<<24) + ((int(ver_latest_m.group("minor"),10)&0xff)<<16) + (int(ver_latest_m.group("svn"),10)&0xffff) )
   ver_rollbk_s = parser.get("asection", "ver_rollbk")
   ver_rollbk_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<svn>[0-9A-Fa-f]+)', ver_rollbk_s)
-  pkghead.set_ver_rollbk( ((int(ver_rollbk_m.group("major"),10)&0xff)<<24) + ((int(ver_rollbk_m.group("minor"),10)%0xff)<<16) + (int(ver_rollbk_m.group("svn"),16)%0xffff) )
+  pkghead.set_ver_rollbk( ((int(ver_rollbk_m.group("major"),10)&0xff)<<24) + ((int(ver_rollbk_m.group("minor"),10)&0xff)<<16) + (int(ver_rollbk_m.group("svn"),10)&0xffff) )
   minames_s = parser.get("asection", "modules")
   minames = minames_s.split(' ')
   pkghead.entry_count = len(minames)
-  pkghead.hdrend_offs = sizeof(pkghead) + sizeof(FwPkgEntry)*pkghead.entry_count
+  pkghead.hdrend_offs = sizeof(pkghead) + sizeof(FwPkgEntry)*pkghead.entry_count + sizeof(c_ushort)
   del parser
   return (pkghead, minames)
 
@@ -346,7 +344,7 @@ def dji_create(po, fwpkgfile):
   fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
   for hde in pkgmodules:
     fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
-  #fwmdlfile.write((c_ubyte * sizeof(modposthd)).from_buffer_copy(modposthd))
+  #fwpkgfile.write((c_ubyte * sizeof(modposthd)).from_buffer_copy(modposthd))
   # Write module data
   for i, hde in enumerate(pkgmodules):
       if minames[i] == "0":
@@ -358,7 +356,7 @@ def dji_create(po, fwpkgfile):
       fname = "{:s}_{:s}.bin".format(po.dcprefix,minames[i])
       # Skip unused pkgmodules
       if (os.stat(fname).st_size < 1):
-          eprint("{}: Warning: module index {:d} empty".format(po.fwmdlfile,i))
+          eprint("{}: Warning: module index {:d} empty".format(po.fwpkgfile,i))
           continue
       epos = fwpkgfile.tell()
       # Wrie unfinished header
