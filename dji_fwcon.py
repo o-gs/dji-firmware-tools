@@ -313,7 +313,7 @@ def dji_extract(po, fwpkgfile):
       chksum = hashlib.md5()
       dji_write_fwentry_head(po, i, hde, minames[i])
       fwitmfile = open("{:s}_{:s}.bin".format(po.dcprefix,minames[i]), "wb")
-      fwpkgfile.seek(e.dt_offs)
+      fwpkgfile.seek(hde.dt_offs)
       n = 0
       while n < hde.dt_length:
           copy_buffer = fwpkgfile.read(min(1024 * 1024, hde.dt_length - n))
@@ -344,23 +344,23 @@ def dji_create(po, fwpkgfile):
   fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
   for hde in pkgmodules:
     fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
+  fwpkgfile.write((c_ubyte * sizeof(c_ushort))())
   #fwpkgfile.write((c_ubyte * sizeof(modposthd)).from_buffer_copy(modposthd))
   # Write module data
-  for i, hde in enumerate(pkgmodules):
-      if minames[i] == "0":
+  for i, miname in enumerate(minames):
+      hde = pkgmodules[i]
+      if miname == "0":
           if (po.verbose > 0):
               print("{}: Empty module index {:d}".format(po.fwpkgfile,i))
           continue
       if (po.verbose > 0):
           print("{}: Copying module index {:d}".format(po.fwpkgfile,i))
-      fname = "{:s}_{:s}.bin".format(po.dcprefix,minames[i])
+      fname = "{:s}_{:s}.bin".format(po.dcprefix,miname)
       # Skip unused pkgmodules
       if (os.stat(fname).st_size < 1):
           eprint("{}: Warning: module index {:d} empty".format(po.fwpkgfile,i))
           continue
       epos = fwpkgfile.tell()
-      # Wrie unfinished header
-      fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
       # Copy partition data and compute CRC
       fwitmfile = open(fname, "rb")
       ptcrc = 0
@@ -372,6 +372,12 @@ def dji_create(po, fwpkgfile):
         n += len(copy_buffer)
         fwpkgfile.write(copy_buffer)
       fwitmfile.close()
+      hde.dt_offs = epos
+      hde.dt_length = fwpkgfile.tell() - epos
+      hde.dt_alloclen = hde.dt_length
+      #hde.dt_md5
+      #hde.dt_2ndhash
+      pkgmodules[i] = hde
 
   # TODO
   raise NotImplementedError('NOT IMPLEMENTED')
