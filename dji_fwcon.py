@@ -249,7 +249,7 @@ def dji_write_fwentry_head(po, i, e, miname):
   fwheadfile.close()
 
 def dji_read_fwentry_head(po, i, miname):
-  e = FwPkgEntry()
+  hde = FwPkgEntry()
   fname = "{:s}_{:s}.ini".format(po.dcprefix,miname)
   parser = configparser.ConfigParser()
   with open(fname, "r") as lines:
@@ -257,14 +257,14 @@ def dji_read_fwentry_head(po, i, miname):
     parser.read_file(lines)
   target_s = parser.get("asection", "target")
   target_m = re.search('m(?P<kind>[0-9]{2})(?P<model>[0-9]{2})', target_s)
-  e.target = ((int(target_m.group("kind"),10)&0x1f)) + ((int(target_m.group("model"),10)%0x07)<<5)
+  hde.target = ((int(target_m.group("kind"),10)&0x1f)) + ((int(target_m.group("model"),10)%0x07)<<5)
   version_s = parser.get("asection", "version")
-  version_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<svn>[0-9A-Fa-f]+)', version_s)
-  e.version = ((int(version_m.group("major"),10)&0xff)<<24) + ((int(version_m.group("minor"),10)%0xff)<<16) + (int(version_m.group("svn"),16)%0xffff)
-  e.spcoding = int(parser.get("asection", "spcoding"),16)
-  e.reserved2 = int(parser.get("asection", "reserved2"),16)
+  version_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<svn>[0-9]+)', version_s)
+  hde.version = ((int(version_m.group("major"),10)&0xff)<<24) + ((int(version_m.group("minor"),10)%0xff)<<16) + (int(version_m.group("svn"),10)%0xffff)
+  hde.spcoding = int(parser.get("asection", "spcoding"),16)
+  hde.reserved2 = int(parser.get("asection", "reserved2"),16)
   del parser
-  return (e)
+  return (hde)
 
 def dji_extract(po, fwpkgfile):
   pkghead = FwPkgHeader()
@@ -345,7 +345,6 @@ def dji_create(po, fwpkgfile):
   for hde in pkgmodules:
     fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
   fwpkgfile.write((c_ubyte * sizeof(c_ushort))())
-  #fwpkgfile.write((c_ubyte * sizeof(modposthd)).from_buffer_copy(modposthd))
   # Write module data
   for i, miname in enumerate(minames):
       hde = pkgmodules[i]
@@ -375,12 +374,17 @@ def dji_create(po, fwpkgfile):
       hde.dt_offs = epos
       hde.dt_length = fwpkgfile.tell() - epos
       hde.dt_alloclen = hde.dt_length
+      # TODO
       #hde.dt_md5
       #hde.dt_2ndhash
+      eprint("{}: Warning: Checksums not implemented, output file impaired.".format(po.fwpkgfile))
       pkgmodules[i] = hde
-
-  # TODO
-  raise NotImplementedError('NOT IMPLEMENTED')
+  # Write all headers again
+  fwpkgfile.seek(0,os.SEEK_SET)
+  fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+  for hde in pkgmodules:
+    fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
+  fwpkgfile.write((c_ubyte * sizeof(c_ushort))())
 
 def main(argv):
   # Parse command line options
