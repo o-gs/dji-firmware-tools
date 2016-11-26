@@ -5,6 +5,8 @@ Tools for extracting, modding and re-packaging [DJI Phantom 3](http://www.dji.co
 # Motivation
 
 This is an alternative implementation to parser from [phantom-licensecheck](https://github.com/probonopd/phantom-licensecheck), more focused on hacking.
+It allows to merge the previously extracted modules back into single file,
+and includes tools for handling some of the modules after they're extracted.
 
 # Step by step instruction
 
@@ -45,7 +47,7 @@ files created after DJI firmware is extracted. You can recognize the Ambarella
 firmware by a lot of "Amba" strings within, or by a 32-char zero-padded string
 at the beginning of the file.
 
-Example: ```./amba_fwpak.py -vv -x -m P3X_FW_V01.08.0080_12.bin```
+Example: ```./amba_fwpak.py -vv -x -m P3X_FW_V01.08.0080_mi12.bin```
 
 ### amba_romfs.py
 
@@ -55,7 +57,7 @@ Use this after the Ambarella firmware is extracted. You can recognize ROMFS
 partitions by file names near beginning of the file, surrounded by blocks of
 0xff filled bytes.
 
-Example: ```./amba_romfs.py -vv -x -p P3X_FW_V01.08.0080_12_part_rom_fw.a9s```
+Example: ```./amba_romfs.py -vv -x -p P3X_FW_V01.08.0080_mi12_part_rom_fw.a9s```
 
 ### amba_ubifs.sh
 
@@ -64,7 +66,7 @@ mounting, the files can be copied or modified. Use this after the Ambarella
 firmware is extracted. The file containing UBIFS can be easily recognized
 by "UBI#" at the beginning of the file.
 
-Example: ```sudo ./amba_ubifs.sh P3X_FW_V01.08.0080_12_part_rfs.a9s```
+Example: ```sudo ./amba_ubifs.sh P3X_FW_V01.08.0080_mi12_part_rfs.a9s```
 
 
 ### amba_sys2elf.py
@@ -74,4 +76,4 @@ contains a binary image of executable file, and this tool wraps it with ELF
 header. The ELF format can be then easily disassembled, as most debuggers can
 read ELF files.
 
-Example: ```./amba_sys2elf.py -vv -e -l 0x6000000 -p P3X_FW_V01.08.0080_12_part_sys.a9s```
+Example: ```./amba_sys2elf.py -vv -e -l 0x6000000 -p P3X_FW_V01.08.0080_mi12_part_sys.a9s```
