@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BINFILE="P3X_FW_V01.08.0080_12_part_sys.a9s"
+BINFILE="P3X_FW_V01.08.0080_mi12_part_sys.a9s"
 ELFFILE="${BINFILE%.*}.elf"
 TESTFILE="${BINFILE%.*}-test.bin"
 

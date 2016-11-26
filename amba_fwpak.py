@@ -322,6 +322,8 @@ def amba_extract(po, fwmdlfile):
   modhead = FwModA9Header()
   if fwmdlfile.readinto(modhead) != sizeof(modhead):
       raise EOFError("Couldn't read firmware package file header.")
+  if modhead.magic != 0xA324EB90:
+      eprint("{}: Warning: Invalid magic value in main header; will try to extract anyway.".format(po.fwmdlfile))
   if (po.verbose > 1):
       print("{}: Header:".format(po.fwmdlfile))
       print(modhead)
