@@ -270,6 +270,11 @@ def dji_extract(po, fwpkgfile):
   pkghead = FwPkgHeader()
   if fwpkgfile.readinto(pkghead) != sizeof(pkghead):
       raise EOFError("Couldn't read firmware package file header.")
+  if pkghead.magic != 0x12345678 or pkghead.magic_ver != 0x0001:
+      eprint("{}: Warning: Unexpected magic value in main header; will try to extract anyway.".format(po.fwpkgfile))
+  if (pkghead.ver_latest_enc == 0 and pkghead.ver_rollbk_enc == 0):
+      eprint("{}: Warning: Unversioned firmware package identified; this format is not fully supported.".format(po.fwpkgfile))
+      # In this format, versions should be set from file name, and CRC16 of the header should be equal to values hard-coded in updater
   if (po.verbose > 1):
       print("{}: Header:".format(po.fwpkgfile))
       print(pkghead)
