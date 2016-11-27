@@ -411,7 +411,7 @@ def main(argv):
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
-        print("dji_fwcon.py version 0.1.1")
+        print("dji_fwcon.py version 0.2.0")
         sys.exit()
      elif opt == '-v':
         po.verbose += 1
