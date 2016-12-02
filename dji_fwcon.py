@@ -367,7 +367,7 @@ def dji_create(po, fwpkgfile):
       epos = fwpkgfile.tell()
       # Copy partition data and compute CRC
       fwitmfile = open(fname, "rb")
-      ptcrc = 0
+      chksum = hashlib.md5()
       n = 0
       while True:
         copy_buffer = fwitmfile.read(1024 * 1024)
@@ -375,13 +375,14 @@ def dji_create(po, fwpkgfile):
             break
         n += len(copy_buffer)
         fwpkgfile.write(copy_buffer)
+        chksum.update(copy_buffer);
       fwitmfile.close()
       hde.dt_offs = epos
       hde.dt_length = fwpkgfile.tell() - epos
       hde.dt_alloclen = hde.dt_length
-      # TODO
-      #hde.dt_md5
-      #hde.dt_2ndhash
+      hde.dt_md5 = (c_ubyte * 16).from_buffer_copy(chksum.digest())
+      #TODO
+      hde.dt_2ndhash = (c_ubyte * 16).from_buffer_copy(chksum.digest())
       eprint("{}: Warning: Checksums not implemented, output file impaired.".format(po.fwpkgfile))
       pkgmodules[i] = hde
   # Write all headers again
