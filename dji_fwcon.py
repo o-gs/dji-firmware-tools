@@ -20,6 +20,71 @@ class ProgOptions:
   verbose = 0
   command = ''
 
+class DjiModuleTarget():
+    "Stores identification info on module for specific target"
+    def __init__(self, kind, model, name, desc):
+        self.kind = kind
+        self.model = model
+        self.name = name
+        self.desc = desc
+
+dji_targets = [
+    DjiModuleTarget( 1,-1, "CAM",     "camera"),
+    DjiModuleTarget( 1, 0, "FC300X",  "camera 'Ambarella A9SE' App"),
+    DjiModuleTarget( 1, 1, "CAMLDR",  "camera 'Ambarella A9SE' Ldr"),
+    DjiModuleTarget( 1, 2, "CAMBST",  "camera BST"),
+    DjiModuleTarget( 1, 4, "CAMBCPU", "camera BCPU"),
+    DjiModuleTarget( 1, 5, "CAMLCPU", "camera LCPU"),
+    DjiModuleTarget( 1, 6, "ZQ7020",  "camera 'Xilinx Zynq 7020'"),
+    DjiModuleTarget( 3,-1, "MC",      "main controller"),
+    DjiModuleTarget( 3, 5, "MCLDR",   "main controller 'A3' ldr"),
+    DjiModuleTarget( 3, 6, "MCAPP",   "main controller 'A3' app"),
+    DjiModuleTarget( 4,-1, "GIMBAL",  "gimbal"),
+    DjiModuleTarget( 4, 0, "GIMBAL0", "gimbal mdl 0"),
+    DjiModuleTarget( 5,-1, "CENTER",  "central board"),
+    DjiModuleTarget( 5, 0, "CENTER0", "central board mdl 0"),
+    DjiModuleTarget( 7,-1, "WIFI",    "Wi-Fi"),
+    DjiModuleTarget( 7, 0, "WIFI0",   "Wi-Fi mdl 0"),
+    DjiModuleTarget( 8,-1, "VENC",    "video encoder"),
+    DjiModuleTarget( 8, 0, "DM368",   "video encoder 'DaVinci Dm368 Linux'"),
+    DjiModuleTarget( 8, 1, "IG810LB2","video encoder 'IG810 LB2_ENC'"),
+    DjiModuleTarget( 9,-1, "MCA",     "MCU in air"),
+    DjiModuleTarget( 9, 0, "MCA1765", "MCU 'NXP LPC1765'"),
+    DjiModuleTarget(10,-1, "BATTFW",  "battery firmware"),
+    DjiModuleTarget(11,-1, "BATTCT",  "battery controller"),
+    DjiModuleTarget(11, 0, "BATTERY", "battery controller 1 app"),
+    DjiModuleTarget(11, 1, "BATTERY2","battery controller 2 app"),
+    DjiModuleTarget(12,-1, "ESC",     "electronic speed control"),
+    DjiModuleTarget(12, 0, "ESC0",    "electronic speed control 0"),
+    DjiModuleTarget(12, 1, "ESC1",    "electronic speed control 1"),
+    DjiModuleTarget(12, 2, "ESC2",    "electronic speed control 2"),
+    DjiModuleTarget(12, 3, "ESC3",    "electronic speed control 3"),
+    DjiModuleTarget(13, 0, "VDEC",    "video decoder"),
+    DjiModuleTarget(13, 0, "DM365M0", "video decoder 'DaVinci Dm365 Linux' mdl 0"),
+    DjiModuleTarget(13, 1, "DM365M1", "video decoder 'DaVinci Dm365 Linux' mdl 1"),
+    DjiModuleTarget(14,-1, "MCG",     "MCU on ground"),
+    DjiModuleTarget(14, 0, "MCG1765A","MCU 'LPC1765 GROUND LB2'"),
+    DjiModuleTarget(15,-1, "TX",      "radio transmitter"),
+    DjiModuleTarget(15, 0, "TX68013", "radio transmitter 'IG810 LB2_68013_TX'"),
+    DjiModuleTarget(16,-1, "RXG",     "radio receiver"),
+    DjiModuleTarget(16, 0, "RX68013", "radio receiver 'IG810 LB2_68013_RX ground'"),
+    DjiModuleTarget(17,-1, "MVOM",    "visual positioning"),
+    DjiModuleTarget(17, 0, "MVOMC4",  "visual positioning module 'camera'"),
+    DjiModuleTarget(17, 1, "MVOMS0",  "visual positioning module 'sonar'"),
+    DjiModuleTarget(19,-1, "FPGAA",   "FPGA air"),
+    DjiModuleTarget(19, 0, "FPGAA0",  "FPGA air model 0"),
+    DjiModuleTarget(20,-1, "FPGAG",   "FPGA ground"),
+    DjiModuleTarget(20, 3, "FPGAG3",  "FPGA ground 'LB2'"),
+    DjiModuleTarget(25,-1, "IMU",     "inertial measurement unit"),
+    DjiModuleTarget(25, 0, "IMUA3M0", "inertial measurement unit 'A3' pt0"),
+    DjiModuleTarget(25, 1, "IMUA3M1", "inertial measurement unit 'A3' pt1"),
+    DjiModuleTarget(29,-1, "PMU",     "phasor measurement unit"),
+    DjiModuleTarget(29, 0, "PMUA3LDR","phasor measurement unit 'A3 App'"),
+    DjiModuleTarget(29, 1, "PMUA3APP","phasor measurement unit 'A3 Ldr'"),
+    DjiModuleTarget(30,-1, "TESTA",   "test A"),
+    DjiModuleTarget(31,-1, "TESTB",   "test B")
+]
+
 class FwPkgHeader(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('magic', c_uint),
@@ -88,87 +153,15 @@ class FwPkgEntry(LittleEndianStructure):
   def target_name(self):
     tg_kind = getattr(self, 'target') & 31
     tg_model = (getattr(self, 'target') >> 5) & 7
-    if   (tg_kind == 1):
-      if (tg_model == 0):
-        return "camera '{:s}'".format("Ambarella A9SE mdl 00")
-      elif (tg_model == 1):
-        return "camera '{:s}'".format("Ambarella A9SE mdl 01")
-      elif (tg_model == 6):
-        return "camera '{:s}'".format("Xilinx Zynq 7020")
-      else:
-        return "camera model {:02d}".format(tg_model)
-    elif (tg_kind == 3):
-      if ((tg_model%2) > 0):
-        return "main controller mdl {:02d} ldr".format(tg_model)
-      else:
-        return "main controller mdl {:02d} app".format(tg_model-1)
-    elif (tg_kind == 4):
-        return "gimbal model {:02d}".format(tg_model)
-    elif (tg_kind == 5):
-        return "central board model {:02d}".format(tg_model)
-    elif (tg_kind == 8):
-      if (tg_model == 0):
-        return "video encoder '{:s}'".format("DaVinci Dm365 Linux")
-      elif (tg_model == 1):
-        return "video encoder '{:s}'".format("IG810 LB2_ENC")
-      else:
-        return "video encoder {:02d}".format(tg_model)
-    elif (tg_kind == 9):
-      if (tg_model == 0):
-        return "MCU '{:s}'".format("NXP LPC1765")
-      else:
-        return "MCU model {:02d}".format(tg_model)
-    elif (tg_kind == 11):
-        return "battery controller {:02d} app".format(tg_model)
-    elif (tg_kind == 10):
-        return "battery {:02d} fw".format(tg_model)
-    elif (tg_kind == 12):
-        return "electronic speed control {:02d}".format(tg_model)
-    elif (tg_kind == 13):
-      if (tg_model == 0):
-        return "video decoder '{:s}'".format("DaVinci Dm365 Linux")
-      elif (tg_model == 1):
-        return "video decoder '{:s}'".format("DaVinci Dm385 Linux")
-      else:
-        return "video decoder {:02d}".format(tg_model)
-    elif (tg_kind == 14):
-      if (tg_model == 0):
-        return "device kind {:02d} '{:s}'".format(tg_kind,"LPC1765 GROUND LB2")
-      else:
-        return "device kind {:02d} model {:02d}".format(tg_kind,tg_model)
-    elif (tg_kind == 15):
-      if (tg_model == 1):
-        return "radio transmitter '{:s}'".format("IG810 LB2_68013_TX")
-      else:
-        return "radio transmitter model {:02d}".format(tg_model)
-    elif (tg_kind == 16):
-      if (tg_model == 1):
-        return "radio receiver '{:s}'".format("IG810 LB2_68013_RX ground")
-      else:
-        return "radio receiver model {:02d}".format(tg_model)
-    elif (tg_kind == 17):
-      if (tg_model == 0):
-        return "vps component '{:s}'".format("camera")
-      elif (tg_model == 1):
-        return "vps component '{:s}'".format("sonar")
-      else:
-        return "vps component model {:02d}".format(tg_model)
-    elif (tg_kind == 19):
-      return "FPGA air model {:02d}".format(tg_model)
-    elif (tg_kind == 20):
-      if (tg_model == 3):
-        return "FPGA ground '{:s}'".format("LB2")
-      else:
-        return "FPGA ground model {:02d}".format(tg_model)
-    elif (tg_kind == 25):
-      return "IMU model {:02d}".format(tg_model)
-    elif (tg_kind == 29):
-      if ((tg_model%2) > 0):
-        return "PMU model {:02d} ldr".format(tg_model)
-      else:
-        return "PMU model {:02d} app".format(tg_model-1)
-    else:
-      return "device kind {:02} model {:02}".format(tg_kind,tg_model)
+    module_info = next((mi for mi in dji_targets if mi.kind == tg_kind and mi.model == tg_model), None)
+    if (module_info is not None):
+        return module_info.desc
+    # If not found, try getting category
+    module_info = next((mi for mi in dji_targets if mi.kind == tg_kind and mi.model == -1), None)
+    if (module_info is not None):
+        return "{:s} model {:02d}".format(module_info.desc,tg_model)
+    # If category also not found, return as unknown device
+    return "device kind {:02} model {:02}".format(tg_kind,tg_model)
 
   def hex_md5(self):
     varkey = 'dt_md5'
