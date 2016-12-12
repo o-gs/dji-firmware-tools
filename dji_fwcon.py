@@ -357,6 +357,7 @@ def dji_create(po, fwpkgfile):
       if (os.stat(fname).st_size < 1):
           eprint("{}: Warning: module index {:d} empty".format(po.fwpkgfile,i))
           continue
+      chksum_enctype = (hde.spcoding >> 4) & 0x0F;
       epos = fwpkgfile.tell()
       # Copy partition data and compute CRC
       fwitmfile = open(fname, "rb")
@@ -374,9 +375,14 @@ def dji_create(po, fwpkgfile):
       hde.dt_length = fwpkgfile.tell() - epos
       hde.dt_alloclen = hde.dt_length
       hde.dt_md5 = (c_ubyte * 16).from_buffer_copy(chksum.digest())
-      #TODO
-      hde.dt_2ndhash = (c_ubyte * 16).from_buffer_copy(chksum.digest())
-      eprint("{}: Warning: Checksums not implemented, output file impaired.".format(po.fwpkgfile))
+      if (chksum_enctype == 0):
+          hde.dt_2ndhash = (c_ubyte * 16).from_buffer_copy(chksum.digest())
+      elif (chksum_enctype == 1):
+          #TODO
+          hde.dt_2ndhash = (c_ubyte * 16).from_buffer_copy(chksum.digest())
+          eprint("{}: Warning: NOT IMPLEMENTED coding {:d} in module {:d}; secondary checksum bad.".format(po.fwpkgfile,chksum_enctype,i))
+      else:
+          eprint("{}: Warning: Unknown coding {:d} in module {:d}; secondary checksum skipped.".format(po.fwpkgfile,chksum_enctype,i))
       pkgmodules[i] = hde
   # Write all headers again
   fwpkgfile.seek(0,os.SEEK_SET)
