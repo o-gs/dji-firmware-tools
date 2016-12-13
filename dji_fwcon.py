@@ -6,6 +6,7 @@ import getopt
 import re
 import os
 import hashlib
+import binascii
 import configparser
 import itertools
 from ctypes import *
@@ -145,10 +146,23 @@ class FwPkgEntry(LittleEndianStructure):
               ('reserved2', c_ushort),
               ('version', c_uint),
               ('dt_offs', c_uint),
-              ('dt_length', c_uint),
-              ('dt_alloclen', c_uint),
-              ('dt_md5', c_ubyte * 16),
-              ('dt_2ndhash', c_ubyte * 16)]
+              ('stored_len', c_uint),
+              ('decrypted_len', c_uint),
+              ('stored_md5', c_ubyte * 16),
+              ('decrypted_md5', c_ubyte * 16)]
+  preencrypted = 0
+
+  def get_encrypt_type(self):
+      return (self.spcoding >> 4) & 0x0F
+
+  def set_encrypt_type(self, enctype):
+      self.spcoding  = (self.spcoding & 0x0F) | ((enctype & 0x0F) << 4)
+
+  def get_splvalue(self):
+      return (self.spcoding) & 0x0F
+
+  def set_splvalue(self, splval):
+      self.spcoding  = (self.spcoding & 0xF0) | (splval & 0x0F)
 
   def target_name(self):
     tg_kind = getattr(self, 'target') & 31
@@ -163,8 +177,12 @@ class FwPkgEntry(LittleEndianStructure):
     # If category also not found, return as unknown device
     return "device kind {:02} model {:02}".format(tg_kind,tg_model)
 
-  def hex_md5(self):
-    varkey = 'dt_md5'
+  def hex_stored_md5(self):
+    varkey = 'stored_md5'
+    return "".join("{:02x}".format(x) for x in getattr(self, varkey))
+
+  def hex_decrypted_md5(self):
+    varkey = 'decrypted_md5'
     return "".join("{:02x}".format(x) for x in getattr(self, varkey))
 
   def dict_export(self):
@@ -173,12 +191,16 @@ class FwPkgEntry(LittleEndianStructure):
         d[varkey] = getattr(self, varkey)
     varkey = 'version'
     d[varkey] = "{:02d}.{:02d}.{:04d}".format((d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey])&65535)
-    varkey = 'dt_md5'
+    varkey = 'stored_md5'
     d[varkey] = "".join("{:02x}".format(x) for x in d[varkey])
-    varkey = 'dt_2ndhash'
+    varkey = 'decrypted_md5'
     d[varkey] = "".join("{:02x}".format(x) for x in d[varkey])
     varkey = 'target'
     d[varkey] = "m{:02d}{:02d}".format(d[varkey]&31, (d[varkey]>>5)&7)
+    varkey = 'encrypt_type'
+    d[varkey] = self.get_encrypt_type()
+    varkey = 'splvalue'
+    d[varkey] = self.get_splvalue()
     varkey = 'target_name'
     d[varkey] = self.target_name()
     return d
@@ -192,8 +214,16 @@ class FwPkgEntry(LittleEndianStructure):
     fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
     varkey = 'version'
     fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
-    varkey = 'spcoding'
-    fp.write("{:s}={:02X}\n".format(varkey,d[varkey]))
+    varkey = 'encrypt_type'
+    fp.write("{:s}={:d}\n".format(varkey,d[varkey]))
+    if (d[varkey] != 0):
+        # We do not support decryption, so mark the file as already encrypted
+        varkey = 'preencrypted'
+        fp.write("{:s}={:d}\n".format(varkey,1))
+        varkey = 'decrypted_md5'
+        fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+    varkey = 'splvalue'
+    fp.write("{:s}={:d}\n".format(varkey,d[varkey]))
     varkey = 'reserved2'
     fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
 
@@ -254,7 +284,13 @@ def dji_read_fwentry_head(po, i, miname):
   version_s = parser.get("asection", "version")
   version_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<svn>[0-9]+)', version_s)
   hde.version = ((int(version_m.group("major"),10)&0xff)<<24) + ((int(version_m.group("minor"),10)%0xff)<<16) + (int(version_m.group("svn"),10)%0xffff)
-  hde.spcoding = int(parser.get("asection", "spcoding"),16)
+  if parser.has_option("asection", "preencrypted"):
+    hde.preencrypted = int(parser.get("asection", "preencrypted"),10)
+  if (hde.preencrypted):
+    decrypted_md5_s = parser.get("asection", "decrypted_md5")
+    hde.decrypted_md5 = (c_ubyte * 16).from_buffer_copy(binascii.unhexlify(decrypted_md5_s))
+  hde.set_encrypt_type( int(parser.get("asection", "encrypt_type"),10) )
+  hde.set_splvalue( int(parser.get("asection", "splvalue"),10) )
   hde.reserved2 = int(parser.get("asection", "reserved2"),16)
   del parser
   return (hde)
@@ -280,8 +316,8 @@ def dji_extract(po, fwpkgfile):
       if (po.verbose > 1):
           print("{}: Module index {}".format(po.fwpkgfile,i))
           print(hde)
-      if hde.dt_length != hde.dt_alloclen:
-          eprint("{}: Warning: module size mismatch, {:d} instead of {:d}.".format(po.fwpkgfile,hde.dt_length,hde.dt_alloclen))
+      if hde.stored_len != hde.decrypted_len:
+          eprint("{}: Warning: module size mismatch, {:d} instead of {:d}.".format(po.fwpkgfile,hde.stored_len,hde.decrypted_len))
       pkgmodules.append(hde)
 
   pkghead_checksum = c_ushort()
@@ -296,7 +332,7 @@ def dji_extract(po, fwpkgfile):
 
   minames = ["0"]*len(pkgmodules)
   for i, hde in enumerate(pkgmodules):
-      if hde.dt_length > 0:
+      if hde.stored_len > 0:
           minames[i] = "mi{:02d}".format(i)
 
   dji_write_fwpkg_head(po, pkghead, minames)
@@ -304,25 +340,25 @@ def dji_extract(po, fwpkgfile):
   for i, hde in enumerate(pkgmodules):
       if minames[i] == "0":
           if (po.verbose > 0):
-              print("{}: Skipping module index {}, {} bytes".format(po.fwpkgfile,i,hde.dt_length))
+              print("{}: Skipping module index {}, {} bytes".format(po.fwpkgfile,i,hde.stored_len))
           continue
       if (po.verbose > 0):
-          print("{}: Extracting module index {}, {} bytes".format(po.fwpkgfile,i,hde.dt_length))
+          print("{}: Extracting module index {}, {} bytes".format(po.fwpkgfile,i,hde.stored_len))
       chksum = hashlib.md5()
       dji_write_fwentry_head(po, i, hde, minames[i])
       fwitmfile = open("{:s}_{:s}.bin".format(po.dcprefix,minames[i]), "wb")
       fwpkgfile.seek(hde.dt_offs)
       n = 0
-      while n < hde.dt_length:
-          copy_buffer = fwpkgfile.read(min(1024 * 1024, hde.dt_length - n))
+      while n < hde.stored_len:
+          copy_buffer = fwpkgfile.read(min(1024 * 1024, hde.stored_len - n))
           if not copy_buffer:
               break
           n += len(copy_buffer)
           fwitmfile.write(copy_buffer)
           chksum.update(copy_buffer);
       fwitmfile.close()
-      if (chksum.hexdigest() != hde.hex_md5()):
-          eprint("{}: Warning: Module index {:d} checksum mismatch; got {:s}, expected {:s}.".format(po.fwpkgfile,i,chksum.hexdigest(),hde.hex_md5()))
+      if (chksum.hexdigest() != hde.hex_stored_md5()):
+          eprint("{}: Warning: Module index {:d} checksum mismatch; got {:s}, expected {:s}.".format(po.fwpkgfile,i,chksum.hexdigest(),hde.hex_stored_md5()))
       if (po.verbose > 1):
           print("{}: Module index {:d} checksum {:s}".format(po.fwpkgfile,i,chksum.hexdigest()))
 
@@ -357,7 +393,7 @@ def dji_create(po, fwpkgfile):
       if (os.stat(fname).st_size < 1):
           eprint("{}: Warning: module index {:d} empty".format(po.fwpkgfile,i))
           continue
-      chksum_enctype = (hde.spcoding >> 4) & 0x0F;
+      chksum_enctype = hde.get_encrypt_type();
       epos = fwpkgfile.tell()
       # Copy partition data and compute CRC
       fwitmfile = open(fname, "rb")
@@ -372,17 +408,18 @@ def dji_create(po, fwpkgfile):
         chksum.update(copy_buffer);
       fwitmfile.close()
       hde.dt_offs = epos
-      hde.dt_length = fwpkgfile.tell() - epos
-      hde.dt_alloclen = hde.dt_length
-      hde.dt_md5 = (c_ubyte * 16).from_buffer_copy(chksum.digest())
+      hde.stored_len = fwpkgfile.tell() - epos
+      # We do not support any ancryption which changes length of data
+      hde.decrypted_len = hde.stored_len
+      hde.stored_md5 = (c_ubyte * 16).from_buffer_copy(chksum.digest())
       if (chksum_enctype == 0):
-          hde.dt_2ndhash = (c_ubyte * 16).from_buffer_copy(chksum.digest())
+          hde.decrypted_md5 = (c_ubyte * 16).from_buffer_copy(chksum.digest())
       elif (chksum_enctype == 1):
           #TODO
-          hde.dt_2ndhash = (c_ubyte * 16).from_buffer_copy(chksum.digest())
-          eprint("{}: Warning: NOT IMPLEMENTED coding {:d} in module {:d}; secondary checksum bad.".format(po.fwpkgfile,chksum_enctype,i))
+          hde.decrypted_md5 = (c_ubyte * 16).from_buffer_copy(chksum.digest())
+          eprint("{}: Warning: NOT IMPLEMENTED coding {:d} in module {:d}; decrypted checksum bad.".format(po.fwpkgfile,chksum_enctype,i))
       else:
-          eprint("{}: Warning: Unknown coding {:d} in module {:d}; secondary checksum skipped.".format(po.fwpkgfile,chksum_enctype,i))
+          eprint("{}: Warning: Unknown encryption {:d} in module {:d}; decrypted checksum skipped.".format(po.fwpkgfile,chksum_enctype,i))
       pkgmodules[i] = hde
   # Write all headers again
   fwpkgfile.seek(0,os.SEEK_SET)
