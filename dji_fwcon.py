@@ -31,49 +31,49 @@ class DjiModuleTarget():
 
 dji_targets = [
     DjiModuleTarget( 1,-1, "CAM",     "camera"),
-    DjiModuleTarget( 1, 0, "FC300X",  "camera 'Ambarella A9SE' App"),
-    DjiModuleTarget( 1, 1, "CAMLDR",  "camera 'Ambarella A9SE' Ldr"),
+    DjiModuleTarget( 1, 0, "FC300X",  "camera 'Ambarella A9SE' App"), # P3X
+    DjiModuleTarget( 1, 1, "CAMLDR",  "camera 'Ambarella A9SE' Ldr"), # P3X
     DjiModuleTarget( 1, 2, "CAMBST",  "camera BST"),
     DjiModuleTarget( 1, 4, "CAMBCPU", "camera BCPU"),
     DjiModuleTarget( 1, 5, "CAMLCPU", "camera LCPU"),
     DjiModuleTarget( 1, 6, "ZQ7020",  "camera 'Xilinx Zynq 7020'"),
     DjiModuleTarget( 3,-1, "MC",      "main controller"),
-    DjiModuleTarget( 3, 5, "MCLDR",   "main controller 'A3' ldr"),
-    DjiModuleTarget( 3, 6, "MCAPP",   "main controller 'A3' app"),
+    DjiModuleTarget( 3, 5, "MCLDR",   "main controller 'A3' ldr"), # P3X
+    DjiModuleTarget( 3, 6, "MCAPP",   "main controller 'A3' app"), # P3X
     DjiModuleTarget( 4,-1, "GIMBAL",  "gimbal"),
-    DjiModuleTarget( 4, 0, "GIMBAL0", "gimbal mdl 0"),
+    DjiModuleTarget( 4, 0, "GIMBAL0", "gimbal mdl 0"), # P3X
     DjiModuleTarget( 5,-1, "CENTER",  "central board"),
     DjiModuleTarget( 5, 0, "CENTER0", "central board mdl 0"),
     DjiModuleTarget( 7,-1, "WIFI",    "Wi-Fi"),
     DjiModuleTarget( 7, 0, "WIFI0",   "Wi-Fi mdl 0"),
     DjiModuleTarget( 8,-1, "VENC",    "video encoder"),
-    DjiModuleTarget( 8, 0, "DM368",   "video encoder 'DaVinci Dm368 Linux'"),
+    DjiModuleTarget( 8, 0, "DM368",   "video encoder 'DaVinci Dm368 Linux'"), # P3X
     DjiModuleTarget( 8, 1, "IG810LB2","video encoder 'IG810 LB2_ENC'"),
     DjiModuleTarget( 9,-1, "MCA",     "MCU in air"),
-    DjiModuleTarget( 9, 0, "MCA1765", "MCU 'NXP LPC1765'"),
+    DjiModuleTarget( 9, 0, "MCA1765", "MCU 'NXP LPC1765'"), # P3X, OSMO_X5R
     DjiModuleTarget(10,-1, "BATTFW",  "battery firmware"),
     DjiModuleTarget(11,-1, "BATTCT",  "battery controller"),
-    DjiModuleTarget(11, 0, "BATTERY", "battery controller 1 app"),
+    DjiModuleTarget(11, 0, "BATTERY", "battery controller 1 app"), # P3X
     DjiModuleTarget(11, 1, "BATTERY2","battery controller 2 app"),
     DjiModuleTarget(12,-1, "ESC",     "electronic speed control"),
-    DjiModuleTarget(12, 0, "ESC0",    "electronic speed control 0"),
-    DjiModuleTarget(12, 1, "ESC1",    "electronic speed control 1"),
-    DjiModuleTarget(12, 2, "ESC2",    "electronic speed control 2"),
-    DjiModuleTarget(12, 3, "ESC3",    "electronic speed control 3"),
+    DjiModuleTarget(12, 0, "ESC0",    "electronic speed control 0"), # P3X
+    DjiModuleTarget(12, 1, "ESC1",    "electronic speed control 1"), # P3X
+    DjiModuleTarget(12, 2, "ESC2",    "electronic speed control 2"), # P3X
+    DjiModuleTarget(12, 3, "ESC3",    "electronic speed control 3"), # P3X
     DjiModuleTarget(13, 0, "VDEC",    "video decoder"),
     DjiModuleTarget(13, 0, "DM365M0", "video decoder 'DaVinci Dm365 Linux' mdl 0"),
     DjiModuleTarget(13, 1, "DM365M1", "video decoder 'DaVinci Dm365 Linux' mdl 1"),
     DjiModuleTarget(14,-1, "MCG",     "MCU on ground"),
     DjiModuleTarget(14, 0, "MCG1765A","MCU 'LPC1765 GROUND LB2'"),
     DjiModuleTarget(15,-1, "TX",      "radio transmitter"),
-    DjiModuleTarget(15, 0, "TX68013", "radio transmitter 'IG810 LB2_68013_TX'"),
+    DjiModuleTarget(15, 0, "TX68013", "radio transmitter 'IG810 LB2_68013_TX'"), # P3X
     DjiModuleTarget(16,-1, "RXG",     "radio receiver"),
     DjiModuleTarget(16, 0, "RX68013", "radio receiver 'IG810 LB2_68013_RX ground'"),
     DjiModuleTarget(17,-1, "MVOM",    "visual positioning"),
-    DjiModuleTarget(17, 0, "MVOMC4",  "visual positioning module 'camera'"),
-    DjiModuleTarget(17, 1, "MVOMS0",  "visual positioning module 'sonar'"),
+    DjiModuleTarget(17, 0, "MVOMC4",  "visual positioning module 'camera'"), # P3X
+    DjiModuleTarget(17, 1, "MVOMS0",  "visual positioning module 'sonar'"), # P3X
     DjiModuleTarget(19,-1, "FPGAA",   "FPGA air"),
-    DjiModuleTarget(19, 0, "FPGAA0",  "FPGA air model 0"),
+    DjiModuleTarget(19, 0, "FPGAA0",  "FPGA air model 0"), # P3X
     DjiModuleTarget(20,-1, "FPGAG",   "FPGA ground"),
     DjiModuleTarget(20, 3, "FPGAG3",  "FPGA ground 'LB2'"),
     DjiModuleTarget(25,-1, "IMU",     "inertial measurement unit"),
