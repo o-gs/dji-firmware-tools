@@ -217,9 +217,11 @@ class FwPkgEntry(LittleEndianStructure):
     varkey = 'encrypt_type'
     fp.write("{:s}={:d}\n".format(varkey,d[varkey]))
     if (d[varkey] != 0):
-        # We do not support decryption, so mark the file as already encrypted
+        # If we do not support encryption of given type, we may extract the file in encrypted form
         varkey = 'preencrypted'
-        fp.write("{:s}={:d}\n".format(varkey,1))
+        fp.write("{:s}={:d}\n".format(varkey,self.preencrypted))
+    if (self.preencrypted):
+        # We cannot compute decrypted MD5 for pre-encrypted files, so store them in INI file
         varkey = 'decrypted_md5'
         fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
     varkey = 'splvalue'
@@ -412,25 +414,38 @@ def dji_create(po, fwpkgfile):
           continue
       chksum_enctype = hde.get_encrypt_type();
       epos = fwpkgfile.tell()
+      # Check for data encryption
+      if (chksum_enctype != 0) and (not hde.preencrypted):
+          if (chksum_enctype == 1):
+              #TODO Find out what the encryption algorithm is, then write an encoder
+              eprint("{}: Warning: NOT IMPLEMENTED encryption {:d} in module {:d}; decrypted checksum bad.".format(po.fwpkgfile,chksum_enctype,i))
+          else:
+              eprint("{}: Warning: Unknown encryption {:d} in module {:d}; decrypted checksum skipped.".format(po.fwpkgfile,chksum_enctype,i))
       # Copy partition data and compute checksum
       fwitmfile = open(fname, "rb")
-      chksum = hashlib.md5()
-      n = 0
+      stored_chksum = hashlib.md5()
+      decrypted_chksum = hashlib.md5()
+      decrypted_n = 0
       while True:
-        copy_buffer = fwitmfile.read(1024 * 1024)
-        if not copy_buffer:
-            break
-        n += len(copy_buffer)
-        fwpkgfile.write(copy_buffer)
-        chksum.update(copy_buffer);
+          copy_buffer = fwitmfile.read(1024 * 1024)
+          if not copy_buffer:
+              break
+          decrypted_chksum.update(copy_buffer);
+          decrypted_n += len(copy_buffer)
+          #TODO Find out what the encryption algorithm is, then write an encoder
+          #if (chksum_enctype != 0) and (not hde.preencrypted):
+          #    copy_buffer = some_encrypt_func(copy_buffer)
+          stored_chksum.update(copy_buffer);
+          fwpkgfile.write(copy_buffer)
       fwitmfile.close()
       hde.dt_offs = epos
       hde.stored_len = fwpkgfile.tell() - epos
-      # We do not support any encryption which changes length of data
-      hde.decrypted_len = hde.stored_len
-      hde.stored_md5 = (c_ubyte * 16).from_buffer_copy(chksum.digest())
+      # We do not support pre-encryption which changes length of data
+      # If we need it at some point, the only way is to store decrypted_len in INI file
+      hde.decrypted_len = decrypted_n
+      hde.stored_md5 = (c_ubyte * 16).from_buffer_copy(stored_chksum.digest())
       if (hde.preencrypted):
-          # If the file is pre-encrypted, then it has to have encryption type and MD5 set; beyond that, we can't check much
+          # If the file is pre-encrypted, then it has to have encryption type and MD5 set from INI file
           if (chksum_enctype == 0):
               eprint("{}: Warning: Module {:d} marked as pre-encrypted, but with no encryption type.".format(po.fwpkgfile,i))
           if all([ v == 0 for v in hde.decrypted_md5 ]):
@@ -438,14 +453,8 @@ def dji_create(po, fwpkgfile):
           else:
               print("{}: Module {:d} marked as pre-encrypted; decrypted MD5 accepted w/o verification.".format(po.fwpkgfile,i))
       else:
-          if (chksum_enctype == 0):
-              hde.decrypted_md5 = (c_ubyte * 16).from_buffer_copy(chksum.digest())
-          elif (chksum_enctype == 1):
-              #TODO Find out what the encryption algorithm is, then write an encoder
-              hde.decrypted_md5 = (c_ubyte * 16).from_buffer_copy(chksum.digest())
-              eprint("{}: Warning: NOT IMPLEMENTED coding {:d} in module {:d}; decrypted checksum bad.".format(po.fwpkgfile,chksum_enctype,i))
-          else:
-              eprint("{}: Warning: Unknown encryption {:d} in module {:d}; decrypted checksum skipped.".format(po.fwpkgfile,chksum_enctype,i))
+          # If the file is not pre-encrypted, then we should just use the MD5 we've computed
+          hde.decrypted_md5 = (c_ubyte * 16).from_buffer_copy(decrypted_chksum.digest())
       pkgmodules[i] = hde
   # Write all headers again
   fwpkgfile.seek(0,os.SEEK_SET)
