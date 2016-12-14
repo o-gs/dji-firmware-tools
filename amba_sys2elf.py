@@ -286,13 +286,13 @@ def syssw_bin2elf(po, fwpartfile):
   sections_order = []
   for sortpos in sorted(set(po.section_pos.values())):
     # First add sections with size equal zero
-    for sectname, pos in po.section_pos.iteritems():
+    for sectname, pos in po.section_pos.items():
       if pos == sortpos:
         if sectname in sections_size.keys():
           if (sections_size[sectname] < 1):
             sections_order.append(sectname)
     # The non-zero sized section should be last
-    for sectname, pos in po.section_pos.iteritems():
+    for sectname, pos in po.section_pos.items():
       if pos == sortpos:
         if sectname not in sections_order:
           sections_order.append(sectname)
@@ -345,7 +345,7 @@ def syssw_bin2elf(po, fwpartfile):
       print("{}: Section '{:s}' memory address set to 0x{:08x}".format(po.fwpartfile,sectname,sections_address[sectname]))
   # prepare objcopy command line
   #TODO use elftools library instead of calling external executable
-  objcopy_cmd = '/usr/bin/arm-none-eabi-objcopy'
+  objcopy_cmd = 'arm-none-eabi-objcopy'
   for sectname in sections_order:
     if not section_is_bss(sectname):
       objcopy_cmd += ' --update-section "{0:s}={1:s}"'.format(sectname,sections_fname[sectname])
