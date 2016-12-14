@@ -25,8 +25,6 @@ for itm in "${all_firmwares[@]}"; do
   tmp=${itm}[binname]
   FWPKG=${!tmp}
 
-  AMBAPKG="${FWPKG%.*}-test_mi12.bin"
-
   # Download firmwares
 
   if [ ! -f "fw/${FWPKG}" ]; then
@@ -48,9 +46,15 @@ for itm in "${all_firmwares[@]}"; do
     exit 5
   fi
 
-  # Execute tests
+  # Execute test - DJI firmware extractor
 
   tests/test_dji_fwcon_rebin1.sh -sn "fw/${FWPKG}"
+
+  # Find Ambarella firmware
+  AMBAPKG=$(grep '^target=m0100' "${FWPKG%.*}-test_"*".ini" | cut -d : -f 1)
+  AMBAPKG="${AMBAPKG%.*}.bin"
+
+  # Execute test - Ambarella firmware extractor
 
   tests/test_amba_fwpak_repack1.sh -sn "${AMBAPKG}"
 
