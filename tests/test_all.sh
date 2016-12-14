@@ -1,6 +1,8 @@
 #!/bin/bash
 # Execute this from upper level directory
 
+set +x
+
 if [ ! -f "tests/test_dji_fwcon_rebin1.sh" ]; then
   echo '### SUITE executed from wrong directory ###'
   exit 4
@@ -8,27 +10,55 @@ fi
 
 mkdir -p fw
 
-FWPKG="P3X_FW_V01.08.0080.bin"
-AMBAPKG="${FWPKG%.*}-test_mi12.bin"
+declare -A itm_p3x_fw1=([binname]="P3X_FW_V01.01.0008.bin" [dlurl]="http://download.dji-innovations.com/downloads/phantom_3/en/Phantom_3_Professional_Firmware_v1.1.8_en.zip" [dlname]="Phantom_3_Professional_Firmware_v1.1.8_en.zip" )
+declare -A itm_p3x_fw2=([binname]="P3X_FW_V01.01.1003.bin" [dlurl]="none" [dlname]="none" )
+declare -A itm_p3x_fw3=([binname]="P3X_FW_V01.08.0080.bin" [dlurl]="http://dl.djicdn.com/downloads/phantom_3/P3X_FW_V01.08.0080.zip" [dlname]="P3X_FW_V01.08.0080.zip" )
+declare -A itm_p3x_fw4=([binname]="P3X_FW_V01.10.0090.bin" [dlurl]="http://dl.djicdn.com/downloads/phantom_3/P3X_FW_V01.10.0090.zip" [dlname]="P3X_FW_V01.10.0090.zip" )
 
-# Download firmwares
+declare -a all_firmwares=( itm_p3x_fw1 itm_p3x_fw2 itm_p3x_fw3 itm_p3x_fw4 )
 
-if [ ! -f "fw/${FWPKG}" ]; then
-  curl https://dl.djicdn.com/downloads/phantom_3/P3X_FW_V01.09.0060.zip -o fw/P3X_FW_V01.09.0060.zip
-  unzip -j -d fw fw/P3X_FW_V01.09.0060.zip
-fi
+for itm in "${all_firmwares[@]}"; do
+  tmp=${itm}[dlurl]
+  FWDLURL=${!tmp}
+  tmp=${itm}[dlname]
+  FWDLNAME=${!tmp}
+  tmp=${itm}[binname]
+  FWPKG=${!tmp}
 
-# Execute tests
+  AMBAPKG="${FWPKG%.*}-test_mi12.bin"
 
-tests/test_dji_fwcon_rebin1.sh -sn "fw/${FWPKG}"
+  # Download firmwares
 
-tests/test_amba_fwpak_repack1.sh -sn "${AMBAPKG}"
+  if [ ! -f "fw/${FWPKG}" ]; then
 
-# Cleanup
+    if [ ! -f "fw/${FWDLNAME}" ]; then
+      curl "${FWDLURL}" -o "fw/${FWDLNAME}"
+    fi
 
-tests/test_amba_fwpak_repack1.sh -on "${AMBAPKG}"
+    if [ ! -f "fw/${FWDLNAME}" ]; then
+      echo '### SUITE could not download firmware to test ###'
+      exit 5
+    fi
 
-tests/test_dji_fwcon_rebin1.sh -on "fw/${FWPKG}"
+    unzip -j -d fw "fw/${FWDLNAME}"
+  fi
+
+  if [ ! -f "fw/${FWPKG}" ]; then
+    echo '### SUITE could not extract firmware to test ###'
+    exit 5
+  fi
+
+  # Execute tests
+
+  tests/test_dji_fwcon_rebin1.sh -sn "fw/${FWPKG}"
+
+  tests/test_amba_fwpak_repack1.sh -sn "${AMBAPKG}"
+
+  # Cleanup
+
+  tests/test_amba_fwpak_repack1.sh -on "${AMBAPKG}"
+
+  tests/test_dji_fwcon_rebin1.sh -on "fw/${FWPKG}"
+done
 
 exit 0
-

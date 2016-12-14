@@ -419,15 +419,15 @@ def dji_create(po, fwpkgfile):
   pkgmodules = []
   # Create module entry for each partition
   for i, miname in enumerate(minames):
-    if miname == "0":
-        hde = FwPkgEntry()
-    else:
-        hde = dji_read_fwentry_head(po, i, miname)
-    pkgmodules.append(hde)
+      if miname == "0":
+          hde = FwPkgEntry()
+      else:
+          hde = dji_read_fwentry_head(po, i, miname)
+      pkgmodules.append(hde)
   # Write the unfinished headers
   fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
   for hde in pkgmodules:
-    fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
+      fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
   fwpkgfile.write((c_ubyte * sizeof(c_ushort))())
   # Write module data
   for i, miname in enumerate(minames):
@@ -490,9 +490,12 @@ def dji_create(po, fwpkgfile):
   # Write all headers again
   fwpkgfile.seek(0,os.SEEK_SET)
   fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+  curhead_checksum = dji_calculate_crc16_part((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead), 0x3692)
   for hde in pkgmodules:
-    fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
-  fwpkgfile.write((c_ubyte * sizeof(c_ushort))())
+      fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
+      curhead_checksum = dji_calculate_crc16_part((c_ubyte * sizeof(hde)).from_buffer_copy(hde), curhead_checksum)
+  pkghead_checksum = c_ushort(curhead_checksum)
+  fwpkgfile.write((c_ubyte * sizeof(c_ushort)).from_buffer_copy(pkghead_checksum))
 
 def main(argv):
   # Parse command line options
