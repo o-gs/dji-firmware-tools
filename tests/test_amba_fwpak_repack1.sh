@@ -41,6 +41,7 @@ done
 
 if [ ! -f "${BINFILE}" ]; then
     echo '### FAIL: Input file not foumd! ###'
+    echo "### INFO: Expexted file \"${BINFILE}\" ###"
     exit 3
 fi
 
