@@ -2,6 +2,10 @@
 
 from __future__ import print_function
 import sys
+if sys.version_info < (3, 0):
+    # All checksums would have to be computed differently on Python 2.x
+    # due to differences in types
+    raise NotImplementedError('Python version 3 or newer is required.')
 import getopt
 import re
 import os
