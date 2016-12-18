@@ -333,8 +333,12 @@ def amba_extract(po, fwmdlfile):
     hde = FwModEntry()
     if fwmdlfile.readinto(hde) != sizeof(hde):
       raise EOFError("Couldn't read firmware package file header entries.")
-    # If both values are multiplications of 1024, then assume we're past end
-    if ((hde.dt_len & 0x3ff) == 0) and ((hde.crc32 & 0x3ff) == 0):
+    # If both values are multiplications of 1024, and 2nd is non-zero, then assume we're past end
+    # of entries array. Beyond entries array, there's an array of memory load addresses - and
+    # load addresses have are always rounded to multiplication of a power of 2.
+    # Since specific Ambarella firmwares always have set number of partitions, we have to do
+    # such guessing if we want one tool to support all Ambarella firmwares.
+    if ((hde.dt_len & 0x3ff) == 0) and ((hde.crc32 & 0x3ff) == 0) and (hde.crc32 != 0):
       fwmdlfile.seek(-sizeof(hde),os.SEEK_CUR)
       break
     modentries.append(hde)
@@ -343,6 +347,8 @@ def amba_extract(po, fwmdlfile):
     i += 1
     if (i > 128):
       raise EOFError("Couldn't find header entries end marking.")
+  if (po.verbose > 1):
+      print("{}: After detection, expecting {:d} entries".format(po.fwmdlfile,len(modentries)))
   if (po.verbose > 1):
       print("{}: Entries:".format(po.fwmdlfile))
       print(modentries)
@@ -421,7 +427,7 @@ def amba_extract(po, fwmdlfile):
         eprint("{}: Warning: Entry {:d} date is from before Ambarella formed as company.".format(po.fwmdlfile,i))
     # verify if padding area is completely filled with 0x00000000
     if (e.padding[0] != 0x00000000) or (len(set(e.padding)) != 1):
-      eprint("{}: Warning: partition {:d} header uses values from padded area in an unknown manner.".format(po.fwpartfile,i))
+      eprint("{}: Warning: partition {:d} header uses values from padded area in an unknown manner.".format(po.fwmdlfile,i))
   # Now verify checksum in main header
   hdcrc = hdcrc ^ 0xffffffff
   if (hdcrc != modhead.crc32):
