@@ -506,8 +506,15 @@ def amba_create(po, fwmdlfile):
     ptyp = amba_a9_part_entry_type_id(i)
     fname = "{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp)
     # Skip unused modentries
+    if not ptyp in ptyp_names:
+      if (po.verbose > 1):
+        print("{}: Entry {:2d} empty".format(po.fwmdlfile,i))
+      e = FwModPartHeader()
+      part_heads.append(e)
+      continue
+    # Also skip nonexisting ones
     if (os.stat(fname).st_size < 1):
-      eprint("{}: Warning: partition {:d} empty".format(po.fwmdlfile,i))
+      eprint("{}: Warning: partition {:d} marked as existing but empty".format(po.fwmdlfile,i))
       e = FwModPartHeader()
       part_heads.append(e)
       continue
