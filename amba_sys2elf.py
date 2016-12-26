@@ -18,7 +18,6 @@ from time import gmtime, strftime
 # Get it from https://github.com/mefistotelis/pyelftools.git
 # clone to upper level folder, as the path below indicates.
 sys.path.insert(0, '../pyelftools')
-#import elftools
 import elftools.elf.elffile
 import elftools.elf.sections
 
@@ -133,7 +132,8 @@ def prel31_to_addr(ptr,refptr):
 
 def syssw_read_base_address(po):
   mem_addr = 0
-  fname = "{:s}.a9h".format(po.basename)
+  # Do not use basename - a9h file is in the same folder where a9s was
+  fname = "{:s}.a9h".format(os.path.splitext(po.fwpartfile)[0])
   if (po.verbose > 1):
     print("{}: Opening {:s}".format(po.fwpartfile,fname))
   parser = configparser.ConfigParser()
@@ -306,31 +306,6 @@ def syssw_bin2elf(po, fwpartfile):
     else:
       sections_size[sectname] = sectpos_next - po.section_pos[sectname]
     sectpos_next = po.section_pos[sectname]
-  # Extract sections to separate files
-  sections_fname = {}
-  for sectname in sections_order:
-    if section_is_bss(sectname):
-      continue
-    if (po.verbose > 0):
-      print("{}: Extracting section '{:s}' from binary pos 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname]))
-    fname = "{:s}_sect_{:s}.bin".format(po.basename, re.sub('[\W_]+', '', sectname))
-    sections_fname[sectname] = fname
-    if not po.dry_run:
-      sectfile = open(fname, "wb")
-    fwpartfile.seek(po.section_pos[sectname], os.SEEK_SET)
-    n = 0
-    while (n < sections_size[sectname]):
-      copy_buffer = fwpartfile.read(min(1024 * 1024, sections_size[sectname] - n))
-      if not copy_buffer:
-          raise EOFError("Couldn't read whole section '{:s}' from binary file.".format(sectname))
-          break
-      n += len(copy_buffer)
-      if not po.dry_run:
-        sectfile.write(copy_buffer)
-    if not po.dry_run:
-      sectfile.close()
-    if (po.verbose > 1):
-      print("{}: Section '{:s}' written to '{:s}'".format(po.fwpartfile,sectname,fname))
   # Prepare array of addresses
   sections_address = {}
   memaddr = memaddr_base
@@ -343,39 +318,54 @@ def syssw_bin2elf(po, fwpartfile):
     memaddr += sections_size[sectname]
     if (po.verbose > 0):
       print("{}: Section '{:s}' memory address set to 0x{:08x}".format(po.fwpartfile,sectname,sections_address[sectname]))
-  # prepare objcopy command line
-  #TODO use elftools library instead of calling external executable
-  objcopy_cmd = 'arm-none-eabi-objcopy'
-  for sectname in sections_order:
-    if not section_is_bss(sectname):
-      objcopy_cmd += ' --update-section "{0:s}={1:s}"'.format(sectname,sections_fname[sectname])
-    objcopy_cmd += ' --change-section-address "{0:s}=0x{1:08x}"'.format(sectname,sections_address[sectname])
-  objcopy_cmd += ' "{:s}" "{:s}"'.format(po.elftemplate, po.outfile)
-  # execute the objcopy command
-  if (po.verbose > 0):
-    print("{}: Executing command:\n{:s}".format(po.fwpartfile,objcopy_cmd))
-  retcode = 0
+  # Copy an ELF template to destination file name
+  elf_templt = open(po.elftemplate, "rb")
   if not po.dry_run:
-    retcode = subprocess.call(objcopy_cmd, shell=True)
-  if (retcode != 0):
-    raise EnvironmentError("Execution of objcopy returned with error {:d}.".format(retcode))
-  # update entry point in the ELF header
+    elf_fh = open(po.outfile, "wb")
+  n = 0
+  while (1):
+    copy_buffer = elf_templt.read(1024 * 1024)
+    if not copy_buffer:
+        break
+    n += len(copy_buffer)
+    if not po.dry_run:
+      elf_fh.write(copy_buffer)
+  elf_templt.close()
+  if not po.dry_run:
+    elf_fh.close()
+  if (po.verbose > 1):
+    print("{}: ELF template '{:s}' copied to '{:s}', {:d} bytes".format(po.fwpartfile,po.elftemplate,po.outfile,n))
+  # Update entry point in the ELF header
   if (po.verbose > 0):
     print("{}: Updating entry point and section headers".format(po.fwpartfile))
   if not po.dry_run:
     elf_fh = open(po.outfile, "r+b")
   else:
-    elf_fh = open(po.outfile, "rb")
+    elf_fh = open(po.elftemplate, "rb")
   elfobj = elftools.elf.elffile.ELFFile(elf_fh)
   elfobj.header['e_entry'] = memaddr_base
-  # update section sizes, including the uninitialized (.bss*) sections
+  # Update section sizes, including the uninitialized (.bss*) sections
   for sectname in sections_order:
     sect = elfobj.get_section_by_name(sectname)
+    if (po.verbose > 0):
+      print("{}: Preparing ELF section '{:s}' from binary pos 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname]))
     sect.header['sh_addr'] = sections_address[sectname]
-    # for non-bss sections, size will be updated automatically when replacing data sect.set_data(data_buf)
+    # for non-bss sections, size will be updated automatically when replacing data
     if section_is_bss(sectname):
       sect.header['sh_size'] = sections_size[sectname]
+    elif sections_size[sectname] <= 0:
+      sect.set_data(b'')
+    else:
+      fwpartfile.seek(po.section_pos[sectname], os.SEEK_SET)
+      data_buf = fwpartfile.read(sections_size[sectname])
+      if not data_buf:
+          raise EOFError("Couldn't read section '{:s}' from binary file.".format(sectname))
+      sect.set_data(data_buf)
+    if (po.verbose > 2):
+      print("{}: Updating section '{:s}' and shifting subsequent sections".format(po.fwpartfile,sectname))
     elfobj.set_section_by_name(sectname, sect)
+  if (po.verbose > 1):
+    print("{}: Writing changes to '{:s}'".format(po.fwpartfile,po.outfile))
   if not po.dry_run:
     elfobj.write_changes()
   elf_fh.close()
