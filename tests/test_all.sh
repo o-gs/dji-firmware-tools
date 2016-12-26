@@ -102,7 +102,7 @@ for itm in "${all_firmwares[@]}"; do
     ((NUMFAILS++))
   fi
 
-  # Find Ambarella firmware
+  # Find Ambarella firmware file name
   AMBAPKG=$(grep '^target=m0100' "${FWPKG%.*}-test_"*".ini" | head -n 1 | cut -d : -f 1)
   if [ -z "${AMBAPKG}" ]; then
     echo '### SKIP no ambarella firmware found in extracted files ###'
@@ -118,7 +118,19 @@ for itm in "${all_firmwares[@]}"; do
     ((NUMFAILS++))
   fi
 
+  # Get Ambarella system partition file name
+  AMBASYSPKG="${AMBAPKG%.*}_part_sys.a9s"
+
+  # Execute test - Ambarella system partition to ELF wrapper
+
+  tests/test_amba_sys2elf_rebin1.sh -sn "${AMBASYSPKG}"
+  if [ $? -ne 0 ]; then
+    ((NUMFAILS++))
+  fi
+
   # Cleanup
+
+  tests/test_amba_sys2elf_rebin1.sh -on "${AMBASYSPKG}"
 
   tests/test_amba_fwpak_repack1.sh -on "${AMBAPKG}"
 

@@ -18,7 +18,7 @@ case $key in
   -se|--skip-extract)
     SKIP_EXTRACT=1
     ;;
-  -se|--skip-repack)
+  -sp|--skip-repack)
     SKIP_REPACK=1
     ;;
   -sn|--skip-cleanup)
