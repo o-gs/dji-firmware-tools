@@ -14,12 +14,19 @@ import itertools
 from ctypes import *
 from time import gmtime, strftime
 
-# This tool requires version of pyelftools with elf write support.
-# Get it from https://github.com/mefistotelis/pyelftools.git
-# clone to upper level folder, as the path below indicates.
 sys.path.insert(0, '../pyelftools')
-import elftools.elf.elffile
-import elftools.elf.sections
+try:
+  import elftools.elf.elffile
+  import elftools.elf.sections
+  if not callable(getattr(elftools.elf.elffile.ELFFile, "write_changes", None)):
+    raise ImportError("The pyelftools library provided has no write support")
+except ImportError:
+  print("Warning:")
+  print("This tool requires version of pyelftools with ELF write support.")
+  print("Get it from https://github.com/mefistotelis/pyelftools.git")
+  print("clone to upper level folder, '../pyelftools'.")
+  raise
+
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
