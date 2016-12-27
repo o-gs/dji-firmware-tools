@@ -96,7 +96,6 @@ for itm in "${all_firmwares[@]}"; do
   fi
 
   # Execute test - DJI firmware extractor
-
   tests/test_dji_fwcon_rebin1.sh -sn "fw/${FWPKG}"
   if [ $? -ne 0 ]; then
     ((NUMFAILS++))
@@ -112,7 +111,6 @@ for itm in "${all_firmwares[@]}"; do
   AMBAPKG="${AMBAPKG%.*}.bin"
 
   # Execute test - Ambarella firmware extractor
-
   tests/test_amba_fwpak_repack1.sh -sn "${AMBAPKG}"
   if [ $? -ne 0 ]; then
     ((NUMFAILS++))
@@ -120,12 +118,17 @@ for itm in "${all_firmwares[@]}"; do
 
   # Get Ambarella system partition file name
   AMBASYSPKG="${AMBAPKG%.*}_part_sys.a9s"
+  if [ ! -f "${AMBASYSPKG}" ]; then
+    echo '### SKIP no ambarella system partition found in extracted files ###'
+    ((NUMSKIPS++))
+  else
 
-  # Execute test - Ambarella system partition to ELF wrapper
+    # Execute test - Ambarella system partition to ELF wrapper
+    tests/test_amba_sys2elf_rebin1.sh -sn "${AMBASYSPKG}"
+    if [ $? -ne 0 ]; then
+      ((NUMFAILS++))
+    fi
 
-  tests/test_amba_sys2elf_rebin1.sh -sn "${AMBASYSPKG}"
-  if [ $? -ne 0 ]; then
-    ((NUMFAILS++))
   fi
 
   # Cleanup
