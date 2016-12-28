@@ -108,3 +108,18 @@ Optimized examples for specific firmwares:
 
 ```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x482EC0:0 -p P3X_FW_V01.07.0060_mi12_part_sys.a9s```
 
+# Symbols
+
+For some specific firmware modules in specific versions, there are partial symbols
+available in 'symbols' directory. Only functions and variables which were given a
+meaningful names are included in the symbol files. The symbols are in MAP format,
+which can be loaded into most disassemblers with minimal effort. For Ida Pro,
+there is a plugin which can read MAP files and rename functions and variables
+accordingly.
+
+Symbols are matched with ELF files generated with the tools described above,
+not directly with the BINs. Use example commands provided in previous section
+to generate ELF files with content matching to the symbols.
+
+When working on a firmware version for which no symbols are available, you may
+want to use a version with symbols for reference in naming.
