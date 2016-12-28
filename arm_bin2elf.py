@@ -43,10 +43,8 @@ import hashlib
 import mmap
 import zlib
 import re
-import subprocess
 import itertools
 from ctypes import *
-from time import gmtime, strftime
 
 sys.path.insert(0, '../pyelftools')
 try:
@@ -74,6 +72,8 @@ class ProgOptions:
   elftemplate='arm_bin2elf_template.elf'
   address_base=0x1000000
   address_space_len=0x2000000 # 32MB
+  expect_func_align = 2
+  expect_sect_align = 0x10
   verbose = 0
   dry_run = False
   command = ''
@@ -144,8 +144,8 @@ def armfw_is_proper_ARMexidx_entry(po, fwpartfile, eexidx, memaddr_base, func_al
   # Let's assume this segment is somewhere adjacent to our .ARM.exidx segment
   # Size of the table entry which is being pointed at is no less than 4 bytes
   tbent_offs = prel31_to_addr(eexidx.entry, memaddr_base+ent_pos)
-  if ((tbent_offs >= memaddr_base+arr_pos-0x100) and (tbent_offs <= memaddr_base+arr_pos-4) or
-      (tbent_offs < memaddr_base+ent_pos+0x200) and (tbent_offs >= memaddr_base+ent_pos+sizeof(eexidx))):
+  if ((tbent_offs >= memaddr_base+arr_pos-po.expect_sect_align*0x10) and (tbent_offs <= memaddr_base+arr_pos-4) or
+      (tbent_offs < memaddr_base+ent_pos+po.expect_sect_align*0x20) and (tbent_offs >= memaddr_base+ent_pos+sizeof(eexidx))):
      # We can assume the table is aligned; we don't know the size of the entry, but it is multiplication of 4
      if ((tbent_offs % 4) != 0):
            return False
@@ -246,21 +246,21 @@ def armfw_bin2elf(po, fwpartfile):
      print("{}: Searching for sections".format(po.fwpartfile))
   # ARM exceprions index section is easy to find
   sectname = ".ARM.exidx"
-  sectalign = 0x10
+  sect_align = po.expect_sect_align
   if (not sectname in po.section_pos):
-     sect_pos, sect_len = armfw_detect_sect_ARMexidx(po, fwpartfile,  po.address_base, 0, 0x02, sectalign)
+     sect_pos, sect_len = armfw_detect_sect_ARMexidx(po, fwpartfile,  po.address_base, 0, po.expect_func_align, sect_align)
      if (sect_pos < 0):
-        sectalign = 0x08
-        sect_pos, sect_len = armfw_detect_sect_ARMexidx(po, fwpartfile,  po.address_base, 0, 0x02, sectalign)
+        sect_align = (po.expect_sect_align >> 1)
+        sect_pos, sect_len = armfw_detect_sect_ARMexidx(po, fwpartfile,  po.address_base, 0, po.expect_func_align, sect_align)
      if (sect_pos < 0):
-        sectalign = 0x20
-        sect_pos, sect_len = armfw_detect_empty_sect_ARMexidx(po, fwpartfile,  po.address_base, 0, 0x02, sectalign)
+        sect_align = po.expect_sect_align
+        sect_pos, sect_len = armfw_detect_empty_sect_ARMexidx(po, fwpartfile,  po.address_base, 0, po.expect_func_align, sect_align)
      if (sect_pos < 0):
         raise EOFError("No matches found for section '{:s}' in binary file.".format(sectname))
      po.section_pos[sectname] = sect_pos
   else:
      sect_pos = po.section_pos[sectname]
-     sect_len = 0x20
+     sect_len = po.expect_sect_align
   if (not sectname in po.section_size):
      po.section_size[sectname] = sect_len
   else:
@@ -268,12 +268,12 @@ def armfw_bin2elf(po, fwpartfile):
   if (po.verbose > 1):
      print("{}: Set '{:s}' section at file pos 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname],po.section_size[sectname]))
   # Make sure we will not realign sections by mistake; we will update alignment in file later
-  sectalign = 1
+  sect_align = 1
   # Now let's assume that the .ARM.exidx section is located after .text section. Also, the .text section
   # is first because it contains interrupt table located at offset 0
   sectname = ".text"
   if (not sectname in po.section_pos):
-     if (sect_pos > 0x20):
+     if (sect_pos > po.expect_func_align * 8):
         po.section_pos[sectname] = 0x0
      else:
         raise EOFError("No place for '{:s}' section before the '{:s}' section in binary file.".format(sectname,".ARM.exidx"))
@@ -285,8 +285,8 @@ def armfw_bin2elf(po, fwpartfile):
   sectname = ".data"
   if (not sectname in po.section_pos):
      sect_pos += sect_len
-     if (sect_pos % sectalign) != 0:
-        sect_pos += sectalign - (sect_pos % sectalign)
+     if (sect_pos % sect_align) != 0:
+        sect_pos += sect_align - (sect_pos % sect_align)
      po.section_pos[sectname] = sect_pos
   else:
      sect_pos = po.section_pos[sectname]
@@ -303,8 +303,8 @@ def armfw_bin2elf(po, fwpartfile):
   sectname = ".bss"
   if (not sectname in po.section_pos):
      sect_pos += sect_len
-     if (sect_pos % sectalign) != 0:
-        sect_pos += sectalign - (sect_pos % sectalign)
+     if (sect_pos % sect_align) != 0:
+        sect_pos += sect_align - (sect_pos % sect_align)
      po.section_pos[sectname] = sect_pos
   else:
      sect_pos = po.section_pos[sectname]
@@ -368,11 +368,11 @@ def armfw_bin2elf(po, fwpartfile):
   for sectname in sections_order:
      # add section address to array; since BIN is a linear mem dump, addresses are the same as file offsets
      sections_address[sectname] = po.address_base + po.section_pos[sectname]
-     sectalign = 0x20
-     while (sections_address[sectname] % sectalign) != 0: sectalign = (sectalign >> 1)
-     sections_align[sectname] = sectalign
+     sect_align = (po.expect_sect_align << 1)
+     while (sections_address[sectname] % sect_align) != 0: sect_align = (sect_align >> 1)
+     sections_align[sectname] = sect_align
      if (po.verbose > 0):
-        print("{}: Section '{:s}' memory address set to 0x{:08x}, alignment 0x{:02x}".format(po.fwpartfile,sectname,sections_address[sectname],sectalign))
+        print("{}: Section '{:s}' memory address set to 0x{:08x}, alignment 0x{:02x}".format(po.fwpartfile,sectname,sections_address[sectname],sect_align))
   # Update entry point in the ELF header
   if (po.verbose > 0):
      print("{}: Updating entry point and section headers".format(po.fwpartfile))
@@ -414,8 +414,8 @@ def main(argv):
 
       Its task is to parse command line options and call a function which performs selected command.
   """
-  # Parse command line options
   po = ProgOptions()
+  # Parse command line options
   try:
      opts, args = getopt.getopt(argv,"hevt:p:l:b:s:o:",["help","version","mkelf","dry-run","fwpart=","template","addrsplen=","baseaddr=","section=","output="])
   except getopt.GetoptError:
@@ -434,7 +434,7 @@ def main(argv):
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
-        print("arm_bin2elf.py version 0.1.1")
+        print("arm_bin2elf.py version 0.2.0")
         sys.exit()
      elif opt == "-v":
         po.verbose += 1
