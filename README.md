@@ -69,11 +69,42 @@ by "UBI#" at the beginning of the file.
 Example: ```sudo ./amba_ubifs.sh P3X_FW_V01.08.0080_mi12_part_rfs.a9s```
 
 
+### arm_bin2elf.py
+
+Tool which wrapps binary execytable ARM images with ELF header. If a firmware
+contains binary image of executable file, this tool can rebuild ELF header for it.
+The ELF format can be then easily disassembled, as most debuggers can read ELF files.
+Note that using this tool on encrypted firmwares will not result in useable ELF.
+
+Example: ```./arm_bin2elf.py -vv -e -b 0x8020000 -l 0x6000000 -p P3X_FW_V01.07.0060_mi01.bin```
+
+After first look at the disassembly, it is good to find where the correct border
+between '.text' and '.data' sections is located. File offset of this location can
+be used to generate better ELF file in case '.ARM.exidx' section was not detected.
+This section is treated as a separator between '.text' and '.data'. This means that
+position of the '.ARM.exidx' influences length of the '.text' section, and starting
+offset of the '.data' section. If there is no '.ARM.exidx' section in the file, it
+will still be used as separator, just with zero size.
+
+Optimized examples for specific firmwares:
+
+```./arm_bin2elf.py -vv -e -b 0x8020000 --section .ARM.exidx@0x085d34:0 --section .bss@0x17fe0000:0x4400000 -p P3X_FW_V01.07.0060_mi01.bin```
+
 ### amba_sys2elf.py
 
 Ambarella A7/A9 firmware "System Software" partition converter. The partition
 contains a binary image of executable file, and this tool wraps it with ELF
 header. The ELF format can be then easily disassembled, as most debuggers can
-read ELF files.
+read ELF files. This tool is very similar to arm_bin2elf.py, it is just
+pre-configured to specific firmware.
 
 Example: ```./amba_sys2elf.py -vv -e -l 0x6000000 -p P3X_FW_V01.08.0080_mi12_part_sys.a9s```
+
+All border adjusting rules explained for arm_bin2elf.py apply for this tool as well.
+
+Optimized examples for specific firmwares:
+
+```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x483E4C:0 -p P3X_FW_V01.08.0080_mi12_part_sys.a9s```
+
+```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x482EC0:0 -p P3X_FW_V01.07.0060_mi12_part_sys.a9s```
+
