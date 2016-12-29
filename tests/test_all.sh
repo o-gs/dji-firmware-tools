@@ -101,41 +101,65 @@ for itm in "${all_firmwares[@]}"; do
     ((NUMFAILS++))
   fi
 
-  # Find Ambarella firmware file name
-  AMBAPKG=$(grep '^target=m0100' "${FWPKG%.*}-test_"*".ini" | head -n 1 | cut -d : -f 1)
-  if [ -z "${AMBAPKG}" ]; then
-    echo '### SKIP no ambarella firmware found in extracted files ###'
+  # Find Ambarella App firmware file name
+  AMBAPKG1=$(grep '^target=m0100' "${FWPKG%.*}-test_"*".ini" | head -n 1 | cut -d : -f 1)
+  if [ -z "${AMBAPKG1}" ]; then
+    echo '### SKIP no ambarella app firmware found in extracted files ###'
     ((NUMSKIPS++))
     continue
   fi
-  AMBAPKG="${AMBAPKG%.*}.bin"
+  AMBAPKG1="${AMBAPKG1%.*}.bin"
 
   # Execute test - Ambarella firmware extractor
-  tests/test_amba_fwpak_repack1.sh -sn "${AMBAPKG}"
+  tests/test_amba_fwpak_repack1.sh -sn "${AMBAPKG1}"
   if [ $? -ne 0 ]; then
     ((NUMFAILS++))
   fi
 
   # Get Ambarella system partition file name
-  AMBASYSPKG="${AMBAPKG%.*}_part_sys.a9s"
-  if [ ! -f "${AMBASYSPKG}" ]; then
-    echo '### SKIP no ambarella system partition found in extracted files ###'
+  AMBAPKG1SYS="${AMBAPKG1%.*}_part_sys.a9s"
+  if [ ! -f "${AMBAPKG1SYS}" ]; then
+    echo '### SKIP no ambarella app system partition found in extracted files ###'
+    AMBAPKG1SYS=
     ((NUMSKIPS++))
   else
 
     # Execute test - Ambarella system partition to ELF wrapper
-    tests/test_amba_sys2elf_rebin1.sh -sn "${AMBASYSPKG}"
+    tests/test_amba_sys2elf_rebin1.sh -sn "${AMBAPKG1SYS}"
     if [ $? -ne 0 ]; then
       ((NUMFAILS++))
     fi
 
   fi
 
+  # Find Ambarella Ldr firmware file name
+  AMBAPKG2=$(grep '^target=m0101' "${FWPKG%.*}-test_"*".ini" | head -n 1 | cut -d : -f 1)
+  if [ -z "${AMBAPKG2}" ]; then
+    echo '### SKIP no ambarella ldr firmware found in extracted files ###'
+    ((NUMSKIPS++))
+    continue
+  fi
+  AMBAPKG2="${AMBAPKG2%.*}.bin"
+
+  # Execute test - Ambarella firmware extractor
+  tests/test_amba_fwpak_repack1.sh -sn "${AMBAPKG2}"
+  if [ $? -ne 0 ]; then
+    ((NUMFAILS++))
+  fi
+
   # Cleanup
 
-  tests/test_amba_sys2elf_rebin1.sh -on "${AMBASYSPKG}"
+  if [ ! -z "${AMBAPKG1SYS}" ]; then
+    tests/test_amba_sys2elf_rebin1.sh -on "${AMBAPKG1SYS}"
+  fi
 
-  tests/test_amba_fwpak_repack1.sh -on "${AMBAPKG}"
+  if [ ! -z "${AMBAPKG2}" ]; then
+    tests/test_amba_fwpak_repack1.sh -on "${AMBAPKG2}"
+  fi
+
+  if [ ! -z "${AMBAPKG1}" ]; then
+    tests/test_amba_fwpak_repack1.sh -on "${AMBAPKG1}"
+  fi
 
   tests/test_dji_fwcon_rebin1.sh -on "fw/${FWPKG}"
 done
