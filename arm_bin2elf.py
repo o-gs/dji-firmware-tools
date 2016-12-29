@@ -43,7 +43,6 @@ import hashlib
 import mmap
 import zlib
 import re
-import itertools
 from ctypes import *
 
 sys.path.insert(0, '../pyelftools')
@@ -424,13 +423,16 @@ def main(argv):
   for opt, arg in opts:
      if opt in ("-h", "--help"):
         print("Binary firmware with ARM code to ELF converter")
-        print("arm_bin2elf.py <-e> [-v] -p <fwmdfile> [-o <elffile>] [-t <tmpltfile>]")
+        print("arm_bin2elf.py <-e> [-v] -p <fwmdfile> [-o <elffile>] [-t <tmpltfile>] [-b <baseaddr>] [-l <spacelen>] [-s <sect@pos:len>]")
         print("  -p <fwpartfile> - name of the firmware binary file")
         print("  -o <elffile> - output file name")
         print("  -t <tmpltfile> - template file name")
         print("  -e - make ELF file from a binary image")
         print("  -l <spacelen> - set address space length; influences size of last section")
         print("  -b <baseaddr> - set base address; first section will start at this memory location")
+        print("  -s <sect@pos:len> - set section position and/or length; can be used to override")
+        print("      detection of sections; setting section .ARM.exidx will influence .text")
+        print("      and .data, moving them and sizing to fit one before and one after the .ARM.exidx")
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
