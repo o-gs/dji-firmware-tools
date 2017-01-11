@@ -10,7 +10,8 @@ import binascii
 import configparser
 import itertools
 from ctypes import *
-from time import gmtime, strftime
+from time import gmtime, strftime, strptime
+from calendar import timegm
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
@@ -92,7 +93,7 @@ class FwPkgHeader(LittleEndianStructure):
   _fields_ = [('magic', c_uint),
               ('magic_ver', c_ushort),
               ('hdrend_offs', c_ushort),
-              ('salt', c_int),
+              ('timestamp', c_uint),
               ('manufacturer', c_char * 16),
               ('model', c_char * 16),
               ('entry_count', c_ushort),
@@ -101,19 +102,19 @@ class FwPkgHeader(LittleEndianStructure):
               ('padding', c_ubyte * 10)]
 
   def set_ver_latest(self, ver):
-    self.ver_latest_enc = 0x5127A564 ^ ver ^ self.salt;
+    self.ver_latest_enc = 0x5127A564 ^ ver ^ self.timestamp;
 
   def set_ver_rollbk(self, ver):
-    self.ver_rollbk_enc = 0x5127A564 ^ ver ^ self.salt;
+    self.ver_rollbk_enc = 0x5127A564 ^ ver ^ self.timestamp;
 
   def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
     varkey = 'ver_latest'
-    d[varkey] = d['salt'] ^ d[varkey+"_enc"]  ^ 0x5127A564;
+    d[varkey] = d['timestamp'] ^ d[varkey+"_enc"]  ^ 0x5127A564;
     varkey = 'ver_rollbk'
-    d[varkey] = d['salt'] ^ d[varkey+"_enc"]  ^ 0x5127A564;
+    d[varkey] = d['timestamp'] ^ d[varkey+"_enc"]  ^ 0x5127A564;
     varkey = 'padding'
     d[varkey] = "".join("{:02X}".format(x) for x in d[varkey])
     return d
@@ -126,8 +127,8 @@ class FwPkgHeader(LittleEndianStructure):
     fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8")))
     varkey = 'model'
     fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8")))
-    varkey = 'salt'
-    fp.write("{:s}={:08X}\n".format(varkey,d[varkey]))
+    varkey = 'timestamp'
+    fp.write("{:s}={:s}\n".format(varkey,strftime("%Y-%m-%d %H:%M:%S",gmtime(d[varkey]))))
     varkey = 'ver_latest'
     fp.write("{:s}={:02d}.{:02d}.{:04d}\n".format(varkey, (d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey])&65535))
     varkey = 'ver_rollbk'
@@ -281,7 +282,7 @@ def dji_read_fwpkg_head(po):
     parser.read_file(lines)
   pkghead.manufacturer = parser.get("asection", "manufacturer").encode("utf-8")
   pkghead.model = parser.get("asection", "model").encode("utf-8")
-  pkghead.salt = int(parser.get("asection", "salt"),16)
+  pkghead.timestamp = timegm(strptime(parser.get("asection", "timestamp"),"%Y-%m-%d %H:%M:%S"))
   ver_latest_s = parser.get("asection", "ver_latest")
   ver_latest_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<svn>[0-9A-Fa-f]+)', ver_latest_s)
   pkghead.set_ver_latest( ((int(ver_latest_m.group("major"),10)&0xff)<<24) + ((int(ver_latest_m.group("minor"),10)&0xff)<<16) + (int(ver_latest_m.group("svn"),10)&0xffff) )
