@@ -19,6 +19,7 @@ class ProgOptions:
   fwpkgfile = ''
   dcprefix = ''
   verbose = 0
+  force_continue = 0
   command = ''
 
 class DjiModuleTarget():
@@ -329,7 +330,11 @@ def dji_extract(po, fwpkgfile):
   if fwpkgfile.readinto(pkghead) != sizeof(pkghead):
       raise EOFError("Couldn't read firmware package file header.")
   if pkghead.magic != 0x12345678 or pkghead.magic_ver != 0x0001:
-      eprint("{}: Warning: Unexpected magic value in main header; will try to extract anyway.".format(po.fwpkgfile))
+      if (po.force_continue):
+          eprint("{}: Warning: Unexpected magic value in main header; will try to extract anyway.".format(po.fwpkgfile))
+      else:
+          eprint("{}: Error: Unexpected magic value in main header; input file is not a firmware package.".format(po.fwpkgfile))
+          exit(1)
   if (pkghead.ver_latest_enc == 0 and pkghead.ver_rollbk_enc == 0):
       eprint("{}: Warning: Unversioned firmware package identified; this format is not fully supported.".format(po.fwpkgfile))
       # In this format, versions should be set from file name, and CRC16 of the header should be equal to values hard-coded in updater
@@ -512,6 +517,7 @@ def main(argv):
         print("  -p <fwpkgfile> - name of the firmware package file")
         print("  -m <mdprefix> - file name prefix for the single decomposed firmware modules")
         print("                  defaults to base name of firmware package file")
+        print("  -f - force continuing execution despite warning signs of issues")
         print("  -x - extract firmware package into modules")
         print("  -a - add module files to firmware package")
         print("  -v - increases verbosity level; max level is set by -vvv")
@@ -525,6 +531,8 @@ def main(argv):
         po.fwpkgfile = arg
      elif opt in ("-m", "--mdprefix"):
         po.dcprefix = arg
+     elif opt in ("-f", "--force-continue"):
+        po.force_continue = 1
      elif opt in ("-x", "--extract"):
         po.command = 'x'
      elif opt in ("-a", "--add"):
