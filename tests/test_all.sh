@@ -13,6 +13,8 @@ if [ ! -f "supported_firmwares.csv" ]; then
   exit 4
 fi
 
+EXEC_FLAG=0x04
+
 mkdir -p fw
 
 declare -a all_firmwares=()
@@ -51,7 +53,7 @@ do
     fi
   fi
   # Select firmwares for testing
-  if [ $((testflg & 0x04)) -ne 0 ]; then
+  if [ $((testflg & EXEC_FLAG)) -ne 0 ]; then
     all_firmwares+=("$itm")
   fi
 
@@ -117,7 +119,7 @@ for itm in "${all_firmwares[@]}"; do
     AMBAPKG1="${AMBAPKG1%.*}.bin"
   fi
 
-  if [ ! -z "${AMBAPKG2}" ]; then
+  if [ ! -z "${AMBAPKG1}" ]; then
     # Execute test - Ambarella firmware extractor
     tests/test_amba_fwpak_repack1.sh -sn "${AMBAPKG1}"
     if [ $? -ne 0 ]; then
@@ -173,7 +175,10 @@ for itm in "${all_firmwares[@]}"; do
     tests/test_amba_fwpak_repack1.sh -on "${AMBAPKG1}"
   fi
 
-  tests/test_dji_fwcon_rebin1.sh -on "fw/${FWPKG}"
+  if [ ! -z "${FWPKG}" ]; then
+    tests/test_dji_fwcon_rebin1.sh -on "fw/${FWPKG}"
+  fi
+
 done
 
 if [ ${NUMSKIPS} -gt 0 ]; then
