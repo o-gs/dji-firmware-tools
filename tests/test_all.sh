@@ -29,13 +29,29 @@ do
   dlname="${dlname%\"}"
   dlname="${dlname#\"}"
   #echo "$itm:$product|$binname|$dlpage|$dlurl|$dlname|$testflg"
+  # Verify flags
+  if [ $i -eq 0 ]; then
+    testflg=0
+  fi
+  re='^[0-9]+$'
+  if ! [[ ${testflg} =~ $re ]]; then
+      echo '### SKIP fw list entry '$i' has non-numeric test flags ###'
+      testflg=0
+  fi
   declare -A ${itm}
   eval ${itm}[binname]=\"${binname}\"
   eval ${itm}[dlurl]=\"${dlurl}\"
   eval ${itm}[dlname]=\"${dlname}\"
-
+  eval ${itm}[testflg]=\"${testflg}\"
+  # Verify entry
+  if [ ${testflg} -ne 0 ]; then
+    if [ -z "${binname}" ]; then
+      echo '### SKIP fw list entry '$i' has no binary file name set ###'
+      testflg=0
+    fi
+  fi
   # Select firmwares for testing
-  if [ $i -ne 0 ] && [ $((testflg & 0x04)) -ne 0 ]; then
+  if [ $((testflg & 0x04)) -ne 0 ]; then
     all_firmwares+=("$itm")
   fi
 
@@ -52,12 +68,14 @@ for itm in "${all_firmwares[@]}"; do
   FWDLNAME=${!tmp}
   tmp=${itm}[binname]
   FWPKG=${!tmp}
+  tmp=${itm}[testflg]
+  FWTSTFLG=${!tmp}
 
   # Download firmwares
 
   if [ ! -f "fw/${FWPKG}" ]; then
 
-    if [ ! -f "fw/${FWDLNAME}" ]; then
+    if [ ! -f "fw/${FWDLNAME}" ] && [ $((FWTSTFLG & 0x01)) -ne 0 ]; then
       curl "${FWDLURL}" -o "fw/${FWDLNAME}"
     fi
 

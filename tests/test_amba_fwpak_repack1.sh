@@ -84,9 +84,12 @@ fi
 if [ "${SKIP_COMPARE}" -le "0" ]; then
   if [ ${TEST_RESULT} == 0 ]; then
     echo '### SUCCESS: File identical after conversion. ###'
+  elif [ ! -s "${TESTFILE}" ]; then
+    echo '### FAIL: File empty or missing; creation faled! ###'
+    exit 2
   else
     echo '### FAIL: File changed during conversion! ###'
-    exit 2
+    exit 1
   fi
 fi
 
