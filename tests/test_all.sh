@@ -4,62 +4,43 @@
 set +x
 
 if [ ! -f "tests/test_dji_fwcon_rebin1.sh" ]; then
-  echo '### SUITE executed from wrong directory ###'
+  echo '### SUITE sub-script not found; executed from wrong directory? ###'
+  exit 4
+fi
+
+if [ ! -f "supported_firmwares.csv" ]; then
+  echo '### SUITE fw list not found; executed from wrong directory? ###'
   exit 4
 fi
 
 mkdir -p fw
 
-declare -A itm_p3x_fw01=([binname]="P3X_FW_V01.01.0006.bin" [dlurl]="http://download.dji-innovations.com/downloads/phantom_3/en/Phantom_3_Professional_Firmware_v1.1.6_en.zip" [dlname]="Phantom_3_Professional_Firmware_v1.1.6_en.zip" )
-declare -A itm_p3x_fw02=([binname]="P3X_FW_V01.01.0008.bin" [dlurl]="http://download.dji-innovations.com/downloads/phantom_3/en/Phantom_3_Professional_Firmware_v1.1.8_en.zip" [dlname]="Phantom_3_Professional_Firmware_v1.1.8_en.zip" )
-declare -A itm_p3x_fw03=([binname]="P3X_FW_V01.01.0009.bin" [dlurl]="http://download.dji-innovations.com/downloads/phantom_3/en/Phantom_3_Professional_Firmware_v1.1.9_en.zip" [dlname]="Phantom_3_Professional_Firmware_v1.1.9_en.zip" )
-declare -A itm_p3x_fw04=([binname]="P3X_FW_V01.01.1003.bin" [dlurl]="none" [dlname]="none" )
-declare -A itm_p3x_fw05=([binname]="P3X_FW_V01.01.1007.bin" [dlurl]="none" [dlname]="none" )
-declare -A itm_p3x_fw06=([binname]="P3X_FW_V01.02.0006.bin" [dlurl]="http://download.dji-innovations.com/downloads/phantom_3/en/Phantom_3_Professional_Firmware_v1.2.6_en.zip" [dlname]="Phantom_3_Professional_Firmware_v1.2.6_en.zip" )
-declare -A itm_p3x_fw07=([binname]="P3X_FW_V01.03.0020.bin" [dlurl]="http://download.dji-innovations.com/downloads/phantom_3/en/Phantom_3_Professional_Firmware_v1.3.20_en.zip" [dlname]="Phantom_3_Professional_Firmware_v1.3.20_en.zip" )
-declare -A itm_p3x_fw08=([binname]="P3X_FW_V01.04.0005.bin" [dlurl]="none" [dlname]="none" )
-declare -A itm_p3x_fw09=([binname]="P3X_FW_V01.04.0010.bin" [dlurl]="http://download.dji-innovations.com/downloads/phantom_3/en/Phantom_3_Professional_Firmware_v1.4.0010_en.zip" [dlname]="Phantom_3_Professional_Firmware_v1.4.0010_en.zip" )
-declare -A itm_p3x_fw10=([binname]="P3X_FW_V01.05.0030.bin" [dlurl]="http://dl.djicdn.com/downloads/phantom_3/P3X_FW_V01.05.0030.zip" [dlname]="P3X_FW_V01.05.0030.zip" )
-declare -A itm_p3x_fw11=([binname]="P3X_FW_V01.06.0040.bin" [dlurl]="http://dl.djicdn.com/downloads/phantom_3/P3X_FW_V01.06.0040.zip" [dlname]="P3X_FW_V01.06.0040.zip" )
-declare -A itm_p3x_fw12=([binname]="P3X_FW_V01.07.0043_beta.bin" [dlurl]="none" [dlname]="none" )
-declare -A itm_p3x_fw13=([binname]="P3X_FW_V01.07.0060.bin" [dlurl]="http://dl.djicdn.com/downloads/phantom_3/P3X_FW_V01.07.0060.zip" [dlname]="P3X_FW_V01.07.0060.zip" )
-declare -A itm_p3x_fw14=([binname]="P3X_FW_V01.08.0080.bin" [dlurl]="http://dl.djicdn.com/downloads/phantom_3/P3X_FW_V01.08.0080.zip" [dlname]="P3X_FW_V01.08.0080.zip" ) # interesting - mi02 encrypted
-declare -A itm_p3x_fw15=([binname]="P3X_FW_V01.09.0021.bin" [dlurl]="http://dl.djicdn.com/downloads/phantom_3/P3X_FW_V01.09.0021.zip" [dlname]="P3X_FW_V01.09.0021.zip" )
-declare -A itm_p3x_fw16=([binname]="P3X_FW_V01.09.0060.bin" [dlurl]="http://dl.djicdn.com/downloads/phantom_3/P3X_FW_V01.09.0060.zip" [dlname]="P3X_FW_V01.09.0060.zip" )
-declare -A itm_p3x_fw17=([binname]="P3X_FW_V01.10.0090.bin" [dlurl]="http://dl.djicdn.com/downloads/phantom_3/P3X_FW_V01.10.0090.zip" [dlname]="P3X_FW_V01.10.0090.zip" ) # latest available
+declare -a all_firmwares=()
 
-declare -A itm_osmo_fw01=([binname]="OSMO_FC550_FW_V01.03.00.40.bin" [dlurl]="https://dl.djicdn.com/downloads/osmo/OSMO_FC550_FW_V01.03.00.40.zip" [dlname]="OSMO_FC550_FW_V01.03.00.40.zip" )
-declare -A itm_osmo_fw02=([binname]="OSMO_FC550R_FW_V01.03.00.40.bin" [dlurl]="https://dl.djicdn.com/downloads/osmo/OSMO_FC550R_FW_V01.03.00.40.zip" [dlname]="OSMO_FC550R_FW_V01.03.00.40.zip" ) # larger than others
-declare -A itm_osmo_fw03=([binname]="OSMO_FW_V01.04.01.80.bin" [dlurl]="http://dl.djicdn.com/downloads/osmo/OSMO_FW_BUGFIX_V01.04.01.80.bin.zip" [dlname]="OSMO_FW_BUGFIX_V01.04.01.80.bin.zip" )
-declare -A itm_osmo_fw04=([binname]="OSMO_FW_V01.06.02.10.bin" [dlurl]="http://dl.djicdn.com/downloads/osmo/OSMO_FW_V01.06.02.10.zip" [dlname]="OSMO_FW_V01.06.02.10.zip" )
-declare -A itm_osmo_fw05=([binname]="OSMO_FW_V01.08.02.40.bin" [dlurl]="https://dl.djicdn.com/downloads/osmo/OSMO_FW_V01.08.02.40.zip" [dlname]="OSMO_FW_V01.08.02.40.zip" )
+i=0
+while IFS=, read product binname dlpage dlurl dlname testflg alltherest
+do
+  printf -v itm "itm_fw%05d" $i
+  # Remove prefix/suffix quotes
+  binname="${binname%\"}"
+  binname="${binname#\"}"
+  dlurl="${dlurl%\"}"
+  dlurl="${dlurl#\"}"
+  dlname="${dlname%\"}"
+  dlname="${dlname#\"}"
+  #echo "$itm:$product|$binname|$dlpage|$dlurl|$dlname|$testflg"
+  declare -A ${itm}
+  eval ${itm}[binname]=\"${binname}\"
+  eval ${itm}[dlurl]=\"${dlurl}\"
+  eval ${itm}[dlname]=\"${dlname}\"
 
-# Select firmwares for testing
+  # Select firmwares for testing
+  if [ $i -ne 0 ] && [ $((testflg & 0x04)) -ne 0 ]; then
+    all_firmwares+=("$itm")
+  fi
 
-declare -a all_firmwares=( \
-itm_p3x_fw01 \
-itm_p3x_fw02 \
-#itm_p3x_fw03 \
-#itm_p3x_fw04 \
-#itm_p3x_fw05 \
-itm_p3x_fw06 \
-#itm_p3x_fw07 \
-#itm_p3x_fw08 \
-#itm_p3x_fw09 \
-#itm_p3x_fw10 \
-#itm_p3x_fw11 \
-#itm_p3x_fw12 \
-#itm_p3x_fw13 \
-itm_p3x_fw14 \
-#itm_p3x_fw15 \
-#itm_p3x_fw16 \
-itm_p3x_fw17 \
-#itm_osmo_fw01 \
-itm_osmo_fw02 \
-#itm_osmo_fw03 \
-#itm_osmo_fw04 \
-itm_osmo_fw05 \
-)
+  i=$((i+1))
+done < supported_firmwares.csv
 
 NUMFAILS=0
 NUMSKIPS=0
@@ -86,7 +67,11 @@ for itm in "${all_firmwares[@]}"; do
       continue
     fi
 
-    unzip -j -o -d fw "fw/${FWDLNAME}"
+    if [[ ${FWDLNAME} =~ [.]zip$ ]]; then
+      (unzip -j -o -d fw "fw/${FWDLNAME}")
+    elif [[ ${FWDLNAME} =~ [.]rar$ ]]; then
+      (cd fw && unrar e "${FWDLNAME}")
+    fi
   fi
 
   if [ ! -f "fw/${FWPKG}" ]; then
@@ -95,25 +80,31 @@ for itm in "${all_firmwares[@]}"; do
     continue
   fi
 
-  # Execute test - DJI firmware extractor
-  tests/test_dji_fwcon_rebin1.sh -sn "fw/${FWPKG}"
-  if [ $? -ne 0 ]; then
-    ((NUMFAILS++))
+  if [ ! -z "${FWPKG}" ]; then
+    # Execute test - DJI firmware extractor
+    tests/test_dji_fwcon_rebin1.sh -sn "fw/${FWPKG}"
+    if [ $? -ne 0 ]; then
+      ((NUMFAILS++))
+    fi
   fi
 
   # Find Ambarella App firmware file name
   AMBAPKG1=$(grep '^target=m0100' "${FWPKG%.*}-test_"*".ini" | head -n 1 | cut -d : -f 1)
   if [ -z "${AMBAPKG1}" ]; then
     echo '### SKIP no ambarella app firmware found in extracted files ###'
+    AMBAPKG1=
     ((NUMSKIPS++))
-    continue
   fi
-  AMBAPKG1="${AMBAPKG1%.*}.bin"
+  if [ ! -z "${AMBAPKG1}" ]; then
+    AMBAPKG1="${AMBAPKG1%.*}.bin"
+  fi
 
-  # Execute test - Ambarella firmware extractor
-  tests/test_amba_fwpak_repack1.sh -sn "${AMBAPKG1}"
-  if [ $? -ne 0 ]; then
-    ((NUMFAILS++))
+  if [ ! -z "${AMBAPKG2}" ]; then
+    # Execute test - Ambarella firmware extractor
+    tests/test_amba_fwpak_repack1.sh -sn "${AMBAPKG1}"
+    if [ $? -ne 0 ]; then
+      ((NUMFAILS++))
+    fi
   fi
 
   # Get Ambarella system partition file name
@@ -122,14 +113,14 @@ for itm in "${all_firmwares[@]}"; do
     echo '### SKIP no ambarella app system partition found in extracted files ###'
     AMBAPKG1SYS=
     ((NUMSKIPS++))
-  else
+  fi
 
+  if [ ! -z "${AMBAPKG1SYS}" ]; then
     # Execute test - Ambarella system partition to ELF wrapper
     tests/test_amba_sys2elf_rebin1.sh -sn "${AMBAPKG1SYS}"
     if [ $? -ne 0 ]; then
       ((NUMFAILS++))
     fi
-
   fi
 
   # Find Ambarella Ldr firmware file name
@@ -137,14 +128,17 @@ for itm in "${all_firmwares[@]}"; do
   if [ -z "${AMBAPKG2}" ]; then
     echo '### SKIP no ambarella ldr firmware found in extracted files ###'
     ((NUMSKIPS++))
-    continue
   fi
-  AMBAPKG2="${AMBAPKG2%.*}.bin"
+  if [ ! -z "${AMBAPKG2}" ]; then
+    AMBAPKG2="${AMBAPKG2%.*}.bin"
+  fi
 
-  # Execute test - Ambarella firmware extractor
-  tests/test_amba_fwpak_repack1.sh -sn "${AMBAPKG2}"
-  if [ $? -ne 0 ]; then
-    ((NUMFAILS++))
+  if [ ! -z "${AMBAPKG2}" ]; then
+    # Execute test - Ambarella firmware extractor
+    tests/test_amba_fwpak_repack1.sh -sn "${AMBAPKG2}"
+    if [ $? -ne 0 ]; then
+      ((NUMFAILS++))
+    fi
   fi
 
   # Cleanup
