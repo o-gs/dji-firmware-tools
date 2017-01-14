@@ -139,7 +139,8 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
      else:
         limit_ftoi = int(eexpar.limit_f.min) # DJI does not use round() here
      if (limit_ftoi != eexpar.limit_u.min):
-        #print("Rejected on min {:d} {:d} {:f}\n".format(limit_ftoi,eexpar.limit_u.min,eexpar.limit_f.min))
+        if (po.verbose > 2):
+           print("Rejected on min {:d} {:d} {:f}\n".format(limit_ftoi,eexpar.limit_u.min,eexpar.limit_f.min))
         return False
      # Max unsigned
      if (eexpar.limit_f.max < Limits.uint_min):
@@ -149,7 +150,8 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
      else:
         limit_ftoi = int(eexpar.limit_f.max) # DJI does not use round() here
      if (limit_ftoi != eexpar.limit_u.max):
-        print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_u.max,eexpar.limit_f.max))
+        if (po.verbose > 2):
+           print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_u.max,eexpar.limit_f.max))
         return False
      # Default unsigned
      if (eexpar.limit_f.deflt < Limits.uint_min):
@@ -170,7 +172,8 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
      else:
         limit_ftoi = int(eexpar.limit_f.min) # DJI does not use round() here
      if (limit_ftoi != eexpar.limit_i.min):
-        #print("Rejected on min {:d} {:d} {:f}\n".format(limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
+        if (po.verbose > 2):
+           print("Rejected on min {:d} {:d} {:f}\n".format(limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
         return False
      # Max signed
      if (eexpar.limit_f.max < Limits.int_min):
@@ -180,7 +183,8 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
      else:
         limit_ftoi = int(eexpar.limit_f.max) # DJI does not use round() here
      if (limit_ftoi != eexpar.limit_i.max):
-        print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
+        if (po.verbose > 2):
+           print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
         return False
      # Default signed
      if (eexpar.limit_f.deflt < Limits.int_min):
@@ -252,7 +256,7 @@ def flyc_param_get(po, fwmdlfile, index):
   """ Returns array with properties of given flight parameter.
   """
   parprop = {'index': index, 'typeID' : 0, 'size' : 0, 'attribute' : 0,
-    'minValue' : 0, 'maxValue' : 0, 'defaultValue' : 0, 'name' : "" }
+    'minValue' : 0, 'maxValue' : 0, 'defaultValue' : 0, 'name' : "" , 'modify' : False}
   eexpar = FlycExportParam()
   fwmdlfile.seek(po.param_pos+sizeof(eexpar)*index, os.SEEK_SET)
   if fwmdlfile.readinto(eexpar) != sizeof(eexpar):
@@ -267,6 +271,8 @@ def flyc_param_get(po, fwmdlfile, index):
   # Read property name
   fwmdlfile.seek(eexpar.nameptr - po.address_base, os.SEEK_SET)
   parprop['name'] = fwmdlfile.read(256).split(b'\0',1)[0].decode('UTF-8')
+  if ((eexpar.attribute & 0x0B) == 0x0B): # Just a guess
+     parprop['modify'] = True
   return parprop
 
 def flyc_list(po, fwmdlfile):
@@ -281,12 +287,32 @@ def flyc_extract(po, fwmdlfile):
   (po.param_pos, po.param_count) = flyc_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
   if po.param_pos < 0:
     raise ValueError("Flight controller parameters array signature not detected in input file.")
-  raise NotImplementedError('Function unfininshed.')
+  inffile = open(po.inffile, "w")
+  inffile.write("[\n")
+  for i in range(0,po.param_count):
+    parprop = flyc_param_get(po, fwmdlfile, i)
+    inffile.write("\t{\n")
+    for ppname in ('index', 'typeID', 'size', 'attribute'):
+       inffile.write("\t\t\"{:s}\" : {:d},\n".format(ppname,parprop[ppname]))
+    for ppname in ('minValue', 'maxValue', 'defaultValue'):
+       if (isinstance(parprop[ppname], float)):
+          inffile.write("\t\t\"{:s}\" : {:.06f},\n".format(ppname,parprop[ppname]))
+       else:
+          inffile.write("\t\t\"{:s}\" : {:d},\n".format(ppname,parprop[ppname]))
+    for ppname in ('name',):
+       inffile.write("\t\t\"{:s}\" : \"{:s}\",\n".format(ppname,parprop[ppname]))
+    if parprop['modify']:
+       inffile.write("\t\t\"{:s}\" : {:s},\n".format('modify','true'))
+    inffile.write("\t},\n")
+  inffile.write("]\n")
+  inffile.close()
 
 def flyc_update(po, fwmdlfile):
   (po.param_pos, po.param_count) = flyc_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
   if po.param_pos < 0:
     raise ValueError("Flight controller parameters array signature not detected in input file.")
+  inffile = open(po.inffile, "r")
+  inffile.close()
 
   raise NotImplementedError('Function unfininshed.')
 
