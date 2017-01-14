@@ -3,16 +3,9 @@
 from __future__ import print_function
 import sys
 import getopt
-import re
 import os
 import math
-import hashlib
-import binascii
-import configparser
-import itertools
 from ctypes import *
-from time import gmtime, strftime, strptime
-from calendar import timegm
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
@@ -255,16 +248,46 @@ def flyc_pos_search(po, fwmdlfile, start_pos, func_align, data_align):
      return -1, 0
   return match_pos, match_entries
 
+def flyc_param_get(po, fwmdlfile, index):
+  """ Returns array with properties of given flight parameter.
+  """
+  parprop = {'index': index, 'typeID' : 0, 'size' : 0, 'attribute' : 0,
+    'minValue' : 0, 'maxValue' : 0, 'defaultValue' : 0, 'name' : "" }
+  eexpar = FlycExportParam()
+  fwmdlfile.seek(po.param_pos+sizeof(eexpar)*index, os.SEEK_SET)
+  if fwmdlfile.readinto(eexpar) != sizeof(eexpar):
+      raise EOFError("Cannot read parameter entry.")
+
+  parprop['typeID'] = eexpar.type_id
+  parprop['size'] = eexpar.valsize
+  parprop['attribute'] = eexpar.attribute
+  parprop['minValue'] = eexpar.limit_f.min
+  parprop['maxValue'] = eexpar.limit_f.max
+  parprop['defaultValue'] = eexpar.limit_f.deflt
+  # Read property name
+  fwmdlfile.seek(eexpar.nameptr - po.address_base, os.SEEK_SET)
+  parprop['name'] = fwmdlfile.read(256).split(b'\0',1)[0].decode('UTF-8')
+  return parprop
+
 def flyc_list(po, fwmdlfile):
   (po.param_pos, po.param_count) = flyc_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
-  raise NotImplementedError('Function unfininshed.')
+  if po.param_pos < 0:
+    raise ValueError("Flight controller parameters array signature not detected in input file.")
+  for i in range(0,po.param_count):
+    parprop = flyc_param_get(po, fwmdlfile, i)
+    print("{:3d} {:40s} {:2d} {:2d} 0x{:x} {:6.1f} {:6.1f} {:6.1f}".format(parprop['index'],parprop['name'],parprop['typeID'],parprop['size'],parprop['attribute'],parprop['minValue'],parprop['maxValue'],parprop['defaultValue']))
 
 def flyc_extract(po, fwmdlfile):
   (po.param_pos, po.param_count) = flyc_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
+  if po.param_pos < 0:
+    raise ValueError("Flight controller parameters array signature not detected in input file.")
   raise NotImplementedError('Function unfininshed.')
 
 def flyc_update(po, fwmdlfile):
   (po.param_pos, po.param_count) = flyc_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
+  if po.param_pos < 0:
+    raise ValueError("Flight controller parameters array signature not detected in input file.")
+
   raise NotImplementedError('Function unfininshed.')
 
 def main(argv):
