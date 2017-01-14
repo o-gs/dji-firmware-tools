@@ -6,6 +6,7 @@ import getopt
 import os
 import math
 from ctypes import *
+import json
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
@@ -284,6 +285,8 @@ def flyc_list(po, fwmdlfile):
     print("{:3d} {:40s} {:2d} {:2d} 0x{:x} {:6.1f} {:6.1f} {:6.1f}".format(parprop['index'],parprop['name'],parprop['typeID'],parprop['size'],parprop['attribute'],parprop['minValue'],parprop['maxValue'],parprop['defaultValue']))
 
 def flyc_extract(po, fwmdlfile):
+  """ Extracts all flight controller parameters from firmware to JSON format text file.
+  """
   (po.param_pos, po.param_count) = flyc_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
   if po.param_pos < 0:
     raise ValueError("Flight controller parameters array signature not detected in input file.")
@@ -292,27 +295,51 @@ def flyc_extract(po, fwmdlfile):
   for i in range(0,po.param_count):
     parprop = flyc_param_get(po, fwmdlfile, i)
     inffile.write("\t{\n")
-    for ppname in ('index', 'typeID', 'size', 'attribute'):
-       inffile.write("\t\t\"{:s}\" : {:d},\n".format(ppname,parprop[ppname]))
+    for ppname in ('index',):
+       inffile.write("\t\t\"{:s}\" : {:d}".format(ppname,parprop[ppname]))
+    for ppname in ('typeID', 'size', 'attribute'):
+       inffile.write(",\n")
+       inffile.write("\t\t\"{:s}\" : {:d}".format(ppname,parprop[ppname]))
     for ppname in ('minValue', 'maxValue', 'defaultValue'):
+       inffile.write(",\n")
        if (isinstance(parprop[ppname], float)):
-          inffile.write("\t\t\"{:s}\" : {:.06f},\n".format(ppname,parprop[ppname]))
+          inffile.write("\t\t\"{:s}\" : {:.06f}".format(ppname,parprop[ppname]))
        else:
-          inffile.write("\t\t\"{:s}\" : {:d},\n".format(ppname,parprop[ppname]))
+          inffile.write("\t\t\"{:s}\" : {:d}".format(ppname,parprop[ppname]))
     for ppname in ('name',):
-       inffile.write("\t\t\"{:s}\" : \"{:s}\",\n".format(ppname,parprop[ppname]))
+       inffile.write(",\n")
+       inffile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,parprop[ppname]))
     if parprop['modify']:
-       inffile.write("\t\t\"{:s}\" : {:s},\n".format('modify','true'))
-    inffile.write("\t},\n")
+       inffile.write(",\n")
+       inffile.write("\t\t\"{:s}\" : {:s}".format('modify','true'))
+    inffile.write("\n")
+    if (i+1 < po.param_count):
+       inffile.write("\t},\n")
+    else:
+       inffile.write("\t}\n")
   inffile.write("]\n")
   inffile.close()
 
 def flyc_update(po, fwmdlfile):
+  """ Updates all flight controller parameters in firmware from JSON format text file.
+  """
   (po.param_pos, po.param_count) = flyc_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
   if po.param_pos < 0:
     raise ValueError("Flight controller parameters array signature not detected in input file.")
-  inffile = open(po.inffile, "r")
-  inffile.close()
+  with open(po.inffile) as inffile:
+    nxparprops = json.load(inffile)
+  for i in range(0,po.param_count):
+    pvparprop = flyc_param_get(po, fwmdlfile, i)
+    nxparprop = None
+    for parprop in nxparprops:
+      if (parprop['name'] == pvparprop['name']):
+         nxparprop = parprop
+         break
+    if (nxparprop is None):
+       eprint("{}: Warning: parameter not found in fw: \"{:s}\"".format(po.mdlfile,pvparprop['name']))
+       continue
+    # TODO compare properties to check whether we want an update
+    print(nxparprop)
 
   raise NotImplementedError('Function unfininshed.')
 
@@ -330,7 +357,7 @@ def main(argv):
         print("dji_flyc_param_ed.sh <-l|-x|-u> [-v] -m <mdlfile>")
         print("  -m <mdlfile> - Flight controller firmware binary module file")
         print("  -l - list parameters stored in the firmware")
-        print("  -x - extract parameters array to infos text file")
+        print("  -x - extract parameters array to infos json text file")
         print("  -u - update parameters array in binary fw from infos text file")
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
@@ -372,7 +399,7 @@ def main(argv):
 
     if (po.verbose > 0):
       print("{}: Opening for update".format(po.mdlfile))
-    fwmdlfile = open(po.mdlfile, "wb")
+    fwmdlfile = open(po.mdlfile, "r+b")
 
     flyc_update(po,fwmdlfile)
 
