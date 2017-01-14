@@ -49,7 +49,7 @@
 "C1","C1_FW_v01.01.0090.bin",,"https://s3-ap-northeast-1.amazonaws.com/dji-firmware-test/LB2/C1_FW_v01.01.0090.bin","C1_FW_v01.01.0090.bin",3,"2016-03-24",30046440,
 "C1","C1_FW_V01.01.0092.bin",,"https://s3-ap-northeast-1.amazonaws.com/dji-firmware-test/LB2/C1_FW_V01.01.0092.bin","C1_FW_V01.01.0092.bin",3,"2016-03-29",14169232,
 "C1","C1_FW_V01.01.0093.bin",,"https://s3-ap-northeast-1.amazonaws.com/dji-firmware-test/LB2/C1_FW_V01.01.0093.bin","C1_FW_V01.01.0093.bin",3,"2016-05-25",18933156,
-"C1","C1_FW_V01.02.0021.bin","http://www.gerhard-weinberger.at/phpBB2/viewtopic.php?f=5&t=9",,"C1_FW_V01.02.0021.bin",,,,
+"C1","C1_FW_V01.02.0021.bin","http://www.gerhard-weinberger.at/phpBB2/viewtopic.php?f=5&t=9",,"C1_FW_V01.02.0021.bin",3,,,
 "C1","C1_FW_V01.03.0020.bin",,"http://download.dji-innovations.com/downloads/phantom_3/C1_FW_V01.03.0020.bin","C1_FW_V01.03.0020.bin",3,"2015-09-07",,
 "C1","C1_FW_V01.03.00.21.bin",,"http://download.dji-innovations.com/downloads/inspire_1/C1_FW_V01.03.00.21.bin","C1_FW_V01.03.00.21.bin",3,"2015-08-13",,
 "C1","C1_FW_V01.04.0030.bin",,"http://download.dji-innovations.com/downloads/RC/C1_FW_V01.04.0030.bin","C1_FW_V01.04.0030.bin",3,"2015-11-24",,
@@ -59,7 +59,7 @@
 "C1","C1_FW_V01.05.0080.bin",,"https://dl.djicdn.com/downloads/RC/C1_FW_V01.05.0080.bin","C1_FW_V01.05.0080.bin",3,"2016-07-08",18909124,
 "C1","C1_FW_V01.06.0000.bin",,"https://dl.djicdn.com/downloads/lightbridge2/C1_FW_V01.06.0000.bin","C1_FW_V01.06.0000.bin",3,"2016-07-25",18920900,
 "C1","C1_FW_v01.06.0001.bin",,"https://s3-ap-northeast-1.amazonaws.com/dji-firmware-test/RC_TEST/C1_FW_v01.06.0001.bin","C1_FW_v01.06.0001.bin",3,"2016-08-15",30058336,
-"C1","C1_FW_V01.06.0020.bin","http://resource.dj2006.net/document/2016050611715.txt","https://s3-ap-northeast-1.amazonaws.com/dji-firmware-test/RC_TEST/C1_FW_V01.06.0020.bin","C1_FW_V01.06.0020.bin",3,"2016-04-29",,
+"C1","C1_FW_V01.06.0020.bin","http://resource.dj2006.net/document/2016050611715.txt",,"C1_FW_V01.06.0020.bin",0,"2016-04-29",,"mentioned in update file, but no longer available; no known source"
 "C1","C1_FW_v01.07.0000.bin",,"https://s3-ap-northeast-1.amazonaws.com/dji-firmware-test/RC_TEST/C1_FW_v01.07.0000.bin","C1_FW_v01.07.0000.bin",3,"2016-08-26",30058336,
 "C1","C1_FW_v01.07.0002.bin",,"https://s3-ap-northeast-1.amazonaws.com/dji-firmware-test/RC_TEST/C1_FW_v01.07.0002.bin","C1_FW_v01.07.0002.bin",3,"2016-07-08",30022496,
 "C1","C1_FW_v01.07.0030.bin",,"https://s3-ap-northeast-1.amazonaws.com/dji-firmware-test/RC_TEST/C1_FW_v01.07.0030.bin","C1_FW_v01.07.0030.bin",3,"2016-07-14",30023072,
