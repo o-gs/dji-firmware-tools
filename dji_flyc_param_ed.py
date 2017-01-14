@@ -48,6 +48,19 @@ class Limits:
   ulonglong_min = 0
   ulonglong_max = (2 ** 64) - 1
 
+class ParamType:
+  unknown0 = 0x0
+  unknown1 = 0x1
+  uint = 0x2
+  unknown3 = 0x3
+  unknown4 = 0x4
+  unknown5 = 0x5
+  int = 0x6
+  unknown7 = 0x7
+  unknown8 = 0x8
+  unknown9 = 0x9
+  array = 0xa
+
 class FlycExportLimitF(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('min', c_float),
@@ -60,6 +73,12 @@ class FlycExportLimitI(LittleEndianStructure):
               ('max', c_int),
               ('deflt', c_int)]
 
+class FlycExportLimitU(LittleEndianStructure):
+  _pack_ = 1
+  _fields_ = [('min', c_uint),
+              ('max', c_uint),
+              ('deflt', c_uint)]
+
 class FlycExportParam(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('nameptr', c_uint), # Pointer to the name string of this parameter
@@ -68,9 +87,9 @@ class FlycExportParam(LittleEndianStructure):
               ('type_id', c_uint),
               ('limit_f', FlycExportLimitF),
               ('limit_i', FlycExportLimitI),
-              ('limit_s', FlycExportLimitI),
+              ('limit_u', FlycExportLimitU),
               ('attribute', c_uint),
-              ('field_38', c_uint)]
+              ('callback', c_uint)]
 
   def dict_export(self):
     d = dict()
@@ -80,7 +99,7 @@ class FlycExportParam(LittleEndianStructure):
     d[varkey] = "{0:.3f} {1:.3f} {2:.3f}".format(d[varkey].min,d[varkey].max,d[varkey].deflt)
     varkey = 'limit_i'
     d[varkey] = "{0:d} {1:d} {2:d}".format(d[varkey].min,d[varkey].max,d[varkey].deflt)
-    varkey = 'limit_s'
+    varkey = 'limit_u'
     d[varkey] = "{0:d} {1:d} {2:d}".format(d[varkey].min,d[varkey].max,d[varkey].deflt)
     return d
 
@@ -98,18 +117,19 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
      return False
   # Address to uninitialized variable
   if (eexpar.valptr < po.address_bss) or (eexpar.valptr >= po.address_bss+po.sizeof_bss):
-     return False
+     if (eexpar.valptr != 0): # Value pointer can be NULL
+        return False
   # Size and type
-  if (eexpar.type_id == 1):
+  if (eexpar.type_id == ParamType.unknown1):
      if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
         return False
-  elif (eexpar.type_id == 2):
+  elif (eexpar.type_id == ParamType.uint):
      if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
         return False
-  elif (eexpar.type_id <= 9):
+  elif (eexpar.type_id <= ParamType.unknown9):
      if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
         return False
-  elif (eexpar.type_id == 10): # array type
+  elif (eexpar.type_id == ParamType.array): # array needs to have multiple elements
      if (eexpar.valsize < 2):
         return False
   else:
@@ -117,21 +137,75 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
   # Limits
   if math.isnan(eexpar.limit_f.min) or math.isnan(eexpar.limit_f.max) or math.isnan(eexpar.limit_f.deflt):
      return False
-  if (eexpar.limit_f.min >= Limits.int_min) and (eexpar.limit_f.min <= Limits.int_max):
-     if (int(eexpar.limit_f.min) != eexpar.limit_i.min): # DJI does not use round() here
+  if (eexpar.type_id == ParamType.uint):
+     # Min unsigned
+     if (eexpar.limit_f.min < Limits.uint_min):
+        limit_ftoi = Limits.uint_min
+     elif (eexpar.limit_f.min > Limits.uint_max):
+        limit_ftoi = Limits.uint_max
+     else:
+        limit_ftoi = int(eexpar.limit_f.min) # DJI does not use round() here
+     if (limit_ftoi != eexpar.limit_u.min):
+        #print("Rejected on min {:d} {:d} {:f}\n".format(limit_ftoi,eexpar.limit_u.min,eexpar.limit_f.min))
         return False
-  if (eexpar.limit_f.max >= Limits.int_min) and (eexpar.limit_f.max <= Limits.int_max):
-     if (int(eexpar.limit_f.max) != eexpar.limit_i.max): # DJI does not use round() here
+     # Max unsigned
+     if (eexpar.limit_f.max < Limits.uint_min):
+        limit_ftoi = Limits.uint_min
+     elif (eexpar.limit_f.max > Limits.uint_max):
+        limit_ftoi = Limits.uint_max
+     else:
+        limit_ftoi = int(eexpar.limit_f.max) # DJI does not use round() here
+     if (limit_ftoi != eexpar.limit_u.max):
+        print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_u.max,eexpar.limit_f.max))
         return False
-  if (eexpar.limit_f.deflt >= Limits.int_min) and (eexpar.limit_f.deflt <= Limits.int_max):
-     if (int(eexpar.limit_f.deflt) != eexpar.limit_i.deflt): # DJI does not use round() here
+     # Default unsigned
+     if (eexpar.limit_f.deflt < Limits.uint_min):
+        limit_ftoi = Limits.uint_min
+     elif (eexpar.limit_f.deflt > Limits.uint_max):
+        limit_ftoi = Limits.uint_max
+     else:
+        limit_ftoi = int(eexpar.limit_f.deflt) # DJI does not use round() here
+     if (abs(limit_ftoi - eexpar.limit_u.deflt) > 127):
+        print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_u.deflt,eexpar.limit_f.deflt))
         return False
-  if (1): # limit_s is just a copy of limit_i
-     if (int(eexpar.limit_i.min) != eexpar.limit_s.min):
+  else:
+     # Min signed
+     if (eexpar.limit_f.min < Limits.int_min):
+        limit_ftoi = Limits.int_min
+     elif (eexpar.limit_f.min > Limits.int_max):
+        limit_ftoi = Limits.int_max
+     else:
+        limit_ftoi = int(eexpar.limit_f.min) # DJI does not use round() here
+     if (limit_ftoi != eexpar.limit_i.min):
+        #print("Rejected on min {:d} {:d} {:f}\n".format(limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
         return False
-     if (int(eexpar.limit_i.max) != eexpar.limit_s.max):
+     # Max signed
+     if (eexpar.limit_f.max < Limits.int_min):
+        limit_ftoi = Limits.int_min
+     elif (eexpar.limit_f.max > Limits.int_max):
+        limit_ftoi = Limits.int_max
+     else:
+        limit_ftoi = int(eexpar.limit_f.max) # DJI does not use round() here
+     if (limit_ftoi != eexpar.limit_i.max):
+        print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
         return False
-     if (int(eexpar.limit_i.deflt) != eexpar.limit_s.deflt):
+     # Default signed
+     if (eexpar.limit_f.deflt < Limits.int_min):
+        limit_ftoi = Limits.int_min
+     elif (eexpar.limit_f.deflt > Limits.int_max):
+        limit_ftoi = Limits.int_max
+     else:
+        limit_ftoi = int(eexpar.limit_f.deflt) # DJI does not use round() here
+     if (abs(limit_ftoi - eexpar.limit_i.deflt) > 127):
+        print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
+        return False
+
+  if (1): # limit_u and limit_i are bitwise identical; cast them to compare
+     if (c_uint(eexpar.limit_i.min).value != eexpar.limit_u.min):
+        return False
+     if (c_uint(eexpar.limit_i.max).value != eexpar.limit_u.max):
+        return False
+     if (c_uint(eexpar.limit_i.deflt).value != eexpar.limit_u.deflt):
         return False
   return True
 
