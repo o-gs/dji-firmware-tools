@@ -33,26 +33,26 @@ class Limits:
   short_max  = (2 ** 15) - 1
   ushort_min = 0
   ushort_max = (2 ** 16) - 1
-  int_min  = - (2 ** 31)
-  int_max  = (2 ** 31) - 1
-  uint_min = 0
-  uint_max = (2 ** 32) - 1
+  long_min  = - (2 ** 31)
+  long_max  = (2 ** 31) - 1
+  ulong_min = 0
+  ulong_max = (2 ** 32) - 1
   longlong_min  = - (2 ** 63)
   longlong_max  = (2 ** 63) - 1
   ulonglong_min = 0
   ulonglong_max = (2 ** 64) - 1
 
 class ParamType:
-  unknown0 = 0x0
-  unknown1 = 0x1
-  uint = 0x2
-  unknown3 = 0x3
-  unknown4 = 0x4
-  unknown5 = 0x5
-  int = 0x6
-  unknown7 = 0x7
-  unknown8 = 0x8
-  unknown9 = 0x9
+  ubyte = 0x0
+  ushort = 0x1
+  ulong = 0x2
+  ulonglong = 0x3
+  byte = 0x4
+  short = 0x5
+  long = 0x6
+  longlong = 0x7
+  float = 0x8
+  double = 0x9
   array = 0xa
 
 class FlycExportLimitF(LittleEndianStructure):
@@ -102,6 +102,98 @@ class FlycExportParam(LittleEndianStructure):
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
+def flyc_param_limit_to_type(po, type_id, fltval):
+  if (type_id == ParamType.ubyte):
+     if (fltval < Limits.ubyte_min):
+        return Limits.ubyte_min
+     elif (fltval > Limits.ubyte_max):
+        return Limits.ubyte_max
+     else:
+        return int(fltval) # DJI does not use round() here
+  if (type_id == ParamType.ushort):
+     if (fltval < Limits.ushort_min):
+        return Limits.ushort_min
+     elif (fltval > Limits.ushort_max):
+        return Limits.ushort_max
+     else:
+        return int(fltval) # DJI does not use round() here
+  if (type_id == ParamType.ulong):
+     if (fltval < Limits.ulong_min):
+        return Limits.ulong_min
+     elif (fltval > Limits.ulong_max):
+        return Limits.ulong_max
+     else:
+        return int(fltval) # DJI does not use round() here
+  if (type_id == ParamType.ulonglong):
+     if (fltval < Limits.ulonglong_min):
+        return Limits.ulonglong_min
+     elif (fltval > Limits.ulonglong_max):
+        return Limits.ulonglong_max
+     else:
+        return int(fltval) # DJI does not use round() here
+  if (type_id == ParamType.byte):
+     if (fltval < Limits.byte_min):
+        return Limits.byte_min
+     elif (fltval > Limits.byte_max):
+        return Limits.byte_max
+     else:
+        return int(fltval) # DJI does not use round() here
+  if (type_id == ParamType.short):
+     if (fltval < Limits.short_min):
+        return Limits.short_min
+     elif (fltval > Limits.short_max):
+        return Limits.short_max
+     else:
+        return int(fltval) # DJI does not use round() here
+  if (type_id == ParamType.long):
+     if (fltval < Limits.long_min):
+        return Limits.long_min
+     elif (fltval > Limits.long_max):
+        return Limits.long_max
+     else:
+        return int(fltval) # DJI does not use round() here
+  if (type_id == ParamType.longlong):
+     if (fltval < Limits.longlong_min):
+        return Limits.longlong_min
+     elif (fltval > Limits.longlong_max):
+        return Limits.longlong_max
+     else:
+        return int(fltval) # DJI does not use round() here
+  return fltval
+
+def flyc_param_limit_unsigned_int(po, eexpar):
+  return (eexpar.type_id == ParamType.ubyte) or \
+     (eexpar.type_id == ParamType.ushort) or \
+     (eexpar.type_id == ParamType.ulong) or \
+     (eexpar.type_id == ParamType.ulonglong)
+
+def flyc_param_limit_signed_int(po, eexpar):
+  return (eexpar.type_id == ParamType.byte) or \
+     (eexpar.type_id == ParamType.short) or \
+     (eexpar.type_id == ParamType.long) or \
+     (eexpar.type_id == ParamType.longlong)
+
+def flyc_param_get_proper_limit_min(po, eexpar):
+  if flyc_param_limit_unsigned_int(po, eexpar):
+     return eexpar.limit_u.min
+  if flyc_param_limit_signed_int(po, eexpar):
+     return eexpar.limit_i.min
+  return eexpar.limit_f.min
+
+def flyc_param_get_proper_limit_max(po, eexpar):
+  if flyc_param_limit_unsigned_int(po, eexpar):
+     return eexpar.limit_u.max
+  if flyc_param_limit_signed_int(po, eexpar):
+     return eexpar.limit_i.max
+  return eexpar.limit_f.max
+
+def flyc_param_get_proper_limit_deflt(po, eexpar):
+  if flyc_param_limit_unsigned_int(po, eexpar):
+     return eexpar.limit_u.deflt
+  if flyc_param_limit_signed_int(po, eexpar):
+     return eexpar.limit_i.deflt
+  return eexpar.limit_f.deflt
+
 def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_align, data_align, pos, entry_pos):
   """ Checks whether given FlycExportParam object stores a proper entry of
       flight controller parameters array.
@@ -114,88 +206,89 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
      if (eexpar.valptr != 0): # Value pointer can be NULL
         return False
   # Size and type
-  if (eexpar.type_id == ParamType.unknown1):
+  if (eexpar.type_id == ParamType.ushort):
      if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
+        if (po.verbose > 2):
+           print("Rejected type {:d} on size scheck ({:d})\n".format(eexpar.type_id,eexpar.valsize))
         return False
-  elif (eexpar.type_id == ParamType.uint):
+  elif (eexpar.type_id == ParamType.ulong):
      if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
+        if (po.verbose > 2):
+           print("Rejected type {:d} on size scheck ({:d})\n".format(eexpar.type_id,eexpar.valsize))
         return False
-  elif (eexpar.type_id <= ParamType.unknown9):
+  elif (eexpar.type_id <= ParamType.double):
      if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
+        if (po.verbose > 2):
+           print("Rejected type {:d} on size scheck ({:d})\n".format(eexpar.type_id,eexpar.valsize))
         return False
   elif (eexpar.type_id == ParamType.array): # array needs to have multiple elements
      if (eexpar.valsize < 2):
+        if (po.verbose > 2):
+           print("Rejected type {:d} on size scheck ({:d})\n".format(eexpar.type_id,eexpar.valsize))
         return False
   else:
+     if (po.verbose > 2):
+        print("Rejected type {:d} - not known\n".format(eexpar.type_id))
      return False
   # Limits
   if math.isnan(eexpar.limit_f.min) or math.isnan(eexpar.limit_f.max) or math.isnan(eexpar.limit_f.deflt):
      return False
-  if (eexpar.type_id == ParamType.uint):
+  if (flyc_param_limit_unsigned_int(po, eexpar)):
      # Min unsigned
-     if (eexpar.limit_f.min < Limits.uint_min):
-        limit_ftoi = Limits.uint_min
-     elif (eexpar.limit_f.min > Limits.uint_max):
-        limit_ftoi = Limits.uint_max
-     else:
-        limit_ftoi = int(eexpar.limit_f.min) # DJI does not use round() here
+     limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.min)
      if (limit_ftoi != eexpar.limit_u.min):
         if (po.verbose > 2):
-           print("Rejected on min {:d} {:d} {:f}\n".format(limit_ftoi,eexpar.limit_u.min,eexpar.limit_f.min))
+           print("Rejected type {:d} on min {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_u.min,eexpar.limit_f.min))
         return False
      # Max unsigned
-     if (eexpar.limit_f.max < Limits.uint_min):
-        limit_ftoi = Limits.uint_min
-     elif (eexpar.limit_f.max > Limits.uint_max):
-        limit_ftoi = Limits.uint_max
-     else:
-        limit_ftoi = int(eexpar.limit_f.max) # DJI does not use round() here
+     limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.max)
      if (limit_ftoi != eexpar.limit_u.max):
         if (po.verbose > 2):
            print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_u.max,eexpar.limit_f.max))
         return False
      # Default unsigned
-     if (eexpar.limit_f.deflt < Limits.uint_min):
-        limit_ftoi = Limits.uint_min
-     elif (eexpar.limit_f.deflt > Limits.uint_max):
-        limit_ftoi = Limits.uint_max
-     else:
-        limit_ftoi = int(eexpar.limit_f.deflt) # DJI does not use round() here
+     limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.deflt)
      if (abs(limit_ftoi - eexpar.limit_u.deflt) > 127):
-        print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_u.deflt,eexpar.limit_f.deflt))
+        if (po.verbose > 2):
+           print("Rejected type {:d} on deflt {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_u.deflt,eexpar.limit_f.deflt))
         return False
-  else:
+  elif (flyc_param_limit_signed_int(po, eexpar)):
      # Min signed
-     if (eexpar.limit_f.min < Limits.int_min):
-        limit_ftoi = Limits.int_min
-     elif (eexpar.limit_f.min > Limits.int_max):
-        limit_ftoi = Limits.int_max
-     else:
-        limit_ftoi = int(eexpar.limit_f.min) # DJI does not use round() here
+     limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.min)
      if (limit_ftoi != eexpar.limit_i.min):
         if (po.verbose > 2):
-           print("Rejected on min {:d} {:d} {:f}\n".format(limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
+           print("Rejected type {:d} on min {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
         return False
      # Max signed
-     if (eexpar.limit_f.max < Limits.int_min):
-        limit_ftoi = Limits.int_min
-     elif (eexpar.limit_f.max > Limits.int_max):
-        limit_ftoi = Limits.int_max
-     else:
-        limit_ftoi = int(eexpar.limit_f.max) # DJI does not use round() here
+     limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.max)
      if (limit_ftoi != eexpar.limit_i.max):
         if (po.verbose > 2):
            print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
         return False
      # Default signed
-     if (eexpar.limit_f.deflt < Limits.int_min):
-        limit_ftoi = Limits.int_min
-     elif (eexpar.limit_f.deflt > Limits.int_max):
-        limit_ftoi = Limits.int_max
-     else:
-        limit_ftoi = int(eexpar.limit_f.deflt) # DJI does not use round() here
+     limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.deflt)
      if (abs(limit_ftoi - eexpar.limit_i.deflt) > 127):
-        print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
+        if (po.verbose > 2):
+           print("Rejected type {:d} on deflt {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
+        return False
+  else: # in case of other types, int params are storing 32-bit signed value
+     # Min signed
+     limit_ftoi = flyc_param_limit_to_type(po, ParamType.long, eexpar.limit_f.min)
+     if (limit_ftoi != eexpar.limit_i.min):
+        if (po.verbose > 2):
+           print("Rejected type {:d} on min {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
+        return False
+     # Max signed
+     limit_ftoi = flyc_param_limit_to_type(po, ParamType.long, eexpar.limit_f.max)
+     if (limit_ftoi != eexpar.limit_i.max):
+        if (po.verbose > 2):
+           print("Rejected type {:d} on max {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
+        return False
+     # Default signed
+     limit_ftoi = flyc_param_limit_to_type(po, ParamType.long, eexpar.limit_f.deflt)
+     if (abs(limit_ftoi - eexpar.limit_i.deflt) > 127):
+        if (po.verbose > 2):
+           print("Rejected type {:d} on deflt {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
         return False
 
   if (1): # limit_u and limit_i are bitwise identical; cast them to compare
@@ -266,9 +359,18 @@ def flyc_param_get(po, fwmdlfile, index):
   parprop['typeID'] = eexpar.type_id
   parprop['size'] = eexpar.valsize
   parprop['attribute'] = eexpar.attribute
-  parprop['minValue'] = eexpar.limit_f.min
-  parprop['maxValue'] = eexpar.limit_f.max
-  parprop['defaultValue'] = eexpar.limit_f.deflt
+  if flyc_param_limit_unsigned_int(po, eexpar):
+     parprop['minValue'] = eexpar.limit_u.min
+     parprop['maxValue'] = eexpar.limit_u.max
+     parprop['defaultValue'] = eexpar.limit_u.deflt
+  elif flyc_param_limit_signed_int(po, eexpar):
+     parprop['minValue'] = eexpar.limit_i.min
+     parprop['maxValue'] = eexpar.limit_i.max
+     parprop['defaultValue'] = eexpar.limit_i.deflt
+  else:
+     parprop['minValue'] = eexpar.limit_f.min
+     parprop['maxValue'] = eexpar.limit_f.max
+     parprop['defaultValue'] = eexpar.limit_f.deflt
   # Read property name
   fwmdlfile.seek(eexpar.nameptr - po.address_base, os.SEEK_SET)
   parprop['name'] = fwmdlfile.read(256).split(b'\0',1)[0].decode('UTF-8')
