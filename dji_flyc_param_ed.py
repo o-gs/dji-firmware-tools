@@ -383,6 +383,47 @@ def flyc_param_get(po, fwmdlfile, index):
      parprop['modify'] = True
   return parprop
 
+def flyc_param_set_type(po, fwmdlfile, index, parprop):
+  """ Updates parameter of given index with type from given parprop array.
+  """
+  raise NotImplementedError('Changing variable type is dangerous; this is not supported.')
+
+def flyc_param_set_attribs(po, fwmdlfile, index, parprop):
+  """ Updates parameter of given index with attribs from given parprop array.
+  """
+  eexpar = FlycExportParam()
+  fwmdlfile.seek(po.param_pos+sizeof(eexpar)*index, os.SEEK_SET)
+  if fwmdlfile.readinto(eexpar) != sizeof(eexpar):
+      raise EOFError("Cannot read parameter entry.")
+  eexpar.attribute = parprop['attribute']
+  fwmdlfile.seek(po.param_pos+sizeof(eexpar)*index, os.SEEK_SET)
+  fwpkgfile.write((c_ubyte * sizeof(eexpar)).from_buffer_copy(eexpar))
+
+def flyc_param_set_limits(po, fwmdlfile, index, parprop):
+  """ Updates parameter of given index with limits from given parprop array.
+  """
+  eexpar = FlycExportParam()
+  fwmdlfile.seek(po.param_pos+sizeof(eexpar)*index, os.SEEK_SET)
+  if fwmdlfile.readinto(eexpar) != sizeof(eexpar):
+      raise EOFError("Cannot read parameter entry.")
+  if flyc_param_limit_unsigned_int(po, eexpar):
+     eexpar.limit_u.min = parprop['minValue']
+     eexpar.limit_u.max = parprop['maxValue']
+     eexpar.limit_u.deflt = parprop['defaultValue']
+     raise NotImplementedError('Function unfininshed.')
+  elif flyc_param_limit_signed_int(po, eexpar):
+     eexpar.limit_i.min = parprop['minValue']
+     eexpar.limit_i.max = parprop['maxValue']
+     eexpar.limit_i.deflt = parprop['defaultValue']
+     raise NotImplementedError('Function unfininshed.')
+  else:
+     eexpar.limit_f.min = parprop['minValue']
+     eexpar.limit_f.max = parprop['maxValue']
+     eexpar.limit_f.deflt = parprop['defaultValue']
+     raise NotImplementedError('Function unfininshed.')
+  fwmdlfile.seek(po.param_pos+sizeof(eexpar)*index, os.SEEK_SET)
+  fwpkgfile.write((c_ubyte * sizeof(eexpar)).from_buffer_copy(eexpar))
+
 def flyc_list(po, fwmdlfile):
   (po.param_pos, po.param_count) = flyc_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
   if po.param_pos < 0:
@@ -472,11 +513,11 @@ def flyc_update(po, fwmdlfile):
        update_count += 1
     # do the update
     if (update_type):
-       raise NotImplementedError('Changing variable type is dangerous; this is not supported.')
+       flyc_param_set_type(po, fwmdlfile, pvparprop['index'], nxparprop)
     if (update_attrib):
-       raise NotImplementedError('Function unfininshed.')
+       flyc_param_set_attribs(po, fwmdlfile, pvparprop['index'], nxparprop)
     if (update_limits):
-       raise NotImplementedError('Function unfininshed.')
+       flyc_param_set_limits(po, fwmdlfile, pvparprop['index'], nxparprop)
   if (po.verbose > 0):
      print("{}: Updated {:d} parameter entries".format(po.mdlfile,update_count))
 
