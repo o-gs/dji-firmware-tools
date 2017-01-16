@@ -397,7 +397,7 @@ def flyc_param_set_attribs(po, fwmdlfile, index, parprop):
       raise EOFError("Cannot read parameter entry.")
   eexpar.attribute = parprop['attribute']
   fwmdlfile.seek(po.param_pos+sizeof(eexpar)*index, os.SEEK_SET)
-  fwpkgfile.write((c_ubyte * sizeof(eexpar)).from_buffer_copy(eexpar))
+  fwmdlfile.write((c_ubyte * sizeof(eexpar)).from_buffer_copy(eexpar))
 
 def flyc_param_set_limits(po, fwmdlfile, index, parprop):
   """ Updates parameter of given index with limits from given parprop array.
@@ -407,22 +407,37 @@ def flyc_param_set_limits(po, fwmdlfile, index, parprop):
   if fwmdlfile.readinto(eexpar) != sizeof(eexpar):
       raise EOFError("Cannot read parameter entry.")
   if flyc_param_limit_unsigned_int(po, eexpar):
-     eexpar.limit_u.min = parprop['minValue']
-     eexpar.limit_u.max = parprop['maxValue']
-     eexpar.limit_u.deflt = parprop['defaultValue']
-     raise NotImplementedError('Function unfininshed.')
+     eexpar.limit_u.min = flyc_param_limit_to_type(po, eexpar.type_id, parprop['minValue'])
+     eexpar.limit_u.max = flyc_param_limit_to_type(po, eexpar.type_id, parprop['maxValue'])
+     eexpar.limit_u.deflt = flyc_param_limit_to_type(po, eexpar.type_id, parprop['defaultValue'])
+     eexpar.limit_i.min = c_int(eexpar.limit_u.min).value
+     eexpar.limit_i.max = c_int(eexpar.limit_u.max).value
+     eexpar.limit_i.deflt = c_int(eexpar.limit_u.deflt).value
+     eexpar.limit_f.min = float(eexpar.limit_u.min)
+     eexpar.limit_f.max = float(eexpar.limit_u.max)
+     eexpar.limit_f.deflt = float(eexpar.limit_u.deflt)
   elif flyc_param_limit_signed_int(po, eexpar):
-     eexpar.limit_i.min = parprop['minValue']
-     eexpar.limit_i.max = parprop['maxValue']
-     eexpar.limit_i.deflt = parprop['defaultValue']
-     raise NotImplementedError('Function unfininshed.')
+     eexpar.limit_i.min = flyc_param_limit_to_type(po, eexpar.type_id, parprop['minValue'])
+     eexpar.limit_i.max = flyc_param_limit_to_type(po, eexpar.type_id, parprop['maxValue'])
+     eexpar.limit_i.deflt = flyc_param_limit_to_type(po, eexpar.type_id, parprop['defaultValue'])
+     eexpar.limit_u.min = c_uint(eexpar.limit_i.min).value
+     eexpar.limit_u.max = c_uint(eexpar.limit_i.max).value
+     eexpar.limit_u.deflt = c_uint(eexpar.limit_i.deflt).value
+     eexpar.limit_f.min = float(eexpar.limit_i.min)
+     eexpar.limit_f.max = float(eexpar.limit_i.max)
+     eexpar.limit_f.deflt = float(eexpar.limit_i.deflt)
   else:
-     eexpar.limit_f.min = parprop['minValue']
-     eexpar.limit_f.max = parprop['maxValue']
-     eexpar.limit_f.deflt = parprop['defaultValue']
-     raise NotImplementedError('Function unfininshed.')
+     eexpar.limit_f.min = flyc_param_limit_to_type(po, eexpar.type_id, parprop['minValue'])
+     eexpar.limit_f.max = flyc_param_limit_to_type(po, eexpar.type_id, parprop['maxValue'])
+     eexpar.limit_f.deflt = flyc_param_limit_to_type(po, eexpar.type_id, parprop['defaultValue'])
+     eexpar.limit_f.min = flyc_param_limit_to_type(po, ParamType.long, parprop['minValue'])
+     eexpar.limit_f.max = flyc_param_limit_to_type(po, ParamType.long, parprop['maxValue'])
+     eexpar.limit_f.deflt = flyc_param_limit_to_type(po, ParamType.long, parprop['defaultValue'])
+     eexpar.limit_u.min = c_uint(eexpar.limit_i.min).value
+     eexpar.limit_u.max = c_uint(eexpar.limit_i.max).value
+     eexpar.limit_u.deflt = c_uint(eexpar.limit_i.deflt).value
   fwmdlfile.seek(po.param_pos+sizeof(eexpar)*index, os.SEEK_SET)
-  fwpkgfile.write((c_ubyte * sizeof(eexpar)).from_buffer_copy(eexpar))
+  fwmdlfile.write((c_ubyte * sizeof(eexpar)).from_buffer_copy(eexpar))
 
 def flyc_list(po, fwmdlfile):
   (po.param_pos, po.param_count) = flyc_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
