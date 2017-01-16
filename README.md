@@ -108,6 +108,19 @@ Optimized examples for specific firmwares:
 
 ```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x482EC0:0 -p P3X_FW_V01.07.0060_mi12_part_sys.a9s```
 
+### dji_flyc_param_ed.py
+
+Flight Controller Firmware Parameters Array Editor finds an array of flight
+parameters within formware binary, and allows to extract the parameters to a JSON
+format text file. This file can then easily be modified, and used to update
+binary firmware, changing attributes and limits of each parameter.
+
+Example of extracting and then updating the flight controller parameters:
+
+```./dji_flyc_param_ed.py -vv -x -m P3X_FW_V01.07.0060_mi01.bin```
+
+```./dji_flyc_param_ed.py -vv -u -m P3X_FW_V01.07.0060_mi01.bin```
+
 # Symbols
 
 For some specific firmware modules in specific versions, there are partial symbols
