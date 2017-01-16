@@ -102,6 +102,11 @@ class FlycExportParam(LittleEndianStructure):
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
+def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
+  """ Equivalent to math.isclose(); use it if the script needs to work on Python < 3.5
+  """
+  return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
 def flyc_param_limit_to_type(po, type_id, fltval):
   if (type_id == ParamType.ubyte):
      if (fltval < Limits.ubyte_min):
@@ -430,6 +435,7 @@ def flyc_update(po, fwmdlfile):
     raise ValueError("Flight controller parameters array signature not detected in input file.")
   with open(po.inffile) as inffile:
     nxparprops = json.load(inffile)
+  update_count = 0
   for i in range(0,po.param_count):
     pvparprop = flyc_param_get(po, fwmdlfile, i)
     nxparprop = None
@@ -440,10 +446,39 @@ def flyc_update(po, fwmdlfile):
     if (nxparprop is None):
        eprint("{}: Warning: parameter not found in fw: \"{:s}\"".format(po.mdlfile,pvparprop['name']))
        continue
-    # TODO compare properties to check whether we want an update
-    print(nxparprop)
-
-  raise NotImplementedError('Function unfininshed.')
+    update_type=False
+    update_attrib=False
+    update_limits=False
+    # compare properties to check what we want to update
+    for ppname in ('typeID', 'size'):
+       if (pvparprop[ppname] != nxparprop[ppname]):
+          update_type=True
+          update_limits=True
+    for ppname in ('attribute',):
+       if (pvparprop[ppname] != nxparprop[ppname]):
+          update_attrib=True
+    for ppname in ('minValue', 'maxValue', 'defaultValue'):
+       if (isinstance(pvparprop[ppname], float)):
+          if (not isclose(pvparprop[ppname], nxparprop[ppname], rel_tol=1e-5, abs_tol=1e-5)):
+             #print("{}: Prop \"{:s}\" {:s} test: {:s} vs {:s}".format(po.mdlfile,pvparprop['name'],ppname,str(pvparprop[ppname]),str(nxparprop[ppname])))
+             update_limits=True
+       else:
+          if (pvparprop[ppname] != nxparprop[ppname]):
+             #print("{}: Prop \"{:s}\" {:s} test: {:s} vs {:s}".format(po.mdlfile,pvparprop['name'],ppname,str(pvparprop[ppname]),str(nxparprop[ppname])))
+             update_limits=True
+    if (update_type or update_attrib or update_limits):
+       if (po.verbose > 1):
+          print("{}: Updating \"{:s}\" {:s}{:s}{:s}".format(po.mdlfile,pvparprop['name']," type," if update_type else ""," attribs," if update_attrib else ""," limits," if update_limits else ""))
+       update_count += 1
+    # do the update
+    if (update_type):
+       raise NotImplementedError('Changing variable type is dangerous; this is not supported.')
+    if (update_attrib):
+       raise NotImplementedError('Function unfininshed.')
+    if (update_limits):
+       raise NotImplementedError('Function unfininshed.')
+  if (po.verbose > 0):
+     print("{}: Updated {:d} parameter entries".format(po.mdlfile,update_count))
 
 def main(argv):
   # Parse command line options
