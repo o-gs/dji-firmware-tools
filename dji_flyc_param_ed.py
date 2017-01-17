@@ -416,6 +416,12 @@ def flyc_param_set_limits(po, fwmdlfile, index, parprop):
      eexpar.limit_f.min = float(eexpar.limit_u.min)
      eexpar.limit_f.max = float(eexpar.limit_u.max)
      eexpar.limit_f.deflt = float(eexpar.limit_u.deflt)
+     if (not isclose(eexpar.limit_u.min, float(parprop['minValue']), rel_tol=1e-5, abs_tol=1e-5)):
+       eprint("{}: Warning: min value {:f} bound to {:d}".format(po.mdlfile,float(parprop['minValue']),eexpar.limit_u.min))
+     if (not isclose(eexpar.limit_u.max, float(parprop['maxValue']), rel_tol=1e-5, abs_tol=1e-5)):
+       eprint("{}: Warning: max value {:f} bound to {:d}".format(po.mdlfile,float(parprop['maxValue']),eexpar.limit_u.max))
+     if (not isclose(eexpar.limit_u.deflt, float(parprop['defaultValue']), rel_tol=1e-5, abs_tol=1e-5)):
+       eprint("{}: Warning: dafault value {:f} bound to {:d}".format(po.mdlfile,float(parprop['defaultValue']),eexpar.limit_u.deflt))
   elif flyc_param_limit_signed_int(po, eexpar):
      eexpar.limit_i.min = flyc_param_limit_to_type(po, eexpar.type_id, parprop['minValue'])
      eexpar.limit_i.max = flyc_param_limit_to_type(po, eexpar.type_id, parprop['maxValue'])
@@ -426,6 +432,12 @@ def flyc_param_set_limits(po, fwmdlfile, index, parprop):
      eexpar.limit_f.min = float(eexpar.limit_i.min)
      eexpar.limit_f.max = float(eexpar.limit_i.max)
      eexpar.limit_f.deflt = float(eexpar.limit_i.deflt)
+     if (not isclose(eexpar.limit_i.min, float(parprop['minValue']), rel_tol=1e-5, abs_tol=1e-5)):
+       eprint("{}: Warning: min value {:f} bound to {:d}".format(po.mdlfile,float(parprop['minValue']),eexpar.limit_i.min))
+     if (not isclose(eexpar.limit_i.max, float(parprop['maxValue']), rel_tol=1e-5, abs_tol=1e-5)):
+       eprint("{}: Warning: max value {:f} bound to {:d}".format(po.mdlfile,float(parprop['maxValue']),eexpar.limit_i.max))
+     if (not isclose(eexpar.limit_i.deflt, float(parprop['defaultValue']), rel_tol=1e-5, abs_tol=1e-5)):
+       eprint("{}: Warning: dafault value {:f} bound to {:d}".format(po.mdlfile,float(parprop['defaultValue']),eexpar.limit_i.deflt))
   else:
      eexpar.limit_f.min = flyc_param_limit_to_type(po, eexpar.type_id, parprop['minValue'])
      eexpar.limit_f.max = flyc_param_limit_to_type(po, eexpar.type_id, parprop['maxValue'])
@@ -436,6 +448,12 @@ def flyc_param_set_limits(po, fwmdlfile, index, parprop):
      eexpar.limit_u.min = c_uint(eexpar.limit_i.min).value
      eexpar.limit_u.max = c_uint(eexpar.limit_i.max).value
      eexpar.limit_u.deflt = c_uint(eexpar.limit_i.deflt).value
+     if (not isclose(eexpar.limit_f.min, float(parprop['minValue']), rel_tol=1e-5, abs_tol=1e-5)):
+       eprint("{}: Warning: min value {:f} bound to {:f}".format(po.mdlfile,float(parprop['minValue']),eexpar.limit_f.min))
+     if (not isclose(eexpar.limit_f.max, float(parprop['maxValue']), rel_tol=1e-5, abs_tol=1e-5)):
+       eprint("{}: Warning: max value {:f} bound to {:f}".format(po.mdlfile,float(parprop['maxValue']),eexpar.limit_f.max))
+     if (not isclose(eexpar.limit_f.deflt, float(parprop['defaultValue']), rel_tol=1e-5, abs_tol=1e-5)):
+       eprint("{}: Warning: dafault value {:f} bound to {:f}".format(po.mdlfile,float(parprop['defaultValue']),eexpar.limit_f.deflt))
   fwmdlfile.seek(po.param_pos+sizeof(eexpar)*index, os.SEEK_SET)
   fwmdlfile.write((c_ubyte * sizeof(eexpar)).from_buffer_copy(eexpar))
 
