@@ -58,7 +58,20 @@ def flyc_nofly_is_proper_zone_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_
   """
   if (enfzone.begin_at != 0) or (enfzone.end_at != 0):
      if (po.verbose > 2):
-        print("Rejected at {:06x} on begin_at/end_at check ({:.6f},{:.6f})\n".format(entry_pos,enfzone.latitude/1000000.0,enfzone.longitude/1000000.0))
+        print("Rejected at {:06x} on begin_at/end_at check ({:d},{:d})\n".format(entry_pos,enfzone.begin_at,enfzone.end_at))
+     return False
+  if (enfzone.radius < 30) or (enfzone.radius > 50000):
+     if (po.verbose > 2):
+        print("Rejected at {:06x} on radius check ({:d})\n".format(entry_pos,enfzone.radius))
+     return False
+  if (enfzone.country_code > 2000):
+     if (po.verbose > 2):
+        print("Rejected at {:06x} on country check ({:d})\n".format(entry_pos,enfzone.country_code))
+     return False
+  #if (enfzone.class_id < 30) or (enfzone.class_id > 30000):
+  if (enfzone.area_id <= 0):
+     if (po.verbose > 2):
+        print("Rejected at {:06x} on area_id check ({:d})\n".format(entry_pos,enfzone.area_id))
      return False
   return flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_align, data_align, pos, entry_pos)
 
@@ -66,8 +79,8 @@ def flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfcord, func_
   """ Checks whether given FlycNoFlyCoords object stores a proper entry of
       flight controller no fly coordinates array.
   """
-  # Check if we're at ocean around (0.0,0.0), that is within rectangle (-10,-6.7) to (4.7,5.5)
-  if (enfcord.latitude >= -10000000) and (enfcord.latitude <= 4700000):
+  # Check if we're at ocean around (0.0,0.0), that is within rectangle (-8.0,-6.7) to (4.7,5.5)
+  if (enfcord.latitude >= -8000000) and (enfcord.latitude <= 4700000):
      if (enfcord.longitude >= -6700000) and (enfcord.longitude <= 5500000):
         if (po.verbose > 2):
            print("Rejected at {:06x} on low coord ocean check ({:.6f},{:.6f})\n".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
@@ -129,13 +142,36 @@ def flyc_nofly_zone_pos_search(po, fwmdlfile, start_pos, func_align, data_align,
      return -1, 0
   return match_pos, match_entries
 
+def flyc_nofly_zone_get(po, fwmdlfile, index):
+  """ Returns array with properties of given no fly zone.
+  """
+  parprop = {'area_id':60000,'type':0,'shape':0,'lat':90.0,'lng':0.0,'radius':30,
+      'warning':0,'level':2,'disable':0,'updated_at':1447945800,'begin_at':0,'end_at':0,
+      'name':"",'country':0,'city':"",'points':None}
+  enfzone = FlycNoFlyZone()
+  fwmdlfile.seek(po.param_pos+sizeof(enfzone)*index, os.SEEK_SET)
+  if fwmdlfile.readinto(enfzone) != sizeof(enfzone):
+      raise EOFError("Cannot read nfz entry.")
+  parprop['area_id'] = enfzone.area_id
+  parprop['begin_at'] = enfzone.begin_at
+  parprop['end_at'] = enfzone.end_at
+  parprop['lat'] = enfzone.latitude/1000000.0
+  parprop['lng'] = enfzone.longitude/1000000.0
+  parprop['radius'] = enfzone.radius
+  parprop['country'] = enfzone.country_code
+  # sel all or some of 'type','shape','warning','level','disable' based on class_id
+  #parprop[''] = enfzone.class_id
+  return parprop
+
 def flyc_nofly_list(po, fwmdlfile):
   """ Lists all flight controller no fly zones from firmware on screen table.
   """
   (po.param_pos, po.param_count) = flyc_nofly_zone_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align, po.min_match_accepted)
   if po.param_pos < 0:
     raise ValueError("Flight controller no fly zones array signature not detected in input file.")
-  raise NotImplementedError('Not implemented.')
+  for i in range(0,po.param_count):
+    parprop = flyc_nofly_zone_get(po, fwmdlfile, i)
+    print("{:5d} {:3.6f} {:4.6f} {:4d} {:d} {:d} ".format(parprop['area_id'],parprop['lat'],parprop['lng'],parprop['radius'],parprop['begin_at'],parprop['end_at'],parprop['country']))
 
 def flyc_nofly_extract(po, fwmdlfile):
   """ Extracts all flight controller no fly zones from firmware to JSON format text file.
