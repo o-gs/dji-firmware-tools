@@ -19,15 +19,22 @@ class ProgOptions:
   sizeof_bss=0x4400000
   expect_func_align = 4
   expect_data_align = 2
-  min_match_accepted = 5
+  min_match_accepted = 60
   verbose = 0
   command = ''
-  param_pos = -1
-  param_count = 0
+  nfzone_pos = -1
+  nfzone_count = 0
+  nfcord_pos = -1
+  nfcord_count = 0
+
+class NoFlyStorage:
+  none = 0x0
+  zone = 0x1
+  cord = 0x2
 
 class FlycNoFlyZone(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('latitude', c_int),
+  _fields_ = [('latitude', c_int), # angular value * 1000000
               ('longitude', c_int),
               ('radius', c_ushort),
               ('country_code', c_ushort),
@@ -51,6 +58,11 @@ class FlycNoFlyCoords(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('latitude', c_int),
               ('longitude', c_int)]
+
+def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
+  """ Equivalent to math.isclose(); use it if the script needs to work on Python < 3.5
+  """
+  return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
 
 def flyc_nofly_is_proper_zone_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_align, data_align, pos, entry_pos):
   """ Checks whether given FlycNoFlyZone object stores a proper entry of
@@ -124,10 +136,10 @@ def flyc_nofly_zone_pos_search(po, fwmdlfile, start_pos, func_align, data_align,
      if (reached_eof):
         break
      # If entry is ok, consider it a match
-     if entry_count > 4:
+     if entry_count > min_match_accepted:
         if (po.verbose > 1):
            print("{}: Matching zones array at 0x{:08x}: {:d} entries".format(po.mdlfile,pos,entry_count))
-        if (entry_count >= min_match_accepted):
+        if (entry_count >= match_entries):
            match_pos = pos
            match_entries = entry_count
         match_count += 1
@@ -142,16 +154,71 @@ def flyc_nofly_zone_pos_search(po, fwmdlfile, start_pos, func_align, data_align,
      return -1, 0
   return match_pos, match_entries
 
+def flyc_nofly_cord_pos_search(po, fwmdlfile, start_pos, func_align, data_align, min_match_accepted):
+  """ Finds position of flight controller no fly coords in the binary.
+  """
+  fwmdlfile.seek(0, os.SEEK_END)
+  fwmdlfile_len = fwmdlfile.tell()
+  enfcord = FlycNoFlyCoords()
+  match_count = 0
+  match_pos = -1
+  match_entries = 0
+  reached_eof = False
+  pos = start_pos
+  while (True):
+     # Check how many correct zone entries we have
+     entry_count = 0
+     entry_pos = pos
+     while (True):
+        fwmdlfile.seek(entry_pos, os.SEEK_SET)
+        if fwmdlfile.readinto(enfcord) != sizeof(enfcord):
+           reached_eof = True
+           break
+        # The array ends with int value storing its size
+        if (entry_count >= min_match_accepted) and (enfcord.latitude == entry_count):
+           break
+        if not flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfcord, func_align, data_align, pos, entry_pos):
+           break
+        entry_count += 1
+        entry_pos += sizeof(enfcord)
+     # Do not allow entry at EOF
+     if (reached_eof):
+        break
+     # If entry is ok, consider it a match
+     if entry_count > min_match_accepted:
+        if (po.verbose > 1):
+           print("{}: Matching coords array at 0x{:08x}: {:d} entries".format(po.mdlfile,pos,entry_count))
+        if (entry_count >= match_entries):
+           match_pos = pos
+           match_entries = entry_count
+        match_count += 1
+     # Set position to search for next entry
+     if entry_count >= min_match_accepted:
+        pos += entry_count * sizeof(enfcord)
+     else:
+        pos += data_align - (pos%data_align)
+  if (match_count > 1):
+     eprint("{}: Warning: multiple ({:d}) matches found for fly coords array with alignment 0x{:02x}".format(po.mdlfile,match_count,data_align))
+  if (match_count < 1):
+     return -1, 0
+  return match_pos, match_entries
+
+def flyc_nofly_zone_template(po):
+  # Set coords at north pole; they should never stay at default value after all
+  # Set 'level' at 2; definition is: WARNING(0), CAN_UNLIMIT(1), CAN_NOT_UNLIMIT(2, 4), STRONG_WARNING(3)
+  parprop = {'area_id':60000,'type':0,'shape':0,'lat':90.0,'lng':0.0,'radius':30,
+      'warning':0,'level':2,'disable':0,'updated_at':1447945800,'begin_at':0,'end_at':0,
+      'name':"",'country':0,'city':"",'storage':NoFlyStorage.none,'points':None}
+  return parprop
+
 def flyc_nofly_zone_get(po, fwmdlfile, index):
   """ Returns array with properties of given no fly zone.
   """
-  parprop = {'area_id':60000,'type':0,'shape':0,'lat':90.0,'lng':0.0,'radius':30,
-      'warning':0,'level':2,'disable':0,'updated_at':1447945800,'begin_at':0,'end_at':0,
-      'name':"",'country':0,'city':"",'points':None}
+  parprop = flyc_nofly_zone_template(po)
   enfzone = FlycNoFlyZone()
-  fwmdlfile.seek(po.param_pos+sizeof(enfzone)*index, os.SEEK_SET)
+  fwmdlfile.seek(po.nfzone_pos+sizeof(enfzone)*index, os.SEEK_SET)
   if fwmdlfile.readinto(enfzone) != sizeof(enfzone):
-      raise EOFError("Cannot read nfz entry.")
+      raise EOFError("Cannot read nfzone entry.")
   parprop['area_id'] = enfzone.area_id
   parprop['begin_at'] = enfzone.begin_at
   parprop['end_at'] = enfzone.end_at
@@ -159,33 +226,69 @@ def flyc_nofly_zone_get(po, fwmdlfile, index):
   parprop['lng'] = enfzone.longitude/1000000.0
   parprop['radius'] = enfzone.radius
   parprop['country'] = enfzone.country_code
-  # sel all or some of 'type','shape','warning','level','disable' based on class_id
-  #parprop[''] = enfzone.class_id
+  parprop['type'] = enfzone.class_id
+  parprop['storage'] |= NoFlyStorage.zone
+  return parprop
+
+def flyc_nofly_cord_get(po, fwmdlfile, index):
+  """ Returns array with properties of given no fly coords.
+  """
+  parprop = {'lat':90.0,'lng':0.0}
+  enfcord = FlycNoFlyCoords()
+  fwmdlfile.seek(po.nfcord_pos+sizeof(enfcord)*index, os.SEEK_SET)
+  if fwmdlfile.readinto(enfcord) != sizeof(enfcord):
+      raise EOFError("Cannot read nfcord entry.")
+  parprop['lat'] = enfcord.latitude/1000000.0
+  parprop['lng'] = enfcord.longitude/1000000.0
   return parprop
 
 def flyc_nofly_list(po, fwmdlfile):
   """ Lists all flight controller no fly zones from firmware on screen table.
   """
-  (po.param_pos, po.param_count) = flyc_nofly_zone_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align, po.min_match_accepted)
-  if po.param_pos < 0:
+  (po.nfzone_pos, po.nfzone_count) = flyc_nofly_zone_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align, po.min_match_accepted)
+  if po.nfzone_pos < 0:
     raise ValueError("Flight controller no fly zones array signature not detected in input file.")
-  for i in range(0,po.param_count):
+  (po.nfcord_pos, po.nfcord_count) = flyc_nofly_cord_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align, po.min_match_accepted)
+  if po.nfcord_pos < 0:
+    raise ValueError("Flight controller no fly coords array signature not detected in input file.")
+  if (po.verbose > 0):
+     print("{}: Merging No Fly arrays...".format(po.mdlfile))
+  nfzones = []
+  for i in range(0,po.nfzone_count):
     parprop = flyc_nofly_zone_get(po, fwmdlfile, i)
-    print("{:5d} {:3.6f} {:4.6f} {:4d} {:d} {:d} ".format(parprop['area_id'],parprop['lat'],parprop['lng'],parprop['radius'],parprop['begin_at'],parprop['end_at'],parprop['country']))
+    nfzones.append(parprop)
+    #print("{:5d} {:10.6f} {:11.6f} {:5d} {:4d} {:d} {:d} {:d}".format(parprop['area_id'],parprop['lat'],parprop['lng'],parprop['radius'],parprop['country'],parprop['type'],parprop['begin_at'],parprop['end_at']))
+  for i in range(0,po.nfcord_count):
+    parcord = flyc_nofly_cord_get(po, fwmdlfile, i)
+    parprop = next((parprop for parprop in nfzones if isclose(parprop["lat"], parcord["lat"], rel_tol=1e-3, abs_tol=1e-2) and isclose(parprop["lng"], parcord["lng"], rel_tol=1e-3, abs_tol=1e-2)), None)
+    if (parprop is None):
+       parprop = flyc_nofly_zone_template(po)
+       parprop['lat'] = parcord['lat']
+       parprop['lng'] = parcord['lng']
+       parprop['radius'] = 500
+       parprop['area_id'] = 30000 + i
+       nfzones.append(parprop)
+    parprop['storage'] |= NoFlyStorage.cord
+    #print("{:5d} {:10.6f} {:11.6f}".format(i,parcord['lat'],parcord['lng']))
+  nfzones = sorted(nfzones, key=lambda k: -k['lat'])
+  for parprop in nfzones:
+     print("{:5d} {:10.6f} {:11.6f} {:5d} {:4d} {:s}{:s} {:d} {:d} {:d}".format(parprop['area_id'],parprop['lat'],parprop['lng'],
+       parprop['radius'],parprop['country'],"z" if (parprop['storage'] & NoFlyStorage.zone) != 0 else " ",
+       "c" if (parprop['storage'] & NoFlyStorage.cord) != 0 else " ",parprop['type'],parprop['begin_at'],parprop['end_at']))
 
 def flyc_nofly_extract(po, fwmdlfile):
   """ Extracts all flight controller no fly zones from firmware to JSON format text file.
   """
-  (po.param_pos, po.param_count) = flyc_nofly_zone_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align, po.min_match_accepted)
-  if po.param_pos < 0:
+  (po.nfzone_pos, po.nfzone_count) = flyc_nofly_zone_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align, po.min_match_accepted)
+  if po.nfzone_pos < 0:
     raise ValueError("Flight controller no fly zones array signature not detected in input file.")
   raise NotImplementedError('Not implemented.')
 
 def flyc_nofly_update(po, fwmdlfile):
   """ Updates all flight controller no fly zones in firmware from JSON format text file.
   """
-  (po.param_pos, po.param_count) = flyc_nofly_zone_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align, po.min_match_accepted)
-  if po.param_pos < 0:
+  (po.nfzone_pos, po.nfzone_count) = flyc_nofly_zone_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align, po.min_match_accepted)
+  if po.nfzone_pos < 0:
     raise ValueError("Flight controller no fly zones array signature not detected in input file.")
   raise NotImplementedError('Not implemented.')
 
