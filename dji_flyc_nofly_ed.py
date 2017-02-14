@@ -278,6 +278,8 @@ def flyc_nofly_list(po, fwmdlfile):
      print("{:5d} {:10.6f} {:11.6f} {:5d} {:4d} {:s}{:s} {:d} {:d} {:d}".format(parprop['area_id'],parprop['lat'],parprop['lng'],
        parprop['radius'],parprop['country'],"z" if (parprop['storage'] & NoFlyStorage.zone) != 0 else " ",
        "c" if (parprop['storage'] & NoFlyStorage.cord) != 0 else " ",parprop['type'],parprop['begin_at'],parprop['end_at']))
+  if (po.verbose > 0):
+     print("{}: Done listing.".format(po.mdlfile))
 
 def flyc_nofly_extract(po, fwmdlfile):
   """ Extracts all flight controller no fly zones from firmware to JSON format text file.
@@ -289,31 +291,33 @@ def flyc_nofly_extract(po, fwmdlfile):
   if po.nfcord_pos < 0:
     raise ValueError("Flight controller no fly coords array signature not detected in input file.")
   nfzones = flyc_nofly_merged_zones_array(po, fwmdlfile)
+  if (po.verbose > 0):
+     print("{}: Creating JSON file...".format(po.mdlfile))
   inffile = open(po.inffile, "w")
   inffile.write("{\"release_limits\":[\n")
   i = 0
   for parprop in nfzones:
     inffile.write("{")
     for ppname in ('area_id','type','shape',):
-       inffile.write("\"{:s}\" : {:d}".format(ppname,parprop[ppname]))
+       inffile.write("\"{:s}\":{:d}".format(ppname,parprop[ppname]))
        inffile.write(",")
     for ppname in ('lat','lng',):
-       inffile.write("\"{:s}\" : {:06f}".format(ppname,parprop[ppname]))
+       inffile.write("\"{:s}\":{:06f}".format(ppname,parprop[ppname]))
        inffile.write(",")
     for ppname in ('radius','warning','level','disable','updated_at','begin_at','end_at',):
-       inffile.write("\"{:s}\" : {:d}".format(ppname,parprop[ppname]))
+       inffile.write("\"{:s}\":{:d}".format(ppname,parprop[ppname]))
        inffile.write(",")
     for ppname in ('name',):
-       inffile.write("\"{:s}\" : \"{:s}\"".format(ppname,parprop[ppname]))
+       inffile.write("\"{:s}\":\"{:s}\"".format(ppname,parprop[ppname]))
        inffile.write(",")
     for ppname in ('storage','country',):
-       inffile.write("\"{:s}\" : {:d}".format(ppname,parprop[ppname]))
+       inffile.write("\"{:s}\":{:d}".format(ppname,parprop[ppname]))
        inffile.write(",")
     for ppname in ('city',):
-       inffile.write("\"{:s}\" : \"{:s}\"".format(ppname,parprop[ppname]))
+       inffile.write("\"{:s}\":\"{:s}\"".format(ppname,parprop[ppname]))
        inffile.write(",")
     for ppname in ('points',):
-       inffile.write("\"{:s}\" : {:s}".format(ppname,parprop[ppname] if parprop[ppname] is not None else "null"))
+       inffile.write("\"{:s}\":{:s}".format(ppname,parprop[ppname] if parprop[ppname] is not None else "null"))
     if (i+1 < len(nfzones)):
        inffile.write("},\n")
     else:
@@ -321,6 +325,8 @@ def flyc_nofly_extract(po, fwmdlfile):
     i += 1
   inffile.write("]}\n")
   inffile.close()
+  if (po.verbose > 0):
+     print("{}: Done exporting.".format(po.mdlfile))
 
 def flyc_nofly_update(po, fwmdlfile):
   """ Updates all flight controller no fly zones in firmware from JSON format text file.
@@ -331,6 +337,11 @@ def flyc_nofly_update(po, fwmdlfile):
   (po.nfcord_pos, po.nfcord_count) = flyc_nofly_cord_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align, po.min_match_accepted)
   if po.nfcord_pos < 0:
     raise ValueError("Flight controller no fly coords array signature not detected in input file.")
+  pvnfzones = flyc_nofly_merged_zones_array(po, fwmdlfile)
+  if (po.verbose > 0):
+     print("{}: Loading JSON file...".format(po.mdlfile))
+  with open(po.inffile) as inffile:
+    nxnfzones = json.load(inffile)
   raise NotImplementedError('Not implemented.')
 
 def main(argv):
