@@ -124,11 +124,16 @@ Example of extracting and then updating the flight controller parameters:
 # Symbols
 
 For some specific firmware modules in specific versions, there are partial symbols
-available in 'symbols' directory. Only functions and variables which were given a
-meaningful names are included in the symbol files. The symbols are in MAP format,
-which can be loaded into most disassemblers with minimal effort. For Ida Pro,
+available in 'symbols' directory. The symbols are in two formats:
+
+- MAP files - Can be loaded into most disassemblers with minimal effort. For IDA Pro,
 there is a plugin which can read MAP files and rename functions and variables
-accordingly.
+accordingly. Only functions and global variables which were given a meaningful names
+are included in these files.
+- IDC script - Format specific to IDA Pro. Stores not only functions and globals,
+but also type information - enums and structs. Allows storing function parameters
+and local variables with their names and types, too. Can be easily applied to an
+opened ELF file via IDA Pro, no other tool will understand it.
 
 Symbols are matched with ELF files generated with the tools described above,
 not directly with the BINs. Use example commands provided in previous section
