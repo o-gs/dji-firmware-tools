@@ -2,7 +2,9 @@
  Start         Length     Name                   Class
  0001:00000000 000085D34H .text                  CODE
  0002:00000000 00003AC80H .data                  DATA
- 0003:00000000 004400000H .bss                   BSS
+ 0003:00000000 00000A000H .bss                   BSS
+ 0005:00000000 000030000H .bss2                  BSS
+ 0004:00000000 000030000H .bss3                  BSS
 
 
   Address         Publics by Value
@@ -708,6 +710,7 @@
  0001:0805329C       aApi_mode_assis
  0001:080532C6       act_fini_navigation
  0001:080532C8       get_action_namestr
+ 0001:080532F2       kctrl_init_follow_me_mission_0
  0001:080532FE       act_init_go_home
  0001:08053326       act_init_auto_takeoff
  0001:08053380       act_init_auto_landing
@@ -2680,112 +2683,112 @@
  0002:080DF930       aTemp_z
  0002:080DFB1C       a123456
  0002:080DFB28       aSdkV1_0BetaM10
- 0003:200000E8       test_deformation
- 0003:20000324       fw_upgrading
- 0003:200010FC       g_config__device
- 0003:20001100       g_config__system_command
- 0003:2000111C       g_config__aircraft
- 0003:2000113E       g_config__imu_gps
- 0003:20001154       g_config__receiver
- 0003:200011D8       g_config__control
- 0003:20001258       g_config__engine
- 0003:20001264       g_config__craft_model
- 0003:2000128C       g_config__advanced_function
- 0003:20001295       g_config__fail_safe
- 0003:20001296       g_config__go_home
- 0003:2000129C       g_config__intelligence_orientation
- 0003:200012A0       g_config__pantilt
- 0003:200012D4       g_config__flying_limit
- 0003:200012DC       g_config__knob
- 0003:200012E4       g_config__voltage
- 0003:200012F0       g_config__output_servo
- 0003:20001316       g_config__unknown1
- 0003:20001330       g_config__voltage2
- 0003:2000133C       g_config__fdi
- 0003:2000140C       g_config__fdi_open
- 0003:20001420       g_config__fdi_inject
- 0003:20001428       g_config__imu_para_cfg
- 0003:20001460       g_config__novice_cfg
- 0003:20001480       g_config__led_cfg
- 0003:20001484       g_config__gps_cfg
- 0003:20001494       g_config__gear_cfg
- 0003:200014A4       g_config__esc_cfg
- 0003:200014A8       g_config__serial_api_cfg
- 0003:200014B0       g_config__imu_dir
- 0003:200014D4       g_config__api_entry_cfg
- 0003:20001509       g_config__airport_limit_cfg
- 0003:20001534       g_config__avoid_obstacle_limit_cfg
- 0003:20001550       g_config__misc_cfg
- 0003:20001560       g_config__hotpoint_cfg
- 0003:200015A8       g_config__home_lock_cfg
- 0003:200015C0       g_config__followme_cfg
- 0003:20001600       g_config__waypoint_cfg
- 0003:20001618       g_config__bat_limit
- 0003:20001680       g_real__input
- 0003:20001784       g_real__imu
- 0003:20001830       home_coords
- 0003:2000186D       g_real__status
- 0003:20001880       g_real__knob
- 0003:20001E1C       g_real__config_status
- 0003:20001E82       g_real__wm610_app_command
- 0003:20001E84       g_real__force_on
- 0003:20001F48       g_raw__input
- 0003:2000206C       g_raw__battery_info
- 0003:20002099       g_raw__gps_snr
- 0003:20002864       g_navi_data.horiz_vel_sensor_id
- 0003:20008550       wp_setting.length
- 0003:20008554       wp_setting.vel_cmd_range
- 0003:20008558       wp_setting.idle_vel
- 0003:2000855C       wp_setting.action_on_finish
- 0003:2000855D       wp_setting.mission_exec_num
- 0003:2000855E       wp_setting.yaw_mode
- 0003:2000855F       wp_setting.trace_mode
- 0003:20008560       wp_setting.action_on_rc_lost
- 0003:2000B4B4       AttiData_200Hz.press
- 0003:2000B578       imu_data
- 0003:20018760       OSIdleTaskTCB
- 0003:2001A7CC       debugr
- 0003:2001A824       g_cfg_debug
- 0003:2001C0B4       standard_range_min
- 0003:2001C0B8       standard_range_max
- 0003:2001C154       local_simulator
- 0003:2001C156       config_parameter__assistant_timeout
- 0003:2001C158       config_parameter__motor_stop_lock
- 0003:2001C2B2       imu_check_status.check_flag
- 0003:2001C2B3       imu_check_status.status
- 0003:2001C784       g_swdg_timeout_max
- 0003:2001C948       default_gps_svn
- 0003:2001C960       initial_lati
- 0003:2001C968       initial_longti
- 0003:2001C972       run_mode
- 0003:2001C98C       wall_dis_front
- 0003:2001C990       wall_dis_right
- 0003:2001C994       wall_dis_back
- 0003:2001C998       wall_dis_left
- 0003:2001E234       imu_temp
- 0003:200200D0       ioc_type
- 0003:200200D8       cfg_var_table_size
- 0003:20021514       g_hardfault_info
- 0003:20021794       imu_type
- 0003:20021A84       g_debug.sim_flag
- 0003:20021A88       g_debug.sim_var
- 0003:20021AC3       is_home_point_set
- 0003:20022148       global__status
- 0003:20022BAC       fix_send_index
- 0003:20022C0C       fix_send
- 0003:20023F94       airport_limit_flash_key_20023F94
- 0003:20027AA0       imu_app_temp_cali.start_flag
- 0003:20027AA1       imu_app_temp_cali.state
- 0003:20027AA2       imu_app_temp_cali.cali_cnt
- 0003:20027AA3       imu_app_temp_cali.temp_ready
- 0003:20027AA4       imu_app_temp_cali.step
- 0003:20027AAB       imu_app_temp_cali.dst_cali_temp
- 0003:20027AAC       imu_app_temp_cali.bias_flag.temp_min
- 0003:20027AB0       imu_app_temp_cali.bias_flag.temp_max
- 0003:20027AB4       imu_app_temp_cali.bias_flag.temp_cali_status
- 0003:20027AB5       imu_app_temp_cali.bias_flag.base_cali_status
- 0003:20027AB6       imu_app_temp_cali.bias_flag.cfg_temp_cali_fw_version
- 0003:20027AB7       imu_app_temp_cali.bias_flag.cur_temp_cali_fw_version
- 0003:2002A44C       wind_speed
+ 0005:200000E8       test_deformation
+ 0005:20000324       fw_upgrading
+ 0005:200010FC       g_config__device
+ 0005:20001100       g_config__system_command
+ 0005:2000111C       g_config__aircraft
+ 0005:2000113E       g_config__imu_gps
+ 0005:20001154       g_config__receiver
+ 0005:200011D8       g_config__control
+ 0005:20001258       g_config__engine
+ 0005:20001264       g_config__craft_model
+ 0005:2000128C       g_config__advanced_function
+ 0005:20001295       g_config__fail_safe
+ 0005:20001296       g_config__go_home
+ 0005:2000129C       g_config__intelligence_orientation
+ 0005:200012A0       g_config__pantilt
+ 0005:200012D4       g_config__flying_limit
+ 0005:200012DC       g_config__knob
+ 0005:200012E4       g_config__voltage
+ 0005:200012F0       g_config__output_servo
+ 0005:20001316       g_config__unknown1
+ 0005:20001330       g_config__voltage2
+ 0005:2000133C       g_config__fdi
+ 0005:2000140C       g_config__fdi_open
+ 0005:20001420       g_config__fdi_inject
+ 0005:20001428       g_config__imu_para_cfg
+ 0005:20001460       g_config__novice_cfg
+ 0005:20001480       g_config__led_cfg
+ 0005:20001484       g_config__gps_cfg
+ 0005:20001494       g_config__gear_cfg
+ 0005:200014A4       g_config__esc_cfg
+ 0005:200014A8       g_config__serial_api_cfg
+ 0005:200014B0       g_config__imu_dir
+ 0005:200014D4       g_config__api_entry_cfg
+ 0005:20001509       g_config__airport_limit_cfg
+ 0005:20001534       g_config__avoid_obstacle_limit_cfg
+ 0005:20001550       g_config__misc_cfg
+ 0005:20001560       g_config__hotpoint_cfg
+ 0005:200015A8       g_config__home_lock_cfg
+ 0005:200015C0       g_config__followme_cfg
+ 0005:20001600       g_config__waypoint_cfg
+ 0005:20001618       g_config__bat_limit
+ 0005:20001680       g_real__input
+ 0005:20001784       g_real__imu
+ 0005:20001830       home_coords
+ 0005:2000186D       g_real__status
+ 0005:20001880       g_real__knob
+ 0005:20001E1C       g_real__config_status
+ 0005:20001E82       g_real__wm610_app_command
+ 0005:20001E84       g_real__force_on
+ 0005:20001F48       g_raw__input
+ 0005:2000206C       g_raw__battery_info
+ 0005:20002099       g_raw__gps_snr
+ 0005:20002864       g_navi_data.horiz_vel_sensor_id
+ 0005:20008550       wp_setting.length
+ 0005:20008554       wp_setting.vel_cmd_range
+ 0005:20008558       wp_setting.idle_vel
+ 0005:2000855C       wp_setting.action_on_finish
+ 0005:2000855D       wp_setting.mission_exec_num
+ 0005:2000855E       wp_setting.yaw_mode
+ 0005:2000855F       wp_setting.trace_mode
+ 0005:20008560       wp_setting.action_on_rc_lost
+ 0005:2000B4B4       AttiData_200Hz.press
+ 0005:2000B578       imu_data
+ 0005:20018760       OSIdleTaskTCB
+ 0005:2001A7CC       debugr
+ 0005:2001A824       g_cfg_debug
+ 0005:2001C0B4       standard_range_min
+ 0005:2001C0B8       standard_range_max
+ 0005:2001C154       local_simulator
+ 0005:2001C156       config_parameter__assistant_timeout
+ 0005:2001C158       config_parameter__motor_stop_lock
+ 0005:2001C2B2       imu_check_status.check_flag
+ 0005:2001C2B3       imu_check_status.status
+ 0005:2001C784       g_swdg_timeout_max
+ 0005:2001C948       default_gps_svn
+ 0005:2001C960       initial_lati
+ 0005:2001C968       initial_longti
+ 0005:2001C972       run_mode
+ 0005:2001C98C       wall_dis_front
+ 0005:2001C990       wall_dis_right
+ 0005:2001C994       wall_dis_back
+ 0005:2001C998       wall_dis_left
+ 0005:2001E234       imu_temp
+ 0005:200200D0       ioc_type
+ 0005:200200D8       cfg_var_table_size
+ 0005:20021514       g_hardfault_info
+ 0005:20021794       imu_type
+ 0005:20021A84       g_debug.sim_flag
+ 0005:20021A88       g_debug.sim_var
+ 0005:20021AC3       is_home_point_set
+ 0005:20022148       global__status
+ 0005:20022BAC       fix_send_index
+ 0005:20022C0C       fix_send
+ 0005:20023F94       airport_limit_flash_key_20023F94
+ 0005:20027AA0       imu_app_temp_cali.start_flag
+ 0005:20027AA1       imu_app_temp_cali.state
+ 0005:20027AA2       imu_app_temp_cali.cali_cnt
+ 0005:20027AA3       imu_app_temp_cali.temp_ready
+ 0005:20027AA4       imu_app_temp_cali.step
+ 0005:20027AAB       imu_app_temp_cali.dst_cali_temp
+ 0005:20027AAC       imu_app_temp_cali.bias_flag.temp_min
+ 0005:20027AB0       imu_app_temp_cali.bias_flag.temp_max
+ 0005:20027AB4       imu_app_temp_cali.bias_flag.temp_cali_status
+ 0005:20027AB5       imu_app_temp_cali.bias_flag.base_cali_status
+ 0005:20027AB6       imu_app_temp_cali.bias_flag.cfg_temp_cali_fw_version
+ 0005:20027AB7       imu_app_temp_cali.bias_flag.cur_temp_cali_fw_version
+ 0005:2002A44C       wind_speed
 
 Program entry point at 0001:00000000
