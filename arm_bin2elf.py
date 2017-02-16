@@ -93,9 +93,6 @@ class ExIdxEntry(LittleEndianStructure):
      from pprint import pformat
      return pformat(d, indent=4, width=1)
 
-def section_is_bss(sectname):
-  return sectname.startswith('.bss')
-
 def sign_extend(value, bits):
   """ Sign-extend an integer value from given amount of bits to full Python int
   """
@@ -299,22 +296,38 @@ def armfw_bin2elf(po, fwpartfile):
      print("{}: Set '{:s}' section at file pos 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname],po.section_size[sectname]))
   # Set position for bss section too - to the place
   # where it should be if it had the content stored
-  sectname = ".bss"
-  if (not sectname in po.section_pos):
-     sect_pos += sect_len
-     if (sect_pos % sect_align) != 0:
-        sect_pos += sect_align - (sect_pos % sect_align)
-     po.section_pos[sectname] = sect_pos
-  else:
-     sect_pos = po.section_pos[sectname]
-  if (not sectname in po.section_size):
-     sect_len = po.address_space_len - sect_pos
-     if (sect_len < 0): sect_len = 0
-     po.section_size[sectname] = sect_len
-  else:
+  if True:
+     sectname = ".bss"
+     if (not sectname in po.section_pos):
+        sect_pos += sect_len
+        if (sect_pos % sect_align) != 0:
+           sect_pos += sect_align - (sect_pos % sect_align)
+        po.section_pos[sectname] = sect_pos
+     else:
+        sect_pos = po.section_pos[sectname]
+     if (not sectname in po.section_size):
+        sect_len = po.address_space_len - sect_pos
+        if (sect_len < 0): sect_len = 0
+        po.section_size[sectname] = sect_len
+     else:
+        sect_len = po.section_size[sectname]
+     if (po.verbose > 1):
+        print("{}: Set '{:s}' section at file pos 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname],po.section_size[sectname]))
+  # Allow more .bss sections, as long as size is provided
+  for i in range(1,9):
+     sectname = ".bss"+str(i)
+     if (not sectname in po.section_size):
+        break
+     if (not sectname in po.section_pos):
+        sect_pos += sect_len
+        if (sect_pos % sect_align) != 0:
+           sect_pos += sect_align - (sect_pos % sect_align)
+        po.section_pos[sectname] = sect_pos
+     else:
+        sect_pos = po.section_pos[sectname]
      sect_len = po.section_size[sectname]
-  if (po.verbose > 1):
-     print("{}: Set '{:s}' section at file pos 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname],po.section_size[sectname]))
+     if (po.verbose > 1):
+        print("{}: Set '{:s}' section at file pos 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname],po.section_size[sectname]))
 
   # Prepare list of sections in the order of position
   sections_order = []
@@ -384,12 +397,16 @@ def armfw_bin2elf(po, fwpartfile):
   # Update section sizes, including the uninitialized (.bss*) sections
   for sectname in sections_order:
      sect = elfobj.get_section_by_name(sectname)
+     if sect is None:
+         sect = elfobj.get_section_by_name(sectname[:-1])
+         sect.name = sectname
+         elfobj.insert_section_after(sectname[:-1], sect)
      if (po.verbose > 0):
         print("{}: Preparing ELF section '{:s}' from binary pos 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname]))
      sect.header['sh_addr'] = sections_address[sectname]
      sect.header['sh_addralign'] = sections_align[sectname]
      # for non-bss sections, size will be updated automatically when replacing data
-     if section_is_bss(sectname):
+     if sect.header['sh_type'] == 'SHT_NOBITS':
         sect.header['sh_size'] = po.section_size[sectname]
      elif po.section_size[sectname] <= 0:
         sect.set_data(b'')
