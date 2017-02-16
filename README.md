@@ -88,7 +88,9 @@ will still be used as separator, just with zero size.
 
 Optimized examples for specific firmwares:
 
-```./arm_bin2elf.py -vv -e -b 0x8020000 --section .ARM.exidx@0x085d34:0 --section .bss@0x17fe0000:0x4400000 -p P3X_FW_V01.07.0060_mi01.bin```
+```./arm_bin2elf.py -vv -e -b 0x8020000 --section .ARM.exidx@0x085d34:0  --section .bss@0x07fe0000:0xA000 --section .bss2@0x17fe0000:0x30000 --section .bss3@0x37fe0000:0x30000 -p P3X_FW_V01.07.0060_mi01.bin```
+
+```./arm_bin2elf.py -vv -e -b 0x0000000 --section .ARM.exidx@0x01ce50:0 --section .bss@0x10000000:0x8000 --section .bss2@0x40000000:0x50000 --section .bss3@0xe0000000:0x10000 -p C1_FW_V01.06.0000_mi06.bin```
 
 ### amba_sys2elf.py
 
