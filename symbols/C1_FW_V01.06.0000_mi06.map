@@ -66,6 +66,7 @@
  0001:0000848C       aXXXXXXXXXXX
  0001:000084B4       aAmcSem
  0001:000084BC       p_sem
+ 0001:000087FA       rf_power_unkn1
  0001:00008BE4       jpt_8BE0
  0001:00008C2A       def_8BE0
  0001:00009218       aC
@@ -110,40 +111,82 @@
  0001:00011CA0       nullsub_11
  0001:00011CB0       j___disable_irq
  0001:00011D1A       nullsub_12
- 0001:00011F90       nullsub_8
+ 0001:00011D3E       OS_CPU_IntHandler
+ 0001:00011F90       OSCfg_Init
  0001:00011F94       OS_IdleTask
  0001:00011FA2       OS_IdleTaskInit
+ 0001:00011FE0       OS_RdyListInit
+ 0001:00011FFE       OSInit
+ 0001:00012086       OSIntEnter
+ 0001:0001209C       OSIntExit
  0001:00012104       OSSched
+ 0001:0001215E       OS_SchedLockTimeMeasStart
+ 0001:00012172       OSSchedLock
+ 0001:000121B6       OS_SchedLockTimeMeasStop
+ 0001:000121E0       OSSchedUnlock
+ 0001:0001223C       OSStart
+ 0001:00012284       OS_PendDbgNameAdd
+ 0001:000122B2       OS_PendListInsertPrio
+ 0001:0001230C       OS_PendDataInit
+ 0001:0001233C       OS_RdyListRemove
  0001:0001238C       aUcOsIiiIdleTask
  0001:000123E4       aTaskQ
  0001:000123EC       aTaskSem
+ 0001:0001240C       OS_TaskBlock
+ 0001:00012436       OS_Pend
+ 0001:0001247E       OS_PendListRemove1
+ 0001:000124B4       OS_PendListRemove
+ 0001:000124DA       OS_PendAbort1
+ 0001:000124FA       OS_RdyListInsertHead
  0001:0001252E       OS_RdyListInsertTail
  0001:0001255E       OS_RdyListInsert
  0001:00012584       OS_TaskRdy
+ 0001:0001259E       OS_PendAbort
  0001:000125BA       jpt_125B6
  0001:00012622       def_126CC
+ 0001:00012626       OS_PendDbgNameRemove
+ 0001:0001263C       OS_PendListChangePrio
  0001:0001266E       OS_PendListInit
+ 0001:00012678       OS_PendListInsertHead
+ 0001:00012698       OS_PendObjDel1
  0001:000126B8       OS_PendObjDel
  0001:000126D0       jpt_126CC
+ 0001:00012736       OS_Post1
+ 0001:0001275C       OS_Post
  0001:00012772       jpt_1276E
  0001:000127E6       def_1276E
- 0001:00012838       nullsub_13
+ 0001:00012838       OSIdleTaskHook
+ 0001:0001283A       OSInitHook
+ 0001:00012860       OSStatTaskHook
  0001:00012862       OSTaskCreateHook
  0001:00012864       OSTaskDelHook
  0001:00012866       OSTaskReturnHook
  0001:00012868       OSTaskStkInit
- 0001:00012912       nullsub_2
- 0001:00012988       nullsub_9
+ 0001:000128C4       OSTaskSwHook
+ 0001:00012912       OSTimeTickHook
+ 0001:00012914       OS_CPU_SysTickHandler
+ 0001:0001293E       OS_CPU_SysTickInit
+ 0001:00012988       OS_Dbg_Init
+ 0001:0001298C       OS_MsgPoolCreate
+ 0001:000129E2       OS_MsgPoolInit
+ 0001:00012A24       OS_MsgQFreeAll
  0001:00012A52       OS_MsgQInit
+ 0001:00012A60       OS_MsgQGet
+ 0001:00012AB2       OS_MsgQPut
  0001:00012B44       OS_PrioInit
  0001:00012B54       OS_PrioGetHighest
  0001:00012B74       OS_PrioInsert
  0001:00012B90       OS_PrioRemove
+ 0001:00012BB0       OS_SemDbgListAdd
  0001:00012BCA       OSSemCreate
  0001:00012C14       OS_SemClr
  0001:00012C2A       OS_SemDbgListRemove
  0001:00012C4E       OSSemDel
+ 0001:00012E18       OSxxxPendAbort
+ 0001:00012F50       aSema
+ 0001:00012F58       aNoneSem
  0001:00012F5C       aSem
+ 0001:00012F6C       OSTaskChangePrio
  0001:00012F9E       jpt_12F9A
  0001:00012FEE       jpt_12FEA
  0001:00013004       def_12FEA
@@ -151,25 +194,41 @@
  0001:00013028       OS_TaskDbgListAdd
  0001:00013046       OS_TaskInitTCB
  0001:000130CA       OSTaskCreate
+ 0001:00013328       OS_TaskQPost
  0001:00013358       jpt_13354
  0001:000133B4       aTask
  0001:000133D0       j_OSSched
  0001:000133D4       def_13354
  0001:0001342E       jpt_1342A
  0001:000134B4       def_1342A
+ 0001:000134C6       OSTaskSemPend
+ 0001:000135DA       OS_TaskSemPost
  0001:00013608       jpt_13604
  0001:0001366C       def_13604
+ 0001:00013682       OSTaskSemPost
+ 0001:0001369C       OSTaskSemSet
+ 0001:000136CC       OS_TaskSuspend
  0001:0001371E       jpt_1371A
  0001:00013768       def_1371A
+ 0001:0001377A       OS_TaskDbgListRemove
+ 0001:000137AC       OS_TaskInit
  0001:000137BE       OS_TaskReturn
  0001:000137F4       OS_TickListRemove
+ 0001:0001382A       OS_TickListUpdate
  0001:00013878       jpt_13874
  0001:00013910       def_13874
  0001:00013936       OS_TickTask
+ 0001:0001395A       OS_TickListInit
  0001:0001397C       OS_TickTaskInit
+ 0001:000139D4       OS_TickListInsert
+ 0001:00013A9E       OS_TickListResetPeak
  0001:00013AE0       aUcOsIiiTickTas
  0001:00013AF4       p_tcb
  0001:00013AF8       OSTimeDly
+ 0001:00013B78       OSTimeDlyHMSM
+ 0001:00013C34       OSTimeGet
+ 0001:00013C58       OSTimeSet
+ 0001:00013C7C       OSTimeTick
  0001:00013CC0       __disable_irq
  0001:00013CC4       __enable_irq
  0001:00013CC8       _get_PRIMASK
@@ -188,6 +247,12 @@
  0001:00014108       def_1405C
  0001:0001416C       CPU_IntDisMeasStop
  0001:00014198       CPU_IntDisMeasStart
+ 0001:000141EE       CPU_IntDisMeasMaxCurGet
+ 0001:00014206       CPU_IntDisMeasMaxCurReset
+ 0001:00014220       CPU_IntDisMeasMaxGet
+ 0001:00014238       CPU_IntDisMeasInit
+ 0001:0001427E       CPU_IntDisMeasMaxCalc
+ 0001:00014296       SystemCoreClockGet
  0001:00014312       jpt_1430E
  0001:00014332       def_1430E
  0001:00014476       nullsub_14
@@ -264,7 +329,13 @@
  0001:00016D02       UART2_Init
  0001:00016FA6       UART3_Init
  0001:00017298       WDT_Init
+ 0001:00018DE0       aNan_0
+ 0001:00018DE4       aNan
+ 0001:00018DE8       aInf
+ 0001:00018DEC       aInf_0
  0001:00019230       aInfinity
+ 0001:00019B24       OSStartHighRdy
+ 0001:00019B46       OS_CPU_PendSVHandler
  0001:0001C214       jpt_1C210
  0001:0001CBDA       jpt_1CBD6
  0002:00024F03       aMsdos5_0
@@ -281,4 +352,55 @@
  0002:000257CD       a123456789abcde
  0002:00025ABC       aChDMcsDModeDBw
  0002:00025CB3       aTestdjiw
+ 0003:10000498       OS_CPU_ExceptStkBase
+ 0003:1000049C       OSPrioTbl
+ 0003:100004A0       OSStatTaskCtr
+ 0003:100004A4       OSIntNestingCtr
+ 0003:100004A5       OSRunning
+ 0003:100004A8       OSMsgPool
+ 0003:100004B1       OSPrioHighRdy
+ 0003:100004B4       OSSchedLockTimeBegin
+ 0003:100004B8       OSSchedLockTimeMax
+ 0003:100004BC       OSSchedLockTimeMaxCur
+ 0003:100004C0       OSSchedLockNestingCtr
+ 0003:100004C4       OSSemDbgListPtr
+ 0003:100004C8       OSSemQty
+ 0003:100004CC       OSTaskCtxSwCtr
+ 0003:100004D0       OSTaskDbgListPtr
+ 0003:100004D4       OSTaskQty
+ 0003:100004D8       OSTickCtr
+ 0003:100004DC       OSTickTaskTimeMax
+ 0003:100004E0       OSTCBCurPtr
+ 0003:100004E4       OSTCBHighRdyPtr
+ 0003:100004E8       CPU_IntDisMeasCtr
+ 0003:100004EA       CPU_IntDisNestCtr
+ 0003:100004F0       CPU_IntDisMeasStart_cnts
+ 0003:100004F4       CPU_IntDisMeasStop_cnts
+ 0003:100004F8       CPU_IntDisMeasOvrhd_cnts
+ 0003:100004FC       CPU_IntDisMeasMaxCur_cnts
+ 0003:10000500       CPU_IntDisMeasMax_cnts
+ 0003:100005D8       status_uid
+ 0003:100005E8       status_DEFVER
+ 0003:100005E9       status_RC
+ 0003:100005EE       zone_is_fcc
+ 0003:100005EF       status_MYNAME
+ 0003:100005F5       status_MYPASSWORD
+ 0003:100005F7       status_function
+ 0003:100005F8       status_GROUP_ID
+ 0003:100005FC       status_GROUP_NAME
+ 0003:10000602       status_GROUP_PASSWORD
+ 0003:10000604       status_MYIP
+ 0003:10000605       status_STATUE
+ 0003:10000606       status_GIMBAL_CTLIP
+ 0003:10000607       zone_is_on
+ 0003:10000BAC       strct_10000BAC
+ 0003:1000190C       strct_1000190C
+ 0003:10001DBC       strct_10001DBC
+ 0003:1000226C       strct_1000226C
+ 0003:100054DC       OSCfg_TickWheel
  0003:10005614       OSRdyList
+ 0003:1000577C       OSTickTaskTCB
+ 0004:E000E010       NVIC_SYSTICK_CTRL
+ 0004:E000E014       NVIC_SYSTICK_LOAD
+ 0004:E000ED04       NVIC_INT_CTRL
+ 0004:E000ED20       NVIC_SYSPRI2
