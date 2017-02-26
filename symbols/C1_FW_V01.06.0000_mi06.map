@@ -10,6 +10,7 @@
   Address         Publics by Value
 
  0001:00000234       start
+ 0001:0000028A       set_to_default_28A
  0001:00000640       aSomethingChang
  0001:00000654       aNoChange
  0001:00000668       RTCx
@@ -38,15 +39,98 @@
  0001:0000137C       def_1366
  0001:00001506       jpt_1502
  0001:000015C4       def_1502
+ 0001:00001F9C       param_buf
+ 0001:00001FA0       a1
  0001:00002132       jpt_212E
  0001:00002158       def_212E
  0001:00002604       jpt_2600
  0001:00002618       def_2600
+ 0001:0000276A       cmd_exec_sub_276A
+ 0001:00002788       cmd_exec_sub_2788
+ 0001:000027C2       cmd_exec_sub_27C2
  0001:000027EC       jpt_27E8
  0001:00002830       def_27E8
+ 0001:000028C2       cmd_exec_sub_28C2
+ 0001:000029B4       cmd_exec_sub_29B4
+ 0001:00002A6C       cmd_exec_sub_2A6C
+ 0001:00002ADC       cmd_exec_sub_2ADC
+ 0001:00002B10       cmd_exec_sub_2B10
+ 0001:00002BCA       cmd_exec_sub_2BCA
+ 0001:00002C22       cmd_exec_sub_2C22
+ 0001:00002C54       cmd_exec_sub_2C54
+ 0001:00002C94       cmd_exec_sub_2C94
+ 0001:00002CD0       cmd_exec_sub_2CD0
+ 0001:00002D0A       cmd_exec_sub_2D0A
  0001:00002D44       dbg_printf
+ 0001:00002E94       cmd_exec_sub_2E94
+ 0001:00002F8A       cmd_exec_sub_2F8A
+ 0001:00002FA4       cmd_exec_sub_2FA4
+ 0001:00002FE0       cmd_exec_sub_2FE0
  0001:00003270       aTickU
+ 0001:000032F2       cmd_exec_sub_32F2
+ 0001:0000334A       cmd_exec_sub_334A
+ 0001:00003388       cmd_exec_sub_3388
+ 0001:000033F8       cmd_exec_sub_33F8
+ 0001:0000342E       cmd_exec_sub_342E
+ 0001:0000346C       cmd_exec_sub_346C
+ 0001:000034A4       cmd_exec_sub_34A4
+ 0001:000034E4       cmd_exec_sub_34E4
+ 0001:00003542       cmd_exec_sub_3542
+ 0001:00003614       cmd_exec_sub_3614
+ 0001:00003654       cmd_exec_sub_3654
+ 0001:000036AC       cmd_exec_sub_36AC
+ 0001:0000370C       cmd_exec_sub_370C
+ 0001:00003744       cmd_exec_sub_3744
+ 0001:0000378A       cmd_exec_sub_378A
+ 0001:000037DC       cmd_exec_sub_37DC
+ 0001:0000381A       cmd_exec_sub_381A
+ 0001:00003854       cmd_exec_sub_3854
+ 0001:00003BF6       cmd_exec_sub_3BF6
+ 0001:00003D32       cmd_exec_sub_3D32
+ 0001:00003D60       cmd_exec_sub_3D60
+ 0001:00003DB8       cmd_exec_sub_3DB8
+ 0001:00003E2A       cmd_exec_sub_3E2A
+ 0001:00003EBA       cmd_exec_sub_3EBA
+ 0001:00003EE8       cmd_exec_set_zone_3EE8
+ 0001:00003F50       cmd_exec_sub_3F50
+ 0001:00003F8C       cmd_exec_sub_3F8C
+ 0001:00003FF6       cmd_exec_sub_3FF6
+ 0001:0000401C       cmd_exec_sub_401C
+ 0001:00004086       cmd_exec_sub_4086
+ 0001:000040D0       cmd_exec_sub_40D0
+ 0001:0000414C       cmd_exec_sub_414C
+ 0001:000041D6       cmd_exec_sub_41D6
+ 0001:000041DE       cmd_exec_sub_41DE
+ 0001:0000420C       cmd_exec_sub_420C
+ 0001:0000423E       cmd_exec_sub_423E
+ 0001:0000426C       cmd_exec_sub_426C
+ 0001:000042AC       cmd_exec_sub_42AC
+ 0001:0000431C       cmd_exec_sub_431C
+ 0001:00004378       cmd_exec_sub_4378
+ 0001:0000445E       cmd_exec_sub_445E
+ 0001:0000448C       cmd_exec_sub_448C
+ 0001:000044C2       cmd_exec_sub_44C2
+ 0001:000044F6       cmd_exec_sub_44F6
+ 0001:00004532       cmd_exec_sub_4532
+ 0001:00004584       cmd_exec_sub_4584
+ 0001:000045B8       cmd_exec_sub_45B8
+ 0001:00004616       cmd_exec_sub_4616
+ 0001:0000464E       cmd_exec_sub_464E
+ 0001:0000467A       cmd_exec_sub_467A
+ 0001:00004708       cmd_exec_sub_4708
+ 0001:000047B4       cmd_exec_sub_47B4
+ 0001:000047EA       cmd_exec_sub_47EA
  0001:00004BB8       aWm610A7_176520
+ 0001:00004FD2       cmd_exec_sub_4FD2
+ 0001:00005062       cmd_exec_sub_5062
+ 0001:000050C0       cmd_exec_sub_50C0
+ 0001:00005124       cmd_exec_sub_5124
+ 0001:0000518A       cmd_exec_sub_518A
+ 0001:00005216       nullsub_2
+ 0001:00005218       cmd_exec_sub_5218
+ 0001:00005266       cmd_exec_sub_5266
+ 0001:000052EA       cmd_exec_sub_52EA
+ 0001:000053C8       parse_subcommand_53C8
  0001:000053D8       jpt_53D4
  0001:00005406       def_53D4
  0001:00005470       def_54D6
@@ -55,9 +139,11 @@
  0001:000054DA       jpt_54D6
  0001:000055FA       def_56F0
  0001:000056F4       jpt_56F0
+ 0001:00005BB0       parse_command_5BB0
  0001:00005C90       jpt_5C8C
  0001:00005CF6       jpt_5CF2
  0001:00005D28       def_5CF2
+ 0001:000066F8       pkt
  0001:000067A8       def_6832
  0001:00006836       jpt_6832
  0001:00006B58       a_2x
@@ -79,10 +165,12 @@
  0001:0000AD34       aTestmaster
  0001:0000AD40       aTestslaver
  0001:0000AD50       aMonitor
+ 0001:0000BA1C       cmd_exec_sub_BA1C
  0001:0000BA82       jpt_BA7E
  0001:0000BAE0       def_BA7E
  0001:0000D3A8       jpt_D3A4
  0001:0000D3D8       def_D3A4
+ 0001:0000D49C       p_err
  0001:0000DD54       SPI_Init
  0001:0000E680       a2d2d2d
  0001:0000E68C       a2d2d4d
@@ -107,6 +195,7 @@
  0001:0000FB88       aEncryptLoss
  0001:0000FD02       sha204p_send_slave_address
  0001:00011C50       aCanBufOverFlow
+ 0001:00011C68       CPU_TS_TmrInit
  0001:00011C8A       OS_TS_GET
  0001:00011CA0       nullsub_11
  0001:00011CB0       j___disable_irq
@@ -125,6 +214,7 @@
  0001:000121B6       OS_SchedLockTimeMeasStop
  0001:000121E0       OSSchedUnlock
  0001:0001223C       OSStart
+ 0001:0001227A       OSVersion
  0001:00012284       OS_PendDbgNameAdd
  0001:000122B2       OS_PendListInsertPrio
  0001:0001230C       OS_PendDataInit
@@ -168,6 +258,7 @@
  0001:0001293E       OS_CPU_SysTickInit
  0001:00012988       OS_Dbg_Init
  0001:0001298C       OS_MsgPoolCreate
+ 0001:000129BC       OS_MsgUnkn_129BC
  0001:000129E2       OS_MsgPoolInit
  0001:00012A24       OS_MsgQFreeAll
  0001:00012A52       OS_MsgQInit
@@ -182,7 +273,11 @@
  0001:00012C14       OS_SemClr
  0001:00012C2A       OS_SemDbgListRemove
  0001:00012C4E       OSSemDel
- 0001:00012E18       OSxxxPendAbort
+ 0001:00012D0E       OSSemPend
+ 0001:00012E18       OSSemPendAbort
+ 0001:00012E8E       OS_SemPost
+ 0001:00012F20       OSSemPost
+ 0001:00012F3A       OS_SemInit
  0001:00012F50       aSema
  0001:00012F58       aNoneSem
  0001:00012F5C       aSem
@@ -194,11 +289,15 @@
  0001:00013028       OS_TaskDbgListAdd
  0001:00013046       OS_TaskInitTCB
  0001:000130CA       OSTaskCreate
+ 0001:000131B6       OSTaskQFlush
+ 0001:000131FC       OSTaskQPend
  0001:00013328       OS_TaskQPost
  0001:00013358       jpt_13354
  0001:000133B4       aTask
  0001:000133D0       j_OSSched
  0001:000133D4       def_13354
+ 0001:000133E8       OSTaskQPost
+ 0001:0001340E       OS_TaskResume
  0001:0001342E       jpt_1342A
  0001:000134B4       def_1342A
  0001:000134C6       OSTaskSemPend
@@ -229,6 +328,7 @@
  0001:00013C34       OSTimeGet
  0001:00013C58       OSTimeSet
  0001:00013C7C       OSTimeTick
+ 0001:00013CA4       OS_CSP_TickInit
  0001:00013CC0       __disable_irq
  0001:00013CC4       __enable_irq
  0001:00013CC8       _get_PRIMASK
@@ -237,24 +337,38 @@
  0001:00013CDC       __RBIT
  0001:00013CE2       __WFI
  0001:00013CE6       __WFE
+ 0001:00013CEC       CPU_BitBandClr
+ 0001:00013D18       CPU_BitBandSet
+ 0001:00013D44       CPU_IntSrcDis
  0001:00013D54       jpt_13D50
  0001:00013DBC       def_13D50
+ 0001:00013E06       CPU_IntSrcEn
  0001:00013E16       jpt_13E12
  0001:00013E7E       def_13E12
+ 0001:00013EC8       CPU_IntSrcPendClr
+ 0001:00013F1C       CPU_IntSrcPrioSet
  0001:00013F3A       jpt_13F36
  0001:00013FF0       def_13F36
+ 0001:0001404C       CPU_IntSrcPrioGet
  0001:00014060       jpt_1405C
  0001:00014108       def_1405C
  0001:0001416C       CPU_IntDisMeasStop
  0001:00014198       CPU_IntDisMeasStart
+ 0001:000141B4       CPU_Init
+ 0001:000141C8       CPU_SW_Exception
+ 0001:000141CA       CPU_TS_Get32
+ 0001:000141D0       CPU_TS_TmrFreqGet
+ 0001:000141E8       CPU_TS_TmrFreqSet
  0001:000141EE       CPU_IntDisMeasMaxCurGet
  0001:00014206       CPU_IntDisMeasMaxCurReset
  0001:00014220       CPU_IntDisMeasMaxGet
  0001:00014238       CPU_IntDisMeasInit
  0001:0001427E       CPU_IntDisMeasMaxCalc
- 0001:00014296       SystemCoreClockGet
+ 0001:00014296       Chip_Clock_GetPeripheralClockRate
  0001:00014312       jpt_1430E
  0001:00014332       def_1430E
+ 0001:0001438E       UnkFlag1Set_1438E
+ 0001:000143D4       UnkFlag1Clear_143D4
  0001:00014476       nullsub_14
  0001:00014478       nullsub_15
  0001:00014EC0       jpt_14EBC
@@ -266,6 +380,15 @@
  0001:00015504       nullsub_7
  0001:0001566E       nullsub_10
  0001:000156CC       WDT_Feed
+ 0001:000156DC       Chip_IAP_EraseSector
+ 0001:000156FC       Chip_IAP_CopyRamToFlash
+ 0001:00015726       Chip_IAP_BlankCheckSector
+ 0001:0001574A       Chip_IAP_Compare
+ 0001:00015774       Chip_IAP_ReadUID
+ 0001:00015A04       iap_entry
+ 0001:00015A08       Chip_IAP_PreSectorForReadWrite
+ 0001:00015A38       cmd_param
+ 0001:00015A44       srcAdd
  0001:00015B30       ADC_Init
  0001:00015C00       ADC_GetData
  0001:00015C2A       ADC_StartCmd
@@ -374,6 +497,7 @@
  0003:100004E4       OSTCBHighRdyPtr
  0003:100004E8       CPU_IntDisMeasCtr
  0003:100004EA       CPU_IntDisNestCtr
+ 0003:100004EC       CPU_TS_TmrFreq_Hz
  0003:100004F0       CPU_IntDisMeasStart_cnts
  0003:100004F4       CPU_IntDisMeasStop_cnts
  0003:100004F8       CPU_IntDisMeasOvrhd_cnts
@@ -397,10 +521,29 @@
  0003:1000190C       strct_1000190C
  0003:10001DBC       strct_10001DBC
  0003:1000226C       strct_1000226C
+ 0003:10002850       packet_1
+ 0003:10002A50       packet_ptr1
+ 0003:10002A74       packet_2
+ 0003:10002B74       packet_ptr2
+ 0003:10002B98       packet_3
+ 0003:10002D98       packet_ptr3
+ 0003:10002DBC       packet_4
+ 0003:10002EBC       packet_ptr4
+ 0003:10002EE0       packet_5
+ 0003:10002F20       packet_ptr5
+ 0003:10003058       packet_6
+ 0003:10003258       packet_ptr6
+ 0003:1000327C       packet_7
+ 0003:1000337C       packet_ptr7
  0003:100054DC       OSCfg_TickWheel
  0003:10005614       OSRdyList
  0003:1000577C       OSTickTaskTCB
+ 0004:E0001000       pTMR__field0or1
+ 0004:E0001004       pTMR__TC
  0004:E000E010       NVIC_SYSTICK_CTRL
  0004:E000E014       NVIC_SYSTICK_LOAD
- 0004:E000ED04       NVIC_INT_CTRL
- 0004:E000ED20       NVIC_SYSPRI2
+ 0004:E000ED04       CPU_REG_NVIC_INT_CTRL
+ 0004:E000ED18       CPU_REG_NVIC_SHPRI1
+ 0004:E000ED1C       CPU_REG_NVIC_SHPRI2
+ 0004:E000ED20       CPU_REG_NVIC_SYSPRI2
+ 0004:E000ED24       CPU_REG_NVIC_SHCSR
