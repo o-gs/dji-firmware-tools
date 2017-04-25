@@ -25,6 +25,7 @@ class ProgOptions:
   ptprefix = ''
   verbose = 0
   binhead = False
+  binfmt = 'auto'
   command = ''
 
 part_entry_type_id = ["sys", "dsp_fw", "rom_fw", "lnx", "rfs"]
@@ -268,6 +269,12 @@ def amba_calculate_crc32b_part(buf, pcrc):
 def amba_calculate_crc32(buf):
   return amba_calculate_crc32b_part(buf, 0)
 
+def amba_detect_format(po, fwmdlfile):
+  """Detects which binary format the firmware module file has."""
+  #TODO make multiple formats support
+  # FC220 has different format (2016 - FwModA9Header longer 4 butes, 319 ints in FwModA9PostHeader)
+  return '2014'
+
 # We really need both i and ptyp params
 def amba_extract_part_head(po, e, i, ptyp):
   fwpartfile = open("{:s}_part_{:s}.a9h".format(po.ptprefix,ptyp), "w")
@@ -324,6 +331,9 @@ def amba_read_mod_head(po):
 
 def amba_extract(po, fwmdlfile):
   modhead = FwModA9Header()
+  fwmdlfile.seek(0, os.SEEK_END)
+  fwmdlfile_len = fwmdlfile.tell()
+  fwmdlfile.seek(0, os.SEEK_SET)
   if fwmdlfile.readinto(modhead) != sizeof(modhead):
       raise EOFError("Couldn't read firmware package file header.")
   if (po.verbose > 1):
@@ -339,10 +349,16 @@ def amba_extract(po, fwmdlfile):
       raise EOFError("Couldn't read firmware package file header entries.")
     # If both values are multiplications of 1024, and 2nd is non-zero, then assume we're past end
     # of entries array. Beyond entries array, there's an array of memory load addresses - and
-    # load addresses have are always rounded to multiplication of a power of 2.
+    # load addresses are always rounded to multiplication of a power of 2.
     # Since specific Ambarella firmwares always have set number of partitions, we have to do
     # such guessing if we want one tool to support all Ambarella firmwares.
     if ((hde.dt_len & 0x3ff) == 0) and ((hde.crc32 & 0x3ff) == 0) and (hde.crc32 != 0):
+      fwmdlfile.seek(-sizeof(hde),os.SEEK_CUR)
+      break
+    if (sizeof(modhead)+i*sizeof(hde)+hde.dt_len >= fwmdlfile_len):
+      if (po.verbose > 1):
+          print("{}: Detection finished with entry larger than file; expecting {:d} entries".format(po.fwmdlfile,len(modentries)))
+      eprint("{}: Warning: Detection finished with unusual condition, verify files".format(po.fwmdlfile))
       fwmdlfile.seek(-sizeof(hde),os.SEEK_CUR)
       break
     modentries.append(hde)
@@ -586,7 +602,7 @@ def main(argv):
   # Parse command line options
   po = ProgOptions()
   try:
-     opts, args = getopt.getopt(argv,"hxsabvt:m:",["help","version","extract","search","add","binhead","fwmdl=","ptprefix="])
+     opts, args = getopt.getopt(argv,"hxsabvf:t:m:",["help","version","extract","search","add","binhead","format=","fwmdl=","ptprefix="])
   except getopt.GetoptError:
      print("Unrecognized options; check amba_fwpak.py --help")
      sys.exit(2)
@@ -602,6 +618,8 @@ def main(argv):
         print("       (works similar to -x, but uses brute-force search for partitions)")
         print("  -a - add partition files to firmware module file")
         print("       (works only on data created with -x; the -s is insufficient)")
+        #print("  -f - set binary format version; default is to detect it (-fauto)")
+        #print("       valid formats are 2014 and 2016")
         print("  -b - leave (-x) or use (-a) binary header in front of partition")
         print("       this leaves the original binary header before each partition")
         print("       on extraction, and uses that header on module file creation;")
@@ -615,6 +633,8 @@ def main(argv):
         po.verbose += 1
      elif opt in ("-b", "--binhead"):
         po.binhead = True
+     elif opt in ("-f", "--format"):
+        po.binfmt = arg
      elif opt in ("-m", "--fwmdl"):
         po.fwmdlfile = arg
      elif opt in ("-t", "--ptprefix"):
@@ -633,6 +653,9 @@ def main(argv):
     if (po.verbose > 0):
       print("{}: Opening for extraction".format(po.fwmdlfile))
     fwmdlfile = open(po.fwmdlfile, "rb")
+
+    if po.binfmt == 'auto':
+      po.binfmt = amba_detect_format(po,fwmdlfile)
 
     amba_extract(po,fwmdlfile)
 
