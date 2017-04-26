@@ -63,8 +63,8 @@ dji_targets = [
     DjiModuleTarget(12, 2, "ESC2",    "electronic speed control 2"), # P3X
     DjiModuleTarget(12, 3, "ESC3",    "electronic speed control 3"), # P3X
     DjiModuleTarget(13, 0, "VDEC",    "video decoder"),
-    DjiModuleTarget(13, 0, "DM365M0", "video decoder 'DaVinci Dm365 Linux' mdl 0"),
-    DjiModuleTarget(13, 1, "DM365M1", "video decoder 'DaVinci Dm365 Linux' mdl 1"),
+    DjiModuleTarget(13, 0, "DM365M0", "video decoder 'DaVinci Dm365 Linux'"),
+    DjiModuleTarget(13, 1, "DM365M1", "video decoder 'DaVinci Dm385 Linux'"),
     DjiModuleTarget(14,-1, "MCG",     "MCU on ground"),
     DjiModuleTarget(14, 0, "MCG1765A","MCU 'LPC1765 GROUND LB2'"),
     DjiModuleTarget(15,-1, "TX",      "radio transmitter"),
@@ -74,16 +74,19 @@ dji_targets = [
     DjiModuleTarget(17,-1, "MVOM",    "visual positioning"),
     DjiModuleTarget(17, 0, "MVOMC4",  "visual positioning module 'camera'"), # P3X
     DjiModuleTarget(17, 1, "MVOMS0",  "visual positioning module 'sonar'"), # P3X
-    DjiModuleTarget(19,-1, "FPGAA",   "FPGA air"),
-    DjiModuleTarget(19, 0, "FPGAA0",  "FPGA air model 0"), # P3X
-    DjiModuleTarget(20,-1, "FPGAG",   "FPGA ground"),
-    DjiModuleTarget(20, 3, "FPGAG3",  "FPGA ground 'LB2'"),
+    DjiModuleTarget(19,-1, "FPGAA",   "FPGA on air"),
+    DjiModuleTarget(19, 0, "FPGAA0",  "FPGA on air model 0"), # P3X
+    DjiModuleTarget(20,-1, "FPGAG",   "FPGA on ground"),
+    DjiModuleTarget(20, 3, "FPGAG3",  "FPGA on ground 'Lightbridge2'"),
     DjiModuleTarget(25,-1, "IMU",     "inertial measurement unit"),
-    DjiModuleTarget(25, 0, "IMUA3M0", "inertial measurement unit 'A3' pt0"),
-    DjiModuleTarget(25, 1, "IMUA3M1", "inertial measurement unit 'A3' pt1"),
-    DjiModuleTarget(29,-1, "PMU",     "phasor measurement unit"),
-    DjiModuleTarget(29, 0, "PMUA3LDR","phasor measurement unit 'A3 App'"),
-    DjiModuleTarget(29, 1, "PMUA3APP","phasor measurement unit 'A3 Ldr'"),
+    DjiModuleTarget(25, 0, "IMUA3M0", "inertial measurement unit pt0"),
+    DjiModuleTarget(25, 1, "IMUA3M1", "inertial measurement unit pt1"),
+    DjiModuleTarget(26,-1, "RTK",     "real time kinematic"),
+    DjiModuleTarget(26, 6, "RTKAPP",  "real time kinematic App"),
+    DjiModuleTarget(26, 7, "RTKLDR",  "real time kinematic Ldr"),
+    DjiModuleTarget(29,-1, "PMU",     "power management unit"),
+    DjiModuleTarget(29, 0, "PMUA3LDR","power management unit App"),
+    DjiModuleTarget(29, 1, "PMUA3APP","power management unit Ldr"),
     DjiModuleTarget(30,-1, "TESTA",   "test A"),
     DjiModuleTarget(31,-1, "TESTB",   "test B")
 ]
