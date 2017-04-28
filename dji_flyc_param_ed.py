@@ -214,26 +214,26 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
   if (eexpar.type_id == ParamType.ushort):
      if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
         if (po.verbose > 2):
-           print("Rejected type {:d} on size check ({:d})\n".format(eexpar.type_id,eexpar.valsize))
+           print("{}: Rejected type {:d} on size check ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
         return False
   elif (eexpar.type_id == ParamType.ulong):
      if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
         if (po.verbose > 2):
-           print("Rejected type {:d} on size check ({:d})\n".format(eexpar.type_id,eexpar.valsize))
+           print("{}: Rejected type {:d} on size check ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
         return False
   elif (eexpar.type_id <= ParamType.double):
      if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
         if (po.verbose > 2):
-           print("Rejected type {:d} on size check ({:d})\n".format(eexpar.type_id,eexpar.valsize))
+           print("{}: Rejected type {:d} on size check ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
         return False
   elif (eexpar.type_id == ParamType.array): # array needs to have multiple elements
      if (eexpar.valsize < 2):
         if (po.verbose > 2):
-           print("Rejected type {:d} on size check ({:d})\n".format(eexpar.type_id,eexpar.valsize))
+           print("{}: Rejected type {:d} on size check ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
         return False
   else:
      if (po.verbose > 2):
-        print("Rejected type {:d} - not known\n".format(eexpar.type_id))
+        print("{}: Rejected type {:d} - not known".format(po.mdlfile,eexpar.type_id))
      return False
   # Limits
   if math.isnan(eexpar.limit_f.min) or math.isnan(eexpar.limit_f.max) or math.isnan(eexpar.limit_f.deflt):
@@ -243,57 +243,57 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
      limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.min)
      if (limit_ftoi != eexpar.limit_u.min):
         if (po.verbose > 2):
-           print("Rejected type {:d} on min U-F {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_u.min,eexpar.limit_f.min))
+           print("{}: Rejected type {:d} on min U-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_u.min,eexpar.limit_f.min))
         return False
      # Max unsigned
      limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.max)
      if (limit_ftoi != eexpar.limit_u.max):
         if (po.verbose > 2):
-           print("Rejected type {:d} on max U-F {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_u.max,eexpar.limit_f.max))
+           print("{}: Rejected type {:d} on max U-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_u.max,eexpar.limit_f.max))
         return False
      # Default unsigned
      limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.deflt)
      if (abs(limit_ftoi - eexpar.limit_u.deflt) > 127):
         if (po.verbose > 2):
-           print("Rejected type {:d} on deflt U-F {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_u.deflt,eexpar.limit_f.deflt))
+           print("{}: Rejected type {:d} on deflt U-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_u.deflt,eexpar.limit_f.deflt))
         return False
   elif (flyc_param_limit_signed_int(po, eexpar)):
      # Min signed
      limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.min)
      if (limit_ftoi != eexpar.limit_i.min):
         if (po.verbose > 2):
-           print("Rejected type {:d} on min I-F {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
+           print("{}: Rejected type {:d} on min I-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
         return False
      # Max signed
      limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.max)
      if (limit_ftoi != eexpar.limit_i.max):
         if (po.verbose > 2):
-           print("Rejected type {:d} on max I-F {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
+           print("{}: Rejected type {:d} on max I-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
         return False
      # Default signed
      limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.deflt)
      if (abs(limit_ftoi - eexpar.limit_i.deflt) > 127):
         if (po.verbose > 2):
-           print("Rejected type {:d} on deflt I-F {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
+           print("{}: Rejected type {:d} on deflt I-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
         return False
   else: # in case of other types, int params are storing 32-bit signed value
      # Min signed
      limit_ftoi = flyc_param_limit_to_type(po, ParamType.long, eexpar.limit_f.min)
      if (limit_ftoi != eexpar.limit_i.min):
         if (po.verbose > 2):
-           print("Rejected type {:d} on min O-F {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
+           print("{}: Rejected type {:d} on min O-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
         return False
      # Max signed
      limit_ftoi = flyc_param_limit_to_type(po, ParamType.long, eexpar.limit_f.max)
      if (limit_ftoi != eexpar.limit_i.max):
         if (po.verbose > 2):
-           print("Rejected type {:d} on max O-F {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
+           print("{}: Rejected type {:d} on max O-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
         return False
      # Default signed
      limit_ftoi = flyc_param_limit_to_type(po, ParamType.long, eexpar.limit_f.deflt)
      if (abs(limit_ftoi - eexpar.limit_i.deflt) > 127):
         if (po.verbose > 2):
-           print("Rejected type {:d} on deflt O-F {:d} {:d} {:f}\n".format(eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
+           print("{}: Rejected type {:d} on deflt O-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
         return False
 
   if (1): # limit_u and limit_i are bitwise identical; cast them to compare
@@ -461,6 +461,8 @@ def flyc_list(po, fwmdlfile):
   (po.param_pos, po.param_count) = flyc_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
   if po.param_pos < 0:
     raise ValueError("Flight controller parameters array signature not detected in input file.")
+  if (po.verbose > 1):
+    print("{}: Listing parameters array at 0x{:08x}: {:d} entries".format(po.mdlfile,po.param_pos,po.param_count))
   for i in range(0,po.param_count):
     parprop = flyc_param_get(po, fwmdlfile, i)
     print("{:3d} {:40s} {:2d} {:2d} 0x{:x} {:6.1f} {:6.1f} {:6.1f}".format(parprop['index'],parprop['name'],parprop['typeID'],parprop['size'],parprop['attribute'],parprop['minValue'],parprop['maxValue'],parprop['defaultValue']))
@@ -471,6 +473,8 @@ def flyc_extract(po, fwmdlfile):
   (po.param_pos, po.param_count) = flyc_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
   if po.param_pos < 0:
     raise ValueError("Flight controller parameters array signature not detected in input file.")
+  if (po.verbose > 1):
+    print("{}: Extracting parameters array at 0x{:08x}: {:d} entries".format(po.mdlfile,po.param_pos,po.param_count))
   inffile = open(po.inffile, "w")
   inffile.write("[\n")
   for i in range(0,po.param_count):
@@ -507,6 +511,8 @@ def flyc_update(po, fwmdlfile):
   (po.param_pos, po.param_count) = flyc_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
   if po.param_pos < 0:
     raise ValueError("Flight controller parameters array signature not detected in input file.")
+  if (po.verbose > 1):
+    print("{}: Updating parameters array at 0x{:08x}: {:d} entries".format(po.mdlfile,po.param_pos,po.param_count))
   with open(po.inffile) as inffile:
     nxparprops = json.load(inffile)
   update_count = 0

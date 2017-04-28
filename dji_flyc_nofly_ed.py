@@ -70,20 +70,20 @@ def flyc_nofly_is_proper_zone_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_
   """
   if (enfzone.begin_at != 0) or (enfzone.end_at != 0):
      if (po.verbose > 2):
-        print("Rejected at {:06x} on begin_at/end_at check ({:d},{:d})\n".format(entry_pos,enfzone.begin_at,enfzone.end_at))
+        print("Rejected at {:06x} on begin_at/end_at check ({:d},{:d})".format(entry_pos,enfzone.begin_at,enfzone.end_at))
      return False
   if (enfzone.radius < 30) or (enfzone.radius > 50000):
      if (po.verbose > 2):
-        print("Rejected at {:06x} on radius check ({:d})\n".format(entry_pos,enfzone.radius))
+        print("Rejected at {:06x} on radius check ({:d})".format(entry_pos,enfzone.radius))
      return False
   if (enfzone.country_code > 2000):
      if (po.verbose > 2):
-        print("Rejected at {:06x} on country check ({:d})\n".format(entry_pos,enfzone.country_code))
+        print("Rejected at {:06x} on country check ({:d})".format(entry_pos,enfzone.country_code))
      return False
   #if (enfzone.class_id < 30) or (enfzone.class_id > 30000):
   if (enfzone.area_id <= 0):
      if (po.verbose > 2):
-        print("Rejected at {:06x} on area_id check ({:d})\n".format(entry_pos,enfzone.area_id))
+        print("Rejected at {:06x} on area_id check ({:d})".format(entry_pos,enfzone.area_id))
      return False
   return flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_align, data_align, pos, entry_pos)
 
@@ -95,16 +95,16 @@ def flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfcord, func_
   if (enfcord.latitude >= -8000000) and (enfcord.latitude <= 4700000):
      if (enfcord.longitude >= -6700000) and (enfcord.longitude <= 5500000):
         if (po.verbose > 2):
-           print("Rejected at {:06x} on low coord ocean check ({:.6f},{:.6f})\n".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
+           print("Rejected at {:06x} on low coord ocean check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
         return False
   # Check if coords are within valid angular range
   if (enfcord.latitude < -90000000) or (enfcord.latitude > 90000000):
      if (po.verbose > 2):
-        print("Rejected at {:06x} on latitude coord limit check ({:.6f},{:.6f})\n".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
+        print("Rejected at {:06x} on latitude coord limit check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
      return False
   if (enfcord.longitude < -180000000) or (enfcord.longitude > 180000000):
      if (po.verbose > 2):
-        print("Rejected at {:06x} on longitude coord limit check ({:.6f},{:.6f})\n".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
+        print("Rejected at {:06x} on longitude coord limit check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
      return False
   return True
 
