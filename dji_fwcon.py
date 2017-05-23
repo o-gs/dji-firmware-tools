@@ -110,6 +110,36 @@ class FwPkgHeader(LittleEndianStructure):
   def set_ver_rollbk(self, ver):
     self.ver_rollbk_enc = 0x5127A564 ^ ver ^ self.timestamp;
 
+  def get_format_version(self):
+    if self.magic == 0x12345678 and self.magic_ver == 0x0001:
+        if (self.ver_latest_enc == 0 and self.ver_rollbk_enc == 0):
+            return 2015
+        else:
+            return 2016
+    elif self.magic == 0x12345678 and self.magic_ver == 0x1130:
+        return 2017
+    else:
+        return 0
+
+  def set_format_version(self, ver):
+    if ver == 2015:
+        self.magic = 0x12345678
+        self.magic_ver = 0x0001
+        self.ver_latest_enc = 0
+        self.ver_rollbk_enc = 0
+    elif ver == 2016:
+        self.magic = 0x12345678
+        self.magic_ver = 0x0001
+        self.set_ver_latest(0)
+        self.set_ver_rollbk(0)
+    elif ver == 2017:
+        self.magic = 0x12345678
+        self.magic_ver = 0x1130
+        self.set_ver_latest(0)
+        self.set_ver_rollbk(0)
+    else:
+        raise ValueError("Unsupported package format version.")
+
   def dict_export(self):
     d = dict()
     for (varkey, vartype) in self._fields_:
@@ -126,6 +156,8 @@ class FwPkgHeader(LittleEndianStructure):
     d = self.dict_export()
     fp.write("# DJI Firmware Container main header file.\n")
     fp.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
+    varkey = 'pkg_format'
+    fp.write("{:s}={:d}\n".format(varkey,self.get_format_version()))
     varkey = 'manufacturer'
     fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8")))
     varkey = 'model'
@@ -276,13 +308,15 @@ def dji_write_fwpkg_head(po, pkghead, minames):
 
 def dji_read_fwpkg_head(po):
   pkghead = FwPkgHeader()
-  pkghead.magic = 0x12345678
-  pkghead.magic_ver = 0x0001
   fname = "{:s}_head.ini".format(po.dcprefix)
   parser = configparser.ConfigParser()
   with open(fname, "r") as lines:
     lines = itertools.chain(("[asection]",), lines)  # This line adds section header to ini
     parser.read_file(lines)
+  # Set magic fields properly
+  pkgformat = parser.get("asection", "pkg_format").encode("utf-8")
+  pkghead.set_format_version(int(pkgformat))
+  # Set the rest of the fields
   pkghead.manufacturer = parser.get("asection", "manufacturer").encode("utf-8")
   pkghead.model = parser.get("asection", "model").encode("utf-8")
   pkghead.timestamp = timegm(strptime(parser.get("asection", "timestamp"),"%Y-%m-%d %H:%M:%S"))
@@ -333,12 +367,15 @@ def dji_extract(po, fwpkgfile):
   pkghead = FwPkgHeader()
   if fwpkgfile.readinto(pkghead) != sizeof(pkghead):
       raise EOFError("Couldn't read firmware package file header.")
-  if pkghead.magic != 0x12345678 or pkghead.magic_ver != 0x0001:
+  pkgformat = pkghead.get_format_version()
+  if pkgformat == 0:
       if (po.force_continue):
           eprint("{}: Warning: Unexpected magic value in main header; will try to extract anyway.".format(po.fwpkgfile))
       else:
           eprint("{}: Error: Unexpected magic value in main header; input file is not a firmware package.".format(po.fwpkgfile))
           exit(1)
+  if (po.verbose > 1):
+      print("{}: Package format version {:d} detected".format(po.fwpkgfile,pkgformat))
   if (pkghead.ver_latest_enc == 0 and pkghead.ver_rollbk_enc == 0):
       eprint("{}: Warning: Unversioned firmware package identified; this format is not fully supported.".format(po.fwpkgfile))
       # In this format, versions should be set from file name, and CRC16 of the header should be equal to values hard-coded in updater
