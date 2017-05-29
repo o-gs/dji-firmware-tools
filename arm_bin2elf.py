@@ -449,11 +449,16 @@ def main(argv):
         print("  -b <baseaddr> - set base address; first section will start at this memory location")
         print("  -s <sect@pos:len> - set section position and/or length; can be used to override")
         print("      detection of sections; setting section .ARM.exidx will influence .text")
-        print("      and .data, moving them and sizing to fit one before and one after the .ARM.exidx")
+        print("      and .data, moving them and sizing to fit one before and one after the .ARM.exidx;")
+        print("      sect - a text name of the section, as defined in elf template; multiple sections")
+        print("          can be cloned from the same template section by adding index at end (ie. .bss2)")
+        print("      pos - is a position of the section within input file (not a memory address!)")
+        print("      len - is the length of the section (in both input file and memory, unless its")
+        print("          uninitialized section, in which case it is memory size as file size is 0)")
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
-        print("arm_bin2elf.py version 0.2.0")
+        print("arm_bin2elf.py version 0.2.1")
         sys.exit()
      elif opt == "-v":
         po.verbose += 1
