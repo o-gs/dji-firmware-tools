@@ -124,6 +124,21 @@ Example of extracting and then updating the flight controller parameters:
 
 ```./dji_flyc_param_ed.py -vv -u -m P3X_FW_V01.07.0060_mi01.bin```
 
+### comm_serial2pcap.py
+
+DJI serial bus sniffer with pcap output format.
+
+The script captures data from two UARTs and attempts to packetise the streams.
+Packets CRC is checked before the data is passed to the pcap file or fifo.
+Any tool with pcap format support can then be used to analyse the data (ie. Wireshark).
+
+The utility requires two serial interfaces with RX lines connected to RX and TX lines
+within the drone.
+
+Example of starting the capture from two UART-to-TTL (aka FTDI) converters:
+
+```./comm_serial2pcap.py -b 115200 -F /tmp/wsf /dev/ttyUSB0 /dev/ttyUSB1```
+
 # Symbols
 
 For some specific firmware modules in specific versions, there are partial symbols
