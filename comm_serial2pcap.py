@@ -45,7 +45,7 @@ import binascii
 import datetime
 import argparse
 
-def calc_checksum(packet, plength):
+def calc_pkt55_checksum(packet, plength):
     crc =[0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
      0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c, 0xdbe5, 0xe97e, 0xf8f7,
      0x1081, 0x0108, 0x3393, 0x221a, 0x56a5, 0x472c, 0x75b7, 0x643e,
@@ -85,6 +85,26 @@ def calc_checksum(packet, plength):
         vv = v >> 8
         v = vv ^ crc[((packet[i] ^ v) & 0xFF)]
     return v
+
+def calc_pktAB_checksum(cnst, packet, length): 
+
+    result = packet[0]
+
+    for byte_ctr in range(1,(length )):
+        byte = packet[byte_ctr]
+        for bit_ctr in range(0, 8):
+            msb = result & 0x80
+            result = ((result << 1) | (byte >> 7)) & 0xFF
+            if msb == 0x80:
+                result = result ^ cnst
+            byte = (byte << 1) & 0xFF
+
+    for bit_ctr in range(0, 8):
+        msb = result & 0x80
+        result = (result << 1) & 0xFF
+        if msb == 0x80:
+            result = result ^ cnst
+    return result
 
 
 class Formatter:
@@ -185,11 +205,12 @@ def main():
     except KeyboardInterrupt:
         pass
 
+
 def do_packetiser(ser, state, packet, out, count):
     while ser.inWaiting():
         byte = ord(ser.read(1))
-        if state == 0:	#expect a 55
-            if byte == 0x55:
+        if state == 0:	#expect a 55 or AB
+            if byte == 0x55 or byte == 0xAB:
                 packet = bytearray()
                 packet.append(byte)
                 state = 1
@@ -201,9 +222,10 @@ def do_packetiser(ser, state, packet, out, count):
 
         elif state == 2:
             packet.append(byte)
-            ccrc = calc_checksum(packet, len(packet)-2)
-            crc_pkt = struct.unpack("<H", packet[-2:])[0]
-            if ccrc == crc_pkt:
+            if packet[0] == 0x55:
+                ccrc = calc_pkt55_checksum(packet, len(packet) - 2)
+                crc_pkt = struct.unpack("<H", packet[-2:])[0]
+                if ccrc == crc_pkt:
                     try:
                         count = count + 1
                         out.write_packet(packet)
@@ -211,6 +233,19 @@ def do_packetiser(ser, state, packet, out, count):
                         # SIGPIPE indicates the fifo was closed
                         if e.errno == errno.SIGPIPE:
                             break
+                                           
+            elif packet[0] == 0xAB:
+                ccrc = calc_pktAB_checksum(7, packet, len(packet) - 1)
+                crc_pkt = struct.unpack("B", packet[-1:])[0]
+                if ccrc == crc_pkt:
+                    try:
+                        count = count + 1
+                        out.write_packet(packet)
+                    except OSError as e:
+                        # SIGPIPE indicates the fifo was closed
+                        if e.errno == errno.SIGPIPE:
+                            break
+
             state = 0
     return state, packet, count
 
