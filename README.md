@@ -139,6 +139,12 @@ Example of starting the capture from two UART-to-TTL (aka FTDI) converters:
 
 ```./comm_serial2pcap.py -b 115200 -F /tmp/wsf /dev/ttyUSB0 /dev/ttyUSB1```
 
+### comm_dissector
+
+The folder contains [Wireshark](https://www.wireshark.org/) dissector for for analyzing communication in DJI drone interfaces.
+
+Documentation of the tool is [included in its folder](comm_dissector/README.md).
+
 # Symbols
 
 For some specific firmware modules in specific versions, there are partial symbols
