@@ -92,7 +92,7 @@ static Segments(void) {
 	SegDefReg(0xE0000000,"T",0x0);
 	SegDefReg(0xE0000000,"DS",0x2);
 	SetSegmentType(0XE0000000,9);
-	LowVoids(0xA000);
+	LowVoids(0x20);
 	HighVoids(0xE0010000);
 }
 
@@ -249,6 +249,44 @@ static Enums_0(id) {
 	AddConstEx(id,"RTC_TIMETYPE_DAYOFYEAR",	0X5,	-1);
 	AddConstEx(id,"RTC_TIMETYPE_MONTH",	0X6,	-1);
 	AddConstEx(id,"RTC_TIMETYPE_YEAR",	0X7,	-1);
+	id = AddEnum(-1,"PACKET_FIELDS",0x1100000);
+	AddConstEx(id,"PACKET_DELIMITER",	0X55,	-1);
+	id = AddEnum(-1,"PktCmd_CommandSets",0x1100000);
+	AddConstEx(id,"CMDSET_Universal",	0,	-1);
+	AddConstEx(id,"CMDSET_Special",	0X1,	-1);
+	AddConstEx(id,"CMDSET_Camera",	0X2,	-1);
+	AddConstEx(id,"CMDSET_FlightCtrl",	0X3,	-1);
+	AddConstEx(id,"CMDSET_Gimbal",	0X4,	-1);
+	AddConstEx(id,"CMDSET_CentrBoard",	0X5,	-1);
+	AddConstEx(id,"CMDSET_RemtCtrl",	0X6,	-1);
+	AddConstEx(id,"CMDSET_WiFi",	0X7,	-1);
+	AddConstEx(id,"CMDSET_DM368",	0X8,	-1);
+	AddConstEx(id,"CMDSET_HDVidTx",	0X9,	-1);
+	AddConstEx(id,"CMDSET_MonBinOcular",	0XA,	-1);
+	AddConstEx(id,"CMDSET_Simult",	0XB,	-1);
+	AddConstEx(id,"CMDSET_ESC",	0XC,	-1);
+	AddConstEx(id,"CMDSET_SmartBat",	0XD,	-1);
+	AddConstEx(id,"CMDSET_DataLoggr",	0XE,	-1);
+	AddConstEx(id,"CMDSET_RTK",	0XF,	-1);
+	AddConstEx(id,"CMDSET_Automatn",	0X10,	-1);
+	id = AddEnum(-1,"PktCmdSet_Universal",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_Special",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_Camera",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_FlightCtrl",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_Gimbal",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_CentrBoard",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_RemtCtrl",0x1100000);
+	AddConstEx(id,"PKTCMD_GetPowerZone",	0X21,	-1);
+	id = AddEnum(-1,"PktCmdSet_WiFi",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_DM368",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_HDVidTx",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_MonBinOcular",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_Simult",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_ESC",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_SmartBat",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_DataLoggr",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_RTK",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_Automatn",0x1100000);
 	return id;
 }
 
@@ -307,6 +345,7 @@ static ApplyStrucTInfos_0(void) {
 	id = GetStrucIdByName("SCB_Type");
 	id = GetStrucIdByName("SCnSCB_Type");
 	id = GetStrucIdByName("DWT_Type");
+	id = GetStrucIdByName("UnknPacket1");
 	return id;
 }
 
@@ -364,6 +403,7 @@ static Structures_0(id) {
 	SetStrucComment(id,"Structure type to access the System Control and ID Register not in the SCB.",1);
 	id = AddStrucEx(-1,"DWT_Type",0);
 	SetStrucComment(id,"Structure type to access the Data Watchpoint and Trace Register (DWT).",1);
+	id = AddStrucEx(-1,"UnknPacket1",0);
 	
 	id = GetStrucIdByName("LPC_RTC_TypeDef");
 	mid = AddStrucMember(id,"ILR",	0,	0x000400,	-1,	1);
@@ -940,6 +980,18 @@ static Structures_0(id) {
 	SetMemberComment(id,	0X54,	"Mask Register 3",	1);
 	mid = AddStrucMember(id,"FUNCTION3",	0X58,	0x20000400,	-1,	4);
 	SetMemberComment(id,	0X58,	"Function Register 3",	1);
+	
+	id = GetStrucIdByName("UnknPacket1");
+	mid = AddStrucMember(id,"delimiter",	0,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"protover_length",	0X1,	0x10000400,	-1,	2);
+	mid = AddStrucMember(id,"hdr_crc",	0X3,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"sender",	0X4,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"receiver",	0X5,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"seqctr",	0X6,	0x10000400,	-1,	2);
+	mid = AddStrucMember(id,"ack",	0X8,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"cmdset",	0X9,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"cmd",	0XA,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"payload",	0XB,	0x000400,	-1,	1);
 	return id;
 }
 
@@ -1132,12 +1184,18 @@ static Bytes_0(void) {
 	MakeCode	(x=0XA3AA);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0XA3BE,	"seed");
+	MakeComm	(0XA3C2,	"len");
+	MakeComm	(0XA3C4,	"buf");
 	MakeCode	(x=0XA3CE);
 	OpOff		(x,	1,	0X1000001C);
 	OpOff		(x,	129,	0X1000001C);
 	MakeCode	(x=0XA3D0);
 	OpOff		(x,	1,	0X1000001C);
 	OpOff		(x,	129,	0X1000001C);
+	MakeComm	(0XA3D2,	"len");
+	MakeComm	(0XA3D4,	"buf");
+	MakeComm	(0XA3D6,	"seed");
 	MakeCode	(x=0XA3DC);
 	OpOff		(x,	1,	0X1000001C);
 	OpOff		(x,	129,	0X1000001C);
@@ -4118,6 +4176,7 @@ static Bytes_0(void) {
 	OpOff		(x,	1,	0X10000160);
 	OpOff		(x,	129,	0X10000160);
 	MakeCode	(0XC7DE);
+	MakeName	(0XC7DE,	"packet_send");
 	MakeCode	(x=0XC7E0);
 	OpHex		(x,	1);
 	MakeComm	(0XC7E4,	"switch 31 cases ");
@@ -4171,13 +4230,24 @@ static Bytes_0(void) {
 	MakeCode	(0XC830);
 	MakeName	(0XC830,	"def_27E8");
 	MakeCode	(0XC832);
+	MakeName	(0XC832,	"packet_prepare_response");
+	MakeCode	(x=0XC838);
+	OpEnumEx		(x,	1,	GetEnum("PACKET_FIELDS"),0);
 	MakeCode	(x=0XC840);
 	OpHex		(x,	1);
+	MakeComm	(0XC85C,	"len");
+	MakeComm	(0XC85E,	"buf");
+	MakeComm	(0XC860,	"seed");
 	MakeComm	(0XC86A,	"a3");
 	MakeCode	(x=0XC86C);
 	OpHex		(x,	1);
 	MakeComm	(0XC88E,	"param_buf");
 	MakeComm	(0XC890,	"a1");
+	MakeComm	(0XC89C,	"seed");
+	MakeComm	(0XC8A4,	"buf");
+	MakeComm	(0XC8A6,	"len");
+	MakeComm	(0XC8AC,	"chksum");
+	MakeComm	(0XC8BC,	"buf");
 	MakeCode	(0XC8C2);
 	MakeName	(0XC8C2,	"cmd_exec_sub_28C2");
 	MakeCode	(x=0XC8C6);
@@ -4217,6 +4287,7 @@ static Bytes_0(void) {
 	MakeComm	(0XC996,	"param_buf");
 	MakeCode	(x=0XC996);
 	OpStkvar	(x,	1);
+	MakeComm	(0XC9AC,	"pkt");
 	MakeCode	(0XC9AC);
 	MakeCode	(0XC9B4);
 	MakeName	(0XC9B4,	"cmd_exec_sub_29B4");
@@ -4284,6 +4355,7 @@ static Bytes_0(void) {
 	MakeComm	(0XCA58,	"a3");
 	MakeComm	(0XCA5A,	"param_buf");
 	MakeComm	(0XCA5C,	"pkt");
+	MakeComm	(0XCA62,	"pkt");
 	MakeCode	(x=0XCA62);
 	OpStkvar	(x,	1);
 	MakeCode	(0XCA6C);
@@ -4303,6 +4375,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XCACA);
 	OpStkvar	(x,	1);
 	MakeComm	(0XCACC,	"pkt");
+	MakeComm	(0XCAD2,	"pkt");
 	MakeCode	(0XCADC);
 	MakeName	(0XCADC,	"cmd_exec_sub_2ADC");
 	MakeCode	(x=0XCADE);
@@ -4320,6 +4393,7 @@ static Bytes_0(void) {
 	MakeComm	(0XCB00,	"param_buf");
 	MakeCode	(x=0XCB00);
 	OpStkvar	(x,	1);
+	MakeComm	(0XCB06,	"pkt");
 	MakeCode	(0XCB10);
 	MakeName	(0XCB10,	"cmd_exec_sub_2B10");
 	MakeCode	(x=0XCB1C);
@@ -4337,6 +4411,7 @@ static Bytes_0(void) {
 	MakeComm	(0XCB70,	"a3");
 	MakeComm	(0XCB72,	"param_buf");
 	MakeComm	(0XCB74,	"pkt");
+	MakeComm	(0XCB7A,	"pkt");
 	MakeCode	(x=0XCB7A);
 	OpStkvar	(x,	1);
 	MakeCode	(0XCB84);
@@ -4384,6 +4459,7 @@ static Bytes_0(void) {
 	OpStkvar	(x,	1);
 	MakeComm	(0XCC10,	"a3");
 	MakeComm	(0XCC12,	"param_buf");
+	MakeComm	(0XCC18,	"pkt");
 	MakeCode	(x=0XCC18);
 	OpStkvar	(x,	1);
 	MakeCode	(0XCC22);
@@ -4403,6 +4479,7 @@ static Bytes_0(void) {
 	MakeComm	(0XCC46,	"param_buf");
 	MakeCode	(x=0XCC46);
 	OpStkvar	(x,	1);
+	MakeComm	(0XCC4C,	"pkt");
 	MakeCode	(0XCC54);
 	MakeName	(0XCC54,	"cmd_exec_sub_2C54");
 	MakeCode	(x=0XCC64);
@@ -4417,6 +4494,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XCC82);
 	OpStkvar	(x,	1);
 	MakeComm	(0XCC84,	"pkt");
+	MakeComm	(0XCC8A,	"pkt");
 	MakeCode	(0XCC94);
 	MakeName	(0XCC94,	"cmd_exec_sub_2C94");
 	MakeCode	(x=0XCCB0);
@@ -4429,6 +4507,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XCCC0);
 	OpStkvar	(x,	1);
 	MakeComm	(0XCCC2,	"pkt");
+	MakeComm	(0XCCC8,	"pkt");
 	MakeCode	(0XCCD0);
 	MakeName	(0XCCD0,	"cmd_exec_sub_2CD0");
 	MakeCode	(x=0XCCDC);
@@ -4443,6 +4522,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XCCFA);
 	OpStkvar	(x,	1);
 	MakeComm	(0XCCFC,	"pkt");
+	MakeComm	(0XCD02,	"pkt");
 	MakeCode	(0XCD0A);
 	MakeName	(0XCD0A,	"cmd_exec_sub_2D0A");
 	MakeCode	(x=0XCD24);
@@ -4455,6 +4535,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XCD34);
 	OpStkvar	(x,	1);
 	MakeComm	(0XCD36,	"pkt");
+	MakeComm	(0XCD3C,	"pkt");
 	MakeCode	(0XCD44);
 	MakeName	(0XCD44,	"dbg_printf");
 	MakeCode	(0XCD46);
@@ -4478,8 +4559,11 @@ static Bytes_0(void) {
 	MakeCode	(x=0XCD76);
 	OpOff		(x,	1,	0X100000C8);
 	OpOff		(x,	129,	0X100000C8);
+	MakeComm	(0XCD7E,	"len");
 	MakeCode	(x=0XCD80);
 	OpHex		(x,	1);
+	MakeComm	(0XCD98,	"buf");
+	MakeComm	(0XCD9A,	"seed");
 	MakeComm	(0XCDA4,	"a3");
 	MakeCode	(x=0XCDA6);
 	OpHex		(x,	1);
@@ -4490,6 +4574,11 @@ static Bytes_0(void) {
 	MakeComm	(0XCDC6,	"param_buf");
 	MakeCode	(x=0XCDC6);
 	OpStkvar	(x,	1);
+	MakeComm	(0XCDD0,	"seed");
+	MakeComm	(0XCDD8,	"buf");
+	MakeComm	(0XCDDA,	"len");
+	MakeComm	(0XCDE0,	"chksum");
+	MakeComm	(0XCDEC,	"buf");
 	MakeCode	(x=0XCDF4);
 	OpOff		(x,	1,	0X100000C8);
 	OpOff		(x,	129,	0X100000C8);
@@ -4526,6 +4615,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XCE6E);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0XCE88,	"pkt");
 	MakeCode	(x=0XCE88);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -4674,6 +4764,7 @@ static Bytes_0(void) {
 	MakeComm	(0XCFD2,	"param_buf");
 	MakeCode	(x=0XCFD2);
 	OpStkvar	(x,	1);
+	MakeComm	(0XCFD8,	"pkt");
 	MakeCode	(0XCFE0);
 	MakeName	(0XCFE0,	"cmd_exec_sub_2FE0");
 	MakeCode	(x=0XCFE4);
@@ -4793,6 +4884,7 @@ static Bytes_0(void) {
 	MakeDword	(x=0XD25C);
 	OpOff		(x,	0,	0);
 	OpOff		(x,	128,	0);
+	MakeName	(0XD25C,	"dst");
 	MakeDword	(x=0XD260);
 	OpOff		(x,	0,	0);
 	OpOff		(x,	128,	0);
@@ -4854,6 +4946,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XD2DA);
 	OpHex		(x,	1);
 	MakeComm	(0XD2E0,	"pkt");
+	MakeComm	(0XD2E6,	"pkt");
 	MakeCode	(x=0XD2E6);
 	OpStkvar	(x,	1);
 	MakeCode	(0XD2F2);
@@ -4874,6 +4967,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XD328);
 	OpStkvar	(x,	1);
 	MakeComm	(0XD32A,	"param_buf");
+	MakeComm	(0XD330,	"pkt");
 	MakeCode	(x=0XD330);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0XD338);
@@ -4897,6 +4991,7 @@ static Bytes_0(void) {
 	MakeComm	(0XD37A,	"param_buf");
 	MakeCode	(x=0XD37A);
 	OpStkvar	(x,	1);
+	MakeComm	(0XD380,	"pkt");
 	MakeCode	(0XD388);
 	MakeName	(0XD388,	"cmd_exec_sub_3388");
 	MakeCode	(x=0XD396);
@@ -4958,6 +5053,7 @@ static Bytes_0(void) {
 	OpStkvar	(x,	1);
 	MakeComm	(0XD3E6,	"a3");
 	MakeComm	(0XD3E8,	"param_buf");
+	MakeComm	(0XD3EE,	"pkt");
 	MakeCode	(x=0XD3EE);
 	OpStkvar	(x,	1);
 	MakeCode	(0XD3F8);
@@ -4976,6 +5072,7 @@ static Bytes_0(void) {
 	MakeComm	(0XD420,	"param_buf");
 	MakeCode	(x=0XD420);
 	OpStkvar	(x,	1);
+	MakeComm	(0XD426,	"pkt");
 	MakeCode	(0XD42E);
 	MakeName	(0XD42E,	"cmd_exec_sub_342E");
 	MakeCode	(x=0XD43A);
@@ -4993,6 +5090,7 @@ static Bytes_0(void) {
 	MakeComm	(0XD45E,	"param_buf");
 	MakeCode	(x=0XD45E);
 	OpStkvar	(x,	1);
+	MakeComm	(0XD464,	"pkt");
 	MakeCode	(0XD46C);
 	MakeName	(0XD46C,	"cmd_exec_sub_346C");
 	MakeCode	(x=0XD47C);
@@ -5012,6 +5110,7 @@ static Bytes_0(void) {
 	MakeComm	(0XD496,	"param_buf");
 	MakeCode	(x=0XD496);
 	OpStkvar	(x,	1);
+	MakeComm	(0XD49C,	"pkt");
 	MakeCode	(0XD4A4);
 	MakeName	(0XD4A4,	"cmd_exec_sub_34A4");
 	MakeCode	(x=0XD4B0);
@@ -5032,6 +5131,7 @@ static Bytes_0(void) {
 	MakeComm	(0XD4D6,	"param_buf");
 	MakeCode	(x=0XD4D6);
 	OpStkvar	(x,	1);
+	MakeComm	(0XD4DC,	"pkt");
 	MakeCode	(0XD4E4);
 	MakeName	(0XD4E4,	"cmd_exec_sub_34E4");
 	MakeCode	(x=0XD4F2);
@@ -5076,6 +5176,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XD52C);
 	OpHex		(x,	1);
 	MakeComm	(0XD532,	"param_buf");
+	MakeComm	(0XD538,	"pkt");
 	MakeCode	(x=0XD538);
 	OpStkvar	(x,	1);
 	MakeCode	(0XD542);
@@ -5145,6 +5246,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XD5FC);
 	OpStkvar	(x,	1);
 	MakeComm	(0XD5FE,	"pkt");
+	MakeComm	(0XD604,	"pkt");
 	MakeCode	(x=0XD60A);
 	OpOff		(x,	1,	0X100000C8);
 	OpOff		(x,	129,	0X100000C8);
@@ -5168,6 +5270,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XD642);
 	OpStkvar	(x,	1);
 	MakeComm	(0XD644,	"pkt");
+	MakeComm	(0XD64A,	"pkt");
 	MakeCode	(0XD654);
 	MakeName	(0XD654,	"cmd_exec_sub_3654");
 	MakeCode	(x=0XD656);
@@ -5197,6 +5300,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XD69C);
 	OpStkvar	(x,	1);
 	MakeComm	(0XD69E,	"param_buf");
+	MakeComm	(0XD6A4,	"pkt");
 	MakeCode	(x=0XD6A4);
 	OpStkvar	(x,	1);
 	MakeCode	(0XD6AC);
@@ -5220,6 +5324,7 @@ static Bytes_0(void) {
 	MakeComm	(0XD6DC,	"param_buf");
 	MakeCode	(x=0XD6DC);
 	OpStkvar	(x,	1);
+	MakeComm	(0XD6E2,	"pkt");
 	MakeArray	(0XD6EA,	0X2);
 	MakeDword	(x=0XD6EC);
 	OpOff		(x,	0,	0);
@@ -5245,6 +5350,7 @@ static Bytes_0(void) {
 	MakeDword	(x=0XD708);
 	OpOff		(x,	0,	0);
 	OpOff		(x,	128,	0);
+	MakeName	(0XD708,	"src");
 	MakeCode	(0XD70C);
 	MakeName	(0XD70C,	"cmd_exec_sub_370C");
 	MakeCode	(x=0XD70E);
@@ -5262,6 +5368,7 @@ static Bytes_0(void) {
 	MakeComm	(0XD736,	"param_buf");
 	MakeCode	(x=0XD736);
 	OpStkvar	(x,	1);
+	MakeComm	(0XD73C,	"pkt");
 	MakeCode	(0XD744);
 	MakeName	(0XD744,	"cmd_exec_sub_3744");
 	MakeCode	(x=0XD754);
@@ -5285,6 +5392,7 @@ static Bytes_0(void) {
 	MakeComm	(0XD77A,	"param_buf");
 	MakeCode	(x=0XD77A);
 	OpStkvar	(x,	1);
+	MakeComm	(0XD780,	"pkt");
 	MakeCode	(0XD78A);
 	MakeName	(0XD78A,	"cmd_exec_sub_378A");
 	MakeCode	(x=0XD7A4);
@@ -5303,6 +5411,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XD7CC);
 	OpStkvar	(x,	1);
 	MakeComm	(0XD7CE,	"pkt");
+	MakeComm	(0XD7D4,	"pkt");
 	MakeCode	(0XD7DC);
 	MakeName	(0XD7DC,	"cmd_exec_sub_37DC");
 	MakeCode	(x=0XD7EC);
@@ -5324,6 +5433,7 @@ static Bytes_0(void) {
 	MakeComm	(0XD80C,	"param_buf");
 	MakeCode	(x=0XD80C);
 	OpStkvar	(x,	1);
+	MakeComm	(0XD812,	"pkt");
 	MakeCode	(0XD81A);
 	MakeName	(0XD81A,	"cmd_exec_sub_381A");
 	MakeCode	(x=0XD81C);
@@ -5341,6 +5451,7 @@ static Bytes_0(void) {
 	MakeComm	(0XD846,	"param_buf");
 	MakeCode	(x=0XD846);
 	OpStkvar	(x,	1);
+	MakeComm	(0XD84C,	"pkt");
 	MakeCode	(0XD854);
 	MakeName	(0XD854,	"cmd_exec_sub_3854");
 	MakeCode	(x=0XD862);
@@ -5364,6 +5475,7 @@ static Bytes_0(void) {
 	MakeComm	(0XD886,	"param_buf");
 	MakeCode	(x=0XD886);
 	OpStkvar	(x,	1);
+	MakeComm	(0XD88C,	"pkt");
 	MakeCode	(x=0XD894);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -5888,6 +6000,7 @@ static Bytes_0(void) {
 	MakeComm	(0XDD1E,	"a3");
 	MakeComm	(0XDD20,	"param_buf");
 	MakeComm	(0XDD22,	"pkt");
+	MakeComm	(0XDD28,	"pkt");
 	MakeCode	(x=0XDD28);
 	OpStkvar	(x,	1);
 	MakeCode	(0XDD32);
@@ -5904,6 +6017,7 @@ static Bytes_0(void) {
 	MakeComm	(0XDD52,	"param_buf");
 	MakeCode	(x=0XDD52);
 	OpStkvar	(x,	1);
+	MakeComm	(0XDD58,	"pkt");
 	MakeCode	(0XDD60);
 	MakeName	(0XDD60,	"cmd_exec_sub_3D60");
 	MakeCode	(x=0XDD72);
@@ -5924,6 +6038,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XDDA6);
 	OpStkvar	(x,	1);
 	MakeComm	(0XDDA8,	"pkt");
+	MakeComm	(0XDDAE,	"pkt");
 	MakeCode	(0XDDB8);
 	MakeName	(0XDDB8,	"cmd_exec_sub_3DB8");
 	MakeCode	(x=0XDDC2);
@@ -5966,6 +6081,7 @@ static Bytes_0(void) {
 	MakeComm	(0XDE1A,	"pkt");
 	MakeCode	(x=0XDE1A);
 	OpStkvar	(x,	1);
+	MakeComm	(0XDE20,	"pkt");
 	MakeCode	(0XDE2A);
 	MakeName	(0XDE2A,	"cmd_exec_sub_3E2A");
 	MakeCode	(x=0XDE32);
@@ -6027,7 +6143,7 @@ static Bytes_0(void) {
 	OpOff		(x,	1,	0X100033A0);
 	OpOff		(x,	129,	0X100033A0);
 	MakeCode	(0XDEBA);
-	MakeName	(0XDEBA,	"cmd_exec_sub_3EBA");
+	MakeName	(0XDEBA,	"cmd_exec_get_zone_3EBA");
 	MakeCode	(x=0XDEC8);
 	OpHex		(x,	1);
 	MakeCode	(x=0XDECE);
@@ -6043,6 +6159,7 @@ static Bytes_0(void) {
 	MakeComm	(0XDEDA,	"param_buf");
 	MakeCode	(x=0XDEDA);
 	OpStkvar	(x,	1);
+	MakeComm	(0XDEE0,	"pkt");
 	MakeCode	(0XDEE8);
 	MakeName	(0XDEE8,	"cmd_exec_set_zone_3EE8");
 	MakeCode	(x=0XDEEA);
@@ -6060,6 +6177,7 @@ static Bytes_0(void) {
 	MakeComm	(0XDF0C,	"param_buf");
 	MakeCode	(x=0XDF0C);
 	OpStkvar	(x,	1);
+	MakeComm	(0XDF12,	"pkt");
 	MakeArray	(0XDF1A,	0X2);
 	MakeDword	(x=0XDF1C);
 	OpOff		(x,	0,	0);
@@ -6122,6 +6240,7 @@ static Bytes_0(void) {
 	MakeComm	(0XDF7E,	"param_buf");
 	MakeCode	(x=0XDF7E);
 	OpStkvar	(x,	1);
+	MakeComm	(0XDF84,	"pkt");
 	MakeCode	(0XDF8C);
 	MakeName	(0XDF8C,	"cmd_exec_sub_3F8C");
 	MakeCode	(x=0XDF96);
@@ -6145,11 +6264,21 @@ static Bytes_0(void) {
 	MakeCode	(x=0XDFD4);
 	OpStkvar	(x,	1);
 	MakeComm	(0XDFD6,	"pkt");
+	MakeComm	(0XDFDC,	"pkt");
 	MakeCode	(x=0XDFE4);
 	OpHex		(x,	1);
 	MakeCode	(x=0XDFEC);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_1(void) {
+        auto x;
+#define id x
+
 	MakeCode	(0XDFF6);
 	MakeName	(0XDFF6,	"cmd_exec_sub_3FF6");
 	MakeCode	(x=0XE004);
@@ -6159,6 +6288,7 @@ static Bytes_0(void) {
 	MakeComm	(0XE00E,	"param_buf");
 	MakeCode	(x=0XE00E);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE014,	"pkt");
 	MakeCode	(0XE01C);
 	MakeName	(0XE01C,	"cmd_exec_sub_401C");
 	MakeCode	(x=0XE01E);
@@ -6174,6 +6304,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XE062);
 	OpStkvar	(x,	1);
 	MakeComm	(0XE064,	"pkt");
+	MakeComm	(0XE06A,	"pkt");
 	MakeCode	(0XE074);
 	MakeCode	(0XE086);
 	MakeName	(0XE086,	"cmd_exec_sub_4086");
@@ -6202,6 +6333,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XE0C0);
 	OpStkvar	(x,	1);
 	MakeComm	(0XE0C2,	"pkt");
+	MakeComm	(0XE0C8,	"pkt");
 	MakeCode	(0XE0D0);
 	MakeName	(0XE0D0,	"cmd_exec_sub_40D0");
 	MakeCode	(x=0XE0D6);
@@ -6223,6 +6355,7 @@ static Bytes_0(void) {
 	MakeCode	(x=0XE138);
 	OpStkvar	(x,	1);
 	MakeComm	(0XE13A,	"pkt");
+	MakeComm	(0XE140,	"pkt");
 	MakeCode	(0XE14C);
 	MakeName	(0XE14C,	"cmd_exec_sub_414C");
 	MakeCode	(x=0XE156);
@@ -6243,19 +6376,11 @@ static Bytes_0(void) {
 	OpOff		(x,	1,	0X10000244);
 	OpOff		(x,	129,	0X10000244);
 	MakeComm	(0XE1C0,	"a4");
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_1(void) {
-        auto x;
-#define id x
-
 	MakeComm	(0XE1C2,	"param_buf");
 	MakeCode	(x=0XE1C2);
 	OpStkvar	(x,	1);
 	MakeComm	(0XE1C4,	"pkt");
+	MakeComm	(0XE1CA,	"pkt");
 	MakeCode	(x=0XE1D6);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -6280,6 +6405,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE1FE,	"param_buf");
 	MakeCode	(x=0XE1FE);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE204,	"pkt");
 	MakeCode	(0XE20C);
 	MakeName	(0XE20C,	"cmd_exec_sub_420C");
 	MakeCode	(x=0XE20E);
@@ -6297,6 +6423,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE230,	"param_buf");
 	MakeCode	(x=0XE230);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE236,	"pkt");
 	MakeCode	(0XE23E);
 	MakeName	(0XE23E,	"cmd_exec_sub_423E");
 	MakeCode	(x=0XE24C);
@@ -6314,6 +6441,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE25E,	"param_buf");
 	MakeCode	(x=0XE25E);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE264,	"pkt");
 	MakeCode	(0XE26C);
 	MakeName	(0XE26C,	"cmd_exec_sub_426C");
 	MakeCode	(x=0XE26E);
@@ -6338,6 +6466,7 @@ static Bytes_1(void) {
 	MakeCode	(x=0XE29A);
 	OpStkvar	(x,	1);
 	MakeComm	(0XE29C,	"pkt");
+	MakeComm	(0XE2A2,	"pkt");
 	MakeCode	(0XE2AC);
 	MakeName	(0XE2AC,	"cmd_exec_sub_42AC");
 	MakeCode	(x=0XE2BC);
@@ -6352,6 +6481,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE30C,	"param_buf");
 	MakeCode	(x=0XE30C);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE312,	"pkt");
 	MakeCode	(0XE31C);
 	MakeName	(0XE31C,	"cmd_exec_sub_431C");
 	MakeCode	(x=0XE32A);
@@ -6389,6 +6519,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE352,	"param_buf");
 	MakeCode	(x=0XE352);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE358,	"pkt");
 	MakeArray	(0XE362,	0X2);
 	MakeDword	(x=0XE364);
 	OpOff		(x,	0,	0);
@@ -6427,6 +6558,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE3CE,	"a3");
 	MakeComm	(0XE3D0,	"param_buf");
 	MakeComm	(0XE3D2,	"pkt");
+	MakeComm	(0XE3D8,	"pkt");
 	MakeCode	(x=0XE3D8);
 	OpStkvar	(x,	1);
 	MakeCode	(0XE3E0);
@@ -6482,6 +6614,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE47E,	"param_buf");
 	MakeCode	(x=0XE47E);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE484,	"pkt");
 	MakeCode	(0XE48C);
 	MakeName	(0XE48C,	"cmd_exec_sub_448C");
 	MakeCode	(x=0XE48E);
@@ -6499,6 +6632,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE4B4,	"param_buf");
 	MakeCode	(x=0XE4B4);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE4BA,	"pkt");
 	MakeCode	(0XE4C2);
 	MakeName	(0XE4C2,	"cmd_exec_sub_44C2");
 	MakeCode	(x=0XE4D0);
@@ -6518,6 +6652,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE4E8,	"param_buf");
 	MakeCode	(x=0XE4E8);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE4EE,	"pkt");
 	MakeCode	(0XE4F6);
 	MakeName	(0XE4F6,	"cmd_exec_sub_44F6");
 	MakeCode	(x=0XE4F8);
@@ -6535,6 +6670,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE524,	"param_buf");
 	MakeCode	(x=0XE524);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE52A,	"pkt");
 	MakeCode	(0XE532);
 	MakeName	(0XE532,	"cmd_exec_sub_4532");
 	MakeCode	(x=0XE540);
@@ -6562,6 +6698,7 @@ static Bytes_1(void) {
 	OpStkvar	(x,	1);
 	MakeComm	(0XE56C,	"a3");
 	MakeComm	(0XE56E,	"param_buf");
+	MakeComm	(0XE574,	"pkt");
 	MakeCode	(x=0XE574);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0XE57C);
@@ -6584,6 +6721,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE5AA,	"param_buf");
 	MakeCode	(x=0XE5AA);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE5B0,	"pkt");
 	MakeCode	(0XE5B8);
 	MakeName	(0XE5B8,	"cmd_exec_sub_45B8");
 	MakeCode	(x=0XE5C6);
@@ -6626,6 +6764,7 @@ static Bytes_1(void) {
 	OpStkvar	(x,	1);
 	MakeComm	(0XE604,	"a3");
 	MakeComm	(0XE606,	"param_buf");
+	MakeComm	(0XE60C,	"pkt");
 	MakeCode	(x=0XE60C);
 	OpStkvar	(x,	1);
 	MakeCode	(0XE616);
@@ -6646,6 +6785,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE640,	"param_buf");
 	MakeCode	(x=0XE640);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE646,	"pkt");
 	MakeCode	(0XE64E);
 	MakeName	(0XE64E,	"cmd_exec_sub_464E");
 	MakeCode	(x=0XE65C);
@@ -6657,6 +6797,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE66C,	"param_buf");
 	MakeCode	(x=0XE66C);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE672,	"pkt");
 	MakeCode	(0XE67A);
 	MakeName	(0XE67A,	"cmd_exec_sub_467A");
 	MakeCode	(x=0XE688);
@@ -6724,6 +6865,7 @@ static Bytes_1(void) {
 	OpStkvar	(x,	1);
 	MakeComm	(0XE6F6,	"a3");
 	MakeComm	(0XE6F8,	"param_buf");
+	MakeComm	(0XE6FE,	"pkt");
 	MakeCode	(x=0XE6FE);
 	OpStkvar	(x,	1);
 	MakeCode	(0XE708);
@@ -6779,6 +6921,7 @@ static Bytes_1(void) {
 	MakeCode	(x=0XE77C);
 	OpStkvar	(x,	1);
 	MakeComm	(0XE77E,	"pkt");
+	MakeComm	(0XE784,	"pkt");
 	MakeCode	(x=0XE784);
 	OpStkvar	(x,	1);
 	MakeDword	(x=0XE788);
@@ -6822,6 +6965,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE7DA,	"param_buf");
 	MakeCode	(x=0XE7DA);
 	OpStkvar	(x,	1);
+	MakeComm	(0XE7E0,	"pkt");
 	MakeCode	(0XE7EA);
 	MakeName	(0XE7EA,	"cmd_exec_sub_47EA");
 	MakeCode	(x=0XE7F6);
@@ -6867,6 +7011,7 @@ static Bytes_1(void) {
 	MakeCode	(x=0XE85A);
 	OpStkvar	(x,	1);
 	MakeComm	(0XE85C,	"pkt");
+	MakeComm	(0XE862,	"pkt");
 	MakeCode	(0XE86C);
 	MakeCode	(x=0XE86E);
 	OpStkvar	(x,	1);
@@ -6923,6 +7068,7 @@ static Bytes_1(void) {
 	MakeComm	(0XE910,	"a3");
 	MakeComm	(0XE912,	"param_buf");
 	MakeComm	(0XE914,	"pkt");
+	MakeComm	(0XE91A,	"pkt");
 	MakeCode	(x=0XE91A);
 	OpStkvar	(x,	1);
 	MakeCode	(0XE924);
@@ -6999,6 +7145,7 @@ static Bytes_1(void) {
 	MakeCode	(0XEA42);
 	MakeCode	(0XEA44);
 	MakeCode	(0XEA46);
+	MakeComm	(0XEA4A,	"pkt");
 	MakeCode	(x=0XEA4A);
 	OpStkvar	(x,	1);
 	MakeCode	(0XEA56);
@@ -7075,6 +7222,7 @@ static Bytes_1(void) {
 	OpStkvar	(x,	1);
 	MakeCode	(x=0XEB30);
 	OpStkvar	(x,	1);
+	MakeComm	(0XEB44,	"pkt");
 	MakeCode	(x=0XEB44);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0XEB4E);
@@ -7216,6 +7364,7 @@ static Bytes_1(void) {
 	MakeCode	(x=0XED5E);
 	OpStkvar	(x,	1);
 	MakeComm	(0XED60,	"pkt");
+	MakeComm	(0XED66,	"pkt");
 	MakeCode	(x=0XED66);
 	OpStkvar	(x,	1);
 	MakeCode	(0XED70);
@@ -7285,6 +7434,7 @@ static Bytes_1(void) {
 	MakeComm	(0XEE2A,	"a3");
 	MakeComm	(0XEE2C,	"param_buf");
 	MakeComm	(0XEE2E,	"pkt");
+	MakeComm	(0XEE34,	"pkt");
 	MakeCode	(x=0XEE34);
 	OpStkvar	(x,	1);
 	MakeCode	(0XEE3E);
@@ -7338,6 +7488,7 @@ static Bytes_1(void) {
 	MakeComm	(0XEEEE,	"a3");
 	MakeComm	(0XEEF0,	"param_buf");
 	MakeComm	(0XEEF2,	"pkt");
+	MakeComm	(0XEEF8,	"pkt");
 	MakeCode	(x=0XEEF8);
 	OpStkvar	(x,	1);
 	MakeCode	(0XEF02);
@@ -7393,6 +7544,7 @@ static Bytes_1(void) {
 	MakeComm	(0XEFBE,	"a3");
 	MakeComm	(0XEFC0,	"param_buf");
 	MakeComm	(0XEFC2,	"pkt");
+	MakeComm	(0XEFC8,	"pkt");
 	MakeCode	(x=0XEFC8);
 	OpStkvar	(x,	1);
 	MakeCode	(0XEFD2);
@@ -7426,6 +7578,7 @@ static Bytes_1(void) {
 	MakeComm	(0XF024,	"param_buf");
 	MakeCode	(x=0XF024);
 	OpStkvar	(x,	1);
+	MakeComm	(0XF02A,	"pkt");
 	MakeCode	(0XF032);
 	MakeCode	(0XF03E);
 	MakeCode	(0XF044);
@@ -7450,6 +7603,7 @@ static Bytes_1(void) {
 	MakeComm	(0XF0A4,	"a3");
 	MakeComm	(0XF0A6,	"param_buf");
 	MakeComm	(0XF0A8,	"pkt");
+	MakeComm	(0XF0AE,	"pkt");
 	MakeCode	(x=0XF0AE);
 	OpStkvar	(x,	1);
 	MakeCode	(0XF0B8);
@@ -7468,6 +7622,7 @@ static Bytes_1(void) {
 	OpStkvar	(x,	1);
 	MakeComm	(0XF0F4,	"a3");
 	MakeComm	(0XF0F6,	"param_buf");
+	MakeComm	(0XF0FC,	"pkt");
 	MakeCode	(x=0XF0FC);
 	OpStkvar	(x,	1);
 	MakeCode	(0XF106);
@@ -7495,6 +7650,7 @@ static Bytes_1(void) {
 	MakeComm	(0XF158,	"param_buf");
 	MakeCode	(x=0XF158);
 	OpStkvar	(x,	1);
+	MakeComm	(0XF15E,	"pkt");
 	MakeCode	(x=0XF164);
 	OpStkvar	(x,	1);
 	MakeComm	(0XF178,	"TimeOut");
@@ -7519,6 +7675,7 @@ static Bytes_1(void) {
 	MakeComm	(0XF1F8,	"a3");
 	MakeComm	(0XF1FA,	"param_buf");
 	MakeComm	(0XF1FC,	"pkt");
+	MakeComm	(0XF202,	"pkt");
 	MakeCode	(x=0XF202);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0XF20C);
@@ -7542,6 +7699,7 @@ static Bytes_1(void) {
 	MakeCode	(x=0XF256);
 	OpStkvar	(x,	1);
 	MakeComm	(0XF258,	"pkt");
+	MakeComm	(0XF25E,	"pkt");
 	MakeCode	(0XF266);
 	MakeName	(0XF266,	"cmd_exec_sub_5266");
 	MakeCode	(x=0XF274);
@@ -7557,6 +7715,7 @@ static Bytes_1(void) {
 	MakeCode	(x=0XF2B4);
 	OpStkvar	(x,	1);
 	MakeComm	(0XF2B6,	"pkt");
+	MakeComm	(0XF2BC,	"pkt");
 	MakeCode	(x=0XF2C2);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0XF2CC);
@@ -7632,6 +7791,7 @@ static Bytes_1(void) {
 	MakeComm	(0XF3A6,	"a3");
 	MakeComm	(0XF3A8,	"param_buf");
 	MakeComm	(0XF3AA,	"pkt");
+	MakeComm	(0XF3B0,	"pkt");
 	MakeCode	(x=0XF3B0);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0XF3BA);
@@ -7678,6 +7838,7 @@ static Bytes_1(void) {
 	MakeName	(0XF470,	"def_54D6");
 	MakeRptCmt	(0XF472,	"jumptable 000053D4 case 6");
 	MakeCode	(0XF472);
+	MakeComm	(0XF474,	"pkt");
 	MakeComm	(0XF476,	"switch 33 cases ");
 	MakeComm	(0XF47E,	"switch jump");
 	MakeComm	(0XF482,	"jump table for switch statement");
@@ -8017,6 +8178,7 @@ static Bytes_1(void) {
 	OpStkvar	(x,	1);
 	MakeComm	(0XF8AE,	"param_buf");
 	MakeComm	(0XF8B0,	"pkt");
+	MakeComm	(0XF8B6,	"pkt");
 	MakeCode	(x=0XF8B6);
 	OpStkvar	(x,	1);
 	MakeCode	(0XF8C0);
@@ -8275,6 +8437,7 @@ static Bytes_1(void) {
 	OpOff		(x,	129,	0X100000C8);
 	MakeCode	(x=0XFD48);
 	OpStkvar	(x,	1);
+	MakeComm	(0XFD5E,	"pkt");
 	MakeCode	(x=0XFD5E);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0XFD66);
@@ -8300,6 +8463,7 @@ static Bytes_1(void) {
 	MakeCode	(x=0XFD90);
 	OpOff		(x,	1,	0X10003708);
 	OpOff		(x,	129,	0X10003708);
+	MakeComm	(0XFDB8,	"pkt");
 	MakeCode	(x=0XFDC0);
 	OpOff		(x,	1,	0X100000C8);
 	OpOff		(x,	129,	0X100000C8);
@@ -8325,6 +8489,7 @@ static Bytes_1(void) {
 	MakeCode	(x=0XFDEC);
 	OpOff		(x,	1,	0X10003908);
 	OpOff		(x,	129,	0X10003908);
+	MakeComm	(0XFE14,	"pkt");
 	MakeCode	(x=0XFE1C);
 	OpOff		(x,	1,	0X100000C8);
 	OpOff		(x,	129,	0X100000C8);
@@ -8481,6 +8646,7 @@ static Bytes_1(void) {
 	MakeCode	(0XFFA2);
 	MakeCode	(x=0XFFA6);
 	OpStkvar	(x,	1);
+	MakeComm	(0XFFC0,	"pkt");
 	MakeCode	(x=0XFFC0);
 	OpStkvar	(x,	1);
 	MakeCode	(0XFFCA);
@@ -8888,6 +9054,7 @@ static Bytes_1(void) {
 	MakeCode	(x=0X10400);
 	OpOff		(x,	1,	0X10000160);
 	OpOff		(x,	129,	0X10000160);
+	MakeComm	(0X10402,	"pkt");
 	MakeCode	(x=0X10402);
 	OpStkvar	(x,	1);
 	MakeCode	(0X1040A);
@@ -11502,6 +11669,15 @@ static Bytes_1(void) {
 	OpHex		(x,	1);
 	MakeCode	(x=0X126D0);
 	OpHex		(x,	1);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_2(void) {
+        auto x;
+#define id x
+
 	MakeCode	(0X126D8);
 	MakeCode	(x=0X126E6);
 	OpHex		(x,	1);
@@ -11689,15 +11865,6 @@ static Bytes_1(void) {
 	MakeCode	(x=0X12AD8);
 	OpOff		(x,	1,	0X10000214);
 	OpOff		(x,	129,	0X10000214);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_2(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X12AE0);
 	OpOff		(x,	1,	0X10000214);
 	OpOff		(x,	129,	0X10000214);
@@ -14967,6 +15134,7 @@ static Bytes_2(void) {
 	OpHex		(x,	1);
 	MakeComm	(0X1573C,	"param_buf");
 	MakeComm	(0X1573E,	"pkt");
+	MakeComm	(0X15744,	"pkt");
 	MakeCode	(x=0X15744);
 	OpStkvar	(x,	1);
 	MakeCode	(0X15750);
@@ -14993,6 +15161,7 @@ static Bytes_2(void) {
 	MakeCode	(x=0X157B2);
 	OpStkvar	(x,	1);
 	MakeComm	(0X157B4,	"pkt");
+	MakeComm	(0X157BA,	"pkt");
 	MakeCode	(x=0X157BA);
 	OpStkvar	(x,	1);
 	MakeCode	(0X157C4);
@@ -15013,6 +15182,7 @@ static Bytes_2(void) {
 	MakeCode	(x=0X1580E);
 	OpStkvar	(x,	1);
 	MakeComm	(0X15810,	"pkt");
+	MakeComm	(0X15816,	"pkt");
 	MakeCode	(0X15820);
 	MakeCode	(x=0X15822);
 	OpOff		(x,	1,	0);
@@ -15032,6 +15202,7 @@ static Bytes_2(void) {
 	MakeComm	(0X1585C,	"param_buf");
 	MakeCode	(x=0X1585C);
 	OpStkvar	(x,	1);
+	MakeComm	(0X15862,	"pkt");
 	MakeCode	(0X1586C);
 	MakeCode	(x=0X15872);
 	OpStkvar	(x,	1);
@@ -15050,6 +15221,7 @@ static Bytes_2(void) {
 	MakeComm	(0X158A8,	"param_buf");
 	MakeCode	(x=0X158A8);
 	OpStkvar	(x,	1);
+	MakeComm	(0X158AE,	"pkt");
 	MakeCode	(0X158B8);
 	MakeCode	(x=0X158CA);
 	OpStkvar	(x,	1);
@@ -15067,6 +15239,7 @@ static Bytes_2(void) {
 	MakeCode	(x=0X158F6);
 	OpStkvar	(x,	1);
 	MakeComm	(0X158F8,	"pkt");
+	MakeComm	(0X158FE,	"pkt");
 	MakeCode	(0X15906);
 	MakeCode	(x=0X1591E);
 	OpStkvar	(x,	1);
@@ -15084,6 +15257,7 @@ static Bytes_2(void) {
 	OpHex		(x,	1);
 	MakeComm	(0X1594A,	"param_buf");
 	MakeComm	(0X1594C,	"pkt");
+	MakeComm	(0X15952,	"pkt");
 	MakeCode	(x=0X15952);
 	OpStkvar	(x,	1);
 	MakeCode	(0X1595C);
@@ -15123,6 +15297,7 @@ static Bytes_2(void) {
 	OpHex		(x,	1);
 	MakeComm	(0X15A0A,	"param_buf");
 	MakeComm	(0X15A0C,	"pkt");
+	MakeComm	(0X15A12,	"pkt");
 	MakeCode	(x=0X15A12);
 	OpStkvar	(x,	1);
 	MakeCode	(0X15A1C);
@@ -15965,6 +16140,12 @@ static Bytes_2(void) {
 	MakeCode	(x=0X169D0);
 	OpOff		(x,	1,	0X100041D8);
 	OpOff		(x,	129,	0X100041D8);
+	MakeComm	(0X169D6,	"seed");
+	MakeComm	(0X169DA,	"len");
+	MakeComm	(0X169DC,	"buf");
+	MakeComm	(0X169E2,	"seed");
+	MakeComm	(0X169E4,	"len");
+	MakeComm	(0X169E6,	"buf");
 	MakeCode	(x=0X169F4);
 	OpHex		(x,	1);
 	MakeCode	(x=0X169FC);
@@ -17214,6 +17395,15 @@ static Bytes_2(void) {
 	OpHex		(x,	1);
 	MakeCode	(x=0X178B0);
 	OpHex		(x,	1);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_3(void) {
+        auto x;
+#define id x
+
 	MakeCode	(x=0X178B4);
 	OpOff		(x,	1,	0X100041D8);
 	OpOff		(x,	129,	0X100041D8);
@@ -17417,15 +17607,6 @@ static Bytes_2(void) {
 	MakeCode	(x=0X17A12);
 	OpOff		(x,	1,	0X100041D8);
 	OpOff		(x,	129,	0X100041D8);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_3(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X17A16);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -18492,6 +18673,7 @@ static Bytes_3(void) {
 	OpOff		(x,	0,	0);
 	OpOff		(x,	128,	0);
 	MakeCode	(0X18B10);
+	MakeName	(0X18B10,	"compute_buf_crc8");
 	MakeCode	(x=0X18B12);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -18508,6 +18690,9 @@ static Bytes_3(void) {
 	MakeCode	(x=0X18B9E);
 	OpStkvar	(x,	1);
 	MakeCode	(0X18BAA);
+	MakeComm	(0X18BAC,	"len");
+	MakeComm	(0X18BAE,	"seed");
+	MakeComm	(0X18BB0,	"buf");
 	MakeCode	(x=0X18BC4);
 	OpHex		(x,	1);
 	MakeCode	(0X18BD8);
@@ -18517,9 +18702,13 @@ static Bytes_3(void) {
 	MakeComm	(0X18C06,	"a3");
 	MakeComm	(0X18C08,	"param_buf");
 	MakeComm	(0X18C0A,	"a1");
+	MakeComm	(0X18C1C,	"seed");
+	MakeComm	(0X18C20,	"len");
+	MakeComm	(0X18C22,	"buf");
 	MakeCode	(x=0X18C38);
 	OpStkvar	(x,	1);
 	MakeCode	(0X18C5A);
+	MakeName	(0X18C5A,	"packet_set_checksum");
 	MakeCode	(x=0X18C60);
 	OpStkvar	(x,	1);
 	MakeDword	(x=0X18C68);
@@ -22292,6 +22481,15 @@ static Bytes_3(void) {
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
 	MakeComm	(0X1E058,	"switch 16 cases ");
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_4(void) {
+        auto x;
+#define id x
+
 	MakeComm	(0X1E05C,	"switch jump");
 	MakeComm	(0X1E060,	"jump table for switch statement");
 	MakeByte	(0X1E060);
@@ -22447,15 +22645,6 @@ static Bytes_3(void) {
 	OpOff		(x,	129,	0X100004E8);
 	MakeCode	(0X1E220);
 	MakeName	(0X1E220,	"CPU_IntDisMeasMaxGet");
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_4(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X1E226);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -24227,14 +24416,19 @@ static Bytes_4(void) {
 	OpOff		(x,	0,	0);
 	OpOff		(x,	128,	0);
 	MakeCode	(0X1FA54);
+	MakeName	(0X1FA54,	"compute_buf_crc16");
 	MakeCode	(x=0X1FA58);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
 	MakeCode	(0X1FA70);
 	MakeCode	(0X1FA76);
 	MakeCode	(0X1FA7A);
+	MakeComm	(0X1FA86,	"seed");
+	MakeComm	(0X1FA8A,	"len");
 	MakeCode	(0X1FAAA);
 	MakeCode	(0X1FAAE);
+	MakeComm	(0X1FABA,	"seed");
+	MakeComm	(0X1FABE,	"len");
 	MakeDword	(x=0X1FAD0);
 	OpOff		(x,	0,	0);
 	OpOff		(x,	128,	0);
@@ -26011,6 +26205,7 @@ static Bytes_4(void) {
 	MakeCode	(0X218A6);
 	MakeCode	(0X218AC);
 	MakeCode	(0X218D4);
+	MakeName	(0X218D4,	"memcpy");
 	MakeCode	(x=0X218DA);
 	OpHex		(x,	1);
 	MakeCode	(x=0X2190C);
@@ -27597,6 +27792,15 @@ static Bytes_4(void) {
 	MakeDword	(0X24BF4);
 	MakeDword	(0X24BF8);
 	MakeDword	(0X24BFC);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_5(void) {
+        auto x;
+#define id x
+
 	MakeDword	(0X24C00);
 	MakeDword	(0X24C04);
 	MakeDword	(x=0X24C08);
@@ -27842,15 +28046,6 @@ static Bytes_4(void) {
 	OpStkvar	(x,	1);
 	MakeCode	(x=0X254C2);
 	OpStkvar	(x,	1);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_5(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X254C4);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0X254CC);
@@ -28590,6 +28785,8 @@ static Bytes_5(void) {
 	MakeDword	(0X2E818);
 	MakeStr		(0X2E9A3,	0X2E9B2);
 	MakeName	(0X2E9A3,	"aJdjdjdjdjdjdzz");
+	MakeByte	(0X2E9D2);
+	MakeArray	(0X2E9D2,	0X100);
 	MakeByte	(0X2ED35);
 	MakeArray	(0X2ED35,	0X3);
 	MakeByte	(0X2ED39);
@@ -30331,9 +30528,10 @@ static Functions_0(void) {
 	SetFunctionFlags(0XC7C2,0x400);
 	MakeFunction    (0XC7DE,0XC832);
 	SetFunctionFlags(0XC7DE,0x400);
+	SetType(0XC7DE, "int __fastcall packet_send(struct UnknPacket1 *pkt);");
 	MakeFunction    (0XC832,0XC8C2);
 	SetFunctionFlags(0XC832,0x400);
-	SetType(0XC832, "int __fastcall sub_C832(void *pkt, int *param_buf, int a3, void *a4);");
+	SetType(0XC832, "int __fastcall packet_prepare_response(struct UnknPacket1 *inpkt, void *payload_buf, int payload_len, struct UnknPacket1 *outpkt);");
 	MakeFrame(0XC832, 0X18, 0, 0);
 	MakeFunction    (0XC8C2,0XC9B4);
 	SetFunctionFlags(0XC8C2,0x400);
@@ -30510,6 +30708,7 @@ static Functions_0(void) {
 	MakeFunction    (0XDDB8,0XDE00);
 	SetFunctionFlags(0XDDB8,0x400);
 	MakeFrame(0XDDB8, 0X28, 0, 0);
+	MakeLocal(0XDDB8, 0XDE00, "[bp-0X25]", "data_buf");
 	MakeLocal(0XDDB8, 0XDE00, "[bp-0XC]", "param_buf");
 	MakeFunction    (0XDE00,0XDE2A);
 	SetFunctionFlags(0XDE00,0x400);
@@ -30519,17 +30718,21 @@ static Functions_0(void) {
 	MakeFunction    (0XDE2A,0XDEBA);
 	SetFunctionFlags(0XDE2A,0x400);
 	MakeFrame(0XDE2A, 0X40, 0, 0);
+	MakeLocal(0XDE2A, 0XDEBA, "[bp-0X3D]", "data_buf");
 	MakeLocal(0XDE2A, 0XDEBA, "[bp-0X24]", "param_buf");
 	MakeFunction    (0XDEBA,0XDEE8);
 	SetFunctionFlags(0XDEBA,0x400);
+	SetType(0XDEBA, "void __cdecl cmd_exec_get_zone_3EBA(struct UnknPacket1 *pkt);");
 	MakeFrame(0XDEBA, 0X18, 0, 0);
-	MakeLocal(0XDEBA, 0XDEE8, "[bp-0X8]", "param_buf");
+	MakeLocal(0XDEBA, 0XDEE8, "[bp-0X18]", "response_pkt");
+	MakeLocal(0XDEBA, 0XDEE8, "[bp-0X8]", "payload_buf");
 	MakeFunction    (0XDEE8,0XDF1A);
 	SetFunctionFlags(0XDEE8,0x400);
-	SetType(0XDEE8, "void __fastcall cmd_exec_set_zone_3EE8(void *pkt);");
+	SetType(0XDEE8, "void __cdecl cmd_exec_set_zone_3EE8(struct UnknPacket1 *pkt);");
 	SetFunctionCmt(0XDEE8,	"set zone command?", 1);
 	MakeFrame(0XDEE8, 0X18, 0, 0);
-	MakeLocal(0XDEE8, 0XDF1A, "[bp-0X8]", "param_buf");
+	MakeLocal(0XDEE8, 0XDF1A, "[bp-0X18]", "response_pkt");
+	MakeLocal(0XDEE8, 0XDF1A, "[bp-0X8]", "payload_buf");
 	MakeFunction    (0XDF50,0XDF8C);
 	SetFunctionFlags(0XDF50,0x400);
 	MakeFrame(0XDF50, 0X20, 0, 0);
@@ -30632,6 +30835,7 @@ static Functions_0(void) {
 	MakeFunction    (0XE708,0XE7B4);
 	SetFunctionFlags(0XE708,0x400);
 	MakeFrame(0XE708, 0X40, 0, 0);
+	MakeLocal(0XE708, 0XE7B4, "[bp-0X3D]", "data_buf");
 	MakeLocal(0XE708, 0XE7B4, "[bp-0X24]", "a4");
 	MakeLocal(0XE708, 0XE7B4, "[bp-0X14]", "param_buf");
 	MakeLocal(0XE708, 0XE7B4, "[bp-0X10]", "p_err");
@@ -30646,20 +30850,32 @@ static Functions_0(void) {
 	MakeFunction    (0XE8A8,0XE924);
 	SetFunctionFlags(0XE8A8,0x400);
 	MakeFrame(0XE8A8, 0XD0, 0, 0);
+	MakeLocal(0XE8A8, 0XE924, "[bp-0XCF]", "data_buf");
+	MakeLocal(0XE8A8, 0XE924, "[bp-0XA5]", "dst");
 	MakeLocal(0XE8A8, 0XE924, "[bp-0X94]", "a4");
 	MakeLocal(0XE8A8, 0XE924, "[bp-0X4C]", "param_buf");
+	MakeLocal(0XE8A8, 0XE924, "[bp-0X22]", "src");
 	MakeFunction    (0XE924,0XEAB0);
 	SetFunctionFlags(0XE924,0x400);
 	MakeFrame(0XE924, 0X88, 0, 0);
+	MakeLocal(0XE924, 0XEAB0, "[bp-0X7E]", "data_buf");
 	MakeLocal(0XE924, 0XEAB0, "[bp-0X68]", "param_buf");
 	MakeLocal(0XE924, 0XEAB0, "[bp-0X48]", "a4");
+	MakeLocal(0XE924, 0XEAB0, "[bp-0X38]", "payload_buf");
+	MakeLocal(0XE924, 0XEAB0, "[bp-0X2C]", "src");
 	MakeFunction    (0XEAB0,0XEB7C);
 	SetFunctionFlags(0XEAB0,0x400);
 	MakeFrame(0XEAB0, 0XB8, 0, 0);
+	MakeLocal(0XEAB0, 0XEB7C, "[bp-0X93]", "data_buf");
+	MakeLocal(0XEAB0, 0XEB7C, "[bp-0X60]", "pkt");
 	MakeFunction    (0XEB7C,0XEDC2);
 	SetFunctionFlags(0XEB7C,0x400);
 	MakeFrame(0XEB7C, 0XB0, 0, 0);
+	MakeLocal(0XEB7C, 0XEDC2, "[bp-0X4]", "src");
+	MakeLocal(0XEB7C, 0XEDC2, "[bp+0X26]", "dst");
 	MakeLocal(0XEB7C, 0XEDC2, "[bp+0X3C]", "a4");
+	MakeLocal(0XEB7C, 0XEDC2, "[bp+0X50]", "payload_buf");
+	MakeLocal(0XEB7C, 0XEDC2, "[bp+0X54]", "data_buf");
 	MakeLocal(0XEB7C, 0XEDC2, "[bp+0X58]", "a1");
 	MakeLocal(0XEB7C, 0XEDC2, "[bp+0X64]", "param_buf");
 	MakeFunction    (0XEDC2,0XEE3E);
@@ -30747,6 +30963,7 @@ static Functions_0(void) {
 	MakeFunction    (0XFD2A,0XFD6C);
 	SetFunctionFlags(0XFD2A,0x400);
 	MakeFrame(0XFD2A, 0XA8, 0, 0);
+	MakeLocal(0XFD2A, 0XFD6C, "[bp-0X98]", "pkt");
 	MakeFunction    (0XFD6C,0XFDC8);
 	SetFunctionFlags(0XFD6C,0x400);
 	MakeFrame(0XFD6C, 0X30, 0, 0);
@@ -30773,6 +30990,7 @@ static Functions_0(void) {
 	MakeFunction    (0XFFA2,0XFFCA);
 	SetFunctionFlags(0XFFA2,0x400);
 	MakeFrame(0XFFA2, 0X30, 0, 0);
+	MakeLocal(0XFFA2, 0XFFCA, "[bp-0X20]", "pkt");
 	MakeFunction    (0XFFCA,0X1004C);
 	SetFunctionFlags(0XFFCA,0x400);
 	MakeFrame(0XFFCA, 0X38, 0, 0);
@@ -30794,6 +31012,7 @@ static Functions_0(void) {
 	MakeFunction    (0X101BC,0X101FE);
 	SetFunctionFlags(0X101BC,0x400);
 	MakeFrame(0X101BC, 0X28, 0, 0);
+	MakeLocal(0X101BC, 0X101FE, "[bp-0X25]", "data_buf");
 	MakeLocal(0X101BC, 0X101FE, "[bp-0XC]", "param_buf");
 	MakeFunction    (0X101FE,0X10226);
 	SetFunctionFlags(0X101FE,0x400);
@@ -30825,6 +31044,7 @@ static Functions_0(void) {
 	MakeFunction    (0X103AC,0X1043C);
 	SetFunctionFlags(0X103AC,0x400);
 	MakeFrame(0X103AC, 0XA0, 0, 0);
+	MakeLocal(0X103AC, 0X1043C, "[bp-0X90]", "pkt");
 	MakeLocal(0X103AC, 0X1043C, "[bp-0X10]", "p_err");
 	MakeFunction    (0X1043C,0X10452);
 	SetFunctionFlags(0X1043C,0x400);
@@ -30916,6 +31136,7 @@ static Functions_0(void) {
 	SetFunctionFlags(0X11212,0x401);
 	MakeFrame(0X11212, 0X80, 0, 0);
 	MakeLocal(0X11212, 0X12158, "[bp-0X38]", "param_buf");
+	MakeLocal(0X11212, 0X12158, "[bp-0X10]", "data_buf");
 	MakeLocal(0X11212, 0X12158, "[bp-0XC]", "a1");
 	MakeLocal(0X11212, 0X12158, "[bp-0X4]", "p_err");
 	MakeFunction    (0X1215C,0X12172);
@@ -31072,6 +31293,7 @@ static Functions_0(void) {
 	MakeFunction    (0X14102,0X1413E);
 	SetFunctionFlags(0X14102,0x400);
 	MakeFrame(0X14102, 0X48, 0, 0);
+	MakeLocal(0X14102, 0X1413E, "[bp-0X46]", "data_buf");
 	MakeFunction    (0X1413E,0X141E0);
 	SetFunctionFlags(0X1413E,0x400);
 	MakeFrame(0X1413E, 0X48, 0, 0);
@@ -31182,6 +31404,7 @@ static Functions_0(void) {
 	MakeFunction    (0X156FC,0X15750);
 	SetFunctionFlags(0X156FC,0x400);
 	MakeFrame(0X156FC, 0X228, 0, 0);
+	MakeLocal(0X156FC, 0X15750, "[bp-0X220]", "data_buf");
 	MakeLocal(0X156FC, 0X15750, "[bp-0X120]", "a4");
 	MakeFunction    (0X15750,0X157C4);
 	SetFunctionFlags(0X15750,0x400);
@@ -31495,6 +31718,7 @@ static Functions_0(void) {
 	MakeFrame(0X18A62, 0X10, 0, 0);
 	MakeFunction    (0X18B10,0X18B24);
 	SetFunctionFlags(0X18B10,0x400);
+	SetType(0X18B10, "int __fastcall compute_buf_crc8(int seed, uint8_t *buf, unsigned int len);");
 	MakeFrame(0X18B10, 0X8, 0, 0);
 	MakeFunction    (0X18B24,0X18B32);
 	SetFunctionFlags(0X18B24,0x400);
@@ -31505,6 +31729,7 @@ static Functions_0(void) {
 	MakeLocal(0X18B32, 0X18C5A, "[bp-0X2C]", "p_err");
 	MakeFunction    (0X18C5A,0X18C68);
 	SetFunctionFlags(0X18C5A,0x400);
+	SetType(0X18C5A, "void __cdecl packet_set_checksum(uint8_t *buf, uint16_t chksum);");
 	MakeFrame(0X18C5A, 0XC, 0, 0);
 	MakeFunction    (0X18C78,0X18C82);
 	SetFunctionFlags(0X18C78,0x400);
@@ -31573,6 +31798,7 @@ static Functions_0(void) {
 	SetFunctionFlags(0X19326,0x400);
 	MakeFrame(0X19326, 0X58, 0, 0);
 	MakeLocal(0X19326, 0X194AE, "[bp+0]", "param_buf");
+	MakeLocal(0X19326, 0X194AE, "[bp+0X8]", "src");
 	MakeFunction    (0X194AE,0X1952C);
 	SetFunctionFlags(0X194AE,0x400);
 	MakeFrame(0X194AE, 0X70, 0, 0);
@@ -32677,6 +32903,10 @@ static Functions_0(void) {
 	MakeFunction    (0X1F2B8,0X1F30C);
 	SetFunctionFlags(0X1F2B8,0x400);
 	MakeFrame(0X1F2B8, 0X8, 0, 0);
+}
+
+static Functions_1(void) {
+
 	MakeFunction    (0X1F30C,0X1F31C);
 	SetFunctionFlags(0X1F30C,0x400);
 	MakeFunction    (0X1F31C,0X1F31E);
@@ -32725,10 +32955,6 @@ static Functions_0(void) {
 	SetFunctionFlags(0X1F504,0x440);
 	MakeFunction    (0X1F506,0X1F508);
 	SetFunctionFlags(0X1F506,0x440);
-}
-
-static Functions_1(void) {
-
 	MakeFunction    (0X1F508,0X1F51A);
 	SetFunctionFlags(0X1F508,0x400);
 	MakeFunction    (0X1F548,0X1F55C);
@@ -32869,6 +33095,7 @@ static Functions_1(void) {
 	SetFunctionFlags(0X1FA28,0x400);
 	MakeFunction    (0X1FA54,0X1FA7A);
 	SetFunctionFlags(0X1FA54,0x400);
+	SetType(0X1FA54, "signed int __fastcall compute_buf_crc16(uint8_t *buf, unsigned int len, unsigned int seed);");
 	MakeFrame(0X1FA54, 0X8, 0, 0);
 	MakeFunction    (0X1FA7A,0X1FAAE);
 	SetFunctionFlags(0X1FA7A,0x400);
@@ -33260,8 +33487,9 @@ static Functions_1(void) {
 	SetFunctionFlags(0X2183E,0x400);
 	MakeFrame(0X2183E, 0X10, 0, 0);
 	MakeFunction    (0X218D4,0X219C2);
-	SetFunctionFlags(0X218D4,0x400);
-	SetType(0X218D4, "int __fastcall sub_218D4(int a1, int *param_buf, unsigned int a3);");
+	SetFunctionFlags(0X218D4,0x404);
+	SetType(0X218D4, "int __fastcall memcpy(uint8_t *dst, uint8_t *src, unsigned int len);");
+	MakeFrame(0X218D4, 0, 0, 0);
 	MakeFunction    (0X219C2,0X219D2);
 	SetFunctionFlags(0X219C2,0x400);
 	MakeFunction    (0X219D2,0X21A64);

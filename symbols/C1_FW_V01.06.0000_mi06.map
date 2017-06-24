@@ -49,8 +49,10 @@
  0001:0000C76A       cmd_exec_sub_276A
  0001:0000C788       cmd_exec_sub_2788
  0001:0000C7C2       cmd_exec_sub_27C2
+ 0001:0000C7DE       packet_send
  0001:0000C7EC       jpt_27E8
  0001:0000C830       def_27E8
+ 0001:0000C832       packet_prepare_response
  0001:0000C8C2       cmd_exec_sub_28C2
  0001:0000C9B4       cmd_exec_sub_29B4
  0001:0000CA6C       cmd_exec_sub_2A6C
@@ -67,6 +69,7 @@
  0001:0000CF8A       cmd_exec_sub_2F8A
  0001:0000CFA4       cmd_exec_sub_2FA4
  0001:0000CFE0       cmd_exec_sub_2FE0
+ 0001:0000D25C       dst
  0001:0000D270       aTickU
  0001:0000D2F2       cmd_exec_sub_32F2
  0001:0000D34A       cmd_exec_sub_334A
@@ -80,6 +83,7 @@
  0001:0000D614       cmd_exec_sub_3614
  0001:0000D654       cmd_exec_sub_3654
  0001:0000D6AC       cmd_exec_sub_36AC
+ 0001:0000D708       src
  0001:0000D70C       cmd_exec_sub_370C
  0001:0000D744       cmd_exec_sub_3744
  0001:0000D78A       cmd_exec_sub_378A
@@ -91,7 +95,7 @@
  0001:0000DD60       cmd_exec_sub_3D60
  0001:0000DDB8       cmd_exec_sub_3DB8
  0001:0000DE2A       cmd_exec_sub_3E2A
- 0001:0000DEBA       cmd_exec_sub_3EBA
+ 0001:0000DEBA       cmd_exec_get_zone_3EBA
  0001:0000DEE8       cmd_exec_set_zone_3EE8
  0001:0000DF50       cmd_exec_sub_3F50
  0001:0000DF8C       cmd_exec_sub_3F8C
@@ -193,6 +197,8 @@
  0001:00018AFC       aGpgsv
  0001:00018B04       aD
  0001:00018B08       aF_0
+ 0001:00018B10       compute_buf_crc8
+ 0001:00018C5A       packet_set_checksum
  0001:0001907C       aSha204p_send_s
  0001:000196A6       factory_Info
  0001:000196DC       chip_Info
@@ -417,6 +423,7 @@
  0001:0001FA08       Chip_IAP_PreSectorForReadWrite
  0001:0001FA38       cmd_param
  0001:0001FA44       srcAdd
+ 0001:0001FA54       compute_buf_crc16
  0001:0001FB30       ADC_Init
  0001:0001FC00       ADC_GetData
  0001:0001FC2A       ADC_StartCmd
@@ -492,6 +499,7 @@
  0001:00021318       WDT_UpdateTimeOut
  0001:00021336       WDT_GetCurrentCount
  0001:0002133E       WDT_IsTimedOut
+ 0001:000218D4       memcpy
  0001:00022DE0       aNan_0
  0001:00022DE4       aNan
  0001:00022DE8       aInf
