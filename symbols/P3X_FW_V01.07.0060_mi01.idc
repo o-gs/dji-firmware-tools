@@ -110,6 +110,44 @@ static Enums_0(id) {
 	AddConstEx(id,"COMPONENT_BATTERY_VOL",	0X8,	-1);
 	AddConstEx(id,"COMPONENT_BATTERY_TEMP_VOL_LOW",	0X9,	-1);
 	AddConstEx(id,"COMPONENT_BATTERY_BAT_NOT_RDY",	0XA,	-1);
+	id = AddEnum(-1,"PACKET_FIELDS",0x1100000);
+	AddConstEx(id,"PACKET_DELIMITER",	0X55,	-1);
+	id = AddEnum(-1,"PktCmd_CommandSets",0x1100000);
+	AddConstEx(id,"CMDSET_Universal",	0,	-1);
+	AddConstEx(id,"CMDSET_Special",	0X1,	-1);
+	AddConstEx(id,"CMDSET_Camera",	0X2,	-1);
+	AddConstEx(id,"CMDSET_FlightCtrl",	0X3,	-1);
+	AddConstEx(id,"CMDSET_Gimbal",	0X4,	-1);
+	AddConstEx(id,"CMDSET_CentrBoard",	0X5,	-1);
+	AddConstEx(id,"CMDSET_RemtCtrl",	0X6,	-1);
+	AddConstEx(id,"CMDSET_WiFi",	0X7,	-1);
+	AddConstEx(id,"CMDSET_DM368",	0X8,	-1);
+	AddConstEx(id,"CMDSET_HDVidTx",	0X9,	-1);
+	AddConstEx(id,"CMDSET_MonBinOcular",	0XA,	-1);
+	AddConstEx(id,"CMDSET_Simult",	0XB,	-1);
+	AddConstEx(id,"CMDSET_ESC",	0XC,	-1);
+	AddConstEx(id,"CMDSET_SmartBat",	0XD,	-1);
+	AddConstEx(id,"CMDSET_DataLoggr",	0XE,	-1);
+	AddConstEx(id,"CMDSET_RTK",	0XF,	-1);
+	AddConstEx(id,"CMDSET_Automatn",	0X10,	-1);
+	id = AddEnum(-1,"PktCmdSet_Universal",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_Special",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_Camera",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_FlightCtrl",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_Gimbal",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_CentrBoard",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_RemtCtrl",0x1100000);
+	AddConstEx(id,"PKTCMD_GetPowerZone",	0X21,	-1);
+	id = AddEnum(-1,"PktCmdSet_WiFi",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_DM368",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_HDVidTx",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_MonBinOcular",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_Simult",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_ESC",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_SmartBat",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_DataLoggr",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_RTK",0x1100000);
+	id = AddEnum(-1,"PktCmdSet_Automatn",0x1100000);
 	return id;
 }
 
@@ -128,7 +166,7 @@ static ApplyStrucTInfos_0(void) {
 	id = GetStrucIdByName("struc_unkn02");
 	id = GetStrucIdByName("struc_unkn01");
 	id = GetStrucIdByName("struc_unkn03");
-	id = GetStrucIdByName("struc_unkn04");
+	id = GetStrucIdByName("DjiPacketExecCallback");
 	id = GetStrucIdByName("ExportParam");
 	id = GetStrucIdByName("ExportParamLimitD");
 	id = GetStrucIdByName("ExportParamLimitF");
@@ -214,6 +252,7 @@ static ApplyStrucTInfos_0(void) {
 	SetType(GetMemberId(id, 0xC), "double");
 	SetType(GetMemberId(id, 0x14), "double");
 	id = GetStrucIdByName("DjiDebugger");
+	id = GetStrucIdByName("DjiPacket");
 	return id;
 }
 
@@ -230,7 +269,7 @@ static Structures_0(id) {
 	id = AddStrucEx(-1,"struc_unkn02",0);
 	id = AddStrucEx(-1,"struc_unkn01",0);
 	id = AddStrucEx(-1,"struc_unkn03",0);
-	id = AddStrucEx(-1,"struc_unkn04",0);
+	id = AddStrucEx(-1,"DjiPacketExecCallback",0);
 	id = AddStrucEx(-1,"ExportParam",0);
 	id = AddStrucEx(-1,"ExportParamLimitD",0);
 	id = AddStrucEx(-1,"ExportParamLimitF",0);
@@ -308,6 +347,7 @@ static Structures_0(id) {
 	id = AddStrucEx(-1,"BatLimit",0);
 	id = AddStrucEx(-1,"CfgDebug",0);
 	id = AddStrucEx(-1,"DjiDebugger",0);
+	id = AddStrucEx(-1,"DjiPacket",0);
 	
 	id = GetStrucIdByName("struc_unkn02");
 	mid = AddStrucMember(id,"flags",	0,	0x20000400,	-1,	4);
@@ -334,11 +374,11 @@ static Structures_0(id) {
 	mid = AddStrucMember(id,"field_4",	0X4,	0x20000400,	-1,	4);
 	mid = AddStrucMember(id,"field_8",	0X8,	0x20000400,	-1,	4);
 	
-	id = GetStrucIdByName("struc_unkn04");
-	mid = AddStrucMember(id,"field_0",	0,	0x000400,	-1,	1);
-	mid = AddStrucMember(id,"field_1",	0X1,	0x000400,	-1,	1);
+	id = GetStrucIdByName("DjiPacketExecCallback");
+	mid = AddStrucMember(id,"cmdset",	0,	0x800400,	GetEnum("PktCmd_CommandSets"),	1);
+	mid = AddStrucMember(id,"cmd",	0X1,	0x000400,	-1,	1);
 	mid = AddStrucMember(id,"field_2",	0X2,	0x10000400,	-1,	2);
-	mid = AddStrucMember(id,"field_4",	0X4,	0x20500400,	0,	4,	0XFFFFFFFF,	0,	0x000002);
+	mid = AddStrucMember(id,"callback",	0X4,	0x20500400,	0,	4,	0XFFFFFFFF,	0,	0x000002);
 	
 	id = GetStrucIdByName("ExportParamLimitD");
 	mid = AddStrucMember(id,"minval",	0,	0x20200400,	-1,	4);
@@ -1102,6 +1142,18 @@ static Structures_0(id) {
 	mid = AddStrucMember(id,"field_40",	0X40,	0x20000400,	-1,	4);
 	mid = AddStrucMember(id,"field_44",	0X44,	0x20000400,	-1,	4);
 	mid = AddStrucMember(id,"field_48",	0X48,	0x20000400,	-1,	4);
+	
+	id = GetStrucIdByName("DjiPacket");
+	mid = AddStrucMember(id,"delimiter",	0,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"protover_length",	0X1,	0x10000400,	-1,	2);
+	mid = AddStrucMember(id,"hdr_crc",	0X3,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"sender",	0X4,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"receiver",	0X5,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"seqctr",	0X6,	0x10000400,	-1,	2);
+	mid = AddStrucMember(id,"ack",	0X8,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"cmdset",	0X9,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"cmd",	0XA,	0x000400,	-1,	1);
+	mid = AddStrucMember(id,"payload",	0XB,	0x000400,	-1,	1);
 	return id;
 }
 
@@ -25449,7 +25501,7 @@ static Bytes_4(void) {
 	MakeStr		(0X8041F90,	0X8041FA4);
 	MakeName	(0X8041F90,	"aStickMappingEr");
 	MakeCode	(0X8041FA4);
-	MakeName	(0X8041FA4,	"find_in_stru80A6678");
+	MakeName	(0X8041FA4,	"get_receive_command_cb");
 	MakeCode	(x=0X8041FA6);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -25572,6 +25624,7 @@ static Bytes_4(void) {
 	MakeCode	(x=0X80421AA);
 	OpStkvar	(x,	1);
 	MakeCode	(0X80421C4);
+	MakeName	(0X80421C4,	"recorder_action_rcv");
 	MakeCode	(x=0X80421D0);
 	OpHex		(x,	1);
 	MakeCode	(x=0X80421E0);
@@ -25590,6 +25643,10 @@ static Bytes_4(void) {
 	MakeCode	(0X8042216);
 	MakeCode	(x=0X804221E);
 	OpHex		(x,	1);
+	MakeCode	(x=0X8042224);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8042228);
+	OpStkvar	(x,	1);
 	MakeCode	(0X8042238);
 	MakeCode	(x=0X8042240);
 	OpStkvar	(x,	1);
@@ -25754,13 +25811,57 @@ static Bytes_4(void) {
 	MakeCode	(x=0X8042472);
 	OpHex		(x,	1);
 	MakeCode	(0X8042484);
+	MakeCode	(x=0X8042498);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X804249C);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X80424A0);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X80424A2);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X80424AA);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X80424AE);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X80424B2);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X80424B4);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X80424B8);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X80424C4);
+	OpStkvar	(x,	1);
 	MakeCode	(0X80424CA);
+	MakeCode	(x=0X80424CC);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X80424D2);
 	OpHex		(x,	1);
 	MakeCode	(0X80424E6);
+	MakeCode	(x=0X80424EE);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X80424F4);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X80424F6);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X80424FE);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8042502);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8042504);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X804250C);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8042512);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8042514);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8042518);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X804251E);
 	OpHex		(x,	1);
 	MakeCode	(0X8042530);
+	MakeCode	(x=0X804256A);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8042570);
 	OpHex		(x,	1);
 	MakeCode	(0X8042582);
@@ -26181,6 +26282,7 @@ static Bytes_4(void) {
 	MakeCode	(x=0X8042BCC);
 	OpHex		(x,	1);
 	MakeCode	(0X8042BDE);
+	MakeName	(0X8042BDE,	"ofdm_state_rcv");
 	MakeCode	(x=0X8042BE6);
 	OpHex		(x,	1);
 	MakeCode	(x=0X8042BEE);
@@ -26281,17 +26383,29 @@ static Bytes_4(void) {
 	MakeCode	(x=0X8042D16);
 	OpOff		(x,	1,	0X200010E8);
 	OpOff		(x,	129,	0X200010E8);
+	MakeCode	(x=0X8042D1A);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8042D28);
 	OpHex		(x,	1);
 	MakeCode	(0X8042D3A);
+	MakeCode	(x=0X8042D44);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8042D4C);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8042D52);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeCode	(x=0X8042D62);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8042D6A);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8042D70);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
 	MakeCode	(x=0X8042D7A);
 	OpHex		(x,	1);
+	MakeCode	(x=0X8042D82);
+	OpStkvar	(x,	1);
 	MakeCode	(0X8042D8C);
 	MakeCode	(x=0X8042D90);
 	OpOff		(x,	1,	0X200010E8);
@@ -26305,6 +26419,10 @@ static Bytes_4(void) {
 	OpOff		(x,	1,	0X200010E8);
 	OpOff		(x,	129,	0X200010E8);
 	MakeCode	(0X8042DBA);
+	MakeCode	(x=0X8042DC2);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8042DC8);
+	OpStkvar	(x,	1);
 	MakeCode	(0X8042DD8);
 	MakeCode	(0X8042DDA);
 	MakeStr		(0X8042DDC,	0X8042DF0);
@@ -26363,11 +26481,19 @@ static Bytes_4(void) {
 	MakeByte	(0X8042F2D);
 	MakeArray	(0X8042F2D,	0X3);
 	MakeCode	(0X8042F30);
+	MakeCode	(x=0X8042F34);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8042F38);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8042F3C);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8042F42);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
 	MakeCode	(x=0X8042F4C);
 	OpHex		(x,	1);
+	MakeCode	(x=0X8042F54);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8042F5E);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -26380,6 +26506,8 @@ static Bytes_4(void) {
 	MakeCode	(x=0X8042F68);
 	OpOff		(x,	1,	0X20001678);
 	OpOff		(x,	129,	0X20001678);
+	MakeCode	(x=0X8042F6C);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8042F72);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -26616,6 +26744,7 @@ static Bytes_4(void) {
 	MakeCode	(0X804324A);
 	MakeCode	(0X804325A);
 	MakeCode	(0X804325C);
+	MakeName	(0X804325C,	"atti_rcv");
 	MakeCode	(x=0X8043266);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -26627,6 +26756,7 @@ static Bytes_4(void) {
 	MakeCode	(x=0X804328A);
 	OpHex		(x,	1);
 	MakeCode	(0X804329C);
+	MakeName	(0X804329C,	"taillock_rcv");
 	MakeCode	(x=0X80432A6);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -28821,6 +28951,15 @@ static Bytes_4(void) {
 	MakeCode	(x=0X804548A);
 	OpOff		(x,	1,	0X200047C0);
 	OpOff		(x,	129,	0X200047C0);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_5(void) {
+        auto x;
+#define id x
+
 	MakeCode	(0X8045492);
 	MakeCode	(x=0X80454A8);
 	OpOff		(x,	1,	0);
@@ -28901,15 +29040,6 @@ static Bytes_4(void) {
 	MakeCode	(x=0X8045630);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_5(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X8045634);
 	OpOff		(x,	1,	0X20000328);
 	OpOff		(x,	129,	0X20000328);
@@ -31222,7 +31352,7 @@ static Bytes_5(void) {
 	MakeCode	(x=0X8048B30);
 	OpStkvar	(x,	1);
 	MakeCode	(0X8048B3C);
-	MakeName	(0X8048B3C,	"find_in_stru80B2DB0");
+	MakeName	(0X8048B3C,	"get_reply_command_cb");
 	MakeCode	(x=0X8048B3E);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -33736,6 +33866,7 @@ static Bytes_5(void) {
 	MakeDword	(0X804BE60);
 	MakeCode	(0X804BE64);
 	MakeCode	(0X804BE9C);
+	MakeName	(0X804BE9C,	"printf_sub_804BE9C");
 	MakeCode	(0X804BEA0);
 	MakeCode	(x=0X804BEA2);
 	OpOff		(x,	1,	0);
@@ -34463,6 +34594,15 @@ static Bytes_5(void) {
 	MakeCode	(0X804CE00);
 	MakeCode	(x=0X804CE02);
 	OpHex		(x,	1);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_6(void) {
+        auto x;
+#define id x
+
 	MakeCode	(0X804CE0C);
 	MakeCode	(x=0X804CE10);
 	OpHex		(x,	1);
@@ -34538,15 +34678,6 @@ static Bytes_5(void) {
 	MakeCode	(x=0X804CEDC);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_6(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X804CEE2);
 	OpOff		(x,	1,	0X20021A98);
 	OpOff		(x,	129,	0X20021A98);
@@ -37530,19 +37661,28 @@ static Bytes_6(void) {
 	MakeCode	(x=0X8050B24);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0X8050B26,	"a1");
 	MakeCode	(0X8050B30);
 	MakeCode	(x=0X8050B36);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0X8050B38,	"a1");
 	MakeCode	(x=0X8050B4C);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
 	MakeCode	(x=0X8050B50);
 	OpOff		(x,	1,	0X20001678);
 	OpOff		(x,	129,	0X20001678);
+	MakeCode	(x=0X8050B5A);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8050B60);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0X8050B62,	"a1");
+	MakeCode	(x=0X8050B70);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8050B7A);
+	OpStkvar	(x,	1);
 	MakeCode	(0X8050B90);
 	MakeCode	(0X8050B92);
 	MakeCode	(0X8050B94);
@@ -37623,43 +37763,78 @@ static Bytes_6(void) {
 	MakeByte	(0X8050EE7);
 	MakeDword	(0X8050EE8);
 	MakeCode	(0X8050EEC);
+	MakeCode	(x=0X8050EF8);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8050F12);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0X8050F14,	"a1");
 	MakeCode	(x=0X8050F1C);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0X8050F1E,	"a1");
 	MakeCode	(0X8050F34);
+	MakeCode	(x=0X8050F38);
+	OpStkvar	(x,	1);
 	MakeCode	(0X8050F3E);
+	MakeCode	(x=0X8050F4A);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8050F50);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0X8050F52,	"a1");
 	MakeCode	(0X8050F62);
+	MakeCode	(x=0X8050F74);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8050F7A);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8050F80);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8050F84);
+	OpStkvar	(x,	1);
+	MakeCode	(x=0X8050F88);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8050F92);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0X8050F94,	"a1");
+	MakeCode	(x=0X8050F9A);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8050FA0);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeCode	(x=0X8050FA2);
+	OpStkvar	(x,	1);
 	MakeCode	(x=0X8050FA8);
 	OpOff		(x,	1,	0X20001678);
 	OpOff		(x,	129,	0X20001678);
 	MakeCode	(x=0X8050FB0);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0X8050FB2,	"a1");
 	MakeCode	(x=0X8050FB8);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0X8050FBA,	"a1");
+	MakeCode	(x=0X8050FC2);
+	OpStkvar	(x,	1);
 	MakeCode	(0X8050FCE);
 	MakeCode	(x=0X8050FD2);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0X8050FD4,	"a1");
+	MakeCode	(x=0X8050FEA);
+	OpStkvar	(x,	1);
 	MakeCode	(0X8050FFC);
 	MakeCode	(x=0X8051002);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+	MakeComm	(0X8051004,	"a1");
 	MakeCode	(0X8051012);
+	MakeCode	(x=0X8051024);
+	OpStkvar	(x,	1);
 	MakeCode	(0X8051036);
+	MakeName	(0X8051036,	"def_ack_func");
 	MakeCode	(x=0X805103E);
 	OpHex		(x,	1);
 	MakeCode	(x=0X8051050);
@@ -37763,6 +37938,7 @@ static Bytes_6(void) {
 	OpOff		(x,	1,	0X2001D6C0);
 	OpOff		(x,	129,	0X2001D6C0);
 	MakeCode	(0X8051212);
+	MakeName	(0X8051212,	"send_msg_serial_close_by_app");
 	MakeCode	(x=0X805121A);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0X8051220);
@@ -39712,6 +39888,15 @@ static Bytes_6(void) {
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
 	MakeCode	(0X80535D8);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_7(void) {
+        auto x;
+#define id x
+
 	MakeCode	(x=0X80535E8);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0X80535EC);
@@ -39848,15 +40033,6 @@ static Bytes_6(void) {
 	OpOff		(x,	129,	0X200021AC);
 	MakeCode	(x=0X805395C);
 	OpStkvar	(x,	1);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_7(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X8053964);
 	OpOff		(x,	1,	0X20000028);
 	OpOff		(x,	129,	0X20000028);
@@ -45322,6 +45498,15 @@ static Bytes_7(void) {
 	MakeCode	(x=0X805D7CE);
 	OpHex		(x,	1);
 	MakeCode	(0X805D7D4);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_8(void) {
+        auto x;
+#define id x
+
 	MakeCode	(x=0X805D7D8);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -45461,15 +45646,6 @@ static Bytes_7(void) {
 	MakeCode	(x=0X805D9C4);
 	OpOff		(x,	1,	0X2000BF98);
 	OpOff		(x,	129,	0X2000BF98);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_8(void) {
-        auto x;
-#define id x
-
 	MakeCode	(0X805D9CA);
 	MakeCode	(x=0X805D9CE);
 	OpOff		(x,	1,	0);
@@ -50787,6 +50963,15 @@ static Bytes_8(void) {
 	MakeCode	(x=0X8063BBE);
 	OpOff		(x,	1,	0X200002B0);
 	OpOff		(x,	129,	0X200002B0);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_9(void) {
+        auto x;
+#define id x
+
 	MakeCode	(x=0X8063BC6);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -50925,15 +51110,6 @@ static Bytes_8(void) {
 	MakeCode	(x=0X8063CF0);
 	OpOff		(x,	1,	0X200002B0);
 	OpOff		(x,	129,	0X200002B0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_9(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X8063CF8);
 	OpOff		(x,	1,	0X200002B0);
 	OpOff		(x,	129,	0X200002B0);
@@ -56446,6 +56622,15 @@ static Bytes_9(void) {
 	MakeCode	(x=0X806CE52);
 	OpOff		(x,	1,	0X20001678);
 	OpOff		(x,	129,	0X20001678);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_10(void) {
+        auto x;
+#define id x
+
 	MakeCode	(x=0X806CE56);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -56578,15 +56763,6 @@ static Bytes_9(void) {
 	OpOff		(x,	128,	0);
 	MakeRptCmt	(0X806D04C,	"degree/radian conversion factor");
 	MakeDouble	(0X806D04C);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_10(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X806D054);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -57888,6 +58064,7 @@ static Bytes_10(void) {
 	MakeCode	(0X806DFA2);
 	MakeCode	(0X806DFBE);
 	MakeCode	(0X806DFC6);
+	MakeName	(0X806DFC6,	"printf_sub_806DFC6");
 	MakeCode	(x=0X806DFD2);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0X806DFD8);
@@ -62175,6 +62352,15 @@ static Bytes_10(void) {
 	MakeCode	(0X8073E68);
 	MakeCode	(x=0X8073E80);
 	OpStkvar	(x,	1);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_11(void) {
+        auto x;
+#define id x
+
 	MakeCode	(x=0X8073E88);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -62317,15 +62503,6 @@ static Bytes_10(void) {
 	MakeCode	(x=0X80740D2);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_11(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X80740D8);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -67687,6 +67864,15 @@ static Bytes_11(void) {
 	MakeCode	(x=0X807B590);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_12(void) {
+        auto x;
+#define id x
+
 	MakeCode	(x=0X807B5A2);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0X807B5AC);
@@ -67830,15 +68016,6 @@ static Bytes_11(void) {
 	MakeCode	(x=0X807B9C8);
 	OpOff		(x,	1,	0X20001678);
 	OpOff		(x,	129,	0X20001678);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_12(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X807B9D0);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -68503,6 +68680,7 @@ static Bytes_12(void) {
 	OpOff		(x,	1,	0X2000013C);
 	OpOff		(x,	129,	0X2000013C);
 	MakeCode	(0X807C864);
+	MakeName	(0X807C864,	"toogle_whitelist");
 	MakeCode	(x=0X807C866);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -68744,6 +68922,7 @@ static Bytes_12(void) {
 	MakeCode	(x=0X807CCBC);
 	OpHex		(x,	1);
 	MakeCode	(0X807CCCE);
+	MakeName	(0X807CCCE,	"wp_mission_pause_rcv");
 	MakeCode	(x=0X807CCD8);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0X807CCDE);
@@ -69280,6 +69459,7 @@ static Bytes_12(void) {
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
 	MakeCode	(0X807DA42);
+	MakeName	(0X807DA42,	"hp_reset_head_rcv");
 	MakeCode	(x=0X807DA48);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0X807DA4E);
@@ -73124,6 +73304,15 @@ static Bytes_12(void) {
 	OpOff		(x,	129,	0X20000308);
 	MakeCode	(x=0X8084366);
 	OpStkvar	(x,	1);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_13(void) {
+        auto x;
+#define id x
+
 	MakeCode	(x=0X8084368);
 	OpStkvar	(x,	1);
 	MakeCode	(x=0X808436A);
@@ -73280,15 +73469,6 @@ static Bytes_12(void) {
 	MakeCode	(x=0X80844F6);
 	OpOff		(x,	1,	0X2001DE04);
 	OpOff		(x,	129,	0X2001DE04);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_13(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X808450A);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -74609,6 +74789,7 @@ static Bytes_13(void) {
 	OpOff		(x,	1,	0X20016784);
 	OpOff		(x,	129,	0X20016784);
 	MakeCode	(0X8085CC6);
+	MakeName	(0X8085CC6,	"esc_link_up_sub_8085CC6");
 	MakeCode	(x=0X8085D00);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -78911,6 +79092,15 @@ static Bytes_13(void) {
 	MakeCode	(x=0X808D9A2);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_14(void) {
+        auto x;
+#define id x
+
 	MakeCode	(x=0X808D9B8);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -79066,15 +79256,6 @@ static Bytes_13(void) {
 	MakeCode	(x=0X808DCEC);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_14(void) {
-        auto x;
-#define id x
-
 	MakeCode	(x=0X808DD02);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
@@ -84388,6 +84569,15 @@ static Bytes_14(void) {
 	MakeCode	(x=0X8096D98);
 	OpOff		(x,	1,	0X2001A2F8);
 	OpOff		(x,	129,	0X2001A2F8);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_15(void) {
+        auto x;
+#define id x
+
 	MakeCode	(x=0X8096D9C);
 	OpOff		(x,	1,	0X2001A2F8);
 	OpOff		(x,	129,	0X2001A2F8);
@@ -84542,15 +84732,6 @@ static Bytes_14(void) {
 	OpOff		(x,	1,	0X20000E2C);
 	OpOff		(x,	129,	0X20000E2C);
 	MakeCode	(0X8096EFC);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_15(void) {
-        auto x;
-#define id x
-
 	MakeCode	(0X8096F02);
 	MakeCode	(x=0X8096F08);
 	OpOff		(x,	1,	0);
@@ -89971,6 +90152,15 @@ static Bytes_15(void) {
 	MakeCode	(x=0X809DAEA);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_16(void) {
+        auto x;
+#define id x
+
 	MakeCode	(0X809DB08);
 	MakeCode	(x=0X809DB8C);
 	OpStkvar	(x,	1);
@@ -90117,15 +90307,6 @@ static Bytes_15(void) {
 	MakeCode	(x=0X809DE74);
 	OpOff		(x,	1,	0);
 	OpOff		(x,	129,	0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_16(void) {
-        auto x;
-#define id x
-
 	MakeCode	(0X809DE82);
 	MakeCode	(x=0X809DE84);
 	OpOff		(x,	1,	0);
@@ -94849,8 +95030,9 @@ static Bytes_16(void) {
 	MakeArray	(0X80A6438,	0X21);
 	MakeStruct	(0X80A64BC,	"struc_unkn03");
 	MakeArray	(0X80A64BC,	0X25);
-	MakeStruct	(0X80A6678,	"struc_unkn04");
+	MakeStruct	(0X80A6678,	"DjiPacketExecCallback");
 	MakeArray	(0X80A6678,	0X51);
+	MakeName	(0X80A6678,	"receive_commands");
 	MakeStruct	(0X80A6900,	"ExportParam");
 	MakeArray	(0X80A6900,	0X200);
 	MakeName	(0X80A6900,	"flyc_params");
@@ -94859,8 +95041,9 @@ static Bytes_16(void) {
 	MakeName	(0X80AE100,	"flyc_params_pt2");
 	MakeByte	(0X80B2DA4);
 	MakeArray	(0X80B2DA4,	0XC);
-	MakeStruct	(0X80B2DB0,	"struc_unkn04");
+	MakeStruct	(0X80B2DB0,	"DjiPacketExecCallback");
 	MakeArray	(0X80B2DB0,	0X6);
+	MakeName	(0X80B2DB0,	"reply_commands");
 	MakeStruct	(0X80B2DE0,	"struc_unkn04e");
 	MakeArray	(0X80B2DE0,	0X347);
 	MakeStruct	(0X80B4818,	"struc_unkn04e");
@@ -95274,6 +95457,15 @@ static Bytes_16(void) {
 	MakeName	(0X80D4EE8,	"aHardfaultTas_1");
 	MakeByte	(0X80D4F2A);
 	MakeArray	(0X80D4F2A,	0X2);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_17(void) {
+        auto x;
+#define id x
+
 	MakeStr		(0X80D4F2C,	0X80D4F71);
 	MakeName	(0X80D4F2C,	"aHardfaultWdg_0");
 	MakeByte	(0X80D4F71);
@@ -95387,15 +95579,6 @@ static Bytes_16(void) {
 	MakeDword	(0X80D5930);
 	MakeDword	(0X80D5934);
 	MakeDword	(0X80D5938);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_17(void) {
-        auto x;
-#define id x
-
 	MakeDword	(0X80D593C);
 	MakeDword	(0X80D5940);
 	MakeDword	(0X80D5944);
@@ -97885,6 +98068,7 @@ static Bytes_17(void) {
 	MakeByte	(0X200000DF);
 	MakeDword	(0X200000E0);
 	MakeDword	(0X200000E4);
+	MakeName	(0X200000E4,	"ofdm_last_state");
 	MakeName	(0X200000E8,	"test_deformation");
 	MakeDword	(0X200000F0);
 	MakeArray	(0X200000F0,	0X6);
@@ -98346,41 +98530,24 @@ static Bytes_17(void) {
 	MakeName	(0X2000113E,	"g_config__imu_gps");
 	MakeStruct	(0X20001154,	"ConfReceiver");
 	MakeName	(0X20001154,	"g_config__receiver");
+	MakeStruct	(0X200011D8,	"ConfControl");
 	MakeName	(0X200011D8,	"g_config__control");
-	MakeWord	(0X2000120C);
-	MakeWord	(0X20001210);
-	MakeWord	(0X20001212);
-	MakeWord	(0X20001218);
-	MakeWord	(0X2000121A);
-	MakeWord	(0X20001224);
-	MakeWord	(0X20001226);
-	MakeWord	(0X20001228);
-	MakeWord	(0X2000122A);
-	MakeByte	(0X20001240);
-	MakeByte	(0X20001241);
-	MakeByte	(0X20001242);
-	MakeByte	(0X20001246);
-	MakeWord	(0X20001256);
 	MakeStruct	(0X20001258,	"ConfEngine");
 	MakeName	(0X20001258,	"g_config__engine");
 	MakeStruct	(0X20001264,	"ConfCraftModel");
 	MakeName	(0X20001264,	"g_config__craft_model");
+	MakeStruct	(0X2000128C,	"ConfAdvancedFunction");
 	MakeName	(0X2000128C,	"g_config__advanced_function");
-	MakeByte	(0X2000128F);
-	MakeByte	(0X20001291);
-	MakeByte	(0X20001293);
 	MakeStruct	(0X20001295,	"ConfFailSafe");
 	MakeName	(0X20001295,	"g_config__fail_safe");
 	MakeStruct	(0X20001296,	"ConfGoHome");
 	MakeName	(0X20001296,	"g_config__go_home");
+	MakeStruct	(0X2000129C,	"ConfIntelligenceOrientation");
 	MakeName	(0X2000129C,	"g_config__intelligence_orientation");
-	MakeByte	(0X2000129F);
 	MakeStruct	(0X200012A0,	"ConfPanTilt");
 	MakeName	(0X200012A0,	"g_config__pantilt");
-	MakeWord	(0X200012D4);
+	MakeStruct	(0X200012D4,	"ConfFlyingLimit");
 	MakeName	(0X200012D4,	"g_config__flying_limit");
-	MakeWord	(0X200012D6);
-	MakeWord	(0X200012D8);
 	MakeStruct	(0X200012DC,	"ConfKnob");
 	MakeName	(0X200012DC,	"g_config__knob");
 	MakeStruct	(0X200012E4,	"ConfVoltage");
@@ -98408,8 +98575,8 @@ static Bytes_17(void) {
 	MakeName	(0X20001484,	"g_config__gps_cfg");
 	MakeStruct	(0X20001494,	"ConfGearCfg");
 	MakeName	(0X20001494,	"g_config__gear_cfg");
+	MakeStruct	(0X200014A4,	"ConfEscCfg");
 	MakeName	(0X200014A4,	"g_config__esc_cfg");
-	MakeByte	(0X200014A5);
 	MakeStruct	(0X200014A8,	"ConfSerialApiCfg");
 	MakeName	(0X200014A8,	"g_config__serial_api_cfg");
 	MakeDword	(0X200014B0);
@@ -98427,28 +98594,16 @@ static Bytes_17(void) {
 	MakeName	(0X20001560,	"g_config__hotpoint_cfg");
 	MakeStruct	(0X200015A8,	"ConfHomeLockCfg");
 	MakeName	(0X200015A8,	"g_config__home_lock_cfg");
+	MakeStruct	(0X200015C0,	"ConfFollowMeCfg");
 	MakeName	(0X200015C0,	"g_config__followme_cfg");
-	MakeByte	(0X200015FB);
-	MakeByte	(0X200015FC);
-	MakeByte	(0X200015FE);
 	MakeStruct	(0X20001600,	"ConfWaypointCfg");
 	MakeName	(0X20001600,	"g_config__waypoint_cfg");
 	MakeStruct	(0X20001618,	"ConfBatLimit");
 	MakeName	(0X20001618,	"g_config__bat_limit");
 	MakeDword	(0X20001678);
 	MakeDword	(0X2000167C);
-	MakeWord	(0X20001680);
+	MakeStruct	(0X20001680,	"RealInput");
 	MakeName	(0X20001680,	"g_real__input");
-	MakeWord	(0X20001682);
-	MakeWord	(0X20001684);
-	MakeWord	(0X20001686);
-	MakeWord	(0X20001688);
-	MakeWord	(0X2000168C);
-	MakeWord	(0X200016A4);
-	MakeWord	(0X200016A6);
-	MakeWord	(0X200016A8);
-	MakeWord	(0X200016AA);
-	MakeWord	(0X200016AC);
 	MakeWord	(0X200016AE);
 	MakeWord	(0X200016B0);
 	MakeWord	(0X200016B2);
@@ -98500,16 +98655,8 @@ static Bytes_17(void) {
 	MakeArray	(0X20001858,	0X4);
 	MakeDword	(0X20001868);
 	MakeByte	(0X2000186C);
-	MakeByte	(0X2000186D);
+	MakeStruct	(0X2000186D,	"RealStatus");
 	MakeName	(0X2000186D,	"g_real__status");
-	MakeByte	(0X2000186E);
-	MakeByte	(0X2000186F);
-	MakeByte	(0X20001872);
-	MakeByte	(0X20001874);
-	MakeByte	(0X20001875);
-	MakeWord	(0X20001876);
-	MakeByte	(0X20001878);
-	MakeArray	(0X20001879,	0X7);
 	MakeStruct	(0X20001880,	"RealKnob");
 	MakeName	(0X20001880,	"g_real__knob");
 	MakeByte	(0X2000188C);
@@ -98566,6 +98713,15 @@ static Bytes_17(void) {
 	MakeArray	(0X2000199E,	0X2);
 	MakeWord	(0X200019A0);
 	MakeWord	(0X200019A2);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_18(void) {
+        auto x;
+#define id x
+
 	MakeWord	(0X200019A4);
 	MakeWord	(0X200019A6);
 	MakeWord	(0X200019A8);
@@ -98699,15 +98855,6 @@ static Bytes_17(void) {
 	MakeByte	(0X20001C3A);
 	MakeByte	(0X20001C3B);
 	MakeArray	(0X20001C3B,	0X9);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_18(void) {
-        auto x;
-#define id x
-
 	MakeByte	(0X20001C44);
 	MakeByte	(0X20001C45);
 	MakeArray	(0X20001C45,	0X3);
@@ -104721,8 +104868,16 @@ static Functions_0(void) {
 	SetFunctionFlags(0X803AB50,0x400);
 	MakeFunction    (0X803AB64,0X803AB74);
 	SetFunctionFlags(0X803AB64,0x400);
+	MakeFunction    (0X803AB74,0X803AB88);
+	SetFunctionFlags(0X803AB74,0x400);
+	MakeFunction    (0X803AB88,0X803AB9C);
+	SetFunctionFlags(0X803AB88,0x400);
 	MakeFunction    (0X803AB9C,0X803ABB0);
 	SetFunctionFlags(0X803AB9C,0x400);
+	MakeFunction    (0X803ABB0,0X803ABC4);
+	SetFunctionFlags(0X803ABB0,0x400);
+	MakeFunction    (0X803ABC4,0X803ABDA);
+	SetFunctionFlags(0X803ABC4,0x400);
 	MakeFunction    (0X803AC1E,0X803AC24);
 	SetFunctionFlags(0X803AC1E,0x400);
 	MakeFunction    (0X803AC68,0X803AC7C);
@@ -105259,6 +105414,11 @@ static Functions_0(void) {
 	MakeFrame(0X80400E4, 0X10, 0, 0);
 	MakeFunction    (0X8040104,0X8040114);
 	SetFunctionFlags(0X8040104,0x400);
+	MakeFunction    (0X8040114,0X804017A);
+	SetFunctionFlags(0X8040114,0x400);
+	MakeFrame(0X8040114, 0X8, 0, 0);
+	MakeFunction    (0X804017A,0X8040206);
+	SetFunctionFlags(0X804017A,0x400);
 	MakeFunction    (0X8040206,0X8040274);
 	SetFunctionFlags(0X8040206,0x400);
 	MakeFunction    (0X8040274,0X8040286);
@@ -105340,6 +105500,10 @@ static Functions_0(void) {
 	MakeFunction    (0X8041C54,0X8041C82);
 	SetFunctionFlags(0X8041C54,0x400);
 	MakeFrame(0X8041C54, 0X10, 0, 0);
+}
+
+static Functions_1(void) {
+
 	MakeFunction    (0X8041C82,0X8041CA6);
 	SetFunctionFlags(0X8041C82,0x400);
 	MakeFrame(0X8041C82, 0X10, 0, 0);
@@ -105351,10 +105515,6 @@ static Functions_0(void) {
 	MakeFrame(0X8041D08, 0X8, 0, 0);
 	MakeFunction    (0X8041D24,0X8041D36);
 	SetFunctionFlags(0X8041D24,0x400);
-}
-
-static Functions_1(void) {
-
 	MakeFunction    (0X8041D36,0X8041D8A);
 	SetFunctionFlags(0X8041D36,0x400);
 	MakeFrame(0X8041D36, 0X10, 0, 0);
@@ -105379,10 +105539,11 @@ static Functions_1(void) {
 	MakeFrame(0X8041F06, 0X8, 0, 0);
 	MakeFunction    (0X8041FA4,0X8041FD0);
 	SetFunctionFlags(0X8041FA4,0x400);
-	SetType(0X8041FA4, "void *__fastcall find_in_stru80A6678(int a1, int a2);");
+	SetType(0X8041FA4, "void *__fastcall get_receive_command_cb(int a1, int a2);");
 	MakeFrame(0X8041FA4, 0X8, 0, 0);
 	MakeFunction    (0X8041FD0,0X8042052);
 	SetFunctionFlags(0X8041FD0,0x400);
+	SetType(0X8041FD0, "_BYTE *__fastcall sub_8041FD0(struct DjiPacket *pkt, unsigned int a2);");
 	MakeFrame(0X8041FD0, 0X10, 0, 0);
 	MakeFunction    (0X8042052,0X8042054);
 	SetFunctionFlags(0X8042052,0x480);
@@ -105391,122 +105552,182 @@ static Functions_1(void) {
 	MakeFrame(0X8042054, 0X8, 0, 0);
 	MakeFunction    (0X8042090,0X80420E0);
 	SetFunctionFlags(0X8042090,0x400);
+	SetType(0X8042090, "int __fastcall sub_8042090(struct DjiPacket *pkt);");
 	MakeFrame(0X8042090, 0X28, 0, 0);
 	MakeFunction    (0X80420E0,0X80420F2);
 	SetFunctionFlags(0X80420E0,0x400);
+	SetType(0X80420E0, "int __fastcall sub_80420E0(struct DjiPacket *pkt);");
 	MakeFrame(0X80420E0, 0X8, 0, 0);
 	MakeFunction    (0X80420F2,0X8042124);
 	SetFunctionFlags(0X80420F2,0x400);
+	SetType(0X80420F2, "int __fastcall sub_80420F2(struct DjiPacket *pkt);");
 	MakeFrame(0X80420F2, 0X10, 0, 0);
 	MakeFunction    (0X8042124,0X8042160);
 	SetFunctionFlags(0X8042124,0x400);
+	SetType(0X8042124, "int __fastcall sub_8042124(struct DjiPacket *pkt);");
 	MakeFrame(0X8042124, 0X10, 0, 0);
 	MakeFunction    (0X8042160,0X8042186);
 	SetFunctionFlags(0X8042160,0x400);
+	SetType(0X8042160, "int __fastcall sub_8042160(struct DjiPacket *pkt);");
 	MakeFrame(0X8042160, 0X10, 0, 0);
 	MakeFunction    (0X8042186,0X80421C4);
 	SetFunctionFlags(0X8042186,0x400);
+	SetType(0X8042186, "int __fastcall sub_8042186(struct DjiPacket *pkt);");
 	MakeFrame(0X8042186, 0X10, 0, 0);
 	MakeFunction    (0X80421C4,0X8042216);
 	SetFunctionFlags(0X80421C4,0x400);
+	SetType(0X80421C4, "int __fastcall recorder_action_rcv(struct DjiPacket *pkt);");
 	MakeFrame(0X80421C4, 0X18, 0, 0);
+	MakeFunction    (0X8042216,0X8042238);
+	SetFunctionFlags(0X8042216,0x400);
+	MakeFrame(0X8042216, 0X18, 0, 0);
 	MakeFunction    (0X8042238,0X804226C);
 	SetFunctionFlags(0X8042238,0x400);
+	SetType(0X8042238, "int __fastcall sub_8042238(struct DjiPacket *pkt);");
 	MakeFrame(0X8042238, 0X20, 0, 0);
 	MakeFunction    (0X804226C,0X80422A8);
 	SetFunctionFlags(0X804226C,0x400);
+	SetType(0X804226C, "int __fastcall sub_804226C(struct DjiPacket *pkt);");
 	MakeFrame(0X804226C, 0X10, 0, 0);
 	MakeFunction    (0X80422A8,0X80422D4);
 	SetFunctionFlags(0X80422A8,0x400);
+	SetType(0X80422A8, "int __fastcall sub_80422A8(struct DjiPacket *pkt);");
 	MakeFrame(0X80422A8, 0X10, 0, 0);
 	MakeFunction    (0X80422D4,0X8042348);
 	SetFunctionFlags(0X80422D4,0x400);
+	SetType(0X80422D4, "int __fastcall sub_80422D4(struct DjiPacket *pkt);");
 	MakeFrame(0X80422D4, 0X50, 0, 0);
 	MakeFunction    (0X8042348,0X8042438);
 	SetFunctionFlags(0X8042348,0x400);
+	SetType(0X8042348, "int __fastcall sub_8042348(struct DjiPacket *pkt);");
 	MakeFrame(0X8042348, 0X50, 0, 0);
 	MakeFunction    (0X8042438,0X8042460);
 	SetFunctionFlags(0X8042438,0x400);
+	SetType(0X8042438, "int __fastcall sub_8042438(struct DjiPacket *pkt);");
 	MakeFrame(0X8042438, 0X10, 0, 0);
 	MakeFunction    (0X8042460,0X8042484);
 	SetFunctionFlags(0X8042460,0x400);
+	SetType(0X8042460, "int __fastcall sub_8042460(struct DjiPacket *pkt);");
 	MakeFrame(0X8042460, 0X10, 0, 0);
+	MakeFunction    (0X8042484,0X80424E6);
+	SetFunctionFlags(0X8042484,0x400);
+	MakeFrame(0X8042484, 0X30, 0, 0);
+	MakeFunction    (0X80424E6,0X8042530);
+	SetFunctionFlags(0X80424E6,0x400);
+	MakeFrame(0X80424E6, 0X28, 0, 0);
+	MakeFunction    (0X8042530,0X8042582);
+	SetFunctionFlags(0X8042530,0x400);
+	MakeFrame(0X8042530, 0X18, 0, 0);
 	MakeFunction    (0X8042582,0X804268E);
 	SetFunctionFlags(0X8042582,0x400);
+	SetType(0X8042582, "int __fastcall sub_8042582(struct DjiPacket *pkt);");
 	MakeFrame(0X8042582, 0X20, 0, 0);
 	MakeFunction    (0X804268E,0X804279A);
 	SetFunctionFlags(0X804268E,0x400);
+	SetType(0X804268E, "int __fastcall sub_804268E(struct DjiPacket *pkt);");
 	MakeFrame(0X804268E, 0X28, 0, 0);
 	MakeFunction    (0X804279A,0X80427D4);
 	SetFunctionFlags(0X804279A,0x400);
+	SetType(0X804279A, "int __fastcall sub_804279A(struct DjiPacket *pkt);");
 	MakeFrame(0X804279A, 0X10, 0, 0);
 	MakeFunction    (0X80427D4,0X80429D0);
 	SetFunctionFlags(0X80427D4,0x400);
+	SetType(0X80427D4, "int __fastcall sub_80427D4(struct DjiPacket *pkt);");
 	MakeFrame(0X80427D4, 0X30, 0, 0);
 	MakeFunction    (0X80429D0,0X8042A10);
 	SetFunctionFlags(0X80429D0,0x400);
+	SetType(0X80429D0, "int __fastcall sub_80429D0(struct DjiPacket *pkt);");
 	MakeFrame(0X80429D0, 0X10, 0, 0);
 	MakeFunction    (0X8042A10,0X8042A7C);
 	SetFunctionFlags(0X8042A10,0x400);
+	SetType(0X8042A10, "int __fastcall sub_8042A10(struct DjiPacket *pkt);");
 	MakeFrame(0X8042A10, 0X18, 0, 0);
 	MakeFunction    (0X8042A7C,0X8042AD0);
 	SetFunctionFlags(0X8042A7C,0x400);
+	SetType(0X8042A7C, "int __fastcall sub_8042A7C(struct DjiPacket *pkt);");
 	MakeFrame(0X8042A7C, 0X28, 0, 0);
 	MakeFunction    (0X8042AD0,0X8042AF4);
 	SetFunctionFlags(0X8042AD0,0x400);
+	SetType(0X8042AD0, "int __fastcall sub_8042AD0(struct DjiPacket *pkt);");
 	MakeFrame(0X8042AD0, 0X10, 0, 0);
 	MakeFunction    (0X8042AF4,0X8042B1C);
 	SetFunctionFlags(0X8042AF4,0x400);
+	SetType(0X8042AF4, "int __fastcall sub_8042AF4(struct DjiPacket *pkt);");
 	MakeFrame(0X8042AF4, 0X30, 0, 0);
 	MakeFunction    (0X8042B1C,0X8042B76);
 	SetFunctionFlags(0X8042B1C,0x400);
+	SetType(0X8042B1C, "int __fastcall sub_8042B1C(struct DjiPacket *pkt);");
 	MakeFrame(0X8042B1C, 0X18, 0, 0);
 	MakeFunction    (0X8042B76,0X8042BAC);
 	SetFunctionFlags(0X8042B76,0x400);
+	SetType(0X8042B76, "int __fastcall sub_8042B76(struct DjiPacket *pkt);");
 	MakeFrame(0X8042B76, 0X10, 0, 0);
 	MakeFunction    (0X8042BAC,0X8042BDE);
 	SetFunctionFlags(0X8042BAC,0x400);
+	SetType(0X8042BAC, "int __fastcall sub_8042BAC(struct DjiPacket *pkt);");
 	MakeFrame(0X8042BAC, 0X10, 0, 0);
 	MakeFunction    (0X8042BDE,0X8042C04);
 	SetFunctionFlags(0X8042BDE,0x400);
+	SetType(0X8042BDE, "int __fastcall ofdm_state_rcv(struct DjiPacket *pkt);");
 	MakeFrame(0X8042BDE, 0X10, 0, 0);
 	MakeFunction    (0X8042C04,0X8042C12);
 	SetFunctionFlags(0X8042C04,0x400);
+	SetType(0X8042C04, "int __fastcall sub_8042C04(struct DjiPacket *pkt);");
 	MakeFunction    (0X8042C12,0X8042C42);
 	SetFunctionFlags(0X8042C12,0x400);
+	SetType(0X8042C12, "int __fastcall sub_8042C12(struct DjiPacket *pkt);");
 	MakeFrame(0X8042C12, 0X10, 0, 0);
 	MakeFunction    (0X8042C42,0X8042CC0);
 	SetFunctionFlags(0X8042C42,0x400);
+	SetType(0X8042C42, "int __fastcall sub_8042C42(struct DjiPacket *pkt);");
 	MakeFrame(0X8042C42, 0X18, 0, 0);
 	MakeFunction    (0X8042CC0,0X8042D0E);
 	SetFunctionFlags(0X8042CC0,0x400);
 	MakeFrame(0X8042CC0, 0X10, 0, 0);
+	MakeFunction    (0X8042D0E,0X8042D3A);
+	SetFunctionFlags(0X8042D0E,0x400);
+	MakeFrame(0X8042D0E, 0X10, 0, 0);
+	MakeFunction    (0X8042D3A,0X8042DBA);
+	SetFunctionFlags(0X8042D3A,0x400);
+	MakeFrame(0X8042D3A, 0X18, 0, 0);
+	MakeFunction    (0X8042DBA,0X8042F7A);
+	SetFunctionFlags(0X8042DBA,0x400);
+	MakeFrame(0X8042DBA, 0X10, 0, 0);
 	MakeFunction    (0X8042F7A,0X8043032);
 	SetFunctionFlags(0X8042F7A,0x400);
+	SetType(0X8042F7A, "int __fastcall sub_8042F7A(struct DjiPacket *pkt);");
 	MakeFrame(0X8042F7A, 0X20, 0, 0);
 	MakeFunction    (0X8043032,0X8043088);
 	SetFunctionFlags(0X8043032,0x400);
+	SetType(0X8043032, "int __fastcall sub_8043032(struct DjiPacket *pkt);");
 	MakeFrame(0X8043032, 0X10, 0, 0);
 	MakeFunction    (0X8043088,0X8043176);
 	SetFunctionFlags(0X8043088,0x400);
+	SetType(0X8043088, "int __fastcall sub_8043088(struct DjiPacket *pkt);");
 	MakeFrame(0X8043088, 0X40, 0, 0);
 	MakeFunction    (0X8043176,0X8043198);
 	SetFunctionFlags(0X8043176,0x400);
 	MakeFunction    (0X8043198,0X8043242);
 	SetFunctionFlags(0X8043198,0x400);
+	SetType(0X8043198, "int __fastcall sub_8043198(struct DjiPacket *pkt);");
 	MakeFrame(0X8043198, 0X18, 0, 0);
 	MakeFunction    (0X8043242,0X804324A);
 	SetFunctionFlags(0X8043242,0x400);
+	SetType(0X8043242, "int __fastcall sub_8043242(struct DjiPacket *pkt);");
 	MakeFunction    (0X804324A,0X804325C);
 	SetFunctionFlags(0X804324A,0x400);
+	SetType(0X804324A, "int __fastcall sub_804324A(struct DjiPacket *pkt);");
 	MakeFunction    (0X804325C,0X804329C);
 	SetFunctionFlags(0X804325C,0x400);
+	SetType(0X804325C, "int __fastcall atti_rcv(struct DjiPacket *pkt);");
 	MakeFrame(0X804325C, 0X10, 0, 0);
 	MakeFunction    (0X804329C,0X80432DC);
 	SetFunctionFlags(0X804329C,0x400);
+	SetType(0X804329C, "int __fastcall taillock_rcv(struct DjiPacket *pkt);");
 	MakeFrame(0X804329C, 0X10, 0, 0);
 	MakeFunction    (0X80432DC,0X804330E);
 	SetFunctionFlags(0X80432DC,0x400);
+	SetType(0X80432DC, "int __fastcall sub_80432DC(struct DjiPacket *pkt);");
 	MakeFrame(0X80432DC, 0X10, 0, 0);
 	MakeFunction    (0X8043414,0X8043434);
 	SetFunctionFlags(0X8043414,0x400);
@@ -105875,6 +106096,10 @@ static Functions_1(void) {
 	MakeFrame(0X8046306, 0X8, 0, 0);
 	MakeFunction    (0X8046312,0X8046320);
 	SetFunctionFlags(0X8046312,0x400);
+	SetType(0X8046312, "int __fastcall sub_8046312(struct DjiPacket *pkt);");
+	MakeFunction    (0X8046320,0X804634A);
+	SetFunctionFlags(0X8046320,0x400);
+	MakeFrame(0X8046320, 0X18, 0, 0);
 	MakeFunction    (0X804634A,0X80463B2);
 	SetFunctionFlags(0X804634A,0x400);
 	MakeFrame(0X804634A, 0X18, 0, 0);
@@ -106110,11 +106335,14 @@ static Functions_1(void) {
 	MakeFrame(0X8048A80, 0X8, 0, 0);
 	MakeFunction    (0X8048ADC,0X8048B0C);
 	SetFunctionFlags(0X8048ADC,0x400);
+	SetType(0X8048ADC, "int __fastcall sub_8048ADC(struct DjiPacket *pkt);");
 	MakeFunction    (0X8048B0C,0X8048B3C);
 	SetFunctionFlags(0X8048B0C,0x400);
+	SetType(0X8048B0C, "int __fastcall sub_8048B0C(struct DjiPacket *pkt);");
 	MakeFrame(0X8048B0C, 0X10, 0, 0);
 	MakeFunction    (0X8048B3C,0X8048B68);
 	SetFunctionFlags(0X8048B3C,0x400);
+	SetType(0X8048B3C, "void *__fastcall get_reply_command_cb(int a1, int a2);");
 	MakeFrame(0X8048B3C, 0X8, 0, 0);
 	MakeFunction    (0X8048B6C,0X8048B88);
 	SetFunctionFlags(0X8048B6C,0x400);
@@ -106339,6 +106567,7 @@ static Functions_1(void) {
 	MakeFrame(0X804A88E, 0X10, 0, 0);
 	MakeFunction    (0X804A8DA,0X804A9FC);
 	SetFunctionFlags(0X804A8DA,0x400);
+	SetType(0X804A8DA, "int __fastcall sub_804A8DA(struct DjiPacket *pkt);");
 	MakeFrame(0X804A8DA, 0XD8, 0, 0);
 	MakeFunction    (0X804A9FC,0X804AA1C);
 	SetFunctionFlags(0X804A9FC,0x400);
@@ -106524,6 +106753,7 @@ static Functions_1(void) {
 	MakeFrame(0X804BE64, 0X50, 0, 0);
 	MakeFunction    (0X804BE9C,0X804BEA0);
 	SetFunctionFlags(0X804BE9C,0x400);
+	SetType(0X804BE9C, "int printf_sub_804BE9C(const char *fmt, ...);");
 	MakeFunction    (0X804BEB6,0X804BF0E);
 	SetFunctionFlags(0X804BEB6,0x400);
 	MakeFrame(0X804BEB6, 0X18, 0, 0);
@@ -106895,6 +107125,23 @@ static Functions_1(void) {
 	MakeFunction    (0X8050AAC,0X8050ABA);
 	SetFunctionFlags(0X8050AAC,0x400);
 	MakeFrame(0X8050AAC, 0X20, 0, 0);
+	MakeFunction    (0X8050B22,0X8050B30);
+	SetFunctionFlags(0X8050B22,0x400);
+	MakeFrame(0X8050B22, 0X8, 0, 0);
+	MakeFunction    (0X8050B30,0X8050F3E);
+	SetFunctionFlags(0X8050B30,0x400);
+	MakeFrame(0X8050B30, 0X90, 0, 0);
+	MakeFunction    (0X8050F3E,0X8050FCE);
+	SetFunctionFlags(0X8050F3E,0x400);
+	MakeFrame(0X8050F3E, 0X48, 0, 0);
+	MakeFunction    (0X8050FCE,0X8050FFC);
+	SetFunctionFlags(0X8050FCE,0x400);
+	MakeFrame(0X8050FCE, 0X10, 0, 0);
+	MakeFunction    (0X8050FFC,0X8051036);
+	SetFunctionFlags(0X8050FFC,0x400);
+	MakeFrame(0X8050FFC, 0X10, 0, 0);
+	MakeFunction    (0X8051036,0X8051056);
+	SetFunctionFlags(0X8051036,0x400);
 	MakeFunction    (0X8051056,0X805106E);
 	SetFunctionFlags(0X8051056,0x400);
 	MakeFrame(0X8051056, 0X8, 0, 0);
@@ -108514,6 +108761,10 @@ static Functions_1(void) {
 	MakeFunction    (0X80662E6,0X806632E);
 	SetFunctionFlags(0X80662E6,0x400);
 	MakeFrame(0X80662E6, 0X18, 0, 0);
+}
+
+static Functions_2(void) {
+
 	MakeFunction    (0X806632E,0X8066364);
 	SetFunctionFlags(0X806632E,0x400);
 	MakeFrame(0X806632E, 0X8, 0, 0);
@@ -108568,10 +108819,6 @@ static Functions_1(void) {
 	SetFunctionFlags(0X8066874,0x400);
 	MakeFunction    (0X8066886,0X8066890);
 	SetFunctionFlags(0X8066886,0x400);
-}
-
-static Functions_2(void) {
-
 	MakeFunction    (0X8066890,0X806689A);
 	SetFunctionFlags(0X8066890,0x400);
 	MakeFunction    (0X806689A,0X80668B0);
@@ -109456,7 +109703,7 @@ static Functions_2(void) {
 	SetFunctionFlags(0X806DFBE,0x400);
 	MakeFunction    (0X806DFC6,0X806E038);
 	SetFunctionFlags(0X806DFC6,0x400);
-	SetType(0X806DFC6, "int sub_806DFC6(int a1, const char *fmt, ...);");
+	SetType(0X806DFC6, "int printf_sub_806DFC6(int a1, const char *fmt, ...);");
 	MakeFrame(0X806DFC6, 0X168, 0, 0);
 	MakeLocal(0X806DFC6, 0X806E038, "[bp-0X10]", "varg_r0");
 	MakeLocal(0X806DFC6, 0X806E038, "[bp-0XC]", "varg_r1");
@@ -110438,71 +110685,93 @@ static Functions_2(void) {
 	MakeFrame(0X807C8C2, 0X8, 0, 0);
 	MakeFunction    (0X807CAA0,0X807CB68);
 	SetFunctionFlags(0X807CAA0,0x400);
+	SetType(0X807CAA0, "int __fastcall sub_807CAA0(struct DjiPacket *pkt);");
 	MakeFrame(0X807CAA0, 0X18, 0, 0);
 	MakeFunction    (0X807CB68,0X807CBCE);
 	SetFunctionFlags(0X807CB68,0x400);
+	SetType(0X807CB68, "int __fastcall sub_807CB68(struct DjiPacket *pkt);");
 	MakeFrame(0X807CB68, 0X10, 0, 0);
 	MakeFunction    (0X807CBCE,0X807CBE0);
 	SetFunctionFlags(0X807CBCE,0x400);
+	SetType(0X807CBCE, "int __fastcall sub_807CBCE(struct DjiPacket *pkt);");
 	MakeFrame(0X807CBCE, 0X10, 0, 0);
 	MakeFunction    (0X807CC3A,0X807CC44);
 	SetFunctionFlags(0X807CC3A,0x400);
 	MakeFunction    (0X807CC44,0X807CCCE);
 	SetFunctionFlags(0X807CC44,0x400);
+	SetType(0X807CC44, "int __fastcall sub_807CC44(struct DjiPacket *pkt);");
 	MakeFrame(0X807CC44, 0X10, 0, 0);
 	MakeFunction    (0X807CCCE,0X807CD36);
 	SetFunctionFlags(0X807CCCE,0x400);
+	SetType(0X807CCCE, "int __fastcall wp_mission_pause_rcv(struct DjiPacket *pkt);");
 	MakeFrame(0X807CCCE, 0X18, 0, 0);
 	MakeFunction    (0X807CD36,0X807CDAC);
 	SetFunctionFlags(0X807CD36,0x400);
+	SetType(0X807CD36, "int __fastcall sub_807CD36(struct DjiPacket *pkt);");
 	MakeFrame(0X807CD36, 0X18, 0, 0);
 	MakeFunction    (0X807CDAC,0X807CE08);
 	SetFunctionFlags(0X807CDAC,0x400);
+	SetType(0X807CDAC, "int __fastcall sub_807CDAC(struct DjiPacket *pkt);");
 	MakeFrame(0X807CDAC, 0X10, 0, 0);
 	MakeFunction    (0X807CE08,0X807CE20);
 	SetFunctionFlags(0X807CE08,0x400);
+	SetType(0X807CE08, "int __fastcall sub_807CE08(struct DjiPacket *pkt);");
 	MakeFrame(0X807CE08, 0X40, 0, 0);
 	MakeFunction    (0X807CE58,0X807D12C);
 	SetFunctionFlags(0X807CE58,0x400);
+	SetType(0X807CE58, "int __fastcall sub_807CE58(struct DjiPacket *pkt);");
 	MakeFrame(0X807CE58, 0X68, 0, 0);
 	MakeFunction    (0X807D12C,0X807D27C);
 	SetFunctionFlags(0X807D12C,0x400);
+	SetType(0X807D12C, "int __fastcall sub_807D12C(struct DjiPacket *pkt);");
 	MakeFrame(0X807D12C, 0X28, 0, 0);
 	MakeFunction    (0X807D27C,0X807D2C0);
 	SetFunctionFlags(0X807D27C,0x400);
+	SetType(0X807D27C, "int __fastcall sub_807D27C(struct DjiPacket *pkt);");
 	MakeFrame(0X807D27C, 0X10, 0, 0);
 	MakeFunction    (0X807D2C0,0X807D31C);
 	SetFunctionFlags(0X807D2C0,0x400);
+	SetType(0X807D2C0, "int __fastcall sub_807D2C0(struct DjiPacket *pkt);");
 	MakeFrame(0X807D2C0, 0X18, 0, 0);
 	MakeFunction    (0X807D31C,0X807D35E);
 	SetFunctionFlags(0X807D31C,0x400);
+	SetType(0X807D31C, "int __fastcall sub_807D31C(struct DjiPacket *pkt);");
 	MakeFrame(0X807D31C, 0X10, 0, 0);
 	MakeFunction    (0X807D35E,0X807D79A);
 	SetFunctionFlags(0X807D35E,0x400);
+	SetType(0X807D35E, "int __fastcall sub_807D35E(struct DjiPacket *pkt);");
 	MakeFrame(0X807D35E, 0X48, 0, 0);
 	MakeFunction    (0X807D79A,0X807D7DE);
 	SetFunctionFlags(0X807D79A,0x400);
+	SetType(0X807D79A, "int __fastcall sub_807D79A(struct DjiPacket *pkt);");
 	MakeFrame(0X807D79A, 0X10, 0, 0);
 	MakeFunction    (0X807D7DE,0X807D862);
 	SetFunctionFlags(0X807D7DE,0x400);
+	SetType(0X807D7DE, "int __fastcall sub_807D7DE(struct DjiPacket *pkt);");
 	MakeFrame(0X807D7DE, 0X10, 0, 0);
 	MakeFunction    (0X807D862,0X807D92A);
 	SetFunctionFlags(0X807D862,0x400);
+	SetType(0X807D862, "int __fastcall sub_807D862(struct DjiPacket *pkt);");
 	MakeFrame(0X807D862, 0X50, 0, 0);
 	MakeFunction    (0X807D92A,0X807D9D4);
 	SetFunctionFlags(0X807D92A,0x400);
+	SetType(0X807D92A, "int __fastcall sub_807D92A(struct DjiPacket *pkt);");
 	MakeFrame(0X807D92A, 0X30, 0, 0);
 	MakeFunction    (0X807D9D4,0X807DA42);
 	SetFunctionFlags(0X807D9D4,0x400);
+	SetType(0X807D9D4, "int __fastcall sub_807D9D4(struct DjiPacket *pkt);");
 	MakeFrame(0X807D9D4, 0X20, 0, 0);
 	MakeFunction    (0X807DA42,0X807DA68);
 	SetFunctionFlags(0X807DA42,0x400);
+	SetType(0X807DA42, "int __fastcall hp_reset_head_rcv(struct DjiPacket *pkt);");
 	MakeFrame(0X807DA42, 0X10, 0, 0);
 	MakeFunction    (0X807DA68,0X807DE22);
 	SetFunctionFlags(0X807DA68,0x400);
+	SetType(0X807DA68, "int __fastcall sub_807DA68(struct DjiPacket *pkt);");
 	MakeFrame(0X807DA68, 0X28, 0, 0);
 	MakeFunction    (0X807DE22,0X807DE62);
 	SetFunctionFlags(0X807DE22,0x400);
+	SetType(0X807DE22, "int __fastcall sub_807DE22(struct DjiPacket *pkt);");
 	MakeFrame(0X807DE22, 0X10, 0, 0);
 	MakeFunction    (0X807DE62,0X807DE68);
 	SetFunctionFlags(0X807DE62,0x400);
@@ -111042,9 +111311,11 @@ static Functions_2(void) {
 	SetFunctionFlags(0X8083102,0x400);
 	MakeFunction    (0X8083148,0X8083198);
 	SetFunctionFlags(0X8083148,0x400);
+	SetType(0X8083148, "int __fastcall sub_8083148(struct DjiPacket *pkt);");
 	MakeFrame(0X8083148, 0X10, 0, 0);
 	MakeFunction    (0X8083198,0X80831B6);
 	SetFunctionFlags(0X8083198,0x400);
+	SetType(0X8083198, "int __fastcall sub_8083198(struct DjiPacket *pkt);");
 	MakeFunction    (0X80831B6,0X80831D4);
 	SetFunctionFlags(0X80831B6,0x400);
 	MakeFunction    (0X80831D4,0X80831E2);
@@ -111705,14 +111976,17 @@ static Functions_2(void) {
 	MakeFrame(0X8089BA4, 0X8, 0, 0);
 	MakeFunction    (0X8089BC6,0X8089C26);
 	SetFunctionFlags(0X8089BC6,0x400);
+	SetType(0X8089BC6, "int __fastcall sub_8089BC6(struct DjiPacket *pkt);");
 	MakeFrame(0X8089BC6, 0X18, 0, 0);
 	MakeFunction    (0X8089C26,0X8089C52);
 	SetFunctionFlags(0X8089C26,0x400);
 	MakeFunction    (0X8089C52,0X8089C88);
 	SetFunctionFlags(0X8089C52,0x400);
+	SetType(0X8089C52, "int __fastcall sub_8089C52(struct DjiPacket *pkt);");
 	MakeFrame(0X8089C52, 0X38, 0, 0);
 	MakeFunction    (0X8089C88,0X8089CC2);
 	SetFunctionFlags(0X8089C88,0x400);
+	SetType(0X8089C88, "int __fastcall sub_8089C88(struct DjiPacket *pkt);");
 	MakeFrame(0X8089C88, 0X28, 0, 0);
 	MakeFunction    (0X8089CC2,0X8089CF2);
 	SetFunctionFlags(0X8089CC2,0x400);
@@ -111731,6 +112005,10 @@ static Functions_2(void) {
 	SetFunctionFlags(0X8089E66,0x400);
 	MakeFunction    (0X8089EE2,0X8089F1C);
 	SetFunctionFlags(0X8089EE2,0x400);
+}
+
+static Functions_3(void) {
+
 	MakeFunction    (0X8089F1C,0X8089F7C);
 	SetFunctionFlags(0X8089F1C,0x400);
 	MakeFrame(0X8089F1C, 0X4, 0, 0);
@@ -111785,10 +112063,6 @@ static Functions_2(void) {
 	MakeFunction    (0X808A4BC,0X808A4F8);
 	SetFunctionFlags(0X808A4BC,0x400);
 	MakeFrame(0X808A4BC, 0X10, 0, 0);
-}
-
-static Functions_3(void) {
-
 	MakeFunction    (0X808A4F8,0X808A51E);
 	SetFunctionFlags(0X808A4F8,0x400);
 	MakeFrame(0X808A4F8, 0X18, 0, 0);
@@ -113378,6 +113652,8 @@ static Functions_3(void) {
 	MakeFunction    (0X809C3BC,0X809C3F0);
 	SetFunctionFlags(0X809C3BC,0x400);
 	MakeFrame(0X809C3BC, 0X14, 0, 0);
+	MakeFunction    (0X809C3FC,0X809C436);
+	SetFunctionFlags(0X809C3FC,0x400);
 	MakeFunction    (0X809C436,0X809C4AC);
 	SetFunctionFlags(0X809C436,0x400);
 	MakeFrame(0X809C436, 0X38, 0, 0);
@@ -113565,27 +113841,35 @@ static Functions_3(void) {
 	MakeFrame(0X809F07C, 0X8, 0, 0);
 	MakeFunction    (0X809F0C0,0X809F144);
 	SetFunctionFlags(0X809F0C0,0x400);
+	SetType(0X809F0C0, "int __fastcall sub_809F0C0(struct DjiPacket *pkt);");
 	MakeFrame(0X809F0C0, 0XB0, 0, 0);
 	MakeFunction    (0X809F144,0X809F1EA);
 	SetFunctionFlags(0X809F144,0x400);
+	SetType(0X809F144, "int __fastcall sub_809F144(struct DjiPacket *pkt);");
 	MakeFrame(0X809F144, 0XB0, 0, 0);
 	MakeFunction    (0X809F246,0X809F2E0);
 	SetFunctionFlags(0X809F246,0x400);
+	SetType(0X809F246, "int __fastcall sub_809F246(struct DjiPacket *pkt);");
 	MakeFrame(0X809F246, 0XC8, 0, 0);
 	MakeFunction    (0X809F2E0,0X809F3A4);
 	SetFunctionFlags(0X809F2E0,0x400);
+	SetType(0X809F2E0, "int __fastcall sub_809F2E0(struct DjiPacket *pkt);");
 	MakeFrame(0X809F2E0, 0XD0, 0, 0);
 	MakeFunction    (0X809F408,0X809F49A);
 	SetFunctionFlags(0X809F408,0x400);
+	SetType(0X809F408, "int __fastcall sub_809F408(struct DjiPacket *pkt);");
 	MakeFrame(0X809F408, 0XC0, 0, 0);
 	MakeFunction    (0X809F49A,0X809F554);
 	SetFunctionFlags(0X809F49A,0x400);
+	SetType(0X809F49A, "int __fastcall sub_809F49A(struct DjiPacket *pkt);");
 	MakeFrame(0X809F49A, 0XC0, 0, 0);
 	MakeFunction    (0X809F5B8,0X809F6AA);
 	SetFunctionFlags(0X809F5B8,0x400);
+	SetType(0X809F5B8, "int __fastcall sub_809F5B8(struct DjiPacket *pkt);");
 	MakeFrame(0X809F5B8, 0XC0, 0, 0);
 	MakeFunction    (0X809F6AA,0X809F7C2);
 	SetFunctionFlags(0X809F6AA,0x400);
+	SetType(0X809F6AA, "int __fastcall sub_809F6AA(struct DjiPacket *pkt);");
 	MakeFrame(0X809F6AA, 0XC8, 0, 0);
 	MakeFunction    (0X809F7C2,0X809F7D8);
 	SetFunctionFlags(0X809F7C2,0x400);
@@ -113594,9 +113878,11 @@ static Functions_3(void) {
 	MakeFrame(0X809F8B0, 0X18, 0, 0);
 	MakeFunction    (0X809FA70,0X809FABC);
 	SetFunctionFlags(0X809FA70,0x400);
+	SetType(0X809FA70, "int __fastcall sub_809FA70(struct DjiPacket *pkt);");
 	MakeFrame(0X809FA70, 0X10, 0, 0);
 	MakeFunction    (0X809FABC,0X809FB18);
 	SetFunctionFlags(0X809FABC,0x400);
+	SetType(0X809FABC, "int __fastcall sub_809FABC(struct DjiPacket *pkt);");
 	MakeFrame(0X809FABC, 0X40, 0, 0);
 	MakeFunction    (0X809FB74,0X809FB7A);
 	SetFunctionFlags(0X809FB74,0x400);

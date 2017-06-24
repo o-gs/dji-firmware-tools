@@ -412,7 +412,8 @@
  0001:08041F60       aStickIsInCalib
  0001:08041F78       aStickCenterOut
  0001:08041F90       aStickMappingEr
- 0001:08041FA4       find_in_stru80A6678
+ 0001:08041FA4       get_receive_command_cb
+ 0001:080421C4       recorder_action_rcv
  0001:080423D0       aSenderDRequest
  0001:080423F4       aRecorderAction
  0001:08042814       aFragErrorDD
@@ -428,6 +429,7 @@
  0001:08042964       aWhitelistDat_1
  0001:08042984       aWhitelistDat_2
  0001:080429A4       aWhitelistAppTo
+ 0001:08042BDE       ofdm_state_rcv
  0001:08042DDC       aRecvTransferDD
  0001:08042DF8       a2xSetRcLostAct
  0001:08042E10       aSetRcLostActio
@@ -442,6 +444,8 @@
  0001:08042EEC       a2xSetIocmodeD
  0001:08042F00       a2xGetIocmodeD
  0001:08042F14       a2xSetLimittype
+ 0001:0804325C       atti_rcv
+ 0001:0804329C       taillock_rcv
  0001:08043310       a2xGetLimittype
  0001:08043338       aSetAlarmClassD
  0001:08043354       aGetAlarmClassD
@@ -517,7 +521,7 @@
  0001:08048A94       aNullPointer
  0001:08048AA4       aSendBufferFull
  0001:08048AC0       aAssistantProte
- 0001:08048B3C       find_in_stru80B2DB0
+ 0001:08048B3C       get_reply_command_cb
  0001:0804923C       nullsub_24
  0001:080494C8       jpt_80494C4
  0001:08049574       def_80494C4
@@ -545,6 +549,7 @@
  0001:0804B208       aSendByProtecti
  0001:0804B220       aSendByRc
  0001:0804B22C       aSendByNavigati
+ 0001:0804BE9C       printf_sub_804BE9C
  0001:0804C06C       aWorkqueue_hi_t
  0001:0804CCC8       jpt_804CCC4
  0001:0804CD04       def_804CCC4
@@ -663,6 +668,8 @@
  0001:08050E94       aSdkUserErrorCm
  0001:08050EAC       aSdkUserReg_ver
  0001:08050ED4       aSdkUserAckX
+ 0001:08051036       def_ack_func
+ 0001:08051212       send_msg_serial_close_by_app
  0001:080512EC       aSdkUserVersion
  0001:08051308       aSdkUserVersi_0
  0001:08051320       aSdkUserReg_use
@@ -947,6 +954,7 @@
  0001:0806D91C       aFly03d_dat
  0001:0806D930       aSys_dji
  0001:0806DD68       aDjiFlyLog
+ 0001:0806DFC6       printf_sub_806DFC6
  0001:0806E08A       printf_sub_806E08A
  0001:0806E2A4       a7d
  0001:0806E9B4       aDevBusyDeviceC
@@ -1059,6 +1067,7 @@
  0001:0807C6C8       aSn
  0001:0807C6CC       aArea_idDClassD
  0001:0807C6F4       aLatiDLonDRDHiD
+ 0001:0807C864       toogle_whitelist
  0001:0807C934       aPeriodic
  0001:0807C968       aInterfereListN
  0001:0807C99C       aAppSwitchDCfgS
@@ -1068,6 +1077,7 @@
  0001:0807CA24       aToogleWhitel_1
  0001:0807CA44       aToogleWhitel_2
  0001:0807CA6C       aInit_0
+ 0001:0807CCCE       wp_mission_pause_rcv
  0001:0807CE90       aReceivedOnOffD
  0001:0807CEAC       aAckOnOffDToApp
  0001:0807CEC8       aReceivedMissio
@@ -1100,6 +1110,7 @@
  0001:0807D630       aFollowMissio_9
  0001:0807D664       aFollowMissi_10
  0001:0807D698       aHpFailedToExec
+ 0001:0807DA42       hp_reset_head_rcv
  0001:0807DA8C       aHpFailedToEx_0
  0001:0807DAC4       aHpFailedToEx_1
  0001:0807DB00       aHpReadyToExec_
@@ -1189,6 +1200,7 @@
  0001:080858E4       aLoaderV02d_02d
  0001:08085908       aFirmwareV02d_0
  0001:08085930       aEscDGetVersion
+ 0001:08085CC6       esc_link_up_sub_8085CC6
  0001:08085D44       aEsc_is_stallSt
  0001:08085D84       aEsc_is_emptySt
  0001:08085DD4       aEscDLinkUp
@@ -1550,8 +1562,10 @@
  0001:080A5CAC       aGh_set_user__0
  0001:080A5CF0       aHomegpsLat11_0
  0002:080A612C       aFollow_meInitG
+ 0002:080A6678       receive_commands
  0002:080A6900       flyc_params
  0002:080AE100       flyc_params_pt2
+ 0002:080B2DB0       reply_commands
  0002:080B5CAC       no_fly_airports
  0002:080BDF64       array_80B5CAC_length
  0002:080BDF68       no_fly_areas
@@ -2683,6 +2697,7 @@
  0002:080DF930       aTemp_z
  0002:080DFB1C       a123456
  0002:080DFB28       aSdkV1_0BetaM10
+ 0005:200000E4       ofdm_last_state
  0005:200000E8       test_deformation
  0005:20000324       fw_upgrading
  0005:200010FC       g_config__device
