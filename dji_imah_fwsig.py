@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 #
+# Copyright (C) 2017  Freek van Tienen <freek.v.tienen@gmail.com>
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
