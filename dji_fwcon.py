@@ -39,6 +39,7 @@ dji_targets = [
     DjiModuleTarget( 1, 4, "CAMBCPU", "camera BCPU"),
     DjiModuleTarget( 1, 5, "CAMLCPU", "camera LCPU"),
     DjiModuleTarget( 1, 6, "ZQ7020",  "camera 'Xilinx Zynq 7020'"),
+    DjiModuleTarget( 2,-1, "MBAPP",   "mobile app"),
     DjiModuleTarget( 3,-1, "MC",      "main controller"),
     DjiModuleTarget( 3, 5, "MCLDR",   "main controller 'A3' ldr"), # P3X
     DjiModuleTarget( 3, 6, "MCAPP",   "main controller 'A3' app"), # P3X
@@ -46,15 +47,16 @@ dji_targets = [
     DjiModuleTarget( 4, 0, "GIMBAL0", "gimbal mdl 0"), # P3X
     DjiModuleTarget( 5,-1, "CENTER",  "central board"),
     DjiModuleTarget( 5, 0, "CENTER0", "central board mdl 0"),
+    DjiModuleTarget( 6,-1, "RMRAD",   "remote radio"),
     DjiModuleTarget( 7,-1, "WIFI",    "Wi-Fi"),
     DjiModuleTarget( 7, 0, "WIFI0",   "Wi-Fi mdl 0"),
-    DjiModuleTarget( 8,-1, "VENC",    "video encoder"),
+    DjiModuleTarget( 8,-1, "VENC",    "video encoder in air"),
     DjiModuleTarget( 8, 0, "DM368",   "video encoder 'DaVinci Dm368 Linux'"), # P3X
     DjiModuleTarget( 8, 1, "IG810LB2","video encoder 'IG810 LB2_ENC'"),
-    DjiModuleTarget( 9,-1, "MCA",     "MCU in air"),
-    DjiModuleTarget( 9, 0, "MCA1765", "MCU 'NXP LPC1765'"), # P3X, OSMO_X5R
+    DjiModuleTarget( 9,-1, "LBMCA",   "lightbridge MCU in air"),
+    DjiModuleTarget( 9, 0, "MCA1765", "lightbridge MCU 'STM32F103'"), # P3X, OSMO_X5R
     DjiModuleTarget(10,-1, "BATTFW",  "battery firmware"),
-    DjiModuleTarget(11,-1, "BATTCT",  "battery controller"),
+    DjiModuleTarget(11,-1, "BATTMGR", "battery controller"),
     DjiModuleTarget(11, 0, "BATTERY", "battery controller 1 app"), # P3X
     DjiModuleTarget(11, 1, "BATTERY2","battery controller 2 app"),
     DjiModuleTarget(12,-1, "ESC",     "electronic speed control"),
@@ -65,25 +67,26 @@ dji_targets = [
     DjiModuleTarget(13, 0, "VDEC",    "video decoder"),
     DjiModuleTarget(13, 0, "DM365M0", "video decoder 'DaVinci Dm365 Linux'"),
     DjiModuleTarget(13, 1, "DM365M1", "video decoder 'DaVinci Dm385 Linux'"),
-    DjiModuleTarget(14,-1, "MCG",     "MCU on ground"),
-    DjiModuleTarget(14, 0, "MCG1765A","MCU 'LPC1765 GROUND LB2'"),
-    DjiModuleTarget(15,-1, "TX",      "radio transmitter"),
-    DjiModuleTarget(15, 0, "TX68013", "radio transmitter 'IG810 LB2_68013_TX'"), # P3X
-    DjiModuleTarget(16,-1, "RXG",     "radio receiver"),
-    DjiModuleTarget(16, 0, "RX68013", "radio receiver 'IG810 LB2_68013_RX ground'"),
+    DjiModuleTarget(14,-1, "LBMCG",   "lightbridge MCU on ground"),
+    DjiModuleTarget(14, 0, "MCG1765A","lightbridge MCU 'LPC1765 GROUND LB2'"),
+    DjiModuleTarget(15,-1, "TXUSBC",  "transmitter usb controller"),
+    DjiModuleTarget(15, 0, "TX68013", "transmitter usb 'IG810 LB2_68013_TX'"), # P3X
+    DjiModuleTarget(16,-1, "RXUSBCG", "receiver usb controller"),
+    DjiModuleTarget(16, 0, "RX68013", "receiver usb 'IG810 LB2_68013_RX ground'"),
     DjiModuleTarget(17,-1, "MVOM",    "visual positioning"),
     DjiModuleTarget(17, 0, "MVOMC4",  "visual positioning module 'camera'"), # P3X
     DjiModuleTarget(17, 1, "MVOMS0",  "visual positioning module 'sonar'"), # P3X
-    DjiModuleTarget(19,-1, "FPGAA",   "FPGA on air"),
-    DjiModuleTarget(19, 0, "FPGAA0",  "FPGA on air model 0"), # P3X
-    DjiModuleTarget(20,-1, "FPGAG",   "FPGA on ground"),
-    DjiModuleTarget(20, 3, "FPGAG3",  "FPGA on ground 'Lightbridge2'"),
+    DjiModuleTarget(19,-1, "FPGAA",   "lightbridge FPGA on air"),
+    DjiModuleTarget(19, 0, "FPGAA0",  "lightbridge FPGA on air model 0"), # P3X
+    DjiModuleTarget(20,-1, "FPGAG",   "lightbridge FPGA on ground"),
+    DjiModuleTarget(20, 3, "FPGAG3",  "lightbridge FPGA on ground 'LB2'"),
     DjiModuleTarget(25,-1, "IMU",     "inertial measurement unit"),
     DjiModuleTarget(25, 0, "IMUA3M0", "inertial measurement unit pt0"),
     DjiModuleTarget(25, 1, "IMUA3M1", "inertial measurement unit pt1"),
     DjiModuleTarget(26,-1, "RTK",     "real time kinematic"),
     DjiModuleTarget(26, 6, "RTKAPP",  "real time kinematic App"),
     DjiModuleTarget(26, 7, "RTKLDR",  "real time kinematic Ldr"),
+    DjiModuleTarget(27,-1, "WIFIGND", "Wi-Fi ground"),
     DjiModuleTarget(29,-1, "PMU",     "power management unit"),
     DjiModuleTarget(29, 0, "PMUA3LDR","power management unit App"),
     DjiModuleTarget(29, 1, "PMUA3APP","power management unit Ldr"),
