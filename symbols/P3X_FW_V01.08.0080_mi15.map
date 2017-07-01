@@ -1,0 +1,51 @@
+
+ Start         Length     Name                   Class
+ 0001:00000000 00000D510H .text                  CODE
+ 0002:00000000 000004E54H .data                  DATA
+ 0003:00000000 000005A00H .bss                   BSS
+ 0008:00000000 000006700H .bss2                  BSS
+ 0007:00000000 000005500H .bss3                  BSS
+ 0006:00000000 000002200H .bss4                  BSS
+ 0005:00000000 000000100H .bss5                  BSS
+ 0004:00000000 000000500H .bss6                  BSS
+
+
+  Address         Publics by Value
+
+ 0001:0800C2C0       log_printf
+ 0001:0800CF14       ioreg_query
+ 0001:0800D342       jpt_800D33E
+ 0001:0800D398       def_800D33E
+ 0001:0800DCBC       aPhantom2x
+ 0001:0800DCC8       aDDDDD
+ 0001:0800DCDC       aVerD
+ 0001:0800DCE8       aFpgaBootD
+ 0001:0800DCFC       aFpgaCfgOk
+ 0001:0800DD0C       aFpgaCfgError
+ 0001:0800DD2C       nullsub_6
+ 0001:0800DD36       nullsub_5
+ 0001:0800DD38       nullsub_4
+ 0001:0800DD3A       nullsub_3
+ 0001:0800F3B4       aErrorAd9363Reg
+ 0001:0800F3D0       aErrorAr8003Reg
+ 0001:0800F87C       a_2x_2x_2x_2x_0
+ 0001:0800FCBC       a_2x_2x_2x_2x_1
+ 0001:0800FCEC       aSetAlterD
+ 0001:08010160       aId_2x_2x_2x_2x
+ 0001:08010234       jpt_8010230
+ 0001:08010272       def_8010230
+ 0001:080105A4       a_2x_2x_2x_2x_2
+ 0001:08011330       nullsub_2
+ 0001:08011594       jpt_8011590
+ 0001:08011638       def_8011590
+ 0001:0801174E       jpt_801174A
+ 0001:08011834       def_801174A
+ 0001:0801227C       aWm32xA4_fpga20
+ 0001:080128F0       aSigrtmemOutOfH
+ 0001:08012910       aHeapMemoryCorr
+ 0001:08014884       jpt_8014880
+ 0001:0801524A       jpt_8015246
+ 0002:080197FA       aKkkkkkkkkkkkmm
+ 0002:08019E60       crc16_tab
+
+Program entry point at 0001:00000000
