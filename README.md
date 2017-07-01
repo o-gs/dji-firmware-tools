@@ -92,7 +92,7 @@ Optimized examples for specific firmwares:
 
 ```./arm_bin2elf.py -vv -e -b 0x000a000 --section .ARM.exidx@0x01ce50:0 --section .bss@0xfff6000:0x8000 --section .bss2@0x3fff6000:0x50000 --section .bss3@0xdfff6000:0x10000 -p C1_FW_V01.06.0000_mi06.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x0000000 --section .ARM.exidx@0x0D510:0 --section .bss@0x1FFFF700:0x5A00 --section .bss2@0x40000000:0x6700 --section .bss3@0x40010000:0x5500 --section .bss4@0x40020000:0x2200 --section .bss5@0x42200000:0x100 --section .bss6@0x42420000:0x500 -p P3X_FW_V01.08.0080_mi15.bin```
+```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x0D510:0 --section .bss@0x17FF7700:0x5A00 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x2200 --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p P3X_FW_V01.08.0080_mi15.bin```
 
 ### amba_sys2elf.py
 
