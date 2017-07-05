@@ -34,6 +34,9 @@ local SRC_DEST = {  [0] = 'Invalid',
                     [30] = 'Unknown',
                     [31] = 'Last'   }
 
+local ENCRYPT_TYPE = {[0]='None',
+                    [2]='SeqHash2' }
+
 local ACK_POLL = {  [0]="RSP",[1]="CMD",[2]="CMD",[3]="????"}
 
 local CMD_SET = {   [0] = 'General',
@@ -188,6 +191,8 @@ f.sender = ProtoField.uint8 ("dji_p3.sender", "Sender", base.DEC, SRC_DEST, 0x1F
 f.receiver = ProtoField.uint8 ("dji_p3.receiver", "Receiver", base.DEC, SRC_DEST, 0x1F)
 -- [6-7]  Sequence Ctr
 f.seqctr = ProtoField.uint16 ("dji_p3.seqctr", "Seq Counter", base.DEC)
+-- [8] Encryption
+f.encrypt = ProtoField.uint8 ("dji_p3.encrypt", "Encryption Type", base.DEC, ENCRYPT_TYPE, 0x0F)
 -- [8] Ack (to be improved)
 f.ack = ProtoField.uint8 ("dji_p3.ack", "Ack", base.HEX, ACK_POLL, 0x60)
 -- [9] Cmd Set
@@ -241,7 +246,8 @@ function main_dissector(buffer, pinfo, subtree)
     subtree:add_le (f.seqctr, buffer(offset, 2))
     offset = offset + 2
 
-    -- [8] Ack
+    -- [8] Encrypt | Ack
+    subtree:add (f.encrypt, buffer(offset, 1))
     subtree:add (f.ack, buffer(offset, 1))
     offset = offset + 1
 
