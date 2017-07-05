@@ -3,54 +3,54 @@ DJI_P3_PROTO = Proto ("dji_p3", "DJI_P3","dji p3 UART protocol")
 
 local SRC_DEST = {  [0] = 'Invalid',
                     [1] = 'Camera',
-                    [2] = 'Unknown',
+                    [2] = 'App',
                     [3] = 'Flight Controller',
                     [4] = 'Gimbal',
-                    [5] = 'Central Board',
-                    [6] = 'Unknown',
-                    [7] = 'OSMO',
-                    [8] = 'Unknown',
-                    [9] = 'HW Button',
-                    [10] = 'Unknown',
+                    [5] = 'Center Board',
+                    [6] = 'Remote Control',
+                    [7] = 'Wi-Fi air side',
+                    [8] = 'DM36x transcoder air side',
+                    [9] = 'HD transmission MCU air side',
+                    [10] = 'PC',
                     [11] = 'Battery',
                     [12] = 'ESC',
-                    [13] = 'Unknown',
-                    [14] = 'Unknown',
-                    [15] = 'Unknown',
-                    [16] = 'Unknown',
-                    [17] = 'Unknown',
-                    [18] = 'Unknown',
-                    [19] = 'Unknown',
-                    [20] = 'Unknown',
-                    [21] = 'Unknown',
-                    [22] = 'Unknown',
-                    [23] = 'Unknown',
-                    [24] = 'Unknown',
-                    [25] = 'Unknown',
-                    [26] = 'Unknown',
-                    [27] = 'Unknown',
-                    [28] = 'Unknown',
-                    [29] = 'Unknown',
+                    [13] = 'DM36x transcoder gnd side',
+                    [14] = 'HD transmission MCU gnd side',
+                    [15] = 'Serial-to-parallel (USB ctrl.) air side',
+                    [16] = 'Serial-to-parallel (USB ctrl.) gnd side',
+                    [17] = 'Monocular',
+                    [18] = 'Binocular',
+                    [19] = 'HD transmission FPGA air side',
+                    [20] = 'HD transmission FPGA gnd side',
+                    [21] = 'Simulator',
+                    [22] = 'Base Station',
+                    [23] = 'Airborne computing platform',
+                    [24] = 'RC battery',
+                    [25] = 'IMU',
+                    [26] = 'GPS/RTK',
+                    [27] = 'Wi-Fi gnd side',
+                    [28] = 'Sig_cvt',
+                    [29] = 'PMU',
                     [30] = 'Unknown',
-                    [31] = 'Unknown'   }
+                    [31] = 'Last'   }
 
 local ACK_POLL = {  [0]="RSP",[1]="CMD",[2]="CMD",[3]="????"}
 
-local CMD_SET = {   [0] = 'General', 
+local CMD_SET = {   [0] = 'General',
                     [1] = 'Special',
                     [2] = 'Camera',
-                    [3] = 'Flight Controller',
+                    [3] = 'Flight Control',
                     [4] = 'Gimbal',
-                    [5] = 'Central Board',
-                    [6] = 'RC',
-                    [7] = 'WiFi',
-                    [8] = 'DM386',
+                    [5] = 'Center Board',
+                    [6] = 'Remote Control',
+                    [7] = 'Wi-Fi',
+                    [8] = 'DM36x',
                     [9] = 'HD Link',
                     [10] = 'Mono/Binocular',
                     [11] = 'Simulator',
                     [12] = 'ESC',
                     [13] = 'Battery',
-                    [14] = 'Data Rec',
+                    [14] = 'Data Logger',
                     [15] = 'RTK',
                     [16] = 'Automation' }
 
@@ -66,7 +66,7 @@ local SPECIAL_CMDS = {      [0x01] = 'App Cmd' }
 
 local CAMERA_CMDS = {       [0x80] = 'TBD' }
 
-local FLIGHT_CTRLER_CMDS = {[0x1C] = 'TBD',
+local FLIGHT_CTRL_CMDS = {[0x1C] = 'TBD',
                             [0x2A] = 'App Cmd',
                             [0x2F] = 'Set Alarm',
                             [0x30] = 'Get Alarm',
@@ -137,7 +137,7 @@ local FLIGHT_CTRLER_CMDS = {[0x1C] = 'TBD',
 local GIMBAL_CMDS = {       [0x05] = 'TBD',
                             [0x1C] = 'Set Gimbal type' }
 
-local CENTRAL_BRD_CMDS = {  }
+local CENTER_BRD_CMDS = {  }
 
 local RC_CMDS = {           [0x1C] = 'TBD' }
 
@@ -145,31 +145,31 @@ local WIFI_CMDS = {         [0x0E] = 'Get PSK',
                             [0x11] = 'TBD',
                             [0x1E] = 'Get SSID' }
 
-local DM386_CMDS = {  }
+local DM36X_CMDS = {  }
 local HD_LINK_CMDS = {  }
 local MBINO_CMDS = {  }
 local SIM_CMDS = {  }
 local ESC_CMDS = {  }
 local BATTERY_CMDS = {  }
-local DATA_REC_CMDS = {  }
+local DATA_LOG_CMDS = {  }
 local RTK_CMDS = {  }
 local AUTO_CMDS = {  }
 
 local CMD_CMD_SET = {   [0] = GENERAL_CMDS,
                         [1] = SPECIAL_CMDS,
                         [2] = CAMERA_CMDS,
-                        [3] = FLIGHT_CTRLER_CMDS,
+                        [3] = FLIGHT_CTRL_CMDS,
                         [4] = GIMBAL_CMDS,
-                        [5] = CENTRAL_BRD_CMDS,
+                        [5] = CENTER_BRD_CMDS,
                         [6] = RC_CMDS,
                         [7] = WIFI_CMDS,
-                        [8] = DM386_CMDS,
+                        [8] = DM36X_CMDS,
                         [9] = HD_LINK_CMDS,
                         [10] = MBINO_CMDS,
                         [11] = SIM_CMDS,
                         [12] = ESC_CMDS,
                         [13] = BATTERY_CMDS,
-                        [14] = DATA_REC_CMDS,
+                        [14] = DATA_LOG_CMDS,
                         [15] = RTK_CMDS,
                         [16] = AUTO_CMDS    }
 
