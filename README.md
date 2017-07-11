@@ -47,7 +47,7 @@ files created after DJI firmware is extracted. You can recognize the Ambarella
 firmware by a lot of "Amba" strings within, or by a 32-char zero-padded string
 at the beginning of the file.
 
-Example: ```./amba_fwpak.py -vv -x -m P3X_FW_V01.08.0080_mi12.bin```
+Example: ```./amba_fwpak.py -vv -x -m P3X_FW_V01.08.0080_m0100.bin```
 
 ### amba_romfs.py
 
@@ -57,7 +57,7 @@ Use this after the Ambarella firmware is extracted. You can recognize ROMFS
 partitions by file names near beginning of the file, surrounded by blocks of
 0xff filled bytes.
 
-Example: ```./amba_romfs.py -vv -x -p P3X_FW_V01.08.0080_mi12_part_rom_fw.a9s```
+Example: ```./amba_romfs.py -vv -x -p P3X_FW_V01.08.0080_m0100_part_rom_fw.a9s```
 
 ### amba_ubifs.sh
 
@@ -66,7 +66,7 @@ mounting, the files can be copied or modified. Use this after the Ambarella
 firmware is extracted. The file containing UBIFS can be easily recognized
 by "UBI#" at the beginning of the file.
 
-Example: ```sudo ./amba_ubifs.sh P3X_FW_V01.08.0080_mi12_part_rfs.a9s```
+Example: ```sudo ./amba_ubifs.sh P3X_FW_V01.08.0080_m0100_part_rfs.a9s```
 
 
 ### arm_bin2elf.py
@@ -76,7 +76,7 @@ contains binary image of executable file, this tool can rebuild ELF header for i
 The ELF format can be then easily disassembled, as most debuggers can read ELF files.
 Note that using this tool on encrypted firmwares will not result in useable ELF.
 
-Example: ```./arm_bin2elf.py -vv -e -b 0x8020000 -l 0x6000000 -p P3X_FW_V01.07.0060_mi01.bin```
+Example: ```./arm_bin2elf.py -vv -e -b 0x8020000 -l 0x6000000 -p P3X_FW_V01.07.0060_m0306.bin```
 
 After first look at the disassembly, it is good to find where the correct border
 between '.text' and '.data' sections is located. File offset of this location can
@@ -88,11 +88,11 @@ will still be used as separator, just with zero size.
 
 Optimized examples for specific firmwares:
 
-```./arm_bin2elf.py -vv -e -b 0x8020000 --section .ARM.exidx@0x085d34:0  --section .bss@0x07fe0000:0xA000 --section .bss2@0x17fe0000:0x30000 --section .bss3@0x37fe0000:0x30000 -p P3X_FW_V01.07.0060_mi01.bin```
+```./arm_bin2elf.py -vv -e -b 0x8020000 --section .ARM.exidx@0x085d34:0  --section .bss@0x07fe0000:0xA000 --section .bss2@0x17fe0000:0x30000 --section .bss3@0x37fe0000:0x30000 -p P3X_FW_V01.07.0060_m0306.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x000a000 --section .ARM.exidx@0x01ce50:0 --section .bss@0xfff6000:0x8000 --section .bss2@0x3fff6000:0x50000 --section .bss3@0xdfff6000:0x10000 -p C1_FW_V01.06.0000_mi06.bin```
+```./arm_bin2elf.py -vv -e -b 0x000a000 --section .ARM.exidx@0x01ce50:0 --section .bss@0xfff6000:0x8000 --section .bss2@0x3fff6000:0x50000 --section .bss3@0xdfff6000:0x10000 -p C1_FW_V01.06.0000_m1400.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x0D510:0 --section .bss@0x17FF7700:0x5A00 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x2200 --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p P3X_FW_V01.08.0080_mi15.bin```
+```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x0D510:0 --section .bss@0x17FF7700:0x5A00 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x2200 --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p P3X_FW_V01.08.0080_m0900.bin```
 
 ### amba_sys2elf.py
 
@@ -102,15 +102,15 @@ header. The ELF format can be then easily disassembled, as most debuggers can
 read ELF files. This tool is very similar to arm_bin2elf.py, it is just
 pre-configured to specific firmware.
 
-Example: ```./amba_sys2elf.py -vv -e -l 0x6000000 -p P3X_FW_V01.08.0080_mi12_part_sys.a9s```
+Example: ```./amba_sys2elf.py -vv -e -l 0x6000000 -p P3X_FW_V01.08.0080_m0100_part_sys.a9s```
 
 All border adjusting rules explained for arm_bin2elf.py apply for this tool as well.
 
 Optimized examples for specific firmwares:
 
-```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x483E4C:0 -p P3X_FW_V01.08.0080_mi12_part_sys.a9s```
+```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x483E4C:0 -p P3X_FW_V01.08.0080_m0100_part_sys.a9s```
 
-```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x482EC0:0 -p P3X_FW_V01.07.0060_mi12_part_sys.a9s```
+```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x482EC0:0 -p P3X_FW_V01.07.0060_m0100_part_sys.a9s```
 
 ### dji_flyc_param_ed.py
 
@@ -121,9 +121,9 @@ binary firmware, changing attributes and limits of each parameter.
 
 Example of extracting and then updating the flight controller parameters:
 
-```./dji_flyc_param_ed.py -vv -x -m P3X_FW_V01.07.0060_mi01.bin```
+```./dji_flyc_param_ed.py -vv -x -m P3X_FW_V01.07.0060_m0306.bin```
 
-```./dji_flyc_param_ed.py -vv -u -m P3X_FW_V01.07.0060_mi01.bin```
+```./dji_flyc_param_ed.py -vv -u -m P3X_FW_V01.07.0060_m0306.bin```
 
 ### comm_serial2pcap.py
 
