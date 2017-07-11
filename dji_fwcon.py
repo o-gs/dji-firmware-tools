@@ -417,10 +417,28 @@ def dji_extract(po, fwpkgfile):
   if fwpkgfile.tell() != pkghead.hdrend_offs:
       eprint("{}: Warning: Header end offset does not match; should end at {}, ends at {}.".format(po.fwpkgfile,pkghead.hdrend_offs,fwpkgfile.tell()))
 
+  # Prepare array of names; "0" will mean empty index
   minames = ["0"]*len(pkgmodules)
+  # Name the modules after target component
   for i, hde in enumerate(pkgmodules):
       if hde.stored_len > 0:
-          minames[i] = "mi{:02d}".format(i)
+          d = hde.dict_export()
+          minames[i] = "{:s}".format(d['target'])
+  # Rename targets in case of duplicates
+  minames_seen = set()
+  for i in range(len(minames)):
+      miname = minames[i]
+      if miname in minames_seen:
+          # Add suffix a..z to multiple uses of the same module
+          for miname_suffix in range(97,110):
+              if miname+chr(miname_suffix) not in minames_seen:
+                  break
+          # Show warning the first time duplicate is found
+          if (miname_suffix == 97):
+              eprint("{}: Warning: Found multiple modules {:s}; invalid firmware.".format(po.fwpkgfile,miname))
+          minames[i] = miname+chr(miname_suffix)
+      minames_seen.add(minames[i])
+  minames_seen = None
 
   dji_write_fwpkg_head(po, pkghead, minames)
 
