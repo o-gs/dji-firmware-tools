@@ -56,6 +56,7 @@ if [ "${SKIP_COMPARE}" -le "0" ]; then
 fi
 
 if [ "${SKIP_EXTRACT}" -le "0" ]; then
+  echo "### INFO: Input file \"${BINFILE}\" ###"
   # Remove files which will be created
   rm ${TESTFILE%.*}_*.bin ${TESTFILE%.*}_*.ini 2>/dev/null
   # Extract firmwares for modules
