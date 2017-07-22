@@ -143,14 +143,17 @@ local GIMBAL_CMDS = {       [0x05] = 'TBD',
 
 local CENTER_BRD_CMDS = {  }
 
-local RC_CMDS = {           [0x1C] = 'TBD' }
+local RC_CMDS = {           [0x1C] = 'TBD',
+                            [0xF0] = 'Set Transciever Pwr Mode' }
 
 local WIFI_CMDS = {         [0x0E] = 'Get PSK',
                             [0x11] = 'TBD',
                             [0x1E] = 'Get SSID' }
 
 local DM36X_CMDS = {  }
-local HD_LINK_CMDS = {  }
+
+local HD_LINK_CMDS = {      [0x06] = 'Set Transciever Reg'}
+
 local MBINO_CMDS = {  }
 local SIM_CMDS = {  }
 local ESC_CMDS = {  }
@@ -208,6 +211,15 @@ f.payload = ProtoField.bytes ("dji_p3.payload", "Payload", base.HEX)
 -- [B+Payload] CRC
 f.crc = ProtoField.uint16 ("dji_p3.crc", "CRC", base.HEX)
 
+function set_info(cmd, pinfo, decodes)
+    pinfo.cols.info = ""
+    if decodes[cmd] == nil then
+        pinfo.cols.info:append(string.format("Unknown [0x%02X]", cmd))
+    else
+        pinfo.cols.info:append(decodes[cmd])
+    end
+end
+
 -- Telemetry
 f.telemetry_lat = ProtoField.double ("dji_p3.telemetry_lat", "Latitude")
 f.telemetry_lon = ProtoField.double ("dji_p3.telemetry_lon", "Longitude")
@@ -221,15 +233,6 @@ f.telemetry_num_satellites = ProtoField.uint16 ("dji_p3.telemetry_num_satellites
 f.telemetry_unkn51 = ProtoField.bytes ("dji_p3.telemetry_unkn51", "Unknown", base.HEX)
 f.telemetry_unkn_counter = ProtoField.uint8 ("dji_p3.telemetry_unkn_counter", "Unknown counter", base.DEC)
 f.telemetry_unkn55 = ProtoField.bytes ("dji_p3.telemetry_unkn55", "Unknown", base.HEX)
-
-function set_info(cmd, pinfo, decodes)
-    pinfo.cols.info = ""
-    if decodes[cmd] == nil then
-        pinfo.cols.info:append(string.format("Unknown [0x%02X]", cmd))
-    else
-        pinfo.cols.info:append(decodes[cmd])
-    end
-end
 
 function main_flight_ctrl_telemetry_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 13
@@ -272,14 +275,24 @@ function main_flight_ctrl_telemetry_dissector(pkt_length, buffer, pinfo, subtree
 
 end
 
-function main_flight_ctrl_dissector(pkt_length, buffer, cmd, pinfo, subtree)
-    if cmd == 0x43 then
-        main_flight_ctrl_telemetry_dissector(pkt_length, buffer, pinfo, subtree)
-    else
+local FLIGHT_CTRL_DISSECT = {[0x43] = main_flight_ctrl_telemetry_dissector }
 
-    end
+-- Set transciever register packet
+f.transciever_reg_addr = ProtoField.uint16 ("dji_p3.transciever_reg_set", "Register addr", base.HEX)
+f.transciever_reg_val = ProtoField.uint8 ("dji_p3.transciever_reg_val", "Register value", base.HEX)
+
+function main_hd_link_set_transciever_reg_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 13
+
+    subtree:add_le (f.transciever_reg_addr, buffer(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.transciever_reg_val, buffer(offset, 1))
+    offset = offset + 1
+
 end
 
+local HD_LINK_DISSECT = {[0x06] = main_hd_link_set_transciever_reg_dissector }
 
 function main_dissector(buffer, pinfo, subtree)
     local offset = 1
@@ -332,10 +345,17 @@ function main_dissector(buffer, pinfo, subtree)
     if pkt_length > 13 then
         payload_tree = subtree:add(f.payload, buffer(offset, pkt_length - 13))
 
+        -- If we have a dissector for this kind of command, run it
+        local dissector = nil
         if cmdset == 0x03 then
-            main_flight_ctrl_dissector(pkt_length, buffer, cmd, pinfo, payload_tree)
+            dissector = FLIGHT_CTRL_DISSECT[cmd]
+        elseif cmdset == 0x09 then
+            dissector = HD_LINK_DISSECT[cmd]
         else
 
+        end
+        if dissector ~= nil then
+            dissector(pkt_length, buffer, pinfo, payload_tree)
         end
 
     end
