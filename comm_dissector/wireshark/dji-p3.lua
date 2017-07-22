@@ -84,6 +84,7 @@ local FLIGHT_CTRL_CMDS = {[0x1C] = 'TBD',
                             [0x3D] = 'Set Timezone',
                             [0x3F] = 'TBD',     --Data transfer
                             [0x41] = 'TBD',     
+                            [0x43] = 'Telemetry',
                             [0x46] = 'TBD',
                             [0x47] = 'Toggle Whitelist',
                             [0x51] = 'TBD',
@@ -207,6 +208,20 @@ f.payload = ProtoField.bytes ("dji_p3.payload", "Payload", base.HEX)
 -- [B+Payload] CRC
 f.crc = ProtoField.uint16 ("dji_p3.crc", "CRC", base.HEX)
 
+-- Telemetry
+f.telemetry_lat = ProtoField.double ("dji_p3.telemetry_lat", "Latitude")
+f.telemetry_lon = ProtoField.double ("dji_p3.telemetry_lon", "Longitude")
+f.telemetry_alt = ProtoField.double ("dji_p3.telemetry_alt", "Altitude")
+f.telemetry_rc_signal_str = ProtoField.uint16 ("dji_p3.telemetry_rc_signal_str", "RC Signal strength", base.DEC)
+f.telemetry_wifi_signal_str = ProtoField.uint16 ("dji_p3.telemetry_wifi_signal_str", "WiFi Signal strength", base.DEC)
+f.telemetry_pos_mode = ProtoField.uint16 ("dji_p3.telemetry_pos_mode", "Positioning mode", base.HEX)
+f.telemetry_fly_mode = ProtoField.uint16 ("dji_p3.telemetry_fly_mode", "Flight mode", base.HEX)
+f.telemetry_gps_signal_str = ProtoField.uint16 ("dji_p3.telemetry_gps_signal_str", "GPS Signal strength", base.DEC)
+f.telemetry_num_satellites = ProtoField.uint16 ("dji_p3.telemetry_num_satellites", "Satellites number", base.DEC)
+f.telemetry_unkn51 = ProtoField.bytes ("dji_p3.telemetry_unkn51", "Unknown", base.HEX)
+f.telemetry_unkn_counter = ProtoField.uint8 ("dji_p3.telemetry_unkn_counter", "Unknown counter", base.DEC)
+f.telemetry_unkn55 = ProtoField.bytes ("dji_p3.telemetry_unkn55", "Unknown", base.HEX)
+
 function set_info(cmd, pinfo, decodes)
     pinfo.cols.info = ""
     if decodes[cmd] == nil then
@@ -215,6 +230,56 @@ function set_info(cmd, pinfo, decodes)
         pinfo.cols.info:append(decodes[cmd])
     end
 end
+
+function main_flight_ctrl_telemetry_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 13
+
+    subtree:add (f.telemetry_lat, buffer(offset, 8))
+    offset = offset + 8
+
+    subtree:add (f.telemetry_lon, buffer(offset, 8))
+    offset = offset + 8
+
+    subtree:add (f.telemetry_alt, buffer(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.telemetry_rc_signal_str, buffer(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.telemetry_wifi_signal_str, buffer(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.telemetry_pos_mode, buffer(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.telemetry_fly_mode, buffer(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.telemetry_gps_signal_str, buffer(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.telemetry_num_satellites, buffer(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.telemetry_unkn51, buffer(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.telemetry_unkn_counter, buffer(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.telemetry_unkn55, buffer(offset, 8))
+    offset = offset + 8
+
+end
+
+function main_flight_ctrl_dissector(pkt_length, buffer, cmd, pinfo, subtree)
+    if cmd == 0x43 then
+        main_flight_ctrl_telemetry_dissector(pkt_length, buffer, pinfo, subtree)
+    else
+
+    end
+end
+
 
 function main_dissector(buffer, pinfo, subtree)
     local offset = 1
@@ -259,12 +324,20 @@ function main_dissector(buffer, pinfo, subtree)
     set_info(buffer(offset,1):uint(), pinfo, CMD_CMD_SET[cmdset])
 
     -- [A] Cmd
+    local cmd = buffer(offset,1):uint()
     subtree:add (f.cmd, buffer(offset, 1))
     offset = offset + 1
 
     -- [B] Payload    
     if pkt_length > 13 then
-        subtree:add(f.payload, buffer(offset, pkt_length - 13))
+        payload_tree = subtree:add(f.payload, buffer(offset, pkt_length - 13))
+
+        if cmdset == 0x03 then
+            main_flight_ctrl_dissector(pkt_length, buffer, cmd, pinfo, payload_tree)
+        else
+
+        end
+
     end
 
     -- CRC
