@@ -12,8 +12,17 @@
 
   Address         Publics by Value
 
+ 0001:0800B508       SPI_UsrWaitTransferComplete
+ 0001:0800B5F0       spi_ad936x_transfer_mark
+ 0001:0800B5FE       spi_ad936x_transfer_clear
+ 0001:0800BC1E       memcpy
  0001:0800C2C0       log_printf
- 0001:0800CF14       ioreg_query
+ 0001:0800C2F8       decrypt_payload
+ 0001:0800CE24       src
+ 0001:0800CE8A       spi_ad936x_raw_write_xE
+ 0001:0800CEAE       spi_ad936x_raw_read_xF
+ 0001:0800CED2       ad936x_reg_sync_write
+ 0001:0800CF14       ad936x_reg_sync_read
  0001:0800D342       jpt_800D33E
  0001:0800D398       def_800D33E
  0001:0800DCBC       aPhantom2x
@@ -26,26 +35,72 @@
  0001:0800DD36       nullsub_5
  0001:0800DD38       nullsub_4
  0001:0800DD3A       nullsub_3
+ 0001:0800E28C       dest
+ 0001:0800E99E       packet_receive
  0001:0800F3B4       aErrorAd9363Reg
  0001:0800F3D0       aErrorAr8003Reg
  0001:0800F87C       a_2x_2x_2x_2x_0
+ 0001:0800FC7A       j_ad936x_reg_sync_write
  0001:0800FCBC       a_2x_2x_2x_2x_1
  0001:0800FCEC       aSetAlterD
+ 0001:08010130       dst
+ 0001:08010154       a3
+ 0001:08010158       cb
  0001:08010160       aId_2x_2x_2x_2x
  0001:08010234       jpt_8010230
  0001:08010272       def_8010230
  0001:080105A4       a_2x_2x_2x_2x_2
  0001:08011330       nullsub_2
+ 0001:08011580       packet_send
  0001:08011594       jpt_8011590
  0001:08011638       def_8011590
+ 0001:0801163A       packet_exec_ofdm_command
+ 0001:0801172E       unknstruct01_fill
  0001:0801174E       jpt_801174A
  0001:08011834       def_801174A
+ 0001:08011896       packet_crc_correct_cb
+ 0001:08011AA8       compute_buf_crc8
+ 0001:08011B04       compute_buf_crc16
+ 0001:08011B2A       packet_crc_correct
+ 0001:08011B5E       packet_make_checksum
+ 0001:08011B84       cmd_exec_set03_cmd43
+ 0001:08011C48       cmd_exec_set03_cmd44
+ 0001:08011CC2       cmd_exec_set03_cmd42
+ 0001:08011CEC       cmd_exec_set09_cmd0E
+ 0001:08011D18       cmd_exec_set09_cmd0F
+ 0001:08011D74       cmd_exec_set09_cmd04
+ 0001:08011D94       cmd_exec_set09_cmd05
+ 0001:08011DB4       cmd_exec_set09_cmd06
+ 0001:08011DFC       cmd_exec_set09_cmd07
+ 0001:08011E46       cmd_exec_set09_cmd12
+ 0001:08011EA2       cmd_exec_set09_cmd13
+ 0001:08011F00       cmd_exec_set00_cmd01b
+ 0001:08011F8E       cmd_exec_set00_cmd07
+ 0001:08012048       cmd_exec_set00_cmd08
+ 0001:08012076       cmd_exec_set00_cmd0A
+ 0001:080120B8       cmd_exec_set00_cmd0B
+ 0001:080120E8       cmd_exec_set00_cmd0C
+ 0001:0801214C       cmd_exec_set00_cmd0D
+ 0001:08012180       cmd_exec_set06_cmd1B
+ 0001:0801219E       cmd_exec_set00_cmd01a
+ 0001:080121CA       cmd_exec_set00_cmdFF
+ 0001:08012222       cmd_exec_set00_cmdFE
+ 0001:0801226C       cmd_exec_set09_cmd2C
  0001:0801227C       aWm32xA4_fpga20
+ 0001:08012426       packet_hw_receive
+ 0001:080125E2       memcpy2
+ 0001:0801266C       memmove
+ 0001:08012714       memset_zero
  0001:080128F0       aSigrtmemOutOfH
  0001:08012910       aHeapMemoryCorr
  0001:08014884       jpt_8014880
  0001:0801524A       jpt_8015246
- 0002:080197FA       aKkkkkkkkkkkkmm
+ 0002:08015612       payload_hashtable
+ 0002:08019C80       ofdm_exec_commands
+ 0002:08019D60       crc8_tab
  0002:08019E60       crc16_tab
+ 0003:20001920       input_buf
+ 0003:200024F8       payload_s03_p43
+ 0003:20002524       payload_s03_p44
 
 Program entry point at 0001:00000000
