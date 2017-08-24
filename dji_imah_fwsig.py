@@ -53,19 +53,30 @@ def eprint(*args, **kwargs):
 class ImgPkgHeader(LittleEndianStructure):
     _pack_ = 1
     _fields_ = [('magic', c_char * 4),              #0
-                ('version', c_uint),                #4
-                ('total_size', c_uint),             #8
-                ('unk1', c_char * 4),               #12
+                ('header_version', c_uint),         #4
+                ('size', c_uint),                   #8
+                ('reserved', c_char * 4),           #12
                 ('header_size', c_uint),            #16
-                ('rsa_sig_size', c_uint),           #20
+                ('signature_size', c_uint),         #20
                 ('payload_size', c_uint),           #24
-                ('unk2', c_char * 12),              #28
+                ('target_size', c_uint),            #28
+                ('os', c_ubyte),                    #32
+                ('arch', c_ubyte),                  #33
+                ('compression', c_ubyte),           #34
+                ('anti_version', c_ubyte),          #35
+                ('auth_alg', c_uint),               #36
                 ('auth_key', c_char * 4),           #40
                 ('enc_key', c_char * 4),            #44
-                ('scramble_key', c_ubyte * 16),     #48
-                ('image_name', c_char * 32),        #64
-                ('unk3', c_char * 60),              #96
-                ('blocks_cnt', c_uint),             #156
+                ('scram_key', c_ubyte * 16),        #48
+                ('name', c_char * 32),              #64
+                ('type', c_uint),                   #96
+                ('version', c_uint),                #100
+                ('date', c_uint),                   #104
+                ('reserved2', c_char * 20),         #108
+                ('userdata', c_char * 16),          #128
+                ('entry', c_char * 8),              #144
+                ('reserved3', c_char * 4),          #152
+                ('chunk_num', c_uint),              #156
                 ('sha256_payload', c_ubyte * 32)]   #160 end is 192
 
     def dict_export(self):
@@ -80,13 +91,14 @@ class ImgPkgHeader(LittleEndianStructure):
         from pprint import pformat
         return pformat(d, indent=4, width=1)
 
-class ImgBlkHeader(LittleEndianStructure):
+class ImgChunkHeader(LittleEndianStructure):
     _pack_ = 1
-    _fields_ = [('name', c_char * 4),        #0
-                ('start_offset', c_uint),    #4
-                ('output_size', c_uint),     #8
+    _fields_ = [('id', c_char * 4),          #0
+                ('offset', c_uint),          #4
+                ('size', c_uint),            #8
                 ('attrib', c_uint),          #12
-                ('unk3', c_char * 16)]       #16 end is 32
+                ('address', c_ulonglong),    #16
+                ('reserved', c_char * 8)]    #24 end is 32
 
     def dict_export(self):
         d = dict()
@@ -115,6 +127,7 @@ def main(argv):
         print("Magic isn't correct in the header")
         return
 
+    print("Unpacking image...")
     print(header)
 
     # Get the encryption keys
@@ -126,48 +139,56 @@ def main(argv):
         print("Can't find enc_key " + enc_k_str)
 
 
-    # Decode the blocks of the image
-    blocks = []
-    for i in range(0, header.blocks_cnt):
-        block = ImgBlkHeader()
-        if image_file.readinto(block) != sizeof(block):
-            raise EOFError("Couldn't read image block " + i + " header.")
-        blocks.append(block)
+    # Decode the chunks of the image
+    chunks = []
+    for i in range(0, header.chunk_num):
+        chunk = ImgChunkHeader()
+        if image_file.readinto(chunk) != sizeof(chunk):
+            raise EOFError("Couldn't read image chunk " + i + " header.")
+        chunks.append(chunk)
 
-    # Output the blocks
-    for block in blocks:
-        if (block.attrib & 0x01):
-            image_file.seek(header.header_size + header.rsa_sig_size + block.start_offset, 0)
-            file_buffer = image_file.read(block.output_size)
-            output_file = open(filname_wo_ext + '_' + block.name.decode("utf-8") + '.bin', "wb")
+    # Output the chunks
+    for chunk in chunks:
+
+        # Not encrypted chunk
+        if (chunk.attrib & 0x01):
+            image_file.seek(header.header_size + header.signature_size + chunk.offset, 0)
+            file_buffer = image_file.read(chunk.size)
+            output_file = open(filname_wo_ext + '_' + chunk.id.decode("utf-8") + '.bin', "wb")
             output_file.write(file_buffer)
             output_file.close()
-            print("Unpacking block " + str(block))
+            print("\nUnpacking chunk...")
+            print(str(chunk))
+
+        # Encrypted chunk (have key as well)
         elif enc_key != None:
             # Set the key
             if enc_k_str == "PUEK":
                 cipher = AES.new(keys['_PUEK'], AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
-                scramble_key = cipher.decrypt(header.scramble_key)
-                cipher_scrmb = AES.new(scramble_key, AES.MODE_CBC, header.scramble_key)
-            elif header.version == 1:
+                scram_key = cipher.decrypt(header.scram_key)
+                cipher_scrmb = AES.new(scram_key, AES.MODE_CBC, header.scram_key)
+            elif header.header_version == 1:
                 cipher = AES.new(enc_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
-                scramble_key = cipher.decrypt(header.scramble_key)
-                cipher_scrmb = AES.new(scramble_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+                scram_key = cipher.decrypt(header.scram_key)
+                cipher_scrmb = AES.new(scram_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
             else:
-                cipher_scrmb = AES.new(enc_key, AES.MODE_CBC, header.scramble_key)
+                cipher_scrmb = AES.new(enc_key, AES.MODE_CBC, header.scram_key)
 
             # Decrypt the data
-            image_file.seek(header.header_size + header.rsa_sig_size + block.start_offset, 0)
-            enc_buffer = image_file.read(block.output_size)
+            image_file.seek(header.header_size + header.signature_size + chunk.offset, 0)
+            enc_buffer = image_file.read(chunk.size)
             pad_cnt = (AES.block_size - len(enc_buffer) % AES.block_size) % AES.block_size
             enc_buffer = enc_buffer + ((bytes([0])) * pad_cnt)
             dec_buffer = cipher_scrmb.decrypt(enc_buffer)
-            output_file = open(filname_wo_ext + '_' + block.name.decode("utf-8") + '.bin', "wb")
+            output_file = open(filname_wo_ext + '_' + chunk.id.decode("utf-8") + '.bin', "wb")
             output_file.write(dec_buffer)
             output_file.close()
-            print("Unpacking encrypted block " + str(block))
+            print("\nUnpacking encrypted chunk...")
+            print(str(chunk))
+        # Missing encryption key
         else:
-            print("Can't unpack encoded block " + str(block))
+            print("\nCan't unpack encrypted chunk! Missing key: " + enc_k_str)
+            print(str(chunk))
 
     image_file.close()
 
