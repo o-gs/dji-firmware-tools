@@ -176,7 +176,7 @@ def main(argv):
             enc_buffer = image_file.read(chunk.size + pad_cnt)
             dec_buffer = cipher_scrmb.decrypt(enc_buffer)
             output_file = open(filname_wo_ext + '_' + chunk.id.decode("utf-8") + '.bin', "wb")
-            output_file.write(dec_buffer[:-pad_cnt])
+            output_file.write(dec_buffer[:chunk.size])
             output_file.close()
             print("\nUnpacking encrypted chunk...")
             print(str(chunk))
