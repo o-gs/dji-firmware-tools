@@ -214,26 +214,26 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
   if (eexpar.type_id == ParamType.ushort):
      if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on size check ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
+           print("{}: At 0x{:08x}, rejected type {:d} on size check ({:d})".format(po.mdlfile,entry_pos,eexpar.type_id,eexpar.valsize))
         return False
   elif (eexpar.type_id == ParamType.ulong):
      if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on size check ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
+           print("{}: At 0x{:08x}, rejected type {:d} on size check ({:d})".format(po.mdlfile,entry_pos,eexpar.type_id,eexpar.valsize))
         return False
   elif (eexpar.type_id <= ParamType.double):
      if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on size check ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
+           print("{}: At 0x{:08x}, rejected type {:d} on size check ({:d})".format(po.mdlfile,entry_pos,eexpar.type_id,eexpar.valsize))
         return False
   elif (eexpar.type_id == ParamType.array): # array needs to have multiple elements
      if (eexpar.valsize < 2):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on size check ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
+           print("{}: At 0x{:08x}, rejected type {:d} on size check ({:d})".format(po.mdlfile,entry_pos,eexpar.type_id,eexpar.valsize))
         return False
   else:
      if (po.verbose > 2):
-        print("{}: Rejected type {:d} - not known".format(po.mdlfile,eexpar.type_id))
+        print("{}: At 0x{:08x}, rejected type {:d} - not known".format(po.mdlfile,entry_pos,eexpar.type_id))
      return False
   # Limits
   if math.isnan(eexpar.limit_f.min) or math.isnan(eexpar.limit_f.max) or math.isnan(eexpar.limit_f.deflt):
@@ -243,57 +243,57 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
      limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.min)
      if (limit_ftoi != eexpar.limit_u.min):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on min U-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_u.min,eexpar.limit_f.min))
+           print("{}: At 0x{:08x}, rejected type {:d} on min U-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_u.min,eexpar.limit_f.min))
         return False
      # Max unsigned
      limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.max)
      if (limit_ftoi != eexpar.limit_u.max):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on max U-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_u.max,eexpar.limit_f.max))
+           print("{}: At 0x{:08x}, rejected type {:d} on max U-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_u.max,eexpar.limit_f.max))
         return False
      # Default unsigned
      limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.deflt)
      if (abs(limit_ftoi - eexpar.limit_u.deflt) > 127):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on deflt U-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_u.deflt,eexpar.limit_f.deflt))
+           print("{}: At 0x{:08x}, rejected type {:d} on deflt U-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_u.deflt,eexpar.limit_f.deflt))
         return False
   elif (flyc_param_limit_signed_int(po, eexpar)):
      # Min signed
      limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.min)
      if (limit_ftoi != eexpar.limit_i.min):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on min I-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
+           print("{}: At 0x{:08x}, rejected type {:d} on min I-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
         return False
      # Max signed
      limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.max)
      if (limit_ftoi != eexpar.limit_i.max):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on max I-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
+           print("{}: At 0x{:08x}, rejected type {:d} on max I-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
         return False
      # Default signed
      limit_ftoi = flyc_param_limit_to_type(po, eexpar.type_id, eexpar.limit_f.deflt)
      if (abs(limit_ftoi - eexpar.limit_i.deflt) > 127):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on deflt I-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
+           print("{}: At 0x{:08x}, rejected type {:d} on deflt I-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
         return False
   else: # in case of other types, int params are storing 32-bit signed value
      # Min signed
      limit_ftoi = flyc_param_limit_to_type(po, ParamType.long, eexpar.limit_f.min)
      if (limit_ftoi != eexpar.limit_i.min):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on min O-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
+           print("{}: At 0x{:08x}, rejected type {:d} on min O-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
         return False
      # Max signed
      limit_ftoi = flyc_param_limit_to_type(po, ParamType.long, eexpar.limit_f.max)
      if (limit_ftoi != eexpar.limit_i.max):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on max O-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
+           print("{}: At 0x{:08x}, rejected type {:d} on max O-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
         return False
      # Default signed
      limit_ftoi = flyc_param_limit_to_type(po, ParamType.long, eexpar.limit_f.deflt)
      if (abs(limit_ftoi - eexpar.limit_i.deflt) > 127):
         if (po.verbose > 2):
-           print("{}: Rejected type {:d} on deflt O-F {:d} {:d} {:f}".format(po.mdlfile,eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
+           print("{}: At 0x{:08x}, rejected type {:d} on deflt O-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
         return False
 
   if (1): # limit_u and limit_i are bitwise identical; cast them to compare
@@ -564,7 +564,7 @@ def main(argv):
   # Parse command line options
   po = ProgOptions()
   try:
-     opts, args = getopt.getopt(argv,"hvm:lux",["help","version","mdlfile="])
+     opts, args = getopt.getopt(argv,"hvm:b:lux",["help","version","mdlfile=","baseaddr="])
   except getopt.GetoptError:
      print("Unrecognized options; check dji_flyc_param_ed.sh --help")
      sys.exit(2)
@@ -576,6 +576,7 @@ def main(argv):
         print("  -l - list parameters stored in the firmware")
         print("  -x - extract parameters array to infos json text file")
         print("  -u - update parameters array in binary fw from infos text file")
+        print("  -b <baseaddr> - set base address; crucial for finding the array")
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
@@ -583,6 +584,8 @@ def main(argv):
         sys.exit()
      elif opt == '-v':
         po.verbose += 1
+     elif opt in ("-b", "--baseaddr"):
+        po.address_base = int(arg,0)
      elif opt in ("-m", "--mdlfile"):
         po.mdlfile = arg
      elif opt in ("-l", "--list"):
