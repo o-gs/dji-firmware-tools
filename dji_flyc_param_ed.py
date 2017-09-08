@@ -274,34 +274,37 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
         return False
      # Max unsigned
      limit_ftoi = flyc_param_limit_to_type(po, ver, eexpar.type_id, eexpar.limit_f.max)
-     if (limit_ftoi != eexpar.limit_u.max):
+     treshold = abs(limit_ftoi / 10000000) # ignore differences beyond 32bit float precision
+     if (abs(limit_ftoi - eexpar.limit_u.max) > treshold):
         if (po.verbose > 2):
            print("{}: At 0x{:08x}, rejected type {:d} on max U-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_u.max,eexpar.limit_f.max))
         return False
      # Default unsigned
      limit_ftoi = flyc_param_limit_to_type(po, ver, eexpar.type_id, eexpar.limit_f.deflt)
-     if (abs(limit_ftoi - eexpar.limit_u.deflt) > 127):
+     treshold = abs(limit_ftoi / 10000000) # ignore differences beyond 32bit float precision
+     if (abs(limit_ftoi - eexpar.limit_u.deflt) > treshold):
         if (po.verbose > 2):
            print("{}: At 0x{:08x}, rejected type {:d} on deflt U-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_u.deflt,eexpar.limit_f.deflt))
         return False
   elif (flyc_param_limit_signed_int(po, eexpar)):
      # Min signed
      limit_ftoi = flyc_param_limit_to_type(po, ver, eexpar.type_id, eexpar.limit_f.min)
-     treshold = abs(limit_ftoi / 999999) # ignore differences beyond 32bit float precision
+     treshold = abs(limit_ftoi / 10000000) # ignore differences beyond 32bit float precision
      if (abs(limit_ftoi - eexpar.limit_i.min) > treshold):
         if (po.verbose > 2):
            print("{}: At 0x{:08x}, rejected type {:d} on min I-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
         return False
      # Max signed
      limit_ftoi = flyc_param_limit_to_type(po, ver, eexpar.type_id, eexpar.limit_f.max)
-     treshold = abs(limit_ftoi / 999999) # ignore differences beyond 32bit float precision
+     treshold = abs(limit_ftoi / 10000000) # ignore differences beyond 32bit float precision
      if (abs(limit_ftoi - eexpar.limit_i.max) > treshold):
         if (po.verbose > 2):
            print("{}: At 0x{:08x}, rejected type {:d} on max I-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
         return False
      # Default signed
      limit_ftoi = flyc_param_limit_to_type(po, ver, eexpar.type_id, eexpar.limit_f.deflt)
-     if (abs(limit_ftoi - eexpar.limit_i.deflt) > 127):
+     treshold = abs(limit_ftoi / 10000000) # ignore differences beyond 32bit float precision
+     if (abs(limit_ftoi - eexpar.limit_i.deflt) > treshold):
         if (po.verbose > 2):
            print("{}: At 0x{:08x}, rejected type {:d} on deflt I-F {:d} {:d} {:f}".format(po.mdlfile,entry_pos,eexpar.type_id,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
         return False
