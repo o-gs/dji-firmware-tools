@@ -56,23 +56,41 @@ class ParamType:
   double = 0x9
   array = 0xa
 
-class FlycExportLimitF(LittleEndianStructure):
+class FlycExportLimitF2015(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('min', c_float),
               ('max', c_float),
               ('deflt', c_float)]
 
-class FlycExportLimitI(LittleEndianStructure):
+class FlycExportLimitI2015(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('min', c_int),
               ('max', c_int),
               ('deflt', c_int)]
 
-class FlycExportLimitU(LittleEndianStructure):
+class FlycExportLimitU2015(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('min', c_uint),
               ('max', c_uint),
               ('deflt', c_uint)]
+
+class FlycExportLimitF2017(LittleEndianStructure):
+  _pack_ = 1
+  _fields_ = [('deflt', c_float),
+              ('min', c_float),
+              ('max', c_float)]
+
+class FlycExportLimitI2017(LittleEndianStructure):
+  _pack_ = 1
+  _fields_ = [('deflt', c_int),
+              ('min', c_int),
+              ('max', c_int)]
+
+class FlycExportLimitU2017(LittleEndianStructure):
+  _pack_ = 1
+  _fields_ = [('deflt', c_uint),
+              ('min', c_uint),
+              ('max', c_uint)]
 
 class FlycExportParam2015(LittleEndianStructure):
   _pack_ = 1
@@ -80,9 +98,9 @@ class FlycExportParam2015(LittleEndianStructure):
               ('valptr', c_uint), # Pointer to where current value of the parameter is
               ('valsize', c_uint),
               ('type_id', c_uint),
-              ('limit_f', FlycExportLimitF),
-              ('limit_i', FlycExportLimitI),
-              ('limit_u', FlycExportLimitU),
+              ('limit_f', FlycExportLimitF2015),
+              ('limit_i', FlycExportLimitI2015),
+              ('limit_u', FlycExportLimitU2015),
               ('attribute', c_uint),
               ('callback', c_uint)]
 
@@ -92,9 +110,9 @@ class FlycExportParam2017(LittleEndianStructure):
               ('valptr', c_uint), # Pointer to where current value of the parameter is
               ('valsize', c_ushort),
               ('type_id', c_ushort),
-              ('limit_f', FlycExportLimitF),
-              ('limit_i', FlycExportLimitI),
-              ('limit_u', FlycExportLimitU),
+              ('limit_f', FlycExportLimitF2017),
+              ('limit_i', FlycExportLimitI2017),
+              ('limit_u', FlycExportLimitU2017),
               ('attribute', c_uint),
               ('callback', c_uint)]
 
