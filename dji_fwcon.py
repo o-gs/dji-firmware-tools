@@ -351,7 +351,7 @@ def dji_read_fwentry_head(po, i, miname):
     parser.read_file(lines)
   target_s = parser.get("asection", "target")
   target_m = re.search('m(?P<kind>[0-9]{2})(?P<model>[0-9]{2})', target_s)
-  hde.target = ((int(target_m.group("kind"),10)&0x1f)) + ((int(target_m.group("model"),10)%0x07)<<5)
+  hde.target = ((int(target_m.group("kind"),10)&0x1f)) + ((int(target_m.group("model"),10)&0x07)<<5)
   version_s = parser.get("asection", "version")
   version_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<svn>[0-9]+)', version_s)
   hde.version = ((int(version_m.group("major"),10)&0xff)<<24) + ((int(version_m.group("minor"),10)%0xff)<<16) + (int(version_m.group("svn"),10)%0xffff)
