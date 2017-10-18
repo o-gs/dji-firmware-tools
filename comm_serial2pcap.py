@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-# DJI serial bus -> pcap utility. 
-#
-# This script captures data from two UARTs and attempts to packetise the
-# streams, the CRC is checked before the packet is passed to the pcap file/fifo
-#
+""" DJI serial bus -> pcap utility.
+
+ This script captures data from two UARTs and attempts to packetise the
+ streams. CRC is checked before the packet is passed to the pcap file/fifo.
+"""
+
 # Derived from:
 #
 # AVR / Arduino dynamic memory log analyis script.
@@ -44,6 +46,19 @@ import select
 import binascii
 import datetime
 import argparse
+import enum
+
+class RxState(enum.Enum):
+    NO_PACKET = 0
+    IN_HEAD = 1
+    IN_BODY = 2
+    IN_TRAIL = 3
+
+class CaptureStats:
+  count_ok = 0
+  count_bad = 0
+  bytes_ok = 0
+  bytes_bad = 0
 
 def calc_pkt55_checksum(packet, plength):
     crc =[0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
@@ -197,6 +212,10 @@ def setup_output(options):
         return HumanFormatter(sys.stdout)
 
 def main():
+    """ Main executable function.
+
+      Its task is to parse command line options and call a function which performs sniffing.
+    """
     parser = argparse.ArgumentParser(description='Convert DJI P3 packets sniffed from a serial link into pcap format')
 
     parser.add_argument('port1',
@@ -230,52 +249,84 @@ def main():
         pass
 
 
-def do_packetiser(ser, state, packet, out, count):
+def do_packetiser(ser, state, packet, out, cstat):
     while ser.inWaiting():
         byte = ord(ser.read(1))
-        if state == 0:	#expect a 55 or AB
+
+        if state == RxState.NO_PACKET:	# expect ideftifier - 55 or AB
             if byte == 0x55 or byte == 0xAB:
+                if len(packet) > 0:
+                    cstat.count_bad += 1
+                    cstat.bytes_bad += len(packet)
                 packet = bytearray()
                 packet.append(byte)
-                state = 1
+                state = RxState.IN_HEAD
+            else:
+                packet.append(byte)
+                # Make sure we do not gather too much rubbish
+                if len(packet) > 255:
+                    cstat.count_bad += 1
+                    cstat.bytes_bad += len(packet)
+                    packet = bytearray()
 
-        elif state == 1:
+        elif state == RxState.IN_HEAD:
             packet.append(byte)
-            if len(packet) == packet[1]-1:
-                state = 2
-
-        elif state == 2:
-            packet.append(byte)
-            if packet[0] == 0x55:
+            # If got whole header for given packet type, switch to reading body
+            if packet[0] == 0x55 and len(packet) == 4:
+                # type 55 packet header has its own checksum
                 hdr_ccrc = calc_pkt55_hdr_checksum(0x77, packet, 3)
                 hdr_crc_pkt = struct.unpack("B", packet[3:4])[0]
                 if hdr_ccrc == hdr_crc_pkt:
+                    state = RxState.IN_BODY
+                else:
+                    # stats will be updated later, just change state
+                    state = RxState.NO_PACKET
+            elif packet[0] == 0xAB and len(packet) == 4:
+                state = RxState.IN_BODY
 
-                    ccrc = calc_pkt55_checksum(packet, len(packet) - 2)
-                    crc_pkt = struct.unpack("<H", packet[-2:])[0]
-                    if ccrc == crc_pkt:
-                        try:
-                            count = count + 1
-                            out.write_packet(packet)
-                        except OSError as e:
-                            # SIGPIPE indicates the fifo was closed
-                            if e.errno == errno.SIGPIPE:
-                                break
+        elif state == RxState.IN_BODY:
+            packet.append(byte)
+            if len(packet) == packet[1]-1:
+                state = RxState.IN_TRAIL
+
+        elif state == RxState.IN_TRAIL:
+            packet.append(byte)
+
+            if packet[0] == 0x55:
+                ccrc = calc_pkt55_checksum(packet, len(packet) - 2)
+                crc_pkt = struct.unpack("<H", packet[-2:])[0]
+                if ccrc == crc_pkt:
+                    try:
+                        cstat.count_ok += 1
+                        cstat.bytes_ok += len(packet)
+                        out.write_packet(packet)
+                    except OSError as e:
+                        # SIGPIPE indicates the fifo was closed
+                        if e.errno == errno.SIGPIPE:
+                            break
+                else:
+                    cstat.count_bad += 1
+                    cstat.bytes_bad += len(packet)
                                            
             elif packet[0] == 0xAB:
                 ccrc = calc_pktAB_checksum(7, packet, len(packet) - 1)
                 crc_pkt = struct.unpack("B", packet[-1:])[0]
                 if ccrc == crc_pkt:
                     try:
-                        count = count + 1
+                        cstat.count_ok += 1
+                        cstat.bytes_ok += len(packet)
                         out.write_packet(packet)
                     except OSError as e:
                         # SIGPIPE indicates the fifo was closed
                         if e.errno == errno.SIGPIPE:
                             break
+                else:
+                    cstat.count_bad += 1
+                    cstat.bytes_bad += len(packet)
 
-            state = 0
-    return state, packet, count
+            packet = bytearray()
+            state = RxState.NO_PACKET
+    return state, packet, cstat
 
 def do_sniff_once(options):
     # This might block until the other side of the fifo is opened
@@ -291,17 +342,19 @@ def do_sniff_once(options):
     if not options.quiet:
         print("Waiting for packets...")
 
-    count = 0
+    cstat = CaptureStats()
+
     poll = select.poll()
     # Wait to read data from serial, or until the fifo is closed
     poll.register(ser1, select.POLLIN)
     poll.register(ser2, select.POLLIN)
+    poll.register(sys.stdin, select.POLLIN)
     poll.register(out, select.POLLERR)
 
     packet1 = bytearray()
     packet2 = bytearray()
-    state1 = 0
-    state2 = 0
+    state1 = RxState.NO_PACKET
+    state2 = RxState.NO_PACKET
 
 
     while True:
@@ -314,17 +367,23 @@ def do_sniff_once(options):
             break
 
         elif ser1.fileno() in fds:
-            state1, packet1, count = do_packetiser(ser1, state1, packet1, out, count)
+            state1, packet1, cstat = do_packetiser(ser1, state1, packet1, out, cstat)
 
         elif ser2.fileno() in fds:
-            state2, packet2, count = do_packetiser(ser2, state2, packet2, out, count)
+            state2, packet2, cstat = do_packetiser(ser2, state2, packet2, out, cstat)
+
+        elif sys.stdin.fileno() in fds:
+            input()
+            print("Captured {} packets ({}b), dropped {} fragments ({}b)".format(cstat.count_ok,
+                cstat.bytes_ok, cstat.count_bad, cstat.bytes_bad))
 
     ser1.close()
     ser2.close()
     out.close()
 
     if not options.quiet:
-        print("Captured {} packet{}".format(count, 's' if count != 1 else ''))
+        print("Captured {} packets ({}b), dropped {} fragments ({}b)".format(cstat.count_ok,
+            cstat.bytes_ok, cstat.count_bad, cstat.bytes_bad))
 
 if __name__ == '__main__':
     main()
