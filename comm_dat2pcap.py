@@ -183,25 +183,30 @@ class HumanFormatter(Formatter):
         self.out.flush()
 
 def is_packet_ready(state):
-  """ Returns whether a packet within the state is ready for storing.
-  """
-  return (state.id == StateId.READY) and (len(state.packet) > 0);
+    """ Returns whether a packet within the state is ready for storing.
+    """
+    return (state.id == StateId.READY) and (len(state.packet) > 0);
 
 def is_packet_at_finish(state):
-  """ Returns whether the state informs processing should finish.
-  """
-  return (state.id == StateId.FINISH);
+    """ Returns whether the state informs processing should finish.
+    """
+    return (state.id == StateId.FINISH);
 
 def store_packet(out, state):
-  state.id = StateId.NO_PACKET
-  try:
-      out.write_packet(state.packet)
-  except OSError as e:
-      # SIGPIPE indicates the fifo was closed
-      if e.errno == errno.SIGPIPE:
-          state.id = StateId.FINISH
-  state.packet = bytearray()
-  return state
+    """ Write packet from given state into given output stream.
+
+        This function can be called when packet stored within the state
+        is ready. The packet is written to stream and removed from the state.
+    """
+    state.id = StateId.NO_PACKET
+    try:
+        out.write_packet(state.packet)
+    except OSError as e:
+        # SIGPIPE indicates the fifo was closed
+        if e.errno == errno.SIGPIPE:
+            state.id = StateId.FINISH
+    state.packet = bytearray()
+    return state
 
 def do_packetise_byte(byte, state, info):
   """ Add byte to the packetize effort represented by state
@@ -250,7 +255,7 @@ def do_packetise_byte(byte, state, info):
 
   elif state.id == StateId.IN_BODY:
       state.packet.append(byte)
-      # TODO for packet type 0x55, 2 bits of size are in packet[2]:
+      # for packet type 0x55, 2 bits of size are in packet[2]
       if state.packet[0] == 0x55:
           len_pkt = struct.unpack("<H", state.packet[1:3])[0] & 0x3ff
       else:
@@ -386,4 +391,4 @@ def main(argv):
      raise NotImplementedError('Unsupported command.')
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    main(sys.argv[1:])
