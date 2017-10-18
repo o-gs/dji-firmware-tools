@@ -125,12 +125,24 @@ Example of extracting and then updating the flight controller parameters:
 
 ```./dji_flyc_param_ed.py -vv -u -m P3X_FW_V01.07.0060_m0306.bin```
 
+### comm_dat2pcap.py
+
+DJI Universal Packet Container stream pareser with pcap output format.
+
+The script parses Raw DUPC stream (ie. flight log files ```FLY???.DAT```) and wraps
+single packets with PCap headers. Packets CRC is checked before the data is passed.
+Any tool with PCap format support can then be used to analyse the data (ie. Wireshark).
+
+Example of converting flight log file:
+
+```./comm_dat2pcap.py -vv -d FLY002.DAT```
+
 ### comm_serial2pcap.py
 
-DJI serial bus sniffer with pcap output format.
+DJI serial bus sniffer with DUPC packetizer and PCap output format.
 
-The script captures data from two UARTs and attempts to packetise the streams.
-Packets CRC is checked before the data is passed to the pcap file or fifo.
+The script captures data from two UARTs and wraps single DUPC packets with PCap headers.
+Packets CRC is checked before the data is passed to the PCap file or FIFO pipe.
 Any tool with pcap format support can then be used to analyse the data (ie. Wireshark).
 
 The utility requires two serial interfaces with RX lines connected to RX and TX lines
