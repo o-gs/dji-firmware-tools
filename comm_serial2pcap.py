@@ -211,44 +211,6 @@ def setup_output(options):
     else:
         return HumanFormatter(sys.stdout)
 
-def main():
-    """ Main executable function.
-
-      Its task is to parse command line options and call a function which performs sniffing.
-    """
-    parser = argparse.ArgumentParser(description='Convert DJI P3 packets sniffed from a serial link into pcap format')
-
-    parser.add_argument('port1',
-                        help='The serial port to read from')
-
-    parser.add_argument('port2',
-                        help='The serial port to read from')
-
-
-    parser.add_argument('-b', '--baudrate', default=115200, type=int,
-                        help='The baudrate to use for the serial port (defaults to %(default)s)')
-
-    parser.add_argument('-q', '--quiet', action='store_true',
-                        help='Do not output any informational messages')
-
-    output = parser.add_mutually_exclusive_group()
-
-    output.add_argument('-F', '--fifo',
-                        help='Write output to a fifo instead of stdout. The fifo is created if needed and capturing does not start until the other side of the fifo is opened.')
-
-    output.add_argument('-w', '--write-file',
-                        help='Write output to a file instead of stdout')
-
-    options = parser.parse_args();
-
-    try:
-        # If the fifo got closed, just start over again
-        while True:
-            do_sniff_once(options)
-    except KeyboardInterrupt:
-        pass
-
-
 def do_packetiser(ser, state, packet, out, cstat):
     while ser.inWaiting():
         byte = ord(ser.read(1))
@@ -264,7 +226,7 @@ def do_packetiser(ser, state, packet, out, cstat):
             else:
                 packet.append(byte)
                 # Make sure we do not gather too much rubbish
-                if len(packet) > 255:
+                if len(packet) > 0x3ff:
                     cstat.count_bad += 1
                     cstat.bytes_bad += len(packet)
                     packet = bytearray()
@@ -286,6 +248,8 @@ def do_packetiser(ser, state, packet, out, cstat):
 
         elif state == RxState.IN_BODY:
             packet.append(byte)
+            # TODO for packet type 0x55, 2 bits of size are in packet[2]:
+            #if len(packet) == struct.unpack("<H", packet[1:3])[0] & 0x3ff:
             if len(packet) == packet[1]-1:
                 state = RxState.IN_TRAIL
 
@@ -356,7 +320,6 @@ def do_sniff_once(options):
     state1 = RxState.NO_PACKET
     state2 = RxState.NO_PACKET
 
-
     while True:
         # Wait for something to do
         events = poll.poll()
@@ -366,13 +329,13 @@ def do_sniff_once(options):
             # Error on output, e.g. fifo closed on the other end
             break
 
-        elif ser1.fileno() in fds:
+        if ser1.fileno() in fds:
             state1, packet1, cstat = do_packetiser(ser1, state1, packet1, out, cstat)
 
-        elif ser2.fileno() in fds:
+        if ser2.fileno() in fds:
             state2, packet2, cstat = do_packetiser(ser2, state2, packet2, out, cstat)
 
-        elif sys.stdin.fileno() in fds:
+        if sys.stdin.fileno() in fds:
             input()
             print("Captured {} packets ({}b), dropped {} fragments ({}b)".format(cstat.count_ok,
                 cstat.bytes_ok, cstat.count_bad, cstat.bytes_bad))
@@ -384,6 +347,42 @@ def do_sniff_once(options):
     if not options.quiet:
         print("Captured {} packets ({}b), dropped {} fragments ({}b)".format(cstat.count_ok,
             cstat.bytes_ok, cstat.count_bad, cstat.bytes_bad))
+
+def main():
+    """ Main executable function.
+
+      Its task is to parse command line options and call a function which performs sniffing.
+    """
+    parser = argparse.ArgumentParser(description='Convert DJI P3 packets sniffed from a serial link into pcap format')
+
+    parser.add_argument('port1',
+                        help='The serial port to read from')
+
+    parser.add_argument('port2',
+                        help='The serial port to read from')
+
+    parser.add_argument('-b', '--baudrate', default=115200, type=int,
+                        help='The baudrate to use for the serial port (defaults to %(default)s)')
+
+    parser.add_argument('-q', '--quiet', action='store_true',
+                        help='Do not output any informational messages')
+
+    output = parser.add_mutually_exclusive_group()
+
+    output.add_argument('-F', '--fifo',
+                        help='Write output to a fifo instead of stdout. The fifo is created if needed and capturing does not start until the other side of the fifo is opened.')
+
+    output.add_argument('-w', '--write-file',
+                        help='Write output to a file instead of stdout')
+
+    options = parser.parse_args();
+
+    try:
+        # If the fifo got closed, just start over again
+        while True:
+            do_sniff_once(options)
+    except KeyboardInterrupt:
+        pass
 
 if __name__ == '__main__':
     main()
