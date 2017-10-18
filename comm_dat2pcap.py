@@ -19,7 +19,7 @@ import configparser
 import itertools
 
 sys.path.insert(0, './')
-from comm_serial2pcap import setup_output, do_packetiser, CaptureStats
+from comm_serial2pcap import do_packetiser, PcapFormatter, CaptureStats, RxState
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
@@ -31,7 +31,27 @@ class ProgOptions:
   verbose = 0
   command = ''
 
-def do_dat2pcap(po, datfile, pcapfile)
+def do_dat2pcap(po, datfile, pcapfile):
+  """ Reads raw packets from datfile and writes them into pcapfile with proper headers.
+  """
+  # This might block until the other side of the fifo is opened
+  out = PcapFormatter(pcapfile)
+  out.write_header()
+
+  if (po.verbose > 1):
+    print("{}: Copying packets into {} ...".format(po.datfile,po.pcapfile))
+
+  cstat = CaptureStats()
+
+  packet = bytearray()
+  state = RxState.NO_PACKET
+
+  while True:
+      state1, packet1, cstat = do_packetiser(datfile, state, packet, out, cstat)
+
+  print("Captured {} packets ({}b), dropped {} fragments ({}b)".format(cstat.count_ok,
+      cstat.bytes_ok, cstat.count_bad, cstat.bytes_bad))
+
   pass
 
 def main(argv):
@@ -61,7 +81,7 @@ def main(argv):
         po.verbose += 1
      elif opt in ("-d", "--datfile"):
         po.datfile = arg
-        po.command == 'd'
+        po.command = 'd'
      elif opt in ("-p", "--pcapfile"):
         po.pcapfile = arg
 
@@ -77,7 +97,7 @@ def main(argv):
      datfile = open(po.datfile, "rb")
      pcapfile = open(po.pcapfile, "wb")
 
-     do_dat2pcap(po,datfile)
+     do_dat2pcap(po,datfile,pcapfile)
 
      datfile.close();
      pcapfile.close();
