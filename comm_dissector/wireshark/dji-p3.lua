@@ -189,6 +189,16 @@ f.length = ProtoField.uint16 ("dji_p3.length", "Length", base.HEX, nil, 0x3FF)
 f.protocol_version = ProtoField.uint16 ("dji_p3.protover", "Protocol Version", base.HEX, nil, 0xFC00)
 -- [3]  Data Type
 f.datatype = ProtoField.uint8 ("dji_p3.hdr_crc", "Header CRC", base.HEX)
+
+-- Fields for ProtoVer = 0 (Flight Record)
+
+-- [4-5]  Log Entry Type
+f.rec_etype = ProtoField.uint16 ("dji_p3.rec_etype", "Log Entry Type", base.HEX)
+-- [6-9]  Sequence Ctr
+f.rec_seqctr = ProtoField.uint16 ("dji_p3.rec_seqctr", "Seq Counter", base.DEC)
+
+-- Fields for ProtoVer = 1
+
 -- [4]  Sender
 f.sender = ProtoField.uint8 ("dji_p3.sender", "Sender", base.DEC, SRC_DEST, 0x1F)
 -- [5]  Receiver
@@ -219,6 +229,27 @@ function set_info(cmd, pinfo, decodes)
         pinfo.cols.info:append(decodes[cmd])
     end
 end
+
+-- Flight log - Text message
+f.rec_msg_text = ProtoField.string ("dji_p3.rec_msg_text", "Text Message", base.ASCII)
+
+function flightrec_message_text_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 6
+
+    local seqctr = buffer(offset,4):le_uint()
+
+    offset = 10
+
+    local msg = buffer(offset, pkt_length - offset - 2):bytes()
+
+    for i = 0, (msg:len() - 1) do
+      msg:set_index( i, bit.bxor(msg:get_index(i), bit32.band(seqctr, 0xFF) ) )
+    end
+    subtree:add (f.rec_msg_text, buffer(offset, pkt_length - offset - 2))
+    offset = pkt_length - 2
+end
+
+local FLIGHT_RECORD_DISSECT = { [0x8000] = flightrec_message_text_dissector }
 
 -- Telemetry
 f.telemetry_lat = ProtoField.double ("dji_p3.telemetry_lat", "Latitude")
@@ -299,10 +330,10 @@ function main_dissector(buffer, pinfo, subtree)
 
     -- [1-2] The Pkt length | protocol version?
     local pkt_length = buffer(offset,2):le_uint()
+    local pkt_protover = pkt_length
     -- bit32 lib requires LUA 5.2
-    pkt_length = bit32.band(pkt_length,  0x03FF)
-
-    local pkt_length = buffer(offset,1):uint()
+    pkt_length = bit32.band(pkt_length, 0x03FF)
+    pkt_protover = bit32.rshift(bit32.band(pkt_protover, 0xFC00), 10)
 
     subtree:add_le (f.length, buffer(offset, 2))
     subtree:add_le (f.protocol_version, buffer(offset, 2))
@@ -312,50 +343,84 @@ function main_dissector(buffer, pinfo, subtree)
     subtree:add (f.datatype, buffer(offset, 1))
     offset = offset + 1
 
-    -- [4] Sender
-    subtree:add (f.sender, buffer(offset, 1))
-    offset = offset + 1
+    if pkt_protover == 0 then
 
-    -- [5] Receiver
-    subtree:add (f.receiver, buffer(offset, 1))
-    offset = offset + 1
+        -- [4] Log entry type
+        local etype = buffer(offset,2):le_uint()
+        subtree:add (f.rec_etype, buffer(offset, 2))
+        offset = offset + 2
 
-    -- [6] Sequence Counter
-    subtree:add_le (f.seqctr, buffer(offset, 2))
-    offset = offset + 2
+        -- [6] Sequence Counter
+        subtree:add_le (f.rec_seqctr, buffer(offset, 4))
+        offset = offset + 4
 
-    -- [8] Encrypt | Ack
-    subtree:add (f.encrypt, buffer(offset, 1))
-    subtree:add (f.ack, buffer(offset, 1))
-    offset = offset + 1
+        assert(offset == 10, "Offset shifted - dissector internal inconsistency")
 
-    -- [9] Cmd Set
-    local cmdset = buffer(offset,1):uint()
-    subtree:add (f.cmdset, buffer(offset, 1))
-    offset = offset + 1
+        -- [A] Payload    
+        if pkt_length > offset+2 then
+            payload_tree = subtree:add(f.payload, buffer(offset, pkt_length - offset - 2))
 
-    set_info(buffer(offset,1):uint(), pinfo, CMD_CMD_SET[cmdset])
+            -- If we have a dissector for this kind of command, run it
+            local dissector = nil
 
-    -- [A] Cmd
-    local cmd = buffer(offset,1):uint()
-    subtree:add (f.cmd, buffer(offset, 1))
-    offset = offset + 1
+            dissector = FLIGHT_RECORD_DISSECT[etype]
 
-    -- [B] Payload    
-    if pkt_length > 13 then
-        payload_tree = subtree:add(f.payload, buffer(offset, pkt_length - 13))
-
-        -- If we have a dissector for this kind of command, run it
-        local dissector = nil
-        if cmdset == 0x03 then
-            dissector = FLIGHT_CTRL_DISSECT[cmd]
-        elseif cmdset == 0x09 then
-            dissector = HD_LINK_DISSECT[cmd]
-        else
+            if dissector ~= nil then
+                dissector(pkt_length, buffer, pinfo, payload_tree)
+            end
 
         end
-        if dissector ~= nil then
-            dissector(pkt_length, buffer, pinfo, payload_tree)
+
+    else
+
+        -- [4] Sender
+        subtree:add (f.sender, buffer(offset, 1))
+        offset = offset + 1
+
+        -- [5] Receiver
+        subtree:add (f.receiver, buffer(offset, 1))
+        offset = offset + 1
+
+        -- [6] Sequence Counter
+        subtree:add_le (f.seqctr, buffer(offset, 2))
+        offset = offset + 2
+
+        -- [8] Encrypt | Ack
+        subtree:add (f.encrypt, buffer(offset, 1))
+        subtree:add (f.ack, buffer(offset, 1))
+        offset = offset + 1
+
+        -- [9] Cmd Set
+        local cmdset = buffer(offset,1):uint()
+        subtree:add (f.cmdset, buffer(offset, 1))
+        offset = offset + 1
+
+        set_info(buffer(offset,1):uint(), pinfo, CMD_CMD_SET[cmdset])
+
+        -- [A] Cmd
+        local cmd = buffer(offset,1):uint()
+        subtree:add (f.cmd, buffer(offset, 1))
+        offset = offset + 1
+
+        assert(offset == 11, "Offset shifted - dissector internal inconsistency")
+
+        -- [B] Payload    
+        if pkt_length > offset+2 then
+            payload_tree = subtree:add(f.payload, buffer(offset, pkt_length - offset - 2))
+
+            -- If we have a dissector for this kind of command, run it
+            local dissector = nil
+            if cmdset == 0x03 then
+                dissector = FLIGHT_CTRL_DISSECT[cmd]
+            elseif cmdset == 0x09 then
+                dissector = HD_LINK_DISSECT[cmd]
+            else
+
+            end
+            if dissector ~= nil then
+                dissector(pkt_length, buffer, pinfo, payload_tree)
+            end
+
         end
 
     end
