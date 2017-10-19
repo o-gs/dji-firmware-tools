@@ -1,6 +1,9 @@
 -- Create a new dissector
 DJI_P3_PROTO = Proto ("dji_p3", "DJI_P3","dji p3 UART protocol")
 
+local REC_ENTRY_TYPE = {  [0x8000] = 'Message Text',
+}
+
 local SRC_DEST = {  [0] = 'Invalid',
                     [1] = 'Camera',
                     [2] = 'App',
@@ -193,7 +196,7 @@ f.datatype = ProtoField.uint8 ("dji_p3.hdr_crc", "Header CRC", base.HEX)
 -- Fields for ProtoVer = 0 (Flight Record)
 
 -- [4-5]  Log Entry Type
-f.rec_etype = ProtoField.uint16 ("dji_p3.rec_etype", "Log Entry Type", base.HEX)
+f.rec_etype = ProtoField.uint16 ("dji_p3.rec_etype", "Log Entry Type", base.HEX, REC_ENTRY_TYPE)
 -- [6-9]  Sequence Ctr
 f.rec_seqctr = ProtoField.uint16 ("dji_p3.rec_seqctr", "Seq Counter", base.DEC)
 
@@ -230,22 +233,35 @@ function set_info(cmd, pinfo, decodes)
     end
 end
 
+function bytearray_to_string(bytes)
+  s = {}
+  for i = 0, bytes:len() - 1 do
+    s[i] = string.char(bytes:get_index(i))
+  end
+  return table.concat(s)
+end
+
+function flightrec_decrypt_payload(pkt_length, buffer)
+    local offset = 6
+    local seqctr = buffer(offset,4):le_uint()
+
+    offset = 10
+    local payload = buffer(offset, pkt_length - offset - 2):bytes()
+
+    for i = 0, (payload:len() - 1) do
+      payload:set_index( i, bit.bxor(payload:get_index(i), bit32.band(seqctr, 0xFF) ) )
+    end
+
+    return payload
+end
+
 -- Flight log - Text message
 f.rec_msg_text = ProtoField.string ("dji_p3.rec_msg_text", "Text Message", base.ASCII)
 
 function flightrec_message_text_dissector(pkt_length, buffer, pinfo, subtree)
-    local offset = 6
+    local payload = flightrec_decrypt_payload(pkt_length, buffer)
 
-    local seqctr = buffer(offset,4):le_uint()
-
-    offset = 10
-
-    local msg = buffer(offset, pkt_length - offset - 2):bytes()
-
-    for i = 0, (msg:len() - 1) do
-      msg:set_index( i, bit.bxor(msg:get_index(i), bit32.band(seqctr, 0xFF) ) )
-    end
-    subtree:add (f.rec_msg_text, buffer(offset, pkt_length - offset - 2))
+    subtree:add (f.rec_msg_text, bytearray_to_string(payload))
     offset = pkt_length - 2
 end
 
@@ -347,7 +363,7 @@ function main_dissector(buffer, pinfo, subtree)
 
         -- [4] Log entry type
         local etype = buffer(offset,2):le_uint()
-        subtree:add (f.rec_etype, buffer(offset, 2))
+        subtree:add_le (f.rec_etype, buffer(offset, 2))
         offset = offset + 2
 
         -- [6] Sequence Counter
