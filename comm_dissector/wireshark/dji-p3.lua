@@ -1,8 +1,5 @@
 -- Create a new dissector
-DJI_P3_PROTO = Proto ("dji_p3", "DJI_P3","dji p3 UART protocol")
-
-local REC_ENTRY_TYPE = {  [0x8000] = 'Message Text',
-}
+DJI_P3_PROTO = Proto ("dji_p3", "DJI_P3","Dji Ph3 DUPC / UART protocol")
 
 local SRC_DEST = {  [0] = 'Invalid',
                     [1] = 'Camera',
@@ -183,6 +180,8 @@ local CMD_CMD_SET = {   [0] = GENERAL_CMDS,
                         [15] = RTK_CMDS,
                         [16] = AUTO_CMDS    }
 
+dofile('dji-p3-flightrec.lua')
+
 local f = DJI_P3_PROTO.fields
 -- [0]  Start of Pkt, always 0x55
 f.delimiter = ProtoField.uint8 ("dji_p3.delimiter", "Delimiter", base.HEX)
@@ -196,7 +195,7 @@ f.datatype = ProtoField.uint8 ("dji_p3.hdr_crc", "Header CRC", base.HEX)
 -- Fields for ProtoVer = 0 (Flight Record)
 
 -- [4-5]  Log Entry Type
-f.rec_etype = ProtoField.uint16 ("dji_p3.rec_etype", "Log Entry Type", base.HEX, REC_ENTRY_TYPE)
+f.rec_etype = ProtoField.uint16 ("dji_p3.rec_etype", "Log Entry Type", base.HEX, DJI_P3_FLIGHT_RECORD_ENTRY_TYPE)
 -- [6-9]  Sequence Ctr
 f.rec_seqctr = ProtoField.uint16 ("dji_p3.rec_seqctr", "Seq Counter", base.DEC)
 
@@ -224,7 +223,7 @@ f.payload = ProtoField.bytes ("dji_p3.payload", "Payload", base.HEX)
 -- [B+Payload] CRC
 f.crc = ProtoField.uint16 ("dji_p3.crc", "CRC", base.HEX)
 
-function set_info(cmd, pinfo, decodes)
+local function set_info(cmd, pinfo, decodes)
     pinfo.cols.info = ""
     if decodes[cmd] == nil then
         pinfo.cols.info:append(string.format("Unknown [0x%02X]", cmd))
@@ -233,15 +232,23 @@ function set_info(cmd, pinfo, decodes)
     end
 end
 
-function bytearray_to_string(bytes)
+local function bytearray_to_string(bytes)
   s = {}
   for i = 0, bytes:len() - 1 do
-    s[i] = string.char(bytes:get_index(i))
+    s[i+1] = string.char(bytes:get_index(i))
   end
   return table.concat(s)
 end
 
-function flightrec_decrypt_payload(pkt_length, buffer)
+local function bytearray_to_hexstr(bytes)
+  s = {}
+  for i = 0, bytes:len() - 1 do
+    s[i+1] = string.format("%02X",bytes:get_index(i))
+  end
+  return table.concat(s," ")
+end
+
+local function flightrec_decrypt_payload(pkt_length, buffer)
     local offset = 6
     local seqctr = buffer(offset,4):le_uint()
 
@@ -254,18 +261,6 @@ function flightrec_decrypt_payload(pkt_length, buffer)
 
     return payload
 end
-
--- Flight log - Text message
-f.rec_msg_text = ProtoField.string ("dji_p3.rec_msg_text", "Text Message", base.ASCII)
-
-function flightrec_message_text_dissector(pkt_length, buffer, pinfo, subtree)
-    local payload = flightrec_decrypt_payload(pkt_length, buffer)
-
-    subtree:add (f.rec_msg_text, bytearray_to_string(payload))
-    offset = pkt_length - 2
-end
-
-local FLIGHT_RECORD_DISSECT = { [0x8000] = flightrec_message_text_dissector }
 
 -- Telemetry
 f.telemetry_lat = ProtoField.double ("dji_p3.telemetry_lat", "Latitude")
@@ -281,7 +276,7 @@ f.telemetry_unkn51 = ProtoField.bytes ("dji_p3.telemetry_unkn51", "Unknown", bas
 f.telemetry_unkn_counter = ProtoField.uint8 ("dji_p3.telemetry_unkn_counter", "Unknown counter", base.DEC)
 f.telemetry_unkn55 = ProtoField.bytes ("dji_p3.telemetry_unkn55", "Unknown", base.HEX)
 
-function main_flight_ctrl_telemetry_dissector(pkt_length, buffer, pinfo, subtree)
+local function main_flight_ctrl_telemetry_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 13
 
     subtree:add (f.telemetry_lat, buffer(offset, 8))
@@ -328,7 +323,7 @@ local FLIGHT_CTRL_DISSECT = {[0x43] = main_flight_ctrl_telemetry_dissector }
 f.transciever_reg_addr = ProtoField.uint16 ("dji_p3.transciever_reg_set", "Register addr", base.HEX)
 f.transciever_reg_val = ProtoField.uint8 ("dji_p3.transciever_reg_val", "Register value", base.HEX)
 
-function main_hd_link_set_transciever_reg_dissector(pkt_length, buffer, pinfo, subtree)
+local function main_hd_link_set_transciever_reg_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 13
 
     subtree:add_le (f.transciever_reg_addr, buffer(offset, 2))
@@ -341,7 +336,7 @@ end
 
 local HD_LINK_DISSECT = {[0x06] = main_hd_link_set_transciever_reg_dissector }
 
-function main_dissector(buffer, pinfo, subtree)
+local function main_dissector(buffer, pinfo, subtree)
     local offset = 1
 
     -- [1-2] The Pkt length | protocol version?
@@ -374,15 +369,18 @@ function main_dissector(buffer, pinfo, subtree)
 
         -- [A] Payload    
         if pkt_length > offset+2 then
-            payload_tree = subtree:add(f.payload, buffer(offset, pkt_length - offset - 2))
+            local payload_buf = flightrec_decrypt_payload(pkt_length, buffer)
+            local payload_tree = subtree:add(f.payload, buffer(offset, pkt_length - offset - 2))
+            payload_tree:set_text("Payload: " .. bytearray_to_hexstr(payload_buf));
+            local payload_tvb = ByteArray.tvb(payload_buf, "Payload")
 
             -- If we have a dissector for this kind of command, run it
             local dissector = nil
 
-            dissector = FLIGHT_RECORD_DISSECT[etype]
+            dissector = DJI_P3_FLIGHT_RECORD_DISSECT[etype]
 
             if dissector ~= nil then
-                dissector(pkt_length, buffer, pinfo, payload_tree)
+                dissector(payload_tvb, pinfo, payload_tree)
             end
 
         end
@@ -497,7 +495,7 @@ f.batt_power_status = ProtoField.string("dji_p3.batt_status", "Power Status")
 --Battery barcode
 f.batt_barcode = ProtoField.bytes("dji_p3.batt_barcode", "Barcode", base.DEC)
 
-function battery_barcode_dissector(batt_length, buffer, pinfo, subtree)
+local function battery_barcode_dissector(batt_length, buffer, pinfo, subtree)
     local offset = 5
     if batt_length ~= 14 then
         subtree:add(f.batt_barcode, buffer(offset, (batt_length -6)))
@@ -505,7 +503,7 @@ function battery_barcode_dissector(batt_length, buffer, pinfo, subtree)
     end
 end
 
-function battery_status_dissector(batt_length, buffer, pinfo, subtree)
+local function battery_status_dissector(batt_length, buffer, pinfo, subtree)
     local offset = 5
 --    local cell 
     if batt_length ~= 14 then
@@ -541,7 +539,7 @@ function battery_status_dissector(batt_length, buffer, pinfo, subtree)
 
 end
 
-function battery_type_dissector(batt_length, buffer, pinfo, subtree)
+local function battery_type_dissector(batt_length, buffer, pinfo, subtree)
     local offset = 5
 
     if batt_length ~= 14 then
@@ -586,7 +584,7 @@ function battery_type_dissector(batt_length, buffer, pinfo, subtree)
     end
 end
 
-function battery_dissector(buffer, pinfo, subtree)
+local function battery_dissector(buffer, pinfo, subtree)
     local offset = 1
 
     local batt_length = buffer(offset,2):le_uint()
