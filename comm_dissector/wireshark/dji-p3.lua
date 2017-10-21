@@ -218,7 +218,7 @@ f.cmdset = ProtoField.uint8('dji_p3.cmdset', 'Cmd Set', base.DEC, CMD_SET, 0xFF)
 f.cmd       = ProtoField.uint8('dji_p3.cmd',      'Cmd',          base.HEX)
 
 -- [B] Payload (optional)
-f.payload = ProtoField.bytes ("dji_p3.payload", "Payload", base.HEX)
+f.payload = ProtoField.bytes ("dji_p3.payload", "Payload", base.SPACE)
 
 -- [B+Payload] CRC
 f.crc = ProtoField.uint16 ("dji_p3.crc", "CRC", base.HEX)
@@ -272,9 +272,9 @@ f.telemetry_pos_mode = ProtoField.uint16 ("dji_p3.telemetry_pos_mode", "Position
 f.telemetry_fly_mode = ProtoField.uint16 ("dji_p3.telemetry_fly_mode", "Flight mode", base.HEX)
 f.telemetry_gps_signal_str = ProtoField.uint16 ("dji_p3.telemetry_gps_signal_str", "GPS Signal strength", base.DEC)
 f.telemetry_num_satellites = ProtoField.uint16 ("dji_p3.telemetry_num_satellites", "Satellites number", base.DEC)
-f.telemetry_unkn51 = ProtoField.bytes ("dji_p3.telemetry_unkn51", "Unknown", base.HEX)
+f.telemetry_unkn51 = ProtoField.bytes ("dji_p3.telemetry_unkn51", "Unknown", base.NONE)
 f.telemetry_unkn_counter = ProtoField.uint8 ("dji_p3.telemetry_unkn_counter", "Unknown counter", base.DEC)
-f.telemetry_unkn55 = ProtoField.bytes ("dji_p3.telemetry_unkn55", "Unknown", base.HEX)
+f.telemetry_unkn55 = ProtoField.bytes ("dji_p3.telemetry_unkn55", "Unknown", base.NONE)
 
 local function main_flight_ctrl_telemetry_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 13
@@ -464,7 +464,7 @@ f.batt_protocol_version = ProtoField.uint16 ("dji_p3.batt_protover", "Protocol V
 -- [3] Cmd ID
 f.batt_cmd = ProtoField.uint8('dji_p3.batt_cmd', 'Battery Cmd', base.HEX, BATTERY_CMDS)
 
-f.batt_payload = ProtoField.bytes ("dji_p3.batt_payload", "Payload", base.HEX)
+f.batt_payload = ProtoField.bytes ("dji_p3.batt_payload", "Payload", base.NONE)
 
 f.batt_crc = ProtoField.uint8 ("dji_p3.batt_crc", "CRC", base.HEX)
 
@@ -479,7 +479,7 @@ f.batt_serial_number = ProtoField.uint16 ("dji_p3.batt_serial_number", "Serial N
 f.batt_name = ProtoField.string("dji_p3.batt_name", "Name")
 f.batt_unk1 = ProtoField.uint16 ("dji_p3.batt_unknown1", "Unknown", base.HEX)
 f.batt_unk2 = ProtoField.uint16 ("dji_p3.batt_unknown2", "Unknown", base.HEX)
-f.batt_fw_version = ProtoField.string ("dji_p3.batt_fw_version", "FW Version", base.HEX)
+f.batt_fw_version = ProtoField.string ("dji_p3.batt_fw_version", "FW Version", base.ASCII)
 f.batt_life = ProtoField.uint16 ("dji_p3.batt_life", "Battery Life", base.DEC)
 
 -- Battery Status
@@ -493,7 +493,7 @@ f.batt_cell_eol = ProtoField.uint16 ("dji_p3.batt_cell_eol", "EOL", base.HEX)
 f.batt_power_status = ProtoField.string("dji_p3.batt_status", "Power Status")
 
 --Battery barcode
-f.batt_barcode = ProtoField.bytes("dji_p3.batt_barcode", "Barcode", base.DEC)
+f.batt_barcode = ProtoField.bytes("dji_p3.batt_barcode", "Barcode", base.SPACE)
 
 local function battery_barcode_dissector(batt_length, buffer, pinfo, subtree)
     local offset = 5

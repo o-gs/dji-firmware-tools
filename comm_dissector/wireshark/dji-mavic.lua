@@ -96,7 +96,7 @@ f.cmdset = ProtoField.uint8('dji_mavic.cmdset', 'Cmd Set', base.DEC, CMD_SET, 0x
 f.cmd       = ProtoField.uint8('dji_mavic.cmd',      'Cmd',          base.HEX)
 
 -- [B] Payload (optional)
-f.payload = ProtoField.bytes ("dji_mavic.payload", "Payload", base.HEX)
+f.payload = ProtoField.bytes ("dji_mavic.payload", "Payload", base.SPACE)
 
 -- [B+Payload] CRC
 f.crc = ProtoField.uint16 ("dji_mavic.crc", "CRC", base.HEX)
