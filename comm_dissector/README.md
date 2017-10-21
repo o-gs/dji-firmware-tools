@@ -14,7 +14,7 @@ A simple setup is required to use the new dissector.
 
 ### Copy the script files
 
-Copy the files init.lua and dji-p3.lua to the Wireshark profile directory.
+Copy all the files LUA files (```*.lua```) and to the Wireshark profile directory. If you already different ```init.lua``` there, merge the content.
 
 #### Copying files in Linux
 

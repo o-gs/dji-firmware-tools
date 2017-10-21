@@ -274,6 +274,9 @@ local function flightrec_controller_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_controller_oh_take, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 37) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Controller: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Controller: Payload size different than expected") end
 end
 
 -- Flight log - Aircraft Condition - 0x03e9
@@ -309,6 +312,9 @@ local function flightrec_aircraft_condition_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_aircraft_condition_safe_fltr, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Aircraft Condition: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Aircraft Condition: Payload size different than expected") end
 end
 
 -- Flight log - Serial Api Inputs - 0x03ea
@@ -392,6 +398,9 @@ local function flightrec_serial_api_inputs_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_serial_api_inputs_f_test, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 25) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Serial Api Inputs: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Serial Api Inputs: Payload size different than expected") end
 end
 
 -- Flight log - Go Home Info - 0x03ec
@@ -491,6 +500,9 @@ local function flightrec_go_home_info_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_go_home_info_head_rate, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 47) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Go Home Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Go Home Info: Payload size different than expected") end
 end
 
 -- Flight log - Fmu Devices Run Time - 0x03ed
@@ -594,6 +606,9 @@ local function flightrec_fmu_devices_run_time_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_fmu_devices_run_time_headset, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 96) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Fmu Devices Run Time: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Fmu Devices Run Time: Payload size different than expected") end
 end
 
 -- Flight log - Fmu Sa Run Time - 0x03f0
@@ -677,6 +692,9 @@ local function flightrec_fmu_sa_run_time_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_fmu_sa_run_time_navi_data, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 76) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Fmu Sa Run Time: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Fmu Sa Run Time: Payload size different than expected") end
 end
 
 -- Flight log - Fmu Write Run Time - 0x03f1
@@ -780,6 +798,9 @@ local function flightrec_fmu_write_run_time_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_fmu_write_run_time_headset, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 96) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Fmu Write Run Time: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Fmu Write Run Time: Payload size different than expected") end
 end
 
 -- Flight log - Fmu Api Run Time - 0x03f3
@@ -791,6 +812,9 @@ local function flightrec_fmu_api_run_time_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_fmu_api_run_time_all, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Fmu Api Run Time: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Fmu Api Run Time: Payload size different than expected") end
 end
 
 -- Flight log - Cfg Errs - 0x03f4
@@ -802,6 +826,9 @@ local function flightrec_cfg_errs_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_cfg_errs_errs, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Cfg Errs: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Cfg Errs: Payload size different than expected") end
 end
 
 -- Flight log - New Api Err Time - 0x03f5
@@ -813,6 +840,9 @@ local function flightrec_new_api_err_time_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_new_api_err_time_errs, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"New Api Err Time: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"New Api Err Time: Payload size different than expected") end
 end
 
 -- Flight log - Poi Debug Data - 0x03ee
@@ -896,6 +926,9 @@ local function flightrec_poi_debug_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_poi_debug_data_is_pud, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 73) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Poi Debug Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Poi Debug Data: Payload size different than expected") end
 end
 
 -- Flight log - Adv Gh Debug Data - 0x03f6
@@ -1031,6 +1064,9 @@ local function flightrec_adv_gh_debug_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_adv_gh_debug_data_ctrl_ok, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 40) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Adv Gh Debug Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Adv Gh Debug Data: Payload size different than expected") end
 end
 
 -- Flight log - Ahrs Data - 0x03f7
@@ -1090,6 +1126,9 @@ local function flightrec_ahrs_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ahrs_data_ns_vgz, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 60) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ahrs Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ahrs Data: Payload size different than expected") end
 end
 
 -- Flight log - Err Code - 0x0070
@@ -1237,6 +1276,9 @@ local function flightrec_err_code_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_err_code_gcm2_act, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 35) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Err Code: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Err Code: Payload size different than expected") end
 end
 
 -- Flight log - Imu Atti 0 - 0x0800
@@ -1376,6 +1418,9 @@ local function flightrec_imu_atti_0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_imu_atti_0_atti_cnt0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 120) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Atti 0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Atti 0: Payload size different than expected") end
 end
 
 -- Flight log - Imu Atti 1 - 0x0801
@@ -1515,6 +1560,9 @@ local function flightrec_imu_atti_1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_imu_atti_1_atti_cnt1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 120) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Atti 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Atti 1: Payload size different than expected") end
 end
 
 -- Flight log - Imu Atti 2 - 0x0802
@@ -1654,6 +1702,9 @@ local function flightrec_imu_atti_2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_imu_atti_2_atti_cnt2, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 120) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Atti 2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Atti 2: Payload size different than expected") end
 end
 
 -- Flight log - Imu Ex 0 - 0x0810
@@ -1721,6 +1772,9 @@ local function flightrec_imu_ex_0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_imu_ex_0_ex_cnt0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 60) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Ex 0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Ex 0: Payload size different than expected") end
 end
 
 -- Flight log - Imu Ex 1 - 0x0811
@@ -1788,6 +1842,9 @@ local function flightrec_imu_ex_1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_imu_ex_1_ex_cnt1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 60) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Ex 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Ex 1: Payload size different than expected") end
 end
 
 -- Flight log - Imu Ex 2 - 0x0812
@@ -1855,6 +1912,9 @@ local function flightrec_imu_ex_2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_imu_ex_2_ex_cnt2, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 60) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Ex 2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Ex 2: Payload size different than expected") end
 end
 
 -- Flight log - Atti Mini0 - 0x08a0
@@ -1902,6 +1962,9 @@ local function flightrec_atti_mini0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_atti_mini0_s_cnt0, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 40) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Atti Mini0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Atti Mini0: Payload size different than expected") end
 end
 
 -- Flight log - Atti Mini1 - 0x08a1
@@ -1949,6 +2012,9 @@ local function flightrec_atti_mini1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_atti_mini1_s_cnt1, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 40) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Atti Mini1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Atti Mini1: Payload size different than expected") end
 end
 
 -- Flight log - Atti Mini2 - 0x08a2
@@ -1996,6 +2062,9 @@ local function flightrec_atti_mini2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_atti_mini2_s_cnt2, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 40) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Atti Mini2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Atti Mini2: Payload size different than expected") end
 end
 
 -- Flight log - Imu Fdi 0 - 0x0860
@@ -2035,6 +2104,9 @@ local function flightrec_imu_fdi_0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_imu_fdi_0_fdi_cnt0, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 18) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Fdi 0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Fdi 0: Payload size different than expected") end
 end
 
 -- Flight log - Imu Fdi 1 - 0x0861
@@ -2074,6 +2146,9 @@ local function flightrec_imu_fdi_1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_imu_fdi_1_fdi_cnt1, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 18) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Fdi 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Fdi 1: Payload size different than expected") end
 end
 
 -- Flight log - Imu Fdi 2 - 0x0862
@@ -2113,6 +2188,9 @@ local function flightrec_imu_fdi_2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_imu_fdi_2_fdi_cnt2, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 18) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Fdi 2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Fdi 2: Payload size different than expected") end
 end
 
 -- Flight log - Hl Debug Data - 0x03ef
@@ -2136,6 +2214,9 @@ local function flightrec_hl_debug_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_hl_debug_data_r_tan_v, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Hl Debug Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Hl Debug Data: Payload size different than expected") end
 end
 
 -- Flight log - Farm Db Data - 0x03f2
@@ -2279,6 +2360,9 @@ local function flightrec_farm_db_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_farm_db_data_auto_line_init_ready, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 85) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Farm Db Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Farm Db Data: Payload size different than expected") end
 end
 
 -- Flight log - Spray Sys Ctrl Cmd - 0x4ef7
@@ -2338,6 +2422,9 @@ local function flightrec_spray_sys_ctrl_cmd_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_spray_sys_ctrl_cmd_valid_spray, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 13) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Spray Sys Ctrl Cmd: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Spray Sys Ctrl Cmd: Payload size different than expected") end
 end
 
 -- Flight log - Spray Sys State - 0x4ef8
@@ -2425,6 +2512,9 @@ local function flightrec_spray_sys_state_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_spray_sys_state_cnt, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Spray Sys State: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Spray Sys State: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Vert Debug - 0x04b0
@@ -2496,6 +2586,9 @@ local function flightrec_ctrl_vert_debug_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ctrl_vert_debug_landing_tyoe, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 28) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Vert Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Vert Debug: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Pos Vert Debug - 0x04b1
@@ -2515,6 +2608,9 @@ local function flightrec_ctrl_pos_vert_debug_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ctrl_pos_vert_debug_pos_fdbk, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Pos Vert Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Pos Vert Debug: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Vel Vert Debug - 0x04b2
@@ -2662,6 +2758,9 @@ local function flightrec_ctrl_vel_vert_debug_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ctrl_vel_vert_debug_hit_damp, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 55) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Vel Vert Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Vel Vert Debug: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Acc Vert Debug - 0x04b3
@@ -2685,6 +2784,9 @@ local function flightrec_ctrl_acc_vert_debug_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ctrl_acc_vert_debug_thr_cmd, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 7) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Acc Vert Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Acc Vert Debug: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Horiz Debug - 0x0514
@@ -2880,6 +2982,9 @@ local function flightrec_ctrl_horiz_debug_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ctrl_horiz_debug_true_rad_lmt, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 102) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Horiz Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Horiz Debug: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Horiz Pos Debug - 0x0515
@@ -2899,6 +3004,9 @@ local function flightrec_ctrl_horiz_pos_debug_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ctrl_horiz_pos_debug_pos_cmdy, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 9) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Horiz Pos Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Horiz Pos Debug: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Horiz Vel Debug - 0x0516
@@ -3186,6 +3294,9 @@ local function flightrec_ctrl_horiz_vel_debug_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ctrl_horiz_vel_debug_ao3_damp, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 143) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Horiz Vel Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Horiz Vel Debug: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Horiz Atti Debug - 0x0518
@@ -3233,6 +3344,9 @@ local function flightrec_ctrl_horiz_atti_debug_dissector(payload, pinfo, subtree
 
     subtree:add (f.rec_ctrl_horiz_atti_debug_cur_tilt_y, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Horiz Atti Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Horiz Atti Debug: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Horiz Ang Vel Debug - 0x0519
@@ -3264,6 +3378,9 @@ local function flightrec_ctrl_horiz_ang_vel_debug_dissector(payload, pinfo, subt
 
     subtree:add (f.rec_ctrl_horiz_ang_vel_debug_gyro_fbkz, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Horiz Ang Vel Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Horiz Ang Vel Debug: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Horiz Ccpm Debug - 0x051a
@@ -3311,6 +3428,9 @@ local function flightrec_ctrl_horiz_ccpm_debug_dissector(payload, pinfo, subtree
 
     subtree:add (f.rec_ctrl_horiz_ccpm_debug_thr_min, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Horiz Ccpm Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Horiz Ccpm Debug: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Horiz Motor Debug - 0x051b
@@ -3350,6 +3470,9 @@ local function flightrec_ctrl_horiz_motor_debug_dissector(payload, pinfo, subtre
 
     subtree:add (f.rec_ctrl_horiz_motor_debug_pwm8, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Horiz Motor Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Horiz Motor Debug: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Sweep Test - 0x051c
@@ -3381,6 +3504,9 @@ local function flightrec_ctrl_sweep_test_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ctrl_sweep_test_y, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Sweep Test: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Sweep Test: Payload size different than expected") end
 end
 
 -- Flight log - Way Debug Info - 0x0460
@@ -3500,6 +3626,9 @@ local function flightrec_way_debug_info_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_way_debug_info_debug_resume_mode, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 84) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Way Debug Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Way Debug Info: Payload size different than expected") end
 end
 
 -- Flight log - Svo Avoid - 0x0461
@@ -3567,6 +3696,9 @@ local function flightrec_svo_avoid_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_svo_avoid_hgl_wf, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 15) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Svo Avoid: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Svo Avoid: Payload size different than expected") end
 end
 
 -- Flight log - Simulator Debug Data - 0x0578
@@ -3778,6 +3910,9 @@ local function flightrec_simulator_debug_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_simulator_debug_data_crash_flag, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 200) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Debug Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Debug Data: Payload size different than expected") end
 end
 
 -- Flight log - Simulator Gyro Acc Data 400Hz - 0x0579
@@ -3817,6 +3952,9 @@ local function flightrec_simulator_gyro_acc_data_400hz_dissector(payload, pinfo,
 
     subtree:add (f.rec_simulator_gyro_acc_data_400hz_gyro_z, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Gyro Acc Data 400Hz: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Gyro Acc Data 400Hz: Payload size different than expected") end
 end
 
 -- Flight log - Simulator Press Data 200Hz - 0x057c
@@ -3832,6 +3970,9 @@ local function flightrec_simulator_press_data_200hz_dissector(payload, pinfo, su
 
     subtree:add (f.rec_simulator_press_data_200hz_temp, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Press Data 200Hz: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Press Data 200Hz: Payload size different than expected") end
 end
 
 -- Flight log - Simulator Mag Data 50Hz - 0x057a
@@ -3855,6 +3996,9 @@ local function flightrec_simulator_mag_data_50hz_dissector(payload, pinfo, subtr
 
     subtree:add (f.rec_simulator_mag_data_50hz_cnt, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Mag Data 50Hz: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Mag Data 50Hz: Payload size different than expected") end
 end
 
 -- Flight log - Simulator Gps Data 5Hz - 0x057b
@@ -3934,6 +4078,9 @@ local function flightrec_simulator_gps_data_5hz_dissector(payload, pinfo, subtre
 
     subtree:add (f.rec_simulator_gps_data_5hz_gpsstate, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Gps Data 5Hz: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Gps Data 5Hz: Payload size different than expected") end
 end
 
 -- Flight log - Simulator Motor Data - 0x057e
@@ -4005,6 +4152,9 @@ local function flightrec_simulator_motor_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_simulator_motor_data_m8_speed, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Motor Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Motor Data: Payload size different than expected") end
 end
 
 -- Flight log - Device Change Times - 0x057d
@@ -4124,6 +4274,9 @@ local function flightrec_device_change_times_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_device_change_times_all, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 56) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Device Change Times: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Device Change Times: Payload size different than expected") end
 end
 
 -- Flight log - Simulator Config Aircraft Param - 0x0582
@@ -4163,6 +4316,9 @@ local function flightrec_simulator_config_aircraft_param_dissector(payload, pinf
 
     subtree:add (f.rec_simulator_config_aircraft_param_mass, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Config Aircraft Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Config Aircraft Param: Payload size different than expected") end
 end
 
 -- Flight log - Simulator Config Battery Param - 0x0583
@@ -4214,6 +4370,9 @@ local function flightrec_simulator_config_battery_param_dissector(payload, pinfo
 
     subtree:add (f.rec_simulator_config_battery_param_standby_i, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 25) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Config Battery Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Config Battery Param: Payload size different than expected") end
 end
 
 -- Flight log - Simulator Config Environment Param - 0x0584
@@ -4249,6 +4408,9 @@ local function flightrec_simulator_config_environment_param_dissector(payload, p
 
     subtree:add (f.rec_simulator_config_environment_param_temp, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 28) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Config Environment Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Config Environment Param: Payload size different than expected") end
 end
 
 -- Flight log - Simulator Config Motor Param 1 - 0x0585
@@ -4296,6 +4458,9 @@ local function flightrec_simulator_config_motor_param_1_dissector(payload, pinfo
 
     subtree:add (f.rec_simulator_config_motor_param_1_volt_max, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 28) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Config Motor Param 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Config Motor Param 1: Payload size different than expected") end
 end
 
 -- Flight log - Simulator Config Sensor Param - 0x0587
@@ -4311,6 +4476,9 @@ local function flightrec_simulator_config_sensor_param_dissector(payload, pinfo,
 
     subtree:add (f.rec_simulator_config_sensor_param_imu_delay, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Config Sensor Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Config Sensor Param: Payload size different than expected") end
 end
 
 -- Flight log - Rtkdata - 0xcff2
@@ -4410,6 +4578,9 @@ local function flightrec_rtkdata_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_rtkdata_gpsstate, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 72) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Rtkdata: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Rtkdata: Payload size different than expected") end
 end
 
 -- Flight log - Genral Debug Data - 0x0640
@@ -4577,6 +4748,9 @@ local function flightrec_genral_debug_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_genral_debug_data_db39, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 160) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Genral Debug Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Genral Debug Data: Payload size different than expected") end
 end
 
 -- Flight log - Rc Debug Info - 0x06a4
@@ -4640,6 +4814,9 @@ local function flightrec_rc_debug_info_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_rc_debug_info_in_wifi, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 18) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Rc Debug Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Rc Debug Info: Payload size different than expected") end
 end
 
 -- Flight log - Cali Mag 00 - 0x08d0
@@ -4663,6 +4840,9 @@ local function flightrec_cali_mag_00_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_cali_mag_00_c_m_cnt_0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Cali Mag 00: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Cali Mag 00: Payload size different than expected") end
 end
 
 -- Flight log - Cali Mag 01 - 0x08d1
@@ -4686,6 +4866,9 @@ local function flightrec_cali_mag_01_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_cali_mag_01_c_m_cnt_1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Cali Mag 01: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Cali Mag 01: Payload size different than expected") end
 end
 
 -- Flight log - Cali Mag 02 - 0x08d2
@@ -4709,6 +4892,9 @@ local function flightrec_cali_mag_02_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_cali_mag_02_c_m_cnt_2, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Cali Mag 02: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Cali Mag 02: Payload size different than expected") end
 end
 
 -- Flight log - Lpf Gyr Acc0 - 0x0828
@@ -4740,6 +4926,9 @@ local function flightrec_lpf_gyr_acc0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_lpf_gyr_acc0_lpf_az_0, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Lpf Gyr Acc0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Lpf Gyr Acc0: Payload size different than expected") end
 end
 
 -- Flight log - Lpf Gyr Acc1 - 0x0829
@@ -4771,6 +4960,9 @@ local function flightrec_lpf_gyr_acc1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_lpf_gyr_acc1_lpf_az_1, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Lpf Gyr Acc1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Lpf Gyr Acc1: Payload size different than expected") end
 end
 
 -- Flight log - Lpf Gyr Acc2 - 0x082a
@@ -4802,6 +4994,9 @@ local function flightrec_lpf_gyr_acc2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_lpf_gyr_acc2_lpf_az_2, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Lpf Gyr Acc2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Lpf Gyr Acc2: Payload size different than expected") end
 end
 
 -- Flight log - App Temp Bias0 - 0x08e6
@@ -4841,6 +5036,9 @@ local function flightrec_app_temp_bias0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_app_temp_bias0_level2_flag0, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"App Temp Bias0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"App Temp Bias0: Payload size different than expected") end
 end
 
 -- Flight log - App Temp Bias1 - 0x08e7
@@ -4880,6 +5078,9 @@ local function flightrec_app_temp_bias1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_app_temp_bias1_level2_flag1, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"App Temp Bias1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"App Temp Bias1: Payload size different than expected") end
 end
 
 -- Flight log - App Temp Bias2 - 0x08e8
@@ -4919,6 +5120,9 @@ local function flightrec_app_temp_bias2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_app_temp_bias2_level2_flag2, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"App Temp Bias2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"App Temp Bias2: Payload size different than expected") end
 end
 
 -- Flight log - Inner Temp Bias0 - 0x08e4
@@ -4958,6 +5162,9 @@ local function flightrec_inner_temp_bias0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_inner_temp_bias0_level1_flag0, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Inner Temp Bias0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Inner Temp Bias0: Payload size different than expected") end
 end
 
 -- Flight log - Inner Temp Bias1 - 0x08e5
@@ -4997,6 +5204,9 @@ local function flightrec_inner_temp_bias1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_inner_temp_bias1_level1_flag1, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Inner Temp Bias1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Inner Temp Bias1: Payload size different than expected") end
 end
 
 -- Flight log - Inner Temp Bias2 - 0x08e6
@@ -5036,6 +5246,9 @@ local function flightrec_inner_temp_bias2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_inner_temp_bias2_level1_flag2, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Inner Temp Bias2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Inner Temp Bias2: Payload size different than expected") end
 end
 
 -- Flight log - Battery Info - 0x06ae
@@ -5103,6 +5316,9 @@ local function flightrec_battery_info_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_battery_info_out_ctl_f, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 44) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Battery Info: Payload size different than expected") end
 end
 
 -- Flight log - Battery Status - 0x06af
@@ -5174,6 +5390,9 @@ local function flightrec_battery_status_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_battery_status_all, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 19) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Battery Status: Payload size different than expected") end
 end
 
 -- Flight log - Smart Battery Info - 0x06b0
@@ -5205,6 +5424,9 @@ local function flightrec_smart_battery_info_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_smart_battery_info_fly_t_for_land, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Smart Battery Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Smart Battery Info: Payload size different than expected") end
 end
 
 -- Flight log - Statistical Info - 0x0708
@@ -5220,6 +5442,9 @@ local function flightrec_statistical_info_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_statistical_info_m_starts, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Statistical Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Statistical Info: Payload size different than expected") end
 end
 
 -- Flight log - Ns Sensor Quality - 0x2764
@@ -5231,6 +5456,9 @@ local function flightrec_ns_sensor_quality_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ns_sensor_quality_ns_mag_gain, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ns Sensor Quality: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ns Sensor Quality: Payload size different than expected") end
 end
 
 -- Flight log - Ns Data Debug - 0x2765
@@ -5318,6 +5546,9 @@ local function flightrec_ns_data_debug_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ns_data_debug_d19, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 80) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ns Data Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ns Data Debug: Payload size different than expected") end
 end
 
 -- Flight log - Ns Data Component - 0x2766
@@ -5329,6 +5560,9 @@ local function flightrec_ns_data_component_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ns_data_component_ns_cmpnt, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ns Data Component: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ns Data Component: Payload size different than expected") end
 end
 
 -- Flight log - Ns Data Residuals - 0x2767
@@ -5440,6 +5674,9 @@ local function flightrec_ns_data_residuals_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ns_data_residuals_vod_h, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 104) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ns Data Residuals: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ns Data Residuals: Payload size different than expected") end
 end
 
 -- Flight log - Ns Data Posi Ofst - 0x2768
@@ -5515,6 +5752,9 @@ local function flightrec_ns_data_posi_ofst_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ns_data_posi_ofst_vod_h, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ns Data Posi Ofst: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ns Data Posi Ofst: Payload size different than expected") end
 end
 
 -- Flight log - Ns Sensor Connect - 0x2769
@@ -5526,6 +5766,9 @@ local function flightrec_ns_sensor_connect_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ns_sensor_connect_ns_ss_cnnct, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ns Sensor Connect: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ns Sensor Connect: Payload size different than expected") end
 end
 
 -- Flight log - Esc Data - 0x276a
@@ -5921,6 +6164,9 @@ local function flightrec_esc_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_esc_data_ppm_mode, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 185) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Esc Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Esc Data: Payload size different than expected") end
 end
 
 -- Flight log - High Freq Gyro Data 0 - 0x276b
@@ -5944,6 +6190,9 @@ local function flightrec_high_freq_gyro_data_0_dissector(payload, pinfo, subtree
 
     subtree:add (f.rec_high_freq_gyro_data_0_cnt0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"High Freq Gyro Data 0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"High Freq Gyro Data 0: Payload size different than expected") end
 end
 
 -- Flight log - High Freq Gyro Data 1 - 0x276c
@@ -5967,6 +6216,9 @@ local function flightrec_high_freq_gyro_data_1_dissector(payload, pinfo, subtree
 
     subtree:add (f.rec_high_freq_gyro_data_1_cnt1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"High Freq Gyro Data 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"High Freq Gyro Data 1: Payload size different than expected") end
 end
 
 -- Flight log - High Freq Gyro Data 2 - 0x276d
@@ -5990,6 +6242,9 @@ local function flightrec_high_freq_gyro_data_2_dissector(payload, pinfo, subtree
 
     subtree:add (f.rec_high_freq_gyro_data_2_cnt2, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"High Freq Gyro Data 2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"High Freq Gyro Data 2: Payload size different than expected") end
 end
 
 -- Flight log - Rc Gps Data - 0x276e
@@ -6049,6 +6304,9 @@ local function flightrec_rc_gps_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_rc_gps_data_gps_state, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Rc Gps Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Rc Gps Data: Payload size different than expected") end
 end
 
 -- Flight log - Cb Gps - 0x2770
@@ -6128,6 +6386,9 @@ local function flightrec_cb_gps_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_cb_gps_gpsstate, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Cb Gps: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Cb Gps: Payload size different than expected") end
 end
 
 -- Flight log - Cb Temp - 0x2771
@@ -6143,6 +6404,9 @@ local function flightrec_cb_temp_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_cb_temp_cnt, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Cb Temp: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Cb Temp: Payload size different than expected") end
 end
 
 -- Flight log - Cb Press - 0x2772
@@ -6158,6 +6422,9 @@ local function flightrec_cb_press_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_cb_press_temp, payload(offset, 8))
     offset = offset + 8
+
+    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Cb Press: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Cb Press: Payload size different than expected") end
 end
 
 -- Flight log - Air Compensate Data - 0x2774
@@ -6197,6 +6464,9 @@ local function flightrec_air_compensate_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_air_compensate_data_vel_level, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 29) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Air Compensate Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Air Compensate Data: Payload size different than expected") end
 end
 
 -- Flight log - Vision Tof - 0x2775
@@ -6308,6 +6578,9 @@ local function flightrec_vision_tof_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_vision_tof_cnt, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Vision Tof: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Vision Tof: Payload size different than expected") end
 end
 
 -- Flight log - Gs Rtk Data - 0x2776
@@ -6383,6 +6656,9 @@ local function flightrec_gs_rtk_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_gs_rtk_data_sim_mvo_f, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 67) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gs Rtk Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gs Rtk Data: Payload size different than expected") end
 end
 
 -- Flight log - Ex Raw Baro1 - 0x2777
@@ -6398,6 +6674,9 @@ local function flightrec_ex_raw_baro1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ex_raw_baro1_temp, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ex Raw Baro1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ex Raw Baro1: Payload size different than expected") end
 end
 
 -- Flight log - Ex Raw Baro2 - 0x2778
@@ -6413,6 +6692,9 @@ local function flightrec_ex_raw_baro2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ex_raw_baro2_temp, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ex Raw Baro2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ex Raw Baro2: Payload size different than expected") end
 end
 
 -- Flight log - Ex Raw Compass - 0x2779
@@ -6436,6 +6718,9 @@ local function flightrec_ex_raw_compass_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ex_raw_compass_cnt, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ex Raw Compass: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ex Raw Compass: Payload size different than expected") end
 end
 
 -- Flight log - Gear Status - 0x27d8
@@ -6475,6 +6760,9 @@ local function flightrec_gear_status_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_gear_status_gr_sh_req, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 14) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gear Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gear Status: Payload size different than expected") end
 end
 
 -- Flight log - Radar Bottom - 0x4ef2
@@ -6510,6 +6798,9 @@ local function flightrec_radar_bottom_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_radar_bottom_cnt, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Radar Bottom: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Radar Bottom: Payload size different than expected") end
 end
 
 -- Flight log - Radar Avoid Front - 0x4ef3
@@ -6573,6 +6864,9 @@ local function flightrec_radar_avoid_front_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_radar_avoid_front_cnt, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 17) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Radar Avoid Front: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Radar Avoid Front: Payload size different than expected") end
 end
 
 -- Flight log - Radar Avoid Back - 0x4ef4
@@ -6632,6 +6926,9 @@ local function flightrec_radar_avoid_back_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_radar_avoid_back_cnt, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Radar Avoid Back: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Radar Avoid Back: Payload size different than expected") end
 end
 
 -- Flight log - Radar Predict Front - 0x4ef5
@@ -6667,6 +6964,9 @@ local function flightrec_radar_predict_front_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_radar_predict_front_cnt, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Radar Predict Front: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Radar Predict Front: Payload size different than expected") end
 end
 
 -- Flight log - Radar Predict Back - 0x4ef6
@@ -6702,6 +7002,9 @@ local function flightrec_radar_predict_back_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_radar_predict_back_cnt, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Radar Predict Back: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Radar Predict Back: Payload size different than expected") end
 end
 
 -- Flight log - Gyro Raw0 0 - 0x4f4c
@@ -6725,6 +7028,9 @@ local function flightrec_gyro_raw0_0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_gyro_raw0_0_gyro_temp0_0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gyro Raw0 0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gyro Raw0 0: Payload size different than expected") end
 end
 
 -- Flight log - Gyro Raw0 1 - 0x4f4d
@@ -6748,6 +7054,9 @@ local function flightrec_gyro_raw0_1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_gyro_raw0_1_gyro_temp0_1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gyro Raw0 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gyro Raw0 1: Payload size different than expected") end
 end
 
 -- Flight log - Gyro Raw0 2 - 0x4f4e
@@ -6771,6 +7080,9 @@ local function flightrec_gyro_raw0_2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_gyro_raw0_2_gyro_temp0_2, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gyro Raw0 2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gyro Raw0 2: Payload size different than expected") end
 end
 
 -- Flight log - Gyro Raw1 0 - 0x4f50
@@ -6794,6 +7106,9 @@ local function flightrec_gyro_raw1_0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_gyro_raw1_0_gyro_temp1_0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gyro Raw1 0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gyro Raw1 0: Payload size different than expected") end
 end
 
 -- Flight log - Gyro Raw1 1 - 0x4f51
@@ -6817,6 +7132,9 @@ local function flightrec_gyro_raw1_1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_gyro_raw1_1_gyro_temp1_1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gyro Raw1 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gyro Raw1 1: Payload size different than expected") end
 end
 
 -- Flight log - Gyro Raw2 0 - 0x4f54
@@ -6840,6 +7158,9 @@ local function flightrec_gyro_raw2_0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_gyro_raw2_0_gyro_temp2_0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gyro Raw2 0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gyro Raw2 0: Payload size different than expected") end
 end
 
 -- Flight log - Gyro Raw2 1 - 0x4f55
@@ -6863,6 +7184,9 @@ local function flightrec_gyro_raw2_1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_gyro_raw2_1_gyro_temp2_1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gyro Raw2 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gyro Raw2 1: Payload size different than expected") end
 end
 
 -- Flight log - Acc Raw0 0 - 0x4f58
@@ -6886,6 +7210,9 @@ local function flightrec_acc_raw0_0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_acc_raw0_0_acc_temp0_0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Acc Raw0 0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Acc Raw0 0: Payload size different than expected") end
 end
 
 -- Flight log - Acc Raw0 1 - 0x4f59
@@ -6909,6 +7236,9 @@ local function flightrec_acc_raw0_1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_acc_raw0_1_acc_temp0_1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Acc Raw0 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Acc Raw0 1: Payload size different than expected") end
 end
 
 -- Flight log - Acc Raw0 2 - 0x4f5a
@@ -6932,6 +7262,9 @@ local function flightrec_acc_raw0_2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_acc_raw0_2_acc_temp0_2, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Acc Raw0 2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Acc Raw0 2: Payload size different than expected") end
 end
 
 -- Flight log - Acc Raw1 0 - 0x4f5c
@@ -6955,6 +7288,9 @@ local function flightrec_acc_raw1_0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_acc_raw1_0_acc_temp1_0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Acc Raw1 0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Acc Raw1 0: Payload size different than expected") end
 end
 
 -- Flight log - Acc Raw1 1 - 0x4f5d
@@ -6978,6 +7314,9 @@ local function flightrec_acc_raw1_1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_acc_raw1_1_acc_temp1_1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Acc Raw1 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Acc Raw1 1: Payload size different than expected") end
 end
 
 -- Flight log - Acc Raw2 0 - 0x4f60
@@ -7001,6 +7340,9 @@ local function flightrec_acc_raw2_0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_acc_raw2_0_acc_temp2_0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Acc Raw2 0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Acc Raw2 0: Payload size different than expected") end
 end
 
 -- Flight log - Acc Raw2 1 - 0x4f61
@@ -7024,6 +7366,9 @@ local function flightrec_acc_raw2_1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_acc_raw2_1_acc_temp2_1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Acc Raw2 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Acc Raw2 1: Payload size different than expected") end
 end
 
 -- Flight log - Sensor Push0 0 - 0x4f64
@@ -7047,6 +7392,9 @@ local function flightrec_sensor_push0_0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_sensor_push0_0_compass0_0, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Sensor Push0 0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Sensor Push0 0: Payload size different than expected") end
 end
 
 -- Flight log - Sensor Push0 1 - 0x4f65
@@ -7070,6 +7418,9 @@ local function flightrec_sensor_push0_1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_sensor_push0_1_compass0_1, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Sensor Push0 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Sensor Push0 1: Payload size different than expected") end
 end
 
 -- Flight log - Baro Raw0 - 0x4f6a
@@ -7085,6 +7436,9 @@ local function flightrec_baro_raw0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_baro_raw0_baro_temp0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Baro Raw0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Baro Raw0: Payload size different than expected") end
 end
 
 -- Flight log - Baro Raw1 - 0x4f6b
@@ -7100,6 +7454,9 @@ local function flightrec_baro_raw1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_baro_raw1_baro_temp1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Baro Raw1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Baro Raw1: Payload size different than expected") end
 end
 
 -- Flight log - Baro Raw2 - 0x4f6c
@@ -7115,6 +7472,9 @@ local function flightrec_baro_raw2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_baro_raw2_baro_temp2, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Baro Raw2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Baro Raw2: Payload size different than expected") end
 end
 
 -- Flight log - Baro Raw3 - 0x4f6d
@@ -7130,6 +7490,9 @@ local function flightrec_baro_raw3_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_baro_raw3_baro_temp3, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Baro Raw3: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Baro Raw3: Payload size different than expected") end
 end
 
 -- Flight log - Compass Raw0 - 0x4f74
@@ -7153,6 +7516,9 @@ local function flightrec_compass_raw0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_compass_raw0_r_m_cnt0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Compass Raw0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Compass Raw0: Payload size different than expected") end
 end
 
 -- Flight log - Compass Raw1 - 0x4f75
@@ -7176,6 +7542,9 @@ local function flightrec_compass_raw1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_compass_raw1_r_m_cnt1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Compass Raw1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Compass Raw1: Payload size different than expected") end
 end
 
 -- Flight log - Compass Raw2 - 0x4f76
@@ -7199,6 +7568,9 @@ local function flightrec_compass_raw2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_compass_raw2_r_m_cnt2, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Compass Raw2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Compass Raw2: Payload size different than expected") end
 end
 
 -- Flight log - Compass Filter0 - 0x4f7e
@@ -7218,6 +7590,9 @@ local function flightrec_compass_filter0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_compass_filter0_f_mz0, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Compass Filter0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Compass Filter0: Payload size different than expected") end
 end
 
 -- Flight log - Compass Filter1 - 0x4f7f
@@ -7237,6 +7612,9 @@ local function flightrec_compass_filter1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_compass_filter1_f_mz1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Compass Filter1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Compass Filter1: Payload size different than expected") end
 end
 
 -- Flight log - Compass Filter2 - 0x4f80
@@ -7256,6 +7634,9 @@ local function flightrec_compass_filter2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_compass_filter2_f_mz2, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Compass Filter2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Compass Filter2: Payload size different than expected") end
 end
 
 -- Flight log - Imu Rotated Data - 0x4f88
@@ -7275,6 +7656,9 @@ local function flightrec_imu_rotated_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_imu_rotated_data_rotated_z, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Rotated Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Rotated Data: Payload size different than expected") end
 end
 
 -- Flight log - Raw Wristband Data - 0x5014
@@ -7358,6 +7742,9 @@ local function flightrec_raw_wristband_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_raw_wristband_data_cnt, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 41) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Raw Wristband Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Raw Wristband Data: Payload size different than expected") end
 end
 
 -- Flight log - Wristband - 0x5015
@@ -7393,6 +7780,9 @@ local function flightrec_wristband_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_wristband_is_hp_set, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 19) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Wristband: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Wristband: Payload size different than expected") end
 end
 
 -- Flight log - Ctrl Device - 0x501e
@@ -7448,6 +7838,9 @@ local function flightrec_ctrl_device_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ctrl_device_is_lost_gh, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 36) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Device: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Device: Payload size different than expected") end
 end
 
 -- Flight log - Battery Info 2 - 0x4e20
@@ -7503,6 +7896,9 @@ local function flightrec_battery_info_2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_battery_info_2_rawpe, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 41) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Info 2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Battery Info 2: Payload size different than expected") end
 end
 
 -- Flight log - Pwm Output - 0x4e21
@@ -7586,6 +7982,9 @@ local function flightrec_pwm_output_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_pwm_output_temp_ctrl, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 76) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Pwm Output: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Pwm Output: Payload size different than expected") end
 end
 
 -- Flight log - Temp Ctl Recorde0 - 0x0880
@@ -7649,6 +8048,9 @@ local function flightrec_temp_ctl_recorde0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_temp_ctl_recorde0_reset_0, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Ctl Recorde0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Ctl Recorde0: Payload size different than expected") end
 end
 
 -- Flight log - Temp Ctl Recorde1 - 0x0881
@@ -7712,6 +8114,9 @@ local function flightrec_temp_ctl_recorde1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_temp_ctl_recorde1_reset_1, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Ctl Recorde1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Ctl Recorde1: Payload size different than expected") end
 end
 
 -- Flight log - Temp Ctl Recorde2 - 0x0882
@@ -7775,6 +8180,9 @@ local function flightrec_temp_ctl_recorde2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_temp_ctl_recorde2_reset_2, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Ctl Recorde2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Ctl Recorde2: Payload size different than expected") end
 end
 
 -- Flight log - Airport Limit Debug Info - 0x4e22
@@ -7806,6 +8214,9 @@ local function flightrec_airport_limit_debug_info_dissector(payload, pinfo, subt
 
     subtree:add (f.rec_airport_limit_debug_info_norm, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 9) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Airport Limit Debug Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Airport Limit Debug Info: Payload size different than expected") end
 end
 
 -- Flight log - Battery Raw Data 1 - 0x4e23
@@ -7841,6 +8252,9 @@ local function flightrec_battery_raw_data_1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_battery_raw_data_1_lowest, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 14) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Raw Data 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Battery Raw Data 1: Payload size different than expected") end
 end
 
 -- Flight log - Battery Raw Data 2 - 0x4e24
@@ -7876,6 +8290,9 @@ local function flightrec_battery_raw_data_2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_battery_raw_data_2_lowest, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 14) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Raw Data 2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Battery Raw Data 2: Payload size different than expected") end
 end
 
 -- Flight log - Sys Err - 0x4e25
@@ -7903,6 +8320,9 @@ local function flightrec_sys_err_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_sys_err_ifv, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Sys Err: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Sys Err: Payload size different than expected") end
 end
 
 -- Flight log - Quick Circle Debug - 0x4e27
@@ -7946,6 +8366,9 @@ local function flightrec_quick_circle_debug_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_quick_circle_debug_gmb_refyaw, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Quick Circle Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Quick Circle Debug: Payload size different than expected") end
 end
 
 -- Flight log - Battery Info 3 - 0x4e28
@@ -7989,6 +8412,9 @@ local function flightrec_battery_info_3_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_battery_info_3_p_r_min, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 27) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Info 3: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Battery Info 3: Payload size different than expected") end
 end
 
 -- Flight log - Rc Func Data - 0x4e29
@@ -8140,6 +8566,9 @@ local function flightrec_rc_func_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_rc_func_data_rc_c1, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 72) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Rc Func Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Rc Func Data: Payload size different than expected") end
 end
 
 -- Flight log - Rc Func State - 0x4e2a
@@ -8291,6 +8720,9 @@ local function flightrec_rc_func_state_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_rc_func_state_s_rc_c1, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 36) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Rc Func State: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Rc Func State: Payload size different than expected") end
 end
 
 -- Flight log - Gps Monitor 1 - 0x4e2b
@@ -8318,6 +8750,9 @@ local function flightrec_gps_monitor_1_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_gps_monitor_1_smc, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gps Monitor 1: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gps Monitor 1: Payload size different than expected") end
 end
 
 -- Flight log - Gps Monitor 2 - 0x4e2c
@@ -8345,6 +8780,9 @@ local function flightrec_gps_monitor_2_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_gps_monitor_2_smc, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gps Monitor 2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gps Monitor 2: Payload size different than expected") end
 end
 
 -- Flight log - Gps Monitor 3 - 0x4e2d
@@ -8372,6 +8810,9 @@ local function flightrec_gps_monitor_3_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_gps_monitor_3_smc, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gps Monitor 3: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gps Monitor 3: Payload size different than expected") end
 end
 
 -- Flight log - Adaptive Roll - 0x0883
@@ -8407,6 +8848,9 @@ local function flightrec_adaptive_roll_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_adaptive_roll_u, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 28) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Adaptive Roll: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Adaptive Roll: Payload size different than expected") end
 end
 
 -- Flight log - Adaptive Pitch - 0x0884
@@ -8442,6 +8886,9 @@ local function flightrec_adaptive_pitch_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_adaptive_pitch_u, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 28) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Adaptive Pitch: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Adaptive Pitch: Payload size different than expected") end
 end
 
 -- Flight log - Fw G Api - 0x0885
@@ -8485,6 +8932,9 @@ local function flightrec_fw_g_api_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_fw_g_api_cmd_yaw, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 27) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Fw G Api: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Fw G Api: Payload size different than expected") end
 end
 
 -- Flight log - Fw Param Ekf - 0x0887
@@ -8536,6 +8986,9 @@ local function flightrec_fw_param_ekf_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_fw_param_ekf_yu, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 44) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Fw Param Ekf: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Fw Param Ekf: Payload size different than expected") end
 end
 
 -- Flight log - Ex Raw Airspeed - 0x27e2
@@ -8555,6 +9008,9 @@ local function flightrec_ex_raw_airspeed_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ex_raw_airspeed_cnt, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ex Raw Airspeed: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ex Raw Airspeed: Payload size different than expected") end
 end
 
 -- Flight log - Vibrate Detect Gyro - 0x5000
@@ -8614,6 +9070,9 @@ local function flightrec_vibrate_detect_gyro_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_vibrate_detect_gyro_y2, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 42) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Vibrate Detect Gyro: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Vibrate Detect Gyro: Payload size different than expected") end
 end
 
 -- Flight log - Airprot Limit Data - 0x500a
@@ -8733,6 +9192,9 @@ local function flightrec_airprot_limit_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_airprot_limit_data_height_limit, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 67) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Airprot Limit Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Airprot Limit Data: Payload size different than expected") end
 end
 
 -- Flight log - Adv Fl Limit Data - 0x500b
@@ -8860,6 +9322,9 @@ local function flightrec_adv_fl_limit_data_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_adv_fl_limit_data_4hight_limit, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 87) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Adv Fl Limit Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Adv Fl Limit Data: Payload size different than expected") end
 end
 
 -- Flight log - Db Subscription - 0x0888
@@ -8875,6 +9340,9 @@ local function flightrec_db_subscription_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_db_subscription_sent_gps_lv, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Db Subscription: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Db Subscription: Payload size different than expected") end
 end
 
 -- Flight log - Lost Sats Go Home Send Package - 0x504b
@@ -8914,6 +9382,9 @@ local function flightrec_lost_sats_go_home_send_package_dissector(payload, pinfo
 
     subtree:add (f.rec_lost_sats_go_home_send_package_has_req_gh, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Lost Sats Go Home Send Package: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Lost Sats Go Home Send Package: Payload size different than expected") end
 end
 
 -- Flight log - Lost Sats Go Home Recv Package - 0x504c
@@ -8937,6 +9408,9 @@ local function flightrec_lost_sats_go_home_recv_package_dissector(payload, pinfo
 
     subtree:add (f.rec_lost_sats_go_home_recv_package_cmd, payload(offset, 1))
     offset = offset + 1
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Lost Sats Go Home Recv Package: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Lost Sats Go Home Recv Package: Payload size different than expected") end
 end
 
 -- Flight log - Adsb Osd Info - 0x504d
@@ -8960,6 +9434,9 @@ local function flightrec_adsb_osd_info_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_adsb_osd_info_alititude, payload(offset, 4))
     offset = offset + 4
+
+    if (offset ~= 13) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Adsb Osd Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Adsb Osd Info: Payload size different than expected") end
 end
 
 -- Flight log - Link Host - 0x092a
@@ -8999,6 +9476,9 @@ local function flightrec_link_host_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_link_host_link_host_send_route, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Link Host: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Link Host: Payload size different than expected") end
 end
 
 -- Flight log - Link Pc - 0x092b
@@ -9038,6 +9518,9 @@ local function flightrec_link_pc_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_link_pc_link_pc_send_route, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Link Pc: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Link Pc: Payload size different than expected") end
 end
 
 -- Flight log - Link Vo - 0x092c
@@ -9077,6 +9560,9 @@ local function flightrec_link_vo_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_link_vo_link_vo_send_route, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Link Vo: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Link Vo: Payload size different than expected") end
 end
 
 -- Flight log - Link Sdk - 0x092d
@@ -9116,6 +9602,9 @@ local function flightrec_link_sdk_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_link_sdk_link_sdk_send_route, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Link Sdk: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Link Sdk: Payload size different than expected") end
 end
 
 -- Flight log - Link Ofdm - 0x092e
@@ -9155,6 +9644,9 @@ local function flightrec_link_ofdm_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_link_ofdm_link_ofdm_send_route, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Link Ofdm: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Link Ofdm: Payload size different than expected") end
 end
 
 -- Flight log - Link Bat - 0x092f
@@ -9194,6 +9686,9 @@ local function flightrec_link_bat_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_link_bat_link_bat_send_route, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Link Bat: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Link Bat: Payload size different than expected") end
 end
 
 -- Flight log - Link Auto Cali - 0x0930
@@ -9233,6 +9728,9 @@ local function flightrec_link_auto_cali_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_link_auto_cali_link_auto_cali_send_route, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Link Auto Cali: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Link Auto Cali: Payload size different than expected") end
 end
 
 -- Flight log - Link Cali Led - 0x0931
@@ -9272,6 +9770,9 @@ local function flightrec_link_cali_led_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_link_cali_led_link_cali_led_send_route, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Link Cali Led: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Link Cali Led: Payload size different than expected") end
 end
 
 -- Flight log - Link Manual Cali - 0x0932
@@ -9311,6 +9812,9 @@ local function flightrec_link_manual_cali_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_link_manual_cali_link_manual_cali_send_route, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Link Manual Cali: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Link Manual Cali: Payload size different than expected") end
 end
 
 -- Flight log - Ipc0 - 0x0933
@@ -9350,6 +9854,9 @@ local function flightrec_ipc0_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_ipc0_ipc0_send_route, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ipc0: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ipc0: Payload size different than expected") end
 end
 
 -- Flight log - System Monitor - 0xcde0
@@ -9525,6 +10032,9 @@ local function flightrec_system_monitor_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_system_monitor_task_imu_reserv, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 84) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"System Monitor: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"System Monitor: Payload size different than expected") end
 end
 
 -- Flight log - Uart Monitor - 0xcddf
@@ -9812,6 +10322,9 @@ local function flightrec_uart_monitor_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_uart_monitor_uart179_dbg5, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 196) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Uart Monitor: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Uart Monitor: Payload size different than expected") end
 end
 
 -- Flight log - Can Monitor - 0xcdde
@@ -9899,6 +10412,9 @@ local function flightrec_can_monitor_dissector(payload, pinfo, subtree)
 
     subtree:add (f.rec_can_monitor_can1_dbg5, payload(offset, 2))
     offset = offset + 2
+
+    if (offset ~= 56) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Can Monitor: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Can Monitor: Payload size different than expected") end
 end
 
 -- Flight log - Fly Log - 0x8000
