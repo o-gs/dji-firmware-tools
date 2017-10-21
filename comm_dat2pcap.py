@@ -29,6 +29,7 @@ class ProgOptions:
     datfile = ''
     pcapfile = ''
     basename = ''
+    userdlt = 0
     verbose = 0
     command = ''
 
@@ -149,6 +150,9 @@ class Formatter:
         self.out.close()
 
 class PcapFormatter(Formatter):
+    def __init__(self, out):
+        Formatter.__init__(self, out)
+        self.userdlt = 0
     def write_header(self):
         self.out.write(struct.pack("=IHHiIII",
             0xa1b2c3d4,   # magic number
@@ -157,7 +161,7 @@ class PcapFormatter(Formatter):
             0,            # GMT to local correction
             0,            # accuracy of timestamps
             65535,        # max length of captured packets, in octets
-            147,          # data link type (DLT) - USER_0
+            147+self.userdlt, # data link type (DLT) - USER_0
         ))
         self.out.flush()
 
@@ -309,6 +313,7 @@ def do_dat2pcap(po, datfile, pcapfile):
   """
   # This might block until the other side of the fifo is opened
   out = PcapFormatter(pcapfile)
+  out.userdlt = po.userdlt
   out.write_header()
 
   if (po.verbose > 1):
@@ -346,7 +351,7 @@ def main(argv):
   po = ProgOptions()
   # Parse command line options
   try:
-     opts, args = getopt.getopt(argv,"hvd:p:",["help","version","datfile=","pcapfile="])
+     opts, args = getopt.getopt(argv,"hvd:p:u:",["help","version","datfile=","pcapfile=","userdlt="])
   except getopt.GetoptError:
      print("Unrecognized options; check comm_dat2pcap.py --help")
      sys.exit(2)
@@ -356,10 +361,12 @@ def main(argv):
         print("comm_dat2pcap.py [-v] -d <datfile> [-p <pcapfile>]")
         print("  -d <datfile> - input from dat file (Raw DUPC) of given name")
         print("  -p <pcapfile> - output to pcap file of given name")
+        print("  -u <userdlt> - set specific data link type of the DLT_USER protocol;")
+        print("                  default is 0; change it for complex wireshark configs")
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
-        print("comm_dat2pcap.py version 0.1.0")
+        print("comm_dat2pcap.py version 0.2.0")
         sys.exit()
      elif opt == "-v":
         po.verbose += 1
@@ -368,6 +375,11 @@ def main(argv):
         po.command = 'd'
      elif opt in ("-p", "--pcapfile"):
         po.pcapfile = arg
+     elif opt in ("-u", "--userdlt"):
+        po.userdlt = int(arg)
+
+  if po.userdlt > 15:
+     raise ValueError("There are only 15 DLT_USER slots.")
 
   po.basename = os.path.splitext(os.path.basename(po.datfile))[0]
   if len(po.datfile) > 0 and len(po.pcapfile) == 0:

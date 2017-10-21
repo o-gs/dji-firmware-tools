@@ -79,6 +79,7 @@ def do_packetiser(ser, state, out, info):
 def do_sniff_once(options):
     # This might block until the other side of the fifo is opened
     out = setup_output(options)
+    out.userdlt = options.userdlt
     out.write_header()
 
     ser1 = serial.Serial(options.port1, options.baudrate)
@@ -150,6 +151,9 @@ def main():
 
     parser.add_argument('-b', '--baudrate', default=115200, type=int,
                         help='The baudrate to use for the serial port (defaults to %(default)s)')
+
+    parser.add_argument('-u', '--userdlt', default=0, type=int,
+                        help='The data link type of the PCap DLT_USER protocol (defaults to %(default)s)')
 
     parser.add_argument('-q', '--quiet', action='store_true',
                         help='Do not output any informational messages')
