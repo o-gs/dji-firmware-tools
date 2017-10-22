@@ -6,6 +6,7 @@ DJI_P3_FLIGHT_RECORD_ENTRY_TYPE = {
     [0x0007] = 'Imu Data',
     [0x000c] = 'Telemetry',
     [0x000d] = 'unkn0D',
+    [0x0011] = 'Battery Info',
     [0x8000] = 'Fly Log',
     [0xffff] = 'Sys Cfg',
 }
@@ -25,29 +26,29 @@ local function flightrec_rc_func_data_dissector(payload, pinfo, subtree)
 
     offset = offset + 4
 
-    subtree:add (f.rec_rc_func_data_a, payload(offset, 2))
+    subtree:add_le (f.rec_rc_func_data_a, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_rc_func_data_e, payload(offset, 2))
+    subtree:add_le (f.rec_rc_func_data_e, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_rc_func_data_t, payload(offset, 2))
+    subtree:add_le (f.rec_rc_func_data_t, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_rc_func_data_r, payload(offset, 2))
+    subtree:add_le (f.rec_rc_func_data_r, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_rc_func_data_u, payload(offset, 2))
+    subtree:add_le (f.rec_rc_func_data_u, payload(offset, 2))
     offset = offset + 2
 
     offset = offset + 17
 
-    subtree:add (f.rec_rc_func_data_sw_mode, payload(offset, 1))
+    subtree:add_le (f.rec_rc_func_data_sw_mode, payload(offset, 1))
     offset = offset + 1
 
     offset = offset + 9
 
-    subtree:add (f.rec_rc_func_data_gps_health, payload(offset, 1))
+    subtree:add_le (f.rec_rc_func_data_gps_health, payload(offset, 1))
     offset = offset + 1
 end
 
@@ -90,103 +91,103 @@ f.rec_imu_atti_0_atti_cnt0 = ProtoField.uint16 ("dji_p3.rec_imu_atti_0_atti_cnt0
 local function flightrec_imu_atti_0_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add (f.rec_imu_atti_0_long0, payload(offset, 8))
+    subtree:add_le (f.rec_imu_atti_0_long0, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add (f.rec_imu_atti_0_lati0, payload(offset, 8))
+    subtree:add_le (f.rec_imu_atti_0_lati0, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add (f.rec_imu_atti_0_press0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_press0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_ax0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_ax0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_ay0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_ay0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_az0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_az0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_wx0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_wx0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_wy0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_wy0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_wz0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_wz0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_alti0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_alti0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_qw0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_qw0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_qx0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_qx0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_qy0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_qy0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_qz0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_qz0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_agx0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_agx0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_agy0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_agy0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_agz0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_agz0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_vgx0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_vgx0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_vgy0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_vgy0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_vgz0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_vgz0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_gbx0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_gbx0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_gby0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_gby0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_gbz0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_0_gbz0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_atti_0_mx0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_0_mx0, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_imu_atti_0_my0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_0_my0, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_imu_atti_0_mz0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_0_mz0, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_imu_atti_0_tx0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_0_tx0, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_imu_atti_0_ty0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_0_ty0, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_imu_atti_0_tz0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_0_tz0, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_imu_atti_0_sensor_stat0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_0_sensor_stat0, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_imu_atti_0_filter_stat0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_0_filter_stat0, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_imu_atti_0_svn0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_0_svn0, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_imu_atti_0_atti_cnt0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_0_atti_cnt0, payload(offset, 2))
     offset = offset + 2
 
     if (offset ~= 120) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Atti 0: Offset does not match - internal inconsistency") end
@@ -202,13 +203,13 @@ f.rec_imu_data_gyro_tempz = ProtoField.float ("dji_p3.rec_imu_data_gyro_tempz", 
 local function flightrec_imu_data_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add (f.rec_imu_data_gyro_tempx, payload(offset, 4))
+    subtree:add_le (f.rec_imu_data_gyro_tempx, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_data_gyro_tempy, payload(offset, 4))
+    subtree:add_le (f.rec_imu_data_gyro_tempy, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add (f.rec_imu_data_gyro_tempz, payload(offset, 4))
+    subtree:add_le (f.rec_imu_data_gyro_tempz, payload(offset, 4))
     offset = offset + 4
 
     offset = offset + 36
@@ -234,34 +235,34 @@ f.rec_telemetry_fly_time = ProtoField.int16 ("dji_p3.rec_telemetry_fly_time", "F
 local function flightrec_telemetry_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add (f.rec_telemetry_lon, payload(offset, 8))
+    subtree:add_le (f.rec_telemetry_lon, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add (f.rec_telemetry_lat, payload(offset, 8))
+    subtree:add_le (f.rec_telemetry_lat, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add (f.rec_telemetry_height, payload(offset, 2))
+    subtree:add_le (f.rec_telemetry_height, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_telemetry_unkn18, payload(offset, 2))
+    subtree:add_le (f.rec_telemetry_unkn18, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_telemetry_unkn20, payload(offset, 2))
+    subtree:add_le (f.rec_telemetry_unkn20, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_telemetry_unkn22, payload(offset, 2))
+    subtree:add_le (f.rec_telemetry_unkn22, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_telemetry_pitch, payload(offset, 2))
+    subtree:add_le (f.rec_telemetry_pitch, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_telemetry_roll, payload(offset, 2))
+    subtree:add_le (f.rec_telemetry_roll, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_telemetry_yaw, payload(offset, 2))
+    subtree:add_le (f.rec_telemetry_yaw, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add (f.rec_telemetry_flyc_st, payload(offset, 1))
+    subtree:add_le (f.rec_telemetry_flyc_st, payload(offset, 1))
     offset = offset + 1
 
     offset = offset + 7
@@ -269,7 +270,7 @@ local function flightrec_telemetry_dissector(payload, pinfo, subtree)
     -- failure info here
     offset = offset + 4
 
-    subtree:add (f.rec_telemetry_fly_time, payload(offset, 2))
+    subtree:add_le (f.rec_telemetry_fly_time, payload(offset, 2))
     offset = offset + 2
 
     -- 6 one-byte values
@@ -281,13 +282,124 @@ end
 
 -- Flight log - unkn0D - 0x000d
 
+f.rec_unkn0D_lon = ProtoField.double ("dji_p3.rec_unkn0D_lon", "Longitude", base.DEC)
+f.rec_unkn0D_lat = ProtoField.double ("dji_p3.rec_unkn0D_lat", "Latitude", base.DEC)
+
 local function flightrec_unkn0D_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    offset = offset + 34
+    subtree:add_le (f.rec_unkn0D_lon, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_unkn0D_lat, payload(offset, 8))
+    offset = offset + 8
+
+    offset = offset + 18
 
     if (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn0D: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn0D: Payload size different than expected") end
+end
+
+-- Flight log - Battery Info - 0x0011
+
+f.rec_battery_info_dsg_cap = ProtoField.uint16 ("dji_p3.rec_battery_info_dsg_cap", "Design Capacity", base.DEC)
+f.rec_battery_info_f_cap = ProtoField.uint16 ("dji_p3.rec_battery_info_f_cap", "Full Charge Cap", base.DEC)
+f.rec_battery_info_r_cap = ProtoField.uint16 ("dji_p3.rec_battery_info_r_cap", "Remain Cap", base.DEC)
+f.rec_battery_info_pack_ve = ProtoField.uint16 ("dji_p3.rec_battery_info_pack_ve", "Pack Voltage", base.DEC)
+f.rec_battery_info_i = ProtoField.int16 ("dji_p3.rec_battery_info_i", "Current", base.DEC)
+f.rec_battery_info_life_per = ProtoField.uint8 ("dji_p3.rec_battery_info_life_per", "Life Percentage", base.DEC)
+f.rec_battery_info_cap_per = ProtoField.uint8 ("dji_p3.rec_battery_info_cap_per", "Capacity Percentage", base.DEC)
+f.rec_battery_info_temp = ProtoField.int16 ("dji_p3.rec_battery_info_temp", "Temperature", base.DEC)
+f.rec_battery_info_chrg_cnt = ProtoField.uint16 ("dji_p3.rec_battery_info_chrg_cnt", "Charge Cycle Count", base.DEC)
+f.rec_battery_info_sn = ProtoField.uint16 ("dji_p3.rec_battery_info_sn", "Serial Number", base.HEX)
+f.rec_battery_info_cell_ve_1 = ProtoField.uint16 ("dji_p3.rec_battery_cell_ve_1", "Cell 1 Voltage", base.DEC)
+f.rec_battery_info_cell_ve_2 = ProtoField.uint16 ("dji_p3.rec_battery_cell_ve_2", "Cell 2 Voltage", base.DEC)
+f.rec_battery_info_cell_ve_3 = ProtoField.uint16 ("dji_p3.rec_battery_cell_ve_3", "Cell 3 Voltage", base.DEC)
+f.rec_battery_info_cell_ve_4 = ProtoField.uint16 ("dji_p3.rec_battery_cell_ve_4", "Cell 4 Voltage", base.DEC)
+f.rec_battery_info_cell_ve_5 = ProtoField.uint16 ("dji_p3.rec_battery_cell_ve_5", "Cell 5 Voltage", base.DEC)
+f.rec_battery_info_cell_ve_6 = ProtoField.uint16 ("dji_p3.rec_battery_cell_ve_6", "Cell 6 Voltage", base.DEC)
+f.rec_battery_info_ave_i = ProtoField.int16 ("dji_p3.rec_battery_info_ave_i", "Average Current", base.DEC)
+f.rec_battery_info_right = ProtoField.uint8 ("dji_p3.rec_battery_info_right", "Right", base.HEX)
+f.rec_battery_info_err_cnt = ProtoField.uint8 ("dji_p3.rec_battery_info_err_cnt", "Error Count", base.DEC)
+f.rec_battery_info_unkn22 = ProtoField.uint8 ("dji_p3.rec_battery_info_unkn22", "Unkn22", base.HEX)
+f.rec_battery_info_unkn23 = ProtoField.uint16 ("dji_p3.rec_battery_info_unkn23", "Unkn23", base.HEX)
+f.rec_battery_info_disch_cnt = ProtoField.uint32 ("dji_p3.rec_battery_info_disch_cnt", "Discharge Times Count", base.DEC)
+f.rec_battery_info_unkn29 = ProtoField.int32 ("dji_p3.rec_battery_info_unkn29", "unkn29", base.DEC)
+
+local function flightrec_battery_info_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_battery_info_dsg_cap, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_f_cap, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_r_cap, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_pack_ve, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_i, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_life_per, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_battery_info_cap_per, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_battery_info_temp, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_chrg_cnt, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_sn, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cell_ve_1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cell_ve_2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cell_ve_3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cell_ve_4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cell_ve_5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cell_ve_6, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_ave_i, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_right, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_battery_info_err_cnt, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_battery_info_unkn22, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_battery_info_unkn23, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_disch_cnt, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_battery_info_unkn29, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 45) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Battery Info: Payload size different than expected") end
 end
 
 -- Flight log - Fly Log - 0x8000
@@ -316,6 +428,7 @@ DJI_P3_FLIGHT_RECORD_DISSECT = {
     [0x0007] = flightrec_imu_data_dissector,
     [0x000c] = flightrec_telemetry_dissector,
     [0x000d] = flightrec_unkn0D_dissector,
+    [0x0011] = flightrec_battery_info_dissector,
     [0x8000] = flightrec_fly_log_dissector,
     [0xffff] = flightrec_sys_cfg_dissector,
 }
