@@ -8,6 +8,9 @@ DJI_P3_FLIGHT_RECORD_ENTRY_TYPE = {
     [0x000d] = 'unkn0D',
     [0x0011] = 'Battery Info',
     [0x8000] = 'Fly Log',
+    [0xff00] = 'RC Log',
+    [0xfffa] = 'Tcx Log',
+    [0xfffe] = 'MC Log',
     [0xffff] = 'Sys Cfg',
 }
 
@@ -430,5 +433,8 @@ DJI_P3_FLIGHT_RECORD_DISSECT = {
     [0x000d] = flightrec_unkn0D_dissector,
     [0x0011] = flightrec_battery_info_dissector,
     [0x8000] = flightrec_fly_log_dissector,
+    [0xff00] = flightrec_sys_cfg_dissector,
+    [0xfffa] = flightrec_sys_cfg_dissector,
+    [0xfffe] = flightrec_sys_cfg_dissector,
     [0xffff] = flightrec_sys_cfg_dissector,
 }
