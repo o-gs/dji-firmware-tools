@@ -29,6 +29,7 @@ class ProgOptions:
     datfile = ''
     pcapfile = ''
     basename = ''
+    storebad = False
     userdlt = 0
     verbose = 0
     command = ''
@@ -39,7 +40,8 @@ class StateId(enum.Enum):
     IN_BODY = 2
     IN_TRAIL = 3
     READY = 4
-    FINISH = 5
+    DAMAGED = 5
+    FINISH = 6
 
 class PktInfo:
     count_ok = 0
@@ -191,6 +193,11 @@ def is_packet_ready(state):
     """
     return (state.id == StateId.READY) and (len(state.packet) > 0);
 
+def is_packet_damaged(state):
+    """ Returns whether a packet within the state is ready but damaged.
+    """
+    return (state.id == StateId.DAMAGED) and (len(state.packet) > 0);
+
 def is_packet_at_finish(state):
     """ Returns whether the state informs processing should finish.
     """
@@ -212,12 +219,25 @@ def store_packet(out, state):
     state.packet = bytearray()
     return state
 
+def drop_packet(state):
+    """ Drop packet from given state without storing it.
+
+        This function can be called when packet stored within the state
+        should be removed.
+    """
+    state.id = StateId.NO_PACKET
+    state.packet = bytearray()
+    return state
+
 def do_packetise_byte(byte, state, info):
   """ Add byte to the packetize effort represented by state
 
     The function adds byte to the packet contained within state,
     or drops the byte if applicable. The processing of a new byte
     is also reflected in statistics.
+
+    If state.id changes to READY or DAMAGED, the function expects caller
+    to remove existing packet before the next call.
   """
 
   if state.id == StateId.NO_PACKET:	# expect ideftifier - 55 or AB
@@ -251,7 +271,7 @@ def do_packetise_byte(byte, state, info):
               state.id = StateId.IN_BODY
           else:
               if (state.verbose > 1):
-                  print("{}: Packet type {:02X} dropped - bad head crc; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
+                  print("{}: Packet type {:02X} skipped - bad head crc; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
               # stats will be updated later, just change state
               state.id = StateId.NO_PACKET
       elif state.packet[0] == 0xAB and len(state.packet) == 4:
@@ -268,7 +288,7 @@ def do_packetise_byte(byte, state, info):
           state.id = StateId.IN_TRAIL
       elif (len(state.packet) >= len_pkt):
           if (state.verbose > 1):
-              print("{}: Packet type {:02X} dropped - shorter than header; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
+              print("{}: Packet type {:02X} skipped - shorter than header; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
           state.id = StateId.NO_PACKET
 
   elif state.id == StateId.IN_TRAIL:
@@ -284,9 +304,8 @@ def do_packetise_byte(byte, state, info):
               info.count_bad += 1
               info.bytes_bad += len(state.packet)
               if (state.verbose > 1):
-                  print("{}: Packet type {:02X} dropped - bad crc; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
-              state.packet = bytearray()
-              state.id = StateId.NO_PACKET
+                  print("{}: Packet type {:02X} damaged - bad crc; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
+              state.id = StateId.DAMAGED
       elif state.packet[0] == 0xAB:
           ccrc = calc_pktAB_checksum(7, state.packet, len(state.packet) - 1)
           crc_pkt = struct.unpack("B", state.packet[-1:])[0]
@@ -298,9 +317,8 @@ def do_packetise_byte(byte, state, info):
               info.count_bad += 1
               info.bytes_bad += len(state.packet)
               if (state.verbose > 1):
-                  print("{}: Packet type {:02X} dropped - bad crc; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
-              state.packet = bytearray()
-              state.id = StateId.NO_PACKET
+                  print("{}: Packet type {:02X} damaged - bad crc; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
+              state.id = StateId.DAMAGED
 
   else:
       print("{}: Invalid packetise state {}".format(state.pname,state.id))
@@ -333,6 +351,11 @@ def do_dat2pcap(po, datfile, pcapfile):
       state, info = do_packetise_byte(ord(chr), state, info)
       if (is_packet_ready(state)):
           state = store_packet(out, state)
+      elif (is_packet_damaged(state)):
+          if (po.storebad):
+              state = store_packet(out, state)
+          else:
+              state = drop_packet(state)
       if (is_packet_at_finish(state)):
           break;
       if (po.verbose > 2) and (count & 0xffff) == 0:
@@ -351,7 +374,7 @@ def main(argv):
   po = ProgOptions()
   # Parse command line options
   try:
-     opts, args = getopt.getopt(argv,"hvd:p:u:",["help","version","datfile=","pcapfile=","userdlt="])
+     opts, args = getopt.getopt(argv,"hvbd:p:u:",["help","version","storebad","datfile=","pcapfile=","userdlt="])
   except getopt.GetoptError:
      print("Unrecognized options; check comm_dat2pcap.py --help")
      sys.exit(2)
@@ -363,6 +386,7 @@ def main(argv):
         print("  -p <pcapfile> - output to pcap file of given name")
         print("  -u <userdlt> - set specific data link type of the DLT_USER protocol;")
         print("                  default is 0; change it for complex wireshark configs")
+        print("  -b - enables storing bad packets (ie. with bad checksums)")
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
@@ -377,6 +401,8 @@ def main(argv):
         po.pcapfile = arg
      elif opt in ("-u", "--userdlt"):
         po.userdlt = int(arg)
+     elif opt in ("-b", "--storebad"):
+        po.storebad = True
 
   if po.userdlt > 15:
      raise ValueError("There are only 15 DLT_USER slots.")
@@ -389,7 +415,6 @@ def main(argv):
 
      if (po.verbose > 0):
         print("{}: Opening Raw DUPC for conversion to PCap".format(po.datfile))
-     # read base address from INI file which should be there after AMBA extraction
      datfile = open(po.datfile, "rb")
      pcapfile = open(po.pcapfile, "wb")
 
