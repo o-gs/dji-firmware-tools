@@ -43,7 +43,11 @@ import select
 import argparse
 
 sys.path.insert(0, './')
-from comm_dat2pcap import do_packetise_byte, is_packet_ready, is_packet_at_finish, store_packet, PcapFormatter, HumanFormatter, PktInfo, PktState
+from comm_dat2pcap import (
+  do_packetise_byte, store_packet, drop_packet,
+  is_packet_ready, is_packet_damaged, is_packet_at_finish,
+  PcapFormatter, HumanFormatter, PktInfo, PktState,
+)
 
 def open_fifo(options, name):
     try:
@@ -72,6 +76,8 @@ def do_packetiser(ser, state, out, info):
         state, info = do_packetise_byte(ord(chr), state, info)
         if (is_packet_ready(state)):
             state = store_packet(out, state)
+        elif (is_packet_damaged(state)):
+            state = drop_packet(state)
         if (is_packet_at_finish(state)):
             break;
     return state, info
