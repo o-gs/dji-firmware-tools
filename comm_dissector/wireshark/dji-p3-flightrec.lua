@@ -16,17 +16,35 @@ DJI_P3_FLIGHT_RECORD_ENTRY_TYPE = {
 
 -- Flight log - Rc Func Data - 0x0000
 
-f.rec_rc_func_data_a = ProtoField.int16 ("dji_p3.rec_rc_func_data_a", "Aileron", base.DEC)
-f.rec_rc_func_data_e = ProtoField.int16 ("dji_p3.rec_rc_func_data_e", "Elevator", base.DEC)
-f.rec_rc_func_data_t = ProtoField.int16 ("dji_p3.rec_rc_func_data_t", "Throttle", base.DEC)
-f.rec_rc_func_data_r = ProtoField.int16 ("dji_p3.rec_rc_func_data_r", "Rudder", base.DEC)
-f.rec_rc_func_data_u = ProtoField.int16 ("dji_p3.rec_rc_func_data_u", "U", base.DEC)
-f.rec_rc_func_data_sw_mode = ProtoField.int8 ("dji_p3.rec_rc_func_data_sw_mode", "Mode Switch", base.DEC)
-f.rec_rc_func_data_gps_health = ProtoField.int16 ("dji_p3.rec_rc_func_data_gps_health", "GPS Health", base.DEC) -- why would we have gps data here?
+f.rec_rc_func_status = ProtoField.int32 ("dji_p3.rec_rc_func_status", "Status", base.DEC)
+f.rec_rc_func_data_a = ProtoField.int16 ("dji_p3.rec_rc_func_data_a", "CH0 Aileron", base.DEC)
+f.rec_rc_func_data_e = ProtoField.int16 ("dji_p3.rec_rc_func_data_e", "CH1 Elevator", base.DEC)
+f.rec_rc_func_data_t = ProtoField.int16 ("dji_p3.rec_rc_func_data_t", "CH2 Throttle", base.DEC)
+f.rec_rc_func_data_r = ProtoField.int16 ("dji_p3.rec_rc_func_data_r", "CH3 Rudder", base.DEC)
+f.rec_rc_func_data_chmode = ProtoField.int16 ("dji_p3.rec_rc_func_data_chmode", "CH4 Mode", base.DEC)
+f.rec_rc_func_data_ioc = ProtoField.int16 ("dji_p3.rec_rc_func_data_ioc", "CH5 IOC", base.DEC)
+f.rec_rc_func_data_gohome = ProtoField.int16 ("dji_p3.rec_rc_func_data_gohome", "CH6 GoHome", base.DEC)
+f.rec_rc_func_data_d4 = ProtoField.int16 ("dji_p3.rec_rc_func_data_d4", "CH21 D4", base.DEC)
+f.rec_rc_func_data_x18 = ProtoField.int16 ("dji_p3.rec_rc_func_data_x18", "CH24 ?", base.DEC)
+f.rec_rc_func_data_x17 = ProtoField.int16 ("dji_p3.rec_rc_func_data_x17", "CH23 ?", base.DEC)
+f.rec_rc_func_data_x19 = ProtoField.int16 ("dji_p3.rec_rc_func_data_x19", "CH25 ?", base.DEC)
+f.rec_rc_func_data_x1A = ProtoField.int16 ("dji_p3.rec_rc_func_data_x1A", "CH26 ?", base.DEC)
+f.rec_rc_func_data_cmdmd = ProtoField.int8 ("dji_p3.rec_rc_func_data_cmdmd", "Control Command mode", base.DEC)
+f.rec_rc_func_data_realmd = ProtoField.int8 ("dji_p3.rec_rc_func_data_realmd", "Control Real mode", base.DEC)
+f.rec_rc_func_data_fld5 = ProtoField.int8 ("dji_p3.rec_rc_func_data_fld5", "Real Status Field5", base.DEC)
+f.rec_rc_func_data_rc_state = ProtoField.int8 ("dji_p3.rec_rc_func_data_rc_state", "RC State", base.DEC)
+f.rec_rc_func_data_fallow_mot = ProtoField.int8 ("dji_p3.rec_rc_func_data_fallow_mot", "Force Allow Start Motors", base.DEC)
+f.rec_rc_func_data_unkn21 = ProtoField.int32 ("dji_p3.rec_rc_func_data_unkn21", "Unknown x21", base.DEC)
+f.rec_rc_func_data_mbat_ve = ProtoField.int16 ("dji_p3.rec_rc_func_data_mbat_ve", "Main Battery Voltage", base.DEC)
+f.rec_rc_func_data_rctl_out_per = ProtoField.int8 ("dji_p3.rec_rc_func_data_rctl_out_per", "Real Ctl Out Per", base.DEC)
+f.rec_rc_func_data_unkn28 = ProtoField.int8 ("dji_p3.rec_rc_func_data_unkn28", "Unknown x28", base.DEC)
+f.rec_rc_func_data_hp_gpshl = ProtoField.int8 ("dji_p3.rec_rc_func_data_hp_gpshl", "Home Point GPS Coords Health", base.DEC)
+f.rec_rc_func_data_unkn2A = ProtoField.int8 ("dji_p3.rec_rc_func_data_unkn2A", "Unknown x2A", base.DEC)
 
 local function flightrec_rc_func_data_dissector(payload, pinfo, subtree)
     local offset = 0
 
+    subtree:add_le (f.rec_rc_func_status, payload(offset, 4))
     offset = offset + 4
 
     subtree:add_le (f.rec_rc_func_data_a, payload(offset, 2))
@@ -41,18 +59,65 @@ local function flightrec_rc_func_data_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_rc_func_data_r, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_u, payload(offset, 2))
+    subtree:add_le (f.rec_rc_func_data_chmode, payload(offset, 2))
     offset = offset + 2
 
-    offset = offset + 17
+    subtree:add_le (f.rec_rc_func_data_ioc, payload(offset, 2))
+    offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_sw_mode, payload(offset, 1))
+    subtree:add_le (f.rec_rc_func_data_gohome, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_func_data_d4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_func_data_x18, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_func_data_x17, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_func_data_x19, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_func_data_x1A, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_func_data_cmdmd, payload(offset, 1))
     offset = offset + 1
 
-    offset = offset + 9
-
-    subtree:add_le (f.rec_rc_func_data_gps_health, payload(offset, 1))
+    subtree:add_le (f.rec_rc_func_data_realmd, payload(offset, 1))
     offset = offset + 1
+
+    subtree:add_le (f.rec_rc_func_data_fld5, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_rc_func_data_rc_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_rc_func_data_fallow_mot, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_rc_func_data_unkn21, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rc_func_data_mbat_ve, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_func_data_rctl_out_per, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_rc_func_data_unkn28, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_rc_func_data_hp_gpshl, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_rc_func_data_unkn2A, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 43) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Rc Func Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Rc Func Data: Payload size different than expected") end
 end
 
 -- Flight log - Imu Atti 0 - 0x0001
