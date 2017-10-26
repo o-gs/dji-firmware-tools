@@ -290,15 +290,31 @@ end
 
 f.rec_telemetry_lon = ProtoField.double ("dji_p3.rec_telemetry_lon", "Longitude", base.DEC)
 f.rec_telemetry_lat = ProtoField.double ("dji_p3.rec_telemetry_lat", "Latitude", base.DEC)
-f.rec_telemetry_height = ProtoField.int16 ("dji_p3.rec_telemetry_height", "Height", base.DEC)
-f.rec_telemetry_unkn18 = ProtoField.int16 ("dji_p3.rec_telemetry_unkn18", "Unkn18", base.DEC)
-f.rec_telemetry_unkn20 = ProtoField.int16 ("dji_p3.rec_telemetry_unkn20", "Unkn20", base.DEC)
-f.rec_telemetry_unkn22 = ProtoField.int16 ("dji_p3.rec_telemetry_unkn22", "Unkn22", base.DEC)
+f.rec_telemetry_height = ProtoField.int16 ("dji_p3.rec_telemetry_height", "Height", base.DEC) -- g_real.imu.field_18 * 10
+f.rec_telemetry_unkn18 = ProtoField.int16 ("dji_p3.rec_telemetry_unkn18", "Unkn18", base.DEC) -- g_real.imu.field_38 * 10
+f.rec_telemetry_unkn20 = ProtoField.int16 ("dji_p3.rec_telemetry_unkn20", "Unkn20", base.DEC) -- g_real.imu.field_3C * 10
+f.rec_telemetry_unkn22 = ProtoField.int16 ("dji_p3.rec_telemetry_unkn22", "Unkn22", base.DEC) -- g_real.imu.field_40 * 10
 f.rec_telemetry_pitch = ProtoField.int16 ("dji_p3.rec_telemetry_pitch", "Pitch", base.DEC)
 f.rec_telemetry_roll = ProtoField.int16 ("dji_p3.rec_telemetry_roll", "Roll", base.DEC)
 f.rec_telemetry_yaw = ProtoField.int16 ("dji_p3.rec_telemetry_yaw", "Yaw", base.DEC)
-f.rec_telemetry_flyc_st = ProtoField.int16 ("dji_p3.rec_telemetry_flyc_st", "Flight Ctrl State", base.DEC)
+f.rec_telemetry_flyc_st = ProtoField.int8 ("dji_p3.rec_telemetry_flyc_st", "Flight Ctrl State", base.DEC)
+f.rec_telemetry_app_func_cmd = ProtoField.int8 ("dji_p3.rec_telemetry_app_func_cmd", "App Function Command", base.DEC)
+f.rec_telemetry_flags1 = ProtoField.uint32 ("dji_p3.rec_telemetry_flags1", "Flags1", base.HEX)
+f.rec_telemetry_num_sats = ProtoField.int8 ("dji_p3.rec_telemetry_num_sats", "Positioning Satellites Count", base.DEC)
+f.rec_telemetry_fld25 = ProtoField.int8 ("dji_p3.rec_telemetry_fld25", "Field25", base.DEC)
+f.rec_telemetry_fld26 = ProtoField.int8 ("dji_p3.rec_telemetry_fld26", "Field26", base.DEC)
+f.rec_telemetry_fld27 = ProtoField.int8 ("dji_p3.rec_telemetry_fld27", "Field27", base.DEC)
+f.rec_telemetry_batt_rmcap = ProtoField.int8 ("dji_p3.rec_telemetry_batt_rmcap", "Battery Remaining Capacity", base.DEC)
+f.rec_telemetry_fld29 = ProtoField.int8 ("dji_p3.rec_telemetry_fld29", "Field29", base.DEC)
 f.rec_telemetry_fly_time = ProtoField.int16 ("dji_p3.rec_telemetry_fly_time", "Flight Time", base.DEC)
+f.rec_telemetry_fld2C = ProtoField.int8 ("dji_p3.rec_telemetry_fld2C", "Field2C", base.DEC)
+f.rec_telemetry_lv1_ve = ProtoField.uint8 ("dji_p3.rec_telemetry_lv1_ve", "Level 1 Voltage", base.DEC, nil, 0x7F)
+f.rec_telemetry_lv1_fn = ProtoField.uint8 ("dji_p3.rec_telemetry_lv1_fn", "Level 1 Function", base.DEC, nil, 0x80)
+f.rec_telemetry_lv2_ve = ProtoField.uint8 ("dji_p3.rec_telemetry_lv2_ve", "Level 2 Voltage", base.DEC, nil, 0x7F)
+f.rec_telemetry_lv2_fn = ProtoField.uint8 ("dji_p3.rec_telemetry_lv2_fn", "Level 2 Function", base.DEC, nil, 0x80)
+f.rec_telemetry_fld2F = ProtoField.int8 ("dji_p3.rec_telemetry_fld2F", "Field2F", base.DEC)
+f.rec_telemetry_fld30 = ProtoField.int8 ("dji_p3.rec_telemetry_fld30", "Field30", base.DEC)
+f.rec_telemetry_fld31 = ProtoField.int8 ("dji_p3.rec_telemetry_fld31", "Field31", base.DEC)
 
 local function flightrec_telemetry_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -322,7 +338,7 @@ local function flightrec_telemetry_dissector(payload, pinfo, subtree)
     offset = offset + 2
 
     subtree:add_le (f.rec_telemetry_pitch, payload(offset, 2))
-    offset = offset + 2
+    offset = offset + 2 -- = 0x1a
 
     subtree:add_le (f.rec_telemetry_roll, payload(offset, 2))
     offset = offset + 2
@@ -333,16 +349,52 @@ local function flightrec_telemetry_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_telemetry_flyc_st, payload(offset, 1))
     offset = offset + 1
 
-    offset = offset + 7
+    subtree:add_le (f.rec_telemetry_app_func_cmd, payload(offset, 1))
+    offset = offset + 1
 
-    -- failure info here
+    subtree:add_le (f.rec_telemetry_flags1, payload(offset, 4))
     offset = offset + 4
+
+    subtree:add_le (f.rec_telemetry_num_sats, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_telemetry_fld25, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_telemetry_fld26, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_telemetry_fld27, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_telemetry_batt_rmcap, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_telemetry_fld29, payload(offset, 1))
+    offset = offset + 1
 
     subtree:add_le (f.rec_telemetry_fly_time, payload(offset, 2))
     offset = offset + 2
 
-    -- 6 one-byte values
-    offset = offset + 6
+    subtree:add_le (f.rec_telemetry_fld2C, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_telemetry_lv1_ve, payload(offset, 1))
+    subtree:add_le (f.rec_telemetry_lv1_fn, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_telemetry_lv2_ve, payload(offset, 1))
+    subtree:add_le (f.rec_telemetry_lv2_fn, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_telemetry_fld2F, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_telemetry_fld30, payload(offset, 1)) -- hard-coded to 2
+    offset = offset + 1
+
+    subtree:add_le (f.rec_telemetry_fld31, payload(offset, 1))
+    offset = offset + 1
 
     if (offset ~= 50) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Telemetry: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Telemetry: Payload size different than expected") end
