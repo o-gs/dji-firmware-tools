@@ -3,10 +3,16 @@ local f = DJI_P3_PROTO.fields
 DJI_P3_FLIGHT_RECORD_ENTRY_TYPE = {
     [0x0000] = 'Rc Func Data',
     [0x0001] = 'Imu Atti 0',
+    [0x0004] = 'unkn04',
     [0x0007] = 'Imu Data',
     [0x000c] = 'Telemetry',
     [0x000d] = 'unkn0D',
     [0x0011] = 'Battery Info',
+    [0x0013] = 'unkn13',
+    [0x0014] = 'unkn14',
+    [0x001a] = 'unkn1A',
+    [0x005c] = 'unkn5C',
+    [0x0062] = 'unkn62',
     [0x8000] = 'Fly Log',
     [0xff00] = 'RC Log',
     [0xfffa] = 'Tcx Log',
@@ -260,6 +266,32 @@ local function flightrec_imu_atti_0_dissector(payload, pinfo, subtree)
 
     if (offset ~= 120) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Atti 0: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Atti 0: Payload size different than expected") end
+end
+
+-- Flight log - unkn04 - 0x0004
+
+f.rec_unkn04_fld0 = ProtoField.uint16 ("dji_p3.rec_unkn04_fld0", "Field0", base.HEX)
+f.rec_unkn04_fld2 = ProtoField.uint16 ("dji_p3.rec_unkn04_fld2", "Field2", base.HEX)
+f.rec_unkn04_fld4 = ProtoField.uint16 ("dji_p3.rec_unkn04_fld4", "Field4", base.HEX)
+f.rec_unkn04_fld6 = ProtoField.uint16 ("dji_p3.rec_unkn04_fld6", "Field6", base.HEX)
+
+local function flightrec_unkn0D_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_unkn04_fld0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn04_fld2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn04_fld4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn04_fld6, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn04: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn04: Payload size different than expected") end
 end
 
 -- Flight log - Imu Data - 0x0007
@@ -522,6 +554,162 @@ local function flightrec_battery_info_dissector(payload, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Battery Info: Payload size different than expected") end
 end
 
+-- Flight log - unkn13 - 0x0013
+
+f.rec_unkn13_fld0 = ProtoField.uint8 ("dji_p3.rec_unkn13_fld0", "Field0", base.HEX)
+f.rec_unkn13_fld1 = ProtoField.uint8 ("dji_p3.rec_unkn13_fld1", "Field1", base.HEX)
+
+local function flightrec_unkn1A_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_unkn13_fld0, payload(offset, 1)) -- Always 1
+    offset = offset + 1
+
+    subtree:add_le (f.rec_unkn13_fld1, payload(offset, 1)) -- Always 0
+    offset = offset + 1
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn13: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn13: Payload size different than expected") end
+end
+
+-- Flight log - unkn14 - 0x0014
+
+f.rec_unkn14_arr0_0 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_0", "Arr0[0]", base.HEX)
+f.rec_unkn14_arr0_1 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_1", "Arr0[1]", base.HEX)
+f.rec_unkn14_arr0_2 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_2", "Arr0[2]", base.HEX)
+f.rec_unkn14_arr0_3 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_3", "Arr0[3]", base.HEX)
+f.rec_unkn14_arr0_4 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_4", "Arr0[4]", base.HEX)
+f.rec_unkn14_arr0_5 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_5", "Arr0[5]", base.HEX)
+f.rec_unkn14_arr0_6 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_6", "Arr0[6]", base.HEX)
+f.rec_unkn14_arr0_7 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_7", "Arr0[7]", base.HEX)
+
+local function flightrec_unkn14_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_unkn14_arr0_0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn14_arr0_1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn14_arr0_2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn14_arr0_3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn14_arr0_4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn14_arr0_5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn14_arr0_6, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn14_arr0_7, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn14: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn14: Payload size different than expected") end
+end
+
+-- Flight log - unkn1A - 0x001a
+
+f.rec_unkn1a_fld0 = ProtoField.uint32 ("dji_p3.rec_unkn1a_fld0", "Field0", base.HEX)
+f.rec_unkn1a_fld4 = ProtoField.uint32 ("dji_p3.rec_unkn1a_fld4", "Field4", base.HEX)
+f.rec_unkn1a_fld8 = ProtoField.uint8 ("dji_p3.rec_unkn1a_fld8", "Field8", base.HEX)
+f.rec_unkn1a_fld9 = ProtoField.uint32 ("dji_p3.rec_unkn1a_fld9", "Field9", base.HEX)
+f.rec_unkn1a_fldD = ProtoField.uint32 ("dji_p3.rec_unkn1a_fldD", "FieldD", base.HEX)
+f.rec_unkn1a_fld11 = ProtoField.uint32 ("dji_p3.rec_unkn1a_fld11", "Field11", base.HEX)
+
+local function flightrec_unkn1A_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_unkn1a_fld0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn1a_fld4, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn1a_fld8, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_unkn1a_fld9, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn1a_fldD, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn1a_fld11, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 21) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn1A: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn1A: Payload size different than expected") end
+end
+
+-- Flight log - unkn5C - 0x005c and 0x0062
+
+f.rec_unkn5c_arr0_0 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arr0_0", "Arr0[0]", base.HEX)
+f.rec_unkn5c_arr0_1 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arr0_1", "Arr0[1]", base.HEX)
+f.rec_unkn5c_arr0_2 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arr0_2", "Arr0[2]", base.HEX)
+f.rec_unkn5c_arr0_3 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arr0_3", "Arr0[3]", base.HEX)
+f.rec_unkn5c_arr0_4 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arr0_4", "Arr0[4]", base.HEX)
+f.rec_unkn5c_arr0_5 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arr0_5", "Arr0[5]", base.HEX)
+f.rec_unkn5c_arrc_0 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arrc_0", "ArrC[0]", base.HEX)
+f.rec_unkn5c_arrc_1 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arrc_1", "ArrC[1]", base.HEX)
+f.rec_unkn5c_arrc_2 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arrc_2", "ArrC[2]", base.HEX)
+f.rec_unkn5c_arrc_3 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arrc_3", "ArrC[3]", base.HEX)
+f.rec_unkn5c_arrc_4 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arrc_4", "ArrC[4]", base.HEX)
+f.rec_unkn5c_arrc_5 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arrc_5", "ArrC[5]", base.HEX)
+f.rec_unkn5c_rt_seqno = ProtoField.uint32 ("dji_p3.rec_unkn5c_rt_seqno", "RecType SeqNo", base.DEC)
+
+local function flightrec_unkn5C_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_unkn5c_arr0_0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn5c_arr0_1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn5c_arr0_2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn5c_arr0_3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn5c_arr0_4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn5c_arr0_5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn5c_arrc_0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn5c_arrc_1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn5c_arrc_2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn5c_arrc_3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn5c_arrc_4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn5c_arrc_5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_unkn5c_rt_seqno, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 28) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn5C: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn5C: Payload size different than expected") end
+end
+
 -- Flight log - Fly Log - 0x8000
 
 f.rec_fly_log_text = ProtoField.string ("dji_p3.rec_fly_log_text", "Fly Log", base.ASCII)
@@ -545,10 +733,16 @@ end
 DJI_P3_FLIGHT_RECORD_DISSECT = {
     [0x0000] = flightrec_rc_func_data_dissector,
     [0x0001] = flightrec_imu_atti_0_dissector,
+    [0x0004] = flightrec_unkn04_dissector,
     [0x0007] = flightrec_imu_data_dissector,
     [0x000c] = flightrec_telemetry_dissector,
     [0x000d] = flightrec_unkn0D_dissector,
     [0x0011] = flightrec_battery_info_dissector,
+    [0x0013] = flightrec_unkn13_dissector,
+    [0x0014] = flightrec_unkn14_dissector,
+    [0x001a] = flightrec_unkn1A_dissector,
+    [0x005c] = flightrec_unkn5C_dissector,
+    [0x0062] = flightrec_unkn5C_dissector, -- this packet type uses the same payload as 0x005c
     [0x8000] = flightrec_fly_log_dissector,
     [0xff00] = flightrec_sys_cfg_dissector,
     [0xfffa] = flightrec_sys_cfg_dissector,
