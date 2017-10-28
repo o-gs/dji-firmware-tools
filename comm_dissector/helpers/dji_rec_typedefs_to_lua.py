@@ -135,6 +135,39 @@ class LuaDissector:
       self.func = f
       self.numtype = n
 
+class LuaProtoField:
+  def __init__(self, nbase, nfltr, nview, dtype, dstyle, dlen):
+      self.name_base = nbase
+      self.name_fltr = nfltr
+      self.name_view = nview
+      self.descr = ""
+      self.dt_type = dtype
+      self.dt_mask = -1
+      self.dt_len = dlen
+      self.dt_style = dstyle
+      self.enum_vals = []
+      self.subfields = []
+      self.commented = False
+  def format_lua_protofield_def(self, protocol_name):
+      """ Format string containing LUA ProtoField definition
+      """
+      add_params = ['nil','nil','nil']
+      if len(self.descr) > 0:
+          add_params[2] = "\"" + self.descr + "\""
+      if self.dt_mask > 0:
+          add_params[1] = "0x{:02x}".format(self.dt_mask)
+      if set(add_params) == set(['nil']):
+          add_params_str = ""
+      else:
+          add_params_str = ", {}, {}, {}".format(add_params[0],add_params[1],add_params[2])
+      return "{}f.rec_{} = ProtoField.{} (\"{}.rec_{}\", \"{}\", base.{}{})\n".format("--" if self.commented else "",
+          self.name_fltr, self.dt_type, protocol_name, self.name_fltr, self.name_view, self.dt_style, add_params_str)
+  def format_lua_protofield_inst(self, protocol_name):
+      """ Format string containing LUA ProtoField instantiation
+      """
+      return "{}subtree:add_le (f.rec_{}, payload(offset, {}))\n".format("--" if self.commented else "",self.name_fltr,self.dt_len)
+
+
 def prop_type_best_lua_base(ntype):
   arr =["NONE", "DEC", "DEC", "DEC", "HEX", "HEX", "HEX", "DEC", "DEC", "NONE"]
   return arr[ntype]
@@ -161,36 +194,78 @@ def recmsg_write_lua(po, luafile, reclist):
           name_title = rst.name.replace("_"," ").title()
           name_view = rst.name.replace("-","_").replace(".","_").lower()
           luafile.write("\n-- Flight log - {:s} - 0x{:04x}\n\n".format(name_title,rst.numtype))
+          # Cgreate a list of future protofields
+          proto_list = []
           for prop in rst.props[:]:
-              if prop.ntype == 9: # RPropType.expr
-                  eprint("{}: Warning: Skipped expr property named '{}' in config '{}'.".format(po.luafile,prop.name,rst.name))
-                  continue
               pname_title = prop.name.replace("_"," ").title()
               pname_view = "{}_{}".format(name_view,prop.name.replace("-","_").replace(".","_").lower())
+              proto = LuaProtoField(prop.name, pname_view, pname_title, prop_type_best_lua_proto_type(prop.ntype),
+                      prop_type_best_lua_base(prop.ntype), prop_type_len(prop.ntype))
+              proto.descr = prop.comment;
 
-              add_params = None
-              if len(prop.comment) > 0:
-                  if add_params is None:
-                      add_params = ['nil','nil','nil']
-                  add_params[2] = "\"" + prop.comment + "\""
-              if add_params is None:
-                  add_params_str = ""
-              else:
-                  add_params_str = ", {}, {}, {}".format(add_params[0],add_params[1],add_params[2])
+              if prop.ntype == 9: # RPropType.expr
+                  # Try to match the expression to known mask formats
+                  parent_field = ""
+                  match = re.search("^bitand\([ \t]*shift_r[ \t]*\(([A-Za-z0-9._-]*)[ \t]*,([0-9._-]*)[ \t]*\),[ \t]*([0-9._-]*)[ \t]*\).*$", prop.val)
+                  if match:
+                      parent_field = match.group(1)
+                      bit_mask_shift = int(match.group(2))
+                      bit_mask_base = int(match.group(3))
+                      proto.dt_mask = bit_mask_base << bit_mask_shift
+                  match = re.search("^bitand\([ \t]*([A-Za-z0-9._-]*)[ \t]*,[ \t]*([0-9._-]*)[ \t]*\).*$", prop.val)
+                  if match:
+                      parent_field = match.group(1)
+                      proto.dt_mask = int(match.group(2))
+                  match = re.search("^shift_r\(([A-Za-z0-9._-]*)[ \t]*,([0-9._-]*)[ \t]*\)and\(([0-9._-]*)[ \t]*\).*$", prop.val)
+                  if match:
+                      parent_field = match.group(1)
+                      bit_mask_shift = int(match.group(2))
+                      bit_mask_base = int(match.group(3))
+                      proto.dt_mask = bit_mask_base << bit_mask_shift
+                  match = re.search("^\(([A-Za-z0-9._-]*)[ \t]*\)and\(([0-9._-]*)[ \t]*\).*$", prop.val)
+                  if match:
+                      parent_field = match.group(1)
+                      proto.dt_mask = int(match.group(2))
+                  if len(parent_field) < 1:
+                      eprint("{}: Warning: Skipped expr property named '{}' in config '{}' - no bit mask format.".format(po.luafile,prop.name,rst.name))
+                      proto.commented = True
+                      proto.descr = prop.val.strip()
+                      proto_list.append(proto)
+                      continue
 
-              luafile.write("f.rec_{} = ProtoField.{} (\"{}.rec_{}\", \"{}\", base.{}{})\n".format(pname_view,
-                  prop_type_best_lua_proto_type(prop.ntype),po.product.lower(),pname_view,pname_title,
-                  prop_type_best_lua_base(prop.ntype),add_params_str))
+                  # Find the proto struct for this field
+                  parent_proto = next((x for x in proto_list if x.name_base == parent_field), None)
+                  if parent_proto is None:
+                      eprint("{}: Warning: Skipped expr property named '{}' in config '{}' - parent '{}' not found.".format(po.luafile,prop.name,rst.name,parent_field))
+                      proto.commented = True
+                      proto.descr = prop.val.strip()
+                      proto_list.append(proto)
+                      continue
+
+                  proto.dt_type = parent_proto.dt_type
+                  proto.dt_len = parent_proto.dt_len
+                  proto.dt_style = parent_proto.dt_style
+                  parent_proto.subfields.append(proto)
+                  continue
+
+              proto_list.append(proto)
+
+          for proto in proto_list[:]:
+              luafile.write(proto.format_lua_protofield_def(po.product.lower()))
+              for subproto in proto.subfields[:]:
+                  luafile.write("  " + subproto.format_lua_protofield_def(po.product.lower()))
+
           luafile.write("\nlocal function flightrec_{}_dissector(payload, pinfo, subtree)\n".format(name_view))
           luafile.write("    local offset = 0\n")
           tot_len = 0
-          for prop in rst.props[:]:
-              if prop.ntype == 9: # RPropType.expr
+          for proto in proto_list[:]:
+              if (proto.commented):
                   continue
-              pname_view = "{}_{}".format(name_view,prop.name.replace("-","_").replace(".","_").lower())
-              luafile.write("\n    subtree:add_le (f.rec_{}, payload(offset, {}))\n".format(pname_view,prop_type_len(prop.ntype)))
-              luafile.write("    offset = offset + {}\n".format(prop_type_len(prop.ntype)))
-              tot_len += prop_type_len(prop.ntype)
+              luafile.write("\n    " + proto.format_lua_protofield_inst(po.product.lower()))
+              for subproto in proto.subfields[:]:
+                  luafile.write("    " + subproto.format_lua_protofield_inst(po.product.lower()))
+              luafile.write("    offset = offset + {}\n".format(proto.dt_len))
+              tot_len += proto.dt_len
           luafile.write("\n    if (offset ~= {}) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,\"{}: Offset does not match - internal inconsistency\") end\n".format(tot_len,name_title))
           luafile.write("    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,\"{}: Payload size different than expected\") end\n".format(name_title))
           luafile.write("end\n")
