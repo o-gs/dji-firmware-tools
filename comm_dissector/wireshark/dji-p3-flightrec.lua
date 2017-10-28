@@ -1,946 +1,2769 @@
 local f = DJI_P3_PROTO.fields
 
 DJI_P3_FLIGHT_RECORD_ENTRY_TYPE = {
-    [0x0000] = 'Rc Func Data',
-    [0x0001] = 'Imu Atti 0',
-    [0x0002] = 'unkn02',
-    [0x0003] = 'unkn03',
-    [0x0004] = 'unkn04',
-    [0x0005] = 'unkn05',
-    [0x0007] = 'Imu Data',
-    [0x000c] = 'Telemetry',
-    [0x000d] = 'unkn0D',
-    [0x0011] = 'Battery Info',
-    [0x0013] = 'unkn13',
-    [0x0014] = 'unkn14',
-    [0x001a] = 'unkn1A',
-    [0x005c] = 'unkn5C',
-    [0x0062] = 'unkn62',
+    [0x0000] = 'Controller',
+    [0x07cf] = 'Ofdm Cnt',
+    [0x07d0] = 'Uart Cnt',
+    [0x0002] = 'Imu Tail',
+    [0xfffa] = 'Drv Log',
+    [0x0073] = 'Asr',
+    [0x0001] = 'Imu Atti',
+    [0x0003] = 'Imu Ex',
+    [0x0820] = 'Imu Tail 00',
+    [0x0800] = 'Imu Atti 00',
+    [0x0810] = 'Imu Ex 00',
+    [0x0821] = 'Imu Tail 01',
+    [0x0801] = 'Imu Atti 01',
+    [0x0811] = 'Imu Ex 01',
+    [0x0822] = 'Imu Tail 02',
+    [0x0802] = 'Imu Atti 02',
+    [0x0812] = 'Imu Ex 02',
+    [0x0004] = 'Compass',
+    [0x0005] = 'Gps Glns',
+    [0x000b] = 'Gps Snr',
+    [0x0061] = 'Pt3 Gps Snr',
+    [0x005b] = 'Imu 21100',
+    [0x005c] = 'Imu Raw',
+    [0x0006] = 'Imu Init',
+    [0x000c] = 'Osd General',
+    [0x000d] = 'Osd Home',
+    [0x001a] = 'Fdi',
+    [0x8003] = 'Vincent Debug',
     [0x8000] = 'Fly Log',
-    [0xff00] = 'RC Log',
-    [0xfffa] = 'Tcx Log',
-    [0xfffe] = 'MC Log',
-    [0xffff] = 'Sys Cfg',
+    [0xff00] = 'Sd Logs',
+    [0xfffe] = 'Svn Info',
+    [0x0007] = 'Imu Data',
+    [0x0870] = 'Imu Data 00',
+    [0x0871] = 'Imu Data 01',
+    [0x0872] = 'Imu Data 02',
+    [0x0008] = 'Imu Cali Data',
+    [0x0009] = 'Sensor Cfg Temp',
+    [0x000a] = 'Temp Ctl Data',
+    [0x0880] = 'Temp Ctl Data 00',
+    [0x0881] = 'Temp Ctl Data 01',
+    [0x0882] = 'Temp Ctl Data 02',
+    [0x0014] = 'Pwm Output',
+    [0x0015] = 'Temp Bias Data',
+    [0x0016] = 'Temp Cali Data',
+    [0x0018] = 'App Temp Bias Data',
+    [0x0019] = 'App Temp Cali Data',
+    [0x0893] = 'Temp Cali Data 00',
+    [0x0896] = 'App Temp Cali Data 00',
+    [0x0894] = 'Temp Cali Data 01',
+    [0x0897] = 'App Temp Cali Data 01',
+    [0x0895] = 'Temp Cali Data 02',
+    [0x0898] = 'App Temp Cali Data 02',
+    [0x0023] = 'Mpu6500 Raw Data',
+    [0x0024] = 'Adxl278 Raw Data',
+    [0x0065] = 'Svo Debug',
+    [0xcdf0] = 'Uc Monitor',
+    [0xcdff] = 'Rc Delay',
+    [0xce02] = 'Taskb Info',
+    [0xce06] = 'Taska Info',
+    [0xce08] = 'Taskc Info',
+    [0xce09] = 'Taskd Info',
+    [0xcdf6] = 'Rc Replay',
+    [0xcdf1] = 'Escm',
+    [0xcdf2] = 'Sweep',
+    [0x000e] = 'Mvo',
+    [0x0010] = 'Usonic',
+    [0xcdef] = 'Console',
+    [0xffff] = 'Syscfg',
+    [0x0011] = 'Battery Info',
+    [0x0017] = 'Special Cmd',
+    [0x003c] = 'Serial Api Inputs',
+    [0x0032] = 'Ctrl Vert',
+    [0x0033] = 'Ctrl Horiz',
+    [0x0034] = 'Ctrl Atti',
+    [0x0035] = 'Ctrl Ccpm',
+    [0x0036] = 'Ctrl Motor',
+    [0x0096] = 'Wp Curve',
+    [0x0012] = 'Smart Battery Info',
+    [0x0028] = 'Airport Limit Data',
+    [0x0029] = 'Fmu Device Run Time',
+    [0x002a] = 'Hp Data',
+    [0x002b] = 'Follow Me Data',
+    [0x0013] = 'Imu Data Status',
+    [0x0046] = 'Aircraft Condition Monitor',
+    [0x0050] = 'Aircraft Model',
+    [0x005a] = 'Go Home Info',
+    [0x001d] = 'New Mvo Feedback',
+    [0x0064] = 'Svo Avoid Obstacle',
+    [0xcff1] = 'Rtkdata',
+    [0x006e] = 'Gear Debug Info',
+    [0x0066] = 'Svo Ctrl Debug',
+    [0x00a0] = 'Waypoint Debug',
 }
 
--- Flight log - Rc Func Data - 0x0000
+-- Flight log - Controller - 0x0000
 
-f.rec_rc_func_status = ProtoField.int32 ("dji_p3.rec_rc_func_status", "Status", base.DEC)
-f.rec_rc_func_data_a = ProtoField.int16 ("dji_p3.rec_rc_func_data_a", "CH0 Aileron", base.DEC)
-f.rec_rc_func_data_e = ProtoField.int16 ("dji_p3.rec_rc_func_data_e", "CH1 Elevator", base.DEC)
-f.rec_rc_func_data_t = ProtoField.int16 ("dji_p3.rec_rc_func_data_t", "CH2 Throttle", base.DEC)
-f.rec_rc_func_data_r = ProtoField.int16 ("dji_p3.rec_rc_func_data_r", "CH3 Rudder", base.DEC)
-f.rec_rc_func_data_chmode = ProtoField.int16 ("dji_p3.rec_rc_func_data_chmode", "CH4 Mode", base.DEC)
-f.rec_rc_func_data_ioc = ProtoField.int16 ("dji_p3.rec_rc_func_data_ioc", "CH5 IOC", base.DEC)
-f.rec_rc_func_data_gohome = ProtoField.int16 ("dji_p3.rec_rc_func_data_gohome", "CH6 GoHome", base.DEC)
-f.rec_rc_func_data_d4 = ProtoField.int16 ("dji_p3.rec_rc_func_data_d4", "CH21 D4", base.DEC)
-f.rec_rc_func_data_x18 = ProtoField.int16 ("dji_p3.rec_rc_func_data_x18", "CH24 ?", base.DEC)
-f.rec_rc_func_data_x17 = ProtoField.int16 ("dji_p3.rec_rc_func_data_x17", "CH23 ?", base.DEC)
-f.rec_rc_func_data_x19 = ProtoField.int16 ("dji_p3.rec_rc_func_data_x19", "CH25 ?", base.DEC)
-f.rec_rc_func_data_x1A = ProtoField.int16 ("dji_p3.rec_rc_func_data_x1A", "CH26 ?", base.DEC)
-f.rec_rc_func_data_cmdmd = ProtoField.int8 ("dji_p3.rec_rc_func_data_cmdmd", "Control Command mode", base.DEC)
-f.rec_rc_func_data_realmd = ProtoField.int8 ("dji_p3.rec_rc_func_data_realmd", "Control Real mode", base.DEC)
-f.rec_rc_func_data_fld5 = ProtoField.int8 ("dji_p3.rec_rc_func_data_fld5", "Real Status Field5", base.DEC)
-f.rec_rc_func_data_rc_state = ProtoField.int8 ("dji_p3.rec_rc_func_data_rc_state", "RC State", base.DEC)
-f.rec_rc_func_data_fallow_mot = ProtoField.int8 ("dji_p3.rec_rc_func_data_fallow_mot", "Force Allow Start Motors", base.DEC)
-f.rec_rc_func_data_unkn21 = ProtoField.int32 ("dji_p3.rec_rc_func_data_unkn21", "Unknown x21", base.DEC)
-f.rec_rc_func_data_mbat_ve = ProtoField.int16 ("dji_p3.rec_rc_func_data_mbat_ve", "Main Battery Voltage", base.DEC)
-f.rec_rc_func_data_rctl_out_per = ProtoField.int8 ("dji_p3.rec_rc_func_data_rctl_out_per", "Real Ctl Out Per", base.DEC)
-f.rec_rc_func_data_unkn28 = ProtoField.int8 ("dji_p3.rec_rc_func_data_unkn28", "Unknown x28", base.DEC)
-f.rec_rc_func_data_hp_gpshl = ProtoField.int8 ("dji_p3.rec_rc_func_data_hp_gpshl", "Home Point GPS Coords Health", base.DEC)
-f.rec_rc_func_data_unkn2A = ProtoField.int8 ("dji_p3.rec_rc_func_data_unkn2A", "Unknown x2A", base.DEC)
+f.rec_controller_g_real_clock = ProtoField.uint32 ("dji_p3.rec_controller_g_real_clock", "G Real Clock", base.HEX)
+f.rec_controller_g_real_input_channel_command_aileron = ProtoField.int16 ("dji_p3.rec_controller_g_real_input_channel_command_aileron", "G Real Input Channel Command Aileron", base.DEC)
+f.rec_controller_g_real_input_channel_command_elevator = ProtoField.int16 ("dji_p3.rec_controller_g_real_input_channel_command_elevator", "G Real Input Channel Command Elevator", base.DEC)
+f.rec_controller_g_real_input_channel_command_throttle = ProtoField.int16 ("dji_p3.rec_controller_g_real_input_channel_command_throttle", "G Real Input Channel Command Throttle", base.DEC)
+f.rec_controller_g_real_input_channel_command_rudder = ProtoField.int16 ("dji_p3.rec_controller_g_real_input_channel_command_rudder", "G Real Input Channel Command Rudder", base.DEC)
+f.rec_controller_g_real_input_channel_command_mode = ProtoField.int16 ("dji_p3.rec_controller_g_real_input_channel_command_mode", "G Real Input Channel Command Mode", base.DEC)
+f.rec_controller_g_real_input_channel_command_ioc = ProtoField.int16 ("dji_p3.rec_controller_g_real_input_channel_command_ioc", "G Real Input Channel Command Ioc", base.DEC)
+f.rec_controller_g_real_input_channel_command_go_home = ProtoField.int16 ("dji_p3.rec_controller_g_real_input_channel_command_go_home", "G Real Input Channel Command Go Home", base.DEC)
+f.rec_controller_g_real_input_channel_command_d4 = ProtoField.int16 ("dji_p3.rec_controller_g_real_input_channel_command_d4", "G Real Input Channel Command D4", base.DEC)
+f.rec_controller_g_real_input_control_core_pitch = ProtoField.int16 ("dji_p3.rec_controller_g_real_input_control_core_pitch", "G Real Input Control Core Pitch", base.DEC)
+f.rec_controller_g_real_input_control_core_roll = ProtoField.int16 ("dji_p3.rec_controller_g_real_input_control_core_roll", "G Real Input Control Core Roll", base.DEC)
+f.rec_controller_g_real_input_control_core_alti = ProtoField.int16 ("dji_p3.rec_controller_g_real_input_control_core_alti", "G Real Input Control Core Alti", base.DEC)
+f.rec_controller_g_real_input_control_core_tail = ProtoField.int16 ("dji_p3.rec_controller_g_real_input_control_core_tail", "G Real Input Control Core Tail", base.DEC)
+f.rec_controller_g_real_status_cotrol_command_mode = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_cotrol_command_mode", "G Real Status Cotrol Command Mode", base.HEX)
+f.rec_controller_g_real_status_control_real_mode = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_control_real_mode", "G Real Status Control Real Mode", base.HEX)
+f.rec_controller_g_real_status_ioc_control_command_mode = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_ioc_control_command_mode", "G Real Status Ioc Control Command Mode", base.HEX)
+f.rec_controller_g_real_status_rc_state = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_rc_state", "G Real Status Rc State", base.HEX)
+f.rec_controller_g_real_status_motor_status = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_motor_status", "G Real Status Motor Status", base.HEX)
+f.rec_controller_imu_package_lost_count = ProtoField.uint32 ("dji_p3.rec_controller_imu_package_lost_count", "Imu Package Lost Count", base.HEX)
+f.rec_controller_g_real_status_main_batery_voltage = ProtoField.uint16 ("dji_p3.rec_controller_g_real_status_main_batery_voltage", "G Real Status Main Batery Voltage", base.HEX)
+f.rec_controller_imu_temp_real_ctl_out_per = ProtoField.uint8 ("dji_p3.rec_controller_imu_temp_real_ctl_out_per", "Imu Temp Real Ctl Out Per", base.HEX)
+f.rec_controller_us_fail_flag = ProtoField.uint8 ("dji_p3.rec_controller_us_fail_flag", "Us Fail Flag", base.HEX)
+f.rec_controller_gps_signal_levels = ProtoField.uint8 ("dji_p3.rec_controller_gps_signal_levels", "Gps Signal Levels", base.HEX)
+f.rec_controller_gps_ctrl_levels = ProtoField.uint8 ("dji_p3.rec_controller_gps_ctrl_levels", "Gps Ctrl Levels", base.HEX)
 
-local function flightrec_rc_func_data_dissector(payload, pinfo, subtree)
+local function flightrec_controller_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add_le (f.rec_rc_func_status, payload(offset, 4))
+    subtree:add_le (f.rec_controller_g_real_clock, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_rc_func_data_a, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_input_channel_command_aileron, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_e, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_input_channel_command_elevator, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_t, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_input_channel_command_throttle, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_r, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_input_channel_command_rudder, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_chmode, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_input_channel_command_mode, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_ioc, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_input_channel_command_ioc, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_gohome, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_input_channel_command_go_home, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_d4, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_input_channel_command_d4, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_x18, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_input_control_core_pitch, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_x17, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_input_control_core_roll, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_x19, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_input_control_core_alti, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_x1A, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_input_control_core_tail, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_cmdmd, payload(offset, 1))
+    subtree:add_le (f.rec_controller_g_real_status_cotrol_command_mode, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_rc_func_data_realmd, payload(offset, 1))
+    subtree:add_le (f.rec_controller_g_real_status_control_real_mode, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_rc_func_data_fld5, payload(offset, 1))
+    subtree:add_le (f.rec_controller_g_real_status_ioc_control_command_mode, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_rc_func_data_rc_state, payload(offset, 1))
+    subtree:add_le (f.rec_controller_g_real_status_rc_state, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_rc_func_data_fallow_mot, payload(offset, 1))
+    subtree:add_le (f.rec_controller_g_real_status_motor_status, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_rc_func_data_unkn21, payload(offset, 4))
+    subtree:add_le (f.rec_controller_imu_package_lost_count, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_rc_func_data_mbat_ve, payload(offset, 2))
+    subtree:add_le (f.rec_controller_g_real_status_main_batery_voltage, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_rc_func_data_rctl_out_per, payload(offset, 1))
+    subtree:add_le (f.rec_controller_imu_temp_real_ctl_out_per, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_rc_func_data_unkn28, payload(offset, 1))
+    subtree:add_le (f.rec_controller_us_fail_flag, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_rc_func_data_hp_gpshl, payload(offset, 1))
+    subtree:add_le (f.rec_controller_gps_signal_levels, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_rc_func_data_unkn2A, payload(offset, 1))
+    subtree:add_le (f.rec_controller_gps_ctrl_levels, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 43) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Rc Func Data: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Rc Func Data: Payload size different than expected") end
+    if (offset ~= 43) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Controller: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Controller: Payload size different than expected") end
 end
 
--- Flight log - Imu Atti 0 - 0x0001
+-- Flight log - Ofdm Cnt - 0x07cf
 
-f.rec_imu_atti_0_long0 = ProtoField.double ("dji_p3.rec_imu_atti_0_long0", "Long0", base.DEC)
-f.rec_imu_atti_0_lati0 = ProtoField.double ("dji_p3.rec_imu_atti_0_lati0", "Lati0", base.DEC)
-f.rec_imu_atti_0_press0 = ProtoField.float ("dji_p3.rec_imu_atti_0_press0", "Press0", base.DEC)
-f.rec_imu_atti_0_ax0 = ProtoField.float ("dji_p3.rec_imu_atti_0_ax0", "Accel x0", base.DEC)
-f.rec_imu_atti_0_ay0 = ProtoField.float ("dji_p3.rec_imu_atti_0_ay0", "Accel y0", base.DEC)
-f.rec_imu_atti_0_az0 = ProtoField.float ("dji_p3.rec_imu_atti_0_az0", "Accel z0", base.DEC)
-f.rec_imu_atti_0_wx0 = ProtoField.float ("dji_p3.rec_imu_atti_0_wx0", "Gyro Wx0", base.DEC)
-f.rec_imu_atti_0_wy0 = ProtoField.float ("dji_p3.rec_imu_atti_0_wy0", "Gyro Wy0", base.DEC)
-f.rec_imu_atti_0_wz0 = ProtoField.float ("dji_p3.rec_imu_atti_0_wz0", "Gyro Wz0", base.DEC)
-f.rec_imu_atti_0_alti0 = ProtoField.float ("dji_p3.rec_imu_atti_0_alti0", "Alti0", base.DEC)
-f.rec_imu_atti_0_qw0 = ProtoField.float ("dji_p3.rec_imu_atti_0_qw0", "Quat w0", base.DEC)
-f.rec_imu_atti_0_qx0 = ProtoField.float ("dji_p3.rec_imu_atti_0_qx0", "Quat x0", base.DEC)
-f.rec_imu_atti_0_qy0 = ProtoField.float ("dji_p3.rec_imu_atti_0_qy0", "Quat y0", base.DEC)
-f.rec_imu_atti_0_qz0 = ProtoField.float ("dji_p3.rec_imu_atti_0_qz0", "Quat z0", base.DEC)
-f.rec_imu_atti_0_agx0 = ProtoField.float ("dji_p3.rec_imu_atti_0_agx0", "Accel gx0", base.DEC)
-f.rec_imu_atti_0_agy0 = ProtoField.float ("dji_p3.rec_imu_atti_0_agy0", "Accel gy0", base.DEC)
-f.rec_imu_atti_0_agz0 = ProtoField.float ("dji_p3.rec_imu_atti_0_agz0", "Accel gz0", base.DEC)
-f.rec_imu_atti_0_vgx0 = ProtoField.float ("dji_p3.rec_imu_atti_0_vgx0", "Vel gx0", base.DEC)
-f.rec_imu_atti_0_vgy0 = ProtoField.float ("dji_p3.rec_imu_atti_0_vgy0", "Vel gy0", base.DEC)
-f.rec_imu_atti_0_vgz0 = ProtoField.float ("dji_p3.rec_imu_atti_0_vgz0", "Vel gz0", base.DEC)
-f.rec_imu_atti_0_gbx0 = ProtoField.float ("dji_p3.rec_imu_atti_0_gbx0", "Gbx0", base.DEC)
-f.rec_imu_atti_0_gby0 = ProtoField.float ("dji_p3.rec_imu_atti_0_gby0", "Gby0", base.DEC)
-f.rec_imu_atti_0_gbz0 = ProtoField.float ("dji_p3.rec_imu_atti_0_gbz0", "Gbz0", base.DEC)
-f.rec_imu_atti_0_mx0 = ProtoField.int16 ("dji_p3.rec_imu_atti_0_mx0", "Mag x0", base.DEC)
-f.rec_imu_atti_0_my0 = ProtoField.int16 ("dji_p3.rec_imu_atti_0_my0", "Mag y0", base.DEC)
-f.rec_imu_atti_0_mz0 = ProtoField.int16 ("dji_p3.rec_imu_atti_0_mz0", "Mag z0", base.DEC)
-f.rec_imu_atti_0_tx0 = ProtoField.int16 ("dji_p3.rec_imu_atti_0_tx0", "Tx0", base.DEC)
-f.rec_imu_atti_0_ty0 = ProtoField.int16 ("dji_p3.rec_imu_atti_0_ty0", "Ty0", base.DEC)
-f.rec_imu_atti_0_tz0 = ProtoField.int16 ("dji_p3.rec_imu_atti_0_tz0", "Tz0", base.DEC)
-f.rec_imu_atti_0_sensor_stat0 = ProtoField.uint16 ("dji_p3.rec_imu_atti_0_sensor_stat0", "Sensor Stat0", base.HEX)
-f.rec_imu_atti_0_filter_stat0 = ProtoField.uint16 ("dji_p3.rec_imu_atti_0_filter_stat0", "Filter Stat0", base.HEX)
-f.rec_imu_atti_0_svn0 = ProtoField.uint16 ("dji_p3.rec_imu_atti_0_svn0", "GNSS SVN Count0", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
-f.rec_imu_atti_0_atti_cnt0 = ProtoField.uint16 ("dji_p3.rec_imu_atti_0_atti_cnt0", "Atti Sequence Count0", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
+f.rec_ofdm_cnt_recv_total = ProtoField.uint16 ("dji_p3.rec_ofdm_cnt_recv_total", "Recv Total", base.HEX)
+f.rec_ofdm_cnt_header_error = ProtoField.uint16 ("dji_p3.rec_ofdm_cnt_header_error", "Header Error", base.HEX)
+f.rec_ofdm_cnt_v1_error = ProtoField.uint16 ("dji_p3.rec_ofdm_cnt_v1_error", "V1 Error", base.HEX)
+f.rec_ofdm_cnt_v0_error = ProtoField.uint16 ("dji_p3.rec_ofdm_cnt_v0_error", "V0 Error", base.HEX)
+f.rec_ofdm_cnt_seccuss = ProtoField.uint16 ("dji_p3.rec_ofdm_cnt_seccuss", "Seccuss", base.HEX)
 
-local function flightrec_imu_atti_0_dissector(payload, pinfo, subtree)
+local function flightrec_ofdm_cnt_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add_le (f.rec_imu_atti_0_long0, payload(offset, 8))
+    subtree:add_le (f.rec_ofdm_cnt_recv_total, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ofdm_cnt_header_error, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ofdm_cnt_v1_error, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ofdm_cnt_v0_error, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ofdm_cnt_seccuss, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ofdm Cnt: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ofdm Cnt: Payload size different than expected") end
+end
+
+-- Flight log - Uart Cnt - 0x07d0
+
+f.rec_uart_cnt_uart_tx1 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_tx1", "Uart Tx1", base.HEX)
+f.rec_uart_cnt_uart_rx1 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_rx1", "Uart Rx1", base.HEX)
+f.rec_uart_cnt_uart_tx2 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_tx2", "Uart Tx2", base.HEX)
+f.rec_uart_cnt_uart_rx2 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_rx2", "Uart Rx2", base.HEX)
+f.rec_uart_cnt_uart_tx3 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_tx3", "Uart Tx3", base.HEX)
+f.rec_uart_cnt_uart_rx3 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_rx3", "Uart Rx3", base.HEX)
+f.rec_uart_cnt_uart_tx4 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_tx4", "Uart Tx4", base.HEX)
+f.rec_uart_cnt_uart_rx4 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_rx4", "Uart Rx4", base.HEX)
+f.rec_uart_cnt_uart_tx5 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_tx5", "Uart Tx5", base.HEX)
+f.rec_uart_cnt_uart_rx5 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_rx5", "Uart Rx5", base.HEX)
+f.rec_uart_cnt_uart_tx6 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_tx6", "Uart Tx6", base.HEX)
+f.rec_uart_cnt_uart_rx6 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_rx6", "Uart Rx6", base.HEX)
+f.rec_uart_cnt_uart_tx7 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_tx7", "Uart Tx7", base.HEX)
+f.rec_uart_cnt_uart_rx7 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_rx7", "Uart Rx7", base.HEX)
+f.rec_uart_cnt_uart_tx8 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_tx8", "Uart Tx8", base.HEX)
+f.rec_uart_cnt_uart_rx8 = ProtoField.uint16 ("dji_p3.rec_uart_cnt_uart_rx8", "Uart Rx8", base.HEX)
+
+local function flightrec_uart_cnt_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_uart_cnt_uart_tx1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_rx1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_tx2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_rx2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_tx3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_rx3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_tx4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_rx4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_tx5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_rx5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_tx6, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_rx6, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_tx7, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_rx7, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_tx8, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uart_cnt_uart_rx8, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Uart Cnt: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Uart Cnt: Payload size different than expected") end
+end
+
+-- Flight log - Imu Tail - 0x0002
+
+f.rec_imu_tail_raw_w_x = ProtoField.int16 ("dji_p3.rec_imu_tail_raw_w_x", "Raw W X", base.DEC)
+f.rec_imu_tail_raw_w_y = ProtoField.int16 ("dji_p3.rec_imu_tail_raw_w_y", "Raw W Y", base.DEC)
+f.rec_imu_tail_raw_w_z = ProtoField.int16 ("dji_p3.rec_imu_tail_raw_w_z", "Raw W Z", base.DEC)
+f.rec_imu_tail_raw_a_x = ProtoField.int16 ("dji_p3.rec_imu_tail_raw_a_x", "Raw A X", base.DEC)
+f.rec_imu_tail_raw_a_y = ProtoField.int16 ("dji_p3.rec_imu_tail_raw_a_y", "Raw A Y", base.DEC)
+f.rec_imu_tail_raw_a_z = ProtoField.int16 ("dji_p3.rec_imu_tail_raw_a_z", "Raw A Z", base.DEC)
+f.rec_imu_tail_raw_wa_x = ProtoField.int16 ("dji_p3.rec_imu_tail_raw_wa_x", "Raw Wa X", base.DEC)
+f.rec_imu_tail_raw_wa_y = ProtoField.int16 ("dji_p3.rec_imu_tail_raw_wa_y", "Raw Wa Y", base.DEC)
+f.rec_imu_tail_raw_wa_z = ProtoField.int16 ("dji_p3.rec_imu_tail_raw_wa_z", "Raw Wa Z", base.DEC)
+f.rec_imu_tail_iir_w_x = ProtoField.int16 ("dji_p3.rec_imu_tail_iir_w_x", "Iir W X", base.DEC)
+f.rec_imu_tail_iir_w_y = ProtoField.int16 ("dji_p3.rec_imu_tail_iir_w_y", "Iir W Y", base.DEC)
+f.rec_imu_tail_iir_w_z = ProtoField.int16 ("dji_p3.rec_imu_tail_iir_w_z", "Iir W Z", base.DEC)
+f.rec_imu_tail_iir_a_x = ProtoField.int16 ("dji_p3.rec_imu_tail_iir_a_x", "Iir A X", base.DEC)
+f.rec_imu_tail_iir_a_y = ProtoField.int16 ("dji_p3.rec_imu_tail_iir_a_y", "Iir A Y", base.DEC)
+f.rec_imu_tail_iir_a_z = ProtoField.int16 ("dji_p3.rec_imu_tail_iir_a_z", "Iir A Z", base.DEC)
+f.rec_imu_tail_iir_wa_x = ProtoField.int16 ("dji_p3.rec_imu_tail_iir_wa_x", "Iir Wa X", base.DEC)
+f.rec_imu_tail_iir_wa_y = ProtoField.int16 ("dji_p3.rec_imu_tail_iir_wa_y", "Iir Wa Y", base.DEC)
+f.rec_imu_tail_iir_wa_z = ProtoField.int16 ("dji_p3.rec_imu_tail_iir_wa_z", "Iir Wa Z", base.DEC)
+f.rec_imu_tail_gyro_hf_cnt = ProtoField.uint32 ("dji_p3.rec_imu_tail_gyro_hf_cnt", "Gyro Hf Cnt", base.HEX)
+--f.rec_imu_tail_e_raw_w_x = ProtoField.none ("dji_p3.rec_imu_tail_e_raw_w_x", "E Raw W X", base.NONE, nil, nil, "raw_w_x/1000")
+--f.rec_imu_tail_e_raw_w_y = ProtoField.none ("dji_p3.rec_imu_tail_e_raw_w_y", "E Raw W Y", base.NONE, nil, nil, "raw_w_y/1000")
+--f.rec_imu_tail_e_raw_w_z = ProtoField.none ("dji_p3.rec_imu_tail_e_raw_w_z", "E Raw W Z", base.NONE, nil, nil, "raw_w_z/1000")
+--f.rec_imu_tail_e_raw_a_x = ProtoField.none ("dji_p3.rec_imu_tail_e_raw_a_x", "E Raw A X", base.NONE, nil, nil, "raw_a_x/500")
+--f.rec_imu_tail_e_raw_a_y = ProtoField.none ("dji_p3.rec_imu_tail_e_raw_a_y", "E Raw A Y", base.NONE, nil, nil, "raw_a_y/500")
+--f.rec_imu_tail_e_raw_a_z = ProtoField.none ("dji_p3.rec_imu_tail_e_raw_a_z", "E Raw A Z", base.NONE, nil, nil, "raw_a_z/500")
+--f.rec_imu_tail_e_raw_wa_x = ProtoField.none ("dji_p3.rec_imu_tail_e_raw_wa_x", "E Raw Wa X", base.NONE, nil, nil, "raw_wa_x/100")
+--f.rec_imu_tail_e_raw_wa_y = ProtoField.none ("dji_p3.rec_imu_tail_e_raw_wa_y", "E Raw Wa Y", base.NONE, nil, nil, "raw_wa_y/100")
+--f.rec_imu_tail_e_raw_wa_z = ProtoField.none ("dji_p3.rec_imu_tail_e_raw_wa_z", "E Raw Wa Z", base.NONE, nil, nil, "raw_wa_z/100")
+--f.rec_imu_tail_e_iir_w_x = ProtoField.none ("dji_p3.rec_imu_tail_e_iir_w_x", "E Iir W X", base.NONE, nil, nil, "iir_w_x/1000")
+--f.rec_imu_tail_e_iir_w_y = ProtoField.none ("dji_p3.rec_imu_tail_e_iir_w_y", "E Iir W Y", base.NONE, nil, nil, "iir_w_y/1000")
+--f.rec_imu_tail_e_iir_w_z = ProtoField.none ("dji_p3.rec_imu_tail_e_iir_w_z", "E Iir W Z", base.NONE, nil, nil, "iir_w_z/1000")
+--f.rec_imu_tail_e_iir_a_x = ProtoField.none ("dji_p3.rec_imu_tail_e_iir_a_x", "E Iir A X", base.NONE, nil, nil, "iir_a_x/500")
+--f.rec_imu_tail_e_iir_a_y = ProtoField.none ("dji_p3.rec_imu_tail_e_iir_a_y", "E Iir A Y", base.NONE, nil, nil, "iir_a_y/500")
+--f.rec_imu_tail_e_iir_a_z = ProtoField.none ("dji_p3.rec_imu_tail_e_iir_a_z", "E Iir A Z", base.NONE, nil, nil, "iir_a_z/500")
+--f.rec_imu_tail_e_iir_wa_x = ProtoField.none ("dji_p3.rec_imu_tail_e_iir_wa_x", "E Iir Wa X", base.NONE, nil, nil, "iir_wa_x/100")
+--f.rec_imu_tail_e_iir_wa_y = ProtoField.none ("dji_p3.rec_imu_tail_e_iir_wa_y", "E Iir Wa Y", base.NONE, nil, nil, "iir_wa_y/100")
+--f.rec_imu_tail_e_iir_wa_z = ProtoField.none ("dji_p3.rec_imu_tail_e_iir_wa_z", "E Iir Wa Z", base.NONE, nil, nil, "iir_wa_z/100")
+
+local function flightrec_imu_tail_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_tail_raw_w_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_raw_w_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_raw_w_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_raw_a_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_raw_a_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_raw_a_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_raw_wa_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_raw_wa_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_raw_wa_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_iir_w_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_iir_w_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_iir_w_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_iir_a_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_iir_a_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_iir_a_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_iir_wa_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_iir_wa_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_iir_wa_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_tail_gyro_hf_cnt, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 40) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Tail: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Tail: Payload size different than expected") end
+end
+
+-- Flight log - Drv Log - 0xfffa
+
+f.rec_drv_log_text = ProtoField.string ("dji_p3.rec_drv_log_text", "Drv Log", base.ASCII)
+
+local function flightrec_drv_log_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add (f.rec_drv_log_text, payload(offset, payload:len() - offset))
+end
+
+-- Flight log - Asr - 0x0073
+
+f.rec_asr_lead = ProtoField.uint32 ("dji_p3.rec_asr_lead", "Lead", base.HEX)
+
+local function flightrec_asr_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_asr_lead, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Asr: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Asr: Payload size different than expected") end
+end
+
+-- Flight log - Imu Atti - 0x0001
+
+f.rec_imu_atti_longti = ProtoField.double ("dji_p3.rec_imu_atti_longti", "Longti", base.DEC)
+f.rec_imu_atti_lati = ProtoField.double ("dji_p3.rec_imu_atti_lati", "Lati", base.DEC)
+f.rec_imu_atti_alti = ProtoField.float ("dji_p3.rec_imu_atti_alti", "Alti", base.DEC)
+f.rec_imu_atti_acc_x = ProtoField.float ("dji_p3.rec_imu_atti_acc_x", "Acc X", base.DEC)
+f.rec_imu_atti_acc_y = ProtoField.float ("dji_p3.rec_imu_atti_acc_y", "Acc Y", base.DEC)
+f.rec_imu_atti_acc_z = ProtoField.float ("dji_p3.rec_imu_atti_acc_z", "Acc Z", base.DEC)
+f.rec_imu_atti_gyro_x = ProtoField.float ("dji_p3.rec_imu_atti_gyro_x", "Gyro X", base.DEC)
+f.rec_imu_atti_gyro_y = ProtoField.float ("dji_p3.rec_imu_atti_gyro_y", "Gyro Y", base.DEC)
+f.rec_imu_atti_gyro_z = ProtoField.float ("dji_p3.rec_imu_atti_gyro_z", "Gyro Z", base.DEC)
+f.rec_imu_atti_press = ProtoField.float ("dji_p3.rec_imu_atti_press", "Press", base.DEC)
+f.rec_imu_atti_q0 = ProtoField.float ("dji_p3.rec_imu_atti_q0", "Q0", base.DEC)
+f.rec_imu_atti_q1 = ProtoField.float ("dji_p3.rec_imu_atti_q1", "Q1", base.DEC)
+f.rec_imu_atti_q2 = ProtoField.float ("dji_p3.rec_imu_atti_q2", "Q2", base.DEC)
+f.rec_imu_atti_q3 = ProtoField.float ("dji_p3.rec_imu_atti_q3", "Q3", base.DEC)
+f.rec_imu_atti_ag_x = ProtoField.float ("dji_p3.rec_imu_atti_ag_x", "Ag X", base.DEC)
+f.rec_imu_atti_ag_y = ProtoField.float ("dji_p3.rec_imu_atti_ag_y", "Ag Y", base.DEC)
+f.rec_imu_atti_ag_z = ProtoField.float ("dji_p3.rec_imu_atti_ag_z", "Ag Z", base.DEC)
+f.rec_imu_atti_vg_x = ProtoField.float ("dji_p3.rec_imu_atti_vg_x", "Vg X", base.DEC)
+f.rec_imu_atti_vg_y = ProtoField.float ("dji_p3.rec_imu_atti_vg_y", "Vg Y", base.DEC)
+f.rec_imu_atti_vg_z = ProtoField.float ("dji_p3.rec_imu_atti_vg_z", "Vg Z", base.DEC)
+f.rec_imu_atti_gb_x = ProtoField.float ("dji_p3.rec_imu_atti_gb_x", "Gb X", base.DEC)
+f.rec_imu_atti_gb_y = ProtoField.float ("dji_p3.rec_imu_atti_gb_y", "Gb Y", base.DEC)
+f.rec_imu_atti_gb_z = ProtoField.float ("dji_p3.rec_imu_atti_gb_z", "Gb Z", base.DEC)
+f.rec_imu_atti_m_x = ProtoField.int16 ("dji_p3.rec_imu_atti_m_x", "M X", base.DEC)
+f.rec_imu_atti_m_y = ProtoField.int16 ("dji_p3.rec_imu_atti_m_y", "M Y", base.DEC)
+f.rec_imu_atti_m_z = ProtoField.int16 ("dji_p3.rec_imu_atti_m_z", "M Z", base.DEC)
+f.rec_imu_atti_temp_x = ProtoField.int16 ("dji_p3.rec_imu_atti_temp_x", "Temp X", base.DEC)
+f.rec_imu_atti_temp_y = ProtoField.int16 ("dji_p3.rec_imu_atti_temp_y", "Temp Y", base.DEC)
+f.rec_imu_atti_temp_z = ProtoField.int16 ("dji_p3.rec_imu_atti_temp_z", "Temp Z", base.DEC)
+f.rec_imu_atti_sensor_monitor = ProtoField.uint16 ("dji_p3.rec_imu_atti_sensor_monitor", "Sensor Monitor", base.HEX)
+f.rec_imu_atti_filter_status = ProtoField.uint16 ("dji_p3.rec_imu_atti_filter_status", "Filter Status", base.HEX)
+f.rec_imu_atti_svn = ProtoField.uint16 ("dji_p3.rec_imu_atti_svn", "Svn", base.HEX)
+f.rec_imu_atti_cnt_atti = ProtoField.uint16 ("dji_p3.rec_imu_atti_cnt_atti", "Cnt Atti", base.HEX)
+
+local function flightrec_imu_atti_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_atti_longti, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add_le (f.rec_imu_atti_0_lati0, payload(offset, 8))
+    subtree:add_le (f.rec_imu_atti_lati, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add_le (f.rec_imu_atti_0_press0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_alti, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_ax0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_acc_x, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_ay0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_acc_y, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_az0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_acc_z, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_wx0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_gyro_x, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_wy0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_gyro_y, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_wz0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_gyro_z, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_alti0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_press, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_qw0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_q0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_qx0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_q1, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_qy0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_q2, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_qz0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_q3, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_agx0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_ag_x, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_agy0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_ag_y, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_agz0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_ag_z, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_vgx0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_vg_x, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_vgy0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_vg_y, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_vgz0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_vg_z, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_gbx0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_gb_x, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_gby0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_gb_y, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_gbz0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_atti_gb_z, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_atti_0_mx0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_m_x, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_imu_atti_0_my0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_m_y, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_imu_atti_0_mz0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_m_z, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_imu_atti_0_tx0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_temp_x, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_imu_atti_0_ty0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_temp_y, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_imu_atti_0_tz0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_temp_z, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_imu_atti_0_sensor_stat0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_sensor_monitor, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_imu_atti_0_filter_stat0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_filter_status, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_imu_atti_0_svn0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_svn, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_imu_atti_0_atti_cnt0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_cnt_atti, payload(offset, 2))
     offset = offset + 2
 
-    if (offset ~= 120) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Atti 0: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Atti 0: Payload size different than expected") end
+    if (offset ~= 120) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Atti: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Atti: Payload size different than expected") end
 end
 
--- Flight log - unkn02 - 0x0002
+-- Flight log - Imu Ex - 0x0003
 
-f.rec_unkn02_arr0_0 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr0_0", "Arr0[0]", base.HEX)
-f.rec_unkn02_arr0_1 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr0_1", "Arr0[1]", base.HEX)
-f.rec_unkn02_arr0_2 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr0_2", "Arr0[2]", base.HEX)
-f.rec_unkn02_arr6_0 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr6_0", "Arr6[0]", base.HEX)
-f.rec_unkn02_arr6_1 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr6_1", "Arr6[1]", base.HEX)
-f.rec_unkn02_arr6_2 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr6_2", "Arr6[2]", base.HEX)
-f.rec_unkn02_arrc_0 = ProtoField.uint16 ("dji_p3.rec_unkn02_arrc_0", "ArrC[0]", base.HEX)
-f.rec_unkn02_arrc_1 = ProtoField.uint16 ("dji_p3.rec_unkn02_arrc_1", "ArrC[1]", base.HEX)
-f.rec_unkn02_arrc_2 = ProtoField.uint16 ("dji_p3.rec_unkn02_arrc_2", "ArrC[2]", base.HEX)
-f.rec_unkn02_arr12_0 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr12_0", "Arr12[0]", base.HEX)
-f.rec_unkn02_arr12_1 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr12_1", "Arr12[1]", base.HEX)
-f.rec_unkn02_arr12_2 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr12_2", "Arr12[2]", base.HEX)
-f.rec_unkn02_arr18_0 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr18_0", "Arr18[0]", base.HEX)
-f.rec_unkn02_arr18_1 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr18_1", "Arr18[1]", base.HEX)
-f.rec_unkn02_arr18_2 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr18_2", "Arr18[2]", base.HEX)
-f.rec_unkn02_arr1e_0 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr1e_0", "Arr1E[0]", base.HEX)
-f.rec_unkn02_arr1e_1 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr1e_1", "Arr1E[1]", base.HEX)
-f.rec_unkn02_arr1e_2 = ProtoField.uint16 ("dji_p3.rec_unkn02_arr1e_2", "Arr1E[2]", base.HEX)
-f.rec_unkn02_rt_cnt = ProtoField.uint32 ("dji_p3.rec_unkn02_rt_cnt", "RecType Seqence Count", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
+f.rec_imu_ex_vo_vx = ProtoField.float ("dji_p3.rec_imu_ex_vo_vx", "Vo Vx", base.DEC)
+f.rec_imu_ex_vo_vy = ProtoField.float ("dji_p3.rec_imu_ex_vo_vy", "Vo Vy", base.DEC)
+f.rec_imu_ex_vo_vz = ProtoField.float ("dji_p3.rec_imu_ex_vo_vz", "Vo Vz", base.DEC)
+f.rec_imu_ex_vo_px = ProtoField.float ("dji_p3.rec_imu_ex_vo_px", "Vo Px", base.DEC)
+f.rec_imu_ex_vo_py = ProtoField.float ("dji_p3.rec_imu_ex_vo_py", "Vo Py", base.DEC)
+f.rec_imu_ex_vo_pz = ProtoField.float ("dji_p3.rec_imu_ex_vo_pz", "Vo Pz", base.DEC)
+f.rec_imu_ex_us_v = ProtoField.float ("dji_p3.rec_imu_ex_us_v", "Us V", base.DEC)
+f.rec_imu_ex_us_p = ProtoField.float ("dji_p3.rec_imu_ex_us_p", "Us P", base.DEC)
+f.rec_imu_ex_rtk_longti = ProtoField.double ("dji_p3.rec_imu_ex_rtk_longti", "Rtk Longti", base.DEC)
+f.rec_imu_ex_rtk_lati = ProtoField.double ("dji_p3.rec_imu_ex_rtk_lati", "Rtk Lati", base.DEC)
+f.rec_imu_ex_rtk_alti = ProtoField.float ("dji_p3.rec_imu_ex_rtk_alti", "Rtk Alti", base.DEC)
+f.rec_imu_ex_vo_flag_navi = ProtoField.uint16 ("dji_p3.rec_imu_ex_vo_flag_navi", "Vo Flag Navi", base.HEX)
+  f.rec_imu_ex_e_vo_flag_navi_vo_vx = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_vo_vx", "E Vo Flag Navi Vo Vx", base.HEX, nil, 0x01, nil)
+  f.rec_imu_ex_e_vo_flag_navi_vo_vy = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_vo_vy", "E Vo Flag Navi Vo Vy", base.HEX, nil, 0x02, nil)
+  f.rec_imu_ex_e_vo_flag_navi_vo_vz = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_vo_vz", "E Vo Flag Navi Vo Vz", base.HEX, nil, 0x04, nil)
+  f.rec_imu_ex_e_vo_flag_navi_vo_px = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_vo_px", "E Vo Flag Navi Vo Px", base.HEX, nil, 0x08, nil)
+  f.rec_imu_ex_e_vo_flag_navi_vo_py = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_vo_py", "E Vo Flag Navi Vo Py", base.HEX, nil, 0x10, nil)
+  f.rec_imu_ex_e_vo_flag_navi_vo_pz = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_vo_pz", "E Vo Flag Navi Vo Pz", base.HEX, nil, 0x20, nil)
+  f.rec_imu_ex_e_vo_flag_navi_us_vz = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_us_vz", "E Vo Flag Navi Us Vz", base.HEX, nil, 0x40, nil)
+  f.rec_imu_ex_e_vo_flag_navi_us_pz = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_us_pz", "E Vo Flag Navi Us Pz", base.HEX, nil, 0x80, nil)
+f.rec_imu_ex_imu_err_flag = ProtoField.uint16 ("dji_p3.rec_imu_ex_imu_err_flag", "Imu Err Flag", base.HEX)
+  f.rec_imu_ex_e_imu_err_vg_large = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_imu_err_vg_large", "E Imu Err Vg Large", base.HEX, nil, 0x01, nil)
+  f.rec_imu_ex_e_imu_err_gps_yaw = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_imu_err_gps_yaw", "E Imu Err Gps Yaw", base.HEX, nil, 0x02, nil)
+  f.rec_imu_ex_e_imu_err_mag_yaw = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_imu_err_mag_yaw", "E Imu Err Mag Yaw", base.HEX, nil, 0x04, nil)
+  f.rec_imu_ex_e_imu_err_gps_consist = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_imu_err_gps_consist", "E Imu Err Gps Consist", base.HEX, nil, 0x08, nil)
+  f.rec_imu_ex_e_imu_err_us_fail = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_imu_err_us_fail", "E Imu Err Us Fail", base.HEX, nil, 0x10, nil)
+  f.rec_imu_ex_e_imu_init_ok_flag = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_imu_init_ok_flag", "E Imu Init Ok Flag", base.HEX, nil, 0x20, nil)
+f.rec_imu_ex_vo_flag_rsv = ProtoField.uint16 ("dji_p3.rec_imu_ex_vo_flag_rsv", "Vo Flag Rsv", base.HEX)
+f.rec_imu_ex_imu_ex_cnt = ProtoField.uint16 ("dji_p3.rec_imu_ex_imu_ex_cnt", "Imu Ex Cnt", base.HEX)
 
-local function flightrec_unkn02_dissector(payload, pinfo, subtree)
+local function flightrec_imu_ex_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add_le (f.rec_unkn02_arr0_0, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr0_1, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr0_2, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr6_0, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr6_1, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr6_2, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arrc_0, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arrc_1, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arrc_2, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr12_0, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr12_1, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr12_2, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr18_0, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr18_1, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr18_2, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr1e_0, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr1e_1, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_arr1e_2, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn02_rt_cnt, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_vo_vx, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 40) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn02: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn02: Payload size different than expected") end
-end
-
--- Flight log - unkn03 - 0x0003
-
-f.rec_unkn03_fld0 = ProtoField.uint32 ("dji_p3.rec_unkn03_fld0", "Field0", base.HEX)
-f.rec_unkn03_fld4 = ProtoField.uint32 ("dji_p3.rec_unkn03_fld4", "Field4", base.HEX)
-f.rec_unkn03_fld8 = ProtoField.uint32 ("dji_p3.rec_unkn03_fld8", "Field8", base.HEX)
-f.rec_unkn03_fldc = ProtoField.uint32 ("dji_p3.rec_unkn03_fldc", "FieldC", base.HEX)
-f.rec_unkn03_fld10 = ProtoField.uint32 ("dji_p3.rec_unkn03_fld10", "Field10", base.HEX)
-f.rec_unkn03_fld14 = ProtoField.uint32 ("dji_p3.rec_unkn03_fld14", "Field14", base.HEX)
-f.rec_unkn03_fld18 = ProtoField.uint32 ("dji_p3.rec_unkn03_fld18", "Field18", base.HEX)
-f.rec_unkn03_fld1c = ProtoField.float ("dji_p3.rec_unkn03_fld1c", "Field1C", base.HEX)
-f.rec_unkn03_fld20 = ProtoField.uint16 ("dji_p3.rec_unkn03_fld20", "Field20", base.HEX)
-f.rec_unkn03_fld22 = ProtoField.uint16 ("dji_p3.rec_unkn03_fld22", "Field22", base.HEX)
-f.rec_unkn03_fld24 = ProtoField.uint16 ("dji_p3.rec_unkn03_fld24", "Field24", base.HEX)
-f.rec_unkn03_rt_cnt = ProtoField.uint16 ("dji_p3.rec_unkn03_rt_cnt", "RecType Seqence Count", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
-f.rec_unkn03_fld28 = ProtoField.uint16 ("dji_p3.rec_unkn03_fld28", "Field28", base.HEX)
-
-local function flightrec_unkn03_dissector(payload, pinfo, subtree)
-    local offset = 0
-
-    subtree:add_le (f.rec_unkn03_fld0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_vo_vy, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_unkn03_fld4, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_vo_vz, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_unkn03_fld8, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_vo_px, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_unkn03_fldc, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_vo_py, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_unkn03_fld10, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_vo_pz, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_unkn03_fld14, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_us_v, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_unkn03_fld18, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_us_p, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_unkn03_fld1c, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn03_fld20, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn03_fld22, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn03_fld24, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn03_rt_cnt, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn03_fld28, payload(offset, 2))
-    offset = offset + 2
-
-    if (offset ~= 42) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn03: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn03: Payload size different than expected") end
-end
-
--- Flight log - unkn04 - 0x0004
-
-f.rec_unkn04_fld0 = ProtoField.uint16 ("dji_p3.rec_unkn04_fld0", "Field0", base.HEX)
-f.rec_unkn04_fld2 = ProtoField.uint16 ("dji_p3.rec_unkn04_fld2", "Field2", base.HEX)
-f.rec_unkn04_fld4 = ProtoField.uint16 ("dji_p3.rec_unkn04_fld4", "Field4", base.HEX)
-f.rec_unkn04_fld6 = ProtoField.uint16 ("dji_p3.rec_unkn04_fld6", "Field6", base.HEX)
-
-local function flightrec_unkn04_dissector(payload, pinfo, subtree)
-    local offset = 0
-
-    subtree:add_le (f.rec_unkn04_fld0, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn04_fld2, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn04_fld4, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn04_fld6, payload(offset, 2))
-    offset = offset + 2
-
-    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn04: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn04: Payload size different than expected") end
-end
-
--- Flight log - unkn05 - 0x0005
-
-f.rec_unkn05_fld0 = ProtoField.uint32 ("dji_p3.rec_unkn05_fld0", "Field0", base.HEX)
-f.rec_unkn05_fld4 = ProtoField.uint32 ("dji_p3.rec_unkn05_fld4", "Field4", base.HEX)
-f.rec_unkn05_fld8 = ProtoField.uint32 ("dji_p3.rec_unkn05_fld8", "Field8", base.HEX)
-f.rec_unkn05_fldc = ProtoField.uint32 ("dji_p3.rec_unkn05_fldc", "FieldC", base.HEX)
-f.rec_unkn05_fld10 = ProtoField.float ("dji_p3.rec_unkn05_fld10", "Field10", base.HEX)
-f.rec_unkn05_fld14 = ProtoField.float ("dji_p3.rec_unkn05_fld14", "Field14", base.HEX)
-f.rec_unkn05_fld18 = ProtoField.float ("dji_p3.rec_unkn05_fld18", "Field18", base.HEX)
-f.rec_unkn05_fld1c = ProtoField.float ("dji_p3.rec_unkn05_fld1c", "Field1C", base.HEX)
-f.rec_unkn05_gps_hdop = ProtoField.uint32 ("dji_p3.rec_unkn05_gps_hdop", "Gps Hdop", base.HEX)
-f.rec_unkn05_fld24 = ProtoField.uint32 ("dji_p3.rec_unkn05_fld24", "Field24", base.HEX)
-f.rec_unkn05_fld28 = ProtoField.uint32 ("dji_p3.rec_unkn05_fld28", "Field28", base.HEX)
-f.rec_unkn05_fld2c = ProtoField.uint32 ("dji_p3.rec_unkn05_fld2c", "Field2C", base.HEX)
-f.rec_unkn05_fld30 = ProtoField.uint32 ("dji_p3.rec_unkn05_fld30", "Field30", base.HEX)
-f.rec_unkn05_fld34 = ProtoField.uint32 ("dji_p3.rec_unkn05_fld34", "Field34", base.HEX)
-f.rec_unkn05_gps_strng = ProtoField.uint32 ("dji_p3.rec_unkn05_gps_strng", "Gps Strength", base.HEX)
-f.rec_unkn05_fld3c = ProtoField.uint32 ("dji_p3.rec_unkn05_fld3c", "Field3C", base.HEX)
-f.rec_unkn05_num_sats = ProtoField.int16 ("dji_p3.rec_unkn05_num_sats", "Positioning Satellites Count", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
-f.rec_unkn05_rt_cnt = ProtoField.uint16 ("dji_p3.rec_unkn05_rt_cnt", "RecType Seqence Count", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
-
-local function flightrec_unkn05_dissector(payload, pinfo, subtree)
-    local offset = 0
-
-    subtree:add_le (f.rec_unkn05_fld0, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fld4, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fld8, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fldc, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fld10, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fld14, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fld18, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fld1c, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_gps_hdop, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fld24, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fld28, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fld2c, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fld30, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fld34, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_gps_strng, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_fld3c, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_unkn05_num_sats, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn05_rt_cnt, payload(offset, 2))
-    offset = offset + 2
-
-    if (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn05: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn05: Payload size different than expected") end
-end
-
--- Flight log - Imu Data - 0x0007
-
-f.rec_imu_data_gyro_tempx = ProtoField.float ("dji_p3.rec_imu_data_gyro_tempx", "Gyro Temp X", base.DEC)
-f.rec_imu_data_gyro_tempy = ProtoField.float ("dji_p3.rec_imu_data_gyro_tempy", "Gyro Temp Y", base.DEC)
-f.rec_imu_data_gyro_tempz = ProtoField.float ("dji_p3.rec_imu_data_gyro_tempz", "Gyro Temp Z", base.DEC)
-
-local function flightrec_imu_data_dissector(payload, pinfo, subtree)
-    local offset = 0
-
-    subtree:add_le (f.rec_imu_data_gyro_tempx, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_imu_data_gyro_tempy, payload(offset, 4))
-    offset = offset + 4
-
-    subtree:add_le (f.rec_imu_data_gyro_tempz, payload(offset, 4))
-    offset = offset + 4
-
-    offset = offset + 36
-
-    if (offset ~= 48) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Data: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Data: Payload size different than expected") end
-end
-
--- Flight log - Telemetry - 0x000c
-
-f.rec_telemetry_lon = ProtoField.double ("dji_p3.rec_telemetry_lon", "Longitude", base.DEC)
-f.rec_telemetry_lat = ProtoField.double ("dji_p3.rec_telemetry_lat", "Latitude", base.DEC)
-f.rec_telemetry_height = ProtoField.int16 ("dji_p3.rec_telemetry_height", "Height", base.DEC, nil, nil, "Equal to g_real.imu.field_18 * 10")
-f.rec_telemetry_unkn18 = ProtoField.int16 ("dji_p3.rec_telemetry_unkn18", "Unkn18", base.DEC, nil, nil, "Equal to g_real.imu.field_38 * 10")
-f.rec_telemetry_unkn20 = ProtoField.int16 ("dji_p3.rec_telemetry_unkn20", "Unkn20", base.DEC, nil, nil, "Equal to g_real.imu.field_3C * 10")
-f.rec_telemetry_unkn22 = ProtoField.int16 ("dji_p3.rec_telemetry_unkn22", "Unkn22", base.DEC, nil, nil, "Equal to g_real.imu.field_40 * 10")
-f.rec_telemetry_pitch = ProtoField.int16 ("dji_p3.rec_telemetry_pitch", "Pitch", base.DEC)
-f.rec_telemetry_roll = ProtoField.int16 ("dji_p3.rec_telemetry_roll", "Roll", base.DEC)
-f.rec_telemetry_yaw = ProtoField.int16 ("dji_p3.rec_telemetry_yaw", "Yaw", base.DEC)
-f.rec_telemetry_flyc_st = ProtoField.int8 ("dji_p3.rec_telemetry_flyc_st", "Flight Ctrl State", base.DEC)
-f.rec_telemetry_app_func_cmd = ProtoField.int8 ("dji_p3.rec_telemetry_app_func_cmd", "App Function Command", base.DEC)
-f.rec_telemetry_flags1 = ProtoField.uint32 ("dji_p3.rec_telemetry_flags1", "Flags1", base.HEX)
-f.rec_telemetry_num_sats = ProtoField.int8 ("dji_p3.rec_telemetry_num_sats", "Positioning Satellites Count", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
-f.rec_telemetry_fld25 = ProtoField.int8 ("dji_p3.rec_telemetry_fld25", "Field25", base.DEC)
-f.rec_telemetry_fld26 = ProtoField.int8 ("dji_p3.rec_telemetry_fld26", "Field26", base.DEC)
-f.rec_telemetry_fld27 = ProtoField.int8 ("dji_p3.rec_telemetry_fld27", "Field27", base.DEC)
-f.rec_telemetry_batt_rmcap = ProtoField.int8 ("dji_p3.rec_telemetry_batt_rmcap", "Battery Remaining Capacity", base.DEC)
-f.rec_telemetry_fld29 = ProtoField.int8 ("dji_p3.rec_telemetry_fld29", "Field29", base.DEC)
-f.rec_telemetry_fly_time = ProtoField.int16 ("dji_p3.rec_telemetry_fly_time", "Flight Time", base.DEC)
-f.rec_telemetry_fld2C = ProtoField.int8 ("dji_p3.rec_telemetry_fld2C", "Field2C", base.DEC)
-f.rec_telemetry_lv1_ve = ProtoField.uint8 ("dji_p3.rec_telemetry_lv1_ve", "Level 1 Voltage", base.DEC, nil, 0x7F)
-f.rec_telemetry_lv1_fn = ProtoField.uint8 ("dji_p3.rec_telemetry_lv1_fn", "Level 1 Function", base.DEC, nil, 0x80)
-f.rec_telemetry_lv2_ve = ProtoField.uint8 ("dji_p3.rec_telemetry_lv2_ve", "Level 2 Voltage", base.DEC, nil, 0x7F)
-f.rec_telemetry_lv2_fn = ProtoField.uint8 ("dji_p3.rec_telemetry_lv2_fn", "Level 2 Function", base.DEC, nil, 0x80)
-f.rec_telemetry_fld2F = ProtoField.int8 ("dji_p3.rec_telemetry_fld2F", "Field2F", base.DEC)
-f.rec_telemetry_fld30 = ProtoField.int8 ("dji_p3.rec_telemetry_fld30", "Field30", base.DEC)
-f.rec_telemetry_fld31 = ProtoField.int8 ("dji_p3.rec_telemetry_fld31", "Field31", base.DEC)
-
-local function flightrec_telemetry_dissector(payload, pinfo, subtree)
-    local offset = 0
-
-    subtree:add_le (f.rec_telemetry_lon, payload(offset, 8))
+    subtree:add_le (f.rec_imu_ex_rtk_longti, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add_le (f.rec_telemetry_lat, payload(offset, 8))
+    subtree:add_le (f.rec_imu_ex_rtk_lati, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add_le (f.rec_telemetry_height, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_telemetry_unkn18, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_telemetry_unkn20, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_telemetry_unkn22, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_telemetry_pitch, payload(offset, 2))
-    offset = offset + 2 -- = 0x1a
-
-    subtree:add_le (f.rec_telemetry_roll, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_telemetry_yaw, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_telemetry_flyc_st, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_telemetry_app_func_cmd, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_telemetry_flags1, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_rtk_alti, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_telemetry_num_sats, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_telemetry_fld25, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_telemetry_fld26, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_telemetry_fld27, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_telemetry_batt_rmcap, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_telemetry_fld29, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_telemetry_fly_time, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_vo_flag_navi, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_vo_flag_navi_vo_vx, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_vo_flag_navi_vo_vy, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_vo_flag_navi_vo_vz, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_vo_flag_navi_vo_px, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_vo_flag_navi_vo_py, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_vo_flag_navi_vo_pz, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_vo_flag_navi_us_vz, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_vo_flag_navi_us_pz, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_telemetry_fld2C, payload(offset, 1))
-    offset = offset + 1
+    subtree:add_le (f.rec_imu_ex_imu_err_flag, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_imu_err_vg_large, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_imu_err_gps_yaw, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_imu_err_mag_yaw, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_imu_err_gps_consist, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_imu_err_us_fail, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_e_imu_init_ok_flag, payload(offset, 2))
+    offset = offset + 2
 
-    subtree:add_le (f.rec_telemetry_lv1_ve, payload(offset, 1))
-    subtree:add_le (f.rec_telemetry_lv1_fn, payload(offset, 1))
-    offset = offset + 1
+    subtree:add_le (f.rec_imu_ex_vo_flag_rsv, payload(offset, 2))
+    offset = offset + 2
 
-    subtree:add_le (f.rec_telemetry_lv2_ve, payload(offset, 1))
-    subtree:add_le (f.rec_telemetry_lv2_fn, payload(offset, 1))
-    offset = offset + 1
+    subtree:add_le (f.rec_imu_ex_imu_ex_cnt, payload(offset, 2))
+    offset = offset + 2
 
-    subtree:add_le (f.rec_telemetry_fld2F, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_telemetry_fld30, payload(offset, 1)) -- hard-coded to 2
-    offset = offset + 1
-
-    subtree:add_le (f.rec_telemetry_fld31, payload(offset, 1))
-    offset = offset + 1
-
-    if (offset ~= 50) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Telemetry: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Telemetry: Payload size different than expected") end
+    if (offset ~= 60) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Ex: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Ex: Payload size different than expected") end
 end
 
--- Flight log - unkn0D - 0x000d
+-- Flight log - Imu Tail 00 - 0x0820
 
-f.rec_unkn0D_lon = ProtoField.double ("dji_p3.rec_unkn0D_lon", "Longitude", base.DEC)
-f.rec_unkn0D_lat = ProtoField.double ("dji_p3.rec_unkn0D_lat", "Latitude", base.DEC)
+f.rec_imu_tail_00_wa_x_00 = ProtoField.float ("dji_p3.rec_imu_tail_00_wa_x_00", "Wa X 00", base.DEC)
+f.rec_imu_tail_00_wa_y_00 = ProtoField.float ("dji_p3.rec_imu_tail_00_wa_y_00", "Wa Y 00", base.DEC)
+f.rec_imu_tail_00_wa_z_00 = ProtoField.float ("dji_p3.rec_imu_tail_00_wa_z_00", "Wa Z 00", base.DEC)
+f.rec_imu_tail_00_w_x_00 = ProtoField.float ("dji_p3.rec_imu_tail_00_w_x_00", "W X 00", base.DEC)
+f.rec_imu_tail_00_w_y_00 = ProtoField.float ("dji_p3.rec_imu_tail_00_w_y_00", "W Y 00", base.DEC)
+f.rec_imu_tail_00_w_z_00 = ProtoField.float ("dji_p3.rec_imu_tail_00_w_z_00", "W Z 00", base.DEC)
 
-local function flightrec_unkn0D_dissector(payload, pinfo, subtree)
+local function flightrec_imu_tail_00_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add_le (f.rec_unkn0D_lon, payload(offset, 8))
+    subtree:add_le (f.rec_imu_tail_00_wa_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_00_wa_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_00_wa_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_00_w_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_00_w_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_00_w_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Tail 00: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Tail 00: Payload size different than expected") end
+end
+
+-- Flight log - Imu Atti 00 - 0x0800
+
+f.rec_imu_atti_00_longti_00 = ProtoField.double ("dji_p3.rec_imu_atti_00_longti_00", "Longti 00", base.DEC)
+f.rec_imu_atti_00_lati_00 = ProtoField.double ("dji_p3.rec_imu_atti_00_lati_00", "Lati 00", base.DEC)
+f.rec_imu_atti_00_alti_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_alti_00", "Alti 00", base.DEC)
+f.rec_imu_atti_00_acc_x_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_acc_x_00", "Acc X 00", base.DEC)
+f.rec_imu_atti_00_acc_y_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_acc_y_00", "Acc Y 00", base.DEC)
+f.rec_imu_atti_00_acc_z_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_acc_z_00", "Acc Z 00", base.DEC)
+f.rec_imu_atti_00_gyro_x_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_gyro_x_00", "Gyro X 00", base.DEC)
+f.rec_imu_atti_00_gyro_y_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_gyro_y_00", "Gyro Y 00", base.DEC)
+f.rec_imu_atti_00_gyro_z_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_gyro_z_00", "Gyro Z 00", base.DEC)
+f.rec_imu_atti_00_press_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_press_00", "Press 00", base.DEC)
+f.rec_imu_atti_00_q0_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_q0_00", "Q0 00", base.DEC)
+f.rec_imu_atti_00_q1_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_q1_00", "Q1 00", base.DEC)
+f.rec_imu_atti_00_q2_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_q2_00", "Q2 00", base.DEC)
+f.rec_imu_atti_00_q3_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_q3_00", "Q3 00", base.DEC)
+f.rec_imu_atti_00_ag_x_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_ag_x_00", "Ag X 00", base.DEC)
+f.rec_imu_atti_00_ag_y_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_ag_y_00", "Ag Y 00", base.DEC)
+f.rec_imu_atti_00_ag_z_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_ag_z_00", "Ag Z 00", base.DEC)
+f.rec_imu_atti_00_vg_x_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_vg_x_00", "Vg X 00", base.DEC)
+f.rec_imu_atti_00_vg_y_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_vg_y_00", "Vg Y 00", base.DEC)
+f.rec_imu_atti_00_vg_z_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_vg_z_00", "Vg Z 00", base.DEC)
+f.rec_imu_atti_00_gb_x_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_gb_x_00", "Gb X 00", base.DEC)
+f.rec_imu_atti_00_gb_y_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_gb_y_00", "Gb Y 00", base.DEC)
+f.rec_imu_atti_00_gb_z_00 = ProtoField.float ("dji_p3.rec_imu_atti_00_gb_z_00", "Gb Z 00", base.DEC)
+f.rec_imu_atti_00_m_x_00 = ProtoField.int16 ("dji_p3.rec_imu_atti_00_m_x_00", "M X 00", base.DEC)
+f.rec_imu_atti_00_m_y_00 = ProtoField.int16 ("dji_p3.rec_imu_atti_00_m_y_00", "M Y 00", base.DEC)
+f.rec_imu_atti_00_m_z_00 = ProtoField.int16 ("dji_p3.rec_imu_atti_00_m_z_00", "M Z 00", base.DEC)
+f.rec_imu_atti_00_temp_x_00 = ProtoField.int16 ("dji_p3.rec_imu_atti_00_temp_x_00", "Temp X 00", base.DEC)
+f.rec_imu_atti_00_temp_y_00 = ProtoField.int16 ("dji_p3.rec_imu_atti_00_temp_y_00", "Temp Y 00", base.DEC)
+f.rec_imu_atti_00_temp_z_00 = ProtoField.int16 ("dji_p3.rec_imu_atti_00_temp_z_00", "Temp Z 00", base.DEC)
+f.rec_imu_atti_00_sensor_monitor_00 = ProtoField.uint16 ("dji_p3.rec_imu_atti_00_sensor_monitor_00", "Sensor Monitor 00", base.HEX)
+f.rec_imu_atti_00_filter_status_00 = ProtoField.uint16 ("dji_p3.rec_imu_atti_00_filter_status_00", "Filter Status 00", base.HEX)
+f.rec_imu_atti_00_svn_00 = ProtoField.uint16 ("dji_p3.rec_imu_atti_00_svn_00", "Svn 00", base.HEX)
+f.rec_imu_atti_00_cnt_atti_00 = ProtoField.uint16 ("dji_p3.rec_imu_atti_00_cnt_atti_00", "Cnt Atti 00", base.HEX)
+--f.rec_imu_atti_00_e_mod_m_00 = ProtoField.none ("dji_p3.rec_imu_atti_00_e_mod_m_00", "E Mod M 00", base.NONE, nil, nil, "sqrt(m_x_00*m_x_00+m_y_00*m_y_00+m_z_00*m_z_00)")
+--f.rec_imu_atti_00_e_pitch_00 = ProtoField.none ("dji_p3.rec_imu_atti_00_e_pitch_00", "E Pitch 00", base.NONE, nil, nil, "-asin_x(2*(q1_00*q3_00-q0_00*q2_00))/3.1415926*180")
+--f.rec_imu_atti_00_e_roll_00 = ProtoField.none ("dji_p3.rec_imu_atti_00_e_roll_00", "E Roll 00", base.NONE, nil, nil, "atan2(2*(q2_00*q3_00+q0_00*q1_00),1-2*(q1_00*q1_00+q2_00*q2_00))/3.1415926*180")
+--f.rec_imu_atti_00_e_yaw_00 = ProtoField.none ("dji_p3.rec_imu_atti_00_e_yaw_00", "E Yaw 00", base.NONE, nil, nil, "atan2(2*(q1_00*q2_00+q0_00*q3_00),1-2*(q2_00*q2_00+q3_00*q3_00))/3.1415926*180")
+--f.rec_imu_atti_00_e_yaw_from_m_00 = ProtoField.none ("dji_p3.rec_imu_atti_00_e_yaw_from_m_00", "E Yaw From M 00", base.NONE, nil, nil, "atan2(-(m_y_00*cos(E_roll_00/57.29578)-m_z_00*sin(E_roll_00/57.29578)),m_x_00*cos(E_pitch_00/57.29578)+m_y_00*sin(E_pitch_00/57.29578)*sin(E_roll_00/57.29578)+m_z_00*sin(E_pitch_00/57.29578)*cos(E_roll_00/57.29578))*180/3.14159265")
+
+local function flightrec_imu_atti_00_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_atti_00_longti_00, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add_le (f.rec_unkn0D_lat, payload(offset, 8))
+    subtree:add_le (f.rec_imu_atti_00_lati_00, payload(offset, 8))
     offset = offset + 8
 
-    offset = offset + 18
+    subtree:add_le (f.rec_imu_atti_00_alti_00, payload(offset, 4))
+    offset = offset + 4
 
-    if (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn0D: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn0D: Payload size different than expected") end
+    subtree:add_le (f.rec_imu_atti_00_acc_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_acc_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_acc_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_gyro_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_gyro_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_gyro_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_press_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_q0_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_q1_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_q2_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_q3_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_ag_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_ag_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_ag_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_vg_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_vg_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_vg_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_gb_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_gb_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_gb_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_00_m_x_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_00_m_y_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_00_m_z_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_00_temp_x_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_00_temp_y_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_00_temp_z_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_00_sensor_monitor_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_00_filter_status_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_00_svn_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_00_cnt_atti_00, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 120) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Atti 00: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Atti 00: Payload size different than expected") end
 end
 
--- Flight log - Battery Info - 0x0011
+-- Flight log - Imu Ex 00 - 0x0810
 
-f.rec_battery_info_dsg_cap = ProtoField.uint16 ("dji_p3.rec_battery_info_dsg_cap", "Design Capacity", base.DEC)
-f.rec_battery_info_f_cap = ProtoField.uint16 ("dji_p3.rec_battery_info_f_cap", "Full Charge Cap", base.DEC)
-f.rec_battery_info_r_cap = ProtoField.uint16 ("dji_p3.rec_battery_info_r_cap", "Remain Cap", base.DEC)
-f.rec_battery_info_pack_ve = ProtoField.uint16 ("dji_p3.rec_battery_info_pack_ve", "Pack Voltage", base.DEC)
-f.rec_battery_info_i = ProtoField.int16 ("dji_p3.rec_battery_info_i", "Current", base.DEC)
-f.rec_battery_info_life_per = ProtoField.uint8 ("dji_p3.rec_battery_info_life_per", "Life Percentage", base.DEC)
-f.rec_battery_info_cap_per = ProtoField.uint8 ("dji_p3.rec_battery_info_cap_per", "Capacity Percentage", base.DEC)
-f.rec_battery_info_temp = ProtoField.int16 ("dji_p3.rec_battery_info_temp", "Temperature", base.DEC)
-f.rec_battery_info_chrg_cnt = ProtoField.uint16 ("dji_p3.rec_battery_info_chrg_cnt", "Charge Cycle Count", base.DEC)
-f.rec_battery_info_sn = ProtoField.uint16 ("dji_p3.rec_battery_info_sn", "Serial Number", base.HEX)
-f.rec_battery_info_cell_ve_1 = ProtoField.uint16 ("dji_p3.rec_battery_cell_ve_1", "Cell 1 Voltage", base.DEC)
-f.rec_battery_info_cell_ve_2 = ProtoField.uint16 ("dji_p3.rec_battery_cell_ve_2", "Cell 2 Voltage", base.DEC)
-f.rec_battery_info_cell_ve_3 = ProtoField.uint16 ("dji_p3.rec_battery_cell_ve_3", "Cell 3 Voltage", base.DEC)
-f.rec_battery_info_cell_ve_4 = ProtoField.uint16 ("dji_p3.rec_battery_cell_ve_4", "Cell 4 Voltage", base.DEC)
-f.rec_battery_info_cell_ve_5 = ProtoField.uint16 ("dji_p3.rec_battery_cell_ve_5", "Cell 5 Voltage", base.DEC)
-f.rec_battery_info_cell_ve_6 = ProtoField.uint16 ("dji_p3.rec_battery_cell_ve_6", "Cell 6 Voltage", base.DEC)
-f.rec_battery_info_ave_i = ProtoField.int16 ("dji_p3.rec_battery_info_ave_i", "Average Current", base.DEC)
-f.rec_battery_info_right = ProtoField.uint8 ("dji_p3.rec_battery_info_right", "Right", base.HEX)
-f.rec_battery_info_err_cnt = ProtoField.uint8 ("dji_p3.rec_battery_info_err_cnt", "Error Count", base.DEC)
-f.rec_battery_info_unkn22 = ProtoField.uint8 ("dji_p3.rec_battery_info_unkn22", "Unkn22", base.HEX)
-f.rec_battery_info_unkn23 = ProtoField.uint16 ("dji_p3.rec_battery_info_unkn23", "Unkn23", base.HEX)
-f.rec_battery_info_disch_cnt = ProtoField.uint32 ("dji_p3.rec_battery_info_disch_cnt", "Discharge Times Count", base.DEC)
-f.rec_battery_info_unkn29 = ProtoField.int32 ("dji_p3.rec_battery_info_unkn29", "unkn29", base.DEC)
+f.rec_imu_ex_00_vo_vx_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_vo_vx_00", "Vo Vx 00", base.DEC)
+f.rec_imu_ex_00_vo_vy_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_vo_vy_00", "Vo Vy 00", base.DEC)
+f.rec_imu_ex_00_vo_vz_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_vo_vz_00", "Vo Vz 00", base.DEC)
+f.rec_imu_ex_00_vo_px_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_vo_px_00", "Vo Px 00", base.DEC)
+f.rec_imu_ex_00_vo_py_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_vo_py_00", "Vo Py 00", base.DEC)
+f.rec_imu_ex_00_vo_pz_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_vo_pz_00", "Vo Pz 00", base.DEC)
+f.rec_imu_ex_00_us_v_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_us_v_00", "Us V 00", base.DEC)
+f.rec_imu_ex_00_us_p_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_us_p_00", "Us P 00", base.DEC)
+f.rec_imu_ex_00_vo_flag_navi_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_vo_flag_navi_00", "Vo Flag Navi 00", base.HEX)
+  f.rec_imu_ex_00_e_vo_flag_navi_vo_vx_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_vo_vx_00", "E Vo Flag Navi Vo Vx 00", base.HEX, nil, 0x01, nil)
+  f.rec_imu_ex_00_e_vo_flag_navi_vo_vy_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_vo_vy_00", "E Vo Flag Navi Vo Vy 00", base.HEX, nil, 0x02, nil)
+  f.rec_imu_ex_00_e_vo_flag_navi_vo_vz_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_vo_vz_00", "E Vo Flag Navi Vo Vz 00", base.HEX, nil, 0x04, nil)
+  f.rec_imu_ex_00_e_vo_flag_navi_vo_px_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_vo_px_00", "E Vo Flag Navi Vo Px 00", base.HEX, nil, 0x08, nil)
+  f.rec_imu_ex_00_e_vo_flag_navi_vo_py_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_vo_py_00", "E Vo Flag Navi Vo Py 00", base.HEX, nil, 0x10, nil)
+  f.rec_imu_ex_00_e_vo_flag_navi_vo_pz_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_vo_pz_00", "E Vo Flag Navi Vo Pz 00", base.HEX, nil, 0x20, nil)
+  f.rec_imu_ex_00_e_vo_flag_navi_us_vz_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_us_vz_00", "E Vo Flag Navi Us Vz 00", base.HEX, nil, 0x40, nil)
+  f.rec_imu_ex_00_e_vo_flag_navi_us_pz_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_us_pz_00", "E Vo Flag Navi Us Pz 00", base.HEX, nil, 0x80, nil)
+f.rec_imu_ex_00_imu_err_flag_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_imu_err_flag_00", "Imu Err Flag 00", base.HEX)
+  f.rec_imu_ex_00_e_imu_err_vg_large_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_imu_err_vg_large_00", "E Imu Err Vg Large 00", base.HEX, nil, 0x01, nil)
+  f.rec_imu_ex_00_e_imu_err_gps_yaw_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_imu_err_gps_yaw_00", "E Imu Err Gps Yaw 00", base.HEX, nil, 0x02, nil)
+  f.rec_imu_ex_00_e_imu_err_mag_yaw_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_imu_err_mag_yaw_00", "E Imu Err Mag Yaw 00", base.HEX, nil, 0x04, nil)
+  f.rec_imu_ex_00_e_imu_err_gps_consist_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_imu_err_gps_consist_00", "E Imu Err Gps Consist 00", base.HEX, nil, 0x08, nil)
+  f.rec_imu_ex_00_e_imu_err_us_fail_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_imu_err_us_fail_00", "E Imu Err Us Fail 00", base.HEX, nil, 0x10, nil)
+  f.rec_imu_ex_00_e_imu_err_init_ok_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_imu_err_init_ok_00", "E Imu Err Init Ok 00", base.HEX, nil, 0x20, nil)
+f.rec_imu_ex_00_vo_flag_rsv_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_vo_flag_rsv_00", "Vo Flag Rsv 00", base.HEX)
+f.rec_imu_ex_00_imu_ex_cnt_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_imu_ex_cnt_00", "Imu Ex Cnt 00", base.HEX)
 
-local function flightrec_battery_info_dissector(payload, pinfo, subtree)
+local function flightrec_imu_ex_00_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add_le (f.rec_battery_info_dsg_cap, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_f_cap, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_r_cap, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_pack_ve, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_i, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_life_per, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_battery_info_cap_per, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_battery_info_temp, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_chrg_cnt, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_sn, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_cell_ve_1, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_cell_ve_2, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_cell_ve_3, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_cell_ve_4, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_cell_ve_5, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_cell_ve_6, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_ave_i, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_right, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_battery_info_err_cnt, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_battery_info_unkn22, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_battery_info_unkn23, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_battery_info_disch_cnt, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_00_vo_vx_00, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_battery_info_unkn29, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_00_vo_vy_00, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 45) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Info: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Battery Info: Payload size different than expected") end
+    subtree:add_le (f.rec_imu_ex_00_vo_vz_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_00_vo_px_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_00_vo_py_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_00_vo_pz_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_00_us_v_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_00_us_p_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_00_vo_flag_navi_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_vo_flag_navi_vo_vx_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_vo_flag_navi_vo_vy_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_vo_flag_navi_vo_vz_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_vo_flag_navi_vo_px_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_vo_flag_navi_vo_py_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_vo_flag_navi_vo_pz_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_vo_flag_navi_us_vz_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_vo_flag_navi_us_pz_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_ex_00_imu_err_flag_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_imu_err_vg_large_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_imu_err_gps_yaw_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_imu_err_mag_yaw_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_imu_err_gps_consist_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_imu_err_us_fail_00, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_00_e_imu_err_init_ok_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_ex_00_vo_flag_rsv_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_ex_00_imu_ex_cnt_00, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 40) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Ex 00: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Ex 00: Payload size different than expected") end
 end
 
--- Flight log - unkn13 - 0x0013
+-- Flight log - Imu Tail 01 - 0x0821
 
-f.rec_unkn13_fld0 = ProtoField.uint8 ("dji_p3.rec_unkn13_fld0", "Field0", base.HEX)
-f.rec_unkn13_fld1 = ProtoField.uint8 ("dji_p3.rec_unkn13_fld1", "Field1", base.HEX)
+f.rec_imu_tail_01_wa_x_01 = ProtoField.float ("dji_p3.rec_imu_tail_01_wa_x_01", "Wa X 01", base.DEC)
+f.rec_imu_tail_01_wa_y_01 = ProtoField.float ("dji_p3.rec_imu_tail_01_wa_y_01", "Wa Y 01", base.DEC)
+f.rec_imu_tail_01_wa_z_01 = ProtoField.float ("dji_p3.rec_imu_tail_01_wa_z_01", "Wa Z 01", base.DEC)
+f.rec_imu_tail_01_w_x_01 = ProtoField.float ("dji_p3.rec_imu_tail_01_w_x_01", "W X 01", base.DEC)
+f.rec_imu_tail_01_w_y_01 = ProtoField.float ("dji_p3.rec_imu_tail_01_w_y_01", "W Y 01", base.DEC)
+f.rec_imu_tail_01_w_z_01 = ProtoField.float ("dji_p3.rec_imu_tail_01_w_z_01", "W Z 01", base.DEC)
 
-local function flightrec_unkn1A_dissector(payload, pinfo, subtree)
+local function flightrec_imu_tail_01_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add_le (f.rec_unkn13_fld0, payload(offset, 1)) -- Always 1
-    offset = offset + 1
+    subtree:add_le (f.rec_imu_tail_01_wa_x_01, payload(offset, 4))
+    offset = offset + 4
 
-    subtree:add_le (f.rec_unkn13_fld1, payload(offset, 1)) -- Always 0
-    offset = offset + 1
+    subtree:add_le (f.rec_imu_tail_01_wa_y_01, payload(offset, 4))
+    offset = offset + 4
 
-    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn13: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn13: Payload size different than expected") end
+    subtree:add_le (f.rec_imu_tail_01_wa_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_01_w_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_01_w_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_01_w_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Tail 01: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Tail 01: Payload size different than expected") end
 end
 
--- Flight log - unkn14 - 0x0014
+-- Flight log - Imu Atti 01 - 0x0801
 
-f.rec_unkn14_arr0_0 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_0", "Arr0[0]", base.HEX)
-f.rec_unkn14_arr0_1 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_1", "Arr0[1]", base.HEX)
-f.rec_unkn14_arr0_2 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_2", "Arr0[2]", base.HEX)
-f.rec_unkn14_arr0_3 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_3", "Arr0[3]", base.HEX)
-f.rec_unkn14_arr0_4 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_4", "Arr0[4]", base.HEX)
-f.rec_unkn14_arr0_5 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_5", "Arr0[5]", base.HEX)
-f.rec_unkn14_arr0_6 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_6", "Arr0[6]", base.HEX)
-f.rec_unkn14_arr0_7 = ProtoField.uint16 ("dji_p3.rec_unkn14_arr0_7", "Arr0[7]", base.HEX)
+f.rec_imu_atti_01_longti_01 = ProtoField.double ("dji_p3.rec_imu_atti_01_longti_01", "Longti 01", base.DEC)
+f.rec_imu_atti_01_lati_01 = ProtoField.double ("dji_p3.rec_imu_atti_01_lati_01", "Lati 01", base.DEC)
+f.rec_imu_atti_01_alti_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_alti_01", "Alti 01", base.DEC)
+f.rec_imu_atti_01_acc_x_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_acc_x_01", "Acc X 01", base.DEC)
+f.rec_imu_atti_01_acc_y_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_acc_y_01", "Acc Y 01", base.DEC)
+f.rec_imu_atti_01_acc_z_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_acc_z_01", "Acc Z 01", base.DEC)
+f.rec_imu_atti_01_gyro_x_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_gyro_x_01", "Gyro X 01", base.DEC)
+f.rec_imu_atti_01_gyro_y_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_gyro_y_01", "Gyro Y 01", base.DEC)
+f.rec_imu_atti_01_gyro_z_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_gyro_z_01", "Gyro Z 01", base.DEC)
+f.rec_imu_atti_01_press_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_press_01", "Press 01", base.DEC)
+f.rec_imu_atti_01_q0_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_q0_01", "Q0 01", base.DEC)
+f.rec_imu_atti_01_q1_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_q1_01", "Q1 01", base.DEC)
+f.rec_imu_atti_01_q2_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_q2_01", "Q2 01", base.DEC)
+f.rec_imu_atti_01_q3_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_q3_01", "Q3 01", base.DEC)
+f.rec_imu_atti_01_ag_x_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_ag_x_01", "Ag X 01", base.DEC)
+f.rec_imu_atti_01_ag_y_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_ag_y_01", "Ag Y 01", base.DEC)
+f.rec_imu_atti_01_ag_z_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_ag_z_01", "Ag Z 01", base.DEC)
+f.rec_imu_atti_01_vg_x_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_vg_x_01", "Vg X 01", base.DEC)
+f.rec_imu_atti_01_vg_y_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_vg_y_01", "Vg Y 01", base.DEC)
+f.rec_imu_atti_01_vg_z_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_vg_z_01", "Vg Z 01", base.DEC)
+f.rec_imu_atti_01_gb_x_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_gb_x_01", "Gb X 01", base.DEC)
+f.rec_imu_atti_01_gb_y_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_gb_y_01", "Gb Y 01", base.DEC)
+f.rec_imu_atti_01_gb_z_01 = ProtoField.float ("dji_p3.rec_imu_atti_01_gb_z_01", "Gb Z 01", base.DEC)
+f.rec_imu_atti_01_m_x_01 = ProtoField.int16 ("dji_p3.rec_imu_atti_01_m_x_01", "M X 01", base.DEC)
+f.rec_imu_atti_01_m_y_01 = ProtoField.int16 ("dji_p3.rec_imu_atti_01_m_y_01", "M Y 01", base.DEC)
+f.rec_imu_atti_01_m_z_01 = ProtoField.int16 ("dji_p3.rec_imu_atti_01_m_z_01", "M Z 01", base.DEC)
+f.rec_imu_atti_01_temp_x_01 = ProtoField.int16 ("dji_p3.rec_imu_atti_01_temp_x_01", "Temp X 01", base.DEC)
+f.rec_imu_atti_01_temp_y_01 = ProtoField.int16 ("dji_p3.rec_imu_atti_01_temp_y_01", "Temp Y 01", base.DEC)
+f.rec_imu_atti_01_temp_z_01 = ProtoField.int16 ("dji_p3.rec_imu_atti_01_temp_z_01", "Temp Z 01", base.DEC)
+f.rec_imu_atti_01_sensor_monitor_01 = ProtoField.uint16 ("dji_p3.rec_imu_atti_01_sensor_monitor_01", "Sensor Monitor 01", base.HEX)
+f.rec_imu_atti_01_filter_status_01 = ProtoField.uint16 ("dji_p3.rec_imu_atti_01_filter_status_01", "Filter Status 01", base.HEX)
+f.rec_imu_atti_01_svn_01 = ProtoField.uint16 ("dji_p3.rec_imu_atti_01_svn_01", "Svn 01", base.HEX)
+f.rec_imu_atti_01_cnt_atti_01 = ProtoField.uint16 ("dji_p3.rec_imu_atti_01_cnt_atti_01", "Cnt Atti 01", base.HEX)
+--f.rec_imu_atti_01_e_pitch_01 = ProtoField.none ("dji_p3.rec_imu_atti_01_e_pitch_01", "E Pitch 01", base.NONE, nil, nil, "-asin_x(2*(q1_01*q3_01-q0_01*q2_01))/3.1415926*180")
+--f.rec_imu_atti_01_e_roll_01 = ProtoField.none ("dji_p3.rec_imu_atti_01_e_roll_01", "E Roll 01", base.NONE, nil, nil, "atan2(2*(q2_01*q3_01+q0_01*q1_01),1-2*(q1_01*q1_01+q2_01*q2_01))/3.1415926*180")
+--f.rec_imu_atti_01_e_yaw_01 = ProtoField.none ("dji_p3.rec_imu_atti_01_e_yaw_01", "E Yaw 01", base.NONE, nil, nil, "atan2(2*(q1_01*q2_01+q0_01*q3_01),1-2*(q2_01*q2_01+q3_01*q3_01))/3.1415926*180")
+--f.rec_imu_atti_01_e_yaw_from_m_01 = ProtoField.none ("dji_p3.rec_imu_atti_01_e_yaw_from_m_01", "E Yaw From M 01", base.NONE, nil, nil, "atan2(-(m_y_01*cos(E_roll_01/57.29578)-m_z_01*sin(E_roll_01/57.29578)),m_x_01*cos(E_pitch_01/57.29578)+m_y_01*sin(E_pitch_01/57.29578)*sin(E_roll_01/57.29578)+m_z_01*sin(E_pitch_01/57.29578)*cos(E_roll_01/57.29578))*180/3.14159265")
 
-local function flightrec_unkn14_dissector(payload, pinfo, subtree)
+local function flightrec_imu_atti_01_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add_le (f.rec_unkn14_arr0_0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_01_longti_01, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_imu_atti_01_lati_01, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_imu_atti_01_alti_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_acc_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_acc_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_acc_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_gyro_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_gyro_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_gyro_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_press_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_q0_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_q1_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_q2_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_q3_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_ag_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_ag_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_ag_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_vg_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_vg_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_vg_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_gb_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_gb_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_gb_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_01_m_x_01, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn14_arr0_1, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_01_m_y_01, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn14_arr0_2, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_01_m_z_01, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn14_arr0_3, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_01_temp_x_01, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn14_arr0_4, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_01_temp_y_01, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn14_arr0_5, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_01_temp_z_01, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn14_arr0_6, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_01_sensor_monitor_01, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn14_arr0_7, payload(offset, 2))
+    subtree:add_le (f.rec_imu_atti_01_filter_status_01, payload(offset, 2))
     offset = offset + 2
 
-    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn14: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn14: Payload size different than expected") end
+    subtree:add_le (f.rec_imu_atti_01_svn_01, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_01_cnt_atti_01, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 120) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Atti 01: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Atti 01: Payload size different than expected") end
 end
 
--- Flight log - unkn1A - 0x001a
+-- Flight log - Imu Ex 01 - 0x0811
 
-f.rec_unkn1a_fld0 = ProtoField.uint32 ("dji_p3.rec_unkn1a_fld0", "Field0", base.HEX)
-f.rec_unkn1a_fld4 = ProtoField.uint32 ("dji_p3.rec_unkn1a_fld4", "Field4", base.HEX)
-f.rec_unkn1a_fld8 = ProtoField.uint8 ("dji_p3.rec_unkn1a_fld8", "Field8", base.HEX)
-f.rec_unkn1a_fld9 = ProtoField.uint32 ("dji_p3.rec_unkn1a_fld9", "Field9", base.HEX)
-f.rec_unkn1a_fldD = ProtoField.uint32 ("dji_p3.rec_unkn1a_fldD", "FieldD", base.HEX)
-f.rec_unkn1a_fld11 = ProtoField.uint32 ("dji_p3.rec_unkn1a_fld11", "Field11", base.HEX)
+f.rec_imu_ex_01_vo_vx_01 = ProtoField.float ("dji_p3.rec_imu_ex_01_vo_vx_01", "Vo Vx 01", base.DEC)
+f.rec_imu_ex_01_vo_vy_01 = ProtoField.float ("dji_p3.rec_imu_ex_01_vo_vy_01", "Vo Vy 01", base.DEC)
+f.rec_imu_ex_01_vo_vz_01 = ProtoField.float ("dji_p3.rec_imu_ex_01_vo_vz_01", "Vo Vz 01", base.DEC)
+f.rec_imu_ex_01_vo_px_01 = ProtoField.float ("dji_p3.rec_imu_ex_01_vo_px_01", "Vo Px 01", base.DEC)
+f.rec_imu_ex_01_vo_py_01 = ProtoField.float ("dji_p3.rec_imu_ex_01_vo_py_01", "Vo Py 01", base.DEC)
+f.rec_imu_ex_01_vo_pz_01 = ProtoField.float ("dji_p3.rec_imu_ex_01_vo_pz_01", "Vo Pz 01", base.DEC)
+f.rec_imu_ex_01_us_v_01 = ProtoField.float ("dji_p3.rec_imu_ex_01_us_v_01", "Us V 01", base.DEC)
+f.rec_imu_ex_01_us_p_01 = ProtoField.float ("dji_p3.rec_imu_ex_01_us_p_01", "Us P 01", base.DEC)
+f.rec_imu_ex_01_vo_flag_navi_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_vo_flag_navi_01", "Vo Flag Navi 01", base.HEX)
+  f.rec_imu_ex_01_e_vo_flag_navi_vo_vx_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_vo_flag_navi_vo_vx_01", "E Vo Flag Navi Vo Vx 01", base.HEX, nil, 0x01, nil)
+  f.rec_imu_ex_01_e_vo_flag_navi_vo_vy_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_vo_flag_navi_vo_vy_01", "E Vo Flag Navi Vo Vy 01", base.HEX, nil, 0x02, nil)
+  f.rec_imu_ex_01_e_vo_flag_navi_vo_vz_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_vo_flag_navi_vo_vz_01", "E Vo Flag Navi Vo Vz 01", base.HEX, nil, 0x04, nil)
+  f.rec_imu_ex_01_e_vo_flag_navi_vo_px_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_vo_flag_navi_vo_px_01", "E Vo Flag Navi Vo Px 01", base.HEX, nil, 0x08, nil)
+  f.rec_imu_ex_01_e_vo_flag_navi_vo_py_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_vo_flag_navi_vo_py_01", "E Vo Flag Navi Vo Py 01", base.HEX, nil, 0x10, nil)
+  f.rec_imu_ex_01_e_vo_flag_navi_vo_pz_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_vo_flag_navi_vo_pz_01", "E Vo Flag Navi Vo Pz 01", base.HEX, nil, 0x20, nil)
+  f.rec_imu_ex_01_e_vo_flag_navi_us_vz_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_vo_flag_navi_us_vz_01", "E Vo Flag Navi Us Vz 01", base.HEX, nil, 0x40, nil)
+  f.rec_imu_ex_01_e_vo_flag_navi_us_pz_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_vo_flag_navi_us_pz_01", "E Vo Flag Navi Us Pz 01", base.HEX, nil, 0x80, nil)
+f.rec_imu_ex_01_imu_err_flag_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_imu_err_flag_01", "Imu Err Flag 01", base.HEX)
+  f.rec_imu_ex_01_e_imu_err_vg_large_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_imu_err_vg_large_01", "E Imu Err Vg Large 01", base.HEX, nil, 0x01, nil)
+  f.rec_imu_ex_01_e_imu_err_gps_yaw_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_imu_err_gps_yaw_01", "E Imu Err Gps Yaw 01", base.HEX, nil, 0x02, nil)
+  f.rec_imu_ex_01_e_imu_err_mag_yaw_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_imu_err_mag_yaw_01", "E Imu Err Mag Yaw 01", base.HEX, nil, 0x04, nil)
+  f.rec_imu_ex_01_e_imu_err_gps_consist_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_imu_err_gps_consist_01", "E Imu Err Gps Consist 01", base.HEX, nil, 0x08, nil)
+  f.rec_imu_ex_01_e_imu_err_us_fail_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_imu_err_us_fail_01", "E Imu Err Us Fail 01", base.HEX, nil, 0x10, nil)
+  f.rec_imu_ex_01_e_imu_err_init_ok_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_e_imu_err_init_ok_01", "E Imu Err Init Ok 01", base.HEX, nil, 0x20, nil)
+f.rec_imu_ex_01_vo_flag_rsv_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_vo_flag_rsv_01", "Vo Flag Rsv 01", base.HEX)
+f.rec_imu_ex_01_imu_ex_cnt_01 = ProtoField.uint16 ("dji_p3.rec_imu_ex_01_imu_ex_cnt_01", "Imu Ex Cnt 01", base.HEX)
 
-local function flightrec_unkn1A_dissector(payload, pinfo, subtree)
+local function flightrec_imu_ex_01_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add_le (f.rec_unkn1a_fld0, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_01_vo_vx_01, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_unkn1a_fld4, payload(offset, 4))
+    subtree:add_le (f.rec_imu_ex_01_vo_vy_01, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_unkn1a_fld8, payload(offset, 1))
+    subtree:add_le (f.rec_imu_ex_01_vo_vz_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_01_vo_px_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_01_vo_py_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_01_vo_pz_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_01_us_v_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_01_us_p_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_01_vo_flag_navi_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_vo_flag_navi_vo_vx_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_vo_flag_navi_vo_vy_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_vo_flag_navi_vo_vz_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_vo_flag_navi_vo_px_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_vo_flag_navi_vo_py_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_vo_flag_navi_vo_pz_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_vo_flag_navi_us_vz_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_vo_flag_navi_us_pz_01, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_ex_01_imu_err_flag_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_imu_err_vg_large_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_imu_err_gps_yaw_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_imu_err_mag_yaw_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_imu_err_gps_consist_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_imu_err_us_fail_01, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_01_e_imu_err_init_ok_01, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_ex_01_vo_flag_rsv_01, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_ex_01_imu_ex_cnt_01, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 40) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Ex 01: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Ex 01: Payload size different than expected") end
+end
+
+-- Flight log - Imu Tail 02 - 0x0822
+
+f.rec_imu_tail_02_wa_x_02 = ProtoField.float ("dji_p3.rec_imu_tail_02_wa_x_02", "Wa X 02", base.DEC)
+f.rec_imu_tail_02_wa_y_02 = ProtoField.float ("dji_p3.rec_imu_tail_02_wa_y_02", "Wa Y 02", base.DEC)
+f.rec_imu_tail_02_wa_z_02 = ProtoField.float ("dji_p3.rec_imu_tail_02_wa_z_02", "Wa Z 02", base.DEC)
+f.rec_imu_tail_02_w_x_02 = ProtoField.float ("dji_p3.rec_imu_tail_02_w_x_02", "W X 02", base.DEC)
+f.rec_imu_tail_02_w_y_02 = ProtoField.float ("dji_p3.rec_imu_tail_02_w_y_02", "W Y 02", base.DEC)
+f.rec_imu_tail_02_w_z_02 = ProtoField.float ("dji_p3.rec_imu_tail_02_w_z_02", "W Z 02", base.DEC)
+
+local function flightrec_imu_tail_02_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_tail_02_wa_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_02_wa_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_02_wa_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_02_w_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_02_w_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_tail_02_w_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Tail 02: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Tail 02: Payload size different than expected") end
+end
+
+-- Flight log - Imu Atti 02 - 0x0802
+
+f.rec_imu_atti_02_longtii_02 = ProtoField.double ("dji_p3.rec_imu_atti_02_longtii_02", "Longtii 02", base.DEC)
+f.rec_imu_atti_02_latii_02 = ProtoField.double ("dji_p3.rec_imu_atti_02_latii_02", "Latii 02", base.DEC)
+f.rec_imu_atti_02_altii_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_altii_02", "Altii 02", base.DEC)
+f.rec_imu_atti_02_acc_x_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_acc_x_02", "Acc X 02", base.DEC)
+f.rec_imu_atti_02_acc_y_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_acc_y_02", "Acc Y 02", base.DEC)
+f.rec_imu_atti_02_acc_z_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_acc_z_02", "Acc Z 02", base.DEC)
+f.rec_imu_atti_02_gyro_x_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_gyro_x_02", "Gyro X 02", base.DEC)
+f.rec_imu_atti_02_gyro_y_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_gyro_y_02", "Gyro Y 02", base.DEC)
+f.rec_imu_atti_02_gyro_z_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_gyro_z_02", "Gyro Z 02", base.DEC)
+f.rec_imu_atti_02_press_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_press_02", "Press 02", base.DEC)
+f.rec_imu_atti_02_q0_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_q0_02", "Q0 02", base.DEC)
+f.rec_imu_atti_02_q1_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_q1_02", "Q1 02", base.DEC)
+f.rec_imu_atti_02_q2_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_q2_02", "Q2 02", base.DEC)
+f.rec_imu_atti_02_q3_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_q3_02", "Q3 02", base.DEC)
+f.rec_imu_atti_02_ag_x_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_ag_x_02", "Ag X 02", base.DEC)
+f.rec_imu_atti_02_ag_y_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_ag_y_02", "Ag Y 02", base.DEC)
+f.rec_imu_atti_02_ag_z_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_ag_z_02", "Ag Z 02", base.DEC)
+f.rec_imu_atti_02_vg_x_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_vg_x_02", "Vg X 02", base.DEC)
+f.rec_imu_atti_02_vg_y_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_vg_y_02", "Vg Y 02", base.DEC)
+f.rec_imu_atti_02_vg_z_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_vg_z_02", "Vg Z 02", base.DEC)
+f.rec_imu_atti_02_gb_x_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_gb_x_02", "Gb X 02", base.DEC)
+f.rec_imu_atti_02_gb_y_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_gb_y_02", "Gb Y 02", base.DEC)
+f.rec_imu_atti_02_gb_z_02 = ProtoField.float ("dji_p3.rec_imu_atti_02_gb_z_02", "Gb Z 02", base.DEC)
+f.rec_imu_atti_02_m_x_02 = ProtoField.int16 ("dji_p3.rec_imu_atti_02_m_x_02", "M X 02", base.DEC)
+f.rec_imu_atti_02_m_y_02 = ProtoField.int16 ("dji_p3.rec_imu_atti_02_m_y_02", "M Y 02", base.DEC)
+f.rec_imu_atti_02_m_z_02 = ProtoField.int16 ("dji_p3.rec_imu_atti_02_m_z_02", "M Z 02", base.DEC)
+f.rec_imu_atti_02_temp_x_02 = ProtoField.int16 ("dji_p3.rec_imu_atti_02_temp_x_02", "Temp X 02", base.DEC)
+f.rec_imu_atti_02_temp_y_02 = ProtoField.int16 ("dji_p3.rec_imu_atti_02_temp_y_02", "Temp Y 02", base.DEC)
+f.rec_imu_atti_02_temp_z_02 = ProtoField.int16 ("dji_p3.rec_imu_atti_02_temp_z_02", "Temp Z 02", base.DEC)
+f.rec_imu_atti_02_sensor_monitor_02 = ProtoField.uint16 ("dji_p3.rec_imu_atti_02_sensor_monitor_02", "Sensor Monitor 02", base.HEX)
+f.rec_imu_atti_02_filter_status_02 = ProtoField.uint16 ("dji_p3.rec_imu_atti_02_filter_status_02", "Filter Status 02", base.HEX)
+f.rec_imu_atti_02_svn_02 = ProtoField.uint16 ("dji_p3.rec_imu_atti_02_svn_02", "Svn 02", base.HEX)
+f.rec_imu_atti_02_cnt_atti_02 = ProtoField.uint16 ("dji_p3.rec_imu_atti_02_cnt_atti_02", "Cnt Atti 02", base.HEX)
+--f.rec_imu_atti_02_e_pitch_02 = ProtoField.none ("dji_p3.rec_imu_atti_02_e_pitch_02", "E Pitch 02", base.NONE, nil, nil, "-asin_x(2*(q1_02*q3_02-q0_02*q2_02))/3.1415926*180")
+--f.rec_imu_atti_02_e_roll_02 = ProtoField.none ("dji_p3.rec_imu_atti_02_e_roll_02", "E Roll 02", base.NONE, nil, nil, "atan2(2*(q2_02*q3_02+q0_02*q1_02),1-2*(q1_02*q1_02+q2_02*q2_02))/3.1415926*180")
+--f.rec_imu_atti_02_e_yaw_02 = ProtoField.none ("dji_p3.rec_imu_atti_02_e_yaw_02", "E Yaw 02", base.NONE, nil, nil, "atan2(2*(q1_02*q2_02+q0_02*q3_02),1-2*(q2_02*q2_02+q3_02*q3_02))/3.1415926*180")
+--f.rec_imu_atti_02_e_yaw_from_m_02 = ProtoField.none ("dji_p3.rec_imu_atti_02_e_yaw_from_m_02", "E Yaw From M 02", base.NONE, nil, nil, "atan2(-(m_y_02*cos(E_roll_02/57.29578)-m_z_02*sin(E_roll_02/57.29578)),m_x_02*cos(E_pitch_02/57.29578)+m_y_02*sin(E_pitch_02/57.29578)*sin(E_roll_02/57.29578)+m_z_02*sin(E_pitch_02/57.29578)*cos(E_roll_02/57.29578))*180/3.14159265")
+
+local function flightrec_imu_atti_02_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_atti_02_longtii_02, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_imu_atti_02_latii_02, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_imu_atti_02_altii_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_acc_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_acc_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_acc_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_gyro_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_gyro_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_gyro_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_press_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_q0_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_q1_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_q2_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_q3_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_ag_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_ag_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_ag_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_vg_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_vg_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_vg_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_gb_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_gb_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_gb_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_atti_02_m_x_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_02_m_y_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_02_m_z_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_02_temp_x_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_02_temp_y_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_02_temp_z_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_02_sensor_monitor_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_02_filter_status_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_02_svn_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_atti_02_cnt_atti_02, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 120) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Atti 02: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Atti 02: Payload size different than expected") end
+end
+
+-- Flight log - Imu Ex 02 - 0x0812
+
+f.rec_imu_ex_02_vo_vx_02 = ProtoField.float ("dji_p3.rec_imu_ex_02_vo_vx_02", "Vo Vx 02", base.DEC)
+f.rec_imu_ex_02_vo_vy_02 = ProtoField.float ("dji_p3.rec_imu_ex_02_vo_vy_02", "Vo Vy 02", base.DEC)
+f.rec_imu_ex_02_vo_vz_02 = ProtoField.float ("dji_p3.rec_imu_ex_02_vo_vz_02", "Vo Vz 02", base.DEC)
+f.rec_imu_ex_02_vo_px_02 = ProtoField.float ("dji_p3.rec_imu_ex_02_vo_px_02", "Vo Px 02", base.DEC)
+f.rec_imu_ex_02_vo_py_02 = ProtoField.float ("dji_p3.rec_imu_ex_02_vo_py_02", "Vo Py 02", base.DEC)
+f.rec_imu_ex_02_vo_pz_02 = ProtoField.float ("dji_p3.rec_imu_ex_02_vo_pz_02", "Vo Pz 02", base.DEC)
+f.rec_imu_ex_02_us_v_02 = ProtoField.float ("dji_p3.rec_imu_ex_02_us_v_02", "Us V 02", base.DEC)
+f.rec_imu_ex_02_us_p_02 = ProtoField.float ("dji_p3.rec_imu_ex_02_us_p_02", "Us P 02", base.DEC)
+f.rec_imu_ex_02_vo_flag_navi_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_vo_flag_navi_02", "Vo Flag Navi 02", base.HEX)
+  f.rec_imu_ex_02_e_vo_flag_navi_vo_vx_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_vo_flag_navi_vo_vx_02", "E Vo Flag Navi Vo Vx 02", base.HEX, nil, 0x01, nil)
+  f.rec_imu_ex_02_e_vo_flag_navi_vo_vy_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_vo_flag_navi_vo_vy_02", "E Vo Flag Navi Vo Vy 02", base.HEX, nil, 0x02, nil)
+  f.rec_imu_ex_02_e_vo_flag_navi_vo_vz_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_vo_flag_navi_vo_vz_02", "E Vo Flag Navi Vo Vz 02", base.HEX, nil, 0x04, nil)
+  f.rec_imu_ex_02_e_vo_flag_navi_vo_px_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_vo_flag_navi_vo_px_02", "E Vo Flag Navi Vo Px 02", base.HEX, nil, 0x08, nil)
+  f.rec_imu_ex_02_e_vo_flag_navi_vo_py_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_vo_flag_navi_vo_py_02", "E Vo Flag Navi Vo Py 02", base.HEX, nil, 0x10, nil)
+  f.rec_imu_ex_02_e_vo_flag_navi_vo_pz_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_vo_flag_navi_vo_pz_02", "E Vo Flag Navi Vo Pz 02", base.HEX, nil, 0x20, nil)
+  f.rec_imu_ex_02_e_vo_flag_navi_us_vz_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_vo_flag_navi_us_vz_02", "E Vo Flag Navi Us Vz 02", base.HEX, nil, 0x40, nil)
+  f.rec_imu_ex_02_e_vo_flag_navi_us_pz_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_vo_flag_navi_us_pz_02", "E Vo Flag Navi Us Pz 02", base.HEX, nil, 0x80, nil)
+f.rec_imu_ex_02_imu_err_flag_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_imu_err_flag_02", "Imu Err Flag 02", base.HEX)
+  f.rec_imu_ex_02_e_imu_err_vg_large_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_imu_err_vg_large_02", "E Imu Err Vg Large 02", base.HEX, nil, 0x01, nil)
+  f.rec_imu_ex_02_e_imu_err_gps_yaw_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_imu_err_gps_yaw_02", "E Imu Err Gps Yaw 02", base.HEX, nil, 0x02, nil)
+  f.rec_imu_ex_02_e_imu_err_mag_yaw_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_imu_err_mag_yaw_02", "E Imu Err Mag Yaw 02", base.HEX, nil, 0x04, nil)
+  f.rec_imu_ex_02_e_imu_err_gps_consist_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_imu_err_gps_consist_02", "E Imu Err Gps Consist 02", base.HEX, nil, 0x08, nil)
+  f.rec_imu_ex_02_e_imu_err_us_fail_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_imu_err_us_fail_02", "E Imu Err Us Fail 02", base.HEX, nil, 0x10, nil)
+  f.rec_imu_ex_02_e_imu_err_init_ok_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_e_imu_err_init_ok_02", "E Imu Err Init Ok 02", base.HEX, nil, 0x20, nil)
+f.rec_imu_ex_02_vo_flag_rsv_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_vo_flag_rsv_02", "Vo Flag Rsv 02", base.HEX)
+f.rec_imu_ex_02_imu_ex_cnt_02 = ProtoField.uint16 ("dji_p3.rec_imu_ex_02_imu_ex_cnt_02", "Imu Ex Cnt 02", base.HEX)
+
+local function flightrec_imu_ex_02_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_ex_02_vo_vx_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_02_vo_vy_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_02_vo_vz_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_02_vo_px_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_02_vo_py_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_02_vo_pz_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_02_us_v_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_02_us_p_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_ex_02_vo_flag_navi_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_vo_flag_navi_vo_vx_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_vo_flag_navi_vo_vy_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_vo_flag_navi_vo_vz_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_vo_flag_navi_vo_px_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_vo_flag_navi_vo_py_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_vo_flag_navi_vo_pz_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_vo_flag_navi_us_vz_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_vo_flag_navi_us_pz_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_ex_02_imu_err_flag_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_imu_err_vg_large_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_imu_err_gps_yaw_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_imu_err_mag_yaw_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_imu_err_gps_consist_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_imu_err_us_fail_02, payload(offset, 2))
+    subtree:add_le (f.rec_imu_ex_02_e_imu_err_init_ok_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_ex_02_vo_flag_rsv_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_ex_02_imu_ex_cnt_02, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 40) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Ex 02: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Ex 02: Payload size different than expected") end
+end
+
+-- Flight log - Compass - 0x0004
+
+f.rec_compass_magx = ProtoField.int16 ("dji_p3.rec_compass_magx", "Magx", base.DEC)
+f.rec_compass_magy = ProtoField.int16 ("dji_p3.rec_compass_magy", "Magy", base.DEC)
+f.rec_compass_magz = ProtoField.int16 ("dji_p3.rec_compass_magz", "Magz", base.DEC)
+f.rec_compass_mag_cnt = ProtoField.uint16 ("dji_p3.rec_compass_mag_cnt", "Mag Cnt", base.HEX)
+
+local function flightrec_compass_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_compass_magx, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_compass_magy, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_compass_magz, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_compass_mag_cnt, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Compass: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Compass: Payload size different than expected") end
+end
+
+-- Flight log - Gps Glns - 0x0005
+
+f.rec_gps_glns_gps_date = ProtoField.uint32 ("dji_p3.rec_gps_glns_gps_date", "Gps Date", base.HEX)
+f.rec_gps_glns_gps_time = ProtoField.uint32 ("dji_p3.rec_gps_glns_gps_time", "Gps Time", base.HEX)
+f.rec_gps_glns_gps_lon = ProtoField.int32 ("dji_p3.rec_gps_glns_gps_lon", "Gps Lon", base.DEC)
+f.rec_gps_glns_gps_lat = ProtoField.int32 ("dji_p3.rec_gps_glns_gps_lat", "Gps Lat", base.DEC)
+f.rec_gps_glns_hmsl = ProtoField.int32 ("dji_p3.rec_gps_glns_hmsl", "Hmsl", base.DEC)
+f.rec_gps_glns_vel_n = ProtoField.float ("dji_p3.rec_gps_glns_vel_n", "Vel N", base.DEC)
+f.rec_gps_glns_vel_e = ProtoField.float ("dji_p3.rec_gps_glns_vel_e", "Vel E", base.DEC)
+f.rec_gps_glns_vel_d = ProtoField.float ("dji_p3.rec_gps_glns_vel_d", "Vel D", base.DEC)
+f.rec_gps_glns_hdop = ProtoField.float ("dji_p3.rec_gps_glns_hdop", "Hdop", base.DEC)
+f.rec_gps_glns_pdop = ProtoField.float ("dji_p3.rec_gps_glns_pdop", "Pdop", base.DEC)
+f.rec_gps_glns_gps_fix = ProtoField.float ("dji_p3.rec_gps_glns_gps_fix", "Gps Fix", base.DEC)
+f.rec_gps_glns_gnss_flag = ProtoField.float ("dji_p3.rec_gps_glns_gnss_flag", "Gnss Flag", base.DEC)
+f.rec_gps_glns_hacc = ProtoField.float ("dji_p3.rec_gps_glns_hacc", "Hacc", base.DEC)
+f.rec_gps_glns_sacc = ProtoField.float ("dji_p3.rec_gps_glns_sacc", "Sacc", base.DEC)
+f.rec_gps_glns_gps_used = ProtoField.uint32 ("dji_p3.rec_gps_glns_gps_used", "Gps Used", base.HEX)
+f.rec_gps_glns_gln_used = ProtoField.uint32 ("dji_p3.rec_gps_glns_gln_used", "Gln Used", base.HEX)
+f.rec_gps_glns_numsv = ProtoField.uint16 ("dji_p3.rec_gps_glns_numsv", "Numsv", base.HEX)
+f.rec_gps_glns_gpsstate = ProtoField.uint16 ("dji_p3.rec_gps_glns_gpsstate", "Gpsstate", base.HEX)
+
+local function flightrec_gps_glns_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_gps_glns_gps_date, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_gps_time, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_gps_lon, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_gps_lat, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_hmsl, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_vel_n, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_vel_e, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_vel_d, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_hdop, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_pdop, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_gps_fix, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_gnss_flag, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_hacc, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_sacc, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_gps_used, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_gln_used, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gps_glns_numsv, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_gps_glns_gpsstate, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gps Glns: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gps Glns: Payload size different than expected") end
+end
+
+-- Flight log - Gps Snr - 0x000b
+
+f.rec_gps_snr_gps_snr1 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr1", "Gps Snr1", base.HEX)
+f.rec_gps_snr_gps_snr2 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr2", "Gps Snr2", base.HEX)
+f.rec_gps_snr_gps_snr3 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr3", "Gps Snr3", base.HEX)
+f.rec_gps_snr_gps_snr4 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr4", "Gps Snr4", base.HEX)
+f.rec_gps_snr_gps_snr5 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr5", "Gps Snr5", base.HEX)
+f.rec_gps_snr_gps_snr6 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr6", "Gps Snr6", base.HEX)
+f.rec_gps_snr_gps_snr7 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr7", "Gps Snr7", base.HEX)
+f.rec_gps_snr_gps_snr8 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr8", "Gps Snr8", base.HEX)
+f.rec_gps_snr_gps_snr9 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr9", "Gps Snr9", base.HEX)
+f.rec_gps_snr_gps_snr10 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr10", "Gps Snr10", base.HEX)
+f.rec_gps_snr_gps_snr11 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr11", "Gps Snr11", base.HEX)
+f.rec_gps_snr_gps_snr12 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr12", "Gps Snr12", base.HEX)
+f.rec_gps_snr_gps_snr13 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr13", "Gps Snr13", base.HEX)
+f.rec_gps_snr_gps_snr14 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr14", "Gps Snr14", base.HEX)
+f.rec_gps_snr_gps_snr15 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr15", "Gps Snr15", base.HEX)
+f.rec_gps_snr_gps_snr16 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr16", "Gps Snr16", base.HEX)
+f.rec_gps_snr_gps_snr17 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr17", "Gps Snr17", base.HEX)
+f.rec_gps_snr_gps_snr18 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr18", "Gps Snr18", base.HEX)
+f.rec_gps_snr_gps_snr19 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr19", "Gps Snr19", base.HEX)
+f.rec_gps_snr_gps_snr20 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr20", "Gps Snr20", base.HEX)
+f.rec_gps_snr_gps_snr21 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr21", "Gps Snr21", base.HEX)
+f.rec_gps_snr_gps_snr22 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr22", "Gps Snr22", base.HEX)
+f.rec_gps_snr_gps_snr23 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr23", "Gps Snr23", base.HEX)
+f.rec_gps_snr_gps_snr24 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr24", "Gps Snr24", base.HEX)
+f.rec_gps_snr_gps_snr25 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr25", "Gps Snr25", base.HEX)
+f.rec_gps_snr_gps_snr26 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr26", "Gps Snr26", base.HEX)
+f.rec_gps_snr_gps_snr27 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr27", "Gps Snr27", base.HEX)
+f.rec_gps_snr_gps_snr28 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr28", "Gps Snr28", base.HEX)
+f.rec_gps_snr_gps_snr29 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr29", "Gps Snr29", base.HEX)
+f.rec_gps_snr_gps_snr30 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr30", "Gps Snr30", base.HEX)
+f.rec_gps_snr_gps_snr31 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr31", "Gps Snr31", base.HEX)
+f.rec_gps_snr_gps_snr32 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gps_snr32", "Gps Snr32", base.HEX)
+f.rec_gps_snr_gln_snr1 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr1", "Gln Snr1", base.HEX)
+f.rec_gps_snr_gln_snr2 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr2", "Gln Snr2", base.HEX)
+f.rec_gps_snr_gln_snr3 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr3", "Gln Snr3", base.HEX)
+f.rec_gps_snr_gln_snr4 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr4", "Gln Snr4", base.HEX)
+f.rec_gps_snr_gln_snr5 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr5", "Gln Snr5", base.HEX)
+f.rec_gps_snr_gln_snr6 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr6", "Gln Snr6", base.HEX)
+f.rec_gps_snr_gln_snr7 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr7", "Gln Snr7", base.HEX)
+f.rec_gps_snr_gln_snr8 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr8", "Gln Snr8", base.HEX)
+f.rec_gps_snr_gln_snr9 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr9", "Gln Snr9", base.HEX)
+f.rec_gps_snr_gln_snr10 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr10", "Gln Snr10", base.HEX)
+f.rec_gps_snr_gln_snr11 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr11", "Gln Snr11", base.HEX)
+f.rec_gps_snr_gln_snr12 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr12", "Gln Snr12", base.HEX)
+f.rec_gps_snr_gln_snr13 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr13", "Gln Snr13", base.HEX)
+f.rec_gps_snr_gln_snr14 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr14", "Gln Snr14", base.HEX)
+f.rec_gps_snr_gln_snr15 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr15", "Gln Snr15", base.HEX)
+f.rec_gps_snr_gln_snr16 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr16", "Gln Snr16", base.HEX)
+f.rec_gps_snr_gln_snr17 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr17", "Gln Snr17", base.HEX)
+f.rec_gps_snr_gln_snr18 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr18", "Gln Snr18", base.HEX)
+f.rec_gps_snr_gln_snr19 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr19", "Gln Snr19", base.HEX)
+f.rec_gps_snr_gln_snr20 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr20", "Gln Snr20", base.HEX)
+f.rec_gps_snr_gln_snr21 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr21", "Gln Snr21", base.HEX)
+f.rec_gps_snr_gln_snr22 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr22", "Gln Snr22", base.HEX)
+f.rec_gps_snr_gln_snr23 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr23", "Gln Snr23", base.HEX)
+f.rec_gps_snr_gln_snr24 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr24", "Gln Snr24", base.HEX)
+f.rec_gps_snr_gln_snr25 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr25", "Gln Snr25", base.HEX)
+f.rec_gps_snr_gln_snr26 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr26", "Gln Snr26", base.HEX)
+f.rec_gps_snr_gln_snr27 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr27", "Gln Snr27", base.HEX)
+f.rec_gps_snr_gln_snr28 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr28", "Gln Snr28", base.HEX)
+f.rec_gps_snr_gln_snr29 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr29", "Gln Snr29", base.HEX)
+f.rec_gps_snr_gln_snr30 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr30", "Gln Snr30", base.HEX)
+f.rec_gps_snr_gln_snr31 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr31", "Gln Snr31", base.HEX)
+f.rec_gps_snr_gln_snr32 = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_snr32", "Gln Snr32", base.HEX)
+f.rec_gps_snr_gln_cnt = ProtoField.uint8 ("dji_p3.rec_gps_snr_gln_cnt", "Gln Cnt", base.HEX)
+
+local function flightrec_gps_snr_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_gps_snr_gps_snr1, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_unkn1a_fld9, payload(offset, 4))
-    offset = offset + 4
+    subtree:add_le (f.rec_gps_snr_gps_snr2, payload(offset, 1))
+    offset = offset + 1
 
-    subtree:add_le (f.rec_unkn1a_fldD, payload(offset, 4))
-    offset = offset + 4
+    subtree:add_le (f.rec_gps_snr_gps_snr3, payload(offset, 1))
+    offset = offset + 1
 
-    subtree:add_le (f.rec_unkn1a_fld11, payload(offset, 4))
-    offset = offset + 4
+    subtree:add_le (f.rec_gps_snr_gps_snr4, payload(offset, 1))
+    offset = offset + 1
 
-    if (offset ~= 21) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn1A: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn1A: Payload size different than expected") end
+    subtree:add_le (f.rec_gps_snr_gps_snr5, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr6, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr7, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr8, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr9, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr10, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr11, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr12, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr13, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr14, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr15, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr16, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr17, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr18, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr19, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr20, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr21, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr22, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr23, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr24, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr25, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr26, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr27, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr28, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr29, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr30, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr31, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gps_snr32, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr1, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr3, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr4, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr5, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr6, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr7, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr8, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr9, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr10, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr11, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr12, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr13, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr14, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr15, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr16, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr17, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr18, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr19, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr20, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr21, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr22, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr23, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr24, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr25, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr26, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr27, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr28, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr29, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr30, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr31, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_snr32, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gps_snr_gln_cnt, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 65) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gps Snr: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gps Snr: Payload size different than expected") end
 end
 
--- Flight log - unkn5C - 0x005c and 0x0062
+-- Flight log - Pt3 Gps Snr - 0x0061
 
-f.rec_unkn5c_arr0_0 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arr0_0", "Arr0[0]", base.HEX)
-f.rec_unkn5c_arr0_1 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arr0_1", "Arr0[1]", base.HEX)
-f.rec_unkn5c_arr0_2 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arr0_2", "Arr0[2]", base.HEX)
-f.rec_unkn5c_arr0_3 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arr0_3", "Arr0[3]", base.HEX)
-f.rec_unkn5c_arr0_4 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arr0_4", "Arr0[4]", base.HEX)
-f.rec_unkn5c_arr0_5 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arr0_5", "Arr0[5]", base.HEX)
-f.rec_unkn5c_arrc_0 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arrc_0", "ArrC[0]", base.HEX)
-f.rec_unkn5c_arrc_1 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arrc_1", "ArrC[1]", base.HEX)
-f.rec_unkn5c_arrc_2 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arrc_2", "ArrC[2]", base.HEX)
-f.rec_unkn5c_arrc_3 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arrc_3", "ArrC[3]", base.HEX)
-f.rec_unkn5c_arrc_4 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arrc_4", "ArrC[4]", base.HEX)
-f.rec_unkn5c_arrc_5 = ProtoField.uint16 ("dji_p3.rec_unkn5c_arrc_5", "ArrC[5]", base.HEX)
-f.rec_unkn5c_rt_cnt = ProtoField.uint32 ("dji_p3.rec_unkn5c_rt_cnt", "RecType Sequence Count", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
+f.rec_pt3_gps_snr_pt3_gps_snr1 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr1", "Pt3 Gps Snr1", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr2 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr2", "Pt3 Gps Snr2", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr3 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr3", "Pt3 Gps Snr3", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr4 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr4", "Pt3 Gps Snr4", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr5 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr5", "Pt3 Gps Snr5", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr6 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr6", "Pt3 Gps Snr6", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr7 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr7", "Pt3 Gps Snr7", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr8 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr8", "Pt3 Gps Snr8", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr9 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr9", "Pt3 Gps Snr9", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr10 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr10", "Pt3 Gps Snr10", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr11 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr11", "Pt3 Gps Snr11", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr12 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr12", "Pt3 Gps Snr12", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr13 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr13", "Pt3 Gps Snr13", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr14 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr14", "Pt3 Gps Snr14", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr15 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr15", "Pt3 Gps Snr15", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr16 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr16", "Pt3 Gps Snr16", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr17 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr17", "Pt3 Gps Snr17", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr18 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr18", "Pt3 Gps Snr18", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr19 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr19", "Pt3 Gps Snr19", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr20 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr20", "Pt3 Gps Snr20", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr21 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr21", "Pt3 Gps Snr21", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr22 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr22", "Pt3 Gps Snr22", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr23 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr23", "Pt3 Gps Snr23", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr24 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr24", "Pt3 Gps Snr24", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr25 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr25", "Pt3 Gps Snr25", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr26 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr26", "Pt3 Gps Snr26", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr27 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr27", "Pt3 Gps Snr27", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr28 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr28", "Pt3 Gps Snr28", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr29 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr29", "Pt3 Gps Snr29", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr30 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr30", "Pt3 Gps Snr30", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr31 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr31", "Pt3 Gps Snr31", base.HEX)
+f.rec_pt3_gps_snr_pt3_gps_snr32 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gps_snr32", "Pt3 Gps Snr32", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr1 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr1", "Pt3 Gln Snr1", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr2 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr2", "Pt3 Gln Snr2", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr3 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr3", "Pt3 Gln Snr3", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr4 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr4", "Pt3 Gln Snr4", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr5 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr5", "Pt3 Gln Snr5", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr6 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr6", "Pt3 Gln Snr6", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr7 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr7", "Pt3 Gln Snr7", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr8 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr8", "Pt3 Gln Snr8", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr9 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr9", "Pt3 Gln Snr9", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr10 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr10", "Pt3 Gln Snr10", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr11 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr11", "Pt3 Gln Snr11", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr12 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr12", "Pt3 Gln Snr12", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr13 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr13", "Pt3 Gln Snr13", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr14 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr14", "Pt3 Gln Snr14", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr15 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr15", "Pt3 Gln Snr15", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr16 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr16", "Pt3 Gln Snr16", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr17 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr17", "Pt3 Gln Snr17", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr18 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr18", "Pt3 Gln Snr18", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr19 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr19", "Pt3 Gln Snr19", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr20 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr20", "Pt3 Gln Snr20", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr21 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr21", "Pt3 Gln Snr21", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr22 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr22", "Pt3 Gln Snr22", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr23 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr23", "Pt3 Gln Snr23", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr24 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr24", "Pt3 Gln Snr24", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr25 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr25", "Pt3 Gln Snr25", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr26 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr26", "Pt3 Gln Snr26", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr27 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr27", "Pt3 Gln Snr27", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr28 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr28", "Pt3 Gln Snr28", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr29 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr29", "Pt3 Gln Snr29", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr30 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr30", "Pt3 Gln Snr30", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr31 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr31", "Pt3 Gln Snr31", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_snr32 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr32", "Pt3 Gln Snr32", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_cnt = ProtoField.uint16 ("dji_p3.rec_pt3_gps_snr_pt3_gln_cnt", "Pt3 Gln Cnt", base.HEX)
 
-local function flightrec_unkn5C_dissector(payload, pinfo, subtree)
+local function flightrec_pt3_gps_snr_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add_le (f.rec_unkn5c_arr0_0, payload(offset, 2))
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr1, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr3, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr4, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr5, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr6, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr7, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr8, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr9, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr10, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr11, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr12, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr13, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr14, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr15, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr16, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr17, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr18, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr19, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr20, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr21, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr22, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr23, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr24, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr25, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr26, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr27, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr28, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr29, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr30, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr31, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gps_snr32, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr1, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr3, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr4, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr5, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr6, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr7, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr8, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr9, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr10, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr11, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr12, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr13, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr14, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr15, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr16, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr17, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr18, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr19, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr20, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr21, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr22, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr23, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr24, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr25, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr26, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr27, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr28, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr29, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr30, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr31, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_snr32, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_pt3_gps_snr_pt3_gln_cnt, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn5c_arr0_1, payload(offset, 2))
+    if (offset ~= 66) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Pt3 Gps Snr: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Pt3 Gps Snr: Payload size different than expected") end
+end
+
+-- Flight log - Imu 21100 - 0x005b
+
+f.rec_imu_21100_gyro_x_21100 = ProtoField.int16 ("dji_p3.rec_imu_21100_gyro_x_21100", "Gyro X 21100", base.DEC)
+f.rec_imu_21100_gyro_y_21100 = ProtoField.int16 ("dji_p3.rec_imu_21100_gyro_y_21100", "Gyro Y 21100", base.DEC)
+f.rec_imu_21100_gyro_z_21100 = ProtoField.int16 ("dji_p3.rec_imu_21100_gyro_z_21100", "Gyro Z 21100", base.DEC)
+f.rec_imu_21100_acc_x_21100 = ProtoField.int16 ("dji_p3.rec_imu_21100_acc_x_21100", "Acc X 21100", base.DEC)
+f.rec_imu_21100_acc_y_21100 = ProtoField.int16 ("dji_p3.rec_imu_21100_acc_y_21100", "Acc Y 21100", base.DEC)
+f.rec_imu_21100_acc_z_21100 = ProtoField.int16 ("dji_p3.rec_imu_21100_acc_z_21100", "Acc Z 21100", base.DEC)
+f.rec_imu_21100_cnt_21100 = ProtoField.uint32 ("dji_p3.rec_imu_21100_cnt_21100", "Cnt 21100", base.HEX)
+
+local function flightrec_imu_21100_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_21100_gyro_x_21100, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn5c_arr0_2, payload(offset, 2))
+    subtree:add_le (f.rec_imu_21100_gyro_y_21100, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn5c_arr0_3, payload(offset, 2))
+    subtree:add_le (f.rec_imu_21100_gyro_z_21100, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn5c_arr0_4, payload(offset, 2))
+    subtree:add_le (f.rec_imu_21100_acc_x_21100, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn5c_arr0_5, payload(offset, 2))
+    subtree:add_le (f.rec_imu_21100_acc_y_21100, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn5c_arrc_0, payload(offset, 2))
+    subtree:add_le (f.rec_imu_21100_acc_z_21100, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_unkn5c_arrc_1, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn5c_arrc_2, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn5c_arrc_3, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn5c_arrc_4, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn5c_arrc_5, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_unkn5c_rt_cnt, payload(offset, 4))
+    subtree:add_le (f.rec_imu_21100_cnt_21100, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 28) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"unkn5C: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"unkn5C: Payload size different than expected") end
+    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu 21100: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu 21100: Payload size different than expected") end
+end
+
+-- Flight log - Imu Raw - 0x005c
+
+f.rec_imu_raw_gyro_x_used = ProtoField.int16 ("dji_p3.rec_imu_raw_gyro_x_used", "Gyro X Used", base.DEC)
+f.rec_imu_raw_gyro_y_used = ProtoField.int16 ("dji_p3.rec_imu_raw_gyro_y_used", "Gyro Y Used", base.DEC)
+f.rec_imu_raw_gyro_z_used = ProtoField.int16 ("dji_p3.rec_imu_raw_gyro_z_used", "Gyro Z Used", base.DEC)
+f.rec_imu_raw_acc_x_used = ProtoField.int16 ("dji_p3.rec_imu_raw_acc_x_used", "Acc X Used", base.DEC)
+f.rec_imu_raw_acc_y_used = ProtoField.int16 ("dji_p3.rec_imu_raw_acc_y_used", "Acc Y Used", base.DEC)
+f.rec_imu_raw_acc_z_used = ProtoField.int16 ("dji_p3.rec_imu_raw_acc_z_used", "Acc Z Used", base.DEC)
+f.rec_imu_raw_gyro_x_unused = ProtoField.int16 ("dji_p3.rec_imu_raw_gyro_x_unused", "Gyro X Unused", base.DEC)
+f.rec_imu_raw_gyro_y_unused = ProtoField.int16 ("dji_p3.rec_imu_raw_gyro_y_unused", "Gyro Y Unused", base.DEC)
+f.rec_imu_raw_gyro_z_unused = ProtoField.int16 ("dji_p3.rec_imu_raw_gyro_z_unused", "Gyro Z Unused", base.DEC)
+f.rec_imu_raw_acc_x_unused = ProtoField.int16 ("dji_p3.rec_imu_raw_acc_x_unused", "Acc X Unused", base.DEC)
+f.rec_imu_raw_acc_y_unused = ProtoField.int16 ("dji_p3.rec_imu_raw_acc_y_unused", "Acc Y Unused", base.DEC)
+f.rec_imu_raw_acc_z_unused = ProtoField.int16 ("dji_p3.rec_imu_raw_acc_z_unused", "Acc Z Unused", base.DEC)
+f.rec_imu_raw_xxxxcnt = ProtoField.int16 ("dji_p3.rec_imu_raw_xxxxcnt", "Xxxxcnt", base.DEC)
+f.rec_imu_raw_xxbaro = ProtoField.int16 ("dji_p3.rec_imu_raw_xxbaro", "Xxbaro", base.DEC)
+f.rec_imu_raw_xxbaro_temp = ProtoField.int16 ("dji_p3.rec_imu_raw_xxbaro_temp", "Xxbaro Temp", base.DEC)
+
+local function flightrec_imu_raw_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_raw_gyro_x_used, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_gyro_y_used, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_gyro_z_used, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_acc_x_used, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_acc_y_used, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_acc_z_used, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_gyro_x_unused, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_gyro_y_unused, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_gyro_z_unused, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_acc_x_unused, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_acc_y_unused, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_acc_z_unused, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_xxxxcnt, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_xxbaro, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_raw_xxbaro_temp, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Raw: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Raw: Payload size different than expected") end
+end
+
+-- Flight log - Imu Init - 0x0006
+
+f.rec_imu_init_imu_offset_x = ProtoField.float ("dji_p3.rec_imu_init_imu_offset_x", "Imu Offset X", base.DEC)
+f.rec_imu_init_imu_offset_y = ProtoField.float ("dji_p3.rec_imu_init_imu_offset_y", "Imu Offset Y", base.DEC)
+f.rec_imu_init_imu_offset_z = ProtoField.float ("dji_p3.rec_imu_init_imu_offset_z", "Imu Offset Z", base.DEC)
+f.rec_imu_init_gps_offset_x = ProtoField.float ("dji_p3.rec_imu_init_gps_offset_x", "Gps Offset X", base.DEC)
+f.rec_imu_init_gps_offset_y = ProtoField.float ("dji_p3.rec_imu_init_gps_offset_y", "Gps Offset Y", base.DEC)
+f.rec_imu_init_gps_offset_z = ProtoField.float ("dji_p3.rec_imu_init_gps_offset_z", "Gps Offset Z", base.DEC)
+f.rec_imu_init_imu_dir = ProtoField.uint16 ("dji_p3.rec_imu_init_imu_dir", "Imu Dir", base.HEX)
+f.rec_imu_init_imu_key = ProtoField.uint8 ("dji_p3.rec_imu_init_imu_key", "Imu Key", base.HEX)
+f.rec_imu_init_o_sw = ProtoField.uint8 ("dji_p3.rec_imu_init_o_sw", "O Sw", base.HEX)
+f.rec_imu_init_mag_bias_x = ProtoField.float ("dji_p3.rec_imu_init_mag_bias_x", "Mag Bias X", base.DEC)
+f.rec_imu_init_mag_bias_y = ProtoField.float ("dji_p3.rec_imu_init_mag_bias_y", "Mag Bias Y", base.DEC)
+f.rec_imu_init_mag_bias_z = ProtoField.float ("dji_p3.rec_imu_init_mag_bias_z", "Mag Bias Z", base.DEC)
+f.rec_imu_init_mag_scale_x = ProtoField.float ("dji_p3.rec_imu_init_mag_scale_x", "Mag Scale X", base.DEC)
+f.rec_imu_init_mag_scale_y = ProtoField.float ("dji_p3.rec_imu_init_mag_scale_y", "Mag Scale Y", base.DEC)
+f.rec_imu_init_mag_scale_z = ProtoField.float ("dji_p3.rec_imu_init_mag_scale_z", "Mag Scale Z", base.DEC)
+f.rec_imu_init_init_counter = ProtoField.uint16 ("dji_p3.rec_imu_init_init_counter", "Init Counter", base.HEX)
+
+local function flightrec_imu_init_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_init_imu_offset_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_init_imu_offset_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_init_imu_offset_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_init_gps_offset_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_init_gps_offset_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_init_gps_offset_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_init_imu_dir, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_init_imu_key, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_imu_init_o_sw, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_imu_init_mag_bias_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_init_mag_bias_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_init_mag_bias_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_init_mag_scale_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_init_mag_scale_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_init_mag_scale_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_init_init_counter, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 54) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Init: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Init: Payload size different than expected") end
+end
+
+-- Flight log - Osd General - 0x000c
+
+f.rec_osd_general_longtitude = ProtoField.double ("dji_p3.rec_osd_general_longtitude", "Longtitude", base.DEC)
+f.rec_osd_general_latitude = ProtoField.double ("dji_p3.rec_osd_general_latitude", "Latitude", base.DEC)
+f.rec_osd_general_relative_height = ProtoField.int16 ("dji_p3.rec_osd_general_relative_height", "Relative Height", base.DEC)
+f.rec_osd_general_vgx = ProtoField.int16 ("dji_p3.rec_osd_general_vgx", "Vgx", base.DEC, nil, nil, "0.1m/s,to ground")
+f.rec_osd_general_vgy = ProtoField.int16 ("dji_p3.rec_osd_general_vgy", "Vgy", base.DEC)
+f.rec_osd_general_vgz = ProtoField.int16 ("dji_p3.rec_osd_general_vgz", "Vgz", base.DEC)
+f.rec_osd_general_pitch = ProtoField.int16 ("dji_p3.rec_osd_general_pitch", "Pitch", base.DEC, nil, nil, "0.1")
+f.rec_osd_general_roll = ProtoField.int16 ("dji_p3.rec_osd_general_roll", "Roll", base.DEC)
+f.rec_osd_general_yaw = ProtoField.int16 ("dji_p3.rec_osd_general_yaw", "Yaw", base.DEC)
+f.rec_osd_general_mode1 = ProtoField.uint8 ("dji_p3.rec_osd_general_mode1", "Mode1", base.HEX, nil, nil, "controller state1 ")
+f.rec_osd_general_latest_cmd = ProtoField.uint8 ("dji_p3.rec_osd_general_latest_cmd", "Latest Cmd", base.HEX, nil, nil, "controller exccute lastest cmd")
+f.rec_osd_general_controller_state = ProtoField.uint32 ("dji_p3.rec_osd_general_controller_state", "Controller State", base.HEX)
+  f.rec_osd_general_e_on_ground = ProtoField.uint32 ("dji_p3.rec_osd_general_e_on_ground", "E On Ground", base.HEX, nil, 0x02, nil)
+  f.rec_osd_general_e_in_air = ProtoField.uint32 ("dji_p3.rec_osd_general_e_in_air", "E In Air", base.HEX, nil, 0x04, nil)
+  f.rec_osd_general_e_motor_on = ProtoField.uint32 ("dji_p3.rec_osd_general_e_motor_on", "E Motor On", base.HEX, nil, 0x08, nil)
+  f.rec_osd_general_e_usonic_on = ProtoField.uint32 ("dji_p3.rec_osd_general_e_usonic_on", "E Usonic On", base.HEX, nil, 0x10, nil)
+  f.rec_osd_general_e_gohome_state = ProtoField.uint32 ("dji_p3.rec_osd_general_e_gohome_state", "E Gohome State", base.HEX, nil, 0xe0, nil)
+  f.rec_osd_general_e_mvo_used = ProtoField.uint32 ("dji_p3.rec_osd_general_e_mvo_used", "E Mvo Used", base.HEX, nil, 0x100, nil)
+  f.rec_osd_general_e_battery_req_gohome = ProtoField.uint32 ("dji_p3.rec_osd_general_e_battery_req_gohome", "E Battery Req Gohome", base.HEX, nil, 0x200, nil)
+  f.rec_osd_general_e_battery_req_land = ProtoField.uint32 ("dji_p3.rec_osd_general_e_battery_req_land", "E Battery Req Land", base.HEX, nil, 0x400, nil)
+  f.rec_osd_general_e_still_heating = ProtoField.uint32 ("dji_p3.rec_osd_general_e_still_heating", "E Still Heating", base.HEX, nil, 0x1000, nil)
+  f.rec_osd_general_e_rc_state = ProtoField.uint32 ("dji_p3.rec_osd_general_e_rc_state", "E Rc State", base.HEX, nil, 0x6000, nil)
+  f.rec_osd_general_e_gps_used = ProtoField.uint32 ("dji_p3.rec_osd_general_e_gps_used", "E Gps Used", base.HEX, nil, 0x8000, nil)
+  f.rec_osd_general_e_compass_over_range = ProtoField.uint32 ("dji_p3.rec_osd_general_e_compass_over_range", "E Compass Over Range", base.HEX, nil, 0x10000, nil)
+  f.rec_osd_general_e_press_err = ProtoField.uint32 ("dji_p3.rec_osd_general_e_press_err", "E Press Err", base.HEX, nil, 0x4000000, nil)
+f.rec_osd_general_gps_nums = ProtoField.uint8 ("dji_p3.rec_osd_general_gps_nums", "Gps Nums", base.HEX)
+f.rec_osd_general_gohome_landing_reason = ProtoField.uint8 ("dji_p3.rec_osd_general_gohome_landing_reason", "Gohome Landing Reason", base.HEX)
+f.rec_osd_general_start_fail_reason = ProtoField.uint8 ("dji_p3.rec_osd_general_start_fail_reason", "Start Fail Reason", base.HEX)
+f.rec_osd_general_controller_state_ext = ProtoField.uint8 ("dji_p3.rec_osd_general_controller_state_ext", "Controller State Ext", base.HEX)
+  f.rec_osd_general_e_gps_state = ProtoField.uint8 ("dji_p3.rec_osd_general_e_gps_state", "E Gps State", base.HEX, nil, 0x0f, nil)
+f.rec_osd_general_rsvd2 = ProtoField.uint8 ("dji_p3.rec_osd_general_rsvd2", "Rsvd2", base.HEX)
+f.rec_osd_general_ultrasonic_height = ProtoField.uint8 ("dji_p3.rec_osd_general_ultrasonic_height", "Ultrasonic Height", base.HEX)
+f.rec_osd_general_motor_startup_time = ProtoField.uint16 ("dji_p3.rec_osd_general_motor_startup_time", "Motor Startup Time", base.HEX)
+f.rec_osd_general_motor_startup_times = ProtoField.uint8 ("dji_p3.rec_osd_general_motor_startup_times", "Motor Startup Times", base.HEX)
+f.rec_osd_general_bat_alarm1 = ProtoField.uint8 ("dji_p3.rec_osd_general_bat_alarm1", "Bat Alarm1", base.HEX)
+f.rec_osd_general_bat_alarm2 = ProtoField.uint8 ("dji_p3.rec_osd_general_bat_alarm2", "Bat Alarm2", base.HEX)
+f.rec_osd_general_version_match = ProtoField.uint8 ("dji_p3.rec_osd_general_version_match", "Version Match", base.HEX)
+f.rec_osd_general_product_type = ProtoField.uint8 ("dji_p3.rec_osd_general_product_type", "Product Type", base.HEX)
+
+local function flightrec_osd_general_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_osd_general_longtitude, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_osd_general_latitude, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_osd_general_relative_height, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_osd_general_vgx, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_osd_general_vgy, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_osd_general_vgz, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_osd_general_pitch, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_osd_general_roll, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_osd_general_yaw, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_osd_general_mode1, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_general_latest_cmd, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_general_controller_state, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_on_ground, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_in_air, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_motor_on, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_usonic_on, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_gohome_state, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_mvo_used, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_battery_req_gohome, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_battery_req_land, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_still_heating, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_rc_state, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_gps_used, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_compass_over_range, payload(offset, 4))
+    subtree:add_le (f.rec_osd_general_e_press_err, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_osd_general_gps_nums, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_general_gohome_landing_reason, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_general_start_fail_reason, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_general_controller_state_ext, payload(offset, 1))
+    subtree:add_le (f.rec_osd_general_e_gps_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_general_rsvd2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_general_ultrasonic_height, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_general_motor_startup_time, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_osd_general_motor_startup_times, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_general_bat_alarm1, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_general_bat_alarm2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_general_version_match, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_general_product_type, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 49) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd General: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd General: Payload size different than expected") end
+end
+
+-- Flight log - Osd Home - 0x000d
+
+f.rec_osd_home_osd_lon = ProtoField.double ("dji_p3.rec_osd_home_osd_lon", "Osd Lon", base.DEC)
+f.rec_osd_home_osd_lat = ProtoField.double ("dji_p3.rec_osd_home_osd_lat", "Osd Lat", base.DEC)
+f.rec_osd_home_osd_alt = ProtoField.float ("dji_p3.rec_osd_home_osd_alt", "Osd Alt", base.DEC)
+f.rec_osd_home_osd_home_state = ProtoField.uint16 ("dji_p3.rec_osd_home_osd_home_state", "Osd Home State", base.HEX)
+  f.rec_osd_home_e_homepoint_set = ProtoField.uint16 ("dji_p3.rec_osd_home_e_homepoint_set", "E Homepoint Set", base.HEX, nil, 0x01, nil)
+  f.rec_osd_home_e_method = ProtoField.uint16 ("dji_p3.rec_osd_home_e_method", "E Method", base.HEX, nil, 0x02, nil)
+  f.rec_osd_home_e_heading = ProtoField.uint16 ("dji_p3.rec_osd_home_e_heading", "E Heading", base.HEX, nil, 0x04, nil)
+  f.rec_osd_home_e_is_dyn_homepoint = ProtoField.uint16 ("dji_p3.rec_osd_home_e_is_dyn_homepoint", "E Is Dyn Homepoint", base.HEX, nil, 0x08, nil)
+  f.rec_osd_home_e_multiple = ProtoField.uint16 ("dji_p3.rec_osd_home_e_multiple", "E Multiple", base.HEX, nil, 0x40, nil)
+  f.rec_osd_home_e_ioc_enable = ProtoField.uint16 ("dji_p3.rec_osd_home_e_ioc_enable", "E Ioc Enable", base.HEX, nil, 0x1000, nil)
+f.rec_osd_home_fixed_altitedue = ProtoField.uint16 ("dji_p3.rec_osd_home_fixed_altitedue", "Fixed Altitedue", base.HEX)
+f.rec_osd_home_course_lock_torsion = ProtoField.int16 ("dji_p3.rec_osd_home_course_lock_torsion", "Course Lock Torsion", base.DEC)
+
+local function flightrec_osd_home_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_osd_home_osd_lon, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_osd_home_osd_lat, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_osd_home_osd_alt, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_osd_home_osd_home_state, payload(offset, 2))
+    subtree:add_le (f.rec_osd_home_e_homepoint_set, payload(offset, 2))
+    subtree:add_le (f.rec_osd_home_e_method, payload(offset, 2))
+    subtree:add_le (f.rec_osd_home_e_heading, payload(offset, 2))
+    subtree:add_le (f.rec_osd_home_e_is_dyn_homepoint, payload(offset, 2))
+    subtree:add_le (f.rec_osd_home_e_multiple, payload(offset, 2))
+    subtree:add_le (f.rec_osd_home_e_ioc_enable, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_osd_home_fixed_altitedue, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_osd_home_course_lock_torsion, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 26) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Home: Payload size different than expected") end
+end
+
+-- Flight log - Fdi - 0x001a
+
+f.rec_fdi_ns_abnormal_all = ProtoField.uint32 ("dji_p3.rec_fdi_ns_abnormal_all", "Ns Abnormal All", base.HEX)
+f.rec_fdi_history_ns_abnormal_all = ProtoField.uint32 ("dji_p3.rec_fdi_history_ns_abnormal_all", "History Ns Abnormal All", base.HEX)
+f.rec_fdi_gyro_bias_raw_flag = ProtoField.uint8 ("dji_p3.rec_fdi_gyro_bias_raw_flag", "Gyro Bias Raw Flag", base.HEX)
+f.rec_fdi_gyrox_bias_raw = ProtoField.float ("dji_p3.rec_fdi_gyrox_bias_raw", "Gyrox Bias Raw", base.DEC)
+f.rec_fdi_gyroy_bias_raw = ProtoField.float ("dji_p3.rec_fdi_gyroy_bias_raw", "Gyroy Bias Raw", base.DEC)
+f.rec_fdi_gyroz_bias_raw = ProtoField.float ("dji_p3.rec_fdi_gyroz_bias_raw", "Gyroz Bias Raw", base.DEC)
+
+local function flightrec_fdi_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_fdi_ns_abnormal_all, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fdi_history_ns_abnormal_all, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fdi_gyro_bias_raw_flag, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_fdi_gyrox_bias_raw, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fdi_gyroy_bias_raw, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fdi_gyroz_bias_raw, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 21) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Fdi: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Fdi: Payload size different than expected") end
+end
+
+-- Flight log - Vincent Debug - 0x8003
+
+f.rec_vincent_debug_data0 = ProtoField.float ("dji_p3.rec_vincent_debug_data0", "Data0", base.DEC)
+f.rec_vincent_debug_data1 = ProtoField.float ("dji_p3.rec_vincent_debug_data1", "Data1", base.DEC)
+f.rec_vincent_debug_data2 = ProtoField.float ("dji_p3.rec_vincent_debug_data2", "Data2", base.DEC)
+f.rec_vincent_debug_data3 = ProtoField.float ("dji_p3.rec_vincent_debug_data3", "Data3", base.DEC)
+f.rec_vincent_debug_data4 = ProtoField.float ("dji_p3.rec_vincent_debug_data4", "Data4", base.DEC)
+f.rec_vincent_debug_data5 = ProtoField.float ("dji_p3.rec_vincent_debug_data5", "Data5", base.DEC)
+f.rec_vincent_debug_data6 = ProtoField.float ("dji_p3.rec_vincent_debug_data6", "Data6", base.DEC)
+f.rec_vincent_debug_data7 = ProtoField.float ("dji_p3.rec_vincent_debug_data7", "Data7", base.DEC)
+f.rec_vincent_debug_data8 = ProtoField.float ("dji_p3.rec_vincent_debug_data8", "Data8", base.DEC)
+f.rec_vincent_debug_data9 = ProtoField.float ("dji_p3.rec_vincent_debug_data9", "Data9", base.DEC)
+f.rec_vincent_debug_data10 = ProtoField.float ("dji_p3.rec_vincent_debug_data10", "Data10", base.DEC)
+f.rec_vincent_debug_data11 = ProtoField.float ("dji_p3.rec_vincent_debug_data11", "Data11", base.DEC)
+f.rec_vincent_debug_data12 = ProtoField.float ("dji_p3.rec_vincent_debug_data12", "Data12", base.DEC)
+f.rec_vincent_debug_data13 = ProtoField.float ("dji_p3.rec_vincent_debug_data13", "Data13", base.DEC)
+f.rec_vincent_debug_data14 = ProtoField.float ("dji_p3.rec_vincent_debug_data14", "Data14", base.DEC)
+f.rec_vincent_debug_data15 = ProtoField.float ("dji_p3.rec_vincent_debug_data15", "Data15", base.DEC)
+f.rec_vincent_debug_data16 = ProtoField.float ("dji_p3.rec_vincent_debug_data16", "Data16", base.DEC)
+f.rec_vincent_debug_data17 = ProtoField.float ("dji_p3.rec_vincent_debug_data17", "Data17", base.DEC)
+f.rec_vincent_debug_data18 = ProtoField.float ("dji_p3.rec_vincent_debug_data18", "Data18", base.DEC)
+f.rec_vincent_debug_data19 = ProtoField.float ("dji_p3.rec_vincent_debug_data19", "Data19", base.DEC)
+f.rec_vincent_debug_data20 = ProtoField.float ("dji_p3.rec_vincent_debug_data20", "Data20", base.DEC)
+f.rec_vincent_debug_data21 = ProtoField.float ("dji_p3.rec_vincent_debug_data21", "Data21", base.DEC)
+f.rec_vincent_debug_data22 = ProtoField.float ("dji_p3.rec_vincent_debug_data22", "Data22", base.DEC)
+f.rec_vincent_debug_data23 = ProtoField.float ("dji_p3.rec_vincent_debug_data23", "Data23", base.DEC)
+f.rec_vincent_debug_data24 = ProtoField.float ("dji_p3.rec_vincent_debug_data24", "Data24", base.DEC)
+f.rec_vincent_debug_data25 = ProtoField.float ("dji_p3.rec_vincent_debug_data25", "Data25", base.DEC)
+f.rec_vincent_debug_data26 = ProtoField.float ("dji_p3.rec_vincent_debug_data26", "Data26", base.DEC)
+f.rec_vincent_debug_data27 = ProtoField.float ("dji_p3.rec_vincent_debug_data27", "Data27", base.DEC)
+f.rec_vincent_debug_data28 = ProtoField.float ("dji_p3.rec_vincent_debug_data28", "Data28", base.DEC)
+f.rec_vincent_debug_data29 = ProtoField.float ("dji_p3.rec_vincent_debug_data29", "Data29", base.DEC)
+f.rec_vincent_debug_data30 = ProtoField.float ("dji_p3.rec_vincent_debug_data30", "Data30", base.DEC)
+f.rec_vincent_debug_data31 = ProtoField.float ("dji_p3.rec_vincent_debug_data31", "Data31", base.DEC)
+f.rec_vincent_debug_data32 = ProtoField.float ("dji_p3.rec_vincent_debug_data32", "Data32", base.DEC)
+f.rec_vincent_debug_data33 = ProtoField.float ("dji_p3.rec_vincent_debug_data33", "Data33", base.DEC)
+f.rec_vincent_debug_data34 = ProtoField.float ("dji_p3.rec_vincent_debug_data34", "Data34", base.DEC)
+f.rec_vincent_debug_data35 = ProtoField.float ("dji_p3.rec_vincent_debug_data35", "Data35", base.DEC)
+f.rec_vincent_debug_data36 = ProtoField.float ("dji_p3.rec_vincent_debug_data36", "Data36", base.DEC)
+f.rec_vincent_debug_data37 = ProtoField.float ("dji_p3.rec_vincent_debug_data37", "Data37", base.DEC)
+f.rec_vincent_debug_data38 = ProtoField.float ("dji_p3.rec_vincent_debug_data38", "Data38", base.DEC)
+f.rec_vincent_debug_data39 = ProtoField.float ("dji_p3.rec_vincent_debug_data39", "Data39", base.DEC)
+f.rec_vincent_debug_data40 = ProtoField.float ("dji_p3.rec_vincent_debug_data40", "Data40", base.DEC)
+f.rec_vincent_debug_data41 = ProtoField.float ("dji_p3.rec_vincent_debug_data41", "Data41", base.DEC)
+f.rec_vincent_debug_data42 = ProtoField.float ("dji_p3.rec_vincent_debug_data42", "Data42", base.DEC)
+f.rec_vincent_debug_data43 = ProtoField.float ("dji_p3.rec_vincent_debug_data43", "Data43", base.DEC)
+f.rec_vincent_debug_data44 = ProtoField.float ("dji_p3.rec_vincent_debug_data44", "Data44", base.DEC)
+f.rec_vincent_debug_data45 = ProtoField.float ("dji_p3.rec_vincent_debug_data45", "Data45", base.DEC)
+f.rec_vincent_debug_data46 = ProtoField.float ("dji_p3.rec_vincent_debug_data46", "Data46", base.DEC)
+f.rec_vincent_debug_data47 = ProtoField.float ("dji_p3.rec_vincent_debug_data47", "Data47", base.DEC)
+f.rec_vincent_debug_data48 = ProtoField.float ("dji_p3.rec_vincent_debug_data48", "Data48", base.DEC)
+f.rec_vincent_debug_data49 = ProtoField.float ("dji_p3.rec_vincent_debug_data49", "Data49", base.DEC)
+f.rec_vincent_debug_data50 = ProtoField.float ("dji_p3.rec_vincent_debug_data50", "Data50", base.DEC)
+f.rec_vincent_debug_data51 = ProtoField.float ("dji_p3.rec_vincent_debug_data51", "Data51", base.DEC)
+f.rec_vincent_debug_data52 = ProtoField.float ("dji_p3.rec_vincent_debug_data52", "Data52", base.DEC)
+f.rec_vincent_debug_data53 = ProtoField.float ("dji_p3.rec_vincent_debug_data53", "Data53", base.DEC)
+f.rec_vincent_debug_data54 = ProtoField.float ("dji_p3.rec_vincent_debug_data54", "Data54", base.DEC)
+f.rec_vincent_debug_data55 = ProtoField.float ("dji_p3.rec_vincent_debug_data55", "Data55", base.DEC)
+f.rec_vincent_debug_data56 = ProtoField.float ("dji_p3.rec_vincent_debug_data56", "Data56", base.DEC)
+f.rec_vincent_debug_data57 = ProtoField.float ("dji_p3.rec_vincent_debug_data57", "Data57", base.DEC)
+f.rec_vincent_debug_data58 = ProtoField.float ("dji_p3.rec_vincent_debug_data58", "Data58", base.DEC)
+f.rec_vincent_debug_data59 = ProtoField.float ("dji_p3.rec_vincent_debug_data59", "Data59", base.DEC)
+
+local function flightrec_vincent_debug_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_vincent_debug_data0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data3, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data4, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data5, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data6, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data7, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data8, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data9, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data10, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data11, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data12, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data13, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data14, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data15, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data16, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data17, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data18, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data19, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data20, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data21, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data22, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data23, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data24, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data25, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data26, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data27, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data28, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data29, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data30, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data31, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data32, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data33, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data34, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data35, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data36, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data37, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data38, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data39, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data40, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data41, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data42, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data43, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data44, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data45, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data46, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data47, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data48, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data49, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data50, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data51, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data52, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data53, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data54, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data55, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data56, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data57, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data58, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_vincent_debug_data59, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 240) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Vincent Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Vincent Debug: Payload size different than expected") end
 end
 
 -- Flight log - Fly Log - 0x8000
@@ -953,35 +2776,5117 @@ local function flightrec_fly_log_dissector(payload, pinfo, subtree)
     subtree:add (f.rec_fly_log_text, payload(offset, payload:len() - offset))
 end
 
--- Flight log - Sys Cfg - 0xffff
+-- Flight log - Sd Logs - 0xff00
 
-f.rec_sys_cfg_text = ProtoField.string ("dji_p3.rec_sys_cfg_text", "Sys Cfg", base.ASCII)
+f.rec_sd_logs_text = ProtoField.string ("dji_p3.rec_sd_logs_text", "Sd Logs", base.ASCII)
 
-local function flightrec_sys_cfg_dissector(payload, pinfo, subtree)
+local function flightrec_sd_logs_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add (f.rec_sys_cfg_text, payload(offset, payload:len() - offset))
+    subtree:add (f.rec_sd_logs_text, payload(offset, payload:len() - offset))
+end
+
+-- Flight log - Svn Info - 0xfffe
+
+f.rec_svn_info_text = ProtoField.string ("dji_p3.rec_svn_info_text", "Svn Info", base.ASCII)
+
+local function flightrec_svn_info_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add (f.rec_svn_info_text, payload(offset, payload:len() - offset))
+end
+
+-- Flight log - Imu Data - 0x0007
+
+f.rec_imu_data_imu_gyro_tempx = ProtoField.float ("dji_p3.rec_imu_data_imu_gyro_tempx", "Imu Gyro Tempx", base.DEC)
+f.rec_imu_data_imu_gyro_tempy = ProtoField.float ("dji_p3.rec_imu_data_imu_gyro_tempy", "Imu Gyro Tempy", base.DEC)
+f.rec_imu_data_imu_gyro_tempz = ProtoField.float ("dji_p3.rec_imu_data_imu_gyro_tempz", "Imu Gyro Tempz", base.DEC)
+f.rec_imu_data_imu_gyro_x = ProtoField.float ("dji_p3.rec_imu_data_imu_gyro_x", "Imu Gyro X", base.DEC)
+f.rec_imu_data_imu_gyro_y = ProtoField.float ("dji_p3.rec_imu_data_imu_gyro_y", "Imu Gyro Y", base.DEC)
+f.rec_imu_data_imu_gyro_z = ProtoField.float ("dji_p3.rec_imu_data_imu_gyro_z", "Imu Gyro Z", base.DEC)
+f.rec_imu_data_imu_acc_x = ProtoField.float ("dji_p3.rec_imu_data_imu_acc_x", "Imu Acc X", base.DEC)
+f.rec_imu_data_imu_acc_y = ProtoField.float ("dji_p3.rec_imu_data_imu_acc_y", "Imu Acc Y", base.DEC)
+f.rec_imu_data_imu_acc_z = ProtoField.float ("dji_p3.rec_imu_data_imu_acc_z", "Imu Acc Z", base.DEC)
+f.rec_imu_data_imu_airpress = ProtoField.float ("dji_p3.rec_imu_data_imu_airpress", "Imu Airpress", base.DEC)
+f.rec_imu_data_imu_vin = ProtoField.float ("dji_p3.rec_imu_data_imu_vin", "Imu Vin", base.DEC)
+f.rec_imu_data_imu_ref = ProtoField.float ("dji_p3.rec_imu_data_imu_ref", "Imu Ref", base.DEC)
+
+local function flightrec_imu_data_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_data_imu_gyro_tempx, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_imu_gyro_tempy, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_imu_gyro_tempz, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_imu_gyro_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_imu_gyro_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_imu_gyro_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_imu_acc_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_imu_acc_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_imu_acc_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_imu_airpress, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_imu_vin, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_imu_ref, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 48) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Data: Payload size different than expected") end
+end
+
+-- Flight log - Imu Data 00 - 0x0870
+
+f.rec_imu_data_00_imu_gyro_tempx_00 = ProtoField.float ("dji_p3.rec_imu_data_00_imu_gyro_tempx_00", "Imu Gyro Tempx 00", base.DEC)
+f.rec_imu_data_00_imu_gyro_tempy_00 = ProtoField.float ("dji_p3.rec_imu_data_00_imu_gyro_tempy_00", "Imu Gyro Tempy 00", base.DEC)
+f.rec_imu_data_00_imu_gyro_tempz_00 = ProtoField.float ("dji_p3.rec_imu_data_00_imu_gyro_tempz_00", "Imu Gyro Tempz 00", base.DEC)
+f.rec_imu_data_00_imu_gyro_x_00 = ProtoField.float ("dji_p3.rec_imu_data_00_imu_gyro_x_00", "Imu Gyro X 00", base.DEC)
+f.rec_imu_data_00_imu_gyro_y_00 = ProtoField.float ("dji_p3.rec_imu_data_00_imu_gyro_y_00", "Imu Gyro Y 00", base.DEC)
+f.rec_imu_data_00_imu_gyro_z_00 = ProtoField.float ("dji_p3.rec_imu_data_00_imu_gyro_z_00", "Imu Gyro Z 00", base.DEC)
+f.rec_imu_data_00_imu_acc_x_00 = ProtoField.float ("dji_p3.rec_imu_data_00_imu_acc_x_00", "Imu Acc X 00", base.DEC)
+f.rec_imu_data_00_imu_acc_y_00 = ProtoField.float ("dji_p3.rec_imu_data_00_imu_acc_y_00", "Imu Acc Y 00", base.DEC)
+f.rec_imu_data_00_imu_acc_z_00 = ProtoField.float ("dji_p3.rec_imu_data_00_imu_acc_z_00", "Imu Acc Z 00", base.DEC)
+f.rec_imu_data_00_imu_airpress_00 = ProtoField.float ("dji_p3.rec_imu_data_00_imu_airpress_00", "Imu Airpress 00", base.DEC)
+f.rec_imu_data_00_imu_vin_00 = ProtoField.float ("dji_p3.rec_imu_data_00_imu_vin_00", "Imu Vin 00", base.DEC)
+f.rec_imu_data_00_imu_ref_00 = ProtoField.float ("dji_p3.rec_imu_data_00_imu_ref_00", "Imu Ref 00", base.DEC)
+
+local function flightrec_imu_data_00_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_data_00_imu_gyro_tempx_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_00_imu_gyro_tempy_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_00_imu_gyro_tempz_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_00_imu_gyro_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_00_imu_gyro_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_00_imu_gyro_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_00_imu_acc_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_00_imu_acc_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_00_imu_acc_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_00_imu_airpress_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_00_imu_vin_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_00_imu_ref_00, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 48) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Data 00: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Data 00: Payload size different than expected") end
+end
+
+-- Flight log - Imu Data 01 - 0x0871
+
+f.rec_imu_data_01_imu_gyro_tempx_01 = ProtoField.float ("dji_p3.rec_imu_data_01_imu_gyro_tempx_01", "Imu Gyro Tempx 01", base.DEC)
+f.rec_imu_data_01_imu_gyro_tempy_01 = ProtoField.float ("dji_p3.rec_imu_data_01_imu_gyro_tempy_01", "Imu Gyro Tempy 01", base.DEC)
+f.rec_imu_data_01_imu_gyro_tempz_01 = ProtoField.float ("dji_p3.rec_imu_data_01_imu_gyro_tempz_01", "Imu Gyro Tempz 01", base.DEC)
+f.rec_imu_data_01_imu_gyro_x_01 = ProtoField.float ("dji_p3.rec_imu_data_01_imu_gyro_x_01", "Imu Gyro X 01", base.DEC)
+f.rec_imu_data_01_imu_gyro_y_01 = ProtoField.float ("dji_p3.rec_imu_data_01_imu_gyro_y_01", "Imu Gyro Y 01", base.DEC)
+f.rec_imu_data_01_imu_gyro_z_01 = ProtoField.float ("dji_p3.rec_imu_data_01_imu_gyro_z_01", "Imu Gyro Z 01", base.DEC)
+f.rec_imu_data_01_imu_acc_x_01 = ProtoField.float ("dji_p3.rec_imu_data_01_imu_acc_x_01", "Imu Acc X 01", base.DEC)
+f.rec_imu_data_01_imu_acc_y_01 = ProtoField.float ("dji_p3.rec_imu_data_01_imu_acc_y_01", "Imu Acc Y 01", base.DEC)
+f.rec_imu_data_01_imu_acc_z_01 = ProtoField.float ("dji_p3.rec_imu_data_01_imu_acc_z_01", "Imu Acc Z 01", base.DEC)
+f.rec_imu_data_01_imu_airpress_01 = ProtoField.float ("dji_p3.rec_imu_data_01_imu_airpress_01", "Imu Airpress 01", base.DEC)
+f.rec_imu_data_01_imu_vin_01 = ProtoField.float ("dji_p3.rec_imu_data_01_imu_vin_01", "Imu Vin 01", base.DEC)
+f.rec_imu_data_01_imu_ref_01 = ProtoField.float ("dji_p3.rec_imu_data_01_imu_ref_01", "Imu Ref 01", base.DEC)
+
+local function flightrec_imu_data_01_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_data_01_imu_gyro_tempx_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_01_imu_gyro_tempy_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_01_imu_gyro_tempz_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_01_imu_gyro_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_01_imu_gyro_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_01_imu_gyro_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_01_imu_acc_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_01_imu_acc_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_01_imu_acc_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_01_imu_airpress_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_01_imu_vin_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_01_imu_ref_01, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 48) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Data 01: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Data 01: Payload size different than expected") end
+end
+
+-- Flight log - Imu Data 02 - 0x0872
+
+f.rec_imu_data_02_imu_gyro_tempx_02 = ProtoField.float ("dji_p3.rec_imu_data_02_imu_gyro_tempx_02", "Imu Gyro Tempx 02", base.DEC)
+f.rec_imu_data_02_imu_gyro_tempy_02 = ProtoField.float ("dji_p3.rec_imu_data_02_imu_gyro_tempy_02", "Imu Gyro Tempy 02", base.DEC)
+f.rec_imu_data_02_imu_gyro_tempz_02 = ProtoField.float ("dji_p3.rec_imu_data_02_imu_gyro_tempz_02", "Imu Gyro Tempz 02", base.DEC)
+f.rec_imu_data_02_imu_gyro_x_02 = ProtoField.float ("dji_p3.rec_imu_data_02_imu_gyro_x_02", "Imu Gyro X 02", base.DEC)
+f.rec_imu_data_02_imu_gyro_y_02 = ProtoField.float ("dji_p3.rec_imu_data_02_imu_gyro_y_02", "Imu Gyro Y 02", base.DEC)
+f.rec_imu_data_02_imu_gyro_z_02 = ProtoField.float ("dji_p3.rec_imu_data_02_imu_gyro_z_02", "Imu Gyro Z 02", base.DEC)
+f.rec_imu_data_02_imu_acc_x_02 = ProtoField.float ("dji_p3.rec_imu_data_02_imu_acc_x_02", "Imu Acc X 02", base.DEC)
+f.rec_imu_data_02_imu_acc_y_02 = ProtoField.float ("dji_p3.rec_imu_data_02_imu_acc_y_02", "Imu Acc Y 02", base.DEC)
+f.rec_imu_data_02_imu_acc_z_02 = ProtoField.float ("dji_p3.rec_imu_data_02_imu_acc_z_02", "Imu Acc Z 02", base.DEC)
+f.rec_imu_data_02_imu_airpress_02 = ProtoField.float ("dji_p3.rec_imu_data_02_imu_airpress_02", "Imu Airpress 02", base.DEC)
+f.rec_imu_data_02_imu_vin_02 = ProtoField.float ("dji_p3.rec_imu_data_02_imu_vin_02", "Imu Vin 02", base.DEC)
+f.rec_imu_data_02_imu_ref_02 = ProtoField.float ("dji_p3.rec_imu_data_02_imu_ref_02", "Imu Ref 02", base.DEC)
+
+local function flightrec_imu_data_02_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_data_02_imu_gyro_tempx_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_02_imu_gyro_tempy_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_02_imu_gyro_tempz_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_02_imu_gyro_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_02_imu_gyro_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_02_imu_gyro_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_02_imu_acc_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_02_imu_acc_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_02_imu_acc_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_02_imu_airpress_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_02_imu_vin_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_data_02_imu_ref_02, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 48) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Data 02: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Data 02: Payload size different than expected") end
+end
+
+-- Flight log - Imu Cali Data - 0x0008
+
+f.rec_imu_cali_data_gyrox_temp = ProtoField.float ("dji_p3.rec_imu_cali_data_gyrox_temp", "Gyrox Temp", base.DEC)
+f.rec_imu_cali_data_g_cfg_temper_bias_bias_bw = ProtoField.float ("dji_p3.rec_imu_cali_data_g_cfg_temper_bias_bias_bw", "G Cfg Temper Bias.Bias.Bw", base.DEC)
+f.rec_imu_cali_data_g_cfg_temper_bias_bias_bw = ProtoField.float ("dji_p3.rec_imu_cali_data_g_cfg_temper_bias_bias_bw", "G Cfg Temper Bias.Bias.Bw", base.DEC)
+f.rec_imu_cali_data_g_cfg_temper_bias_bias_bw = ProtoField.float ("dji_p3.rec_imu_cali_data_g_cfg_temper_bias_bias_bw", "G Cfg Temper Bias.Bias.Bw", base.DEC)
+f.rec_imu_cali_data_g_cfg_temper_bias_bias_ba = ProtoField.float ("dji_p3.rec_imu_cali_data_g_cfg_temper_bias_bias_ba", "G Cfg Temper Bias.Bias.Ba", base.DEC)
+f.rec_imu_cali_data_g_cfg_temper_bias_bias_ba = ProtoField.float ("dji_p3.rec_imu_cali_data_g_cfg_temper_bias_bias_ba", "G Cfg Temper Bias.Bias.Ba", base.DEC)
+f.rec_imu_cali_data_g_cfg_temper_bias_bias_ba = ProtoField.float ("dji_p3.rec_imu_cali_data_g_cfg_temper_bias_bias_ba", "G Cfg Temper Bias.Bias.Ba", base.DEC)
+f.rec_imu_cali_data_g_cfg_temper_bias_flag = ProtoField.uint16 ("dji_p3.rec_imu_cali_data_g_cfg_temper_bias_flag", "G Cfg Temper Bias Flag", base.HEX)
+f.rec_imu_cali_data_g_cfg_temper_bias_cali = ProtoField.uint16 ("dji_p3.rec_imu_cali_data_g_cfg_temper_bias_cali", "G Cfg Temper Bias Cali", base.HEX)
+f.rec_imu_cali_data_g_cfg_gyro_bias_flag = ProtoField.uint16 ("dji_p3.rec_imu_cali_data_g_cfg_gyro_bias_flag", "G Cfg Gyro Bias Flag", base.HEX)
+f.rec_imu_cali_data_g_cfg_gyro_bias_cali = ProtoField.uint16 ("dji_p3.rec_imu_cali_data_g_cfg_gyro_bias_cali", "G Cfg Gyro Bias Cali", base.HEX)
+f.rec_imu_cali_data_imu_cali_bias_sta_flag = ProtoField.uint8 ("dji_p3.rec_imu_cali_data_imu_cali_bias_sta_flag", "Imu Cali Bias Sta Flag", base.HEX)
+f.rec_imu_cali_data_imu_cali_bias_sta_cnt = ProtoField.uint8 ("dji_p3.rec_imu_cali_data_imu_cali_bias_sta_cnt", "Imu Cali Bias Sta Cnt", base.HEX)
+f.rec_imu_cali_data_g_cali_state = ProtoField.uint8 ("dji_p3.rec_imu_cali_data_g_cali_state", "G Cali State", base.HEX)
+f.rec_imu_cali_data_clock = ProtoField.uint16 ("dji_p3.rec_imu_cali_data_clock", "Clock", base.HEX)
+f.rec_imu_cali_data_time = ProtoField.int16 ("dji_p3.rec_imu_cali_data_time", "Time", base.DEC)
+
+local function flightrec_imu_cali_data_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_cali_data_gyrox_temp, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_cali_data_g_cfg_temper_bias_bias_bw, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_cali_data_g_cfg_temper_bias_bias_bw, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_cali_data_g_cfg_temper_bias_bias_bw, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_cali_data_g_cfg_temper_bias_bias_ba, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_cali_data_g_cfg_temper_bias_bias_ba, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_cali_data_g_cfg_temper_bias_bias_ba, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_imu_cali_data_g_cfg_temper_bias_flag, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_cali_data_g_cfg_temper_bias_cali, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_cali_data_g_cfg_gyro_bias_flag, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_cali_data_g_cfg_gyro_bias_cali, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_cali_data_imu_cali_bias_sta_flag, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_imu_cali_data_imu_cali_bias_sta_cnt, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_imu_cali_data_g_cali_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_imu_cali_data_clock, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_imu_cali_data_time, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 43) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Cali Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Cali Data: Payload size different than expected") end
+end
+
+-- Flight log - Sensor Cfg Temp - 0x0009
+
+f.rec_sensor_cfg_temp_bias_gyrox = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_gyrox", "Bias Gyrox", base.DEC)
+f.rec_sensor_cfg_temp_bias_gyroy = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_gyroy", "Bias Gyroy", base.DEC)
+f.rec_sensor_cfg_temp_bias_gyroz = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_gyroz", "Bias Gyroz", base.DEC)
+f.rec_sensor_cfg_temp_bias_accx = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_accx", "Bias Accx", base.DEC)
+f.rec_sensor_cfg_temp_bias_accy = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_accy", "Bias Accy", base.DEC)
+f.rec_sensor_cfg_temp_bias_accz = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_accz", "Bias Accz", base.DEC)
+f.rec_sensor_cfg_temp_tw = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_tw", "Tw", base.DEC)
+f.rec_sensor_cfg_temp_ta = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_ta", "Ta", base.DEC)
+f.rec_sensor_cfg_temp_fw = ProtoField.uint16 ("dji_p3.rec_sensor_cfg_temp_fw", "Fw", base.HEX)
+f.rec_sensor_cfg_temp_fa = ProtoField.uint16 ("dji_p3.rec_sensor_cfg_temp_fa", "Fa", base.HEX)
+
+local function flightrec_sensor_cfg_temp_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_sensor_cfg_temp_bias_gyrox, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_sensor_cfg_temp_bias_gyroy, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_sensor_cfg_temp_bias_gyroz, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_sensor_cfg_temp_bias_accx, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_sensor_cfg_temp_bias_accy, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_sensor_cfg_temp_bias_accz, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_sensor_cfg_temp_tw, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_sensor_cfg_temp_ta, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_sensor_cfg_temp_fw, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_sensor_cfg_temp_fa, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 36) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Sensor Cfg Temp: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Sensor Cfg Temp: Payload size different than expected") end
+end
+
+-- Flight log - Temp Ctl Data - 0x000a
+
+f.rec_temp_ctl_data_p = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_p", "P", base.DEC)
+f.rec_temp_ctl_data_i = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_i", "I", base.DEC)
+f.rec_temp_ctl_data_i_small = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_i_small", "I Small", base.DEC)
+f.rec_temp_ctl_data_d = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_d", "D", base.DEC)
+f.rec_temp_ctl_data_dl_err = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_dl_err", "Dl Err", base.DEC)
+f.rec_temp_ctl_data_err_last = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_err_last", "Err Last", base.DEC)
+f.rec_temp_ctl_data_out = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_out", "Out", base.DEC)
+f.rec_temp_ctl_data_kp = ProtoField.float ("dji_p3.rec_temp_ctl_data_kp", "Kp", base.DEC)
+f.rec_temp_ctl_data_ki = ProtoField.float ("dji_p3.rec_temp_ctl_data_ki", "Ki", base.DEC)
+f.rec_temp_ctl_data_kd = ProtoField.float ("dji_p3.rec_temp_ctl_data_kd", "Kd", base.DEC)
+f.rec_temp_ctl_data_ctl_out_value = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_ctl_out_value", "Ctl Out Value", base.HEX)
+f.rec_temp_ctl_data_real_ctl_out_value = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_real_ctl_out_value", "Real Ctl Out Value", base.HEX)
+f.rec_temp_ctl_data_dst_value = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_dst_value", "Dst Value", base.DEC)
+f.rec_temp_ctl_data_cur_dst_temp = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_cur_dst_temp", "Cur Dst Temp", base.DEC)
+f.rec_temp_ctl_data_cnt = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_cnt", "Cnt", base.HEX)
+f.rec_temp_ctl_data_real_ctl_out_per = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_real_ctl_out_per", "Real Ctl Out Per", base.HEX)
+f.rec_temp_ctl_data_slope_type = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_slope_type", "Slope Type", base.HEX)
+f.rec_temp_ctl_data_temp_ctl_slope = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_temp_ctl_slope", "Temp Ctl Slope", base.HEX)
+f.rec_temp_ctl_data_t_finish = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_t_finish", "T Finish", base.HEX)
+
+local function flightrec_temp_ctl_data_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_temp_ctl_data_p, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_i, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_i_small, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_d, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_dl_err, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_err_last, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_out, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_kp, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_ki, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_kd, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_ctl_out_value, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_real_ctl_out_value, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_dst_value, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_cur_dst_temp, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_cnt, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_real_ctl_out_per, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_slope_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_temp_ctl_slope, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_t_finish, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 56) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Ctl Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Ctl Data: Payload size different than expected") end
+end
+
+-- Flight log - Temp Ctl Data 00 - 0x0880
+
+f.rec_temp_ctl_data_00_dst_value_00 = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_00_dst_value_00", "Dst Value 00", base.DEC)
+f.rec_temp_ctl_data_00_cur_dst_temp_00 = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_00_cur_dst_temp_00", "Cur Dst Temp 00", base.DEC)
+f.rec_temp_ctl_data_00_p_00 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_00_p_00", "P 00", base.DEC)
+f.rec_temp_ctl_data_00_i_00 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_00_i_00", "I 00", base.DEC)
+f.rec_temp_ctl_data_00_d_00 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_00_d_00", "D 00", base.DEC)
+f.rec_temp_ctl_data_00_dl_err_00 = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_00_dl_err_00", "Dl Err 00", base.DEC)
+f.rec_temp_ctl_data_00_real_ctl_out_per_00 = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_00_real_ctl_out_per_00", "Real Ctl Out Per 00", base.HEX)
+f.rec_temp_ctl_data_00_slope_type_00 = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_00_slope_type_00", "Slope Type 00", base.HEX)
+f.rec_temp_ctl_data_00_temp_ctl_slope_00 = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_00_temp_ctl_slope_00", "Temp Ctl Slope 00", base.HEX)
+f.rec_temp_ctl_data_00_t_finish_00 = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_00_t_finish_00", "T Finish 00", base.HEX)
+f.rec_temp_ctl_data_00_err_last_00 = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_00_err_last_00", "Err Last 00", base.DEC)
+f.rec_temp_ctl_data_00_ctl_out_value_00 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_00_ctl_out_value_00", "Ctl Out Value 00", base.HEX)
+f.rec_temp_ctl_data_00_real_ctl_out_value_00 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_00_real_ctl_out_value_00", "Real Ctl Out Value 00", base.HEX)
+f.rec_temp_ctl_data_00_i_small_00 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_00_i_small_00", "I Small 00", base.DEC)
+f.rec_temp_ctl_data_00_out_00 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_00_out_00", "Out 00", base.DEC)
+f.rec_temp_ctl_data_00_cnt_00 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_00_cnt_00", "Cnt 00", base.HEX)
+
+local function flightrec_temp_ctl_data_00_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_temp_ctl_data_00_dst_value_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_00_cur_dst_temp_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_00_p_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_00_i_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_00_d_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_00_dl_err_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_00_real_ctl_out_per_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_00_slope_type_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_00_temp_ctl_slope_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_00_t_finish_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_00_err_last_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_00_ctl_out_value_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_00_real_ctl_out_value_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_00_i_small_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_00_out_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_00_cnt_00, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 44) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Ctl Data 00: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Ctl Data 00: Payload size different than expected") end
+end
+
+-- Flight log - Temp Ctl Data 01 - 0x0881
+
+f.rec_temp_ctl_data_01_dst_value_01 = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_01_dst_value_01", "Dst Value 01", base.DEC)
+f.rec_temp_ctl_data_01_cur_dst_temp_01 = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_01_cur_dst_temp_01", "Cur Dst Temp 01", base.DEC)
+f.rec_temp_ctl_data_01_p_01 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_01_p_01", "P 01", base.DEC)
+f.rec_temp_ctl_data_01_i_01 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_01_i_01", "I 01", base.DEC)
+f.rec_temp_ctl_data_01_d_01 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_01_d_01", "D 01", base.DEC)
+f.rec_temp_ctl_data_01_dl_err_01 = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_01_dl_err_01", "Dl Err 01", base.DEC)
+f.rec_temp_ctl_data_01_real_ctl_out_per_01 = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_01_real_ctl_out_per_01", "Real Ctl Out Per 01", base.HEX)
+f.rec_temp_ctl_data_01_slope_type_01 = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_01_slope_type_01", "Slope Type 01", base.HEX)
+f.rec_temp_ctl_data_01_temp_ctl_slope_01 = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_01_temp_ctl_slope_01", "Temp Ctl Slope 01", base.HEX)
+f.rec_temp_ctl_data_01_t_finish_01 = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_01_t_finish_01", "T Finish 01", base.HEX)
+f.rec_temp_ctl_data_01_err_last_01 = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_01_err_last_01", "Err Last 01", base.DEC)
+f.rec_temp_ctl_data_01_ctl_out_value_01 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_01_ctl_out_value_01", "Ctl Out Value 01", base.HEX)
+f.rec_temp_ctl_data_01_real_ctl_out_value_01 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_01_real_ctl_out_value_01", "Real Ctl Out Value 01", base.HEX)
+f.rec_temp_ctl_data_01_i_small_01 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_01_i_small_01", "I Small 01", base.DEC)
+f.rec_temp_ctl_data_01_out_01 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_01_out_01", "Out 01", base.DEC)
+f.rec_temp_ctl_data_01_cnt_01 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_01_cnt_01", "Cnt 01", base.HEX)
+
+local function flightrec_temp_ctl_data_01_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_temp_ctl_data_01_dst_value_01, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_01_cur_dst_temp_01, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_01_p_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_01_i_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_01_d_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_01_dl_err_01, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_01_real_ctl_out_per_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_01_slope_type_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_01_temp_ctl_slope_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_01_t_finish_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_01_err_last_01, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_01_ctl_out_value_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_01_real_ctl_out_value_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_01_i_small_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_01_out_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_01_cnt_01, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 44) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Ctl Data 01: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Ctl Data 01: Payload size different than expected") end
+end
+
+-- Flight log - Temp Ctl Data 02 - 0x0882
+
+f.rec_temp_ctl_data_02_dst_value_02 = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_02_dst_value_02", "Dst Value 02", base.DEC)
+f.rec_temp_ctl_data_02_cur_dst_temp_02 = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_02_cur_dst_temp_02", "Cur Dst Temp 02", base.DEC)
+f.rec_temp_ctl_data_02_p_02 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_02_p_02", "P 02", base.DEC)
+f.rec_temp_ctl_data_02_i_02 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_02_i_02", "I 02", base.DEC)
+f.rec_temp_ctl_data_02_d_02 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_02_d_02", "D 02", base.DEC)
+f.rec_temp_ctl_data_02_dl_err_02 = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_02_dl_err_02", "Dl Err 02", base.DEC)
+f.rec_temp_ctl_data_02_real_ctl_out_per_02 = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_02_real_ctl_out_per_02", "Real Ctl Out Per 02", base.HEX)
+f.rec_temp_ctl_data_02_slope_type_02 = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_02_slope_type_02", "Slope Type 02", base.HEX)
+f.rec_temp_ctl_data_02_temp_ctl_slope_02 = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_02_temp_ctl_slope_02", "Temp Ctl Slope 02", base.HEX)
+f.rec_temp_ctl_data_02_t_finish_02 = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_02_t_finish_02", "T Finish 02", base.HEX)
+f.rec_temp_ctl_data_02_err_last_02 = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_02_err_last_02", "Err Last 02", base.DEC)
+f.rec_temp_ctl_data_02_ctl_out_value_02 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_02_ctl_out_value_02", "Ctl Out Value 02", base.HEX)
+f.rec_temp_ctl_data_02_real_ctl_out_value_02 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_02_real_ctl_out_value_02", "Real Ctl Out Value 02", base.HEX)
+f.rec_temp_ctl_data_02_i_small_02 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_02_i_small_02", "I Small 02", base.DEC)
+f.rec_temp_ctl_data_02_out_02 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_02_out_02", "Out 02", base.DEC)
+f.rec_temp_ctl_data_02_cnt_02 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_02_cnt_02", "Cnt 02", base.HEX)
+
+local function flightrec_temp_ctl_data_02_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_temp_ctl_data_02_dst_value_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_02_cur_dst_temp_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_02_p_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_02_i_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_02_d_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_02_dl_err_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_02_real_ctl_out_per_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_02_slope_type_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_02_temp_ctl_slope_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_02_t_finish_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_ctl_data_02_err_last_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_ctl_data_02_ctl_out_value_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_02_real_ctl_out_value_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_02_i_small_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_02_out_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_02_cnt_02, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 44) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Ctl Data 02: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Ctl Data 02: Payload size different than expected") end
+end
+
+-- Flight log - Pwm Output - 0x0014
+
+f.rec_pwm_output_m1 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m1", "M1", base.HEX)
+f.rec_pwm_output_m2 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m2", "M2", base.HEX)
+f.rec_pwm_output_m3 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m3", "M3", base.HEX)
+f.rec_pwm_output_m4 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m4", "M4", base.HEX)
+f.rec_pwm_output_m5 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m5", "M5", base.HEX)
+f.rec_pwm_output_m6 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m6", "M6", base.HEX)
+f.rec_pwm_output_m7 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m7", "M7", base.HEX)
+f.rec_pwm_output_m8 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m8", "M8", base.HEX)
+
+local function flightrec_pwm_output_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_pwm_output_m1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_pwm_output_m2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_pwm_output_m3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_pwm_output_m4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_pwm_output_m5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_pwm_output_m6, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_pwm_output_m7, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_pwm_output_m8, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Pwm Output: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Pwm Output: Payload size different than expected") end
+end
+
+-- Flight log - Temp Bias Data - 0x0015
+
+f.rec_temp_bias_data__bw_x = ProtoField.float ("dji_p3.rec_temp_bias_data__bw_x", " Bw X", base.DEC)
+f.rec_temp_bias_data__bw_y = ProtoField.float ("dji_p3.rec_temp_bias_data__bw_y", " Bw Y", base.DEC)
+f.rec_temp_bias_data__bw_z = ProtoField.float ("dji_p3.rec_temp_bias_data__bw_z", " Bw Z", base.DEC)
+f.rec_temp_bias_data__ba_x = ProtoField.float ("dji_p3.rec_temp_bias_data__ba_x", " Ba X", base.DEC)
+f.rec_temp_bias_data__ba_y = ProtoField.float ("dji_p3.rec_temp_bias_data__ba_y", " Ba Y", base.DEC)
+f.rec_temp_bias_data__ba_z = ProtoField.float ("dji_p3.rec_temp_bias_data__ba_z", " Ba Z", base.DEC)
+f.rec_temp_bias_data__temp = ProtoField.float ("dji_p3.rec_temp_bias_data__temp", " Temp", base.DEC)
+f.rec_temp_bias_data__flag = ProtoField.uint8 ("dji_p3.rec_temp_bias_data__flag", " Flag", base.HEX)
+
+local function flightrec_temp_bias_data_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_temp_bias_data__bw_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_bias_data__bw_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_bias_data__bw_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_bias_data__ba_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_bias_data__ba_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_bias_data__ba_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_bias_data__temp, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_bias_data__flag, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 29) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Bias Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Bias Data: Payload size different than expected") end
+end
+
+-- Flight log - Temp Cali Data - 0x0016
+
+f.rec_temp_cali_data__start_flag = ProtoField.uint8 ("dji_p3.rec_temp_cali_data__start_flag", " Start Flag", base.HEX)
+f.rec_temp_cali_data__state = ProtoField.int8 ("dji_p3.rec_temp_cali_data__state", " State", base.DEC)
+f.rec_temp_cali_data__cali_cnt = ProtoField.uint8 ("dji_p3.rec_temp_cali_data__cali_cnt", " Cali Cnt", base.HEX)
+f.rec_temp_cali_data__temp_ready = ProtoField.uint8 ("dji_p3.rec_temp_cali_data__temp_ready", " Temp Ready", base.HEX)
+f.rec_temp_cali_data__step = ProtoField.uint8 ("dji_p3.rec_temp_cali_data__step", " Step", base.HEX)
+f.rec_temp_cali_data__cali_type = ProtoField.uint8 ("dji_p3.rec_temp_cali_data__cali_type", " Cali Type", base.HEX)
+f.rec_temp_cali_data__tick = ProtoField.uint16 ("dji_p3.rec_temp_cali_data__tick", " Tick", base.HEX)
+f.rec_temp_cali_data__grav_acc_x = ProtoField.int8 ("dji_p3.rec_temp_cali_data__grav_acc_x", " Grav Acc X", base.DEC)
+f.rec_temp_cali_data__grav_acc_y = ProtoField.int8 ("dji_p3.rec_temp_cali_data__grav_acc_y", " Grav Acc Y", base.DEC)
+f.rec_temp_cali_data__grav_acc_z = ProtoField.int8 ("dji_p3.rec_temp_cali_data__grav_acc_z", " Grav Acc Z", base.DEC)
+f.rec_temp_cali_data__dst_cali_temp = ProtoField.int8 ("dji_p3.rec_temp_cali_data__dst_cali_temp", " Dst Cali Temp", base.DEC)
+f.rec_temp_cali_data__temp_min = ProtoField.float ("dji_p3.rec_temp_cali_data__temp_min", " Temp Min", base.DEC)
+f.rec_temp_cali_data__temp_max = ProtoField.float ("dji_p3.rec_temp_cali_data__temp_max", " Temp Max", base.DEC)
+f.rec_temp_cali_data__temp_cali_status = ProtoField.uint8 ("dji_p3.rec_temp_cali_data__temp_cali_status", " Temp Cali Status", base.HEX)
+f.rec_temp_cali_data__base_cali_status = ProtoField.uint8 ("dji_p3.rec_temp_cali_data__base_cali_status", " Base Cali Status", base.HEX)
+f.rec_temp_cali_data__cfg_temp_cali_fw_version = ProtoField.uint8 ("dji_p3.rec_temp_cali_data__cfg_temp_cali_fw_version", " Cfg Temp Cali Fw Version", base.HEX)
+f.rec_temp_cali_data__cur_temp_cali_fw_version = ProtoField.uint8 ("dji_p3.rec_temp_cali_data__cur_temp_cali_fw_version", " Cur Temp Cali Fw Version", base.HEX)
+f.rec_temp_cali_data__temp_bw_x = ProtoField.float ("dji_p3.rec_temp_cali_data__temp_bw_x", " Temp Bw X", base.DEC)
+f.rec_temp_cali_data__temp_bw_y = ProtoField.float ("dji_p3.rec_temp_cali_data__temp_bw_y", " Temp Bw Y", base.DEC)
+f.rec_temp_cali_data__temp_bw_z = ProtoField.float ("dji_p3.rec_temp_cali_data__temp_bw_z", " Temp Bw Z", base.DEC)
+f.rec_temp_cali_data__temp_ba_x = ProtoField.float ("dji_p3.rec_temp_cali_data__temp_ba_x", " Temp Ba X", base.DEC)
+f.rec_temp_cali_data__temp_ba_y = ProtoField.float ("dji_p3.rec_temp_cali_data__temp_ba_y", " Temp Ba Y", base.DEC)
+f.rec_temp_cali_data__temp_ba_z = ProtoField.float ("dji_p3.rec_temp_cali_data__temp_ba_z", " Temp Ba Z", base.DEC)
+f.rec_temp_cali_data__temp_temp = ProtoField.float ("dji_p3.rec_temp_cali_data__temp_temp", " Temp Temp", base.DEC)
+f.rec_temp_cali_data__base_bw_x = ProtoField.float ("dji_p3.rec_temp_cali_data__base_bw_x", " Base Bw X", base.DEC)
+f.rec_temp_cali_data__base_bw_y = ProtoField.float ("dji_p3.rec_temp_cali_data__base_bw_y", " Base Bw Y", base.DEC)
+f.rec_temp_cali_data__base_bw_z = ProtoField.float ("dji_p3.rec_temp_cali_data__base_bw_z", " Base Bw Z", base.DEC)
+f.rec_temp_cali_data__base_ba_x = ProtoField.float ("dji_p3.rec_temp_cali_data__base_ba_x", " Base Ba X", base.DEC)
+f.rec_temp_cali_data__base_ba_y = ProtoField.float ("dji_p3.rec_temp_cali_data__base_ba_y", " Base Ba Y", base.DEC)
+f.rec_temp_cali_data__base_ba_z = ProtoField.float ("dji_p3.rec_temp_cali_data__base_ba_z", " Base Ba Z", base.DEC)
+f.rec_temp_cali_data__base_temp = ProtoField.float ("dji_p3.rec_temp_cali_data__base_temp", " Base Temp", base.DEC)
+
+local function flightrec_temp_cali_data_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_temp_cali_data__start_flag, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__cali_cnt, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__temp_ready, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__step, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__cali_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__tick, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_cali_data__grav_acc_x, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__grav_acc_y, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__grav_acc_z, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__dst_cali_temp, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__temp_min, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__temp_max, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__temp_cali_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__base_cali_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__cfg_temp_cali_fw_version, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__cur_temp_cali_fw_version, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data__temp_bw_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__temp_bw_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__temp_bw_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__temp_ba_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__temp_ba_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__temp_ba_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__temp_temp, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__base_bw_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__base_bw_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__base_bw_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__base_ba_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__base_ba_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__base_ba_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data__base_temp, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 80) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Cali Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Cali Data: Payload size different than expected") end
+end
+
+-- Flight log - App Temp Bias Data - 0x0018
+
+f.rec_app_temp_bias_data_bw_x = ProtoField.float ("dji_p3.rec_app_temp_bias_data_bw_x", "Bw X", base.DEC)
+f.rec_app_temp_bias_data_bw_y = ProtoField.float ("dji_p3.rec_app_temp_bias_data_bw_y", "Bw Y", base.DEC)
+f.rec_app_temp_bias_data_bw_z = ProtoField.float ("dji_p3.rec_app_temp_bias_data_bw_z", "Bw Z", base.DEC)
+f.rec_app_temp_bias_data_ba_x = ProtoField.float ("dji_p3.rec_app_temp_bias_data_ba_x", "Ba X", base.DEC)
+f.rec_app_temp_bias_data_ba_y = ProtoField.float ("dji_p3.rec_app_temp_bias_data_ba_y", "Ba Y", base.DEC)
+f.rec_app_temp_bias_data_ba_z = ProtoField.float ("dji_p3.rec_app_temp_bias_data_ba_z", "Ba Z", base.DEC)
+f.rec_app_temp_bias_data_temp = ProtoField.float ("dji_p3.rec_app_temp_bias_data_temp", "Temp", base.DEC)
+f.rec_app_temp_bias_data_flag = ProtoField.uint8 ("dji_p3.rec_app_temp_bias_data_flag", "Flag", base.HEX)
+
+local function flightrec_app_temp_bias_data_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_app_temp_bias_data_bw_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_bias_data_bw_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_bias_data_bw_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_bias_data_ba_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_bias_data_ba_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_bias_data_ba_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_bias_data_temp, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_bias_data_flag, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 29) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"App Temp Bias Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"App Temp Bias Data: Payload size different than expected") end
+end
+
+-- Flight log - App Temp Cali Data - 0x0019
+
+f.rec_app_temp_cali_data_start_flag = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_start_flag", "Start Flag", base.HEX)
+f.rec_app_temp_cali_data_state = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_state", "State", base.DEC)
+f.rec_app_temp_cali_data_cali_cnt = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_cali_cnt", "Cali Cnt", base.HEX)
+f.rec_app_temp_cali_data_temp_ready = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_temp_ready", "Temp Ready", base.HEX)
+f.rec_app_temp_cali_data_step = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_step", "Step", base.HEX)
+f.rec_app_temp_cali_data_cali_type = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_cali_type", "Cali Type", base.HEX)
+f.rec_app_temp_cali_data_tick = ProtoField.uint16 ("dji_p3.rec_app_temp_cali_data_tick", "Tick", base.HEX)
+f.rec_app_temp_cali_data_grav_acc_x = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_grav_acc_x", "Grav Acc X", base.DEC)
+f.rec_app_temp_cali_data_grav_acc_y = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_grav_acc_y", "Grav Acc Y", base.DEC)
+f.rec_app_temp_cali_data_grav_acc_z = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_grav_acc_z", "Grav Acc Z", base.DEC)
+f.rec_app_temp_cali_data_dst_cali_temp = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_dst_cali_temp", "Dst Cali Temp", base.DEC)
+f.rec_app_temp_cali_data_temp_min = ProtoField.float ("dji_p3.rec_app_temp_cali_data_temp_min", "Temp Min", base.DEC)
+f.rec_app_temp_cali_data_temp_max = ProtoField.float ("dji_p3.rec_app_temp_cali_data_temp_max", "Temp Max", base.DEC)
+f.rec_app_temp_cali_data_temp_cali_status = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_temp_cali_status", "Temp Cali Status", base.HEX)
+f.rec_app_temp_cali_data_base_cali_status = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_base_cali_status", "Base Cali Status", base.HEX)
+f.rec_app_temp_cali_data_cfg_temp_cali_fw_version = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_cfg_temp_cali_fw_version", "Cfg Temp Cali Fw Version", base.HEX)
+f.rec_app_temp_cali_data_cur_temp_cali_fw_version = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_cur_temp_cali_fw_version", "Cur Temp Cali Fw Version", base.HEX)
+f.rec_app_temp_cali_data_temp_bw_x = ProtoField.float ("dji_p3.rec_app_temp_cali_data_temp_bw_x", "Temp Bw X", base.DEC)
+f.rec_app_temp_cali_data_temp_bw_y = ProtoField.float ("dji_p3.rec_app_temp_cali_data_temp_bw_y", "Temp Bw Y", base.DEC)
+f.rec_app_temp_cali_data_temp_bw_z = ProtoField.float ("dji_p3.rec_app_temp_cali_data_temp_bw_z", "Temp Bw Z", base.DEC)
+f.rec_app_temp_cali_data_temp_ba_x = ProtoField.float ("dji_p3.rec_app_temp_cali_data_temp_ba_x", "Temp Ba X", base.DEC)
+f.rec_app_temp_cali_data_temp_ba_y = ProtoField.float ("dji_p3.rec_app_temp_cali_data_temp_ba_y", "Temp Ba Y", base.DEC)
+f.rec_app_temp_cali_data_temp_ba_z = ProtoField.float ("dji_p3.rec_app_temp_cali_data_temp_ba_z", "Temp Ba Z", base.DEC)
+f.rec_app_temp_cali_data_temp_temp = ProtoField.float ("dji_p3.rec_app_temp_cali_data_temp_temp", "Temp Temp", base.DEC)
+f.rec_app_temp_cali_data_base_bw_x = ProtoField.float ("dji_p3.rec_app_temp_cali_data_base_bw_x", "Base Bw X", base.DEC)
+f.rec_app_temp_cali_data_base_bw_y = ProtoField.float ("dji_p3.rec_app_temp_cali_data_base_bw_y", "Base Bw Y", base.DEC)
+f.rec_app_temp_cali_data_base_bw_z = ProtoField.float ("dji_p3.rec_app_temp_cali_data_base_bw_z", "Base Bw Z", base.DEC)
+f.rec_app_temp_cali_data_base_ba_x = ProtoField.float ("dji_p3.rec_app_temp_cali_data_base_ba_x", "Base Ba X", base.DEC)
+f.rec_app_temp_cali_data_base_ba_y = ProtoField.float ("dji_p3.rec_app_temp_cali_data_base_ba_y", "Base Ba Y", base.DEC)
+f.rec_app_temp_cali_data_base_ba_z = ProtoField.float ("dji_p3.rec_app_temp_cali_data_base_ba_z", "Base Ba Z", base.DEC)
+f.rec_app_temp_cali_data_base_temp = ProtoField.float ("dji_p3.rec_app_temp_cali_data_base_temp", "Base Temp", base.DEC)
+
+local function flightrec_app_temp_cali_data_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_app_temp_cali_data_start_flag, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_cali_cnt, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_temp_ready, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_step, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_cali_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_tick, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_app_temp_cali_data_grav_acc_x, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_grav_acc_y, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_grav_acc_z, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_dst_cali_temp, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_temp_min, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_temp_max, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_temp_cali_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_base_cali_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_cfg_temp_cali_fw_version, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_cur_temp_cali_fw_version, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_temp_bw_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_temp_bw_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_temp_bw_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_temp_ba_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_temp_ba_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_temp_ba_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_temp_temp, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_base_bw_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_base_bw_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_base_bw_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_base_ba_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_base_ba_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_base_ba_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_base_temp, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 80) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"App Temp Cali Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"App Temp Cali Data: Payload size different than expected") end
+end
+
+-- Flight log - Temp Cali Data 00 - 0x0893
+
+f.rec_temp_cali_data_00__start_flag_00 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_00__start_flag_00", " Start Flag 00", base.HEX)
+f.rec_temp_cali_data_00__state_00 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_00__state_00", " State 00", base.DEC)
+f.rec_temp_cali_data_00__cali_cnt_00 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_00__cali_cnt_00", " Cali Cnt 00", base.HEX)
+f.rec_temp_cali_data_00__temp_ready_00 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_00__temp_ready_00", " Temp Ready 00", base.HEX)
+f.rec_temp_cali_data_00__step_00 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_00__step_00", " Step 00", base.HEX)
+f.rec_temp_cali_data_00__cali_type_00 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_00__cali_type_00", " Cali Type 00", base.HEX)
+f.rec_temp_cali_data_00__tick_00 = ProtoField.uint16 ("dji_p3.rec_temp_cali_data_00__tick_00", " Tick 00", base.HEX)
+f.rec_temp_cali_data_00__grav_acc_x_00 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_00__grav_acc_x_00", " Grav Acc X 00", base.DEC)
+f.rec_temp_cali_data_00__grav_acc_y_00 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_00__grav_acc_y_00", " Grav Acc Y 00", base.DEC)
+f.rec_temp_cali_data_00__grav_acc_z_00 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_00__grav_acc_z_00", " Grav Acc Z 00", base.DEC)
+f.rec_temp_cali_data_00__dst_cali_temp_00 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_00__dst_cali_temp_00", " Dst Cali Temp 00", base.DEC)
+f.rec_temp_cali_data_00__temp_min_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__temp_min_00", " Temp Min 00", base.DEC)
+f.rec_temp_cali_data_00__temp_max_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__temp_max_00", " Temp Max 00", base.DEC)
+f.rec_temp_cali_data_00__temp_cali_status_00 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_00__temp_cali_status_00", " Temp Cali Status 00", base.HEX)
+f.rec_temp_cali_data_00__base_cali_status_00 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_00__base_cali_status_00", " Base Cali Status 00", base.HEX)
+f.rec_temp_cali_data_00__cfg_temp_cali_fw_version_00 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_00__cfg_temp_cali_fw_version_00", " Cfg Temp Cali Fw Version 00", base.HEX)
+f.rec_temp_cali_data_00__cur_temp_cali_fw_version_00 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_00__cur_temp_cali_fw_version_00", " Cur Temp Cali Fw Version 00", base.HEX)
+f.rec_temp_cali_data_00__temp_bw_x_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__temp_bw_x_00", " Temp Bw X 00", base.DEC)
+f.rec_temp_cali_data_00__temp_bw_y_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__temp_bw_y_00", " Temp Bw Y 00", base.DEC)
+f.rec_temp_cali_data_00__temp_bw_z_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__temp_bw_z_00", " Temp Bw Z 00", base.DEC)
+f.rec_temp_cali_data_00__temp_ba_x_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__temp_ba_x_00", " Temp Ba X 00", base.DEC)
+f.rec_temp_cali_data_00__temp_ba_y_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__temp_ba_y_00", " Temp Ba Y 00", base.DEC)
+f.rec_temp_cali_data_00__temp_ba_z_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__temp_ba_z_00", " Temp Ba Z 00", base.DEC)
+f.rec_temp_cali_data_00__temp_temp_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__temp_temp_00", " Temp Temp 00", base.DEC)
+f.rec_temp_cali_data_00__base_bw_x_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__base_bw_x_00", " Base Bw X 00", base.DEC)
+f.rec_temp_cali_data_00__base_bw_y_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__base_bw_y_00", " Base Bw Y 00", base.DEC)
+f.rec_temp_cali_data_00__base_bw_z_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__base_bw_z_00", " Base Bw Z 00", base.DEC)
+f.rec_temp_cali_data_00__base_ba_x_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__base_ba_x_00", " Base Ba X 00", base.DEC)
+f.rec_temp_cali_data_00__base_ba_y_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__base_ba_y_00", " Base Ba Y 00", base.DEC)
+f.rec_temp_cali_data_00__base_ba_z_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__base_ba_z_00", " Base Ba Z 00", base.DEC)
+f.rec_temp_cali_data_00__base_temp_00 = ProtoField.float ("dji_p3.rec_temp_cali_data_00__base_temp_00", " Base Temp 00", base.DEC)
+
+local function flightrec_temp_cali_data_00_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_temp_cali_data_00__start_flag_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__state_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__cali_cnt_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__temp_ready_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__step_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__cali_type_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__tick_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_cali_data_00__grav_acc_x_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__grav_acc_y_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__grav_acc_z_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__dst_cali_temp_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__temp_min_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__temp_max_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__temp_cali_status_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__base_cali_status_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__cfg_temp_cali_fw_version_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__cur_temp_cali_fw_version_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_00__temp_bw_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__temp_bw_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__temp_bw_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__temp_ba_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__temp_ba_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__temp_ba_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__temp_temp_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__base_bw_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__base_bw_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__base_bw_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__base_ba_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__base_ba_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__base_ba_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_00__base_temp_00, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 80) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Cali Data 00: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Cali Data 00: Payload size different than expected") end
+end
+
+-- Flight log - App Temp Cali Data 00 - 0x0896
+
+f.rec_app_temp_cali_data_00_start_flag_00 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_00_start_flag_00", "Start Flag 00", base.HEX)
+f.rec_app_temp_cali_data_00_state_00 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_00_state_00", "State 00", base.DEC)
+f.rec_app_temp_cali_data_00_cali_cnt_00 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_00_cali_cnt_00", "Cali Cnt 00", base.HEX)
+f.rec_app_temp_cali_data_00_temp_ready_00 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_00_temp_ready_00", "Temp Ready 00", base.HEX)
+f.rec_app_temp_cali_data_00_step_00 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_00_step_00", "Step 00", base.HEX)
+f.rec_app_temp_cali_data_00_cali_type_00 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_00_cali_type_00", "Cali Type 00", base.HEX)
+f.rec_app_temp_cali_data_00_tick_00 = ProtoField.uint16 ("dji_p3.rec_app_temp_cali_data_00_tick_00", "Tick 00", base.HEX)
+f.rec_app_temp_cali_data_00_grav_acc_x_00 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_00_grav_acc_x_00", "Grav Acc X 00", base.DEC)
+f.rec_app_temp_cali_data_00_grav_acc_y_00 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_00_grav_acc_y_00", "Grav Acc Y 00", base.DEC)
+f.rec_app_temp_cali_data_00_grav_acc_z_00 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_00_grav_acc_z_00", "Grav Acc Z 00", base.DEC)
+f.rec_app_temp_cali_data_00_dst_cali_temp_00 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_00_dst_cali_temp_00", "Dst Cali Temp 00", base.DEC)
+f.rec_app_temp_cali_data_00_temp_min_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_temp_min_00", "Temp Min 00", base.DEC)
+f.rec_app_temp_cali_data_00_temp_max_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_temp_max_00", "Temp Max 00", base.DEC)
+f.rec_app_temp_cali_data_00_temp_cali_status_00 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_00_temp_cali_status_00", "Temp Cali Status 00", base.HEX)
+f.rec_app_temp_cali_data_00_base_cali_status_00 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_00_base_cali_status_00", "Base Cali Status 00", base.HEX)
+f.rec_app_temp_cali_data_00_cfg_temp_cali_fw_version_00 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_00_cfg_temp_cali_fw_version_00", "Cfg Temp Cali Fw Version 00", base.HEX)
+f.rec_app_temp_cali_data_00_cur_temp_cali_fw_version_00 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_00_cur_temp_cali_fw_version_00", "Cur Temp Cali Fw Version 00", base.HEX)
+f.rec_app_temp_cali_data_00_temp_bw_x_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_temp_bw_x_00", "Temp Bw X 00", base.DEC)
+f.rec_app_temp_cali_data_00_temp_bw_y_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_temp_bw_y_00", "Temp Bw Y 00", base.DEC)
+f.rec_app_temp_cali_data_00_temp_bw_z_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_temp_bw_z_00", "Temp Bw Z 00", base.DEC)
+f.rec_app_temp_cali_data_00_temp_ba_x_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_temp_ba_x_00", "Temp Ba X 00", base.DEC)
+f.rec_app_temp_cali_data_00_temp_ba_y_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_temp_ba_y_00", "Temp Ba Y 00", base.DEC)
+f.rec_app_temp_cali_data_00_temp_ba_z_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_temp_ba_z_00", "Temp Ba Z 00", base.DEC)
+f.rec_app_temp_cali_data_00_temp_temp_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_temp_temp_00", "Temp Temp 00", base.DEC)
+f.rec_app_temp_cali_data_00_base_bw_x_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_base_bw_x_00", "Base Bw X 00", base.DEC)
+f.rec_app_temp_cali_data_00_base_bw_y_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_base_bw_y_00", "Base Bw Y 00", base.DEC)
+f.rec_app_temp_cali_data_00_base_bw_z_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_base_bw_z_00", "Base Bw Z 00", base.DEC)
+f.rec_app_temp_cali_data_00_base_ba_x_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_base_ba_x_00", "Base Ba X 00", base.DEC)
+f.rec_app_temp_cali_data_00_base_ba_y_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_base_ba_y_00", "Base Ba Y 00", base.DEC)
+f.rec_app_temp_cali_data_00_base_ba_z_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_base_ba_z_00", "Base Ba Z 00", base.DEC)
+f.rec_app_temp_cali_data_00_base_temp_00 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_00_base_temp_00", "Base Temp 00", base.DEC)
+
+local function flightrec_app_temp_cali_data_00_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_start_flag_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_state_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_cali_cnt_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_temp_ready_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_step_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_cali_type_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_tick_00, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_grav_acc_x_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_grav_acc_y_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_grav_acc_z_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_dst_cali_temp_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_temp_min_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_temp_max_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_temp_cali_status_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_base_cali_status_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_cfg_temp_cali_fw_version_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_cur_temp_cali_fw_version_00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_temp_bw_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_temp_bw_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_temp_bw_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_temp_ba_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_temp_ba_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_temp_ba_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_temp_temp_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_base_bw_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_base_bw_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_base_bw_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_base_ba_x_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_base_ba_y_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_base_ba_z_00, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_00_base_temp_00, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 80) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"App Temp Cali Data 00: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"App Temp Cali Data 00: Payload size different than expected") end
+end
+
+-- Flight log - Temp Cali Data 01 - 0x0894
+
+f.rec_temp_cali_data_01__start_flag_01 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_01__start_flag_01", " Start Flag 01", base.HEX)
+f.rec_temp_cali_data_01__state_01 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_01__state_01", " State 01", base.DEC)
+f.rec_temp_cali_data_01__cali_cnt_01 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_01__cali_cnt_01", " Cali Cnt 01", base.HEX)
+f.rec_temp_cali_data_01__temp_ready_01 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_01__temp_ready_01", " Temp Ready 01", base.HEX)
+f.rec_temp_cali_data_01__step_01 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_01__step_01", " Step 01", base.HEX)
+f.rec_temp_cali_data_01__cali_type_01 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_01__cali_type_01", " Cali Type 01", base.HEX)
+f.rec_temp_cali_data_01__tick_01 = ProtoField.uint16 ("dji_p3.rec_temp_cali_data_01__tick_01", " Tick 01", base.HEX)
+f.rec_temp_cali_data_01__grav_acc_x_01 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_01__grav_acc_x_01", " Grav Acc X 01", base.DEC)
+f.rec_temp_cali_data_01__grav_acc_y_01 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_01__grav_acc_y_01", " Grav Acc Y 01", base.DEC)
+f.rec_temp_cali_data_01__grav_acc_z_01 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_01__grav_acc_z_01", " Grav Acc Z 01", base.DEC)
+f.rec_temp_cali_data_01__dst_cali_temp_01 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_01__dst_cali_temp_01", " Dst Cali Temp 01", base.DEC)
+f.rec_temp_cali_data_01__temp_min_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__temp_min_01", " Temp Min 01", base.DEC)
+f.rec_temp_cali_data_01__temp_max_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__temp_max_01", " Temp Max 01", base.DEC)
+f.rec_temp_cali_data_01__temp_cali_status_01 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_01__temp_cali_status_01", " Temp Cali Status 01", base.HEX)
+f.rec_temp_cali_data_01__base_cali_status_01 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_01__base_cali_status_01", " Base Cali Status 01", base.HEX)
+f.rec_temp_cali_data_01__cfg_temp_cali_fw_version_01 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_01__cfg_temp_cali_fw_version_01", " Cfg Temp Cali Fw Version 01", base.HEX)
+f.rec_temp_cali_data_01__cur_temp_cali_fw_version_01 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_01__cur_temp_cali_fw_version_01", " Cur Temp Cali Fw Version 01", base.HEX)
+f.rec_temp_cali_data_01__temp_bw_x_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__temp_bw_x_01", " Temp Bw X 01", base.DEC)
+f.rec_temp_cali_data_01__temp_bw_y_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__temp_bw_y_01", " Temp Bw Y 01", base.DEC)
+f.rec_temp_cali_data_01__temp_bw_z_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__temp_bw_z_01", " Temp Bw Z 01", base.DEC)
+f.rec_temp_cali_data_01__temp_ba_x_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__temp_ba_x_01", " Temp Ba X 01", base.DEC)
+f.rec_temp_cali_data_01__temp_ba_y_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__temp_ba_y_01", " Temp Ba Y 01", base.DEC)
+f.rec_temp_cali_data_01__temp_ba_z_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__temp_ba_z_01", " Temp Ba Z 01", base.DEC)
+f.rec_temp_cali_data_01__temp_temp_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__temp_temp_01", " Temp Temp 01", base.DEC)
+f.rec_temp_cali_data_01__base_bw_x_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__base_bw_x_01", " Base Bw X 01", base.DEC)
+f.rec_temp_cali_data_01__base_bw_y_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__base_bw_y_01", " Base Bw Y 01", base.DEC)
+f.rec_temp_cali_data_01__base_bw_z_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__base_bw_z_01", " Base Bw Z 01", base.DEC)
+f.rec_temp_cali_data_01__base_ba_x_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__base_ba_x_01", " Base Ba X 01", base.DEC)
+f.rec_temp_cali_data_01__base_ba_y_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__base_ba_y_01", " Base Ba Y 01", base.DEC)
+f.rec_temp_cali_data_01__base_ba_z_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__base_ba_z_01", " Base Ba Z 01", base.DEC)
+f.rec_temp_cali_data_01__base_temp_01 = ProtoField.float ("dji_p3.rec_temp_cali_data_01__base_temp_01", " Base Temp 01", base.DEC)
+
+local function flightrec_temp_cali_data_01_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_temp_cali_data_01__start_flag_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__state_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__cali_cnt_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__temp_ready_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__step_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__cali_type_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__tick_01, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_cali_data_01__grav_acc_x_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__grav_acc_y_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__grav_acc_z_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__dst_cali_temp_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__temp_min_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__temp_max_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__temp_cali_status_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__base_cali_status_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__cfg_temp_cali_fw_version_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__cur_temp_cali_fw_version_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_01__temp_bw_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__temp_bw_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__temp_bw_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__temp_ba_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__temp_ba_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__temp_ba_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__temp_temp_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__base_bw_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__base_bw_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__base_bw_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__base_ba_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__base_ba_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__base_ba_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_01__base_temp_01, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 80) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Cali Data 01: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Cali Data 01: Payload size different than expected") end
+end
+
+-- Flight log - App Temp Cali Data 01 - 0x0897
+
+f.rec_app_temp_cali_data_01_start_flag_01 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_01_start_flag_01", "Start Flag 01", base.HEX)
+f.rec_app_temp_cali_data_01_state_01 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_01_state_01", "State 01", base.DEC)
+f.rec_app_temp_cali_data_01_cali_cnt_01 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_01_cali_cnt_01", "Cali Cnt 01", base.HEX)
+f.rec_app_temp_cali_data_01_temp_ready_01 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_01_temp_ready_01", "Temp Ready 01", base.HEX)
+f.rec_app_temp_cali_data_01_step_01 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_01_step_01", "Step 01", base.HEX)
+f.rec_app_temp_cali_data_01_cali_type_01 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_01_cali_type_01", "Cali Type 01", base.HEX)
+f.rec_app_temp_cali_data_01_tick_01 = ProtoField.uint16 ("dji_p3.rec_app_temp_cali_data_01_tick_01", "Tick 01", base.HEX)
+f.rec_app_temp_cali_data_01_grav_acc_x_01 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_01_grav_acc_x_01", "Grav Acc X 01", base.DEC)
+f.rec_app_temp_cali_data_01_grav_acc_y_01 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_01_grav_acc_y_01", "Grav Acc Y 01", base.DEC)
+f.rec_app_temp_cali_data_01_grav_acc_z_01 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_01_grav_acc_z_01", "Grav Acc Z 01", base.DEC)
+f.rec_app_temp_cali_data_01_dst_cali_temp_01 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_01_dst_cali_temp_01", "Dst Cali Temp 01", base.DEC)
+f.rec_app_temp_cali_data_01_temp_min_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_temp_min_01", "Temp Min 01", base.DEC)
+f.rec_app_temp_cali_data_01_temp_max_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_temp_max_01", "Temp Max 01", base.DEC)
+f.rec_app_temp_cali_data_01_temp_cali_status_01 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_01_temp_cali_status_01", "Temp Cali Status 01", base.HEX)
+f.rec_app_temp_cali_data_01_base_cali_status_01 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_01_base_cali_status_01", "Base Cali Status 01", base.HEX)
+f.rec_app_temp_cali_data_01_cfg_temp_cali_fw_version_01 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_01_cfg_temp_cali_fw_version_01", "Cfg Temp Cali Fw Version 01", base.HEX)
+f.rec_app_temp_cali_data_01_cur_temp_cali_fw_version_01 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_01_cur_temp_cali_fw_version_01", "Cur Temp Cali Fw Version 01", base.HEX)
+f.rec_app_temp_cali_data_01_temp_bw_x_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_temp_bw_x_01", "Temp Bw X 01", base.DEC)
+f.rec_app_temp_cali_data_01_temp_bw_y_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_temp_bw_y_01", "Temp Bw Y 01", base.DEC)
+f.rec_app_temp_cali_data_01_temp_bw_z_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_temp_bw_z_01", "Temp Bw Z 01", base.DEC)
+f.rec_app_temp_cali_data_01_temp_ba_x_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_temp_ba_x_01", "Temp Ba X 01", base.DEC)
+f.rec_app_temp_cali_data_01_temp_ba_y_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_temp_ba_y_01", "Temp Ba Y 01", base.DEC)
+f.rec_app_temp_cali_data_01_temp_ba_z_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_temp_ba_z_01", "Temp Ba Z 01", base.DEC)
+f.rec_app_temp_cali_data_01_temp_temp_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_temp_temp_01", "Temp Temp 01", base.DEC)
+f.rec_app_temp_cali_data_01_base_bw_x_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_base_bw_x_01", "Base Bw X 01", base.DEC)
+f.rec_app_temp_cali_data_01_base_bw_y_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_base_bw_y_01", "Base Bw Y 01", base.DEC)
+f.rec_app_temp_cali_data_01_base_bw_z_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_base_bw_z_01", "Base Bw Z 01", base.DEC)
+f.rec_app_temp_cali_data_01_base_ba_x_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_base_ba_x_01", "Base Ba X 01", base.DEC)
+f.rec_app_temp_cali_data_01_base_ba_y_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_base_ba_y_01", "Base Ba Y 01", base.DEC)
+f.rec_app_temp_cali_data_01_base_ba_z_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_base_ba_z_01", "Base Ba Z 01", base.DEC)
+f.rec_app_temp_cali_data_01_base_temp_01 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_01_base_temp_01", "Base Temp 01", base.DEC)
+
+local function flightrec_app_temp_cali_data_01_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_start_flag_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_state_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_cali_cnt_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_temp_ready_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_step_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_cali_type_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_tick_01, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_grav_acc_x_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_grav_acc_y_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_grav_acc_z_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_dst_cali_temp_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_temp_min_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_temp_max_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_temp_cali_status_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_base_cali_status_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_cfg_temp_cali_fw_version_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_cur_temp_cali_fw_version_01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_temp_bw_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_temp_bw_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_temp_bw_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_temp_ba_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_temp_ba_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_temp_ba_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_temp_temp_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_base_bw_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_base_bw_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_base_bw_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_base_ba_x_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_base_ba_y_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_base_ba_z_01, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_01_base_temp_01, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 80) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"App Temp Cali Data 01: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"App Temp Cali Data 01: Payload size different than expected") end
+end
+
+-- Flight log - Temp Cali Data 02 - 0x0895
+
+f.rec_temp_cali_data_02__start_flag_02 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_02__start_flag_02", " Start Flag 02", base.HEX)
+f.rec_temp_cali_data_02__state_02 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_02__state_02", " State 02", base.DEC)
+f.rec_temp_cali_data_02__cali_cnt_02 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_02__cali_cnt_02", " Cali Cnt 02", base.HEX)
+f.rec_temp_cali_data_02__temp_ready_02 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_02__temp_ready_02", " Temp Ready 02", base.HEX)
+f.rec_temp_cali_data_02__step_02 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_02__step_02", " Step 02", base.HEX)
+f.rec_temp_cali_data_02__cali_type_02 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_02__cali_type_02", " Cali Type 02", base.HEX)
+f.rec_temp_cali_data_02__tick_02 = ProtoField.uint16 ("dji_p3.rec_temp_cali_data_02__tick_02", " Tick 02", base.HEX)
+f.rec_temp_cali_data_02__grav_acc_x_02 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_02__grav_acc_x_02", " Grav Acc X 02", base.DEC)
+f.rec_temp_cali_data_02__grav_acc_y_02 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_02__grav_acc_y_02", " Grav Acc Y 02", base.DEC)
+f.rec_temp_cali_data_02__grav_acc_z_02 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_02__grav_acc_z_02", " Grav Acc Z 02", base.DEC)
+f.rec_temp_cali_data_02__dst_cali_temp_02 = ProtoField.int8 ("dji_p3.rec_temp_cali_data_02__dst_cali_temp_02", " Dst Cali Temp 02", base.DEC)
+f.rec_temp_cali_data_02__temp_min_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__temp_min_02", " Temp Min 02", base.DEC)
+f.rec_temp_cali_data_02__temp_max_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__temp_max_02", " Temp Max 02", base.DEC)
+f.rec_temp_cali_data_02__temp_cali_status_02 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_02__temp_cali_status_02", " Temp Cali Status 02", base.HEX)
+f.rec_temp_cali_data_02__base_cali_status_02 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_02__base_cali_status_02", " Base Cali Status 02", base.HEX)
+f.rec_temp_cali_data_02__cfg_temp_cali_fw_version_02 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_02__cfg_temp_cali_fw_version_02", " Cfg Temp Cali Fw Version 02", base.HEX)
+f.rec_temp_cali_data_02__cur_temp_cali_fw_version_02 = ProtoField.uint8 ("dji_p3.rec_temp_cali_data_02__cur_temp_cali_fw_version_02", " Cur Temp Cali Fw Version 02", base.HEX)
+f.rec_temp_cali_data_02__temp_bw_x_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__temp_bw_x_02", " Temp Bw X 02", base.DEC)
+f.rec_temp_cali_data_02__temp_bw_y_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__temp_bw_y_02", " Temp Bw Y 02", base.DEC)
+f.rec_temp_cali_data_02__temp_bw_z_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__temp_bw_z_02", " Temp Bw Z 02", base.DEC)
+f.rec_temp_cali_data_02__temp_ba_x_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__temp_ba_x_02", " Temp Ba X 02", base.DEC)
+f.rec_temp_cali_data_02__temp_ba_y_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__temp_ba_y_02", " Temp Ba Y 02", base.DEC)
+f.rec_temp_cali_data_02__temp_ba_z_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__temp_ba_z_02", " Temp Ba Z 02", base.DEC)
+f.rec_temp_cali_data_02__temp_temp_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__temp_temp_02", " Temp Temp 02", base.DEC)
+f.rec_temp_cali_data_02__base_bw_x_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__base_bw_x_02", " Base Bw X 02", base.DEC)
+f.rec_temp_cali_data_02__base_bw_y_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__base_bw_y_02", " Base Bw Y 02", base.DEC)
+f.rec_temp_cali_data_02__base_bw_z_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__base_bw_z_02", " Base Bw Z 02", base.DEC)
+f.rec_temp_cali_data_02__base_ba_x_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__base_ba_x_02", " Base Ba X 02", base.DEC)
+f.rec_temp_cali_data_02__base_ba_y_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__base_ba_y_02", " Base Ba Y 02", base.DEC)
+f.rec_temp_cali_data_02__base_ba_z_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__base_ba_z_02", " Base Ba Z 02", base.DEC)
+f.rec_temp_cali_data_02__base_temp_02 = ProtoField.float ("dji_p3.rec_temp_cali_data_02__base_temp_02", " Base Temp 02", base.DEC)
+
+local function flightrec_temp_cali_data_02_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_temp_cali_data_02__start_flag_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__state_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__cali_cnt_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__temp_ready_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__step_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__cali_type_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__tick_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_temp_cali_data_02__grav_acc_x_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__grav_acc_y_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__grav_acc_z_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__dst_cali_temp_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__temp_min_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__temp_max_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__temp_cali_status_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__base_cali_status_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__cfg_temp_cali_fw_version_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__cur_temp_cali_fw_version_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_temp_cali_data_02__temp_bw_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__temp_bw_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__temp_bw_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__temp_ba_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__temp_ba_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__temp_ba_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__temp_temp_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__base_bw_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__base_bw_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__base_bw_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__base_ba_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__base_ba_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__base_ba_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_cali_data_02__base_temp_02, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 80) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Cali Data 02: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Cali Data 02: Payload size different than expected") end
+end
+
+-- Flight log - App Temp Cali Data 02 - 0x0898
+
+f.rec_app_temp_cali_data_02_start_flag_02 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_02_start_flag_02", "Start Flag 02", base.HEX)
+f.rec_app_temp_cali_data_02_state_02 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_02_state_02", "State 02", base.DEC)
+f.rec_app_temp_cali_data_02_cali_cnt_02 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_02_cali_cnt_02", "Cali Cnt 02", base.HEX)
+f.rec_app_temp_cali_data_02_temp_ready_02 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_02_temp_ready_02", "Temp Ready 02", base.HEX)
+f.rec_app_temp_cali_data_02_step_02 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_02_step_02", "Step 02", base.HEX)
+f.rec_app_temp_cali_data_02_cali_type_02 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_02_cali_type_02", "Cali Type 02", base.HEX)
+f.rec_app_temp_cali_data_02_tick_02 = ProtoField.uint16 ("dji_p3.rec_app_temp_cali_data_02_tick_02", "Tick 02", base.HEX)
+f.rec_app_temp_cali_data_02_grav_acc_x_02 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_02_grav_acc_x_02", "Grav Acc X 02", base.DEC)
+f.rec_app_temp_cali_data_02_grav_acc_y_02 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_02_grav_acc_y_02", "Grav Acc Y 02", base.DEC)
+f.rec_app_temp_cali_data_02_grav_acc_z_02 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_02_grav_acc_z_02", "Grav Acc Z 02", base.DEC)
+f.rec_app_temp_cali_data_02_dst_cali_temp_02 = ProtoField.int8 ("dji_p3.rec_app_temp_cali_data_02_dst_cali_temp_02", "Dst Cali Temp 02", base.DEC)
+f.rec_app_temp_cali_data_02_temp_min_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_temp_min_02", "Temp Min 02", base.DEC)
+f.rec_app_temp_cali_data_02_temp_max_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_temp_max_02", "Temp Max 02", base.DEC)
+f.rec_app_temp_cali_data_02_temp_cali_status_02 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_02_temp_cali_status_02", "Temp Cali Status 02", base.HEX)
+f.rec_app_temp_cali_data_02_base_cali_status_02 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_02_base_cali_status_02", "Base Cali Status 02", base.HEX)
+f.rec_app_temp_cali_data_02_cfg_temp_cali_fw_version_02 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_02_cfg_temp_cali_fw_version_02", "Cfg Temp Cali Fw Version 02", base.HEX)
+f.rec_app_temp_cali_data_02_cur_temp_cali_fw_version_02 = ProtoField.uint8 ("dji_p3.rec_app_temp_cali_data_02_cur_temp_cali_fw_version_02", "Cur Temp Cali Fw Version 02", base.HEX)
+f.rec_app_temp_cali_data_02_temp_bw_x_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_temp_bw_x_02", "Temp Bw X 02", base.DEC)
+f.rec_app_temp_cali_data_02_temp_bw_y_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_temp_bw_y_02", "Temp Bw Y 02", base.DEC)
+f.rec_app_temp_cali_data_02_temp_bw_z_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_temp_bw_z_02", "Temp Bw Z 02", base.DEC)
+f.rec_app_temp_cali_data_02_temp_ba_x_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_temp_ba_x_02", "Temp Ba X 02", base.DEC)
+f.rec_app_temp_cali_data_02_temp_ba_y_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_temp_ba_y_02", "Temp Ba Y 02", base.DEC)
+f.rec_app_temp_cali_data_02_temp_ba_z_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_temp_ba_z_02", "Temp Ba Z 02", base.DEC)
+f.rec_app_temp_cali_data_02_temp_temp_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_temp_temp_02", "Temp Temp 02", base.DEC)
+f.rec_app_temp_cali_data_02_base_bw_x_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_base_bw_x_02", "Base Bw X 02", base.DEC)
+f.rec_app_temp_cali_data_02_base_bw_y_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_base_bw_y_02", "Base Bw Y 02", base.DEC)
+f.rec_app_temp_cali_data_02_base_bw_z_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_base_bw_z_02", "Base Bw Z 02", base.DEC)
+f.rec_app_temp_cali_data_02_base_ba_x_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_base_ba_x_02", "Base Ba X 02", base.DEC)
+f.rec_app_temp_cali_data_02_base_ba_y_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_base_ba_y_02", "Base Ba Y 02", base.DEC)
+f.rec_app_temp_cali_data_02_base_ba_z_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_base_ba_z_02", "Base Ba Z 02", base.DEC)
+f.rec_app_temp_cali_data_02_base_temp_02 = ProtoField.float ("dji_p3.rec_app_temp_cali_data_02_base_temp_02", "Base Temp 02", base.DEC)
+
+local function flightrec_app_temp_cali_data_02_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_start_flag_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_state_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_cali_cnt_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_temp_ready_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_step_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_cali_type_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_tick_02, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_grav_acc_x_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_grav_acc_y_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_grav_acc_z_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_dst_cali_temp_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_temp_min_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_temp_max_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_temp_cali_status_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_base_cali_status_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_cfg_temp_cali_fw_version_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_cur_temp_cali_fw_version_02, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_temp_bw_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_temp_bw_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_temp_bw_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_temp_ba_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_temp_ba_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_temp_ba_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_temp_temp_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_base_bw_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_base_bw_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_base_bw_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_base_ba_x_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_base_ba_y_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_base_ba_z_02, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_app_temp_cali_data_02_base_temp_02, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 80) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"App Temp Cali Data 02: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"App Temp Cali Data 02: Payload size different than expected") end
+end
+
+-- Flight log - Mpu6500 Raw Data - 0x0023
+
+f.rec_mpu6500_raw_data_mpu6500_ax = ProtoField.float ("dji_p3.rec_mpu6500_raw_data_mpu6500_ax", "Mpu6500 Ax", base.DEC)
+f.rec_mpu6500_raw_data_mpu6500_ay = ProtoField.float ("dji_p3.rec_mpu6500_raw_data_mpu6500_ay", "Mpu6500 Ay", base.DEC)
+f.rec_mpu6500_raw_data_mpu6500_az = ProtoField.float ("dji_p3.rec_mpu6500_raw_data_mpu6500_az", "Mpu6500 Az", base.DEC)
+f.rec_mpu6500_raw_data_mpu6500_wx = ProtoField.float ("dji_p3.rec_mpu6500_raw_data_mpu6500_wx", "Mpu6500 Wx", base.DEC)
+f.rec_mpu6500_raw_data_mpu6500_wy = ProtoField.float ("dji_p3.rec_mpu6500_raw_data_mpu6500_wy", "Mpu6500 Wy", base.DEC)
+f.rec_mpu6500_raw_data_mpu6500_wz = ProtoField.float ("dji_p3.rec_mpu6500_raw_data_mpu6500_wz", "Mpu6500 Wz", base.DEC)
+
+local function flightrec_mpu6500_raw_data_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_mpu6500_raw_data_mpu6500_ax, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_mpu6500_raw_data_mpu6500_ay, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_mpu6500_raw_data_mpu6500_az, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_mpu6500_raw_data_mpu6500_wx, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_mpu6500_raw_data_mpu6500_wy, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_mpu6500_raw_data_mpu6500_wz, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Mpu6500 Raw Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Mpu6500 Raw Data: Payload size different than expected") end
+end
+
+-- Flight log - Adxl278 Raw Data - 0x0024
+
+f.rec_adxl278_raw_data_adxl278_ax = ProtoField.float ("dji_p3.rec_adxl278_raw_data_adxl278_ax", "Adxl278 Ax", base.DEC)
+f.rec_adxl278_raw_data_adxl278_ay = ProtoField.float ("dji_p3.rec_adxl278_raw_data_adxl278_ay", "Adxl278 Ay", base.DEC)
+f.rec_adxl278_raw_data_adxl278_az = ProtoField.float ("dji_p3.rec_adxl278_raw_data_adxl278_az", "Adxl278 Az", base.DEC)
+
+local function flightrec_adxl278_raw_data_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_adxl278_raw_data_adxl278_ax, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_adxl278_raw_data_adxl278_ay, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_adxl278_raw_data_adxl278_az, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Adxl278 Raw Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Adxl278 Raw Data: Payload size different than expected") end
+end
+
+-- Flight log - Svo Debug - 0x0065
+
+f.rec_svo_debug_visiondebug1 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug1", "Visiondebug1", base.DEC)
+f.rec_svo_debug_visiondebug2 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug2", "Visiondebug2", base.DEC)
+f.rec_svo_debug_visiondebug3 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug3", "Visiondebug3", base.DEC)
+f.rec_svo_debug_visiondebug4 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug4", "Visiondebug4", base.DEC)
+f.rec_svo_debug_visiondebug5 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug5", "Visiondebug5", base.DEC)
+f.rec_svo_debug_visiondebug6 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug6", "Visiondebug6", base.DEC)
+f.rec_svo_debug_visiondebug7 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug7", "Visiondebug7", base.DEC)
+f.rec_svo_debug_visiondebug8 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug8", "Visiondebug8", base.DEC)
+--f.rec_svo_debug_e_led_atti = ProtoField.none ("dji_p3.rec_svo_debug_e_led_atti", "E Led Atti", base.NONE, nil, 0x03, "bitand(filter_status,3)")
+--f.rec_svo_debug_e_led_hori = ProtoField.none ("dji_p3.rec_svo_debug_e_led_hori", "E Led Hori", base.NONE, nil, 0x0c, "bitand(shift_r(filter_status,2),3)")
+--f.rec_svo_debug_e_led_vert = ProtoField.none ("dji_p3.rec_svo_debug_e_led_vert", "E Led Vert", base.NONE, nil, 0x30, "bitand(shift_r(filter_status,4),3)")
+--f.rec_svo_debug_e_led_gps_new = ProtoField.none ("dji_p3.rec_svo_debug_e_led_gps_new", "E Led Gps New", base.NONE, nil, 0xc0, "bitand(shift_r(filter_status,6),3)")
+--f.rec_svo_debug_e_long_gps = ProtoField.none ("dji_p3.rec_svo_debug_e_long_gps", "E Long Gps", base.NONE, nil, nil, "if(long_gps/10000000<113.93,113.93,long_gps/10000000)")
+--f.rec_svo_debug_e_lat_gps = ProtoField.none ("dji_p3.rec_svo_debug_e_lat_gps", "E Lat Gps", base.NONE, nil, nil, "if(lat_gps/10000000<22.53,22.53,lat_gps/10000000)")
+--f.rec_svo_debug_e_longti = ProtoField.none ("dji_p3.rec_svo_debug_e_longti", "E Longti", base.NONE, nil, nil, "if(longti/3.14159265*180<113.93,113.93,longti/3.14159265*180)")
+--f.rec_svo_debug_e_lati = ProtoField.none ("dji_p3.rec_svo_debug_e_lati", "E Lati", base.NONE, nil, nil, "if(lati/3.14159265*180<22.53,22.53,lati/3.14159265*180)")
+--f.rec_svo_debug_e_longti_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_longti_sim", "E Longti Sim", base.NONE, nil, nil, "if(longti_sim/3.14159265*180<113.93,113.93,longti_sim/3.14159265*180)")
+--f.rec_svo_debug_e_lati_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_lati_sim", "E Lati Sim", base.NONE, nil, nil, "if(lati_sim/3.14159265*180<22.53,22.53,lati_sim/3.14159265*180)")
+--f.rec_svo_debug_e_x = ProtoField.none ("dji_p3.rec_svo_debug_e_x", "E X", base.NONE, nil, nil, "if(absf(x)>50,50,x)")
+--f.rec_svo_debug_e_x_m = ProtoField.none ("dji_p3.rec_svo_debug_e_x_m", "E X M", base.NONE, nil, nil, "if(absf(x_m)>50,50,x_m)")
+--f.rec_svo_debug_e_y = ProtoField.none ("dji_p3.rec_svo_debug_e_y", "E Y", base.NONE, nil, nil, "if(absf(y)>50,50,y)")
+--f.rec_svo_debug_e_y_m = ProtoField.none ("dji_p3.rec_svo_debug_e_y_m", "E Y M", base.NONE, nil, nil, "if(absf(y_m)<50,50,y_m)")
+--f.rec_svo_debug_e_pitch = ProtoField.none ("dji_p3.rec_svo_debug_e_pitch", "E Pitch", base.NONE, nil, nil, "-asin_x(2*(q1*q3-q0*q2))/3.1415926*180")
+--f.rec_svo_debug_e_roll = ProtoField.none ("dji_p3.rec_svo_debug_e_roll", "E Roll", base.NONE, nil, nil, "atan2(2*(q2*q3+q0*q1),1-2*(q1*q1+q2*q2))/3.1415926*180")
+--f.rec_svo_debug_e_yaw = ProtoField.none ("dji_p3.rec_svo_debug_e_yaw", "E Yaw", base.NONE, nil, nil, "atan2(2*(q1*q2+q0*q3),1-2*(q2*q2+q3*q3))/3.1415926*180")
+--f.rec_svo_debug_e_yaw_from_m = ProtoField.none ("dji_p3.rec_svo_debug_e_yaw_from_m", "E Yaw From M", base.NONE, nil, nil, "atan2(-(m_y*cos(E_roll/57.29578)-m_z*sin(E_roll/57.29578)),m_x*cos(E_pitch/57.29578)+m_y*sin(E_pitch/57.29578)*sin(E_roll/57.29578)+m_z*sin(E_pitch/57.29578)*cos(E_roll/57.29578))*180/3.14159265")
+--f.rec_svo_debug_lon = ProtoField.none ("dji_p3.rec_svo_debug_lon", "Lon", base.NONE, nil, nil, "if(longti<1.9886,1.9886,longti)")
+--f.rec_svo_debug_lat = ProtoField.none ("dji_p3.rec_svo_debug_lat", "Lat", base.NONE, nil, nil, "if(lati<0.3933,0.3933,lati)")
+--f.rec_svo_debug_nedx = ProtoField.none ("dji_p3.rec_svo_debug_nedx", "Nedx", base.NONE, nil, nil, "(lat-0.3933)*6378137.0")
+--f.rec_svo_debug_nedy = ProtoField.none ("dji_p3.rec_svo_debug_nedy", "Nedy", base.NONE, nil, nil, "(lon-1.9886)*6378137.0*cos(lat)")
+--f.rec_svo_debug_e_mod_m = ProtoField.none ("dji_p3.rec_svo_debug_e_mod_m", "E Mod M", base.NONE, nil, nil, "sqrt(m_x^2+m_y^2+m_z^2)")
+--f.rec_svo_debug_e_mod_acc = ProtoField.none ("dji_p3.rec_svo_debug_e_mod_acc", "E Mod Acc", base.NONE, nil, nil, "sqrt(acc_x^2+acc_y^2+acc_z^2)")
+--f.rec_svo_debug_e_mod_acc_xy = ProtoField.none ("dji_p3.rec_svo_debug_e_mod_acc_xy", "E Mod Acc Xy", base.NONE, nil, nil, "sqrt(acc_x^2+acc_y^2)")
+--f.rec_svo_debug_e_vel_n = ProtoField.none ("dji_p3.rec_svo_debug_e_vel_n", "E Vel N", base.NONE, nil, nil, "vel_n/100.0")
+--f.rec_svo_debug_e_vel_e = ProtoField.none ("dji_p3.rec_svo_debug_e_vel_e", "E Vel E", base.NONE, nil, nil, "vel_e/100.0")
+--f.rec_svo_debug_e_vel_d = ProtoField.none ("dji_p3.rec_svo_debug_e_vel_d", "E Vel D", base.NONE, nil, nil, "vel_d/100.0")
+--f.rec_svo_debug_e_gps_err = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_err", "E Gps Err", base.NONE, nil, 0xff000000, "bitand(shift_r(gpstime,24),255)")
+--f.rec_svo_debug_e_svn_gln = ProtoField.none ("dji_p3.rec_svo_debug_e_svn_gln", "E Svn Gln", base.NONE, nil, 0x0f, "bitand(shift_r(gpsalt,0),15)")
+--f.rec_svo_debug_e_svn_gps = ProtoField.none ("dji_p3.rec_svo_debug_e_svn_gps", "E Svn Gps", base.NONE, nil, 0xf0, "bitand(shift_r(gpsalt,4),15)")
+--f.rec_svo_debug_e_svn_check = ProtoField.none ("dji_p3.rec_svo_debug_e_svn_check", "E Svn Check", base.NONE, nil, nil, "E_svn_gln+E_svn_gps-numsv")
+--f.rec_svo_debug_e_pitch_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_pitch_sim", "E Pitch Sim", base.NONE, nil, nil, "-asin_x(2*(q1_sim*q3_sim-q0_sim*q2_sim))/3.1415926*180")
+--f.rec_svo_debug_e_roll_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_roll_sim", "E Roll Sim", base.NONE, nil, nil, "atan2(2*(q2_sim*q3_sim+q0_sim*q1_sim),1-2*(q1_sim*q1_sim+q2_sim*q2_sim))/3.1415926*180")
+--f.rec_svo_debug_e_yaw_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_yaw_sim", "E Yaw Sim", base.NONE, nil, nil, "atan2(2*(q1_sim*q2_sim+q0_sim*q3_sim),1-2*(q2_sim*q2_sim+q3_sim*q3_sim))/3.1415926*180")
+--f.rec_svo_debug_e_pitch_rad_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_pitch_rad_sim", "E Pitch Rad Sim", base.NONE, nil, nil, "-asin_x(2*(q1_sim*q3_sim-q0_sim*q2_sim))")
+--f.rec_svo_debug_e_roll_rad_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_roll_rad_sim", "E Roll Rad Sim", base.NONE, nil, nil, "atan2(2*(q2_sim*q3_sim+q0_sim*q1_sim),1-2*(q1_sim*q1_sim+q2_sim*q2_sim))")
+--f.rec_svo_debug_e_yaw_rad_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_yaw_rad_sim", "E Yaw Rad Sim", base.NONE, nil, nil, "atan2(2*(q1_sim*q2_sim+q0_sim*q3_sim),1-2*(q2_sim*q2_sim+q3_sim*q3_sim))")
+--f.rec_svo_debug_e_vb_x = ProtoField.none ("dji_p3.rec_svo_debug_e_vb_x", "E Vb X", base.NONE, nil, nil, "(1-2*q2*q2-2*q3*q3)*vg_x+(2*q1*q2+2*q3*q0)*vg_y+(2*q1*q3-2*q2*q0)*vg_z")
+--f.rec_svo_debug_e_vb_y = ProtoField.none ("dji_p3.rec_svo_debug_e_vb_y", "E Vb Y", base.NONE, nil, nil, "(2*q1*q2-2*q3*q0)*vg_x+(1-2*q1*q1-2*q3*q3)*vg_y+(2*q2*q3+2*q1*q0)*vg_z")
+--f.rec_svo_debug_e_vb_z = ProtoField.none ("dji_p3.rec_svo_debug_e_vb_z", "E Vb Z", base.NONE, nil, nil, "(2*q1*q3+2*q2*q0)*vg_x+(2*q2*q3-2*q1*q0)*vg_y+(1-2*q1*q1-2*q2*q2)*vg_z")
+--f.rec_svo_debug_e_vb_norm_acc = ProtoField.none ("dji_p3.rec_svo_debug_e_vb_norm_acc", "E Vb Norm Acc", base.NONE, nil, nil, "sqrt(acc_x*acc_x*9.8*9.8+acc_y*acc_y*9.8*9.8)")
+--f.rec_svo_debug_e_vb_norm_vb = ProtoField.none ("dji_p3.rec_svo_debug_e_vb_norm_vb", "E Vb Norm Vb", base.NONE, nil, nil, "sqrt(E_vb_x^2+E_vb_y^2)")
+--f.rec_svo_debug_e_vb_x_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_vb_x_sim", "E Vb X Sim", base.NONE, nil, nil, "(1-2*q2*q2-2*q3*q3)*vg_x_sim+(2*q1*q2+2*q3*q0)*vg_y_sim+(2*q1*q3-2*q2*q0)*vg_z_sim")
+--f.rec_svo_debug_e_vb_y_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_vb_y_sim", "E Vb Y Sim", base.NONE, nil, nil, "(2*q1*q2-2*q3*q0)*vg_x_sim+(1-2*q1*q1-2*q3*q3)*vg_y_sim+(2*q2*q3+2*q1*q0)*vg_z_sim")
+--f.rec_svo_debug_e_vb_z_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_vb_z_sim", "E Vb Z Sim", base.NONE, nil, nil, "(2*q1*q3+2*q2*q0)*vg_x_sim+(2*q2*q3-2*q1*q0)*vg_y_sim+(1-2*q1*q1-2*q2*q2)*vg_z_sim")
+--f.rec_svo_debug_e_vb_x_yaw_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_vb_x_yaw_sim", "E Vb X Yaw Sim", base.NONE, nil, nil, "cos(E_yaw_rad_sim)*vg_x_sim+sin(E_yaw_rad_sim)*vg_y_sim")
+--f.rec_svo_debug_e_vb_y_yaw_sim = ProtoField.none ("dji_p3.rec_svo_debug_e_vb_y_yaw_sim", "E Vb Y Yaw Sim", base.NONE, nil, nil, "-sin(E_yaw_rad_sim)*vg_x_sim+cos(E_yaw_rad_sim)*vg_y_sim")
+--f.rec_svo_debug_e_ab_x = ProtoField.none ("dji_p3.rec_svo_debug_e_ab_x", "E Ab X", base.NONE, nil, nil, "(1-2*q2*q2-2*q3*q3)*ag_x+(2*q1*q2+2*q3*q0)*ag_y+(2*q1*q3-2*q2*q0)*ag_z")
+--f.rec_svo_debug_e_ab_y = ProtoField.none ("dji_p3.rec_svo_debug_e_ab_y", "E Ab Y", base.NONE, nil, nil, "(2*q1*q2-2*q3*q0)*ag_x+(1-2*q1*q1-2*q3*q3)*ag_y+(2*q2*q3+2*q1*q0)*ag_z")
+--f.rec_svo_debug_e_ab_z = ProtoField.none ("dji_p3.rec_svo_debug_e_ab_z", "E Ab Z", base.NONE, nil, nil, "(2*q1*q3+2*q2*q0)*ag_x+(2*q2*q3-2*q1*q0)*ag_y+(1-2*q1*q1-2*q2*q2)*ag_z")
+--f.rec_svo_debug_e_mvo_vx = ProtoField.none ("dji_p3.rec_svo_debug_e_mvo_vx", "E Mvo Vx", base.NONE, nil, nil, "-mvo_vx/1000")
+--f.rec_svo_debug_e_mvo_vy = ProtoField.none ("dji_p3.rec_svo_debug_e_mvo_vy", "E Mvo Vy", base.NONE, nil, nil, "-mvo_vy/1000")
+--f.rec_svo_debug_e_us_h_grnd = ProtoField.none ("dji_p3.rec_svo_debug_e_us_h_grnd", "E Us H Grnd", base.NONE, nil, nil, "us_h_grnd/1000")
+--f.rec_svo_debug_e_us_h_flag = ProtoField.none ("dji_p3.rec_svo_debug_e_us_h_flag", "E Us H Flag", base.NONE, nil, 0x01, "bitand(vo_flag,1)")
+--f.rec_svo_debug_e_us_v_flag = ProtoField.none ("dji_p3.rec_svo_debug_e_us_v_flag", "E Us V Flag", base.NONE, nil, 0x02, "bitand(shift_r(vo_flag,1),1)")
+--f.rec_svo_debug_e_vo_pos_flag = ProtoField.none ("dji_p3.rec_svo_debug_e_vo_pos_flag", "E Vo Pos Flag", base.NONE, nil, 0x04, "bitand(shift_r(vo_flag,2),1)")
+--f.rec_svo_debug_e_vo_vel_flag = ProtoField.none ("dji_p3.rec_svo_debug_e_vo_vel_flag", "E Vo Vel Flag", base.NONE, nil, 0x08, "bitand(shift_r(vo_flag,3),1)")
+--f.rec_svo_debug_e_gln_snr1 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr1", "E Gln Snr1", base.NONE, nil, 0x7f, "bitand(gln_snr1,127)")
+--f.rec_svo_debug_e_gln_snr2 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr2", "E Gln Snr2", base.NONE, nil, 0x7f, "bitand(gln_snr2,127)")
+--f.rec_svo_debug_e_gln_snr3 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr3", "E Gln Snr3", base.NONE, nil, 0x7f, "bitand(gln_snr3,127)")
+--f.rec_svo_debug_e_gln_snr4 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr4", "E Gln Snr4", base.NONE, nil, 0x7f, "bitand(gln_snr4,127)")
+--f.rec_svo_debug_e_gln_snr5 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr5", "E Gln Snr5", base.NONE, nil, 0x7f, "bitand(gln_snr5,127)")
+--f.rec_svo_debug_e_gln_snr6 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr6", "E Gln Snr6", base.NONE, nil, 0x7f, "bitand(gln_snr6,127)")
+--f.rec_svo_debug_e_gln_snr7 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr7", "E Gln Snr7", base.NONE, nil, 0x7f, "bitand(gln_snr7,127)")
+--f.rec_svo_debug_e_gln_snr8 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr8", "E Gln Snr8", base.NONE, nil, 0x7f, "bitand(gln_snr8,127)")
+--f.rec_svo_debug_e_gln_snr9 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr9", "E Gln Snr9", base.NONE, nil, 0x7f, "bitand(gln_snr9,127)")
+--f.rec_svo_debug_e_gln_snr10 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr10", "E Gln Snr10", base.NONE, nil, 0x7f, "bitand(gln_snr10,127)")
+--f.rec_svo_debug_e_gln_snr11 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr11", "E Gln Snr11", base.NONE, nil, 0x7f, "bitand(gln_snr11,127)")
+--f.rec_svo_debug_e_gln_snr12 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr12", "E Gln Snr12", base.NONE, nil, 0x7f, "bitand(gln_snr12,127)")
+--f.rec_svo_debug_e_gln_snr13 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr13", "E Gln Snr13", base.NONE, nil, 0x7f, "bitand(gln_snr13,127)")
+--f.rec_svo_debug_e_gln_snr14 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr14", "E Gln Snr14", base.NONE, nil, 0x7f, "bitand(gln_snr14,127)")
+--f.rec_svo_debug_e_gln_snr15 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr15", "E Gln Snr15", base.NONE, nil, 0x7f, "bitand(gln_snr15,127)")
+--f.rec_svo_debug_e_gln_snr16 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr16", "E Gln Snr16", base.NONE, nil, 0x7f, "bitand(gln_snr16,127)")
+--f.rec_svo_debug_e_gln_snr17 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr17", "E Gln Snr17", base.NONE, nil, 0x7f, "bitand(gln_snr17,127)")
+--f.rec_svo_debug_e_gln_snr18 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr18", "E Gln Snr18", base.NONE, nil, 0x7f, "bitand(gln_snr18,127)")
+--f.rec_svo_debug_e_gln_snr19 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr19", "E Gln Snr19", base.NONE, nil, 0x7f, "bitand(gln_snr19,127)")
+--f.rec_svo_debug_e_gln_snr20 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr20", "E Gln Snr20", base.NONE, nil, 0x7f, "bitand(gln_snr20,127)")
+--f.rec_svo_debug_e_gln_snr21 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr21", "E Gln Snr21", base.NONE, nil, 0x7f, "bitand(gln_snr21,127)")
+--f.rec_svo_debug_e_gln_snr22 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr22", "E Gln Snr22", base.NONE, nil, 0x7f, "bitand(gln_snr22,127)")
+--f.rec_svo_debug_e_gln_snr23 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr23", "E Gln Snr23", base.NONE, nil, 0x7f, "bitand(gln_snr23,127)")
+--f.rec_svo_debug_e_gln_snr24 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr24", "E Gln Snr24", base.NONE, nil, 0x7f, "bitand(gln_snr24,127)")
+--f.rec_svo_debug_e_gln_snr25 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr25", "E Gln Snr25", base.NONE, nil, 0x7f, "bitand(gln_snr25,127)")
+--f.rec_svo_debug_e_gln_snr26 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr26", "E Gln Snr26", base.NONE, nil, 0x7f, "bitand(gln_snr26,127)")
+--f.rec_svo_debug_e_gln_snr27 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr27", "E Gln Snr27", base.NONE, nil, 0x7f, "bitand(gln_snr27,127)")
+--f.rec_svo_debug_e_gln_snr28 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr28", "E Gln Snr28", base.NONE, nil, 0x7f, "bitand(gln_snr28,127)")
+--f.rec_svo_debug_e_gln_snr29 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr29", "E Gln Snr29", base.NONE, nil, 0x7f, "bitand(gln_snr29,127)")
+--f.rec_svo_debug_e_gln_snr30 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr30", "E Gln Snr30", base.NONE, nil, 0x7f, "bitand(gln_snr30,127)")
+--f.rec_svo_debug_e_gln_snr31 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr31", "E Gln Snr31", base.NONE, nil, 0x7f, "bitand(gln_snr31,127)")
+--f.rec_svo_debug_e_gln_snr32 = ProtoField.none ("dji_p3.rec_svo_debug_e_gln_snr32", "E Gln Snr32", base.NONE, nil, 0x7f, "bitand(gln_snr32,127)")
+--f.rec_svo_debug_e_gps_snr1 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr1", "E Gps Snr1", base.NONE, nil, 0x7f, "bitand(gps_snr1,127)")
+--f.rec_svo_debug_e_gps_snr2 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr2", "E Gps Snr2", base.NONE, nil, 0x7f, "bitand(gps_snr2,127)")
+--f.rec_svo_debug_e_gps_snr3 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr3", "E Gps Snr3", base.NONE, nil, 0x7f, "bitand(gps_snr3,127)")
+--f.rec_svo_debug_e_gps_snr4 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr4", "E Gps Snr4", base.NONE, nil, 0x7f, "bitand(gps_snr4,127)")
+--f.rec_svo_debug_e_gps_snr5 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr5", "E Gps Snr5", base.NONE, nil, 0x7f, "bitand(gps_snr5,127)")
+--f.rec_svo_debug_e_gps_snr6 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr6", "E Gps Snr6", base.NONE, nil, 0x7f, "bitand(gps_snr6,127)")
+--f.rec_svo_debug_e_gps_snr7 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr7", "E Gps Snr7", base.NONE, nil, 0x7f, "bitand(gps_snr7,127)")
+--f.rec_svo_debug_e_gps_snr8 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr8", "E Gps Snr8", base.NONE, nil, 0x7f, "bitand(gps_snr8,127)")
+--f.rec_svo_debug_e_gps_snr9 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr9", "E Gps Snr9", base.NONE, nil, 0x7f, "bitand(gps_snr9,127)")
+--f.rec_svo_debug_e_gps_snr10 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr10", "E Gps Snr10", base.NONE, nil, 0x7f, "bitand(gps_snr10,127)")
+--f.rec_svo_debug_e_gps_snr11 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr11", "E Gps Snr11", base.NONE, nil, 0x7f, "bitand(gps_snr11,127)")
+--f.rec_svo_debug_e_gps_snr12 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr12", "E Gps Snr12", base.NONE, nil, 0x7f, "bitand(gps_snr12,127)")
+--f.rec_svo_debug_e_gps_snr13 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr13", "E Gps Snr13", base.NONE, nil, 0x7f, "bitand(gps_snr13,127)")
+--f.rec_svo_debug_e_gps_snr14 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr14", "E Gps Snr14", base.NONE, nil, 0x7f, "bitand(gps_snr14,127)")
+--f.rec_svo_debug_e_gps_snr15 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr15", "E Gps Snr15", base.NONE, nil, 0x7f, "bitand(gps_snr15,127)")
+--f.rec_svo_debug_e_gps_snr16 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr16", "E Gps Snr16", base.NONE, nil, 0x7f, "bitand(gps_snr16,127)")
+--f.rec_svo_debug_e_gps_snr17 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr17", "E Gps Snr17", base.NONE, nil, 0x7f, "bitand(gps_snr17,127)")
+--f.rec_svo_debug_e_gps_snr18 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr18", "E Gps Snr18", base.NONE, nil, 0x7f, "bitand(gps_snr18,127)")
+--f.rec_svo_debug_e_gps_snr19 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr19", "E Gps Snr19", base.NONE, nil, 0x7f, "bitand(gps_snr19,127)")
+--f.rec_svo_debug_e_gps_snr20 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr20", "E Gps Snr20", base.NONE, nil, 0x7f, "bitand(gps_snr20,127)")
+--f.rec_svo_debug_e_gps_snr21 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr21", "E Gps Snr21", base.NONE, nil, 0x7f, "bitand(gps_snr21,127)")
+--f.rec_svo_debug_e_gps_snr22 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr22", "E Gps Snr22", base.NONE, nil, 0x7f, "bitand(gps_snr22,127)")
+--f.rec_svo_debug_e_gps_snr23 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr23", "E Gps Snr23", base.NONE, nil, 0x7f, "bitand(gps_snr23,127)")
+--f.rec_svo_debug_e_gps_snr24 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr24", "E Gps Snr24", base.NONE, nil, 0x7f, "bitand(gps_snr24,127)")
+--f.rec_svo_debug_e_gps_snr25 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr25", "E Gps Snr25", base.NONE, nil, 0x7f, "bitand(gps_snr25,127)")
+--f.rec_svo_debug_e_gps_snr26 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr26", "E Gps Snr26", base.NONE, nil, 0x7f, "bitand(gps_snr26,127)")
+--f.rec_svo_debug_e_gps_snr27 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr27", "E Gps Snr27", base.NONE, nil, 0x7f, "bitand(gps_snr27,127)")
+--f.rec_svo_debug_e_gps_snr28 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr28", "E Gps Snr28", base.NONE, nil, 0x7f, "bitand(gps_snr28,127)")
+--f.rec_svo_debug_e_gps_snr29 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr29", "E Gps Snr29", base.NONE, nil, 0x7f, "bitand(gps_snr29,127)")
+--f.rec_svo_debug_e_gps_snr30 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr30", "E Gps Snr30", base.NONE, nil, 0x7f, "bitand(gps_snr30,127)")
+--f.rec_svo_debug_e_gps_snr31 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr31", "E Gps Snr31", base.NONE, nil, 0x7f, "bitand(gps_snr31,127)")
+--f.rec_svo_debug_e_gps_snr32 = ProtoField.none ("dji_p3.rec_svo_debug_e_gps_snr32", "E Gps Snr32", base.NONE, nil, 0x7f, "bitand(gps_snr32,127)")
+
+local function flightrec_svo_debug_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_svo_debug_visiondebug1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_debug_visiondebug2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_debug_visiondebug3, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_debug_visiondebug4, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_debug_visiondebug5, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_debug_visiondebug6, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_debug_visiondebug7, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_debug_visiondebug8, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Svo Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Svo Debug: Payload size different than expected") end
+end
+
+-- Flight log - Uc Monitor - 0xcdf0
+
+f.rec_uc_monitor_cpu_usage = ProtoField.uint16 ("dji_p3.rec_uc_monitor_cpu_usage", "Cpu Usage", base.HEX)
+f.rec_uc_monitor_cpu_usage_task_b = ProtoField.uint16 ("dji_p3.rec_uc_monitor_cpu_usage_task_b", "Cpu Usage Task B", base.HEX)
+f.rec_uc_monitor_cpu_usage_task_a = ProtoField.uint16 ("dji_p3.rec_uc_monitor_cpu_usage_task_a", "Cpu Usage Task A", base.HEX)
+f.rec_uc_monitor_uc_resv0 = ProtoField.uint16 ("dji_p3.rec_uc_monitor_uc_resv0", "Uc Resv0", base.HEX)
+f.rec_uc_monitor_max_time_workqueue = ProtoField.uint16 ("dji_p3.rec_uc_monitor_max_time_workqueue", "Max Time Workqueue", base.HEX)
+f.rec_uc_monitor_max_time_task_b = ProtoField.uint16 ("dji_p3.rec_uc_monitor_max_time_task_b", "Max Time Task B", base.HEX)
+f.rec_uc_monitor_max_time_task_a = ProtoField.uint16 ("dji_p3.rec_uc_monitor_max_time_task_a", "Max Time Task A", base.HEX)
+f.rec_uc_monitor_max_time_task_c = ProtoField.uint16 ("dji_p3.rec_uc_monitor_max_time_task_c", "Max Time Task C", base.HEX)
+f.rec_uc_monitor_max_time_task_d = ProtoField.uint16 ("dji_p3.rec_uc_monitor_max_time_task_d", "Max Time Task D", base.HEX)
+f.rec_uc_monitor_uc_resv1 = ProtoField.uint16 ("dji_p3.rec_uc_monitor_uc_resv1", "Uc Resv1", base.HEX)
+f.rec_uc_monitor_stack_usage_irq = ProtoField.uint16 ("dji_p3.rec_uc_monitor_stack_usage_irq", "Stack Usage Irq", base.HEX)
+f.rec_uc_monitor_stack_usage_workqueue = ProtoField.uint16 ("dji_p3.rec_uc_monitor_stack_usage_workqueue", "Stack Usage Workqueue", base.HEX)
+f.rec_uc_monitor_stack_usage_b = ProtoField.uint16 ("dji_p3.rec_uc_monitor_stack_usage_b", "Stack Usage B", base.HEX)
+f.rec_uc_monitor_stack_usage_a = ProtoField.uint16 ("dji_p3.rec_uc_monitor_stack_usage_a", "Stack Usage A", base.HEX)
+f.rec_uc_monitor_stack_usage_c = ProtoField.uint16 ("dji_p3.rec_uc_monitor_stack_usage_c", "Stack Usage C", base.HEX)
+f.rec_uc_monitor_stack_usage_d = ProtoField.uint16 ("dji_p3.rec_uc_monitor_stack_usage_d", "Stack Usage D", base.HEX)
+f.rec_uc_monitor_uc_resv2 = ProtoField.uint16 ("dji_p3.rec_uc_monitor_uc_resv2", "Uc Resv2", base.HEX)
+f.rec_uc_monitor_pend_cnt_a = ProtoField.uint16 ("dji_p3.rec_uc_monitor_pend_cnt_a", "Pend Cnt A", base.HEX)
+f.rec_uc_monitor_pend_cnt_b = ProtoField.uint16 ("dji_p3.rec_uc_monitor_pend_cnt_b", "Pend Cnt B", base.HEX)
+f.rec_uc_monitor_pend_cnt_c = ProtoField.uint16 ("dji_p3.rec_uc_monitor_pend_cnt_c", "Pend Cnt C", base.HEX)
+f.rec_uc_monitor_pend_cnt_d = ProtoField.uint16 ("dji_p3.rec_uc_monitor_pend_cnt_d", "Pend Cnt D", base.HEX)
+
+local function flightrec_uc_monitor_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_uc_monitor_cpu_usage, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_cpu_usage_task_b, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_cpu_usage_task_a, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_uc_resv0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_max_time_workqueue, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_max_time_task_b, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_max_time_task_a, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_max_time_task_c, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_max_time_task_d, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_uc_resv1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_stack_usage_irq, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_stack_usage_workqueue, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_stack_usage_b, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_stack_usage_a, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_stack_usage_c, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_stack_usage_d, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_uc_resv2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_pend_cnt_a, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_pend_cnt_b, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_pend_cnt_c, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_uc_monitor_pend_cnt_d, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 42) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Uc Monitor: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Uc Monitor: Payload size different than expected") end
+end
+
+-- Flight log - Rc Delay - 0xcdff
+
+f.rec_rc_delay_dly_ns = ProtoField.uint32 ("dji_p3.rec_rc_delay_dly_ns", "Dly Ns", base.HEX)
+
+local function flightrec_rc_delay_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_rc_delay_dly_ns, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Rc Delay: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Rc Delay: Payload size different than expected") end
+end
+
+-- Flight log - Taskb Info - 0xce02
+
+f.rec_taskb_info_period_jitter0 = ProtoField.int32 ("dji_p3.rec_taskb_info_period_jitter0", "Period Jitter0", base.DEC)
+f.rec_taskb_info_exec_time0 = ProtoField.uint16 ("dji_p3.rec_taskb_info_exec_time0", "Exec Time0", base.HEX)
+f.rec_taskb_info_pending0 = ProtoField.uint16 ("dji_p3.rec_taskb_info_pending0", "Pending0", base.HEX)
+
+local function flightrec_taskb_info_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_taskb_info_period_jitter0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_taskb_info_exec_time0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_taskb_info_pending0, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Taskb Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Taskb Info: Payload size different than expected") end
+end
+
+-- Flight log - Taska Info - 0xce06
+
+f.rec_taska_info_period_jitter1 = ProtoField.int32 ("dji_p3.rec_taska_info_period_jitter1", "Period Jitter1", base.DEC)
+f.rec_taska_info_exec_time1 = ProtoField.uint16 ("dji_p3.rec_taska_info_exec_time1", "Exec Time1", base.HEX)
+f.rec_taska_info_pending1 = ProtoField.uint16 ("dji_p3.rec_taska_info_pending1", "Pending1", base.HEX)
+
+local function flightrec_taska_info_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_taska_info_period_jitter1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_taska_info_exec_time1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_taska_info_pending1, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Taska Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Taska Info: Payload size different than expected") end
+end
+
+-- Flight log - Taskc Info - 0xce08
+
+f.rec_taskc_info_period_jitter2 = ProtoField.int32 ("dji_p3.rec_taskc_info_period_jitter2", "Period Jitter2", base.DEC)
+f.rec_taskc_info_exec_time2 = ProtoField.uint16 ("dji_p3.rec_taskc_info_exec_time2", "Exec Time2", base.HEX)
+f.rec_taskc_info_pending2 = ProtoField.uint16 ("dji_p3.rec_taskc_info_pending2", "Pending2", base.HEX)
+
+local function flightrec_taskc_info_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_taskc_info_period_jitter2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_taskc_info_exec_time2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_taskc_info_pending2, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Taskc Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Taskc Info: Payload size different than expected") end
+end
+
+-- Flight log - Taskd Info - 0xce09
+
+f.rec_taskd_info_period_jitter3 = ProtoField.int32 ("dji_p3.rec_taskd_info_period_jitter3", "Period Jitter3", base.DEC)
+f.rec_taskd_info_exec_time3 = ProtoField.uint16 ("dji_p3.rec_taskd_info_exec_time3", "Exec Time3", base.HEX)
+f.rec_taskd_info_pending3 = ProtoField.uint16 ("dji_p3.rec_taskd_info_pending3", "Pending3", base.HEX)
+
+local function flightrec_taskd_info_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_taskd_info_period_jitter3, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_taskd_info_exec_time3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_taskd_info_pending3, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Taskd Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Taskd Info: Payload size different than expected") end
+end
+
+-- Flight log - Rc Replay - 0xcdf6
+
+f.rec_rc_replay_cmd_alieron = ProtoField.int16 ("dji_p3.rec_rc_replay_cmd_alieron", "Cmd Alieron", base.DEC)
+f.rec_rc_replay_cmd_elevator = ProtoField.int16 ("dji_p3.rec_rc_replay_cmd_elevator", "Cmd Elevator", base.DEC)
+f.rec_rc_replay_cmd_throttle = ProtoField.int16 ("dji_p3.rec_rc_replay_cmd_throttle", "Cmd Throttle", base.DEC)
+f.rec_rc_replay_cmd_rudder = ProtoField.int16 ("dji_p3.rec_rc_replay_cmd_rudder", "Cmd Rudder", base.DEC)
+f.rec_rc_replay_cmd_mode = ProtoField.int16 ("dji_p3.rec_rc_replay_cmd_mode", "Cmd Mode", base.DEC)
+f.rec_rc_replay_cmd_ioc = ProtoField.int16 ("dji_p3.rec_rc_replay_cmd_ioc", "Cmd Ioc", base.DEC)
+f.rec_rc_replay_cmd_go_home = ProtoField.int16 ("dji_p3.rec_rc_replay_cmd_go_home", "Cmd Go Home", base.DEC)
+f.rec_rc_replay_cmd_d4 = ProtoField.int16 ("dji_p3.rec_rc_replay_cmd_d4", "Cmd D4", base.DEC)
+
+local function flightrec_rc_replay_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_rc_replay_cmd_alieron, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_replay_cmd_elevator, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_replay_cmd_throttle, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_replay_cmd_rudder, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_replay_cmd_mode, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_replay_cmd_ioc, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_replay_cmd_go_home, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rc_replay_cmd_d4, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Rc Replay: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Rc Replay: Payload size different than expected") end
+end
+
+-- Flight log - Escm - 0xcdf1
+
+f.rec_escm_esc1_status = ProtoField.uint8 ("dji_p3.rec_escm_esc1_status", "Esc1 Status", base.HEX)
+f.rec_escm_esc1_current = ProtoField.int16 ("dji_p3.rec_escm_esc1_current", "Esc1 Current", base.DEC)
+f.rec_escm_esc1_speed = ProtoField.int16 ("dji_p3.rec_escm_esc1_speed", "Esc1 Speed", base.DEC)
+f.rec_escm_esc1_voltage = ProtoField.int16 ("dji_p3.rec_escm_esc1_voltage", "Esc1 Voltage", base.DEC)
+f.rec_escm_esc1_temperature = ProtoField.int16 ("dji_p3.rec_escm_esc1_temperature", "Esc1 Temperature", base.DEC)
+f.rec_escm_esc1_ppm_recv = ProtoField.int16 ("dji_p3.rec_escm_esc1_ppm_recv", "Esc1 Ppm Recv", base.DEC)
+f.rec_escm_esc1_v_out = ProtoField.int16 ("dji_p3.rec_escm_esc1_v_out", "Esc1 V Out", base.DEC)
+f.rec_escm_esc1_debug0 = ProtoField.int16 ("dji_p3.rec_escm_esc1_debug0", "Esc1 Debug0", base.DEC)
+f.rec_escm_esc1_debug1 = ProtoField.int16 ("dji_p3.rec_escm_esc1_debug1", "Esc1 Debug1", base.DEC)
+f.rec_escm_esc1_debug2 = ProtoField.int16 ("dji_p3.rec_escm_esc1_debug2", "Esc1 Debug2", base.DEC)
+f.rec_escm_esc2_status = ProtoField.uint8 ("dji_p3.rec_escm_esc2_status", "Esc2 Status", base.HEX)
+f.rec_escm_esc2_current = ProtoField.int16 ("dji_p3.rec_escm_esc2_current", "Esc2 Current", base.DEC)
+f.rec_escm_esc2_speed = ProtoField.int16 ("dji_p3.rec_escm_esc2_speed", "Esc2 Speed", base.DEC)
+f.rec_escm_esc2_voltage = ProtoField.int16 ("dji_p3.rec_escm_esc2_voltage", "Esc2 Voltage", base.DEC)
+f.rec_escm_esc2_temperature = ProtoField.int16 ("dji_p3.rec_escm_esc2_temperature", "Esc2 Temperature", base.DEC)
+f.rec_escm_esc2_ppm_recv = ProtoField.int16 ("dji_p3.rec_escm_esc2_ppm_recv", "Esc2 Ppm Recv", base.DEC)
+f.rec_escm_esc2_v_out = ProtoField.int16 ("dji_p3.rec_escm_esc2_v_out", "Esc2 V Out", base.DEC)
+f.rec_escm_esc2_debug0 = ProtoField.int16 ("dji_p3.rec_escm_esc2_debug0", "Esc2 Debug0", base.DEC)
+f.rec_escm_esc2_debug1 = ProtoField.int16 ("dji_p3.rec_escm_esc2_debug1", "Esc2 Debug1", base.DEC)
+f.rec_escm_esc2_debug2 = ProtoField.int16 ("dji_p3.rec_escm_esc2_debug2", "Esc2 Debug2", base.DEC)
+f.rec_escm_esc3_status = ProtoField.uint8 ("dji_p3.rec_escm_esc3_status", "Esc3 Status", base.HEX)
+f.rec_escm_esc3_current = ProtoField.int16 ("dji_p3.rec_escm_esc3_current", "Esc3 Current", base.DEC)
+f.rec_escm_esc3_speed = ProtoField.int16 ("dji_p3.rec_escm_esc3_speed", "Esc3 Speed", base.DEC)
+f.rec_escm_esc3_voltage = ProtoField.int16 ("dji_p3.rec_escm_esc3_voltage", "Esc3 Voltage", base.DEC)
+f.rec_escm_esc3_temperature = ProtoField.int16 ("dji_p3.rec_escm_esc3_temperature", "Esc3 Temperature", base.DEC)
+f.rec_escm_esc3_ppm_recv = ProtoField.int16 ("dji_p3.rec_escm_esc3_ppm_recv", "Esc3 Ppm Recv", base.DEC)
+f.rec_escm_esc3_v_out = ProtoField.int16 ("dji_p3.rec_escm_esc3_v_out", "Esc3 V Out", base.DEC)
+f.rec_escm_esc3_debug0 = ProtoField.int16 ("dji_p3.rec_escm_esc3_debug0", "Esc3 Debug0", base.DEC)
+f.rec_escm_esc3_debug1 = ProtoField.int16 ("dji_p3.rec_escm_esc3_debug1", "Esc3 Debug1", base.DEC)
+f.rec_escm_esc3_debug2 = ProtoField.int16 ("dji_p3.rec_escm_esc3_debug2", "Esc3 Debug2", base.DEC)
+f.rec_escm_esc4_status = ProtoField.uint8 ("dji_p3.rec_escm_esc4_status", "Esc4 Status", base.HEX)
+f.rec_escm_esc4_current = ProtoField.int16 ("dji_p3.rec_escm_esc4_current", "Esc4 Current", base.DEC)
+f.rec_escm_esc4_speed = ProtoField.int16 ("dji_p3.rec_escm_esc4_speed", "Esc4 Speed", base.DEC)
+f.rec_escm_esc4_voltage = ProtoField.int16 ("dji_p3.rec_escm_esc4_voltage", "Esc4 Voltage", base.DEC)
+f.rec_escm_esc4_temperature = ProtoField.int16 ("dji_p3.rec_escm_esc4_temperature", "Esc4 Temperature", base.DEC)
+f.rec_escm_esc4_ppm_recv = ProtoField.int16 ("dji_p3.rec_escm_esc4_ppm_recv", "Esc4 Ppm Recv", base.DEC)
+f.rec_escm_esc4_v_out = ProtoField.int16 ("dji_p3.rec_escm_esc4_v_out", "Esc4 V Out", base.DEC)
+f.rec_escm_esc4_debug0 = ProtoField.int16 ("dji_p3.rec_escm_esc4_debug0", "Esc4 Debug0", base.DEC)
+f.rec_escm_esc4_debug1 = ProtoField.int16 ("dji_p3.rec_escm_esc4_debug1", "Esc4 Debug1", base.DEC)
+f.rec_escm_esc4_debug2 = ProtoField.int16 ("dji_p3.rec_escm_esc4_debug2", "Esc4 Debug2", base.DEC)
+
+local function flightrec_escm_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_escm_esc1_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_escm_esc1_current, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc1_speed, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc1_voltage, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc1_temperature, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc1_ppm_recv, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc1_v_out, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc1_debug0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc1_debug1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc1_debug2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc2_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_escm_esc2_current, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc2_speed, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc2_voltage, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc2_temperature, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc2_ppm_recv, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc2_v_out, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc2_debug0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc2_debug1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc2_debug2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc3_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_escm_esc3_current, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc3_speed, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc3_voltage, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc3_temperature, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc3_ppm_recv, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc3_v_out, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc3_debug0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc3_debug1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc3_debug2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc4_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_escm_esc4_current, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc4_speed, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc4_voltage, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc4_temperature, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc4_ppm_recv, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc4_v_out, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc4_debug0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc4_debug1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_escm_esc4_debug2, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 76) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Escm: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Escm: Payload size different than expected") end
+end
+
+-- Flight log - Sweep - 0xcdf2
+
+f.rec_sweep_ppm = ProtoField.uint16 ("dji_p3.rec_sweep_ppm", "Ppm", base.HEX)
+
+local function flightrec_sweep_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_sweep_ppm, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Sweep: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Sweep: Payload size different than expected") end
+end
+
+-- Flight log - Mvo - 0x000e
+
+f.rec_mvo_mvo_px = ProtoField.float ("dji_p3.rec_mvo_mvo_px", "Mvo Px", base.DEC)
+f.rec_mvo_mvo_py = ProtoField.float ("dji_p3.rec_mvo_mvo_py", "Mvo Py", base.DEC)
+f.rec_mvo_mvo_pz = ProtoField.float ("dji_p3.rec_mvo_mvo_pz", "Mvo Pz", base.DEC)
+f.rec_mvo_mvo_vx = ProtoField.int16 ("dji_p3.rec_mvo_mvo_vx", "Mvo Vx", base.DEC)
+f.rec_mvo_mvo_vy = ProtoField.int16 ("dji_p3.rec_mvo_mvo_vy", "Mvo Vy", base.DEC)
+f.rec_mvo_mvo_vz = ProtoField.int16 ("dji_p3.rec_mvo_mvo_vz", "Mvo Vz", base.DEC)
+f.rec_mvo_mvo_cnt = ProtoField.uint8 ("dji_p3.rec_mvo_mvo_cnt", "Mvo Cnt", base.HEX)
+f.rec_mvo_mvo_flag = ProtoField.uint8 ("dji_p3.rec_mvo_mvo_flag", "Mvo Flag", base.HEX)
+  f.rec_mvo_e_mvo_px_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_px_flag", "E Mvo Px Flag", base.HEX, nil, 0x10, nil)
+  f.rec_mvo_e_mvo_py_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_py_flag", "E Mvo Py Flag", base.HEX, nil, 0x20, nil)
+  f.rec_mvo_e_mvo_pz_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_pz_flag", "E Mvo Pz Flag", base.HEX, nil, 0x40, nil)
+  f.rec_mvo_e_mvo_vx_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_vx_flag", "E Mvo Vx Flag", base.HEX, nil, 0x01, nil)
+  f.rec_mvo_e_mvo_vy_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_vy_flag", "E Mvo Vy Flag", base.HEX, nil, 0x02, nil)
+  f.rec_mvo_e_mvo_vz_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_vz_flag", "E Mvo Vz Flag", base.HEX, nil, 0x04, nil)
+
+local function flightrec_mvo_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_mvo_mvo_px, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_mvo_mvo_py, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_mvo_mvo_pz, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_mvo_mvo_vx, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_mvo_mvo_vy, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_mvo_mvo_vz, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_mvo_mvo_cnt, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_mvo_mvo_flag, payload(offset, 1))
+    subtree:add_le (f.rec_mvo_e_mvo_px_flag, payload(offset, 1))
+    subtree:add_le (f.rec_mvo_e_mvo_py_flag, payload(offset, 1))
+    subtree:add_le (f.rec_mvo_e_mvo_pz_flag, payload(offset, 1))
+    subtree:add_le (f.rec_mvo_e_mvo_vx_flag, payload(offset, 1))
+    subtree:add_le (f.rec_mvo_e_mvo_vy_flag, payload(offset, 1))
+    subtree:add_le (f.rec_mvo_e_mvo_vz_flag, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Mvo: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Mvo: Payload size different than expected") end
+end
+
+-- Flight log - Usonic - 0x0010
+
+f.rec_usonic_usonic_h = ProtoField.int16 ("dji_p3.rec_usonic_usonic_h", "Usonic H", base.DEC)
+f.rec_usonic_usonic_flag = ProtoField.uint8 ("dji_p3.rec_usonic_usonic_flag", "Usonic Flag", base.HEX)
+  f.rec_usonic_e_us_flag_old = ProtoField.uint8 ("dji_p3.rec_usonic_e_us_flag_old", "E Us Flag Old", base.HEX, nil, 0x01, nil)
+f.rec_usonic_usonic_cnt = ProtoField.uint8 ("dji_p3.rec_usonic_usonic_cnt", "Usonic Cnt", base.HEX)
+
+local function flightrec_usonic_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_usonic_usonic_h, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_usonic_usonic_flag, payload(offset, 1))
+    subtree:add_le (f.rec_usonic_e_us_flag_old, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_usonic_usonic_cnt, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Usonic: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Usonic: Payload size different than expected") end
+end
+
+-- Flight log - Console - 0xcdef
+
+f.rec_console_text = ProtoField.string ("dji_p3.rec_console_text", "Console", base.ASCII)
+
+local function flightrec_console_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add (f.rec_console_text, payload(offset, payload:len() - offset))
+end
+
+-- Flight log - Syscfg - 0xffff
+
+f.rec_syscfg_text = ProtoField.string ("dji_p3.rec_syscfg_text", "Syscfg", base.ASCII)
+
+local function flightrec_syscfg_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add (f.rec_syscfg_text, payload(offset, payload:len() - offset))
+end
+
+-- Flight log - Battery Info - 0x0011
+
+f.rec_battery_info_design_capacity = ProtoField.uint16 ("dji_p3.rec_battery_info_design_capacity", "Design Capacity", base.HEX)
+f.rec_battery_info_full_charge_capacity = ProtoField.uint16 ("dji_p3.rec_battery_info_full_charge_capacity", "Full Charge Capacity", base.HEX)
+f.rec_battery_info_remaining_capacity = ProtoField.uint16 ("dji_p3.rec_battery_info_remaining_capacity", "Remaining Capacity", base.HEX)
+f.rec_battery_info_pack_voltage = ProtoField.uint16 ("dji_p3.rec_battery_info_pack_voltage", "Pack Voltage", base.HEX)
+f.rec_battery_info_current = ProtoField.int16 ("dji_p3.rec_battery_info_current", "Current", base.DEC)
+f.rec_battery_info_life_percentage = ProtoField.uint8 ("dji_p3.rec_battery_info_life_percentage", "Life Percentage", base.HEX)
+f.rec_battery_info_capacity_percentage = ProtoField.uint8 ("dji_p3.rec_battery_info_capacity_percentage", "Capacity Percentage", base.HEX)
+f.rec_battery_info_temperature = ProtoField.int16 ("dji_p3.rec_battery_info_temperature", "Temperature", base.DEC)
+f.rec_battery_info_cycle_count = ProtoField.uint16 ("dji_p3.rec_battery_info_cycle_count", "Cycle Count", base.HEX)
+f.rec_battery_info_serial_number = ProtoField.uint16 ("dji_p3.rec_battery_info_serial_number", "Serial Number", base.HEX)
+f.rec_battery_info_cell1 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell1", "Cell1", base.HEX)
+f.rec_battery_info_cell2 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell2", "Cell2", base.HEX)
+f.rec_battery_info_cell3 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell3", "Cell3", base.HEX)
+f.rec_battery_info_cell4 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell4", "Cell4", base.HEX)
+f.rec_battery_info_cell5 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell5", "Cell5", base.HEX)
+f.rec_battery_info_cell6 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell6", "Cell6", base.HEX)
+f.rec_battery_info_average_current = ProtoField.int16 ("dji_p3.rec_battery_info_average_current", "Average Current", base.DEC)
+f.rec_battery_info_right = ProtoField.uint8 ("dji_p3.rec_battery_info_right", "Right", base.HEX)
+f.rec_battery_info_error_count = ProtoField.uint32 ("dji_p3.rec_battery_info_error_count", "Error Count", base.HEX)
+f.rec_battery_info_n_discharge_times = ProtoField.uint32 ("dji_p3.rec_battery_info_n_discharge_times", "N Discharge Times", base.HEX)
+f.rec_battery_info_current_status = ProtoField.uint32 ("dji_p3.rec_battery_info_current_status", "Current Status", base.HEX)
+f.rec_battery_info_vol_main = ProtoField.uint16 ("dji_p3.rec_battery_info_vol_main", "Vol Main", base.HEX)
+
+local function flightrec_battery_info_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_battery_info_design_capacity, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_full_charge_capacity, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_remaining_capacity, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_pack_voltage, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_current, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_life_percentage, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_battery_info_capacity_percentage, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_battery_info_temperature, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cycle_count, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_serial_number, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cell1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cell2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cell3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cell4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cell5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_cell6, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_average_current, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_battery_info_right, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_battery_info_error_count, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_battery_info_n_discharge_times, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_battery_info_current_status, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_battery_info_vol_main, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 47) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Battery Info: Payload size different than expected") end
+end
+
+-- Flight log - Special Cmd - 0x0017
+
+f.rec_special_cmd_byte1 = ProtoField.uint8 ("dji_p3.rec_special_cmd_byte1", "Byte1", base.HEX)
+f.rec_special_cmd_byte2 = ProtoField.uint8 ("dji_p3.rec_special_cmd_byte2", "Byte2", base.HEX)
+f.rec_special_cmd_word1 = ProtoField.uint16 ("dji_p3.rec_special_cmd_word1", "Word1", base.HEX)
+f.rec_special_cmd_byte3 = ProtoField.uint8 ("dji_p3.rec_special_cmd_byte3", "Byte3", base.HEX)
+f.rec_special_cmd_ctrl_action = ProtoField.uint8 ("dji_p3.rec_special_cmd_ctrl_action", "Ctrl Action", base.HEX)
+f.rec_special_cmd_byte4 = ProtoField.uint8 ("dji_p3.rec_special_cmd_byte4", "Byte4", base.HEX)
+f.rec_special_cmd_byte5 = ProtoField.uint8 ("dji_p3.rec_special_cmd_byte5", "Byte5", base.HEX)
+f.rec_special_cmd_byte6 = ProtoField.uint8 ("dji_p3.rec_special_cmd_byte6", "Byte6", base.HEX)
+f.rec_special_cmd_byte7 = ProtoField.uint8 ("dji_p3.rec_special_cmd_byte7", "Byte7", base.HEX)
+
+local function flightrec_special_cmd_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_special_cmd_byte1, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_special_cmd_byte2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_special_cmd_word1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_special_cmd_byte3, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_special_cmd_ctrl_action, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_special_cmd_byte4, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_special_cmd_byte5, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_special_cmd_byte6, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_special_cmd_byte7, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Special Cmd: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Special Cmd: Payload size different than expected") end
+end
+
+-- Flight log - Serial Api Inputs - 0x003c
+
+f.rec_serial_api_inputs_user_req_ctrl_flag = ProtoField.uint8 ("dji_p3.rec_serial_api_inputs_user_req_ctrl_flag", "User Req Ctrl Flag", base.HEX)
+f.rec_serial_api_inputs_user_req_roll_or_x = ProtoField.float ("dji_p3.rec_serial_api_inputs_user_req_roll_or_x", "User Req Roll Or X", base.DEC)
+f.rec_serial_api_inputs_user_req_pitch_or_y = ProtoField.float ("dji_p3.rec_serial_api_inputs_user_req_pitch_or_y", "User Req Pitch Or Y", base.DEC)
+f.rec_serial_api_inputs_user_req_thr_z = ProtoField.float ("dji_p3.rec_serial_api_inputs_user_req_thr_z", "User Req Thr Z", base.DEC)
+f.rec_serial_api_inputs_user_req_yaw = ProtoField.float ("dji_p3.rec_serial_api_inputs_user_req_yaw", "User Req Yaw", base.DEC)
+f.rec_serial_api_inputs_nav_cur_dev = ProtoField.uint8 ("dji_p3.rec_serial_api_inputs_nav_cur_dev", "Nav Cur Dev", base.HEX)
+f.rec_serial_api_inputs_api_cur_sub_mode = ProtoField.uint8 ("dji_p3.rec_serial_api_inputs_api_cur_sub_mode", "Api Cur Sub Mode", base.HEX)
+f.rec_serial_api_inputs_api_user_ctrl_data_health = ProtoField.uint8 ("dji_p3.rec_serial_api_inputs_api_user_ctrl_data_health", "Api User Ctrl Data Health", base.HEX)
+f.rec_serial_api_inputs_api_app_ctrl_data_health = ProtoField.uint8 ("dji_p3.rec_serial_api_inputs_api_app_ctrl_data_health", "Api App Ctrl Data Health", base.HEX)
+f.rec_serial_api_inputs_user_open_close_req = ProtoField.uint8 ("dji_p3.rec_serial_api_inputs_user_open_close_req", "User Open Close Req", base.HEX)
+f.rec_serial_api_inputs_user_open_close_ack = ProtoField.uint8 ("dji_p3.rec_serial_api_inputs_user_open_close_ack", "User Open Close Ack", base.HEX)
+f.rec_serial_api_inputs_user_flight_cmd_req = ProtoField.uint8 ("dji_p3.rec_serial_api_inputs_user_flight_cmd_req", "User Flight Cmd Req", base.HEX)
+f.rec_serial_api_inputs_user_flight_cmd_ack = ProtoField.uint8 ("dji_p3.rec_serial_api_inputs_user_flight_cmd_ack", "User Flight Cmd Ack", base.HEX)
+
+local function flightrec_serial_api_inputs_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_serial_api_inputs_user_req_ctrl_flag, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_serial_api_inputs_user_req_roll_or_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_serial_api_inputs_user_req_pitch_or_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_serial_api_inputs_user_req_thr_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_serial_api_inputs_user_req_yaw, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_serial_api_inputs_nav_cur_dev, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_serial_api_inputs_api_cur_sub_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_serial_api_inputs_api_user_ctrl_data_health, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_serial_api_inputs_api_app_ctrl_data_health, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_serial_api_inputs_user_open_close_req, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_serial_api_inputs_user_open_close_ack, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_serial_api_inputs_user_flight_cmd_req, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_serial_api_inputs_user_flight_cmd_ack, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 25) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Serial Api Inputs: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Serial Api Inputs: Payload size different than expected") end
+end
+
+-- Flight log - Ctrl Vert - 0x0032
+
+f.rec_ctrl_vert_vert_module_module_mode = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_module_module_mode", "Vert Module Module Mode", base.HEX)
+f.rec_ctrl_vert_vert_module_vert_hover_state = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_module_vert_hover_state", "Vert Module Vert Hover State", base.HEX)
+f.rec_ctrl_vert_vert_module_vert_hover_enable = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_module_vert_hover_enable", "Vert Module Vert Hover Enable", base.HEX)
+f.rec_ctrl_vert_vert_module_vert_hover_pos = ProtoField.float ("dji_p3.rec_ctrl_vert_vert_module_vert_hover_pos", "Vert Module Vert Hover Pos", base.DEC)
+f.rec_ctrl_vert_vert_module_vert_hover_brake_timer = ProtoField.float ("dji_p3.rec_ctrl_vert_vert_module_vert_hover_brake_timer", "Vert Module Vert Hover Brake Timer", base.DEC)
+f.rec_ctrl_vert_vert_module_take_off_thrust = ProtoField.float ("dji_p3.rec_ctrl_vert_vert_module_take_off_thrust", "Vert Module Take Off Thrust", base.DEC)
+f.rec_ctrl_vert_vert_module_auto_take_off_state = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_module_auto_take_off_state", "Vert Module Auto Take Off State", base.HEX)
+f.rec_ctrl_vert_vert_module_auto_take_off_height = ProtoField.float ("dji_p3.rec_ctrl_vert_vert_module_auto_take_off_height", "Vert Module Auto Take Off Height", base.DEC)
+f.rec_ctrl_vert_api_vert_ctrl_mode = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_api_vert_ctrl_mode", "Api Vert Ctrl Mode", base.HEX)
+f.rec_ctrl_vert_api_vert_ctrl_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_api_vert_ctrl_cmd_id", "Api Vert Ctrl Cmd Id", base.HEX)
+f.rec_ctrl_vert_vert_pos_status = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_pos_status", "Vert Pos Status", base.HEX)
+f.rec_ctrl_vert_vert_pos_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_pos_cmd_id", "Vert Pos Cmd Id", base.HEX)
+f.rec_ctrl_vert_vert_pos_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_pos_feedback_id", "Vert Pos Feedback Id", base.HEX)
+f.rec_ctrl_vert_vert_pos_cmd = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_pos_cmd", "Vert Pos Cmd", base.DEC)
+f.rec_ctrl_vert_vert_pos_feedback = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_pos_feedback", "Vert Pos Feedback", base.DEC)
+f.rec_ctrl_vert_vert_pos_p_ctrl = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_pos_p_ctrl", "Vert Pos P Ctrl", base.DEC)
+f.rec_ctrl_vert_vert_pos_output = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_pos_output", "Vert Pos Output", base.DEC)
+f.rec_ctrl_vert_vert_vel_status = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_vel_status", "Vert Vel Status", base.HEX)
+f.rec_ctrl_vert_vert_vel_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_vel_cmd_id", "Vert Vel Cmd Id", base.HEX)
+f.rec_ctrl_vert_vert_vel_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_vel_feedback_id", "Vert Vel Feedback Id", base.HEX)
+f.rec_ctrl_vert_vert_vel_cmd = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_vel_cmd", "Vert Vel Cmd", base.DEC)
+f.rec_ctrl_vert_vert_vel_cmd_before_limit = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_vel_cmd_before_limit", "Vert Vel Cmd Before Limit", base.DEC)
+f.rec_ctrl_vert_vert_vel_cmd_after_limit = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_vel_cmd_after_limit", "Vert Vel Cmd After Limit", base.DEC)
+f.rec_ctrl_vert_vert_vel_feedback = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_vel_feedback", "Vert Vel Feedback", base.DEC)
+f.rec_ctrl_vert_vert_vel_p_ctrl = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_vel_p_ctrl", "Vert Vel P Ctrl", base.DEC)
+f.rec_ctrl_vert_vert_vel_output = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_vel_output", "Vert Vel Output", base.DEC)
+f.rec_ctrl_vert_vert_acc_status = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_acc_status", "Vert Acc Status", base.HEX)
+f.rec_ctrl_vert_vert_acc_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_acc_cmd_id", "Vert Acc Cmd Id", base.HEX)
+f.rec_ctrl_vert_vert_acc_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_acc_feedback_id", "Vert Acc Feedback Id", base.HEX)
+f.rec_ctrl_vert_vert_acc_cmd = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_acc_cmd", "Vert Acc Cmd", base.DEC)
+f.rec_ctrl_vert_vert_acc_feedback = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_acc_feedback", "Vert Acc Feedback", base.DEC)
+f.rec_ctrl_vert_vert_acc_p_ctrl = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_acc_p_ctrl", "Vert Acc P Ctrl", base.DEC)
+f.rec_ctrl_vert_vert_acc_i_ctrl = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_acc_i_ctrl", "Vert Acc I Ctrl", base.DEC)
+f.rec_ctrl_vert_vert_acc_feedforward = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_acc_feedforward", "Vert Acc Feedforward", base.DEC)
+f.rec_ctrl_vert_vert_acc_output = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_acc_output", "Vert Acc Output", base.DEC)
+f.rec_ctrl_vert_vert_thrust_status = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_thrust_status", "Vert Thrust Status", base.HEX)
+f.rec_ctrl_vert_vert_thrust_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_thrust_cmd_id", "Vert Thrust Cmd Id", base.HEX)
+f.rec_ctrl_vert_vert_thrust_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_vert_vert_thrust_feedback_id", "Vert Thrust Feedback Id", base.HEX)
+f.rec_ctrl_vert_vert_thrust_cmd_data = ProtoField.int16 ("dji_p3.rec_ctrl_vert_vert_thrust_cmd_data", "Vert Thrust Cmd Data", base.DEC)
+
+local function flightrec_ctrl_vert_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_ctrl_vert_vert_module_module_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_module_vert_hover_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_module_vert_hover_enable, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_module_vert_hover_pos, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_vert_vert_module_vert_hover_brake_timer, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_vert_vert_module_take_off_thrust, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_vert_vert_module_auto_take_off_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_module_auto_take_off_height, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_vert_api_vert_ctrl_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_api_vert_ctrl_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_pos_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_pos_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_pos_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_pos_cmd, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_pos_feedback, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_pos_p_ctrl, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_pos_output, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_vel_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_vel_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_vel_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_vel_cmd, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_vel_cmd_before_limit, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_vel_cmd_after_limit, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_vel_feedback, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_vel_p_ctrl, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_vel_output, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_acc_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_acc_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_acc_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_acc_cmd, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_acc_feedback, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_acc_p_ctrl, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_acc_i_ctrl, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_acc_feedforward, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_acc_output, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_vert_vert_thrust_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_thrust_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_thrust_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_vert_vert_thrust_cmd_data, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Vert: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Vert: Payload size different than expected") end
+end
+
+-- Flight log - Ctrl Horiz - 0x0033
+
+f.rec_ctrl_horiz_horiz_module_module_mode = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_module_module_mode", "Horiz Module Module Mode", base.HEX)
+f.rec_ctrl_horiz_horiz_module_horiz_hover_state = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_module_horiz_hover_state", "Horiz Module Horiz Hover State", base.HEX)
+f.rec_ctrl_horiz_horiz_module_horiz_hover_enable = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_module_horiz_hover_enable", "Horiz Module Horiz Hover Enable", base.HEX)
+f.rec_ctrl_horiz_horiz_module_horiz_hover_abs_pos_0 = ProtoField.double ("dji_p3.rec_ctrl_horiz_horiz_module_horiz_hover_abs_pos_0", "Horiz Module Horiz Hover Abs Pos 0", base.DEC)
+f.rec_ctrl_horiz_horiz_module_horiz_hover_abs_pos_1 = ProtoField.double ("dji_p3.rec_ctrl_horiz_horiz_module_horiz_hover_abs_pos_1", "Horiz Module Horiz Hover Abs Pos 1", base.DEC)
+f.rec_ctrl_horiz_horiz_module_horiz_hover_rel_pos_0 = ProtoField.float ("dji_p3.rec_ctrl_horiz_horiz_module_horiz_hover_rel_pos_0", "Horiz Module Horiz Hover Rel Pos 0", base.DEC)
+f.rec_ctrl_horiz_horiz_module_horiz_hover_rel_pos_1 = ProtoField.float ("dji_p3.rec_ctrl_horiz_horiz_module_horiz_hover_rel_pos_1", "Horiz Module Horiz Hover Rel Pos 1", base.DEC)
+f.rec_ctrl_horiz_horiz_module_horiz_hover_brake_timer = ProtoField.float ("dji_p3.rec_ctrl_horiz_horiz_module_horiz_hover_brake_timer", "Horiz Module Horiz Hover Brake Timer", base.DEC)
+f.rec_ctrl_horiz_horiz_module_horiz_pos_offset_0 = ProtoField.float ("dji_p3.rec_ctrl_horiz_horiz_module_horiz_pos_offset_0", "Horiz Module Horiz Pos Offset 0", base.DEC)
+f.rec_ctrl_horiz_horiz_module_horiz_pos_offset_1 = ProtoField.float ("dji_p3.rec_ctrl_horiz_horiz_module_horiz_pos_offset_1", "Horiz Module Horiz Pos Offset 1", base.DEC)
+f.rec_ctrl_horiz_api_horiz_ctrl_mode = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_api_horiz_ctrl_mode", "Api Horiz Ctrl Mode", base.HEX)
+f.rec_ctrl_horiz_api_horiz_ctrl_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_api_horiz_ctrl_cmd_id", "Api Horiz Ctrl Cmd Id", base.HEX)
+f.rec_ctrl_horiz_api_torsion_ctrl_mode = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_api_torsion_ctrl_mode", "Api Torsion Ctrl Mode", base.HEX)
+f.rec_ctrl_horiz_api_torsion_ctrl_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_api_torsion_ctrl_cmd_id", "Api Torsion Ctrl Cmd Id", base.HEX)
+f.rec_ctrl_horiz_api_atti_cmd_type = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_api_atti_cmd_type", "Api Atti Cmd Type", base.HEX)
+f.rec_ctrl_horiz_horiz_pos_tag_status = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_pos_tag_status", "Horiz Pos Tag Status", base.HEX)
+f.rec_ctrl_horiz_horiz_pos_tag_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_pos_tag_cmd_id", "Horiz Pos Tag Cmd Id", base.HEX)
+f.rec_ctrl_horiz_horiz_pos_tag_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_pos_tag_feedback_id", "Horiz Pos Tag Feedback Id", base.HEX)
+f.rec_ctrl_horiz_horiz_pos_cmd_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_pos_cmd_x", "Horiz Pos Cmd X", base.DEC)
+f.rec_ctrl_horiz_horiz_pos_cmd_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_pos_cmd_y", "Horiz Pos Cmd Y", base.DEC)
+f.rec_ctrl_horiz_horiz_pos_feedback_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_pos_feedback_x", "Horiz Pos Feedback X", base.DEC)
+f.rec_ctrl_horiz_horiz_pos_feedback_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_pos_feedback_y", "Horiz Pos Feedback Y", base.DEC)
+f.rec_ctrl_horiz_horiz_pos_p_ctrl_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_pos_p_ctrl_x", "Horiz Pos P Ctrl X", base.DEC)
+f.rec_ctrl_horiz_horiz_pos_p_ctrl_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_pos_p_ctrl_y", "Horiz Pos P Ctrl Y", base.DEC)
+f.rec_ctrl_horiz_horiz_pos_d_ctrl_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_pos_d_ctrl_x", "Horiz Pos D Ctrl X", base.DEC)
+f.rec_ctrl_horiz_horiz_pos_d_ctrl_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_pos_d_ctrl_y", "Horiz Pos D Ctrl Y", base.DEC)
+f.rec_ctrl_horiz_horiz_pos_output_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_pos_output_x", "Horiz Pos Output X", base.DEC)
+f.rec_ctrl_horiz_horiz_pos_output_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_pos_output_y", "Horiz Pos Output Y", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_tag_status = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_vel_tag_status", "Horiz Vel Tag Status", base.HEX)
+f.rec_ctrl_horiz_horiz_vel_tag_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_vel_tag_cmd_id", "Horiz Vel Tag Cmd Id", base.HEX)
+f.rec_ctrl_horiz_horiz_vel_tag_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_vel_tag_feedback_id", "Horiz Vel Tag Feedback Id", base.HEX)
+f.rec_ctrl_horiz_horiz_vel_cmd_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_cmd_x", "Horiz Vel Cmd X", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_cmd_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_cmd_y", "Horiz Vel Cmd Y", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_feedback_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_feedback_x", "Horiz Vel Feedback X", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_feedback_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_feedback_y", "Horiz Vel Feedback Y", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_p_ctrl_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_p_ctrl_x", "Horiz Vel P Ctrl X", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_p_ctrl_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_p_ctrl_y", "Horiz Vel P Ctrl Y", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_d_ctrl_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_d_ctrl_x", "Horiz Vel D Ctrl X", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_d_ctrl_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_d_ctrl_y", "Horiz Vel D Ctrl Y", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_i_ctrl_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_i_ctrl_x", "Horiz Vel I Ctrl X", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_i_ctrl_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_i_ctrl_y", "Horiz Vel I Ctrl Y", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_feedforward_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_feedforward_x", "Horiz Vel Feedforward X", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_feedforward_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_feedforward_y", "Horiz Vel Feedforward Y", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_output_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_output_x", "Horiz Vel Output X", base.DEC)
+f.rec_ctrl_horiz_horiz_vel_output_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_vel_output_y", "Horiz Vel Output Y", base.DEC)
+f.rec_ctrl_horiz_horiz_acc_tag_status = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_acc_tag_status", "Horiz Acc Tag Status", base.HEX)
+f.rec_ctrl_horiz_horiz_acc_tag_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_acc_tag_cmd_id", "Horiz Acc Tag Cmd Id", base.HEX)
+f.rec_ctrl_horiz_horiz_acc_tag_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_acc_tag_feedback_id", "Horiz Acc Tag Feedback Id", base.HEX)
+f.rec_ctrl_horiz_horiz_acc_cmd_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_acc_cmd_x", "Horiz Acc Cmd X", base.DEC)
+f.rec_ctrl_horiz_horiz_acc_cmd_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_acc_cmd_y", "Horiz Acc Cmd Y", base.DEC)
+f.rec_ctrl_horiz_horiz_acc_feedback_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_acc_feedback_x", "Horiz Acc Feedback X", base.DEC)
+f.rec_ctrl_horiz_horiz_acc_feedback_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_acc_feedback_y", "Horiz Acc Feedback Y", base.DEC)
+f.rec_ctrl_horiz_horiz_acc_feedback_i_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_acc_feedback_i_x", "Horiz Acc Feedback I X", base.DEC)
+f.rec_ctrl_horiz_horiz_acc_feedback_i_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_acc_feedback_i_y", "Horiz Acc Feedback I Y", base.DEC)
+f.rec_ctrl_horiz_horiz_acc_feedforward_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_acc_feedforward_x", "Horiz Acc Feedforward X", base.DEC)
+f.rec_ctrl_horiz_horiz_acc_feedforward_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_acc_feedforward_y", "Horiz Acc Feedforward Y", base.DEC)
+f.rec_ctrl_horiz_horiz_acc_output_x = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_acc_output_x", "Horiz Acc Output X", base.DEC)
+f.rec_ctrl_horiz_horiz_acc_output_y = ProtoField.int16 ("dji_p3.rec_ctrl_horiz_horiz_acc_output_y", "Horiz Acc Output Y", base.DEC)
+
+local function flightrec_ctrl_horiz_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_module_module_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_hover_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_hover_enable, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_hover_abs_pos_0, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_hover_abs_pos_1, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_hover_rel_pos_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_hover_rel_pos_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_hover_brake_timer, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_pos_offset_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_pos_offset_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_horiz_api_horiz_ctrl_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_api_horiz_ctrl_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_api_torsion_ctrl_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_api_torsion_ctrl_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_api_atti_cmd_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_tag_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_tag_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_tag_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_cmd_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_cmd_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_feedback_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_feedback_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_p_ctrl_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_p_ctrl_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_d_ctrl_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_d_ctrl_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_output_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_output_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_tag_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_tag_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_tag_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_cmd_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_cmd_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_feedback_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_feedback_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_p_ctrl_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_p_ctrl_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_d_ctrl_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_d_ctrl_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_i_ctrl_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_i_ctrl_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_feedforward_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_feedforward_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_output_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_vel_output_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_tag_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_tag_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_tag_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_cmd_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_cmd_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_feedback_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_feedback_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_feedback_i_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_feedback_i_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_feedforward_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_feedforward_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_output_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_acc_output_y, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 121) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Horiz: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Horiz: Payload size different than expected") end
+end
+
+-- Flight log - Ctrl Atti - 0x0034
+
+f.rec_ctrl_atti_horiz_atti_tilt_tag_status = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_atti_tilt_tag_status", "Horiz Atti Tilt Tag Status", base.HEX)
+f.rec_ctrl_atti_horiz_atti_tilt_tag_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_atti_tilt_tag_cmd_id", "Horiz Atti Tilt Tag Cmd Id", base.HEX)
+f.rec_ctrl_atti_horiz_atti_tilt_tag_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_atti_tilt_tag_feedback_id", "Horiz Atti Tilt Tag Feedback Id", base.HEX)
+f.rec_ctrl_atti_horiz_atti_torsion_tag_status = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_atti_torsion_tag_status", "Horiz Atti Torsion Tag Status", base.HEX)
+f.rec_ctrl_atti_horiz_atti_torsion_tag_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_atti_torsion_tag_cmd_id", "Horiz Atti Torsion Tag Cmd Id", base.HEX)
+f.rec_ctrl_atti_horiz_atti_torsion_tag_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_atti_torsion_tag_feedback_id", "Horiz Atti Torsion Tag Feedback Id", base.HEX)
+f.rec_ctrl_atti_horiz_atti_tgt_acc_x = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_acc_x", "Horiz Atti Tgt Acc X", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_acc_y = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_acc_y", "Horiz Atti Tgt Acc Y", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_tilt_x = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_tilt_x", "Horiz Atti Tgt Tilt X", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_tilt_y = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_tilt_y", "Horiz Atti Tgt Tilt Y", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_body_tilt_x = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_body_tilt_x", "Horiz Atti Tgt Body Tilt X", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_body_tilt_y = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_body_tilt_y", "Horiz Atti Tgt Body Tilt Y", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_ground_tilt_x = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_ground_tilt_x", "Horiz Atti Tgt Ground Tilt X", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_ground_tilt_y = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_ground_tilt_y", "Horiz Atti Tgt Ground Tilt Y", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_tilt_before_limit_x = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_tilt_before_limit_x", "Horiz Atti Tgt Tilt Before Limit X", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_tilt_before_limit_y = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_tilt_before_limit_y", "Horiz Atti Tgt Tilt Before Limit Y", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_x = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_x", "Horiz Atti Tgt Tilt After Limit X", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_y = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_y", "Horiz Atti Tgt Tilt After Limit Y", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_quat_0 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_quat_0", "Horiz Atti Tgt Quat 0", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_quat_1 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_quat_1", "Horiz Atti Tgt Quat 1", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_quat_2 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_quat_2", "Horiz Atti Tgt Quat 2", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_quat_3 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_quat_3", "Horiz Atti Tgt Quat 3", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_torsion = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_torsion", "Horiz Atti Tgt Torsion", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_torsion_rate = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_torsion_rate", "Horiz Atti Tgt Torsion Rate", base.DEC)
+f.rec_ctrl_atti_horiz_atti_feedback_quat_0 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_feedback_quat_0", "Horiz Atti Feedback Quat 0", base.DEC)
+f.rec_ctrl_atti_horiz_atti_feedback_quat_1 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_feedback_quat_1", "Horiz Atti Feedback Quat 1", base.DEC)
+f.rec_ctrl_atti_horiz_atti_feedback_quat_2 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_feedback_quat_2", "Horiz Atti Feedback Quat 2", base.DEC)
+f.rec_ctrl_atti_horiz_atti_feedback_quat_3 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_feedback_quat_3", "Horiz Atti Feedback Quat 3", base.DEC)
+f.rec_ctrl_atti_horiz_atti_locked_torsion = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_locked_torsion", "Horiz Atti Locked Torsion", base.DEC)
+f.rec_ctrl_atti_horiz_atti_err_tilt_x = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_err_tilt_x", "Horiz Atti Err Tilt X", base.DEC)
+f.rec_ctrl_atti_horiz_atti_err_tilt_y = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_err_tilt_y", "Horiz Atti Err Tilt Y", base.DEC)
+f.rec_ctrl_atti_horiz_atti_err_torsion = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_err_torsion", "Horiz Atti Err Torsion", base.DEC)
+f.rec_ctrl_atti_horiz_atti_output_x = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_output_x", "Horiz Atti Output X", base.DEC)
+f.rec_ctrl_atti_horiz_atti_output_y = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_output_y", "Horiz Atti Output Y", base.DEC)
+f.rec_ctrl_atti_horiz_atti_output_z = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_output_z", "Horiz Atti Output Z", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_status = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_status", "Horiz Ang Vel Status", base.HEX)
+f.rec_ctrl_atti_horiz_ang_vel_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_cmd_id", "Horiz Ang Vel Cmd Id", base.HEX)
+f.rec_ctrl_atti_horiz_ang_vel_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_feedback_id", "Horiz Ang Vel Feedback Id", base.HEX)
+f.rec_ctrl_atti_horiz_ang_vel_cmd_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_cmd_x", "Horiz Ang Vel Cmd X", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_cmd_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_cmd_y", "Horiz Ang Vel Cmd Y", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_cmd_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_cmd_z", "Horiz Ang Vel Cmd Z", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_feedback_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_feedback_x", "Horiz Ang Vel Feedback X", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_feedback_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_feedback_y", "Horiz Ang Vel Feedback Y", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_feedback_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_feedback_z", "Horiz Ang Vel Feedback Z", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_feedback_p_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_feedback_p_x", "Horiz Ang Vel Feedback P X", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_feedback_p_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_feedback_p_y", "Horiz Ang Vel Feedback P Y", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_feedback_p_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_feedback_p_z", "Horiz Ang Vel Feedback P Z", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_feedback_d_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_feedback_d_x", "Horiz Ang Vel Feedback D X", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_feedback_d_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_feedback_d_y", "Horiz Ang Vel Feedback D Y", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_feedback_d_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_feedback_d_z", "Horiz Ang Vel Feedback D Z", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_output_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_output_x", "Horiz Ang Vel Output X", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_output_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_output_y", "Horiz Ang Vel Output Y", base.DEC)
+f.rec_ctrl_atti_horiz_ang_vel_output_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_vel_output_z", "Horiz Ang Vel Output Z", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_status = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_status", "Horiz Ang Acc Status", base.HEX)
+f.rec_ctrl_atti_horiz_ang_acc_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_cmd_id", "Horiz Ang Acc Cmd Id", base.HEX)
+f.rec_ctrl_atti_horiz_ang_acc_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_feedback_id", "Horiz Ang Acc Feedback Id", base.HEX)
+f.rec_ctrl_atti_horiz_ang_acc_cmd_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_cmd_x", "Horiz Ang Acc Cmd X", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_cmd_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_cmd_y", "Horiz Ang Acc Cmd Y", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_cmd_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_cmd_z", "Horiz Ang Acc Cmd Z", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_feedback_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_feedback_x", "Horiz Ang Acc Feedback X", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_feedback_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_feedback_y", "Horiz Ang Acc Feedback Y", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_feedback_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_feedback_z", "Horiz Ang Acc Feedback Z", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_p_ctrl_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_p_ctrl_x", "Horiz Ang Acc P Ctrl X", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_p_ctrl_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_p_ctrl_y", "Horiz Ang Acc P Ctrl Y", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_p_ctrl_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_p_ctrl_z", "Horiz Ang Acc P Ctrl Z", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_i_ctrl_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_i_ctrl_x", "Horiz Ang Acc I Ctrl X", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_i_ctrl_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_i_ctrl_y", "Horiz Ang Acc I Ctrl Y", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_i_ctrl_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_i_ctrl_z", "Horiz Ang Acc I Ctrl Z", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_feedforward_direct_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_feedforward_direct_x", "Horiz Ang Acc Feedforward Direct X", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_feedforward_direct_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_feedforward_direct_y", "Horiz Ang Acc Feedforward Direct Y", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_feedforward_direct_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_feedforward_direct_z", "Horiz Ang Acc Feedforward Direct Z", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_x", "Horiz Ang Acc Feedforward Compen X", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_y", "Horiz Ang Acc Feedforward Compen Y", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_z", "Horiz Ang Acc Feedforward Compen Z", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_output_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_output_x", "Horiz Ang Acc Output X", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_output_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_output_y", "Horiz Ang Acc Output Y", base.DEC)
+f.rec_ctrl_atti_horiz_ang_acc_output_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_output_z", "Horiz Ang Acc Output Z", base.DEC)
+--f.rec_ctrl_atti_e_cmd_pitch = ProtoField.none ("dji_p3.rec_ctrl_atti_e_cmd_pitch", "E Cmd Pitch", base.NONE, nil, nil, "-asin_x(2*(horiz_atti_tgt_quat_1*horiz_atti_tgt_quat_3-horiz_atti_tgt_quat_0*horiz_atti_tgt_quat_2))/3.1415926*180")
+--f.rec_ctrl_atti_e_cmd_roll = ProtoField.none ("dji_p3.rec_ctrl_atti_e_cmd_roll", "E Cmd Roll", base.NONE, nil, nil, "atan2(2*(horiz_atti_tgt_quat_2*horiz_atti_tgt_quat_3+horiz_atti_tgt_quat_0*horiz_atti_tgt_quat_1),1-2*(horiz_atti_tgt_quat_1*horiz_atti_tgt_quat_1+horiz_atti_tgt_quat_2*horiz_atti_tgt_quat_2))/3.1415926*180")
+--f.rec_ctrl_atti_e_cmd_yaw = ProtoField.none ("dji_p3.rec_ctrl_atti_e_cmd_yaw", "E Cmd Yaw", base.NONE, nil, nil, "atan2(2*(horiz_atti_tgt_quat_1*horiz_atti_tgt_quat_2+horiz_atti_tgt_quat_0*horiz_atti_tgt_quat_3),1-2*(horiz_atti_tgt_quat_2*horiz_atti_tgt_quat_2+horiz_atti_tgt_quat_3*horiz_atti_tgt_quat_3))/3.1415926*180")
+--f.rec_ctrl_atti_e_feedback_pitch = ProtoField.none ("dji_p3.rec_ctrl_atti_e_feedback_pitch", "E Feedback Pitch", base.NONE, nil, nil, "-asin_x(2*(horiz_atti_feedback_quat_1*horiz_atti_feedback_quat_3-horiz_atti_feedback_quat_0*horiz_atti_feedback_quat_2))/3.1415926*180")
+--f.rec_ctrl_atti_e_feedback_roll = ProtoField.none ("dji_p3.rec_ctrl_atti_e_feedback_roll", "E Feedback Roll", base.NONE, nil, nil, "atan2(2*(horiz_atti_feedback_quat_2*horiz_atti_feedback_quat_3+horiz_atti_feedback_quat_0*horiz_atti_feedback_quat_1),1-2*(horiz_atti_feedback_quat_1*horiz_atti_feedback_quat_1+horiz_atti_feedback_quat_2*horiz_atti_feedback_quat_2))/3.1415926*180")
+--f.rec_ctrl_atti_e_feedback_yaw = ProtoField.none ("dji_p3.rec_ctrl_atti_e_feedback_yaw", "E Feedback Yaw", base.NONE, nil, nil, "atan2(2*(horiz_atti_feedback_quat_1*horiz_atti_feedback_quat_2+horiz_atti_feedback_quat_0*horiz_atti_feedback_quat_3),1-2*(horiz_atti_feedback_quat_2*horiz_atti_feedback_quat_2+horiz_atti_feedback_quat_3*horiz_atti_feedback_quat_3))/3.1415926*180")
+
+local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tilt_tag_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tilt_tag_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tilt_tag_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_torsion_tag_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_torsion_tag_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_torsion_tag_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_acc_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_acc_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_tilt_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_tilt_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_body_tilt_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_body_tilt_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_ground_tilt_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_ground_tilt_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_tilt_before_limit_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_tilt_before_limit_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_quat_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_quat_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_quat_2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_quat_3, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_torsion, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_torsion_rate, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_feedback_quat_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_feedback_quat_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_feedback_quat_2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_feedback_quat_3, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_locked_torsion, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_err_tilt_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_err_tilt_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_err_torsion, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_output_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_output_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_output_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_cmd_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_cmd_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_cmd_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_p_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_p_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_p_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_d_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_d_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_d_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_output_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_output_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_output_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_cmd_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_cmd_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_cmd_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedback_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedback_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedback_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_p_ctrl_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_p_ctrl_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_p_ctrl_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_i_ctrl_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_i_ctrl_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_i_ctrl_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedforward_direct_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedforward_direct_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedforward_direct_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_output_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_output_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_output_z, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 200) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Atti: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Atti: Payload size different than expected") end
+end
+
+-- Flight log - Ctrl Ccpm - 0x0035
+
+f.rec_ctrl_ccpm_dyn_ccpm_raw_lift = ProtoField.float ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_raw_lift", "Dyn Ccpm Raw Lift", base.DEC)
+f.rec_ctrl_ccpm_dyn_ccpm_raw_tilt_x = ProtoField.float ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_raw_tilt_x", "Dyn Ccpm Raw Tilt X", base.DEC)
+f.rec_ctrl_ccpm_dyn_ccpm_raw_tilt_y = ProtoField.float ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_raw_tilt_y", "Dyn Ccpm Raw Tilt Y", base.DEC)
+f.rec_ctrl_ccpm_dyn_ccpm_raw_torsion = ProtoField.float ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_raw_torsion", "Dyn Ccpm Raw Torsion", base.DEC)
+f.rec_ctrl_ccpm_dyn_ccpm_fix_lift = ProtoField.float ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_fix_lift", "Dyn Ccpm Fix Lift", base.DEC)
+f.rec_ctrl_ccpm_dyn_ccpm_fix_tilt_x = ProtoField.float ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_fix_tilt_x", "Dyn Ccpm Fix Tilt X", base.DEC)
+f.rec_ctrl_ccpm_dyn_ccpm_fix_tilt_y = ProtoField.float ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_fix_tilt_y", "Dyn Ccpm Fix Tilt Y", base.DEC)
+f.rec_ctrl_ccpm_dyn_ccpm_fix_torsion = ProtoField.float ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_fix_torsion", "Dyn Ccpm Fix Torsion", base.DEC)
+f.rec_ctrl_ccpm_dyn_ccpm_fix_lift_scale = ProtoField.float ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_fix_lift_scale", "Dyn Ccpm Fix Lift Scale", base.DEC)
+f.rec_ctrl_ccpm_dyn_ccpm_fix_tilt_scale = ProtoField.float ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_fix_tilt_scale", "Dyn Ccpm Fix Tilt Scale", base.DEC)
+f.rec_ctrl_ccpm_dyn_ccpm_fix_torsion_scale = ProtoField.float ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_fix_torsion_scale", "Dyn Ccpm Fix Torsion Scale", base.DEC)
+f.rec_ctrl_ccpm_dyn_ccpm_saturation_value = ProtoField.float ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_saturation_value", "Dyn Ccpm Saturation Value", base.DEC)
+f.rec_ctrl_ccpm_dyn_ccpm_saturation_flag = ProtoField.uint8 ("dji_p3.rec_ctrl_ccpm_dyn_ccpm_saturation_flag", "Dyn Ccpm Saturation Flag", base.HEX)
+
+local function flightrec_ctrl_ccpm_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_raw_lift, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_raw_tilt_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_raw_tilt_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_raw_torsion, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_fix_lift, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_fix_tilt_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_fix_tilt_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_fix_torsion, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_fix_lift_scale, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_fix_tilt_scale, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_fix_torsion_scale, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_saturation_value, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_ctrl_ccpm_dyn_ccpm_saturation_flag, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 49) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Ccpm: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Ccpm: Payload size different than expected") end
+end
+
+-- Flight log - Ctrl Motor - 0x0036
+
+f.rec_ctrl_motor_horiz_motor_status = ProtoField.uint8 ("dji_p3.rec_ctrl_motor_horiz_motor_status", "Horiz Motor Status", base.HEX)
+f.rec_ctrl_motor_horiz_motor_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_motor_horiz_motor_cmd_id", "Horiz Motor Cmd Id", base.HEX)
+f.rec_ctrl_motor_horiz_motor_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_motor_horiz_motor_feedback_id", "Horiz Motor Feedback Id", base.HEX)
+f.rec_ctrl_motor_thrust_1 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_1", "Thrust 1", base.HEX)
+f.rec_ctrl_motor_thrust_2 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_2", "Thrust 2", base.HEX)
+f.rec_ctrl_motor_thrust_3 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_3", "Thrust 3", base.HEX)
+f.rec_ctrl_motor_thrust_4 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_4", "Thrust 4", base.HEX)
+f.rec_ctrl_motor_thrust_5 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_5", "Thrust 5", base.HEX)
+f.rec_ctrl_motor_thrust_6 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_6", "Thrust 6", base.HEX)
+f.rec_ctrl_motor_thrust_7 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_7", "Thrust 7", base.HEX)
+f.rec_ctrl_motor_thrust_8 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_8", "Thrust 8", base.HEX)
+f.rec_ctrl_motor_pwm_1 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_1", "Pwm 1", base.HEX)
+f.rec_ctrl_motor_pwm_2 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_2", "Pwm 2", base.HEX)
+f.rec_ctrl_motor_pwm_3 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_3", "Pwm 3", base.HEX)
+f.rec_ctrl_motor_pwm_4 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_4", "Pwm 4", base.HEX)
+f.rec_ctrl_motor_pwm_5 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_5", "Pwm 5", base.HEX)
+f.rec_ctrl_motor_pwm_6 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_6", "Pwm 6", base.HEX)
+f.rec_ctrl_motor_pwm_7 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_7", "Pwm 7", base.HEX)
+f.rec_ctrl_motor_pwm_8 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_8", "Pwm 8", base.HEX)
+
+local function flightrec_ctrl_motor_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_ctrl_motor_horiz_motor_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_motor_horiz_motor_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_motor_horiz_motor_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_6, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_7, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_8, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_6, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_7, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_8, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 35) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Motor: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Motor: Payload size different than expected") end
+end
+
+-- Flight log - Wp Curve - 0x0096
+
+f.rec_wp_curve_px = ProtoField.float ("dji_p3.rec_wp_curve_px", "Px", base.DEC)
+f.rec_wp_curve_py = ProtoField.float ("dji_p3.rec_wp_curve_py", "Py", base.DEC)
+f.rec_wp_curve_pz = ProtoField.float ("dji_p3.rec_wp_curve_pz", "Pz", base.DEC)
+f.rec_wp_curve_vx = ProtoField.float ("dji_p3.rec_wp_curve_vx", "Vx", base.DEC)
+f.rec_wp_curve_vy = ProtoField.float ("dji_p3.rec_wp_curve_vy", "Vy", base.DEC)
+f.rec_wp_curve_vz = ProtoField.float ("dji_p3.rec_wp_curve_vz", "Vz", base.DEC)
+f.rec_wp_curve_v_norm = ProtoField.float ("dji_p3.rec_wp_curve_v_norm", "V Norm", base.DEC)
+f.rec_wp_curve_t = ProtoField.float ("dji_p3.rec_wp_curve_t", "T", base.DEC)
+f.rec_wp_curve_wp_state = ProtoField.uint8 ("dji_p3.rec_wp_curve_wp_state", "Wp State", base.HEX)
+
+local function flightrec_wp_curve_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_wp_curve_px, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_wp_curve_py, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_wp_curve_pz, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_wp_curve_vx, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_wp_curve_vy, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_wp_curve_vz, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_wp_curve_v_norm, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_wp_curve_t, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_wp_curve_wp_state, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 33) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Wp Curve: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Wp Curve: Payload size different than expected") end
+end
+
+-- Flight log - Smart Battery Info - 0x0012
+
+f.rec_smart_battery_info_rest_time = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_rest_time", "Rest Time", base.HEX)
+f.rec_smart_battery_info_need_time_for_gohome = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_need_time_for_gohome", "Need Time For Gohome", base.HEX)
+f.rec_smart_battery_info_need_time_for_land = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_need_time_for_land", "Need Time For Land", base.HEX)
+f.rec_smart_battery_info_gohome_battery_level = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_gohome_battery_level", "Gohome Battery Level", base.HEX)
+f.rec_smart_battery_info_land_battery_level = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_land_battery_level", "Land Battery Level", base.HEX)
+f.rec_smart_battery_info_radius_for_gohome = ProtoField.float ("dji_p3.rec_smart_battery_info_radius_for_gohome", "Radius For Gohome", base.DEC)
+f.rec_smart_battery_info_request_gohome = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_request_gohome", "Request Gohome", base.HEX)
+f.rec_smart_battery_info_bat_dec_speed = ProtoField.float ("dji_p3.rec_smart_battery_info_bat_dec_speed", "Bat Dec Speed", base.DEC)
+f.rec_smart_battery_info_smart_battery_state = ProtoField.uint32 ("dji_p3.rec_smart_battery_info_smart_battery_state", "Smart Battery State", base.HEX)
+f.rec_smart_battery_info_level1_over_current = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_level1_over_current", "Level1 Over Current", base.HEX)
+f.rec_smart_battery_info_level2_over_current = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_level2_over_current", "Level2 Over Current", base.HEX)
+f.rec_smart_battery_info_level1_over_temp = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_level1_over_temp", "Level1 Over Temp", base.HEX)
+f.rec_smart_battery_info_level2_under_temp = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_level2_under_temp", "Level2 Under Temp", base.HEX)
+f.rec_smart_battery_info_level1_low_temp = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_level1_low_temp", "Level1 Low Temp", base.HEX)
+f.rec_smart_battery_info_level2_low_temp = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_level2_low_temp", "Level2 Low Temp", base.HEX)
+f.rec_smart_battery_info_short_cir = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_short_cir", "Short Cir", base.HEX)
+f.rec_smart_battery_info_low_vol_cells = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_low_vol_cells", "Low Vol Cells", base.HEX)
+f.rec_smart_battery_info_damage_cells = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_damage_cells", "Damage Cells", base.HEX)
+f.rec_smart_battery_info_exchange_cells = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_exchange_cells", "Exchange Cells", base.HEX)
+f.rec_smart_battery_info_user_gohome_level = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_user_gohome_level", "User Gohome Level", base.HEX)
+f.rec_smart_battery_info_user_land_level = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_user_land_level", "User Land Level", base.HEX)
+f.rec_smart_battery_info_user_action_for_gohome = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_user_action_for_gohome", "User Action For Gohome", base.HEX)
+f.rec_smart_battery_info_user_action_for_land = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_user_action_for_land", "User Action For Land", base.HEX)
+f.rec_smart_battery_info_user_use_smart_bat = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_user_use_smart_bat", "User Use Smart Bat", base.HEX)
+f.rec_smart_battery_info_flag_main_vol_low_gohome = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_flag_main_vol_low_gohome", "Flag Main Vol Low Gohome", base.HEX)
+f.rec_smart_battery_info_flag_main_vol_low_land = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_flag_main_vol_low_land", "Flag Main Vol Low Land", base.HEX)
+f.rec_smart_battery_info_flag_user_gohome = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_flag_user_gohome", "Flag User Gohome", base.HEX)
+f.rec_smart_battery_info_flag_user_land = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_flag_user_land", "Flag User Land", base.HEX)
+f.rec_smart_battery_info_flag_smart_bat_gohome = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_flag_smart_bat_gohome", "Flag Smart Bat Gohome", base.HEX)
+f.rec_smart_battery_info_flag_smart_bat_land = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_flag_smart_bat_land", "Flag Smart Bat Land", base.HEX)
+f.rec_smart_battery_info_flag_cell_err = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_flag_cell_err", "Flag Cell Err", base.HEX)
+f.rec_smart_battery_info_flag_communite_err = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_flag_communite_err", "Flag Communite Err", base.HEX)
+f.rec_smart_battery_info_real_desc_speed = ProtoField.float ("dji_p3.rec_smart_battery_info_real_desc_speed", "Real Desc Speed", base.DEC)
+f.rec_smart_battery_info_flag_vol_very_low = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_flag_vol_very_low", "Flag Vol Very Low", base.HEX)
+f.rec_smart_battery_info_flag_temp_and_vol_low = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_flag_temp_and_vol_low", "Flag Temp And Vol Low", base.HEX)
+f.rec_smart_battery_info_flag_first_charge_not_full = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_flag_first_charge_not_full", "Flag First Charge Not Full", base.HEX)
+f.rec_smart_battery_info_g_filter_vol = ProtoField.float ("dji_p3.rec_smart_battery_info_g_filter_vol", "G Filter Vol", base.DEC)
+f.rec_smart_battery_info_g_filter_i = ProtoField.float ("dji_p3.rec_smart_battery_info_g_filter_i", "G Filter I", base.DEC)
+f.rec_smart_battery_info_g_evl_vol = ProtoField.float ("dji_p3.rec_smart_battery_info_g_evl_vol", "G Evl Vol", base.DEC)
+f.rec_smart_battery_info_g_delt_i = ProtoField.float ("dji_p3.rec_smart_battery_info_g_delt_i", "G Delt I", base.DEC)
+
+local function flightrec_smart_battery_info_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_smart_battery_info_rest_time, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_smart_battery_info_need_time_for_gohome, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_smart_battery_info_need_time_for_land, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_smart_battery_info_gohome_battery_level, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_smart_battery_info_land_battery_level, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_smart_battery_info_radius_for_gohome, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_smart_battery_info_request_gohome, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_smart_battery_info_bat_dec_speed, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_smart_battery_info_smart_battery_state, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_smart_battery_info_level1_over_current, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_level2_over_current, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_level1_over_temp, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_level2_under_temp, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_level1_low_temp, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_level2_low_temp, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_short_cir, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_low_vol_cells, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_damage_cells, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_exchange_cells, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_user_gohome_level, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_user_land_level, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_user_action_for_gohome, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_user_action_for_land, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_user_use_smart_bat, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_flag_main_vol_low_gohome, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_flag_main_vol_low_land, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_flag_user_gohome, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_flag_user_land, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_flag_smart_bat_gohome, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_flag_smart_bat_land, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_flag_cell_err, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_flag_communite_err, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_real_desc_speed, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_smart_battery_info_flag_vol_very_low, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_flag_temp_and_vol_low, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_flag_first_charge_not_full, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_g_filter_vol, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_smart_battery_info_g_filter_i, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_smart_battery_info_g_evl_vol, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_smart_battery_info_g_delt_i, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 70) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Smart Battery Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Smart Battery Info: Payload size different than expected") end
+end
+
+-- Flight log - Airport Limit Data - 0x0028
+
+f.rec_airport_limit_data_area_state = ProtoField.uint8 ("dji_p3.rec_airport_limit_data_area_state", "Area State", base.HEX)
+f.rec_airport_limit_data_action_state = ProtoField.uint8 ("dji_p3.rec_airport_limit_data_action_state", "Action State", base.HEX)
+f.rec_airport_limit_data_work_point_num = ProtoField.uint8 ("dji_p3.rec_airport_limit_data_work_point_num", "Work Point Num", base.HEX)
+f.rec_airport_limit_data_lat_int_0 = ProtoField.int32 ("dji_p3.rec_airport_limit_data_lat_int_0", "Lat Int 0", base.DEC)
+f.rec_airport_limit_data_lon_int_0 = ProtoField.int32 ("dji_p3.rec_airport_limit_data_lon_int_0", "Lon Int 0", base.DEC)
+f.rec_airport_limit_data_point_from_where_0 = ProtoField.uint8 ("dji_p3.rec_airport_limit_data_point_from_where_0", "Point From Where 0", base.HEX)
+f.rec_airport_limit_data_flag_limit_radius_0 = ProtoField.uint8 ("dji_p3.rec_airport_limit_data_flag_limit_radius_0", "Flag Limit Radius 0", base.HEX)
+f.rec_airport_limit_data_flag_limit_hi_0 = ProtoField.uint8 ("dji_p3.rec_airport_limit_data_flag_limit_hi_0", "Flag Limit Hi 0", base.HEX)
+f.rec_airport_limit_data_d2limit_edge_0 = ProtoField.float ("dji_p3.rec_airport_limit_data_d2limit_edge_0", "D2Limit Edge 0", base.DEC)
+f.rec_airport_limit_data_d2limit_hi_0 = ProtoField.float ("dji_p3.rec_airport_limit_data_d2limit_hi_0", "D2Limit Hi 0", base.DEC)
+f.rec_airport_limit_data_directx_0 = ProtoField.float ("dji_p3.rec_airport_limit_data_directx_0", "Directx 0", base.DEC)
+f.rec_airport_limit_data_directy_0 = ProtoField.float ("dji_p3.rec_airport_limit_data_directy_0", "Directy 0", base.DEC)
+f.rec_airport_limit_data_lat_int_1 = ProtoField.int32 ("dji_p3.rec_airport_limit_data_lat_int_1", "Lat Int 1", base.DEC)
+f.rec_airport_limit_data_lon_int_1 = ProtoField.int32 ("dji_p3.rec_airport_limit_data_lon_int_1", "Lon Int 1", base.DEC)
+f.rec_airport_limit_data_point_from_where_1 = ProtoField.uint8 ("dji_p3.rec_airport_limit_data_point_from_where_1", "Point From Where 1", base.HEX)
+f.rec_airport_limit_data_flag_limit_radius_1 = ProtoField.uint8 ("dji_p3.rec_airport_limit_data_flag_limit_radius_1", "Flag Limit Radius 1", base.HEX)
+f.rec_airport_limit_data_flag_limit_hi_1 = ProtoField.uint8 ("dji_p3.rec_airport_limit_data_flag_limit_hi_1", "Flag Limit Hi 1", base.HEX)
+f.rec_airport_limit_data_d2limit_edge_1 = ProtoField.float ("dji_p3.rec_airport_limit_data_d2limit_edge_1", "D2Limit Edge 1", base.DEC)
+f.rec_airport_limit_data_d2limit_hi_1 = ProtoField.float ("dji_p3.rec_airport_limit_data_d2limit_hi_1", "D2Limit Hi 1", base.DEC)
+f.rec_airport_limit_data_directx_1 = ProtoField.float ("dji_p3.rec_airport_limit_data_directx_1", "Directx 1", base.DEC)
+f.rec_airport_limit_data_directy_1 = ProtoField.float ("dji_p3.rec_airport_limit_data_directy_1", "Directy 1", base.DEC)
+f.rec_airport_limit_data_lat_int_2 = ProtoField.int32 ("dji_p3.rec_airport_limit_data_lat_int_2", "Lat Int 2", base.DEC)
+f.rec_airport_limit_data_lon_int_2 = ProtoField.int32 ("dji_p3.rec_airport_limit_data_lon_int_2", "Lon Int 2", base.DEC)
+f.rec_airport_limit_data_point_from_where_2 = ProtoField.uint8 ("dji_p3.rec_airport_limit_data_point_from_where_2", "Point From Where 2", base.HEX)
+f.rec_airport_limit_data_flag_limit_radius_2 = ProtoField.uint8 ("dji_p3.rec_airport_limit_data_flag_limit_radius_2", "Flag Limit Radius 2", base.HEX)
+f.rec_airport_limit_data_flag_limit_hi_2 = ProtoField.uint8 ("dji_p3.rec_airport_limit_data_flag_limit_hi_2", "Flag Limit Hi 2", base.HEX)
+f.rec_airport_limit_data_d2limit_edge_2 = ProtoField.float ("dji_p3.rec_airport_limit_data_d2limit_edge_2", "D2Limit Edge 2", base.DEC)
+f.rec_airport_limit_data_d2limit_hi_2 = ProtoField.float ("dji_p3.rec_airport_limit_data_d2limit_hi_2", "D2Limit Hi 2", base.DEC)
+f.rec_airport_limit_data_directx_2 = ProtoField.float ("dji_p3.rec_airport_limit_data_directx_2", "Directx 2", base.DEC)
+f.rec_airport_limit_data_directy_2 = ProtoField.float ("dji_p3.rec_airport_limit_data_directy_2", "Directy 2", base.DEC)
+
+local function flightrec_airport_limit_data_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_airport_limit_data_area_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_airport_limit_data_action_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_airport_limit_data_work_point_num, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_airport_limit_data_lat_int_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_lon_int_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_point_from_where_0, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_airport_limit_data_flag_limit_radius_0, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_airport_limit_data_flag_limit_hi_0, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_airport_limit_data_d2limit_edge_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_d2limit_hi_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_directx_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_directy_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_lat_int_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_lon_int_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_point_from_where_1, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_airport_limit_data_flag_limit_radius_1, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_airport_limit_data_flag_limit_hi_1, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_airport_limit_data_d2limit_edge_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_d2limit_hi_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_directx_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_directy_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_lat_int_2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_lon_int_2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_point_from_where_2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_airport_limit_data_flag_limit_radius_2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_airport_limit_data_flag_limit_hi_2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_airport_limit_data_d2limit_edge_2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_d2limit_hi_2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_directx_2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_airport_limit_data_directy_2, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 84) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Airport Limit Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Airport Limit Data: Payload size different than expected") end
+end
+
+-- Flight log - Fmu Device Run Time - 0x0029
+
+f.rec_fmu_device_run_time_battery = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_battery", "Battery", base.HEX)
+f.rec_fmu_device_run_time_led = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_led", "Led", base.HEX)
+f.rec_fmu_device_run_time_baromter = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_baromter", "Baromter", base.HEX)
+f.rec_fmu_device_run_time_gyro_acc = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_gyro_acc", "Gyro Acc", base.HEX)
+f.rec_fmu_device_run_time_imu = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_imu", "Imu", base.HEX)
+f.rec_fmu_device_run_time_vo = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_vo", "Vo", base.HEX)
+f.rec_fmu_device_run_time_ultrasonic = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_ultrasonic", "Ultrasonic", base.HEX)
+f.rec_fmu_device_run_time_pmu = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_pmu", "Pmu", base.HEX)
+f.rec_fmu_device_run_time_esc = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_esc", "Esc", base.HEX)
+f.rec_fmu_device_run_time_mc = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_mc", "Mc", base.HEX)
+f.rec_fmu_device_run_time_camera = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_camera", "Camera", base.HEX)
+f.rec_fmu_device_run_time_gps = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_gps", "Gps", base.HEX)
+f.rec_fmu_device_run_time_compass = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_compass", "Compass", base.HEX)
+f.rec_fmu_device_run_time_gimbal = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_gimbal", "Gimbal", base.HEX)
+f.rec_fmu_device_run_time_rc = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_rc", "Rc", base.HEX)
+f.rec_fmu_device_run_time_gear = ProtoField.uint32 ("dji_p3.rec_fmu_device_run_time_gear", "Gear", base.HEX)
+
+local function flightrec_fmu_device_run_time_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_fmu_device_run_time_battery, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_led, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_baromter, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_gyro_acc, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_imu, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_vo, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_ultrasonic, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_pmu, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_esc, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_mc, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_camera, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_gps, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_compass, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_gimbal, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_rc, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_fmu_device_run_time_gear, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 64) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Fmu Device Run Time: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Fmu Device Run Time: Payload size different than expected") end
+end
+
+-- Flight log - Hp Data - 0x002a
+
+f.rec_hp_data_tgt_hp_alti = ProtoField.float ("dji_p3.rec_hp_data_tgt_hp_alti", "Tgt Hp Alti", base.DEC)
+f.rec_hp_data_tgt_ang_rate = ProtoField.float ("dji_p3.rec_hp_data_tgt_ang_rate", "Tgt Ang Rate", base.DEC)
+f.rec_hp_data_tgt_radius = ProtoField.float ("dji_p3.rec_hp_data_tgt_radius", "Tgt Radius", base.DEC)
+f.rec_hp_data_distance_to_hp = ProtoField.float ("dji_p3.rec_hp_data_distance_to_hp", "Distance To Hp", base.DEC)
+f.rec_hp_data_cosine_angle = ProtoField.float ("dji_p3.rec_hp_data_cosine_angle", "Cosine Angle", base.DEC)
+f.rec_hp_data_angle_rate = ProtoField.float ("dji_p3.rec_hp_data_angle_rate", "Angle Rate", base.DEC)
+f.rec_hp_data_radius = ProtoField.float ("dji_p3.rec_hp_data_radius", "Radius", base.DEC)
+f.rec_hp_data_pos_error_x = ProtoField.float ("dji_p3.rec_hp_data_pos_error_x", "Pos Error X", base.DEC)
+f.rec_hp_data_pos_error_y = ProtoField.float ("dji_p3.rec_hp_data_pos_error_y", "Pos Error Y", base.DEC)
+f.rec_hp_data_pos_error_z = ProtoField.float ("dji_p3.rec_hp_data_pos_error_z", "Pos Error Z", base.DEC)
+f.rec_hp_data_vel_error_x = ProtoField.float ("dji_p3.rec_hp_data_vel_error_x", "Vel Error X", base.DEC)
+f.rec_hp_data_vel_error_y = ProtoField.float ("dji_p3.rec_hp_data_vel_error_y", "Vel Error Y", base.DEC)
+f.rec_hp_data_vel_error_z = ProtoField.float ("dji_p3.rec_hp_data_vel_error_z", "Vel Error Z", base.DEC)
+f.rec_hp_data_head_error = ProtoField.float ("dji_p3.rec_hp_data_head_error", "Head Error", base.DEC)
+
+local function flightrec_hp_data_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_hp_data_tgt_hp_alti, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_tgt_ang_rate, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_tgt_radius, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_distance_to_hp, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_cosine_angle, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_angle_rate, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_radius, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_pos_error_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_pos_error_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_pos_error_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_vel_error_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_vel_error_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_vel_error_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_hp_data_head_error, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 56) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Hp Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Hp Data: Payload size different than expected") end
+end
+
+-- Flight log - Follow Me Data - 0x002b
+
+f.rec_follow_me_data_heading_ref = ProtoField.float ("dji_p3.rec_follow_me_data_heading_ref", "Heading Ref", base.DEC)
+f.rec_follow_me_data_heading_error = ProtoField.float ("dji_p3.rec_follow_me_data_heading_error", "Heading Error", base.DEC)
+f.rec_follow_me_data_heading_rate = ProtoField.float ("dji_p3.rec_follow_me_data_heading_rate", "Heading Rate", base.DEC)
+f.rec_follow_me_data_ascending_tgt_height = ProtoField.float ("dji_p3.rec_follow_me_data_ascending_tgt_height", "Ascending Tgt Height", base.DEC)
+f.rec_follow_me_data_ascending_error = ProtoField.float ("dji_p3.rec_follow_me_data_ascending_error", "Ascending Error", base.DEC)
+f.rec_follow_me_data_ascending_vel = ProtoField.float ("dji_p3.rec_follow_me_data_ascending_vel", "Ascending Vel", base.DEC)
+f.rec_follow_me_data_phone_tagt_x = ProtoField.double ("dji_p3.rec_follow_me_data_phone_tagt_x", "Phone Tagt X", base.DEC)
+f.rec_follow_me_data_phone_tagt_y = ProtoField.double ("dji_p3.rec_follow_me_data_phone_tagt_y", "Phone Tagt Y", base.DEC)
+f.rec_follow_me_data_quadrotor_cur_x = ProtoField.double ("dji_p3.rec_follow_me_data_quadrotor_cur_x", "Quadrotor Cur X", base.DEC)
+f.rec_follow_me_data_quadrotor_cur_y = ProtoField.double ("dji_p3.rec_follow_me_data_quadrotor_cur_y", "Quadrotor Cur Y", base.DEC)
+f.rec_follow_me_data_quadrotor2phone_offset_x = ProtoField.float ("dji_p3.rec_follow_me_data_quadrotor2phone_offset_x", "Quadrotor2Phone Offset X", base.DEC)
+f.rec_follow_me_data_quadrotor2phone_offset_y = ProtoField.float ("dji_p3.rec_follow_me_data_quadrotor2phone_offset_y", "Quadrotor2Phone Offset Y", base.DEC)
+f.rec_follow_me_data_quadrotor2phone_distance = ProtoField.float ("dji_p3.rec_follow_me_data_quadrotor2phone_distance", "Quadrotor2Phone Distance", base.DEC)
+f.rec_follow_me_data_quadrotor2targetpoint_offset_x = ProtoField.float ("dji_p3.rec_follow_me_data_quadrotor2targetpoint_offset_x", "Quadrotor2Targetpoint Offset X", base.DEC)
+f.rec_follow_me_data_quadrotor2targetpoint_offset_y = ProtoField.float ("dji_p3.rec_follow_me_data_quadrotor2targetpoint_offset_y", "Quadrotor2Targetpoint Offset Y", base.DEC)
+f.rec_follow_me_data_quadrotor2targetpoint_distance = ProtoField.float ("dji_p3.rec_follow_me_data_quadrotor2targetpoint_distance", "Quadrotor2Targetpoint Distance", base.DEC)
+f.rec_follow_me_data_tagt_vel_x = ProtoField.float ("dji_p3.rec_follow_me_data_tagt_vel_x", "Tagt Vel X", base.DEC)
+f.rec_follow_me_data_tagt_vel_y = ProtoField.float ("dji_p3.rec_follow_me_data_tagt_vel_y", "Tagt Vel Y", base.DEC)
+f.rec_follow_me_data_cur_vel_x = ProtoField.float ("dji_p3.rec_follow_me_data_cur_vel_x", "Cur Vel X", base.DEC)
+f.rec_follow_me_data_cur_vel_y = ProtoField.float ("dji_p3.rec_follow_me_data_cur_vel_y", "Cur Vel Y", base.DEC)
+f.rec_follow_me_data_cruise_vel_x = ProtoField.float ("dji_p3.rec_follow_me_data_cruise_vel_x", "Cruise Vel X", base.DEC)
+f.rec_follow_me_data_cruise_vel_y = ProtoField.float ("dji_p3.rec_follow_me_data_cruise_vel_y", "Cruise Vel Y", base.DEC)
+f.rec_follow_me_data_fixed_offset_x = ProtoField.float ("dji_p3.rec_follow_me_data_fixed_offset_x", "Fixed Offset X", base.DEC)
+f.rec_follow_me_data_fixed_offset_y = ProtoField.float ("dji_p3.rec_follow_me_data_fixed_offset_y", "Fixed Offset Y", base.DEC)
+f.rec_follow_me_data_fixed_distance_offset = ProtoField.float ("dji_p3.rec_follow_me_data_fixed_distance_offset", "Fixed Distance Offset", base.DEC)
+f.rec_follow_me_data_dist_drone2drone = ProtoField.float ("dji_p3.rec_follow_me_data_dist_drone2drone", "Dist Drone2Drone", base.DEC)
+f.rec_follow_me_data_dist_phone2phone = ProtoField.float ("dji_p3.rec_follow_me_data_dist_phone2phone", "Dist Phone2Phone", base.DEC)
+f.rec_follow_me_data_gimbal_ptich_tgt = ProtoField.float ("dji_p3.rec_follow_me_data_gimbal_ptich_tgt", "Gimbal Ptich Tgt", base.DEC)
+f.rec_follow_me_data_gimbal_pitch_error = ProtoField.float ("dji_p3.rec_follow_me_data_gimbal_pitch_error", "Gimbal Pitch Error", base.DEC)
+f.rec_follow_me_data_gimbal_pitch_rate = ProtoField.float ("dji_p3.rec_follow_me_data_gimbal_pitch_rate", "Gimbal Pitch Rate", base.DEC)
+f.rec_follow_me_data_in_height_limit = ProtoField.uint8 ("dji_p3.rec_follow_me_data_in_height_limit", "In Height Limit", base.HEX)
+f.rec_follow_me_data_target_loss_count = ProtoField.uint8 ("dji_p3.rec_follow_me_data_target_loss_count", "Target Loss Count", base.HEX)
+f.rec_follow_me_data_mission_status = ProtoField.uint8 ("dji_p3.rec_follow_me_data_mission_status", "Mission Status", base.HEX)
+
+local function flightrec_follow_me_data_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_follow_me_data_heading_ref, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_heading_error, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_heading_rate, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_ascending_tgt_height, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_ascending_error, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_ascending_vel, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_phone_tagt_x, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_follow_me_data_phone_tagt_y, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_follow_me_data_quadrotor_cur_x, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_follow_me_data_quadrotor_cur_y, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rec_follow_me_data_quadrotor2phone_offset_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_quadrotor2phone_offset_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_quadrotor2phone_distance, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_quadrotor2targetpoint_offset_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_quadrotor2targetpoint_offset_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_quadrotor2targetpoint_distance, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_tagt_vel_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_tagt_vel_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_cur_vel_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_cur_vel_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_cruise_vel_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_cruise_vel_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_fixed_offset_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_fixed_offset_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_fixed_distance_offset, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_dist_drone2drone, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_dist_phone2phone, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_gimbal_ptich_tgt, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_gimbal_pitch_error, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_gimbal_pitch_rate, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_follow_me_data_in_height_limit, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_follow_me_data_target_loss_count, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_follow_me_data_mission_status, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 139) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Follow Me Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Follow Me Data: Payload size different than expected") end
+end
+
+-- Flight log - Imu Data Status - 0x0013
+
+f.rec_imu_data_status_start_fan = ProtoField.uint8 ("dji_p3.rec_imu_data_status_start_fan", "Start Fan", base.HEX)
+f.rec_imu_data_status_led_status = ProtoField.uint8 ("dji_p3.rec_imu_data_status_led_status", "Led Status", base.HEX)
+
+local function flightrec_imu_data_status_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_imu_data_status_start_fan, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_imu_data_status_led_status, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Data Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Data Status: Payload size different than expected") end
+end
+
+-- Flight log - Aircraft Condition Monitor - 0x0046
+
+f.rec_aircraft_condition_monitor_craft_flight_mode = ProtoField.uint8 ("dji_p3.rec_aircraft_condition_monitor_craft_flight_mode", "Craft Flight Mode", base.HEX)
+f.rec_aircraft_condition_monitor_near_gnd_state = ProtoField.uint8 ("dji_p3.rec_aircraft_condition_monitor_near_gnd_state", "Near Gnd State", base.HEX)
+f.rec_aircraft_condition_monitor_launch_acc_duration = ProtoField.float ("dji_p3.rec_aircraft_condition_monitor_launch_acc_duration", "Launch Acc Duration", base.DEC)
+f.rec_aircraft_condition_monitor_launch_delta_v = ProtoField.float ("dji_p3.rec_aircraft_condition_monitor_launch_delta_v", "Launch Delta V", base.DEC)
+f.rec_aircraft_condition_monitor_launch_state = ProtoField.uint8 ("dji_p3.rec_aircraft_condition_monitor_launch_state", "Launch State", base.HEX)
+f.rec_aircraft_condition_monitor_thrust_proj_gnd = ProtoField.float ("dji_p3.rec_aircraft_condition_monitor_thrust_proj_gnd", "Thrust Proj Gnd", base.DEC)
+f.rec_aircraft_condition_monitor_thrust_proj_gnd_compen = ProtoField.float ("dji_p3.rec_aircraft_condition_monitor_thrust_proj_gnd_compen", "Thrust Proj Gnd Compen", base.DEC)
+f.rec_aircraft_condition_monitor_thrust_compensator = ProtoField.float ("dji_p3.rec_aircraft_condition_monitor_thrust_compensator", "Thrust Compensator", base.DEC)
+f.rec_aircraft_condition_monitor_hover_thrust = ProtoField.float ("dji_p3.rec_aircraft_condition_monitor_hover_thrust", "Hover Thrust", base.DEC)
+f.rec_aircraft_condition_monitor_dynamic_thrust = ProtoField.float ("dji_p3.rec_aircraft_condition_monitor_dynamic_thrust", "Dynamic Thrust", base.DEC)
+f.rec_aircraft_condition_monitor_cos_safe_tilt = ProtoField.float ("dji_p3.rec_aircraft_condition_monitor_cos_safe_tilt", "Cos Safe Tilt", base.DEC)
+f.rec_aircraft_condition_monitor_safe_tilt = ProtoField.float ("dji_p3.rec_aircraft_condition_monitor_safe_tilt", "Safe Tilt", base.DEC)
+
+local function flightrec_aircraft_condition_monitor_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_aircraft_condition_monitor_craft_flight_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_aircraft_condition_monitor_near_gnd_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_aircraft_condition_monitor_launch_acc_duration, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_condition_monitor_launch_delta_v, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_condition_monitor_launch_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_aircraft_condition_monitor_thrust_proj_gnd, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_condition_monitor_thrust_proj_gnd_compen, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_condition_monitor_thrust_compensator, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_condition_monitor_hover_thrust, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_condition_monitor_dynamic_thrust, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_condition_monitor_cos_safe_tilt, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_condition_monitor_safe_tilt, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 39) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Aircraft Condition Monitor: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Aircraft Condition Monitor: Payload size different than expected") end
+end
+
+-- Flight log - Aircraft Model - 0x0050
+
+f.rec_aircraft_model_m1_current = ProtoField.float ("dji_p3.rec_aircraft_model_m1_current", "M1 Current", base.DEC)
+f.rec_aircraft_model_m1_w = ProtoField.float ("dji_p3.rec_aircraft_model_m1_w", "M1 W", base.DEC)
+f.rec_aircraft_model_m1_lift = ProtoField.float ("dji_p3.rec_aircraft_model_m1_lift", "M1 Lift", base.DEC)
+f.rec_aircraft_model_m1_torque = ProtoField.float ("dji_p3.rec_aircraft_model_m1_torque", "M1 Torque", base.DEC)
+f.rec_aircraft_model_m2_current = ProtoField.float ("dji_p3.rec_aircraft_model_m2_current", "M2 Current", base.DEC)
+f.rec_aircraft_model_m2_w = ProtoField.float ("dji_p3.rec_aircraft_model_m2_w", "M2 W", base.DEC)
+f.rec_aircraft_model_m2_lift = ProtoField.float ("dji_p3.rec_aircraft_model_m2_lift", "M2 Lift", base.DEC)
+f.rec_aircraft_model_m2_torque = ProtoField.float ("dji_p3.rec_aircraft_model_m2_torque", "M2 Torque", base.DEC)
+f.rec_aircraft_model_m3_current = ProtoField.float ("dji_p3.rec_aircraft_model_m3_current", "M3 Current", base.DEC)
+f.rec_aircraft_model_m3_w = ProtoField.float ("dji_p3.rec_aircraft_model_m3_w", "M3 W", base.DEC)
+f.rec_aircraft_model_m3_lift = ProtoField.float ("dji_p3.rec_aircraft_model_m3_lift", "M3 Lift", base.DEC)
+f.rec_aircraft_model_m3_torque = ProtoField.float ("dji_p3.rec_aircraft_model_m3_torque", "M3 Torque", base.DEC)
+f.rec_aircraft_model_m4_current = ProtoField.float ("dji_p3.rec_aircraft_model_m4_current", "M4 Current", base.DEC)
+f.rec_aircraft_model_m4_w = ProtoField.float ("dji_p3.rec_aircraft_model_m4_w", "M4 W", base.DEC)
+f.rec_aircraft_model_m4_lift = ProtoField.float ("dji_p3.rec_aircraft_model_m4_lift", "M4 Lift", base.DEC)
+f.rec_aircraft_model_m4_torque = ProtoField.float ("dji_p3.rec_aircraft_model_m4_torque", "M4 Torque", base.DEC)
+f.rec_aircraft_model_m5_current = ProtoField.float ("dji_p3.rec_aircraft_model_m5_current", "M5 Current", base.DEC)
+f.rec_aircraft_model_m5_w = ProtoField.float ("dji_p3.rec_aircraft_model_m5_w", "M5 W", base.DEC)
+f.rec_aircraft_model_m5_lift = ProtoField.float ("dji_p3.rec_aircraft_model_m5_lift", "M5 Lift", base.DEC)
+f.rec_aircraft_model_m5_torque = ProtoField.float ("dji_p3.rec_aircraft_model_m5_torque", "M5 Torque", base.DEC)
+f.rec_aircraft_model_m6_current = ProtoField.float ("dji_p3.rec_aircraft_model_m6_current", "M6 Current", base.DEC)
+f.rec_aircraft_model_m6_w = ProtoField.float ("dji_p3.rec_aircraft_model_m6_w", "M6 W", base.DEC)
+f.rec_aircraft_model_m6_lift = ProtoField.float ("dji_p3.rec_aircraft_model_m6_lift", "M6 Lift", base.DEC)
+f.rec_aircraft_model_m6_torque = ProtoField.float ("dji_p3.rec_aircraft_model_m6_torque", "M6 Torque", base.DEC)
+f.rec_aircraft_model_m7_current = ProtoField.float ("dji_p3.rec_aircraft_model_m7_current", "M7 Current", base.DEC)
+f.rec_aircraft_model_m7_w = ProtoField.float ("dji_p3.rec_aircraft_model_m7_w", "M7 W", base.DEC)
+f.rec_aircraft_model_m7_lift = ProtoField.float ("dji_p3.rec_aircraft_model_m7_lift", "M7 Lift", base.DEC)
+f.rec_aircraft_model_m7_torque = ProtoField.float ("dji_p3.rec_aircraft_model_m7_torque", "M7 Torque", base.DEC)
+f.rec_aircraft_model_m8_current = ProtoField.float ("dji_p3.rec_aircraft_model_m8_current", "M8 Current", base.DEC)
+f.rec_aircraft_model_m8_w = ProtoField.float ("dji_p3.rec_aircraft_model_m8_w", "M8 W", base.DEC)
+f.rec_aircraft_model_m8_lift = ProtoField.float ("dji_p3.rec_aircraft_model_m8_lift", "M8 Lift", base.DEC)
+f.rec_aircraft_model_m8_torque = ProtoField.float ("dji_p3.rec_aircraft_model_m8_torque", "M8 Torque", base.DEC)
+
+local function flightrec_aircraft_model_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_aircraft_model_m1_current, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m1_w, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m1_lift, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m1_torque, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m2_current, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m2_w, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m2_lift, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m2_torque, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m3_current, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m3_w, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m3_lift, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m3_torque, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m4_current, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m4_w, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m4_lift, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m4_torque, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m5_current, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m5_w, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m5_lift, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m5_torque, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m6_current, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m6_w, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m6_lift, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m6_torque, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m7_current, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m7_w, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m7_lift, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m7_torque, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m8_current, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m8_w, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m8_lift, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_aircraft_model_m8_torque, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 128) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Aircraft Model: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Aircraft Model: Payload size different than expected") end
+end
+
+-- Flight log - Go Home Info - 0x005a
+
+f.rec_go_home_info_go_home_stage = ProtoField.uint8 ("dji_p3.rec_go_home_info_go_home_stage", "Go Home Stage", base.HEX)
+f.rec_go_home_info_go_home_timer = ProtoField.float ("dji_p3.rec_go_home_info_go_home_timer", "Go Home Timer", base.DEC)
+f.rec_go_home_info_dis_to_home_x = ProtoField.float ("dji_p3.rec_go_home_info_dis_to_home_x", "Dis To Home X", base.DEC)
+f.rec_go_home_info_dis_to_home_y = ProtoField.float ("dji_p3.rec_go_home_info_dis_to_home_y", "Dis To Home Y", base.DEC)
+--f.rec_go_home_info_e_dis_to_home = ProtoField.none ("dji_p3.rec_go_home_info_e_dis_to_home", "E Dis To Home", base.NONE, nil, nil, "sqrt(dis_to_home_x*dis_to_home_x+dis_to_home_y*dis_to_home_y)")
+
+local function flightrec_go_home_info_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_go_home_info_go_home_stage, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_go_home_info_go_home_timer, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_go_home_info_dis_to_home_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_go_home_info_dis_to_home_y, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 13) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Go Home Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Go Home Info: Payload size different than expected") end
+end
+
+-- Flight log - New Mvo Feedback - 0x001d
+
+f.rec_new_mvo_feedback_visionobservationcount = ProtoField.uint16 ("dji_p3.rec_new_mvo_feedback_visionobservationcount", "Visionobservationcount", base.HEX)
+f.rec_new_mvo_feedback_vel_x = ProtoField.int16 ("dji_p3.rec_new_mvo_feedback_vel_x", "Vel X", base.DEC)
+f.rec_new_mvo_feedback_vel_y = ProtoField.int16 ("dji_p3.rec_new_mvo_feedback_vel_y", "Vel Y", base.DEC)
+f.rec_new_mvo_feedback_vel_z = ProtoField.int16 ("dji_p3.rec_new_mvo_feedback_vel_z", "Vel Z", base.DEC)
+f.rec_new_mvo_feedback_pos_x = ProtoField.float ("dji_p3.rec_new_mvo_feedback_pos_x", "Pos X", base.DEC)
+f.rec_new_mvo_feedback_pos_y = ProtoField.float ("dji_p3.rec_new_mvo_feedback_pos_y", "Pos Y", base.DEC)
+f.rec_new_mvo_feedback_pos_z = ProtoField.float ("dji_p3.rec_new_mvo_feedback_pos_z", "Pos Z", base.DEC)
+f.rec_new_mvo_feedback_hoverpointuncertainty1 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty1", "Hoverpointuncertainty1", base.DEC)
+f.rec_new_mvo_feedback_hoverpointuncertainty2 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty2", "Hoverpointuncertainty2", base.DEC)
+f.rec_new_mvo_feedback_hoverpointuncertainty3 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty3", "Hoverpointuncertainty3", base.DEC)
+f.rec_new_mvo_feedback_hoverpointuncertainty4 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty4", "Hoverpointuncertainty4", base.DEC)
+f.rec_new_mvo_feedback_hoverpointuncertainty5 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty5", "Hoverpointuncertainty5", base.DEC)
+f.rec_new_mvo_feedback_hoverpointuncertainty6 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty6", "Hoverpointuncertainty6", base.DEC)
+f.rec_new_mvo_feedback_velocityuncertainty1 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty1", "Velocityuncertainty1", base.DEC)
+f.rec_new_mvo_feedback_velocityuncertainty2 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty2", "Velocityuncertainty2", base.DEC)
+f.rec_new_mvo_feedback_velocityuncertainty3 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty3", "Velocityuncertainty3", base.DEC)
+f.rec_new_mvo_feedback_velocityuncertainty4 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty4", "Velocityuncertainty4", base.DEC)
+f.rec_new_mvo_feedback_velocityuncertainty5 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty5", "Velocityuncertainty5", base.DEC)
+f.rec_new_mvo_feedback_velocityuncertainty6 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty6", "Velocityuncertainty6", base.DEC)
+f.rec_new_mvo_feedback_height = ProtoField.float ("dji_p3.rec_new_mvo_feedback_height", "Height", base.DEC)
+f.rec_new_mvo_feedback_heightuncertainty = ProtoField.float ("dji_p3.rec_new_mvo_feedback_heightuncertainty", "Heightuncertainty", base.DEC)
+f.rec_new_mvo_feedback_reserved1 = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_reserved1", "Reserved1", base.HEX)
+  f.rec_new_mvo_feedback_e_new_mvo_px_flag = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_e_new_mvo_px_flag", "E New Mvo Px Flag", base.HEX, nil, 0x10, nil)
+  f.rec_new_mvo_feedback_e_new_mvo_py_flag = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_e_new_mvo_py_flag", "E New Mvo Py Flag", base.HEX, nil, 0x20, nil)
+  f.rec_new_mvo_feedback_e_new_mvo_pz_flag = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_e_new_mvo_pz_flag", "E New Mvo Pz Flag", base.HEX, nil, 0x40, nil)
+  f.rec_new_mvo_feedback_e_new_mvo_vx_flag = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_e_new_mvo_vx_flag", "E New Mvo Vx Flag", base.HEX, nil, 0x01, nil)
+  f.rec_new_mvo_feedback_e_new_mvo_vy_flag = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_e_new_mvo_vy_flag", "E New Mvo Vy Flag", base.HEX, nil, 0x02, nil)
+  f.rec_new_mvo_feedback_e_new_mvo_vz_flag = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_e_new_mvo_vz_flag", "E New Mvo Vz Flag", base.HEX, nil, 0x04, nil)
+f.rec_new_mvo_feedback_reserved2 = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_reserved2", "Reserved2", base.HEX)
+f.rec_new_mvo_feedback_reserved3 = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_reserved3", "Reserved3", base.HEX)
+f.rec_new_mvo_feedback_reserved4 = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_reserved4", "Reserved4", base.HEX)
+
+local function flightrec_new_mvo_feedback_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_new_mvo_feedback_visionobservationcount, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_new_mvo_feedback_vel_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_new_mvo_feedback_vel_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_new_mvo_feedback_vel_z, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_new_mvo_feedback_pos_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_pos_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_pos_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_hoverpointuncertainty1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_hoverpointuncertainty2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_hoverpointuncertainty3, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_hoverpointuncertainty4, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_hoverpointuncertainty5, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_hoverpointuncertainty6, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_velocityuncertainty1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_velocityuncertainty2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_velocityuncertainty3, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_velocityuncertainty4, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_velocityuncertainty5, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_velocityuncertainty6, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_height, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_heightuncertainty, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_new_mvo_feedback_reserved1, payload(offset, 1))
+    subtree:add_le (f.rec_new_mvo_feedback_e_new_mvo_px_flag, payload(offset, 1))
+    subtree:add_le (f.rec_new_mvo_feedback_e_new_mvo_py_flag, payload(offset, 1))
+    subtree:add_le (f.rec_new_mvo_feedback_e_new_mvo_pz_flag, payload(offset, 1))
+    subtree:add_le (f.rec_new_mvo_feedback_e_new_mvo_vx_flag, payload(offset, 1))
+    subtree:add_le (f.rec_new_mvo_feedback_e_new_mvo_vy_flag, payload(offset, 1))
+    subtree:add_le (f.rec_new_mvo_feedback_e_new_mvo_vz_flag, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_new_mvo_feedback_reserved2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_new_mvo_feedback_reserved3, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_new_mvo_feedback_reserved4, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 80) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"New Mvo Feedback: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"New Mvo Feedback: Payload size different than expected") end
+end
+
+-- Flight log - Svo Avoid Obstacle - 0x0064
+
+f.rec_svo_avoid_obstacle_svo_stop_flag = ProtoField.uint8 ("dji_p3.rec_svo_avoid_obstacle_svo_stop_flag", "Svo Stop Flag", base.HEX)
+  f.rec_svo_avoid_obstacle_svo_stop_flag = ProtoField.uint8 ("dji_p3.rec_svo_avoid_obstacle_svo_stop_flag", "Svo Stop Flag", base.HEX, nil, 0x01, nil)
+  f.rec_svo_avoid_obstacle_svo_work_flag = ProtoField.uint8 ("dji_p3.rec_svo_avoid_obstacle_svo_work_flag", "Svo Work Flag", base.HEX, nil, 0x02, nil)
+  f.rec_svo_avoid_obstacle_svo_en_flag = ProtoField.uint8 ("dji_p3.rec_svo_avoid_obstacle_svo_en_flag", "Svo En Flag", base.HEX, nil, 0x04, nil)
+f.rec_svo_avoid_obstacle_svo_p_front = ProtoField.uint16 ("dji_p3.rec_svo_avoid_obstacle_svo_p_front", "Svo P Front", base.HEX)
+f.rec_svo_avoid_obstacle_svo_p_right = ProtoField.uint16 ("dji_p3.rec_svo_avoid_obstacle_svo_p_right", "Svo P Right", base.HEX)
+f.rec_svo_avoid_obstacle_svo_p_back = ProtoField.uint16 ("dji_p3.rec_svo_avoid_obstacle_svo_p_back", "Svo P Back", base.HEX)
+f.rec_svo_avoid_obstacle_svo_p_left = ProtoField.uint16 ("dji_p3.rec_svo_avoid_obstacle_svo_p_left", "Svo P Left", base.HEX)
+f.rec_svo_avoid_obstacle_svo_v_limit = ProtoField.uint8 ("dji_p3.rec_svo_avoid_obstacle_svo_v_limit", "Svo V Limit", base.HEX)
+f.rec_svo_avoid_obstacle_svo_cnt = ProtoField.uint8 ("dji_p3.rec_svo_avoid_obstacle_svo_cnt", "Svo Cnt", base.HEX)
+
+local function flightrec_svo_avoid_obstacle_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_svo_avoid_obstacle_svo_stop_flag, payload(offset, 1))
+    subtree:add_le (f.rec_svo_avoid_obstacle_svo_stop_flag, payload(offset, 1))
+    subtree:add_le (f.rec_svo_avoid_obstacle_svo_work_flag, payload(offset, 1))
+    subtree:add_le (f.rec_svo_avoid_obstacle_svo_en_flag, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_svo_avoid_obstacle_svo_p_front, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_svo_avoid_obstacle_svo_p_right, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_svo_avoid_obstacle_svo_p_back, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_svo_avoid_obstacle_svo_p_left, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_svo_avoid_obstacle_svo_v_limit, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_svo_avoid_obstacle_svo_cnt, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 11) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Svo Avoid Obstacle: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Svo Avoid Obstacle: Payload size different than expected") end
+end
+
+-- Flight log - Rtkdata - 0xcff1
+
+f.rec_rtkdata_lat = ProtoField.int32 ("dji_p3.rec_rtkdata_lat", "Lat", base.DEC)
+f.rec_rtkdata_lon = ProtoField.int32 ("dji_p3.rec_rtkdata_lon", "Lon", base.DEC)
+f.rec_rtkdata_height = ProtoField.int32 ("dji_p3.rec_rtkdata_height", "Height", base.DEC)
+f.rec_rtkdata_satnum = ProtoField.uint16 ("dji_p3.rec_rtkdata_satnum", "Satnum", base.HEX)
+f.rec_rtkdata_postype = ProtoField.uint16 ("dji_p3.rec_rtkdata_postype", "Postype", base.HEX)
+f.rec_rtkdata_reserve1 = ProtoField.int32 ("dji_p3.rec_rtkdata_reserve1", "Reserve1", base.DEC)
+f.rec_rtkdata_reserve2 = ProtoField.int32 ("dji_p3.rec_rtkdata_reserve2", "Reserve2", base.DEC)
+f.rec_rtkdata_reserve3 = ProtoField.int32 ("dji_p3.rec_rtkdata_reserve3", "Reserve3", base.DEC)
+f.rec_rtkdata_reserve4 = ProtoField.int32 ("dji_p3.rec_rtkdata_reserve4", "Reserve4", base.DEC)
+f.rec_rtkdata_reserve5 = ProtoField.int32 ("dji_p3.rec_rtkdata_reserve5", "Reserve5", base.DEC)
+f.rec_rtkdata_reserve6 = ProtoField.int32 ("dji_p3.rec_rtkdata_reserve6", "Reserve6", base.DEC)
+f.rec_rtkdata_reserve7 = ProtoField.int32 ("dji_p3.rec_rtkdata_reserve7", "Reserve7", base.DEC)
+f.rec_rtkdata_reserve8 = ProtoField.int32 ("dji_p3.rec_rtkdata_reserve8", "Reserve8", base.DEC)
+f.rec_rtkdata_reserve9 = ProtoField.int32 ("dji_p3.rec_rtkdata_reserve9", "Reserve9", base.DEC)
+f.rec_rtkdata_reserve10 = ProtoField.int32 ("dji_p3.rec_rtkdata_reserve10", "Reserve10", base.DEC)
+f.rec_rtkdata_cntrtk = ProtoField.uint32 ("dji_p3.rec_rtkdata_cntrtk", "Cntrtk", base.HEX)
+
+local function flightrec_rtkdata_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_rtkdata_lat, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_lon, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_height, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_satnum, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rtkdata_postype, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_rtkdata_reserve1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_reserve2, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_reserve3, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_reserve4, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_reserve5, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_reserve6, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_reserve7, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_reserve8, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_reserve9, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_reserve10, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_rtkdata_cntrtk, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 60) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Rtkdata: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Rtkdata: Payload size different than expected") end
+end
+
+-- Flight log - Gear Debug Info - 0x006e
+
+f.rec_gear_debug_info_gear_mode = ProtoField.uint8 ("dji_p3.rec_gear_debug_info_gear_mode", "Gear Mode", base.HEX)
+f.rec_gear_debug_info_gear_state = ProtoField.uint8 ("dji_p3.rec_gear_debug_info_gear_state", "Gear State", base.HEX)
+f.rec_gear_debug_info_gear_cmd = ProtoField.uint8 ("dji_p3.rec_gear_debug_info_gear_cmd", "Gear Cmd", base.HEX)
+f.rec_gear_debug_info_gear_speed = ProtoField.uint8 ("dji_p3.rec_gear_debug_info_gear_speed", "Gear Speed", base.HEX)
+f.rec_gear_debug_info_gear_counter = ProtoField.uint32 ("dji_p3.rec_gear_debug_info_gear_counter", "Gear Counter", base.HEX)
+f.rec_gear_debug_info_gear_pack_flag = ProtoField.uint8 ("dji_p3.rec_gear_debug_info_gear_pack_flag", "Gear Pack Flag", base.HEX)
+f.rec_gear_debug_info_gear_pack_req = ProtoField.uint8 ("dji_p3.rec_gear_debug_info_gear_pack_req", "Gear Pack Req", base.HEX)
+f.rec_gear_debug_info_gear_pack_type = ProtoField.uint8 ("dji_p3.rec_gear_debug_info_gear_pack_type", "Gear Pack Type", base.HEX)
+f.rec_gear_debug_info_gear_pack_state = ProtoField.uint8 ("dji_p3.rec_gear_debug_info_gear_pack_state", "Gear Pack State", base.HEX)
+f.rec_gear_debug_info_gear_pack_manual_cmd = ProtoField.uint8 ("dji_p3.rec_gear_debug_info_gear_pack_manual_cmd", "Gear Pack Manual Cmd", base.HEX)
+f.rec_gear_debug_info_gear_rc_cmd = ProtoField.uint8 ("dji_p3.rec_gear_debug_info_gear_rc_cmd", "Gear Rc Cmd", base.HEX)
+f.rec_gear_debug_info_gear_app_req = ProtoField.uint8 ("dji_p3.rec_gear_debug_info_gear_app_req", "Gear App Req", base.HEX)
+f.rec_gear_debug_info_gear_app_cmd = ProtoField.uint8 ("dji_p3.rec_gear_debug_info_gear_app_cmd", "Gear App Cmd", base.HEX)
+f.rec_gear_debug_info_gear_rc_raw_input = ProtoField.int16 ("dji_p3.rec_gear_debug_info_gear_rc_raw_input", "Gear Rc Raw Input", base.DEC)
+
+local function flightrec_gear_debug_info_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_gear_debug_info_gear_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gear_debug_info_gear_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gear_debug_info_gear_cmd, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gear_debug_info_gear_speed, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gear_debug_info_gear_counter, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_gear_debug_info_gear_pack_flag, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gear_debug_info_gear_pack_req, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gear_debug_info_gear_pack_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gear_debug_info_gear_pack_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gear_debug_info_gear_pack_manual_cmd, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gear_debug_info_gear_rc_cmd, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gear_debug_info_gear_app_req, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gear_debug_info_gear_app_cmd, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_gear_debug_info_gear_rc_raw_input, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 18) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gear Debug Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gear Debug Info: Payload size different than expected") end
+end
+
+-- Flight log - Svo Ctrl Debug - 0x0066
+
+f.rec_svo_ctrl_debug_svo_avoid_debug0_limit_en = ProtoField.uint8 ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug0_limit_en", "Svo Avoid Debug0 Limit En", base.HEX)
+f.rec_svo_ctrl_debug_svo_avoid_debug0_d_craft2edge = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug0_d_craft2edge", "Svo Avoid Debug0 D Craft2Edge", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug0_limit_direct_0 = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug0_limit_direct_0", "Svo Avoid Debug0 Limit Direct 0", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug0_limit_direct_1 = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug0_limit_direct_1", "Svo Avoid Debug0 Limit Direct 1", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug0_limit_norm = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug0_limit_norm", "Svo Avoid Debug0 Limit Norm", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug0_damping_scale = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug0_damping_scale", "Svo Avoid Debug0 Damping Scale", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug1_limit_en = ProtoField.uint8 ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug1_limit_en", "Svo Avoid Debug1 Limit En", base.HEX)
+f.rec_svo_ctrl_debug_svo_avoid_debug1_d_craft2edge = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug1_d_craft2edge", "Svo Avoid Debug1 D Craft2Edge", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug1_limit_direct_0 = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug1_limit_direct_0", "Svo Avoid Debug1 Limit Direct 0", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug1_limit_direct_1 = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug1_limit_direct_1", "Svo Avoid Debug1 Limit Direct 1", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug1_limit_norm = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug1_limit_norm", "Svo Avoid Debug1 Limit Norm", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug1_damping_scale = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug1_damping_scale", "Svo Avoid Debug1 Damping Scale", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug2_limit_en = ProtoField.uint8 ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug2_limit_en", "Svo Avoid Debug2 Limit En", base.HEX)
+f.rec_svo_ctrl_debug_svo_avoid_debug2_d_craft2edge = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug2_d_craft2edge", "Svo Avoid Debug2 D Craft2Edge", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug2_limit_direct_0 = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug2_limit_direct_0", "Svo Avoid Debug2 Limit Direct 0", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug2_limit_direct_1 = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug2_limit_direct_1", "Svo Avoid Debug2 Limit Direct 1", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug2_limit_norm = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug2_limit_norm", "Svo Avoid Debug2 Limit Norm", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug2_damping_scale = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug2_damping_scale", "Svo Avoid Debug2 Damping Scale", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug3_limit_en = ProtoField.uint8 ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug3_limit_en", "Svo Avoid Debug3 Limit En", base.HEX)
+f.rec_svo_ctrl_debug_svo_avoid_debug3_d_craft2edge = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug3_d_craft2edge", "Svo Avoid Debug3 D Craft2Edge", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug3_limit_direct_0 = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug3_limit_direct_0", "Svo Avoid Debug3 Limit Direct 0", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug3_limit_direct_1 = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug3_limit_direct_1", "Svo Avoid Debug3 Limit Direct 1", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug3_limit_norm = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug3_limit_norm", "Svo Avoid Debug3 Limit Norm", base.DEC)
+f.rec_svo_ctrl_debug_svo_avoid_debug3_damping_scale = ProtoField.float ("dji_p3.rec_svo_ctrl_debug_svo_avoid_debug3_damping_scale", "Svo Avoid Debug3 Damping Scale", base.DEC)
+
+local function flightrec_svo_ctrl_debug_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug0_limit_en, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug0_d_craft2edge, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug0_limit_direct_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug0_limit_direct_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug0_limit_norm, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug0_damping_scale, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug1_limit_en, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug1_d_craft2edge, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug1_limit_direct_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug1_limit_direct_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug1_limit_norm, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug1_damping_scale, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug2_limit_en, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug2_d_craft2edge, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug2_limit_direct_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug2_limit_direct_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug2_limit_norm, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug2_damping_scale, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug3_limit_en, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug3_d_craft2edge, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug3_limit_direct_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug3_limit_direct_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug3_limit_norm, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_svo_ctrl_debug_svo_avoid_debug3_damping_scale, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 84) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Svo Ctrl Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Svo Ctrl Debug: Payload size different than expected") end
+end
+
+-- Flight log - Waypoint Debug - 0x00a0
+
+f.rec_waypoint_debug_wp_mission_status = ProtoField.uint8 ("dji_p3.rec_waypoint_debug_wp_mission_status", "Wp Mission Status", base.HEX)
+f.rec_waypoint_debug_wp_cur_num = ProtoField.uint8 ("dji_p3.rec_waypoint_debug_wp_cur_num", "Wp Cur Num", base.HEX)
+f.rec_waypoint_debug_wp_tgt_vel = ProtoField.uint16 ("dji_p3.rec_waypoint_debug_wp_tgt_vel", "Wp Tgt Vel", base.HEX)
+--f.rec_waypoint_debug_e_gps_lat = ProtoField.none ("dji_p3.rec_waypoint_debug_e_gps_lat", "E Gps Lat", base.NONE, nil, nil, "(gps_lat-225400000)/10000000*3.1415926/180*6370000")
+--f.rec_waypoint_debug_e_gps_lon = ProtoField.none ("dji_p3.rec_waypoint_debug_e_gps_lon", "E Gps Lon", base.NONE, nil, nil, "(gps_lon-1139468000)/10000000*3.1415926/180*6370000*cos(0.3933972)")
+--f.rec_waypoint_debug_e_atti_lat = ProtoField.none ("dji_p3.rec_waypoint_debug_e_atti_lat", "E Atti Lat", base.NONE, nil, nil, "(lati-0.3933972)*6370000")
+--f.rec_waypoint_debug_e_atti_lon = ProtoField.none ("dji_p3.rec_waypoint_debug_e_atti_lon", "E Atti Lon", base.NONE, nil, nil, "(longti-1.9887468)*6370000*cos(0.3933972)")
+--f.rec_waypoint_debug_neg_mvo_vx = ProtoField.none ("dji_p3.rec_waypoint_debug_neg_mvo_vx", "Neg Mvo Vx", base.NONE, nil, nil, "(Vel_X/1000*cos(E_yaw*3.1415926/180)+Vel_Y/1000*sin(-E_yaw*3.1415926/180))")
+--f.rec_waypoint_debug_neg_mvo_vy = ProtoField.none ("dji_p3.rec_waypoint_debug_neg_mvo_vy", "Neg Mvo Vy", base.NONE, nil, nil, "(Vel_X/1000*sin(E_yaw*3.1415926/180)+Vel_Y/1000*cos(E_yaw*3.1415926/180))")
+--f.rec_waypoint_debug_neg_mvo_vz = ProtoField.none ("dji_p3.rec_waypoint_debug_neg_mvo_vz", "Neg Mvo Vz", base.NONE, nil, nil, "Vel_Z/1000")
+--f.rec_waypoint_debug_e_acc_norm = ProtoField.none ("dji_p3.rec_waypoint_debug_e_acc_norm", "E Acc Norm", base.NONE, nil, nil, "sqrt(acc_x^2+acc_y^2+acc_z^2)")
+--f.rec_waypoint_debug_e_horizon_speed = ProtoField.none ("dji_p3.rec_waypoint_debug_e_horizon_speed", "E Horizon Speed", base.NONE, nil, nil, "sqrt(vg_x^2+vg_y^2)")
+
+local function flightrec_waypoint_debug_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_waypoint_debug_wp_mission_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_waypoint_debug_wp_cur_num, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_waypoint_debug_wp_tgt_vel, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Waypoint Debug: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Waypoint Debug: Payload size different than expected") end
 end
 
 DJI_P3_FLIGHT_RECORD_DISSECT = {
-    [0x0000] = flightrec_rc_func_data_dissector,
-    [0x0001] = flightrec_imu_atti_0_dissector,
-    [0x0002] = flightrec_unkn02_dissector,
-    [0x0003] = flightrec_unkn03_dissector,
-    [0x0004] = flightrec_unkn04_dissector,
-    [0x0005] = flightrec_unkn05_dissector,
-    [0x0007] = flightrec_imu_data_dissector,
-    [0x000c] = flightrec_telemetry_dissector,
-    [0x000d] = flightrec_unkn0D_dissector,
-    [0x0011] = flightrec_battery_info_dissector,
-    [0x0013] = flightrec_unkn13_dissector,
-    [0x0014] = flightrec_unkn14_dissector,
-    [0x001a] = flightrec_unkn1A_dissector,
-    [0x005c] = flightrec_unkn5C_dissector,
-    [0x0062] = flightrec_unkn5C_dissector, -- this packet type uses the same payload as 0x005c
+    [0x0000] = flightrec_controller_dissector,
+    [0x07cf] = flightrec_ofdm_cnt_dissector,
+    [0x07d0] = flightrec_uart_cnt_dissector,
+    [0x0002] = flightrec_imu_tail_dissector,
+    [0xfffa] = flightrec_drv_log_dissector,
+    [0x0073] = flightrec_asr_dissector,
+    [0x0001] = flightrec_imu_atti_dissector,
+    [0x0003] = flightrec_imu_ex_dissector,
+    [0x0820] = flightrec_imu_tail_00_dissector,
+    [0x0800] = flightrec_imu_atti_00_dissector,
+    [0x0810] = flightrec_imu_ex_00_dissector,
+    [0x0821] = flightrec_imu_tail_01_dissector,
+    [0x0801] = flightrec_imu_atti_01_dissector,
+    [0x0811] = flightrec_imu_ex_01_dissector,
+    [0x0822] = flightrec_imu_tail_02_dissector,
+    [0x0802] = flightrec_imu_atti_02_dissector,
+    [0x0812] = flightrec_imu_ex_02_dissector,
+    [0x0004] = flightrec_compass_dissector,
+    [0x0005] = flightrec_gps_glns_dissector,
+    [0x000b] = flightrec_gps_snr_dissector,
+    [0x0061] = flightrec_pt3_gps_snr_dissector,
+    [0x005b] = flightrec_imu_21100_dissector,
+    [0x005c] = flightrec_imu_raw_dissector,
+    [0x0006] = flightrec_imu_init_dissector,
+    [0x000c] = flightrec_osd_general_dissector,
+    [0x000d] = flightrec_osd_home_dissector,
+    [0x001a] = flightrec_fdi_dissector,
+    [0x8003] = flightrec_vincent_debug_dissector,
     [0x8000] = flightrec_fly_log_dissector,
-    [0xff00] = flightrec_sys_cfg_dissector,
-    [0xfffa] = flightrec_sys_cfg_dissector,
-    [0xfffe] = flightrec_sys_cfg_dissector,
-    [0xffff] = flightrec_sys_cfg_dissector,
+    [0xff00] = flightrec_sd_logs_dissector,
+    [0xfffe] = flightrec_svn_info_dissector,
+    [0x0007] = flightrec_imu_data_dissector,
+    [0x0870] = flightrec_imu_data_00_dissector,
+    [0x0871] = flightrec_imu_data_01_dissector,
+    [0x0872] = flightrec_imu_data_02_dissector,
+    [0x0008] = flightrec_imu_cali_data_dissector,
+    [0x0009] = flightrec_sensor_cfg_temp_dissector,
+    [0x000a] = flightrec_temp_ctl_data_dissector,
+    [0x0880] = flightrec_temp_ctl_data_00_dissector,
+    [0x0881] = flightrec_temp_ctl_data_01_dissector,
+    [0x0882] = flightrec_temp_ctl_data_02_dissector,
+    [0x0014] = flightrec_pwm_output_dissector,
+    [0x0015] = flightrec_temp_bias_data_dissector,
+    [0x0016] = flightrec_temp_cali_data_dissector,
+    [0x0018] = flightrec_app_temp_bias_data_dissector,
+    [0x0019] = flightrec_app_temp_cali_data_dissector,
+    [0x0893] = flightrec_temp_cali_data_00_dissector,
+    [0x0896] = flightrec_app_temp_cali_data_00_dissector,
+    [0x0894] = flightrec_temp_cali_data_01_dissector,
+    [0x0897] = flightrec_app_temp_cali_data_01_dissector,
+    [0x0895] = flightrec_temp_cali_data_02_dissector,
+    [0x0898] = flightrec_app_temp_cali_data_02_dissector,
+    [0x0023] = flightrec_mpu6500_raw_data_dissector,
+    [0x0024] = flightrec_adxl278_raw_data_dissector,
+    [0x0065] = flightrec_svo_debug_dissector,
+    [0xcdf0] = flightrec_uc_monitor_dissector,
+    [0xcdff] = flightrec_rc_delay_dissector,
+    [0xce02] = flightrec_taskb_info_dissector,
+    [0xce06] = flightrec_taska_info_dissector,
+    [0xce08] = flightrec_taskc_info_dissector,
+    [0xce09] = flightrec_taskd_info_dissector,
+    [0xcdf6] = flightrec_rc_replay_dissector,
+    [0xcdf1] = flightrec_escm_dissector,
+    [0xcdf2] = flightrec_sweep_dissector,
+    [0x000e] = flightrec_mvo_dissector,
+    [0x0010] = flightrec_usonic_dissector,
+    [0xcdef] = flightrec_console_dissector,
+    [0xffff] = flightrec_syscfg_dissector,
+    [0x0011] = flightrec_battery_info_dissector,
+    [0x0017] = flightrec_special_cmd_dissector,
+    [0x003c] = flightrec_serial_api_inputs_dissector,
+    [0x0032] = flightrec_ctrl_vert_dissector,
+    [0x0033] = flightrec_ctrl_horiz_dissector,
+    [0x0034] = flightrec_ctrl_atti_dissector,
+    [0x0035] = flightrec_ctrl_ccpm_dissector,
+    [0x0036] = flightrec_ctrl_motor_dissector,
+    [0x0096] = flightrec_wp_curve_dissector,
+    [0x0012] = flightrec_smart_battery_info_dissector,
+    [0x0028] = flightrec_airport_limit_data_dissector,
+    [0x0029] = flightrec_fmu_device_run_time_dissector,
+    [0x002a] = flightrec_hp_data_dissector,
+    [0x002b] = flightrec_follow_me_data_dissector,
+    [0x0013] = flightrec_imu_data_status_dissector,
+    [0x0046] = flightrec_aircraft_condition_monitor_dissector,
+    [0x0050] = flightrec_aircraft_model_dissector,
+    [0x005a] = flightrec_go_home_info_dissector,
+    [0x001d] = flightrec_new_mvo_feedback_dissector,
+    [0x0064] = flightrec_svo_avoid_obstacle_dissector,
+    [0xcff1] = flightrec_rtkdata_dissector,
+    [0x006e] = flightrec_gear_debug_info_dissector,
+    [0x0066] = flightrec_svo_ctrl_debug_dissector,
+    [0x00a0] = flightrec_waypoint_debug_dissector,
 }
