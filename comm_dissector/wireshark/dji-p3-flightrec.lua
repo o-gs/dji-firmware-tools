@@ -585,9 +585,9 @@ f.rec_imu_ex_vo_py = ProtoField.float ("dji_p3.rec_imu_ex_vo_py", "Vo Py", base.
 f.rec_imu_ex_vo_pz = ProtoField.float ("dji_p3.rec_imu_ex_vo_pz", "Vo Pz", base.DEC)
 f.rec_imu_ex_us_v = ProtoField.float ("dji_p3.rec_imu_ex_us_v", "Us V", base.DEC)
 f.rec_imu_ex_us_p = ProtoField.float ("dji_p3.rec_imu_ex_us_p", "Us P", base.DEC)
-f.rec_imu_ex_rtk_longti = ProtoField.double ("dji_p3.rec_imu_ex_rtk_longti", "Rtk Longti", base.DEC)
-f.rec_imu_ex_rtk_lati = ProtoField.double ("dji_p3.rec_imu_ex_rtk_lati", "Rtk Lati", base.DEC)
-f.rec_imu_ex_rtk_alti = ProtoField.float ("dji_p3.rec_imu_ex_rtk_alti", "Rtk Alti", base.DEC)
+--f.rec_imu_ex_rtk_longti = ProtoField.double ("dji_p3.rec_imu_ex_rtk_longti", "Rtk Longti", base.DEC)
+--f.rec_imu_ex_rtk_lati = ProtoField.double ("dji_p3.rec_imu_ex_rtk_lati", "Rtk Lati", base.DEC)
+--f.rec_imu_ex_rtk_alti = ProtoField.float ("dji_p3.rec_imu_ex_rtk_alti", "Rtk Alti", base.DEC)
 f.rec_imu_ex_vo_flag_navi = ProtoField.uint16 ("dji_p3.rec_imu_ex_vo_flag_navi", "Vo Flag Navi", base.HEX)
   f.rec_imu_ex_e_vo_flag_navi_vo_vx = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_vo_vx", "E Vo Flag Navi Vo Vx", base.HEX, nil, 0x01, nil)
   f.rec_imu_ex_e_vo_flag_navi_vo_vy = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_vo_vy", "E Vo Flag Navi Vo Vy", base.HEX, nil, 0x02, nil)
@@ -605,7 +605,8 @@ f.rec_imu_ex_imu_err_flag = ProtoField.uint16 ("dji_p3.rec_imu_ex_imu_err_flag",
   f.rec_imu_ex_e_imu_err_us_fail = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_imu_err_us_fail", "E Imu Err Us Fail", base.HEX, nil, 0x10, nil)
   f.rec_imu_ex_e_imu_init_ok_flag = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_imu_init_ok_flag", "E Imu Init Ok Flag", base.HEX, nil, 0x20, nil)
 f.rec_imu_ex_vo_flag_rsv = ProtoField.uint16 ("dji_p3.rec_imu_ex_vo_flag_rsv", "Vo Flag Rsv", base.HEX)
-f.rec_imu_ex_imu_ex_cnt = ProtoField.uint16 ("dji_p3.rec_imu_ex_imu_ex_cnt", "Imu Ex Cnt", base.HEX)
+f.rec_imu_ex_imu_ex_cnt = ProtoField.uint16 ("dji_p3.rec_imu_ex_imu_ex_cnt", "Imu Ex Cnt", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
+f.rec_imu_ex_imu_ex_fld28 = ProtoField.uint16 ("dji_p3.rec_imu_ex_imu_ex_fld28", "Field28", base.HEX)
 
 local function flightrec_imu_ex_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -634,14 +635,14 @@ local function flightrec_imu_ex_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_imu_ex_us_p, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_imu_ex_rtk_longti, payload(offset, 8))
-    offset = offset + 8
+    --subtree:add_le (f.rec_imu_ex_rtk_longti, payload(offset, 8))
+    --offset = offset + 8
 
-    subtree:add_le (f.rec_imu_ex_rtk_lati, payload(offset, 8))
-    offset = offset + 8
+    --subtree:add_le (f.rec_imu_ex_rtk_lati, payload(offset, 8))
+    --offset = offset + 8
 
-    subtree:add_le (f.rec_imu_ex_rtk_alti, payload(offset, 4))
-    offset = offset + 4
+    --subtree:add_le (f.rec_imu_ex_rtk_alti, payload(offset, 4))
+    --offset = offset + 4
 
     subtree:add_le (f.rec_imu_ex_vo_flag_navi, payload(offset, 2))
     subtree:add_le (f.rec_imu_ex_e_vo_flag_navi_vo_vx, payload(offset, 2))
@@ -669,7 +670,10 @@ local function flightrec_imu_ex_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_imu_ex_imu_ex_cnt, payload(offset, 2))
     offset = offset + 2
 
-    if (offset ~= 60) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Ex: Offset does not match - internal inconsistency") end
+    subtree:add_le (f.rec_imu_ex_imu_ex_fld28, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 42) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Ex: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Ex: Payload size different than expected") end
 end
 
@@ -2172,9 +2176,10 @@ f.rec_imu_raw_gyro_z_unused = ProtoField.int16 ("dji_p3.rec_imu_raw_gyro_z_unuse
 f.rec_imu_raw_acc_x_unused = ProtoField.int16 ("dji_p3.rec_imu_raw_acc_x_unused", "Acc X Unused", base.DEC)
 f.rec_imu_raw_acc_y_unused = ProtoField.int16 ("dji_p3.rec_imu_raw_acc_y_unused", "Acc Y Unused", base.DEC)
 f.rec_imu_raw_acc_z_unused = ProtoField.int16 ("dji_p3.rec_imu_raw_acc_z_unused", "Acc Z Unused", base.DEC)
-f.rec_imu_raw_xxxxcnt = ProtoField.int16 ("dji_p3.rec_imu_raw_xxxxcnt", "Xxxxcnt", base.DEC)
-f.rec_imu_raw_xxbaro = ProtoField.int16 ("dji_p3.rec_imu_raw_xxbaro", "Xxbaro", base.DEC)
-f.rec_imu_raw_xxbaro_temp = ProtoField.int16 ("dji_p3.rec_imu_raw_xxbaro_temp", "Xxbaro Temp", base.DEC)
+f.rec_imu_raw_xxxxcnt = ProtoField.int32 ("dji_p3.rec_imu_raw_xxxxcnt", "Xxxxcnt", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
+--f.rec_imu_raw_xxxxcnt = ProtoField.int16 ("dji_p3.rec_imu_raw_xxxxcnt", "Xxxxcnt", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
+--f.rec_imu_raw_xxbaro = ProtoField.int16 ("dji_p3.rec_imu_raw_xxbaro", "Xxbaro", base.DEC)
+--f.rec_imu_raw_xxbaro_temp = ProtoField.int16 ("dji_p3.rec_imu_raw_xxbaro_temp", "Xxbaro Temp", base.DEC)
 
 local function flightrec_imu_raw_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -2215,16 +2220,16 @@ local function flightrec_imu_raw_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_imu_raw_acc_z_unused, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_imu_raw_xxxxcnt, payload(offset, 2))
-    offset = offset + 2
+    subtree:add_le (f.rec_imu_raw_xxxxcnt, payload(offset, 4))
+    offset = offset + 4
 
-    subtree:add_le (f.rec_imu_raw_xxbaro, payload(offset, 2))
-    offset = offset + 2
+    --subtree:add_le (f.rec_imu_raw_xxbaro, payload(offset, 2))
+    --offset = offset + 2
 
-    subtree:add_le (f.rec_imu_raw_xxbaro_temp, payload(offset, 2))
-    offset = offset + 2
+    --subtree:add_le (f.rec_imu_raw_xxbaro_temp, payload(offset, 2))
+    --offset = offset + 2
 
-    if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Raw: Offset does not match - internal inconsistency") end
+    if (offset ~= 28) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Raw: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Raw: Payload size different than expected") end
 end
 
@@ -2307,13 +2312,13 @@ end
 f.rec_osd_general_longtitude = ProtoField.double ("dji_p3.rec_osd_general_longtitude", "Longtitude", base.DEC)
 f.rec_osd_general_latitude = ProtoField.double ("dji_p3.rec_osd_general_latitude", "Latitude", base.DEC)
 f.rec_osd_general_relative_height = ProtoField.int16 ("dji_p3.rec_osd_general_relative_height", "Relative Height", base.DEC)
-f.rec_osd_general_vgx = ProtoField.int16 ("dji_p3.rec_osd_general_vgx", "Vgx", base.DEC, nil, nil, "0.1m/s,to ground")
+f.rec_osd_general_vgx = ProtoField.int16 ("dji_p3.rec_osd_general_vgx", "Vgx", base.DEC, nil, nil, "0.1m/s, to ground")
 f.rec_osd_general_vgy = ProtoField.int16 ("dji_p3.rec_osd_general_vgy", "Vgy", base.DEC)
 f.rec_osd_general_vgz = ProtoField.int16 ("dji_p3.rec_osd_general_vgz", "Vgz", base.DEC)
 f.rec_osd_general_pitch = ProtoField.int16 ("dji_p3.rec_osd_general_pitch", "Pitch", base.DEC, nil, nil, "0.1")
 f.rec_osd_general_roll = ProtoField.int16 ("dji_p3.rec_osd_general_roll", "Roll", base.DEC)
 f.rec_osd_general_yaw = ProtoField.int16 ("dji_p3.rec_osd_general_yaw", "Yaw", base.DEC)
-f.rec_osd_general_mode1 = ProtoField.uint8 ("dji_p3.rec_osd_general_mode1", "Mode1", base.HEX, nil, nil, "controller state1 ")
+f.rec_osd_general_mode1 = ProtoField.uint8 ("dji_p3.rec_osd_general_mode1", "Mode1", base.HEX, nil, nil, "controller state1")
 f.rec_osd_general_latest_cmd = ProtoField.uint8 ("dji_p3.rec_osd_general_latest_cmd", "Latest Cmd", base.HEX, nil, nil, "controller exccute lastest cmd")
 f.rec_osd_general_controller_state = ProtoField.uint32 ("dji_p3.rec_osd_general_controller_state", "Controller State", base.HEX)
   f.rec_osd_general_e_on_ground = ProtoField.uint32 ("dji_p3.rec_osd_general_e_on_ground", "E On Ground", base.HEX, nil, 0x02, nil)
@@ -2329,19 +2334,24 @@ f.rec_osd_general_controller_state = ProtoField.uint32 ("dji_p3.rec_osd_general_
   f.rec_osd_general_e_gps_used = ProtoField.uint32 ("dji_p3.rec_osd_general_e_gps_used", "E Gps Used", base.HEX, nil, 0x8000, nil)
   f.rec_osd_general_e_compass_over_range = ProtoField.uint32 ("dji_p3.rec_osd_general_e_compass_over_range", "E Compass Over Range", base.HEX, nil, 0x10000, nil)
   f.rec_osd_general_e_press_err = ProtoField.uint32 ("dji_p3.rec_osd_general_e_press_err", "E Press Err", base.HEX, nil, 0x4000000, nil)
-f.rec_osd_general_gps_nums = ProtoField.uint8 ("dji_p3.rec_osd_general_gps_nums", "Gps Nums", base.HEX)
+f.rec_osd_general_gps_nums = ProtoField.uint8 ("dji_p3.rec_osd_general_gps_nums", "Gps Nums", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
 f.rec_osd_general_gohome_landing_reason = ProtoField.uint8 ("dji_p3.rec_osd_general_gohome_landing_reason", "Gohome Landing Reason", base.HEX)
 f.rec_osd_general_start_fail_reason = ProtoField.uint8 ("dji_p3.rec_osd_general_start_fail_reason", "Start Fail Reason", base.HEX)
 f.rec_osd_general_controller_state_ext = ProtoField.uint8 ("dji_p3.rec_osd_general_controller_state_ext", "Controller State Ext", base.HEX)
   f.rec_osd_general_e_gps_state = ProtoField.uint8 ("dji_p3.rec_osd_general_e_gps_state", "E Gps State", base.HEX, nil, 0x0f, nil)
-f.rec_osd_general_rsvd2 = ProtoField.uint8 ("dji_p3.rec_osd_general_rsvd2", "Rsvd2", base.HEX)
+f.rec_osd_general_rsvd2 = ProtoField.uint8 ("dji_p3.rec_osd_general_rsvd2", "Reserved2", base.DEC, nil, nil, "Battery Remaining Capacity?")
 f.rec_osd_general_ultrasonic_height = ProtoField.uint8 ("dji_p3.rec_osd_general_ultrasonic_height", "Ultrasonic Height", base.HEX)
 f.rec_osd_general_motor_startup_time = ProtoField.uint16 ("dji_p3.rec_osd_general_motor_startup_time", "Motor Startup Time", base.HEX)
 f.rec_osd_general_motor_startup_times = ProtoField.uint8 ("dji_p3.rec_osd_general_motor_startup_times", "Motor Startup Times", base.HEX)
 f.rec_osd_general_bat_alarm1 = ProtoField.uint8 ("dji_p3.rec_osd_general_bat_alarm1", "Bat Alarm1", base.HEX)
+  f.rec_osd_general_bat_alarm1_ve = ProtoField.uint8 ("dji_p3.rec_osd_general_bat_alarm1_ve", "Alarm Level 1 Voltage", base.DEC, nil, 0x7F)
+  f.rec_osd_general_bat_alarm1_fn = ProtoField.uint8 ("dji_p3.rec_osd_general_bat_alarm1_fn", "Alarm Level 1 Function", base.DEC, nil, 0x80)
 f.rec_osd_general_bat_alarm2 = ProtoField.uint8 ("dji_p3.rec_osd_general_bat_alarm2", "Bat Alarm2", base.HEX)
+  f.rec_osd_general_bat_alarm2_ve = ProtoField.uint8 ("dji_p3.rec_osd_general_bat_alarm2_ve", "Alarm Level 2 Voltage", base.DEC, nil, 0x7F)
+  f.rec_osd_general_bat_alarm2_fn = ProtoField.uint8 ("dji_p3.rec_osd_general_bat_alarm2_fn", "Alarm Level 2 Function", base.DEC, nil, 0x80)
 f.rec_osd_general_version_match = ProtoField.uint8 ("dji_p3.rec_osd_general_version_match", "Version Match", base.HEX)
 f.rec_osd_general_product_type = ProtoField.uint8 ("dji_p3.rec_osd_general_product_type", "Product Type", base.HEX)
+f.rec_osd_general_fld31 = ProtoField.int8 ("dji_p3.rec_osd_general_fld31", "Field31", base.DEC)
 
 local function flightrec_osd_general_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -2421,9 +2431,13 @@ local function flightrec_osd_general_dissector(payload, pinfo, subtree)
     offset = offset + 1
 
     subtree:add_le (f.rec_osd_general_bat_alarm1, payload(offset, 1))
+    subtree:add_le (f.rec_osd_general_bat_alarm1_ve, payload(offset, 1))
+    subtree:add_le (f.rec_osd_general_bat_alarm1_fn, payload(offset, 1))
     offset = offset + 1
 
     subtree:add_le (f.rec_osd_general_bat_alarm2, payload(offset, 1))
+    subtree:add_le (f.rec_osd_general_bat_alarm2_ve, payload(offset, 1))
+    subtree:add_le (f.rec_osd_general_bat_alarm2_fn, payload(offset, 1))
     offset = offset + 1
 
     subtree:add_le (f.rec_osd_general_version_match, payload(offset, 1))
@@ -2432,7 +2446,10 @@ local function flightrec_osd_general_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_osd_general_product_type, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 49) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd General: Offset does not match - internal inconsistency") end
+    subtree:add_le (f.rec_osd_general_fld31, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 50) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd General: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd General: Payload size different than expected") end
 end
 
@@ -5400,28 +5417,28 @@ end
 
 -- Flight log - Battery Info - 0x0011
 
-f.rec_battery_info_design_capacity = ProtoField.uint16 ("dji_p3.rec_battery_info_design_capacity", "Design Capacity", base.HEX)
-f.rec_battery_info_full_charge_capacity = ProtoField.uint16 ("dji_p3.rec_battery_info_full_charge_capacity", "Full Charge Capacity", base.HEX)
-f.rec_battery_info_remaining_capacity = ProtoField.uint16 ("dji_p3.rec_battery_info_remaining_capacity", "Remaining Capacity", base.HEX)
-f.rec_battery_info_pack_voltage = ProtoField.uint16 ("dji_p3.rec_battery_info_pack_voltage", "Pack Voltage", base.HEX)
+f.rec_battery_info_design_capacity = ProtoField.uint16 ("dji_p3.rec_battery_info_design_capacity", "Design Capacity", base.DEC)
+f.rec_battery_info_full_charge_capacity = ProtoField.uint16 ("dji_p3.rec_battery_info_full_charge_capacity", "Full Charge Capacity", base.DEC)
+f.rec_battery_info_remaining_capacity = ProtoField.uint16 ("dji_p3.rec_battery_info_remaining_capacity", "Remaining Capacity", base.DEC)
+f.rec_battery_info_pack_voltage = ProtoField.uint16 ("dji_p3.rec_battery_info_pack_voltage", "Pack Voltage", base.DEC)
 f.rec_battery_info_current = ProtoField.int16 ("dji_p3.rec_battery_info_current", "Current", base.DEC)
-f.rec_battery_info_life_percentage = ProtoField.uint8 ("dji_p3.rec_battery_info_life_percentage", "Life Percentage", base.HEX)
-f.rec_battery_info_capacity_percentage = ProtoField.uint8 ("dji_p3.rec_battery_info_capacity_percentage", "Capacity Percentage", base.HEX)
+f.rec_battery_info_life_percentage = ProtoField.uint8 ("dji_p3.rec_battery_info_life_percentage", "Life Percentage", base.DEC)
+f.rec_battery_info_capacity_percentage = ProtoField.uint8 ("dji_p3.rec_battery_info_capacity_percentage", "Capacity Percentage", base.DEC)
 f.rec_battery_info_temperature = ProtoField.int16 ("dji_p3.rec_battery_info_temperature", "Temperature", base.DEC)
-f.rec_battery_info_cycle_count = ProtoField.uint16 ("dji_p3.rec_battery_info_cycle_count", "Cycle Count", base.HEX)
+f.rec_battery_info_cycle_count = ProtoField.uint16 ("dji_p3.rec_battery_info_cycle_count", "Cycle Count", base.DEC)
 f.rec_battery_info_serial_number = ProtoField.uint16 ("dji_p3.rec_battery_info_serial_number", "Serial Number", base.HEX)
-f.rec_battery_info_cell1 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell1", "Cell1", base.HEX)
-f.rec_battery_info_cell2 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell2", "Cell2", base.HEX)
-f.rec_battery_info_cell3 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell3", "Cell3", base.HEX)
-f.rec_battery_info_cell4 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell4", "Cell4", base.HEX)
-f.rec_battery_info_cell5 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell5", "Cell5", base.HEX)
-f.rec_battery_info_cell6 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell6", "Cell6", base.HEX)
+f.rec_battery_info_cell1 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell1", "Cell1 Voltage", base.DEC)
+f.rec_battery_info_cell2 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell2", "Cell2 Voltage", base.DEC)
+f.rec_battery_info_cell3 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell3", "Cell3 Voltage", base.DEC)
+f.rec_battery_info_cell4 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell4", "Cell4 Voltage", base.DEC)
+f.rec_battery_info_cell5 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell5", "Cell5 Voltage", base.DEC)
+f.rec_battery_info_cell6 = ProtoField.uint16 ("dji_p3.rec_battery_info_cell6", "Cell6 Voltage", base.DEC)
 f.rec_battery_info_average_current = ProtoField.int16 ("dji_p3.rec_battery_info_average_current", "Average Current", base.DEC)
 f.rec_battery_info_right = ProtoField.uint8 ("dji_p3.rec_battery_info_right", "Right", base.HEX)
-f.rec_battery_info_error_count = ProtoField.uint32 ("dji_p3.rec_battery_info_error_count", "Error Count", base.HEX)
-f.rec_battery_info_n_discharge_times = ProtoField.uint32 ("dji_p3.rec_battery_info_n_discharge_times", "N Discharge Times", base.HEX)
+f.rec_battery_info_error_count = ProtoField.uint32 ("dji_p3.rec_battery_info_error_count", "Error Count", base.DEC) -- possible that only lower 8 bits store error count
+f.rec_battery_info_n_discharge_times = ProtoField.uint32 ("dji_p3.rec_battery_info_n_discharge_times", "N Discharge Times", base.DEC)
 f.rec_battery_info_current_status = ProtoField.uint32 ("dji_p3.rec_battery_info_current_status", "Current Status", base.HEX)
-f.rec_battery_info_vol_main = ProtoField.uint16 ("dji_p3.rec_battery_info_vol_main", "Vol Main", base.HEX)
+--f.rec_battery_info_vol_main = ProtoField.uint16 ("dji_p3.rec_battery_info_vol_main", "Vol Main", base.HEX)
 
 local function flightrec_battery_info_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -5489,10 +5506,10 @@ local function flightrec_battery_info_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_battery_info_current_status, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_battery_info_vol_main, payload(offset, 2))
-    offset = offset + 2
+    --subtree:add_le (f.rec_battery_info_vol_main, payload(offset, 2))
+    --offset = offset + 2
 
-    if (offset ~= 47) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Info: Offset does not match - internal inconsistency") end
+    if (offset ~= 45) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Info: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Battery Info: Payload size different than expected") end
 end
 
