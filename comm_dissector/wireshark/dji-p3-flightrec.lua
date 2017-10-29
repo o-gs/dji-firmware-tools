@@ -2462,9 +2462,9 @@ end
 
 -- Flight log - Osd Home - 0x000d
 
-f.rec_osd_home_osd_lon = ProtoField.double ("dji_p3.rec_osd_home_osd_lon", "Osd Lon", base.DEC)
-f.rec_osd_home_osd_lat = ProtoField.double ("dji_p3.rec_osd_home_osd_lat", "Osd Lat", base.DEC)
-f.rec_osd_home_osd_alt = ProtoField.float ("dji_p3.rec_osd_home_osd_alt", "Osd Alt", base.DEC)
+f.rec_osd_home_osd_lon = ProtoField.double ("dji_p3.rec_osd_home_osd_lon", "Osd Lon", base.DEC) -- home point coords?
+f.rec_osd_home_osd_lat = ProtoField.double ("dji_p3.rec_osd_home_osd_lat", "Osd Lat", base.DEC) -- home point coords?
+f.rec_osd_home_osd_alt = ProtoField.float ("dji_p3.rec_osd_home_osd_alt", "Osd Alt", base.DEC, nil, nil, "0.1m, altitude")
 f.rec_osd_home_osd_home_state = ProtoField.uint16 ("dji_p3.rec_osd_home_osd_home_state", "Osd Home State", base.HEX)
   f.rec_osd_home_e_homepoint_set = ProtoField.uint16 ("dji_p3.rec_osd_home_e_homepoint_set", "E Homepoint Set", base.HEX, nil, 0x01, nil)
   f.rec_osd_home_e_method = ProtoField.uint16 ("dji_p3.rec_osd_home_e_method", "E Method", base.HEX, nil, 0x02, nil)
@@ -2474,6 +2474,12 @@ f.rec_osd_home_osd_home_state = ProtoField.uint16 ("dji_p3.rec_osd_home_osd_home
   f.rec_osd_home_e_ioc_enable = ProtoField.uint16 ("dji_p3.rec_osd_home_e_ioc_enable", "E Ioc Enable", base.HEX, nil, 0x1000, nil)
 f.rec_osd_home_fixed_altitedue = ProtoField.uint16 ("dji_p3.rec_osd_home_fixed_altitedue", "Fixed Altitedue", base.HEX)
 f.rec_osd_home_course_lock_torsion = ProtoField.int16 ("dji_p3.rec_osd_home_course_lock_torsion", "Course Lock Torsion", base.DEC)
+f.rec_osd_home_fld1a = ProtoField.int8 ("dji_p3.rec_osd_home_fld1a", "field1A", base.DEC)
+f.rec_osd_home_fld1b = ProtoField.int8 ("dji_p3.rec_osd_home_fld1b", "field1B", base.DEC)
+f.rec_osd_home_fld1c = ProtoField.int16 ("dji_p3.rec_osd_home_fld1c", "field1C", base.DEC)
+f.rec_osd_home_fld1e = ProtoField.int16 ("dji_p3.rec_osd_home_fld1e", "field1E", base.DEC)
+f.rec_osd_home_fld20 = ProtoField.int8 ("dji_p3.rec_osd_home_fld20", "field20", base.DEC)
+f.rec_osd_home_fld21 = ProtoField.int8 ("dji_p3.rec_osd_home_fld21", "field21", base.DEC) -- seem to not be filled
 
 local function flightrec_osd_home_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -2502,8 +2508,25 @@ local function flightrec_osd_home_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_osd_home_course_lock_torsion, payload(offset, 2))
     offset = offset + 2
 
-    --TODO update to size=34
-    if (offset ~= 26) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
+    subtree:add_le (f.rec_osd_home_fld1a, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_home_fld1b, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_home_fld1c, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_osd_home_fld1e, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_osd_home_fld20, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_osd_home_fld21, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Home: Payload size different than expected") end
 end
 
@@ -3183,21 +3206,30 @@ f.rec_temp_ctl_data_p = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_p", "P", bas
 f.rec_temp_ctl_data_i = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_i", "I", base.DEC)
 f.rec_temp_ctl_data_i_small = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_i_small", "I Small", base.DEC)
 f.rec_temp_ctl_data_d = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_d", "D", base.DEC)
-f.rec_temp_ctl_data_dl_err = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_dl_err", "Dl Err", base.DEC)
+f.rec_temp_ctl_data_dl_err = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_dl_err", "Dl Err", base.DEC, nil, nil, "difference in cur_dst_temp")
 f.rec_temp_ctl_data_err_last = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_err_last", "Err Last", base.DEC)
 f.rec_temp_ctl_data_out = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_out", "Out", base.DEC)
 f.rec_temp_ctl_data_kp = ProtoField.float ("dji_p3.rec_temp_ctl_data_kp", "Kp", base.DEC)
 f.rec_temp_ctl_data_ki = ProtoField.float ("dji_p3.rec_temp_ctl_data_ki", "Ki", base.DEC)
 f.rec_temp_ctl_data_kd = ProtoField.float ("dji_p3.rec_temp_ctl_data_kd", "Kd", base.DEC)
-f.rec_temp_ctl_data_ctl_out_value = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_ctl_out_value", "Ctl Out Value", base.HEX)
-f.rec_temp_ctl_data_real_ctl_out_value = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_real_ctl_out_value", "Real Ctl Out Value", base.HEX)
+f.rec_temp_ctl_data_ctl_out_value = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_ctl_out_value", "Ctl Out Value", base.DEC, nil, nil, "2000000 means 100%")
+f.rec_temp_ctl_data_real_ctl_out_value = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_real_ctl_out_value", "Real Ctl Out Value", base.DEC)
 f.rec_temp_ctl_data_dst_value = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_dst_value", "Dst Value", base.DEC)
 f.rec_temp_ctl_data_cur_dst_temp = ProtoField.int16 ("dji_p3.rec_temp_ctl_data_cur_dst_temp", "Cur Dst Temp", base.DEC)
-f.rec_temp_ctl_data_cnt = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_cnt", "Cnt", base.HEX)
-f.rec_temp_ctl_data_real_ctl_out_per = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_real_ctl_out_per", "Real Ctl Out Per", base.HEX)
-f.rec_temp_ctl_data_slope_type = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_slope_type", "Slope Type", base.HEX)
-f.rec_temp_ctl_data_temp_ctl_slope = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_temp_ctl_slope", "Temp Ctl Slope", base.HEX)
-f.rec_temp_ctl_data_t_finish = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_t_finish", "T Finish", base.HEX)
+-- The fields below do not match the implementation in m0306 firmware
+--f.rec_temp_ctl_data_cnt = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_cnt", "Cnt", base.DEC)
+--f.rec_temp_ctl_data_real_ctl_out_per = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_real_ctl_out_per", "Real Ctl Out Per", base.DEC, nil, nil, "real_ctl_out_value in percent")
+--f.rec_temp_ctl_data_slope_type = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_slope_type", "Slope Type", base.HEX)
+--f.rec_temp_ctl_data_temp_ctl_slope = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_temp_ctl_slope", "Temp Ctl Slope", base.HEX)
+--f.rec_temp_ctl_data_t_finish = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_t_finish", "T Finish", base.HEX)
+-- This is what flyc_param suggests here
+f.rec_temp_ctl_data_imu_fldc = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_imu_fldc", "imu_temp fldC", base.DEC, nil, nil, "Looks like this supposed to be a counter but never increases beyond 0")
+f.rec_temp_ctl_data_temp_ctl_slope = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_temp_ctl_slope", "Temp Ctl Slope", base.DEC, nil, nil, "Cummulative value of real_ctl_out_per over time")
+f.rec_temp_ctl_data_imu_fld14 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_imu_fld14", "imu_temp fld14", base.DEC, nil, nil, "Cummulative change in value of fld1c over time")
+f.rec_temp_ctl_data_imu_fld18 = ProtoField.float ("dji_p3.rec_temp_ctl_data_imu_fld18", "imu_temp fld18", base.DEC, nil, nil, "equal to temp_ctl_slope / fld14")
+f.rec_temp_ctl_data_imu_fld1c = ProtoField.uint16 ("dji_p3.rec_temp_ctl_data_imu_fld1c", "imu_temp fld1C", base.DEC, nil, nil, "unknown param * 100")
+f.rec_temp_ctl_data_real_ctl_out_per = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_real_ctl_out_per", "Real Ctl Out Per", base.DEC, nil, nil, "real_ctl_out_value in percent")
+f.rec_temp_ctl_data_imu_fld1f = ProtoField.uint8 ("dji_p3.rec_temp_ctl_data_imu_fld1f", "imu_temp fld1F", base.HEX)
 
 local function flightrec_temp_ctl_data_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -3232,7 +3264,7 @@ local function flightrec_temp_ctl_data_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_temp_ctl_data_kd, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_temp_ctl_data_ctl_out_value, payload(offset, 4))
+    subtree:add_le (f.rec_temp_ctl_data_ctl_out_value, payload(offset, 4)) -- offset 36
     offset = offset + 4
 
     subtree:add_le (f.rec_temp_ctl_data_real_ctl_out_value, payload(offset, 4))
@@ -3244,23 +3276,29 @@ local function flightrec_temp_ctl_data_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_temp_ctl_data_cur_dst_temp, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_temp_ctl_data_cnt, payload(offset, 4))
+    --subtree:add_le (f.rec_temp_ctl_data_cnt, payload(offset, 4))
+    subtree:add_le (f.rec_temp_ctl_data_imu_fldc, payload(offset, 4)) -- offset 48
     offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_temp_ctl_slope, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_imu_fld14, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_imu_fld18, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_temp_ctl_data_imu_fld1c, payload(offset, 2))
+    offset = offset + 2
 
     subtree:add_le (f.rec_temp_ctl_data_real_ctl_out_per, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_temp_ctl_data_slope_type, payload(offset, 1))
+    subtree:add_le (f.rec_temp_ctl_data_imu_fld1f, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_temp_ctl_data_temp_ctl_slope, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_temp_ctl_data_t_finish, payload(offset, 1))
-    offset = offset + 1
-
-    -- TODO update to size=68
-    if (offset ~= 56) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Ctl Data: Offset does not match - internal inconsistency") end
+    if (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Temp Ctl Data: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Temp Ctl Data: Payload size different than expected") end
 end
 
@@ -6117,6 +6155,25 @@ f.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_z = ProtoField.int16 ("dji_p3.r
 f.rec_ctrl_atti_horiz_ang_acc_output_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_output_x", "Horiz Ang Acc Output X", base.DEC)
 f.rec_ctrl_atti_horiz_ang_acc_output_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_output_y", "Horiz Ang Acc Output Y", base.DEC)
 f.rec_ctrl_atti_horiz_ang_acc_output_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_output_z", "Horiz Ang Acc Output Z", base.DEC)
+f.rec_ctrl_atti_horiz_fldc8 = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_fldc8", "FieldC8", base.HEX)
+f.rec_ctrl_atti_horiz_fldc9 = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_fldc9", "FieldC9", base.HEX)
+f.rec_ctrl_atti_horiz_fldca = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_fldca", "FieldCA", base.HEX)
+f.rec_ctrl_atti_horiz_fldcb = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldcb", "FieldCB", base.HEX)
+f.rec_ctrl_atti_horiz_fldcd = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldcd", "FieldCD", base.HEX)
+f.rec_ctrl_atti_horiz_fldcf = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldcf", "FieldCF", base.HEX)
+f.rec_ctrl_atti_horiz_fldd1 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldd1", "FieldD1", base.HEX)
+f.rec_ctrl_atti_horiz_fldd3 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldd3", "FieldD3", base.HEX)
+f.rec_ctrl_atti_horiz_fldd5 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldd5", "FieldD5", base.HEX)
+f.rec_ctrl_atti_horiz_fldd7 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldd7", "FieldD7", base.HEX)
+f.rec_ctrl_atti_horiz_fldd9 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldd9", "FieldD9", base.HEX)
+f.rec_ctrl_atti_horiz_flddb = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flddb", "FieldDB", base.HEX)
+f.rec_ctrl_atti_horiz_flddd = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flddd", "FieldDD", base.HEX)
+f.rec_ctrl_atti_horiz_flddf = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flddf", "FieldDF", base.HEX)
+f.rec_ctrl_atti_horiz_flde1 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flde1", "FieldE1", base.HEX)
+f.rec_ctrl_atti_horiz_flde3 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flde3", "FieldE3", base.HEX)
+f.rec_ctrl_atti_horiz_flde5 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flde5", "FieldE5", base.HEX)
+f.rec_ctrl_atti_horiz_flde7 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flde7", "FieldE7", base.HEX)
+f.rec_ctrl_atti_horiz_flde9 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flde9", "FieldE9", base.HEX)
 --f.rec_ctrl_atti_e_cmd_pitch = ProtoField.none ("dji_p3.rec_ctrl_atti_e_cmd_pitch", "E Cmd Pitch", base.NONE, nil, nil, "-asin_x(2*(horiz_atti_tgt_quat_1*horiz_atti_tgt_quat_3-horiz_atti_tgt_quat_0*horiz_atti_tgt_quat_2))/3.1415926*180")
 --f.rec_ctrl_atti_e_cmd_roll = ProtoField.none ("dji_p3.rec_ctrl_atti_e_cmd_roll", "E Cmd Roll", base.NONE, nil, nil, "atan2(2*(horiz_atti_tgt_quat_2*horiz_atti_tgt_quat_3+horiz_atti_tgt_quat_0*horiz_atti_tgt_quat_1),1-2*(horiz_atti_tgt_quat_1*horiz_atti_tgt_quat_1+horiz_atti_tgt_quat_2*horiz_atti_tgt_quat_2))/3.1415926*180")
 --f.rec_ctrl_atti_e_cmd_yaw = ProtoField.none ("dji_p3.rec_ctrl_atti_e_cmd_yaw", "E Cmd Yaw", base.NONE, nil, nil, "atan2(2*(horiz_atti_tgt_quat_1*horiz_atti_tgt_quat_2+horiz_atti_tgt_quat_0*horiz_atti_tgt_quat_3),1-2*(horiz_atti_tgt_quat_2*horiz_atti_tgt_quat_2+horiz_atti_tgt_quat_3*horiz_atti_tgt_quat_3))/3.1415926*180")
@@ -6157,7 +6214,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_tilt_y, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_body_tilt_x, payload(offset, 4))
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_body_tilt_x, payload(offset, 4)) -- offset = 22
     offset = offset + 4
 
     subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_body_tilt_y, payload(offset, 4))
@@ -6178,7 +6235,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_x, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_y, payload(offset, 4))
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_y, payload(offset, 4)) -- offset = 50
     offset = offset + 4
 
     subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_quat_0, payload(offset, 4))
@@ -6202,7 +6259,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_atti_feedback_quat_0, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_atti_feedback_quat_1, payload(offset, 4))
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_feedback_quat_1, payload(offset, 4)) -- offset = 82
     offset = offset + 4
 
     subtree:add_le (f.rec_ctrl_atti_horiz_atti_feedback_quat_2, payload(offset, 4))
@@ -6217,7 +6274,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_atti_err_tilt_x, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_atti_err_tilt_y, payload(offset, 4))
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_err_tilt_y, payload(offset, 4)) -- offset = 102
     offset = offset + 4
 
     subtree:add_le (f.rec_ctrl_atti_horiz_atti_err_torsion, payload(offset, 4))
@@ -6232,7 +6289,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_atti_output_z, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_status, payload(offset, 1))
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_status, payload(offset, 1)) -- offset = 122
     offset = offset + 1
 
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_cmd_id, payload(offset, 1))
@@ -6250,7 +6307,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_cmd_z, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_x, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_x, payload(offset, 2)) -- offset = 131
     offset = offset + 2
 
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_y, payload(offset, 2))
@@ -6277,7 +6334,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_feedback_d_z, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_output_x, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_output_x, payload(offset, 2)) -- offset = 149
     offset = offset + 2
 
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_output_y, payload(offset, 2))
@@ -6286,7 +6343,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_vel_output_z, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_status, payload(offset, 1))
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_status, payload(offset, 1)) -- offset = 155
     offset = offset + 1
 
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_cmd_id, payload(offset, 1))
@@ -6298,7 +6355,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_cmd_x, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_cmd_y, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_cmd_y, payload(offset, 2)) -- offset = 160
     offset = offset + 2
 
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_cmd_z, payload(offset, 2))
@@ -6358,8 +6415,64 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_output_z, payload(offset, 2))
     offset = offset + 2
 
-    -- TODO update to size=235
-    if (offset ~= 200) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Atti: Offset does not match - internal inconsistency") end
+    subtree:add_le (f.rec_ctrl_atti_horiz_fldc8, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_fldc9, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_fldca, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_fldcb, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_fldcd, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_fldcf, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_fldd1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_fldd3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_fldd5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_fldd7, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_fldd9, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_flddb, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_flddd, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_flddf, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_flde1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_flde3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_flde5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_flde7, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_atti_horiz_flde9, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 235) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Atti: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Atti: Payload size different than expected") end
 end
 
@@ -6599,6 +6712,10 @@ f.rec_smart_battery_info_g_filter_vol = ProtoField.float ("dji_p3.rec_smart_batt
 f.rec_smart_battery_info_g_filter_i = ProtoField.float ("dji_p3.rec_smart_battery_info_g_filter_i", "G Filter I", base.DEC)
 f.rec_smart_battery_info_g_evl_vol = ProtoField.float ("dji_p3.rec_smart_battery_info_g_evl_vol", "G Evl Vol", base.DEC)
 f.rec_smart_battery_info_g_delt_i = ProtoField.float ("dji_p3.rec_smart_battery_info_g_delt_i", "G Delt I", base.DEC)
+f.rec_smart_battery_info_fld70 = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_fld70", "Field70", base.HEX)
+f.rec_smart_battery_info_fld72 = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_fld72", "Field72", base.HEX)
+f.rec_smart_battery_info_vol_lv1_prot = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_vol_lv1_prot", "Voltage Level 1 Protect", base.DEC)
+f.rec_smart_battery_info_vol_lv2_prot = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_vol_lv2_prot", "Voltage Level 2 Protect", base.DEC)
 
 local function flightrec_smart_battery_info_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -6648,7 +6765,7 @@ local function flightrec_smart_battery_info_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_smart_battery_info_level2_low_temp, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_smart_battery_info_short_cir, payload(offset, 1))
+    subtree:add_le (f.rec_smart_battery_info_short_cir, payload(offset, 1)) -- offset 30
     offset = offset + 1
 
     subtree:add_le (f.rec_smart_battery_info_low_vol_cells, payload(offset, 1))
@@ -6678,7 +6795,7 @@ local function flightrec_smart_battery_info_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_smart_battery_info_flag_main_vol_low_gohome, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_smart_battery_info_flag_main_vol_low_land, payload(offset, 1))
+    subtree:add_le (f.rec_smart_battery_info_flag_main_vol_low_land, payload(offset, 1)) -- offset 40
     offset = offset + 1
 
     subtree:add_le (f.rec_smart_battery_info_flag_user_gohome, payload(offset, 1))
@@ -6702,7 +6819,7 @@ local function flightrec_smart_battery_info_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_smart_battery_info_real_desc_speed, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_smart_battery_info_flag_vol_very_low, payload(offset, 1))
+    subtree:add_le (f.rec_smart_battery_info_flag_vol_very_low, payload(offset, 1)) -- offset 51
     offset = offset + 1
 
     subtree:add_le (f.rec_smart_battery_info_flag_temp_and_vol_low, payload(offset, 1))
@@ -6720,11 +6837,22 @@ local function flightrec_smart_battery_info_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_smart_battery_info_g_evl_vol, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_smart_battery_info_g_delt_i, payload(offset, 4))
+    subtree:add_le (f.rec_smart_battery_info_g_delt_i, payload(offset, 4)) -- offset 66
     offset = offset + 4
 
-    -- TODO update to size=77
-    if (offset ~= 70) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Smart Battery Info: Offset does not match - internal inconsistency") end
+    subtree:add_le (f.rec_smart_battery_info_fld70, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_smart_battery_info_fld72, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_smart_battery_info_vol_lv1_prot, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_smart_battery_info_vol_lv2_prot, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 77) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Smart Battery Info: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Smart Battery Info: Payload size different than expected") end
 end
 
@@ -7820,7 +7948,7 @@ local function flightrec_waypoint_debug_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_waypoint_debug_wp_tgt_vel, payload(offset, 2))
     offset = offset + 2
 
-    -- TODO update to size=44
+    -- This struct is sometimes seen as size=44 or size=46; extend only if we know what we're doing
     if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Waypoint Debug: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Waypoint Debug: Payload size different than expected") end
 end
