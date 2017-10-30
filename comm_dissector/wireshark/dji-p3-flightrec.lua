@@ -744,7 +744,7 @@ f.rec_imu_atti_00_temp_y_00 = ProtoField.int16 ("dji_p3.rec_imu_atti_00_temp_y_0
 f.rec_imu_atti_00_temp_z_00 = ProtoField.int16 ("dji_p3.rec_imu_atti_00_temp_z_00", "Temp Z 00", base.DEC)
 f.rec_imu_atti_00_sensor_monitor_00 = ProtoField.uint16 ("dji_p3.rec_imu_atti_00_sensor_monitor_00", "Sensor Monitor 00", base.HEX)
 f.rec_imu_atti_00_filter_status_00 = ProtoField.uint16 ("dji_p3.rec_imu_atti_00_filter_status_00", "Filter Status 00", base.HEX)
-f.rec_imu_atti_00_svn_00 = ProtoField.uint16 ("dji_p3.rec_imu_atti_00_svn_00", "Svn 00", base.HEX)
+f.rec_imu_atti_00_svn_00 = ProtoField.uint16 ("dji_p3.rec_imu_atti_00_svn_00", "Svn 00", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
 f.rec_imu_atti_00_cnt_atti_00 = ProtoField.uint16 ("dji_p3.rec_imu_atti_00_cnt_atti_00", "Cnt Atti 00", base.HEX)
 --f.rec_imu_atti_00_e_mod_m_00 = ProtoField.none ("dji_p3.rec_imu_atti_00_e_mod_m_00", "E Mod M 00", base.NONE, nil, nil, "sqrt(m_x_00*m_x_00+m_y_00*m_y_00+m_z_00*m_z_00)")
 --f.rec_imu_atti_00_e_pitch_00 = ProtoField.none ("dji_p3.rec_imu_atti_00_e_pitch_00", "E Pitch 00", base.NONE, nil, nil, "-asin_x(2*(q1_00*q3_00-q0_00*q2_00))/3.1415926*180")
@@ -1011,7 +1011,7 @@ f.rec_imu_atti_01_temp_y_01 = ProtoField.int16 ("dji_p3.rec_imu_atti_01_temp_y_0
 f.rec_imu_atti_01_temp_z_01 = ProtoField.int16 ("dji_p3.rec_imu_atti_01_temp_z_01", "Temp Z 01", base.DEC)
 f.rec_imu_atti_01_sensor_monitor_01 = ProtoField.uint16 ("dji_p3.rec_imu_atti_01_sensor_monitor_01", "Sensor Monitor 01", base.HEX)
 f.rec_imu_atti_01_filter_status_01 = ProtoField.uint16 ("dji_p3.rec_imu_atti_01_filter_status_01", "Filter Status 01", base.HEX)
-f.rec_imu_atti_01_svn_01 = ProtoField.uint16 ("dji_p3.rec_imu_atti_01_svn_01", "Svn 01", base.HEX)
+f.rec_imu_atti_01_svn_01 = ProtoField.uint16 ("dji_p3.rec_imu_atti_01_svn_01", "Svn 01", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
 f.rec_imu_atti_01_cnt_atti_01 = ProtoField.uint16 ("dji_p3.rec_imu_atti_01_cnt_atti_01", "Cnt Atti 01", base.HEX)
 --f.rec_imu_atti_01_e_pitch_01 = ProtoField.none ("dji_p3.rec_imu_atti_01_e_pitch_01", "E Pitch 01", base.NONE, nil, nil, "-asin_x(2*(q1_01*q3_01-q0_01*q2_01))/3.1415926*180")
 --f.rec_imu_atti_01_e_roll_01 = ProtoField.none ("dji_p3.rec_imu_atti_01_e_roll_01", "E Roll 01", base.NONE, nil, nil, "atan2(2*(q2_01*q3_01+q0_01*q1_01),1-2*(q1_01*q1_01+q2_01*q2_01))/3.1415926*180")
@@ -1277,7 +1277,7 @@ f.rec_imu_atti_02_temp_y_02 = ProtoField.int16 ("dji_p3.rec_imu_atti_02_temp_y_0
 f.rec_imu_atti_02_temp_z_02 = ProtoField.int16 ("dji_p3.rec_imu_atti_02_temp_z_02", "Temp Z 02", base.DEC)
 f.rec_imu_atti_02_sensor_monitor_02 = ProtoField.uint16 ("dji_p3.rec_imu_atti_02_sensor_monitor_02", "Sensor Monitor 02", base.HEX)
 f.rec_imu_atti_02_filter_status_02 = ProtoField.uint16 ("dji_p3.rec_imu_atti_02_filter_status_02", "Filter Status 02", base.HEX)
-f.rec_imu_atti_02_svn_02 = ProtoField.uint16 ("dji_p3.rec_imu_atti_02_svn_02", "Svn 02", base.HEX)
+f.rec_imu_atti_02_svn_02 = ProtoField.uint16 ("dji_p3.rec_imu_atti_02_svn_02", "Svn 02", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
 f.rec_imu_atti_02_cnt_atti_02 = ProtoField.uint16 ("dji_p3.rec_imu_atti_02_cnt_atti_02", "Cnt Atti 02", base.HEX)
 --f.rec_imu_atti_02_e_pitch_02 = ProtoField.none ("dji_p3.rec_imu_atti_02_e_pitch_02", "E Pitch 02", base.NONE, nil, nil, "-asin_x(2*(q1_02*q3_02-q0_02*q2_02))/3.1415926*180")
 --f.rec_imu_atti_02_e_roll_02 = ProtoField.none ("dji_p3.rec_imu_atti_02_e_roll_02", "E Roll 02", base.NONE, nil, nil, "atan2(2*(q2_02*q3_02+q0_02*q1_02),1-2*(q1_02*q1_02+q2_02*q2_02))/3.1415926*180")
@@ -2139,7 +2139,7 @@ f.rec_imu_21100_gyro_z_21100 = ProtoField.int16 ("dji_p3.rec_imu_21100_gyro_z_21
 f.rec_imu_21100_acc_x_21100 = ProtoField.int16 ("dji_p3.rec_imu_21100_acc_x_21100", "Acc X 21100", base.DEC)
 f.rec_imu_21100_acc_y_21100 = ProtoField.int16 ("dji_p3.rec_imu_21100_acc_y_21100", "Acc Y 21100", base.DEC)
 f.rec_imu_21100_acc_z_21100 = ProtoField.int16 ("dji_p3.rec_imu_21100_acc_z_21100", "Acc Z 21100", base.DEC)
-f.rec_imu_21100_cnt_21100 = ProtoField.uint32 ("dji_p3.rec_imu_21100_cnt_21100", "Cnt 21100", base.HEX)
+f.rec_imu_21100_cnt_21100 = ProtoField.uint32 ("dji_p3.rec_imu_21100_cnt_21100", "Cnt 21100", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
 
 local function flightrec_imu_21100_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -2462,9 +2462,9 @@ end
 
 -- Flight log - Osd Home - 0x000d
 
-f.rec_osd_home_osd_lon = ProtoField.double ("dji_p3.rec_osd_home_osd_lon", "Osd Lon", base.DEC) -- home point coords?
-f.rec_osd_home_osd_lat = ProtoField.double ("dji_p3.rec_osd_home_osd_lat", "Osd Lat", base.DEC) -- home point coords?
-f.rec_osd_home_osd_alt = ProtoField.float ("dji_p3.rec_osd_home_osd_alt", "Osd Alt", base.DEC, nil, nil, "0.1m, altitude")
+f.rec_osd_home_osd_lon = ProtoField.double ("dji_p3.rec_osd_home_osd_lon", "Osd Longitude", base.DEC) -- home point coords?
+f.rec_osd_home_osd_lat = ProtoField.double ("dji_p3.rec_osd_home_osd_lat", "Osd Latitude", base.DEC) -- home point coords?
+f.rec_osd_home_osd_alt = ProtoField.float ("dji_p3.rec_osd_home_osd_alt", "Osd Altitude", base.DEC, nil, nil, "0.1m, altitude")
 f.rec_osd_home_osd_home_state = ProtoField.uint16 ("dji_p3.rec_osd_home_osd_home_state", "Osd Home State", base.HEX)
   f.rec_osd_home_e_homepoint_set = ProtoField.uint16 ("dji_p3.rec_osd_home_e_homepoint_set", "E Homepoint Set", base.HEX, nil, 0x01, nil)
   f.rec_osd_home_e_method = ProtoField.uint16 ("dji_p3.rec_osd_home_e_method", "E Method", base.HEX, nil, 0x02, nil)
@@ -3152,12 +3152,12 @@ end
 
 -- Flight log - Sensor Cfg Temp - 0x0009
 
-f.rec_sensor_cfg_temp_bias_gyrox = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_gyrox", "Bias Gyrox", base.DEC)
-f.rec_sensor_cfg_temp_bias_gyroy = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_gyroy", "Bias Gyroy", base.DEC)
-f.rec_sensor_cfg_temp_bias_gyroz = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_gyroz", "Bias Gyroz", base.DEC)
-f.rec_sensor_cfg_temp_bias_accx = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_accx", "Bias Accx", base.DEC)
-f.rec_sensor_cfg_temp_bias_accy = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_accy", "Bias Accy", base.DEC)
-f.rec_sensor_cfg_temp_bias_accz = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_accz", "Bias Accz", base.DEC)
+f.rec_sensor_cfg_temp_bias_gyrox = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_gyrox", "Bias Gyro X", base.DEC)
+f.rec_sensor_cfg_temp_bias_gyroy = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_gyroy", "Bias Gyro Y", base.DEC)
+f.rec_sensor_cfg_temp_bias_gyroz = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_gyroz", "Bias Gyro Z", base.DEC)
+f.rec_sensor_cfg_temp_bias_accx = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_accx", "Bias Acc X", base.DEC)
+f.rec_sensor_cfg_temp_bias_accy = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_accy", "Bias Acc Y", base.DEC)
+f.rec_sensor_cfg_temp_bias_accz = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_bias_accz", "Bias Acc Z", base.DEC)
 f.rec_sensor_cfg_temp_tw = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_tw", "Tw", base.DEC)
 f.rec_sensor_cfg_temp_ta = ProtoField.float ("dji_p3.rec_sensor_cfg_temp_ta", "Ta", base.DEC)
 f.rec_sensor_cfg_temp_fw = ProtoField.uint16 ("dji_p3.rec_sensor_cfg_temp_fw", "Fw", base.HEX)
@@ -3319,7 +3319,7 @@ f.rec_temp_ctl_data_00_ctl_out_value_00 = ProtoField.uint32 ("dji_p3.rec_temp_ct
 f.rec_temp_ctl_data_00_real_ctl_out_value_00 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_00_real_ctl_out_value_00", "Real Ctl Out Value 00", base.HEX)
 f.rec_temp_ctl_data_00_i_small_00 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_00_i_small_00", "I Small 00", base.DEC)
 f.rec_temp_ctl_data_00_out_00 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_00_out_00", "Out 00", base.DEC)
-f.rec_temp_ctl_data_00_cnt_00 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_00_cnt_00", "Cnt 00", base.HEX)
+f.rec_temp_ctl_data_00_cnt_00 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_00_cnt_00", "Cnt 00", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
 
 local function flightrec_temp_ctl_data_00_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -3393,7 +3393,7 @@ f.rec_temp_ctl_data_01_ctl_out_value_01 = ProtoField.uint32 ("dji_p3.rec_temp_ct
 f.rec_temp_ctl_data_01_real_ctl_out_value_01 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_01_real_ctl_out_value_01", "Real Ctl Out Value 01", base.HEX)
 f.rec_temp_ctl_data_01_i_small_01 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_01_i_small_01", "I Small 01", base.DEC)
 f.rec_temp_ctl_data_01_out_01 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_01_out_01", "Out 01", base.DEC)
-f.rec_temp_ctl_data_01_cnt_01 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_01_cnt_01", "Cnt 01", base.HEX)
+f.rec_temp_ctl_data_01_cnt_01 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_01_cnt_01", "Cnt 01", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
 
 local function flightrec_temp_ctl_data_01_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -3467,7 +3467,7 @@ f.rec_temp_ctl_data_02_ctl_out_value_02 = ProtoField.uint32 ("dji_p3.rec_temp_ct
 f.rec_temp_ctl_data_02_real_ctl_out_value_02 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_02_real_ctl_out_value_02", "Real Ctl Out Value 02", base.HEX)
 f.rec_temp_ctl_data_02_i_small_02 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_02_i_small_02", "I Small 02", base.DEC)
 f.rec_temp_ctl_data_02_out_02 = ProtoField.int32 ("dji_p3.rec_temp_ctl_data_02_out_02", "Out 02", base.DEC)
-f.rec_temp_ctl_data_02_cnt_02 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_02_cnt_02", "Cnt 02", base.HEX)
+f.rec_temp_ctl_data_02_cnt_02 = ProtoField.uint32 ("dji_p3.rec_temp_ctl_data_02_cnt_02", "Cnt 02", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
 
 local function flightrec_temp_ctl_data_02_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -3526,14 +3526,14 @@ end
 
 -- Flight log - Pwm Output - 0x0014
 
-f.rec_pwm_output_m1 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m1", "M1", base.HEX)
-f.rec_pwm_output_m2 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m2", "M2", base.HEX)
-f.rec_pwm_output_m3 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m3", "M3", base.HEX)
-f.rec_pwm_output_m4 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m4", "M4", base.HEX)
-f.rec_pwm_output_m5 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m5", "M5", base.HEX)
-f.rec_pwm_output_m6 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m6", "M6", base.HEX)
-f.rec_pwm_output_m7 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m7", "M7", base.HEX)
-f.rec_pwm_output_m8 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m8", "M8", base.HEX)
+f.rec_pwm_output_m1 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m1", "Motor 1", base.HEX)
+f.rec_pwm_output_m2 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m2", "Motor 2", base.HEX)
+f.rec_pwm_output_m3 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m3", "Motor 3", base.HEX)
+f.rec_pwm_output_m4 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m4", "Motor 4", base.HEX)
+f.rec_pwm_output_m5 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m5", "Motor 5", base.HEX)
+f.rec_pwm_output_m6 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m6", "Motor 6", base.HEX)
+f.rec_pwm_output_m7 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m7", "Motor 7", base.HEX)
+f.rec_pwm_output_m8 = ProtoField.uint16 ("dji_p3.rec_pwm_output_m8", "Motor 8", base.HEX)
 
 local function flightrec_pwm_output_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -4780,14 +4780,14 @@ end
 
 -- Flight log - Svo Debug - 0x0065
 
-f.rec_svo_debug_visiondebug1 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug1", "Visiondebug1", base.DEC)
-f.rec_svo_debug_visiondebug2 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug2", "Visiondebug2", base.DEC)
-f.rec_svo_debug_visiondebug3 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug3", "Visiondebug3", base.DEC)
-f.rec_svo_debug_visiondebug4 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug4", "Visiondebug4", base.DEC)
-f.rec_svo_debug_visiondebug5 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug5", "Visiondebug5", base.DEC)
-f.rec_svo_debug_visiondebug6 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug6", "Visiondebug6", base.DEC)
-f.rec_svo_debug_visiondebug7 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug7", "Visiondebug7", base.DEC)
-f.rec_svo_debug_visiondebug8 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug8", "Visiondebug8", base.DEC)
+f.rec_svo_debug_visiondebug1 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug1", "Vision Debug 1", base.DEC)
+f.rec_svo_debug_visiondebug2 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug2", "Vision Debug 2", base.DEC)
+f.rec_svo_debug_visiondebug3 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug3", "Vision Debug 3", base.DEC)
+f.rec_svo_debug_visiondebug4 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug4", "Vision Debug 4", base.DEC)
+f.rec_svo_debug_visiondebug5 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug5", "Vision Debug 5", base.DEC)
+f.rec_svo_debug_visiondebug6 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug6", "Vision Debug 6", base.DEC)
+f.rec_svo_debug_visiondebug7 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug7", "Vision Debug 7", base.DEC)
+f.rec_svo_debug_visiondebug8 = ProtoField.float ("dji_p3.rec_svo_debug_visiondebug8", "Vision Debug 8", base.DEC)
 --f.rec_svo_debug_e_led_atti = ProtoField.none ("dji_p3.rec_svo_debug_e_led_atti", "E Led Atti", base.NONE, nil, 0x03, "bitand(filter_status,3)")
 --f.rec_svo_debug_e_led_hori = ProtoField.none ("dji_p3.rec_svo_debug_e_led_hori", "E Led Hori", base.NONE, nil, 0x0c, "bitand(shift_r(filter_status,2),3)")
 --f.rec_svo_debug_e_led_vert = ProtoField.none ("dji_p3.rec_svo_debug_e_led_vert", "E Led Vert", base.NONE, nil, 0x30, "bitand(shift_r(filter_status,4),3)")
@@ -7511,27 +7511,27 @@ end
 
 -- Flight log - New Mvo Feedback - 0x001d
 
-f.rec_new_mvo_feedback_visionobservationcount = ProtoField.uint16 ("dji_p3.rec_new_mvo_feedback_visionobservationcount", "Visionobservationcount", base.HEX)
+f.rec_new_mvo_feedback_visionobservationcount = ProtoField.uint16 ("dji_p3.rec_new_mvo_feedback_visionobservationcount", "Vision Observation Count", base.HEX)
 f.rec_new_mvo_feedback_vel_x = ProtoField.int16 ("dji_p3.rec_new_mvo_feedback_vel_x", "Vel X", base.DEC)
 f.rec_new_mvo_feedback_vel_y = ProtoField.int16 ("dji_p3.rec_new_mvo_feedback_vel_y", "Vel Y", base.DEC)
 f.rec_new_mvo_feedback_vel_z = ProtoField.int16 ("dji_p3.rec_new_mvo_feedback_vel_z", "Vel Z", base.DEC)
 f.rec_new_mvo_feedback_pos_x = ProtoField.float ("dji_p3.rec_new_mvo_feedback_pos_x", "Pos X", base.DEC)
 f.rec_new_mvo_feedback_pos_y = ProtoField.float ("dji_p3.rec_new_mvo_feedback_pos_y", "Pos Y", base.DEC)
 f.rec_new_mvo_feedback_pos_z = ProtoField.float ("dji_p3.rec_new_mvo_feedback_pos_z", "Pos Z", base.DEC)
-f.rec_new_mvo_feedback_hoverpointuncertainty1 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty1", "Hoverpointuncertainty1", base.DEC)
-f.rec_new_mvo_feedback_hoverpointuncertainty2 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty2", "Hoverpointuncertainty2", base.DEC)
-f.rec_new_mvo_feedback_hoverpointuncertainty3 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty3", "Hoverpointuncertainty3", base.DEC)
-f.rec_new_mvo_feedback_hoverpointuncertainty4 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty4", "Hoverpointuncertainty4", base.DEC)
-f.rec_new_mvo_feedback_hoverpointuncertainty5 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty5", "Hoverpointuncertainty5", base.DEC)
-f.rec_new_mvo_feedback_hoverpointuncertainty6 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty6", "Hoverpointuncertainty6", base.DEC)
-f.rec_new_mvo_feedback_velocityuncertainty1 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty1", "Velocityuncertainty1", base.DEC)
-f.rec_new_mvo_feedback_velocityuncertainty2 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty2", "Velocityuncertainty2", base.DEC)
-f.rec_new_mvo_feedback_velocityuncertainty3 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty3", "Velocityuncertainty3", base.DEC)
-f.rec_new_mvo_feedback_velocityuncertainty4 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty4", "Velocityuncertainty4", base.DEC)
-f.rec_new_mvo_feedback_velocityuncertainty5 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty5", "Velocityuncertainty5", base.DEC)
-f.rec_new_mvo_feedback_velocityuncertainty6 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty6", "Velocityuncertainty6", base.DEC)
+f.rec_new_mvo_feedback_hoverpointuncertainty1 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty1", "Hover Point Uncertainty 1", base.DEC)
+f.rec_new_mvo_feedback_hoverpointuncertainty2 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty2", "Hover Point Uncertainty 2", base.DEC)
+f.rec_new_mvo_feedback_hoverpointuncertainty3 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty3", "Hover Point Uncertainty 3", base.DEC)
+f.rec_new_mvo_feedback_hoverpointuncertainty4 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty4", "Hover Point Uncertainty 4", base.DEC)
+f.rec_new_mvo_feedback_hoverpointuncertainty5 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty5", "Hover Point Uncertainty 5", base.DEC)
+f.rec_new_mvo_feedback_hoverpointuncertainty6 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_hoverpointuncertainty6", "Hover Point Uncertainty 6", base.DEC)
+f.rec_new_mvo_feedback_velocityuncertainty1 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty1", "Velocity Uncertainty 1", base.DEC)
+f.rec_new_mvo_feedback_velocityuncertainty2 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty2", "Velocity Uncertainty 2", base.DEC)
+f.rec_new_mvo_feedback_velocityuncertainty3 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty3", "Velocity Uncertainty 3", base.DEC)
+f.rec_new_mvo_feedback_velocityuncertainty4 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty4", "Velocity Uncertainty 4", base.DEC)
+f.rec_new_mvo_feedback_velocityuncertainty5 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty5", "Velocity Uncertainty 5", base.DEC)
+f.rec_new_mvo_feedback_velocityuncertainty6 = ProtoField.float ("dji_p3.rec_new_mvo_feedback_velocityuncertainty6", "Velocity Uncertainty 6", base.DEC)
 f.rec_new_mvo_feedback_height = ProtoField.float ("dji_p3.rec_new_mvo_feedback_height", "Height", base.DEC)
-f.rec_new_mvo_feedback_heightuncertainty = ProtoField.float ("dji_p3.rec_new_mvo_feedback_heightuncertainty", "Heightuncertainty", base.DEC)
+f.rec_new_mvo_feedback_heightuncertainty = ProtoField.float ("dji_p3.rec_new_mvo_feedback_heightuncertainty", "Height Uncertainty", base.DEC)
 f.rec_new_mvo_feedback_reserved1 = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_reserved1", "Reserved1", base.HEX)
   f.rec_new_mvo_feedback_e_new_mvo_px_flag = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_e_new_mvo_px_flag", "E New Mvo Px Flag", base.HEX, nil, 0x10, nil)
   f.rec_new_mvo_feedback_e_new_mvo_py_flag = ProtoField.uint8 ("dji_p3.rec_new_mvo_feedback_e_new_mvo_py_flag", "E New Mvo Py Flag", base.HEX, nil, 0x20, nil)
