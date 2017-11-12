@@ -155,6 +155,7 @@ class PcapFormatter(Formatter):
     def __init__(self, out):
         Formatter.__init__(self, out)
         self.userdlt = 0
+
     def write_header(self):
         self.out.write(struct.pack("=IHHiIII",
             0xa1b2c3d4,   # magic number
@@ -167,12 +168,13 @@ class PcapFormatter(Formatter):
         ))
         self.out.flush()
 
-    def write_packet(self, data):
-        now = datetime.datetime.now()
-        timestamp = int(time.mktime(now.timetuple()))
+    def write_packet(self, data, dtime=None):
+        if dtime is None:
+            dtime = datetime.datetime.now()
+        timestamp = int(time.mktime(dtime.timetuple()))
         self.out.write(struct.pack("=IIII",
             timestamp,        # timestamp seconds
-            now.microsecond,  # timestamp microseconds
+            dtime.microsecond, # timestamp microseconds
             len(data),        # number of octets of packet saved in file
             len(data),        # actual length of packet
         ))
@@ -183,7 +185,7 @@ class HumanFormatter(Formatter):
     def write_header(self):
         pass
 
-    def write_packet(self, data):
+    def write_packet(self, data, dtime=None):
         self.out.write(binascii.hexlify(data).decode())
         self.out.write("\n")
         self.out.flush()
