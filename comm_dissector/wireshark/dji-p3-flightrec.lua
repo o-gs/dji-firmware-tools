@@ -93,6 +93,7 @@ DJI_P3_FLIGHT_RECORD_ENTRY_TYPE = {
     [0x006e] = 'Gear Debug Info',
     [0x0066] = 'Svo Ctrl Debug',
     [0x00a0] = 'Waypoint Debug',
+    [0xa000] = 'Battery Unknown',
 }
 
 -- Flight log - Controller - 0x0000
@@ -416,7 +417,11 @@ f.rec_drv_log_text = ProtoField.string ("dji_p3.rec_drv_log_text", "Drv Log", ba
 local function flightrec_drv_log_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add (f.rec_drv_log_text, payload(offset, payload:len() - offset))
+    local rec_drv_log_text = payload(offset, payload:len() - offset)
+    subtree:add (f.rec_drv_log_text, rec_drv_log_text)
+
+    pinfo.cols.info = rec_drv_log_text:string():gsub('[^a-zA-Z0-9_:,./\\ \t-]','')
+
 end
 
 -- Flight log - Asr - 0x0073
@@ -596,7 +601,7 @@ f.rec_imu_ex_vo_flag_navi = ProtoField.uint16 ("dji_p3.rec_imu_ex_vo_flag_navi",
   f.rec_imu_ex_e_vo_flag_navi_vo_py = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_vo_py", "E Vo Flag Navi Vo Py", base.HEX, nil, 0x10, nil)
   f.rec_imu_ex_e_vo_flag_navi_vo_pz = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_vo_pz", "E Vo Flag Navi Vo Pz", base.HEX, nil, 0x20, nil)
   f.rec_imu_ex_e_vo_flag_navi_us_vz = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_us_vz", "E Vo Flag Navi Us Vz", base.HEX, nil, 0x40, nil)
-  f.rec_imu_ex_e_vo_flag_navi_us_pz = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_us_pz", "E Vo Flag Navi Us Pz", base.HEX, nil, 0x80, nil)
+  f.rec_imu_ex_e_vo_flag_navi_us_pz = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_vo_flag_navi_us_pz", "E Vo Flag Navi Us Pz", base.HEX, nil, 0x80, "Relative height flag; 0=Unavailable, 1=Available")
 f.rec_imu_ex_imu_err_flag = ProtoField.uint16 ("dji_p3.rec_imu_ex_imu_err_flag", "Imu Err Flag", base.HEX)
   f.rec_imu_ex_e_imu_err_vg_large = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_imu_err_vg_large", "E Imu Err Vg Large", base.HEX, nil, 0x01, nil)
   f.rec_imu_ex_e_imu_err_gps_yaw = ProtoField.uint16 ("dji_p3.rec_imu_ex_e_imu_err_gps_yaw", "E Imu Err Gps Yaw", base.HEX, nil, 0x02, nil)
@@ -867,7 +872,7 @@ f.rec_imu_ex_00_vo_px_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_vo_px_00", "V
 f.rec_imu_ex_00_vo_py_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_vo_py_00", "Vo Py 00", base.DEC)
 f.rec_imu_ex_00_vo_pz_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_vo_pz_00", "Vo Pz 00", base.DEC)
 f.rec_imu_ex_00_us_v_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_us_v_00", "Us V 00", base.DEC)
-f.rec_imu_ex_00_us_p_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_us_p_00", "Us P 00", base.DEC)
+f.rec_imu_ex_00_us_p_00 = ProtoField.float ("dji_p3.rec_imu_ex_00_us_p_00", "Us P 00", base.DEC, nil, nil, "Relative height; unit:m")
 f.rec_imu_ex_00_vo_flag_navi_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_vo_flag_navi_00", "Vo Flag Navi 00", base.HEX)
   f.rec_imu_ex_00_e_vo_flag_navi_vo_vx_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_vo_vx_00", "E Vo Flag Navi Vo Vx 00", base.HEX, nil, 0x01, nil)
   f.rec_imu_ex_00_e_vo_flag_navi_vo_vy_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_vo_vy_00", "E Vo Flag Navi Vo Vy 00", base.HEX, nil, 0x02, nil)
@@ -876,7 +881,7 @@ f.rec_imu_ex_00_vo_flag_navi_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_vo_fl
   f.rec_imu_ex_00_e_vo_flag_navi_vo_py_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_vo_py_00", "E Vo Flag Navi Vo Py 00", base.HEX, nil, 0x10, nil)
   f.rec_imu_ex_00_e_vo_flag_navi_vo_pz_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_vo_pz_00", "E Vo Flag Navi Vo Pz 00", base.HEX, nil, 0x20, nil)
   f.rec_imu_ex_00_e_vo_flag_navi_us_vz_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_us_vz_00", "E Vo Flag Navi Us Vz 00", base.HEX, nil, 0x40, nil)
-  f.rec_imu_ex_00_e_vo_flag_navi_us_pz_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_us_pz_00", "E Vo Flag Navi Us Pz 00", base.HEX, nil, 0x80, nil)
+  f.rec_imu_ex_00_e_vo_flag_navi_us_pz_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_vo_flag_navi_us_pz_00", "E Vo Flag Navi Us Pz 00", base.HEX, nil, 0x80, "Relative height flag; 0=Unavailable, 1=Available")
 f.rec_imu_ex_00_imu_err_flag_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_imu_err_flag_00", "Imu Err Flag 00", base.HEX)
   f.rec_imu_ex_00_e_imu_err_vg_large_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_imu_err_vg_large_00", "E Imu Err Vg Large 00", base.HEX, nil, 0x01, nil)
   f.rec_imu_ex_00_e_imu_err_gps_yaw_00 = ProtoField.uint16 ("dji_p3.rec_imu_ex_00_e_imu_err_gps_yaw_00", "E Imu Err Gps Yaw 00", base.HEX, nil, 0x02, nil)
@@ -2821,7 +2826,10 @@ f.rec_fly_log_text = ProtoField.string ("dji_p3.rec_fly_log_text", "Fly Log", ba
 local function flightrec_fly_log_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add (f.rec_fly_log_text, payload(offset, payload:len() - offset))
+    local rec_fly_log_text = payload(offset, payload:len() - offset)
+    subtree:add (f.rec_fly_log_text, rec_fly_log_text)
+
+    pinfo.cols.info = rec_fly_log_text:string():gsub('[^a-zA-Z0-9_:,./\\ \t-]','')
 end
 
 -- Flight log - Sd Logs - 0xff00
@@ -2831,7 +2839,10 @@ f.rec_sd_logs_text = ProtoField.string ("dji_p3.rec_sd_logs_text", "Sd Logs", ba
 local function flightrec_sd_logs_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add (f.rec_sd_logs_text, payload(offset, payload:len() - offset))
+    local rec_sd_logs_text = payload(offset, payload:len() - offset)
+    subtree:add (f.rec_sd_logs_text, rec_sd_logs_text)
+
+    pinfo.cols.info = rec_sd_logs_text:string():gsub('[^a-zA-Z0-9_:,./\\ \t-]','')
 end
 
 -- Flight log - Svn Info - 0xfffe
@@ -2841,7 +2852,10 @@ f.rec_svn_info_text = ProtoField.string ("dji_p3.rec_svn_info_text", "Svn Info",
 local function flightrec_svn_info_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add (f.rec_svn_info_text, payload(offset, payload:len() - offset))
+    local rec_svn_info_text = payload(offset, payload:len() - offset)
+    subtree:add (f.rec_svn_info_text, rec_svn_info_text)
+
+    pinfo.cols.info = rec_svn_info_text:string():gsub('[^a-zA-Z0-9_:,./\\ \t-]','')
 end
 
 -- Flight log - Imu Data - 0x0007
@@ -5376,7 +5390,7 @@ f.rec_mvo_mvo_cnt = ProtoField.uint8 ("dji_p3.rec_mvo_mvo_cnt", "Mvo Cnt", base.
 f.rec_mvo_mvo_flag = ProtoField.uint8 ("dji_p3.rec_mvo_mvo_flag", "Mvo Flag", base.HEX)
   f.rec_mvo_e_mvo_px_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_px_flag", "E Mvo Px Flag", base.HEX, nil, 0x10, nil)
   f.rec_mvo_e_mvo_py_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_py_flag", "E Mvo Py Flag", base.HEX, nil, 0x20, nil)
-  f.rec_mvo_e_mvo_pz_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_pz_flag", "E Mvo Pz Flag", base.HEX, nil, 0x40, nil)
+  f.rec_mvo_e_mvo_pz_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_pz_flag", "E Mvo Pz Flag", base.HEX, nil, 0x40, "Vision height valid flag; 0=not valid, 1=valid")
   f.rec_mvo_e_mvo_vx_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_vx_flag", "E Mvo Vx Flag", base.HEX, nil, 0x01, nil)
   f.rec_mvo_e_mvo_vy_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_vy_flag", "E Mvo Vy Flag", base.HEX, nil, 0x02, nil)
   f.rec_mvo_e_mvo_vz_flag = ProtoField.uint8 ("dji_p3.rec_mvo_e_mvo_vz_flag", "E Mvo Vz Flag", base.HEX, nil, 0x04, nil)
@@ -5420,13 +5434,14 @@ end
 
 -- Flight log - Usonic - 0x0010
 
-f.rec_usonic_usonic_h = ProtoField.int16 ("dji_p3.rec_usonic_usonic_h", "Usonic H", base.DEC)
+f.rec_usonic_usonic_h = ProtoField.int16 ("dji_p3.rec_usonic_usonic_h", "Usonic H", base.DEC, nil, nil, "Ultrasonic sensor measurement; unit:mm")
 f.rec_usonic_usonic_flag = ProtoField.uint8 ("dji_p3.rec_usonic_usonic_flag", "Usonic Flag", base.HEX)
-  f.rec_usonic_e_us_flag_old = ProtoField.uint8 ("dji_p3.rec_usonic_e_us_flag_old", "E Us Flag Old", base.HEX, nil, 0x01, nil)
+  f.rec_usonic_e_us_flag_old = ProtoField.uint8 ("dji_p3.rec_usonic_e_us_flag_old", "E Us Flag Old", base.HEX, nil, 0x01, "Ultrasonic sensor valid flag; 0=not valid, 1=valid")
 f.rec_usonic_usonic_cnt = ProtoField.uint8 ("dji_p3.rec_usonic_usonic_cnt", "Usonic Cnt", base.HEX)
 
 local function flightrec_usonic_dissector(payload, pinfo, subtree)
     local offset = 0
+    local info_str = ""
 
     subtree:add_le (f.rec_usonic_usonic_h, payload(offset, 2))
     offset = offset + 2
@@ -5435,8 +5450,11 @@ local function flightrec_usonic_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_usonic_e_us_flag_old, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_usonic_usonic_cnt, payload(offset, 1))
+    local rec_usonic_usonic_cnt = payload(offset, 1)
+    subtree:add_le (f.rec_usonic_usonic_cnt, rec_usonic_usonic_cnt)
     offset = offset + 1
+
+    --pinfo.cols.info = info_str
 
     if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Usonic: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Usonic: Payload size different than expected") end
@@ -5449,7 +5467,10 @@ f.rec_console_text = ProtoField.string ("dji_p3.rec_console_text", "Console", ba
 local function flightrec_console_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add (f.rec_console_text, payload(offset, payload:len() - offset))
+    local rec_console_text = payload(offset, payload:len() - offset)
+    subtree:add (f.rec_console_text, rec_console_text)
+
+    pinfo.cols.info = rec_console_text:string():gsub('[^a-zA-Z0-9_:,./\\ \t-]','')
 end
 
 -- Flight log - Syscfg - 0xffff
@@ -5459,7 +5480,10 @@ f.rec_syscfg_text = ProtoField.string ("dji_p3.rec_syscfg_text", "Syscfg", base.
 local function flightrec_syscfg_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add (f.rec_syscfg_text, payload(offset, payload:len() - offset))
+    local rec_syscfg_text = payload(offset, payload:len() - offset)
+    subtree:add (f.rec_syscfg_text, rec_syscfg_text)
+
+    pinfo.cols.info = rec_syscfg_text:string():gsub('[^a-zA-Z0-9_:,./\\ \t-]','')
 end
 
 -- Flight log - Battery Info - 0x0011
@@ -7637,10 +7661,10 @@ f.rec_svo_avoid_obstacle_svo_stop_flag = ProtoField.uint8 ("dji_p3.rec_svo_avoid
   f.rec_svo_avoid_obstacle_svo_stop_flag = ProtoField.uint8 ("dji_p3.rec_svo_avoid_obstacle_svo_stop_flag", "Svo Stop Flag", base.HEX, nil, 0x01, nil)
   f.rec_svo_avoid_obstacle_svo_work_flag = ProtoField.uint8 ("dji_p3.rec_svo_avoid_obstacle_svo_work_flag", "Svo Work Flag", base.HEX, nil, 0x02, nil)
   f.rec_svo_avoid_obstacle_svo_en_flag = ProtoField.uint8 ("dji_p3.rec_svo_avoid_obstacle_svo_en_flag", "Svo En Flag", base.HEX, nil, 0x04, nil)
-f.rec_svo_avoid_obstacle_svo_p_front = ProtoField.uint16 ("dji_p3.rec_svo_avoid_obstacle_svo_p_front", "Svo P Front", base.HEX)
-f.rec_svo_avoid_obstacle_svo_p_right = ProtoField.uint16 ("dji_p3.rec_svo_avoid_obstacle_svo_p_right", "Svo P Right", base.HEX)
-f.rec_svo_avoid_obstacle_svo_p_back = ProtoField.uint16 ("dji_p3.rec_svo_avoid_obstacle_svo_p_back", "Svo P Back", base.HEX)
-f.rec_svo_avoid_obstacle_svo_p_left = ProtoField.uint16 ("dji_p3.rec_svo_avoid_obstacle_svo_p_left", "Svo P Left", base.HEX)
+f.rec_svo_avoid_obstacle_svo_p_front = ProtoField.uint16 ("dji_p3.rec_svo_avoid_obstacle_svo_p_front", "Svo P Front", base.HEX, nil, nil, "Obstacle distance detected by front camera; unit:cm")
+f.rec_svo_avoid_obstacle_svo_p_right = ProtoField.uint16 ("dji_p3.rec_svo_avoid_obstacle_svo_p_right", "Svo P Right", base.HEX, nil, nil, "Obstacle distance detected by right camera; unit:cm")
+f.rec_svo_avoid_obstacle_svo_p_back = ProtoField.uint16 ("dji_p3.rec_svo_avoid_obstacle_svo_p_back", "Svo P Back", base.HEX, nil, nil, "Obstacle distance detected by back camera; unit:cm")
+f.rec_svo_avoid_obstacle_svo_p_left = ProtoField.uint16 ("dji_p3.rec_svo_avoid_obstacle_svo_p_left", "Svo P Left", base.HEX, nil, nil, "Obstacle distance detected by left camera; unit:cm")
 f.rec_svo_avoid_obstacle_svo_v_limit = ProtoField.uint8 ("dji_p3.rec_svo_avoid_obstacle_svo_v_limit", "Svo V Limit", base.HEX)
 f.rec_svo_avoid_obstacle_svo_cnt = ProtoField.uint8 ("dji_p3.rec_svo_avoid_obstacle_svo_cnt", "Svo Cnt", base.HEX)
 
@@ -7953,6 +7977,68 @@ local function flightrec_waypoint_debug_dissector(payload, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Waypoint Debug: Payload size different than expected") end
 end
 
+-- Flight log - Unknown - 0xa000
+
+f.rec_unkn_a000_field0 = ProtoField.float ("dji_p3.rec_unkn_a000_field0", "Field 0", base.HEX)
+f.rec_unkn_a000_field4 = ProtoField.float ("dji_p3.rec_unkn_a000_field4", "Field 4", base.HEX)
+f.rec_unkn_a000_field8 = ProtoField.float ("dji_p3.rec_unkn_a000_field8", "Field 8", base.HEX)
+f.rec_unkn_a000_fieldC = ProtoField.float ("dji_p3.rec_unkn_a000_fieldC", "Field C", base.HEX)
+f.rec_unkn_a000_field10 = ProtoField.float ("dji_p3.rec_unkn_a000_field10", "Field 10", base.HEX)
+f.rec_unkn_a000_field14 = ProtoField.float ("dji_p3.rec_unkn_a000_field14", "Field 14", base.HEX)
+f.rec_unkn_a000_field18 = ProtoField.float ("dji_p3.rec_unkn_a000_field18", "Field 18", base.HEX)
+f.rec_unkn_a000_field1C = ProtoField.float ("dji_p3.rec_unkn_a000_field1C", "Field 1C", base.HEX)
+f.rec_unkn_a000_field20 = ProtoField.float ("dji_p3.rec_unkn_a000_field20", "Field 20", base.HEX)
+f.rec_unkn_a000_field24 = ProtoField.float ("dji_p3.rec_unkn_a000_field24", "Field 24", base.HEX)
+f.rec_unkn_a000_field28 = ProtoField.float ("dji_p3.rec_unkn_a000_field28", "Field 28", base.HEX)
+f.rec_unkn_a000_field2C = ProtoField.float ("dji_p3.rec_unkn_a000_field2C", "Field 2C", base.HEX)
+f.rec_unkn_a000_field30 = ProtoField.uint8 ("dji_p3.rec_unkn_a000_field30", "Field 30", base.HEX)
+
+local function flightrec_unkn_a000_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_unkn_a000_field0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn_a000_field4, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn_a000_field8, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn_a000_fieldC, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn_a000_field10, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn_a000_field14, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn_a000_field18, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn_a000_field1C, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn_a000_field20, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn_a000_field24, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn_a000_field28, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn_a000_field2C, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_unkn_a000_field30, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 49) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Unknown a000: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Unknown a000: Payload size different than expected") end
+end
+
 DJI_P3_FLIGHT_RECORD_DISSECT = {
     [0x0000] = flightrec_controller_dissector,
     [0x07cf] = flightrec_ofdm_cnt_dissector,
@@ -8046,4 +8132,5 @@ DJI_P3_FLIGHT_RECORD_DISSECT = {
     [0x006e] = flightrec_gear_debug_info_dissector,
     [0x0066] = flightrec_svo_ctrl_debug_dissector,
     [0x00a0] = flightrec_waypoint_debug_dissector,
+    [0xa000] = flightrec_unkn_a000_dissector,
 }
