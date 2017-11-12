@@ -63,6 +63,8 @@ if [ ! -b "/dev/mtd0" ]; then
   echo "${IMAGE}: Loading module to create mtd0"
   # size of created mtd is 256.0 MiB
   #modprobe nandsim first_id_byte=0x2c second_id_byte=0xda third_id_byte=0x90 fourth_id_byte=0x95
+  # size of created mtd is 128.0 MiB
+  #modprobe nandsim first_id_byte=0xec second_id_byte=0xd3 third_id_byte=0x51 fourth_id_byte=0x95
   # size of created mtd is 64MiB-2048
   modprobe nandsim first_id_byte=0x20 second_id_byte=0xa2 third_id_byte=0x00 fourth_id_byte=0x15
 else
