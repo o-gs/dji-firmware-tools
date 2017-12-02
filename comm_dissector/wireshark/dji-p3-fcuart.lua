@@ -66,10 +66,11 @@ DJI_P3_FLIGHT_CONTROL_UART_CMD_SET = {
 
 -- CMD name decode tables
 local GENERAL_CMDS = {
-    [0x01] = 'Inquiry', 
-    [0x07] = 'TBD', 
+    [0x01] = 'Inquiry',
+    [0x07] = 'TBD',
     [0x0B] = 'REBOOT',
     [0x0C] = 'TBD',
+    [0x0E] = 'Message', -- It looks lik it was supposed to transmit text messages, but is always empty
     [0x32] = 'TBD',
     [0xF1] = 'Component State', -- The component is identified by sender field
 }
@@ -88,7 +89,6 @@ local FLIGHT_CTRL_CMDS = {
     [0x2F] = 'Set Alarm',
     [0x30] = 'Get Alarm',
     [0x31] = 'Set Home Point',   --AC/RC/APP
-    [0x39] = 'TBD',
     [0x33] = 'Set User String',
     [0x34] = 'Get User String',
     [0x39] = 'TBD',
@@ -97,20 +97,22 @@ local FLIGHT_CTRL_CMDS = {
     [0x3C] = 'Get RC Lost Action',
     [0x3D] = 'Set Timezone',
     [0x3F] = 'TBD',     --Data transfer
-    [0x41] = 'TBD',     
+    [0x41] = 'TBD',
     [0x43] = 'Osd General',
+    [0x44] = 'Osd Home',
     [0x46] = 'TBD',
     [0x47] = 'Toggle Whitelist',
+    [0x50] = 'Imu Data Status',
     [0x51] = 'TBD',
     [0x52] = 'TBD',
     [0x53] = 'TBD',
     [0x60] = 'SVO API Transfer',
     [0x62] = 'TBD',
-    [0x64] = 'TBD',     
+    [0x64] = 'TBD',
     [0x70] = 'TBD',     --Some licensing string check
     [0x71] = 'TBD',     --Some licensing string check
-    [0x74] = 'Get Serial Number',  
-    [0x75] = 'Write EEPROM FC0',  
+    [0x74] = 'Get Serial Number',
+    [0x75] = 'Write EEPROM FC0',
     [0x76] = 'Read EEPROM FC0',
     [0x80] = 'TBD',
     [0x82] = 'Set Mission Length',
@@ -264,7 +266,7 @@ local SPECIAL_DISSECT = {
 local CAMERA_DISSECT = {
 }
 
--- Flight Controller - Osd General - 0x0043, identical to flight recorder packet 0x000c
+-- Flight Controller - Osd General - 0x43, identical to flight recorder packet 0x000c
 f.flyc_osd_general_longtitude = ProtoField.double ("dji_p3.flyc_osd_general_longtitude", "Longtitude", base.DEC)
 f.flyc_osd_general_latitude = ProtoField.double ("dji_p3.flyc_osd_general_latitude", "Latitude", base.DEC)
 f.flyc_osd_general_relative_height = ProtoField.int16 ("dji_p3.flyc_osd_general_relative_height", "Relative Height", base.DEC, nil, nil, "0.1m, altitude to ground")
@@ -413,8 +415,102 @@ local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo,
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd General: Payload size different than expected") end
 end
 
+-- Flight Controller - Osd Home - 0x44, identical to flight recorder packet 0x000d
+
+f.flyc_osd_home_osd_lon = ProtoField.double ("dji_p3.flyc_osd_home_osd_lon", "Osd Longitude", base.DEC) -- home point coords?
+f.flyc_osd_home_osd_lat = ProtoField.double ("dji_p3.flyc_osd_home_osd_lat", "Osd Latitude", base.DEC) -- home point coords?
+f.flyc_osd_home_osd_alt = ProtoField.float ("dji_p3.flyc_osd_home_osd_alt", "Osd Altitude", base.DEC, nil, nil, "0.1m, altitude")
+f.flyc_osd_home_osd_home_state = ProtoField.uint16 ("dji_p3.flyc_osd_home_osd_home_state", "Osd Home State", base.HEX)
+  f.flyc_osd_home_e_homepoint_set = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_homepoint_set", "E Homepoint Set", base.HEX, nil, 0x01, nil)
+  f.flyc_osd_home_e_method = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_method", "E Method", base.HEX, nil, 0x02, nil)
+  f.flyc_osd_home_e_heading = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_heading", "E Heading", base.HEX, nil, 0x04, nil)
+  f.flyc_osd_home_e_is_dyn_homepoint = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_is_dyn_homepoint", "E Is Dyn Homepoint", base.HEX, nil, 0x08, nil)
+  f.flyc_osd_home_e_multiple = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_multiple", "E Multiple", base.HEX, nil, 0x40, nil)
+  f.flyc_osd_home_e_ioc_enable = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_ioc_enable", "E Ioc Enable", base.HEX, nil, 0x1000, nil)
+f.flyc_osd_home_fixed_altitedue = ProtoField.uint16 ("dji_p3.flyc_osd_home_fixed_altitedue", "Fixed Altitedue", base.HEX)
+f.flyc_osd_home_course_lock_torsion = ProtoField.int16 ("dji_p3.flyc_osd_home_course_lock_torsion", "Course Lock Torsion", base.DEC)
+f.flyc_osd_home_fld1a = ProtoField.int8 ("dji_p3.flyc_osd_home_fld1a", "field1A", base.DEC)
+f.flyc_osd_home_fld1b = ProtoField.int8 ("dji_p3.flyc_osd_home_fld1b", "field1B", base.DEC)
+f.flyc_osd_home_fld1c = ProtoField.int16 ("dji_p3.flyc_osd_home_fld1c", "field1C", base.DEC)
+f.flyc_osd_home_fld1e = ProtoField.int16 ("dji_p3.flyc_osd_home_fld1e", "field1E", base.DEC)
+f.flyc_osd_home_fld20 = ProtoField.int8 ("dji_p3.flyc_osd_home_fld20", "field20", base.DEC)
+f.flyc_osd_home_fld21 = ProtoField.int8 ("dji_p3.flyc_osd_home_fld21", "field21", base.DEC) -- seem to not be filled
+
+local function main_flight_ctrl_osd_home_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_osd_home_osd_lon, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.flyc_osd_home_osd_lat, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.flyc_osd_home_osd_alt, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_osd_home_osd_home_state, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_homepoint_set, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_method, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_heading, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_is_dyn_homepoint, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_multiple, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_ioc_enable, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_osd_home_fixed_altitedue, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_osd_home_course_lock_torsion, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_osd_home_fld1a, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_osd_home_fld1b, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_osd_home_fld1c, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_osd_home_fld1e, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_osd_home_fld20, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_osd_home_fld21, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Home: Payload size different than expected") end
+end
+
+-- Flight Controller - Imu Data Status - 0x50, identical to flight recorder packet 0x0013
+
+f.flyc_imu_data_status_start_fan = ProtoField.uint8 ("dji_p3.flyc_imu_data_status_start_fan", "Start Fan", base.HEX, nil, nil, "On Ph3, always 1")
+f.flyc_imu_data_status_led_status = ProtoField.uint8 ("dji_p3.flyc_imu_data_status_led_status", "Led Status", base.HEX, nil, nil, "On Ph3, always 0")
+
+local function main_flight_ctrl_imu_data_status_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_imu_data_status_start_fan, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_imu_data_status_led_status, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Data Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Data Status: Payload size different than expected") end
+end
+
 local FLIGHT_CTRL_DISSECT = {
     [0x43] = main_flight_ctrl_osd_general_dissector,
+    [0x44] = main_flight_ctrl_osd_home_dissector,
+    [0x50] = main_flight_ctrl_imu_data_status_dissector,
 }
 
 local GIMBAL_DISSECT = {

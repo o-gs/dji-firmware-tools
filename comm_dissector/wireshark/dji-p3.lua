@@ -53,14 +53,6 @@ local function set_info(cmd, pinfo, valuestring)
     end
 end
 
--- Sets text of a subtree which ProtoType had no valuestring like it had a valuestring
-local function set_valuestring(cmd, subtree, valuestring)
-    if valuestring[cmd] ~= nil then
-        local subtree_name = string.match(subtree.text, "(.*):")
-        subtree:set_text(string.format("%s: %s (0x%02X)", subtree_name, valuestring[cmd], cmd));
-    end
-end
-
 local function bytearray_to_string(bytes)
   s = {}
   for i = 0, bytes:len() - 1 do
@@ -164,10 +156,10 @@ local function main_dissector(buffer, pinfo, subtree)
         subtree:add (f.cmdset, buffer(offset, 1))
         offset = offset + 1
 
-        -- [A] Cmd
+        -- [A] Cmd (has variable valuestring)
         local cmd = buffer(offset,1):uint()
-        local cmd_tree = subtree:add (f.cmd, buffer(offset, 1))
-        set_valuestring(cmd, cmd_tree, DJI_P3_FLIGHT_CONTROL_UART_CMD_TYPE[cmdset])
+        local valuestring = DJI_P3_FLIGHT_CONTROL_UART_CMD_TYPE[cmdset] or {}
+        subtree:add (f.cmd, buffer(offset, 1), cmd, string.format("%s: %s (0x%02X)", "Cmd", valuestring[cmd] or "Unknown", cmd))
         offset = offset + 1
 
         set_info(cmd, pinfo, DJI_P3_FLIGHT_CONTROL_UART_CMD_TYPE[cmdset])
@@ -200,14 +192,16 @@ end
 
 
 -- Top level battery dissector
-local BATTERY_CMDS = {      [0x21] = 'Get Battery Type',
-                                                [0x22] = 'Get Battery Status',
-                                                [0x23] = 'DRM ?',
-                                                [0x24] = 'DRM ?',
-                                                [0x25] = 'Get Battery Warning Flags',
-                                                [0x31] = 'Get Battery Settings',
-                                                [0x34] = 'Unknown',
-                                                [0x38] = 'Get Battery Barcode'  }
+local BATTERY_CMDS = {
+    [0x21] = 'Get Battery Type',
+    [0x22] = 'Get Battery Status',
+    [0x23] = 'DRM ?',
+    [0x24] = 'DRM ?',
+    [0x25] = 'Get Battery Warning Flags',
+    [0x31] = 'Get Battery Settings',
+    [0x34] = 'Unknown',
+    [0x38] = 'Get Battery Barcode',
+}
 
 
 -- [1]  Length of Pkt 
