@@ -1,66 +1,14 @@
 -- Create a new dissector
 DJI_MAVIC_PROTO = Proto ("dji_mavic", "DJI_MAVIC","Dji Mavic DUPC / UART protocol")
 
-local SRC_DEST = {  [0] = 'Invalid',
-                    [1] = 'Camera',
-                    [2] = 'App',
-                    [3] = 'Flight Controller',
-                    [4] = 'Gimbal',
-                    [5] = 'Center Board',
-                    [6] = 'Remote Control',
-                    [7] = 'Wi-Fi air side',
-                    [8] = 'DM36x transcoder air side',
-                    [9] = 'HD transmission MCU air side',
-                    [10] = 'PC',
-                    [11] = 'Battery',
-                    [12] = 'ESC',
-                    [13] = 'DM36x transcoder gnd side',
-                    [14] = 'HD transmission MCU gnd side',
-                    [15] = 'Serial-to-parallel (USB ctrl.) air side',
-                    [16] = 'Serial-to-parallel (USB ctrl.) gnd side',
-                    [17] = 'Monocular',
-                    [18] = 'Binocular',
-                    [19] = 'HD transmission FPGA air side',
-                    [20] = 'HD transmission FPGA gnd side',
-                    [21] = 'Simulator',
-                    [22] = 'Base Station',
-                    [23] = 'Airborne computing platform',
-                    [24] = 'RC battery',
-                    [25] = 'IMU',
-                    [26] = 'GPS/RTK',
-                    [27] = 'Wi-Fi gnd side',
-                    [28] = 'Sig_cvt',
-                    [29] = 'PMU',
-                    [30] = 'Unknown',
-                    [31] = 'Last'   }
+-- Add Packets dissectors
 
-local ENCRYPT_TYPE = {[0]='None',
-                    [2]='SeqHash2' }
-
-local ACK_POLL = {  [0]="RSP",[1]="CMD",[2]="CMD",[3]="????"}
-
-local CMD_SET = {   [0] = 'General',
-                    [1] = 'Special',
-                    [2] = 'Camera',
-                    [3] = 'Flight Control',
-                    [4] = 'Gimbal',
-                    [5] = 'Center Board',
-                    [6] = 'Remote Control',
-                    [7] = 'Wi-Fi',
-                    [8] = 'DM36x',
-                    [9] = 'HD Link',
-                    [10] = 'Mono/Binocular',
-                    [11] = 'Simulator',
-                    [12] = 'ESC',
-                    [13] = 'Battery',
-                    [14] = 'Data Logger',
-                    [15] = 'RTK',
-                    [16] = 'Automation' }
-
--- Add Flight Record Packets dissectors
 dofile('dji-mavic-flightrec.lua')
 
+dofile('dji-mavic-fcuart.lua')
+
 local f = DJI_MAVIC_PROTO.fields
+
 -- [0]  Start of Pkt, always 0x55
 f.delimiter = ProtoField.uint8 ("dji_mavic.delimiter", "Delimiter", base.HEX)
 -- [1]  Length of Pkt 
@@ -77,36 +25,33 @@ f.rec_etype = ProtoField.uint16 ("dji_mavic.rec_etype", "Log Entry Type", base.H
 -- [6-9]  Sequence Ctr
 f.rec_seqctr = ProtoField.uint16 ("dji_mavic.rec_seqctr", "Seq Counter", base.DEC)
 
--- Fields for ProtoVer = 1
+-- Fields for ProtoVer = 1 (UART communication)
 
 -- [4]  Sender
-f.sender = ProtoField.uint8 ("dji_mavic.sender", "Sender", base.DEC, SRC_DEST, 0x1F)
+f.sender = ProtoField.uint8 ("dji_mavic.sender", "Sender", base.DEC, DJI_MAVIC_FLIGHT_CONTROL_UART_SRC_DEST, 0x1F)
 -- [5]  Receiver
-f.receiver = ProtoField.uint8 ("dji_mavic.receiver", "Receiver", base.DEC, SRC_DEST, 0x1F)
+f.receiver = ProtoField.uint8 ("dji_mavic.receiver", "Receiver", base.DEC, DJI_MAVIC_FLIGHT_CONTROL_UART_SRC_DEST, 0x1F)
 -- [6-7]  Sequence Ctr
 f.seqctr = ProtoField.uint16 ("dji_mavic.seqctr", "Seq Counter", base.DEC)
 -- [8] Encryption
-f.encrypt = ProtoField.uint8 ("dji_mavic.encrypt", "Encryption Type", base.DEC, ENCRYPT_TYPE, 0x0F)
+f.encrypt = ProtoField.uint8 ("dji_mavic.encrypt", "Encryption Type", base.DEC, DJI_MAVIC_FLIGHT_CONTROL_UART_ENCRYPT_TYPE, 0x0F)
 -- [8] Ack (to be improved)
-f.ack = ProtoField.uint8 ("dji_mavic.ack", "Ack", base.HEX, ACK_POLL, 0x60)
+f.ack = ProtoField.uint8 ("dji_mavic.ack", "Ack", base.HEX, DJI_MAVIC_FLIGHT_CONTROL_UART_ACK_POLL, 0x60)
 -- [9] Cmd Set
-f.cmdset = ProtoField.uint8('dji_mavic.cmdset', 'Cmd Set', base.DEC, CMD_SET, 0xFF)
-
+f.cmdset = ProtoField.uint8("dji_mavic.cmdset", "Cmd Set", base.DEC, DJI_MAVIC_FLIGHT_CONTROL_UART_CMD_SET, 0xFF)
 -- [A] Cmd
-f.cmd       = ProtoField.uint8('dji_mavic.cmd',      'Cmd',          base.HEX)
-
+f.cmd = ProtoField.uint8("dji_mavic.cmd", "Cmd", base.HEX)
 -- [B] Payload (optional)
 f.payload = ProtoField.bytes ("dji_mavic.payload", "Payload", base.SPACE)
-
 -- [B+Payload] CRC
 f.crc = ProtoField.uint16 ("dji_mavic.crc", "CRC", base.HEX)
 
-local function set_info(cmd, pinfo, decodes)
+local function set_info(cmd, pinfo, valuestring)
     pinfo.cols.info = ""
-    if decodes[cmd] == nil then
-        pinfo.cols.info:append(string.format("Unknown [0x%02X]", cmd))
+    if valuestring[cmd] == nil then
+        pinfo.cols.info:append(string.format("%s (0x%02X)", "Unknown", cmd))
     else
-        pinfo.cols.info:append(decodes[cmd])
+        pinfo.cols.info:append(valuestring[cmd])
     end
 end
 
@@ -179,9 +124,7 @@ local function main_dissector(buffer, pinfo, subtree)
             local payload_tvb = ByteArray.tvb(payload_buf, "Payload")
 
             -- If we have a dissector for this kind of command, run it
-            local dissector = nil
-
-            dissector = DJI_MAVIC_FLIGHT_RECORD_DISSECT[etype]
+            local dissector = DJI_MAVIC_FLIGHT_RECORD_DISSECT[etype]
 
             if dissector ~= nil then
                 dissector(payload_tvb, pinfo, payload_tree)
@@ -213,12 +156,13 @@ local function main_dissector(buffer, pinfo, subtree)
         subtree:add (f.cmdset, buffer(offset, 1))
         offset = offset + 1
 
-        set_info(buffer(offset,1):uint(), pinfo, CMD_CMD_SET[cmdset])
-
-        -- [A] Cmd
+        -- [A] Cmd (has variable valuestring)
         local cmd = buffer(offset,1):uint()
-        subtree:add (f.cmd, buffer(offset, 1))
+        local valuestring = DJI_MAVIC_FLIGHT_CONTROL_UART_CMD_TYPE[cmdset] or {}
+        subtree:add (f.cmd, buffer(offset, 1), cmd, string.format("%s: %s (0x%02X)", "Cmd", valuestring[cmd] or "Unknown", cmd))
         offset = offset + 1
+
+        set_info(cmd, pinfo, DJI_MAVIC_FLIGHT_CONTROL_UART_CMD_TYPE[cmdset])
 
         assert(offset == 11, "Offset shifted - dissector internal inconsistency")
 
@@ -227,7 +171,8 @@ local function main_dissector(buffer, pinfo, subtree)
             payload_tree = subtree:add(f.payload, buffer(offset, pkt_length - offset - 2))
 
             -- If we have a dissector for this kind of command, run it
-            local dissector = nil
+            local dissector_group = DJI_MAVIC_FLIGHT_CONTROL_UART_DISSECT[cmdset] or {}
+            local dissector = dissector_group[cmd]
 
             if dissector ~= nil then
                 dissector(pkt_length, buffer, pinfo, payload_tree)
@@ -253,7 +198,9 @@ function DJI_MAVIC_PROTO.dissector (buffer, pinfo, tree)
     subtree:add (f.delimiter, buffer(offset, 1))
     offset = offset + 1
 
-    main_dissector(buffer, pinfo, subtree)
+    if pkt_type == 0x55 then
+        main_dissector(buffer, pinfo, subtree)
+    end
     
 end
 
