@@ -225,8 +225,12 @@ f.general_compn_state_current_state = ProtoField.uint32 ("dji_p3.general_compn_s
   -- Component state packet flags for OFDM
   f.general_compn_state_ofdm_curr_state_fpga_boot = ProtoField.uint32 ("dji_p3.general_compn_state_ofdm_curr_state_fpga_boot", "E FPGA Boot error", base.HEX, nil, 0x01, "Error in FPGA boot state, final state not reached")
   f.general_compn_state_ofdm_curr_state_fpga_conf = ProtoField.uint32 ("dji_p3.general_compn_state_ofdm_curr_state_fpga_conf", "E FPGA Config error", base.HEX, nil, 0x02, nil)
+  f.general_compn_state_ofdm_curr_state_exec_fail1 = ProtoField.uint32 ("dji_p3.general_compn_state_ofdm_curr_state_exec_fail1", "E Exec fail 1", base.HEX, nil, 0x04, "Meaning uncertain")
+  f.general_compn_state_ofdm_curr_state_exec_fail2 = ProtoField.uint32 ("dji_p3.general_compn_state_ofdm_curr_state_exec_fail2", "E Exec fail 2", base.HEX, nil, 0x08, "Meaning uncertain")
   f.general_compn_state_ofdm_curr_state_ver_match = ProtoField.uint32 ("dji_p3.general_compn_state_ofdm_curr_state_ver_match", "E RC vs OFDM version mismatch?", base.HEX, nil, 0x20, "Meaning uncertain")
   f.general_compn_state_ofdm_curr_state_tcx_reg = ProtoField.uint32 ("dji_p3.general_compn_state_ofdm_curr_state_tcx_reg", "E Transciever Register error", base.HEX, nil, 0x40, "Error in either ad9363 reg 0x17 or ar8003 reg 0x7C")
+  f.general_compn_state_ofdm_curr_state_rx_bad_crc = ProtoField.uint32 ("dji_p3.general_compn_state_ofdm_curr_state_rx_bad_crc", "E Received data CRC fail", base.HEX, nil, 0x400, "Meaning uncertain")
+  f.general_compn_state_ofdm_curr_state_rx_bad_seq = ProtoField.uint32 ("dji_p3.general_compn_state_ofdm_curr_state_rx_bad_seq", "E Received data sequence fail", base.HEX, nil, 0x800, "Meaning uncertain")
 
 local function main_general_compn_state_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 4
@@ -238,8 +242,12 @@ local function main_general_compn_state_dissector(pkt_length, buffer, pinfo, sub
     if sender == 0x09 then
         subtree:add_le (f.general_compn_state_ofdm_curr_state_fpga_boot, buffer(offset, 4))
         subtree:add_le (f.general_compn_state_ofdm_curr_state_fpga_conf, buffer(offset, 4))
+        subtree:add_le (f.general_compn_state_ofdm_curr_state_exec_fail1, buffer(offset, 4))
+        subtree:add_le (f.general_compn_state_ofdm_curr_state_exec_fail2, buffer(offset, 4))
         subtree:add_le (f.general_compn_state_ofdm_curr_state_ver_match, buffer(offset, 4))
         subtree:add_le (f.general_compn_state_ofdm_curr_state_tcx_reg, buffer(offset, 4))
+        subtree:add_le (f.general_compn_state_ofdm_curr_state_rx_bad_crc, buffer(offset, 4))
+        subtree:add_le (f.general_compn_state_ofdm_curr_state_rx_bad_seq, buffer(offset, 4))
     else
     end
     offset = offset + 4
