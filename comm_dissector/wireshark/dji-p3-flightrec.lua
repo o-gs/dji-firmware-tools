@@ -420,7 +420,7 @@ local function flightrec_drv_log_dissector(payload, pinfo, subtree)
     local rec_drv_log_text = payload(offset, payload:len() - offset)
     subtree:add (f.rec_drv_log_text, rec_drv_log_text)
 
-    pinfo.cols.info = rec_drv_log_text:string():gsub('[^a-zA-Z0-9_:,./\\ \t-]','')
+    pinfo.cols.info = rec_drv_log_text:string():gsub('[^a-zA-Z0-9_:,.[[]]/\\ \t-]','')
 
 end
 
@@ -2881,7 +2881,7 @@ local function flightrec_fly_log_dissector(payload, pinfo, subtree)
     local rec_fly_log_text = payload(offset, payload:len() - offset)
     subtree:add (f.rec_fly_log_text, rec_fly_log_text)
 
-    pinfo.cols.info = rec_fly_log_text:string():gsub('[^a-zA-Z0-9_:,./\\ \t-]','')
+    pinfo.cols.info = rec_fly_log_text:string():gsub('[^a-zA-Z0-9_:,.[[]]/\\ \t-]','')
 end
 
 -- Flight log - Sd Logs - 0xff00
@@ -2894,7 +2894,7 @@ local function flightrec_sd_logs_dissector(payload, pinfo, subtree)
     local rec_sd_logs_text = payload(offset, payload:len() - offset)
     subtree:add (f.rec_sd_logs_text, rec_sd_logs_text)
 
-    pinfo.cols.info = rec_sd_logs_text:string():gsub('[^a-zA-Z0-9_:,./\\ \t-]','')
+    pinfo.cols.info = rec_sd_logs_text:string():gsub('[^a-zA-Z0-9_:,.[[]]/\\ \t-]','')
 end
 
 -- Flight log - Svn Info - 0xfffe
@@ -2907,7 +2907,7 @@ local function flightrec_svn_info_dissector(payload, pinfo, subtree)
     local rec_svn_info_text = payload(offset, payload:len() - offset)
     subtree:add (f.rec_svn_info_text, rec_svn_info_text)
 
-    pinfo.cols.info = rec_svn_info_text:string():gsub('[^a-zA-Z0-9_:,./\\ \t-]','')
+    pinfo.cols.info = rec_svn_info_text:string():gsub('[^a-zA-Z0-9_:,.[[]]/\\ \t-]','')
 end
 
 -- Flight log - Imu Data - 0x0007
@@ -5522,7 +5522,7 @@ local function flightrec_console_dissector(payload, pinfo, subtree)
     local rec_console_text = payload(offset, payload:len() - offset)
     subtree:add (f.rec_console_text, rec_console_text)
 
-    pinfo.cols.info = rec_console_text:string():gsub('[^a-zA-Z0-9_:,./\\ \t-]','')
+    pinfo.cols.info = rec_console_text:string():gsub('[^a-zA-Z0-9_:,.[[]]/\\ \t-]','')
 end
 
 -- Flight log - Syscfg - 0xffff
@@ -5535,7 +5535,7 @@ local function flightrec_syscfg_dissector(payload, pinfo, subtree)
     local rec_syscfg_text = payload(offset, payload:len() - offset)
     subtree:add (f.rec_syscfg_text, rec_syscfg_text)
 
-    pinfo.cols.info = rec_syscfg_text:string():gsub('[^a-zA-Z0-9_:,./\\ \t-]','')
+    pinfo.cols.info = rec_syscfg_text:string():gsub('[^a-zA-Z0-9_:,.[[]]/\\ \t-]','')
 end
 
 -- Flight log - Battery Info - 0x0011
