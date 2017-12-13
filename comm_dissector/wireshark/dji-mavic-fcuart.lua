@@ -67,6 +67,8 @@ DJI_MAVIC_FLIGHT_CONTROL_UART_CMD_SET = {
 -- CMD name decode tables
 
 local GENERAL_CMDS = {
+    [0x32] = 'Activation Action',
+    [0x4a] = 'Set Date/Time',
 }
 
 local SPECIAL_CMDS = {
@@ -137,7 +139,78 @@ DJI_MAVIC_FLIGHT_CONTROL_UART_CMD_TYPE = {
     [16] = AUTO_CMDS,
 }
 
+-- Activation Action packet
+f.general_activation_actn_action = ProtoField.uint8 ("dji_mavic.general_activation_actn_action", "Action", base.HEX)
+f.general_activation_actn_state = ProtoField.uint8 ("dji_mavic.general_activation_actn_state", "State", base.HEX)
+f.general_activation_actn_year = ProtoField.uint16 ("dji_mavic.general_activation_actn_year", "Year", base.DEC)
+f.general_activation_actn_month = ProtoField.uint8 ("dji_mavic.general_activation_actn_month", "Month", base.DEC)
+f.general_activation_actn_day = ProtoField.uint8 ("dji_mavic.general_activation_actn_day", "Day", base.DEC)
+f.general_activation_actn_hour = ProtoField.uint8 ("dji_mavic.general_activation_actn_hour", "Hour", base.DEC)
+f.general_activation_actn_min = ProtoField.uint8 ("dji_mavic.general_activation_actn_min", "Minute", base.DEC)
+f.general_activation_actn_sec = ProtoField.uint8 ("dji_mavic.general_activation_actn_sec", "Second", base.DEC)
+f.general_activation_actn_ts = ProtoField.bytes ("dji_mavic.general_activation_actn_ts", "Timestamp", base.NONE)
+f.general_activation_actn_mc_serial_len = ProtoField.uint8 ("dji_mavic.general_activation_actn_mc_serial_len", "MC Serial length", base.DEC)
+f.general_activation_actn_mc_serial = ProtoField.string ("dji_mavic.general_activation_actn_mc_serial", "MC Serial", base.ASCII)
+
+local function main_general_activation_actn_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.general_activation_actn_action, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.general_activation_actn_state, payload(offset, 1))
+    offset = offset + 1
+
+    -- Instead of a series of ints, let's use a single timestamp field
+
+    local ts_year = payload(offset, 2):le_uint()
+    if (ts_year < 1970) then
+        subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Activation Action: Year in timestamp is out of acceptable range")
+        ts_year = 1970
+    end
+    --subtree:add_le (f.general_activation_actn_year, payload(offset, 2))
+    offset = offset + 2
+
+    local ts_month = payload(offset, 1):le_uint()
+    --subtree:add_le (f.general_activation_actn_month, payload(offset, 1))
+    offset = offset + 1
+
+    local ts_day = payload(offset, 1):le_uint()
+    --subtree:add_le (f.general_activation_actn_day, payload(offset, 1))
+    offset = offset + 1
+
+    local ts_hour = payload(offset, 1):le_uint()
+    --subtree:add_le (f.general_activation_actn_hour, payload(offset, 1))
+    offset = offset + 1
+
+    local ts_min = payload(offset, 1):le_uint()
+    --subtree:add_le (f.general_activation_actn_min, payload(offset, 1))
+    offset = offset + 1
+
+    local ts_sec = payload(offset, 1):le_uint()
+    --subtree:add_le (f.general_activation_actn_sec, payload(offset, 1))
+    offset = offset + 1
+
+    local ts_offs = os.time() - os.time(os.date("!*t"))
+    local timestamp_val = os.time({day=ts_day,month=ts_month,year=ts_year,hour=ts_hour,min=ts_min,sec=ts_sec}) + ts_offs
+    subtree:add (f.general_activation_actn_ts, payload(offset-7, 7), timestamp_val, os.date('Timestamp: %Y-%m-%d %H:%M:%S', timestamp_val))
+
+
+    local mc_serial_len = payload(offset,1):uint()
+    subtree:add_le (f.general_activation_actn_mc_serial_len, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add (f.general_activation_actn_mc_serial, payload(offset, mc_serial_len))
+    offset = offset + mc_serial_len
+
+    if (offset ~= 10 + mc_serial_len) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Activation Action: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Activation Action: Payload size different than expected") end
+end
+
 local GENERAL_DISSECT = {
+    [0x32] = main_general_activation_actn_dissector,
 }
 
 local SPECIAL_DISSECT = {
