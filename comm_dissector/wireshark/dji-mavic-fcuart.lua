@@ -166,10 +166,6 @@ local function main_general_activation_actn_dissector(pkt_length, buffer, pinfo,
     -- Instead of a series of ints, let's use a single timestamp field
 
     local ts_year = payload(offset, 2):le_uint()
-    if (ts_year < 1970) then
-        subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Activation Action: Year in timestamp is out of acceptable range")
-        ts_year = 1970
-    end
     --subtree:add_le (f.general_activation_actn_year, payload(offset, 2))
     offset = offset + 2
 
@@ -193,10 +189,8 @@ local function main_general_activation_actn_dissector(pkt_length, buffer, pinfo,
     --subtree:add_le (f.general_activation_actn_sec, payload(offset, 1))
     offset = offset + 1
 
-    local ts_offs = os.time() - os.time(os.date("!*t"))
-    local timestamp_val = os.time({day=ts_day,month=ts_month,year=ts_year,hour=ts_hour,min=ts_min,sec=ts_sec}) + ts_offs
-    subtree:add (f.general_activation_actn_ts, payload(offset-7, 7), timestamp_val, os.date('Timestamp: %Y-%m-%d %H:%M:%S', timestamp_val))
-
+    local timestamp_str = string.format("Timestamp: %d-%02d-%02d %02d:%02d:%02d", ts_year, ts_month, ts_day, ts_hour, ts_min, ts_sec)
+    subtree:add (f.general_activation_actn_ts, payload(offset-7, 7), 0, timestamp_str)
 
     local mc_serial_len = payload(offset,1):uint()
     subtree:add_le (f.general_activation_actn_mc_serial_len, payload(offset, 1))
