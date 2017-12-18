@@ -156,8 +156,8 @@ local FLIGHT_CTRL_CMDS = {
 }
 
 local GIMBAL_CMDS = {
-    [0x05] = 'TBD',
-    [0x1C] = 'Set Gimbal type',
+    [0x05] = 'Gimbal Position',
+    [0x1C] = 'Gimbal Type',
 }
 
 local CENTER_BRD_CMDS = {
@@ -513,7 +513,50 @@ local FLIGHT_CTRL_DISSECT = {
     [0x50] = main_flight_ctrl_imu_data_status_dissector,
 }
 
+-- Gimbal - Gimbal Type - 0x1C
+
+f.gimbal_gimbal_type_id = ProtoField.uint8 ("dji_p3.gimbal_gimbal_type_id", "Type ID", base.HEX)
+
+local function main_gimbal_gimbal_type_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.gimbal_gimbal_type_id, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set Gimbal Type: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set Gimbal Type: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Position - 0x05
+
+f.gimbal_gimbal_position_pitch = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_pitch", "Gimbal Pitch", base.DEC, nil, nil, "0.1, gimbal angular position")
+f.gimbal_gimbal_position_roll = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_roll", "Gimbal Roll", base.DEC, nil, nil, "0.1, gimbal angular position")
+f.gimbal_gimbal_position_yaw = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_yaw", "Gimbal Yaw", base.DEC, nil, nil, "0.1, gimbal angular position")
+
+local function main_gimbal_gimbal_position_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.gimbal_gimbal_position_pitch, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_gimbal_position_roll, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_gimbal_position_yaw, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Position: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Position: Payload size different than expected") end
+end
+
+
 local GIMBAL_DISSECT = {
+    [0x05] = main_gimbal_gimbal_position_dissector,
+    [0x1C] = main_gimbal_gimbal_type_dissector,
 }
 
 local CENTER_BRD_DISSECT = {
