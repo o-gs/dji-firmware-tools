@@ -237,19 +237,20 @@ f.general_compn_state_current_state = ProtoField.uint32 ("dji_p3.general_compn_s
 local function main_general_compn_state_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 4
     local sender = buffer(offset,1):uint()
+    offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
 
-    local offset = 11
-
-    subtree:add_le (f.general_compn_state_current_state, buffer(offset, 4))
+    subtree:add_le (f.general_compn_state_current_state, payload(offset, 4))
     if sender == 0x09 then
-        subtree:add_le (f.general_compn_state_ofdm_curr_state_fpga_boot, buffer(offset, 4))
-        subtree:add_le (f.general_compn_state_ofdm_curr_state_fpga_conf, buffer(offset, 4))
-        subtree:add_le (f.general_compn_state_ofdm_curr_state_exec_fail1, buffer(offset, 4))
-        subtree:add_le (f.general_compn_state_ofdm_curr_state_exec_fail2, buffer(offset, 4))
-        subtree:add_le (f.general_compn_state_ofdm_curr_state_ver_match, buffer(offset, 4))
-        subtree:add_le (f.general_compn_state_ofdm_curr_state_tcx_reg, buffer(offset, 4))
-        subtree:add_le (f.general_compn_state_ofdm_curr_state_rx_bad_crc, buffer(offset, 4))
-        subtree:add_le (f.general_compn_state_ofdm_curr_state_rx_bad_seq, buffer(offset, 4))
+        subtree:add_le (f.general_compn_state_ofdm_curr_state_fpga_boot, payload(offset, 4))
+        subtree:add_le (f.general_compn_state_ofdm_curr_state_fpga_conf, payload(offset, 4))
+        subtree:add_le (f.general_compn_state_ofdm_curr_state_exec_fail1, payload(offset, 4))
+        subtree:add_le (f.general_compn_state_ofdm_curr_state_exec_fail2, payload(offset, 4))
+        subtree:add_le (f.general_compn_state_ofdm_curr_state_ver_match, payload(offset, 4))
+        subtree:add_le (f.general_compn_state_ofdm_curr_state_tcx_reg, payload(offset, 4))
+        subtree:add_le (f.general_compn_state_ofdm_curr_state_rx_bad_crc, payload(offset, 4))
+        subtree:add_le (f.general_compn_state_ofdm_curr_state_rx_bad_seq, payload(offset, 4))
     else
     end
     offset = offset + 4
@@ -525,8 +526,8 @@ local function main_gimbal_gimbal_type_dissector(pkt_length, buffer, pinfo, subt
     subtree:add_le (f.gimbal_gimbal_type_id, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set Gimbal Type: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set Gimbal Type: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Type: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Type: Payload size different than expected") end
 end
 
 -- Gimbal - Gimbal Position - 0x05
@@ -576,14 +577,21 @@ f.transciever_reg_addr = ProtoField.uint16 ("dji_p3.transciever_reg_set", "Regis
 f.transciever_reg_val = ProtoField.uint8 ("dji_p3.transciever_reg_val", "Register value", base.HEX)
 
 local function main_hd_link_set_transciever_reg_dissector(pkt_length, buffer, pinfo, subtree)
-    local offset = 13
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
 
-    subtree:add_le (f.transciever_reg_addr, buffer(offset, 2))
+    --TODO verify
     offset = offset + 2
 
-    subtree:add_le (f.transciever_reg_val, buffer(offset, 1))
+    subtree:add_le (f.transciever_reg_addr, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.transciever_reg_val, payload(offset, 1))
     offset = offset + 1
 
+    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set Transciever Reg: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set Transciever Reg: Payload size different than expected") end
 end
 
 local HD_LINK_DISSECT = {
