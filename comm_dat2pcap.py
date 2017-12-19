@@ -388,7 +388,7 @@ def main(argv):
         print("  -p <pcapfile> - output to pcap file of given name")
         print("  -u <userdlt> - set specific data link type of the DLT_USER protocol;")
         print("                  default is 0; change it for complex wireshark configs")
-        print("  -b - enables storing bad packets (ie. with bad checksums)")
+        print("  -e - enables storing bad packets (ie. with bad checksums)")
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
@@ -403,7 +403,7 @@ def main(argv):
         po.pcapfile = arg
      elif opt in ("-u", "--userdlt"):
         po.userdlt = int(arg)
-     elif opt in ("-b", "--storebad"):
+     elif opt in ("-e", "--storebad"):
         po.storebad = True
 
   if po.userdlt > 15:
