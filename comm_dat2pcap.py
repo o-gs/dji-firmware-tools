@@ -346,18 +346,21 @@ def do_dat2pcap(po, datfile, pcapfile):
   count = 0
 
   while True:
-      chr = datfile.read(1)
-      if not chr: # eof
+      # The read() function in Python is ridiculously slow; instead of using it
+      # many times to read one byte, let's call it once for considerable buffer
+      btarr = datfile.read(4096)
+      if len(btarr) < 1: # eof
           break
-      count += 1
-      state, info = do_packetise_byte(ord(chr), state, info)
-      if (is_packet_ready(state)):
-          state = store_packet(out, state)
-      elif (is_packet_damaged(state)):
-          if (po.storebad):
+      for bt in btarr:
+          count += 1
+          state, info = do_packetise_byte(bt, state, info)
+          if (is_packet_ready(state)):
               state = store_packet(out, state)
-          else:
-              state = drop_packet(state)
+          elif (is_packet_damaged(state)):
+              if (po.storebad):
+                  state = store_packet(out, state)
+              else:
+                  state = drop_packet(state)
       if (is_packet_at_finish(state)):
           break;
       if (po.verbose > 2) and (count & 0xffff) == 0:
