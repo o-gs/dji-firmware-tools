@@ -6153,6 +6153,92 @@ local function flightrec_ctrl_horiz_dissector(payload, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Horiz: Payload size different than expected") end
 end
 
+-- Flight log - Ctrl Motor - 0x0036
+
+f.rec_ctrl_motor_horiz_motor_status = ProtoField.uint8 ("dji_p3.rec_ctrl_motor_horiz_motor_status", "Horiz Motor Status", base.HEX)
+f.rec_ctrl_motor_horiz_motor_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_motor_horiz_motor_cmd_id", "Horiz Motor Cmd Id", base.HEX)
+f.rec_ctrl_motor_horiz_motor_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_motor_horiz_motor_feedback_id", "Horiz Motor Feedback Id", base.HEX)
+f.rec_ctrl_motor_thrust_1 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_1", "Thrust 1", base.DEC, nil, nil, "0.01; thrust value for motor 1 (r.f. in quads)")
+f.rec_ctrl_motor_thrust_2 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_2", "Thrust 2", base.DEC, nil, nil, "0.01; thrust value for motor 2 (l.f. in quads)")
+f.rec_ctrl_motor_thrust_3 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_3", "Thrust 3", base.DEC, nil, nil, "0.01; thrust value for motor 3 (l.b. in quads)")
+f.rec_ctrl_motor_thrust_4 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_4", "Thrust 4", base.DEC, nil, nil, "0.01; thrust value for motor 4 (r.b. in quads)")
+f.rec_ctrl_motor_thrust_5 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_5", "Thrust 5", base.DEC, nil, nil, "0.01; thrust value for motor 5 (if exists)")
+f.rec_ctrl_motor_thrust_6 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_6", "Thrust 6", base.DEC, nil, nil, "0.01; thrust value for motor 6 (if exists)")
+f.rec_ctrl_motor_thrust_7 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_7", "Thrust 7", base.DEC, nil, nil, "0.01; thrust value for motor 7 (if exists)")
+f.rec_ctrl_motor_thrust_8 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_8", "Thrust 8", base.DEC, nil, nil, "0.01; thrust value for motor 8 (if exists)")
+f.rec_ctrl_motor_pwm_1 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_1", "Pwm 1", base.DEC, nil, nil, "0.01; PWM value for motor 1 (r.f. in quads)")
+f.rec_ctrl_motor_pwm_2 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_2", "Pwm 2", base.DEC, nil, nil, "0.01; PWM value for motor 2 (l.f. in quads)")
+f.rec_ctrl_motor_pwm_3 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_3", "Pwm 3", base.DEC, nil, nil, "0.01; PWM value for motor 3 (l.b. in quads)")
+f.rec_ctrl_motor_pwm_4 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_4", "Pwm 4", base.DEC, nil, nil, "0.01; PWM value for motor 4 (r.b. in quads)")
+f.rec_ctrl_motor_pwm_5 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_5", "Pwm 5", base.DEC, nil, nil, "0.01; PWM value for motor 5 (if exists)")
+f.rec_ctrl_motor_pwm_6 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_6", "Pwm 6", base.DEC, nil, nil, "0.01; PWM value for motor 6 (if exists)")
+f.rec_ctrl_motor_pwm_7 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_7", "Pwm 7", base.DEC, nil, nil, "0.01; PWM value for motor 7 (if exists)")
+f.rec_ctrl_motor_pwm_8 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_8", "Pwm 8", base.DEC, nil, nil, "0.01; PWM value for motor 8 (if exists)")
+
+local function flightrec_ctrl_motor_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_ctrl_motor_horiz_motor_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_motor_horiz_motor_cmd_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_motor_horiz_motor_feedback_id, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_6, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_7, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_thrust_8, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_1, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_5, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_6, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_7, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_ctrl_motor_pwm_8, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 35) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Motor: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Motor: Payload size different than expected") end
+end
+
 -- Flight log - Ctrl Atti - 0x0034
 
 f.rec_ctrl_atti_horiz_atti_tilt_tag_status = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_atti_tilt_tag_status", "Horiz Atti Tilt Tag Status", base.HEX)
@@ -6173,16 +6259,16 @@ f.rec_ctrl_atti_horiz_atti_tgt_tilt_before_limit_x = ProtoField.float ("dji_p3.r
 f.rec_ctrl_atti_horiz_atti_tgt_tilt_before_limit_y = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_tilt_before_limit_y", "Horiz Atti Tgt Tilt Before Limit Y", base.DEC)
 f.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_x = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_x", "Horiz Atti Tgt Tilt After Limit X", base.DEC)
 f.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_y = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_tilt_after_limit_y", "Horiz Atti Tgt Tilt After Limit Y", base.DEC)
-f.rec_ctrl_atti_horiz_atti_tgt_quat_0 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_quat_0", "Horiz Atti Tgt Quat 0", base.DEC)
-f.rec_ctrl_atti_horiz_atti_tgt_quat_1 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_quat_1", "Horiz Atti Tgt Quat 1", base.DEC)
-f.rec_ctrl_atti_horiz_atti_tgt_quat_2 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_quat_2", "Horiz Atti Tgt Quat 2", base.DEC)
-f.rec_ctrl_atti_horiz_atti_tgt_quat_3 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_quat_3", "Horiz Atti Tgt Quat 3", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_quat_0 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_quat_0", "Horiz Atti Tgt Quaternion 0", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_quat_1 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_quat_1", "Horiz Atti Tgt Quaternion 1", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_quat_2 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_quat_2", "Horiz Atti Tgt Quaternion 2", base.DEC)
+f.rec_ctrl_atti_horiz_atti_tgt_quat_3 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_quat_3", "Horiz Atti Tgt Quaternion 3", base.DEC)
 f.rec_ctrl_atti_horiz_atti_tgt_torsion = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_torsion", "Horiz Atti Tgt Torsion", base.DEC)
 f.rec_ctrl_atti_horiz_atti_tgt_torsion_rate = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_tgt_torsion_rate", "Horiz Atti Tgt Torsion Rate", base.DEC)
-f.rec_ctrl_atti_horiz_atti_feedback_quat_0 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_feedback_quat_0", "Horiz Atti Feedback Quat 0", base.DEC)
-f.rec_ctrl_atti_horiz_atti_feedback_quat_1 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_feedback_quat_1", "Horiz Atti Feedback Quat 1", base.DEC)
-f.rec_ctrl_atti_horiz_atti_feedback_quat_2 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_feedback_quat_2", "Horiz Atti Feedback Quat 2", base.DEC)
-f.rec_ctrl_atti_horiz_atti_feedback_quat_3 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_feedback_quat_3", "Horiz Atti Feedback Quat 3", base.DEC)
+f.rec_ctrl_atti_horiz_atti_feedback_quat_0 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_feedback_quat_0", "Horiz Atti Feedback Quaternion 0", base.DEC)
+f.rec_ctrl_atti_horiz_atti_feedback_quat_1 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_feedback_quat_1", "Horiz Atti Feedback Quaternion 1", base.DEC)
+f.rec_ctrl_atti_horiz_atti_feedback_quat_2 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_feedback_quat_2", "Horiz Atti Feedback Quaternion 2", base.DEC)
+f.rec_ctrl_atti_horiz_atti_feedback_quat_3 = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_feedback_quat_3", "Horiz Atti Feedback Quaternion 3", base.DEC)
 f.rec_ctrl_atti_horiz_atti_locked_torsion = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_locked_torsion", "Horiz Atti Locked Torsion", base.DEC)
 f.rec_ctrl_atti_horiz_atti_err_tilt_x = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_err_tilt_x", "Horiz Atti Err Tilt X", base.DEC)
 f.rec_ctrl_atti_horiz_atti_err_tilt_y = ProtoField.float ("dji_p3.rec_ctrl_atti_horiz_atti_err_tilt_y", "Horiz Atti Err Tilt Y", base.DEC)
@@ -6232,25 +6318,6 @@ f.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_z = ProtoField.int16 ("dji_p3.r
 f.rec_ctrl_atti_horiz_ang_acc_output_x = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_output_x", "Horiz Ang Acc Output X", base.DEC)
 f.rec_ctrl_atti_horiz_ang_acc_output_y = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_output_y", "Horiz Ang Acc Output Y", base.DEC)
 f.rec_ctrl_atti_horiz_ang_acc_output_z = ProtoField.int16 ("dji_p3.rec_ctrl_atti_horiz_ang_acc_output_z", "Horiz Ang Acc Output Z", base.DEC)
-f.rec_ctrl_atti_horiz_fldc8 = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_fldc8", "FieldC8 Status", base.HEX)
-f.rec_ctrl_atti_horiz_fldc9 = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_fldc9", "FieldC9 Cmd Id", base.HEX)
-f.rec_ctrl_atti_horiz_fldca = ProtoField.uint8 ("dji_p3.rec_ctrl_atti_horiz_fldca", "FieldCA Feedback Id", base.HEX)
-f.rec_ctrl_atti_horiz_fldcb = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldcb", "FieldCB", base.DEC)
-f.rec_ctrl_atti_horiz_fldcd = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldcd", "FieldCD", base.DEC)
-f.rec_ctrl_atti_horiz_fldcf = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldcf", "FieldCF", base.DEC)
-f.rec_ctrl_atti_horiz_fldd1 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldd1", "FieldD1", base.DEC)
-f.rec_ctrl_atti_horiz_fldd3 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldd3", "FieldD3", base.DEC)
-f.rec_ctrl_atti_horiz_fldd5 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldd5", "FieldD5", base.DEC)
-f.rec_ctrl_atti_horiz_fldd7 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldd7", "FieldD7", base.DEC)
-f.rec_ctrl_atti_horiz_fldd9 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_fldd9", "FieldD9", base.DEC)
-f.rec_ctrl_atti_horiz_flddb = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flddb", "FieldDB", base.DEC)
-f.rec_ctrl_atti_horiz_flddd = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flddd", "FieldDD", base.DEC)
-f.rec_ctrl_atti_horiz_flddf = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flddf", "FieldDF", base.DEC)
-f.rec_ctrl_atti_horiz_flde1 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flde1", "FieldE1", base.DEC)
-f.rec_ctrl_atti_horiz_flde3 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flde3", "FieldE3", base.DEC)
-f.rec_ctrl_atti_horiz_flde5 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flde5", "FieldE5", base.DEC)
-f.rec_ctrl_atti_horiz_flde7 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flde7", "FieldE7", base.DEC)
-f.rec_ctrl_atti_horiz_flde9 = ProtoField.uint16 ("dji_p3.rec_ctrl_atti_horiz_flde9", "FieldE9", base.DEC)
 --f.rec_ctrl_atti_e_cmd_pitch = ProtoField.none ("dji_p3.rec_ctrl_atti_e_cmd_pitch", "E Cmd Pitch", base.NONE, nil, nil, "-asin_x(2*(horiz_atti_tgt_quat_1*horiz_atti_tgt_quat_3-horiz_atti_tgt_quat_0*horiz_atti_tgt_quat_2))/3.1415926*180")
 --f.rec_ctrl_atti_e_cmd_roll = ProtoField.none ("dji_p3.rec_ctrl_atti_e_cmd_roll", "E Cmd Roll", base.NONE, nil, nil, "atan2(2*(horiz_atti_tgt_quat_2*horiz_atti_tgt_quat_3+horiz_atti_tgt_quat_0*horiz_atti_tgt_quat_1),1-2*(horiz_atti_tgt_quat_1*horiz_atti_tgt_quat_1+horiz_atti_tgt_quat_2*horiz_atti_tgt_quat_2))/3.1415926*180")
 --f.rec_ctrl_atti_e_cmd_yaw = ProtoField.none ("dji_p3.rec_ctrl_atti_e_cmd_yaw", "E Cmd Yaw", base.NONE, nil, nil, "atan2(2*(horiz_atti_tgt_quat_1*horiz_atti_tgt_quat_2+horiz_atti_tgt_quat_0*horiz_atti_tgt_quat_3),1-2*(horiz_atti_tgt_quat_2*horiz_atti_tgt_quat_2+horiz_atti_tgt_quat_3*horiz_atti_tgt_quat_3))/3.1415926*180")
@@ -6324,7 +6391,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_quat_2, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_quat_3, payload(offset, 4))
+    subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_quat_3, payload(offset, 4)) -- offset = 66
     offset = offset + 4
 
     subtree:add_le (f.rec_ctrl_atti_horiz_atti_tgt_torsion, payload(offset, 4))
@@ -6447,7 +6514,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedback_z, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_p_ctrl_x, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_p_ctrl_x, payload(offset, 2)) -- offset = 170
     offset = offset + 2
 
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_p_ctrl_y, payload(offset, 2))
@@ -6462,7 +6529,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_i_ctrl_y, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_i_ctrl_z, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_i_ctrl_z, payload(offset, 2)) -- offset = 180
     offset = offset + 2
 
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedforward_direct_x, payload(offset, 2))
@@ -6477,7 +6544,7 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_x, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_y, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_y, payload(offset, 2)) -- offset = 190
     offset = offset + 2
 
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_feedforward_compen_z, payload(offset, 2))
@@ -6492,61 +6559,63 @@ local function flightrec_ctrl_atti_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_atti_horiz_ang_acc_output_z, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_fldc8, payload(offset, 1))
+    -- The "Ctrl Atti" record contains "Ctrl Motor" record appended at offset = 200
+
+    subtree:add_le (f.rec_ctrl_motor_horiz_motor_status, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_fldc9, payload(offset, 1))
+    subtree:add_le (f.rec_ctrl_motor_horiz_motor_cmd_id, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_fldca, payload(offset, 1))
+    subtree:add_le (f.rec_ctrl_motor_horiz_motor_feedback_id, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_fldcb, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_thrust_1, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_fldcd, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_thrust_2, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_fldcf, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_thrust_3, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_fldd1, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_thrust_4, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_fldd3, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_thrust_5, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_fldd5, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_thrust_6, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_fldd7, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_thrust_7, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_fldd9, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_thrust_8, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_flddb, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_pwm_1, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_flddd, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_pwm_2, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_flddf, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_pwm_3, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_flde1, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_pwm_4, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_flde3, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_pwm_5, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_flde5, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_pwm_6, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_flde7, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_pwm_7, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_ctrl_atti_horiz_flde9, payload(offset, 2))
+    subtree:add_le (f.rec_ctrl_motor_pwm_8, payload(offset, 2))
     offset = offset + 2
 
     if (offset ~= 235) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Atti: Offset does not match - internal inconsistency") end
@@ -6614,92 +6683,6 @@ local function flightrec_ctrl_ccpm_dissector(payload, pinfo, subtree)
 
     if (offset ~= 49) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Ccpm: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Ccpm: Payload size different than expected") end
-end
-
--- Flight log - Ctrl Motor - 0x0036
-
-f.rec_ctrl_motor_horiz_motor_status = ProtoField.uint8 ("dji_p3.rec_ctrl_motor_horiz_motor_status", "Horiz Motor Status", base.HEX)
-f.rec_ctrl_motor_horiz_motor_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_motor_horiz_motor_cmd_id", "Horiz Motor Cmd Id", base.HEX)
-f.rec_ctrl_motor_horiz_motor_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_motor_horiz_motor_feedback_id", "Horiz Motor Feedback Id", base.HEX)
-f.rec_ctrl_motor_thrust_1 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_1", "Thrust 1", base.HEX)
-f.rec_ctrl_motor_thrust_2 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_2", "Thrust 2", base.HEX)
-f.rec_ctrl_motor_thrust_3 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_3", "Thrust 3", base.HEX)
-f.rec_ctrl_motor_thrust_4 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_4", "Thrust 4", base.HEX)
-f.rec_ctrl_motor_thrust_5 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_5", "Thrust 5", base.HEX)
-f.rec_ctrl_motor_thrust_6 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_6", "Thrust 6", base.HEX)
-f.rec_ctrl_motor_thrust_7 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_7", "Thrust 7", base.HEX)
-f.rec_ctrl_motor_thrust_8 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_thrust_8", "Thrust 8", base.HEX)
-f.rec_ctrl_motor_pwm_1 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_1", "Pwm 1", base.HEX)
-f.rec_ctrl_motor_pwm_2 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_2", "Pwm 2", base.HEX)
-f.rec_ctrl_motor_pwm_3 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_3", "Pwm 3", base.HEX)
-f.rec_ctrl_motor_pwm_4 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_4", "Pwm 4", base.HEX)
-f.rec_ctrl_motor_pwm_5 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_5", "Pwm 5", base.HEX)
-f.rec_ctrl_motor_pwm_6 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_6", "Pwm 6", base.HEX)
-f.rec_ctrl_motor_pwm_7 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_7", "Pwm 7", base.HEX)
-f.rec_ctrl_motor_pwm_8 = ProtoField.uint16 ("dji_p3.rec_ctrl_motor_pwm_8", "Pwm 8", base.HEX)
-
-local function flightrec_ctrl_motor_dissector(payload, pinfo, subtree)
-    local offset = 0
-
-    subtree:add_le (f.rec_ctrl_motor_horiz_motor_status, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_ctrl_motor_horiz_motor_cmd_id, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_ctrl_motor_horiz_motor_feedback_id, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.rec_ctrl_motor_thrust_1, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_thrust_2, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_thrust_3, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_thrust_4, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_thrust_5, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_thrust_6, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_thrust_7, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_thrust_8, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_pwm_1, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_pwm_2, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_pwm_3, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_pwm_4, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_pwm_5, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_pwm_6, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_pwm_7, payload(offset, 2))
-    offset = offset + 2
-
-    subtree:add_le (f.rec_ctrl_motor_pwm_8, payload(offset, 2))
-    offset = offset + 2
-
-    if (offset ~= 35) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Motor: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Motor: Payload size different than expected") end
 end
 
 -- Flight log - Wp Curve - 0x0096
