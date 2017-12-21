@@ -1488,9 +1488,9 @@ end
 
 -- Flight log - Compass - 0x0004
 
-f.rec_compass_magx = ProtoField.int16 ("dji_p3.rec_compass_magx", "Magx", base.DEC)
-f.rec_compass_magy = ProtoField.int16 ("dji_p3.rec_compass_magy", "Magy", base.DEC)
-f.rec_compass_magz = ProtoField.int16 ("dji_p3.rec_compass_magz", "Magz", base.DEC)
+f.rec_compass_magx = ProtoField.int16 ("dji_p3.rec_compass_magx", "Mag X", base.DEC)
+f.rec_compass_magy = ProtoField.int16 ("dji_p3.rec_compass_magy", "Mag Y", base.DEC)
+f.rec_compass_magz = ProtoField.int16 ("dji_p3.rec_compass_magz", "Mag Z", base.DEC)
 f.rec_compass_mag_cnt = ProtoField.uint16 ("dji_p3.rec_compass_mag_cnt", "Mag Cnt", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
 
 local function flightrec_compass_dissector(payload, pinfo, subtree)
@@ -2253,9 +2253,9 @@ f.rec_imu_init_imu_offset_z = ProtoField.float ("dji_p3.rec_imu_init_imu_offset_
 f.rec_imu_init_gps_offset_x = ProtoField.float ("dji_p3.rec_imu_init_gps_offset_x", "Gps Offset X", base.DEC)
 f.rec_imu_init_gps_offset_y = ProtoField.float ("dji_p3.rec_imu_init_gps_offset_y", "Gps Offset Y", base.DEC)
 f.rec_imu_init_gps_offset_z = ProtoField.float ("dji_p3.rec_imu_init_gps_offset_z", "Gps Offset Z", base.DEC)
-f.rec_imu_init_imu_dir = ProtoField.uint16 ("dji_p3.rec_imu_init_imu_dir", "Imu Dir", base.HEX)
-f.rec_imu_init_imu_key = ProtoField.uint8 ("dji_p3.rec_imu_init_imu_key", "Imu Key", base.HEX)
-f.rec_imu_init_o_sw = ProtoField.uint8 ("dji_p3.rec_imu_init_o_sw", "O Sw", base.HEX)
+f.rec_imu_init_imu_dir = ProtoField.uint16 ("dji_p3.rec_imu_init_imu_dir", "Imu Dir", base.HEX, nil, nil, "equal to flyc param g_real.config.imu_gps.imu_dir")
+f.rec_imu_init_imu_key = ProtoField.uint8 ("dji_p3.rec_imu_init_imu_key", "Imu Key", base.HEX, nil, nil, "on P3, always zero")
+f.rec_imu_init_o_sw = ProtoField.uint8 ("dji_p3.rec_imu_init_o_sw", "O Sw", base.HEX, nil, nil, "on P3, always zero")
 f.rec_imu_init_mag_bias_x = ProtoField.float ("dji_p3.rec_imu_init_mag_bias_x", "Mag Bias X", base.DEC)
 f.rec_imu_init_mag_bias_y = ProtoField.float ("dji_p3.rec_imu_init_mag_bias_y", "Mag Bias Y", base.DEC)
 f.rec_imu_init_mag_bias_z = ProtoField.float ("dji_p3.rec_imu_init_mag_bias_z", "Mag Bias Z", base.DEC)

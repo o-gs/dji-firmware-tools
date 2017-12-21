@@ -106,6 +106,7 @@ local FLIGHT_CTRL_CMDS = {
     [0x51] = 'TBD',
     [0x52] = 'TBD',
     [0x53] = 'TBD',
+    [0x57] = 'Gps Glns',
     [0x60] = 'SVO API Transfer',
     [0x62] = 'TBD',
     [0x64] = 'TBD',
@@ -416,12 +417,12 @@ local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo,
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd General: Payload size different than expected") end
 end
 
--- Flight Controller - Osd Home - 0x44, identical to flight recorder packet 0x000d
+-- Flight Controller - OSD Home - 0x44, identical to flight recorder packet 0x000d
 
-f.flyc_osd_home_osd_lon = ProtoField.double ("dji_p3.flyc_osd_home_osd_lon", "Osd Longitude", base.DEC) -- home point coords?
-f.flyc_osd_home_osd_lat = ProtoField.double ("dji_p3.flyc_osd_home_osd_lat", "Osd Latitude", base.DEC) -- home point coords?
-f.flyc_osd_home_osd_alt = ProtoField.float ("dji_p3.flyc_osd_home_osd_alt", "Osd Altitude", base.DEC, nil, nil, "0.1m, altitude")
-f.flyc_osd_home_osd_home_state = ProtoField.uint16 ("dji_p3.flyc_osd_home_osd_home_state", "Osd Home State", base.HEX)
+f.flyc_osd_home_osd_lon = ProtoField.double ("dji_p3.flyc_osd_home_osd_lon", "OSD Longitude", base.DEC) -- home point coords?
+f.flyc_osd_home_osd_lat = ProtoField.double ("dji_p3.flyc_osd_home_osd_lat", "OSD Latitude", base.DEC) -- home point coords?
+f.flyc_osd_home_osd_alt = ProtoField.float ("dji_p3.flyc_osd_home_osd_alt", "OSD Altitude", base.DEC, nil, nil, "0.1m, altitude")
+f.flyc_osd_home_osd_home_state = ProtoField.uint16 ("dji_p3.flyc_osd_home_osd_home_state", "OSD Home State", base.HEX)
   f.flyc_osd_home_e_homepoint_set = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_homepoint_set", "E Homepoint Set", base.HEX, nil, 0x01, nil)
   f.flyc_osd_home_e_method = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_method", "E Method", base.HEX, nil, 0x02, nil)
   f.flyc_osd_home_e_heading = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_heading", "E Heading", base.HEX, nil, 0x04, nil)
@@ -484,7 +485,12 @@ local function main_flight_ctrl_osd_home_dissector(pkt_length, buffer, pinfo, su
     subtree:add_le (f.flyc_osd_home_fld21, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
+    -- Before firmware P3X_FW_V01.07.0060, the packet was 68 bytes long
+    if (payload:len() == offset + 34) then
+        offset = offset + 34
+    end
+
+    if (offset ~= 34) and (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Home: Payload size different than expected") end
 end
 
@@ -508,10 +514,67 @@ local function main_flight_ctrl_imu_data_status_dissector(pkt_length, buffer, pi
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Data Status: Payload size different than expected") end
 end
 
+-- Flight Controller - Gps Glns - 0x57, similar to flight recorder packet 0x0005
+
+f.flyc_gps_glns_gps_lon = ProtoField.int32 ("dji_p3.flyc_gps_glns_gps_lon", "Gps Lon", base.DEC)
+f.flyc_gps_glns_gps_lat = ProtoField.int32 ("dji_p3.flyc_gps_glns_gps_lat", "Gps Lat", base.DEC)
+f.flyc_gps_glns_hmsl = ProtoField.int32 ("dji_p3.flyc_gps_glns_hmsl", "Hmsl", base.DEC)
+f.flyc_gps_glns_vel_n = ProtoField.float ("dji_p3.flyc_gps_glns_vel_n", "Vel N", base.DEC)
+f.flyc_gps_glns_vel_e = ProtoField.float ("dji_p3.flyc_gps_glns_vel_e", "Vel E", base.DEC)
+f.flyc_gps_glns_vel_d = ProtoField.float ("dji_p3.flyc_gps_glns_vel_d", "Vel D", base.DEC)
+f.flyc_gps_glns_hdop = ProtoField.float ("dji_p3.flyc_gps_glns_hdop", "Hdop", base.DEC)
+f.flyc_gps_glns_numsv = ProtoField.uint16 ("dji_p3.flyc_gps_glns_numsv", "NumSV", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
+f.flyc_gps_glns_gpsglns_cnt = ProtoField.uint16 ("dji_p3.flyc_gps_glns_gpsglns_cnt", "Gps Glns Count", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
+f.flyc_gps_glns_unkn20 = ProtoField.uint8 ("dji_p3.flyc_gps_glns_unkn20", "Unknown 20", base.DEC)
+f.flyc_gps_glns_homepoint_set = ProtoField.uint8 ("dji_p3.flyc_gps_glns_homepoint_set", "Homepoint Set", base.DEC)
+
+local function main_flight_ctrl_gps_glns_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_gps_glns_gps_lon, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_gps_glns_gps_lat, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_gps_glns_hmsl, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_gps_glns_vel_n, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_gps_glns_vel_e, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_gps_glns_vel_d, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_gps_glns_hdop, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_gps_glns_numsv, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_gps_glns_gpsglns_cnt, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_gps_glns_unkn20, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_gps_glns_homepoint_set, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 22) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gps Glns: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gps Glns: Payload size different than expected") end
+end
+
 local FLIGHT_CTRL_DISSECT = {
     [0x43] = main_flight_ctrl_osd_general_dissector,
     [0x44] = main_flight_ctrl_osd_home_dissector,
     [0x50] = main_flight_ctrl_imu_data_status_dissector,
+    [0x57] = main_flight_ctrl_gps_glns_dissector,
 }
 
 -- Gimbal - Gimbal Type - 0x1C
@@ -535,6 +598,9 @@ end
 f.gimbal_gimbal_position_pitch = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_pitch", "Gimbal Pitch", base.DEC, nil, nil, "0.1, gimbal angular position")
 f.gimbal_gimbal_position_roll = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_roll", "Gimbal Roll", base.DEC, nil, nil, "0.1, gimbal angular position")
 f.gimbal_gimbal_position_yaw = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_yaw", "Gimbal Yaw", base.DEC, nil, nil, "0.1, gimbal angular position")
+f.gimbal_gimbal_position_unkn6 = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_unkn6", "Unknown06", base.DEC)
+f.gimbal_gimbal_position_unkn8 = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_unkn8", "Unknown08", base.DEC)
+f.gimbal_gimbal_position_unknA = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_unknA", "Unknown0A", base.DEC)
 
 local function main_gimbal_gimbal_position_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -550,7 +616,16 @@ local function main_gimbal_gimbal_position_dissector(pkt_length, buffer, pinfo, 
     subtree:add_le (f.gimbal_gimbal_position_yaw, payload(offset, 2))
     offset = offset + 2
 
-    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Position: Offset does not match - internal inconsistency") end
+    subtree:add_le (f.gimbal_gimbal_position_unkn6, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_gimbal_position_unkn8, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_gimbal_position_unknA, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Position: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Position: Payload size different than expected") end
 end
 
