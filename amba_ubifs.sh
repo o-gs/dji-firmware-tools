@@ -73,11 +73,13 @@ else
 fi
 echo "${IMAGE}: Loading image to simulated device"
 flash_erase /dev/mtd0 0 0
-#ubiformat /dev/mtd0 -s 2048 -O 2048
+# Copy the image to simulated NAND array; on real hardware this only works with ubiformat,
+# but simulated NAND will have no issues accepting copy by dd.
+#ubiformat /dev/mtd0 --sub-page-size=512 --vid-hdr-offset=2048 -f ${IMAGE}
 sudo dd if=${IMAGE} of=/dev/mtd0 bs=$((1024*1024))
 echo "${IMAGE}: Attaching UBI filesystem"
 modprobe ubi
-ubiattach -m 0 -d 0 -O 2048
+ubiattach -m 0 -d 0 --vid-hdr-offset=2048
 if [ ! -e /dev/ubi0_0 ]; then
   echo "${IMAGE}: No volumes found, loading UBI must've failed"
   exit 2
