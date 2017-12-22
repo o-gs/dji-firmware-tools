@@ -595,12 +595,12 @@ end
 
 -- Gimbal - Gimbal Position - 0x05
 
-f.gimbal_gimbal_position_pitch = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_pitch", "Gimbal Pitch", base.DEC, nil, nil, "0.1, gimbal angular position")
-f.gimbal_gimbal_position_roll = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_roll", "Gimbal Roll", base.DEC, nil, nil, "0.1, gimbal angular position")
-f.gimbal_gimbal_position_yaw = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_yaw", "Gimbal Yaw", base.DEC, nil, nil, "0.1, gimbal angular position")
-f.gimbal_gimbal_position_unkn6 = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_unkn6", "Unknown06", base.DEC)
-f.gimbal_gimbal_position_unkn8 = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_unkn8", "Unknown08", base.DEC)
-f.gimbal_gimbal_position_unknA = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_unknA", "Unknown0A", base.DEC)
+f.gimbal_gimbal_position_pitch = ProtoField.int16 ("dji_p3.gimbal_gimbal_position_pitch", "Gimbal Pitch", base.DEC, nil, nil, "0.1, gimbal angular position, zero is forward, max down..up is about -900..470")
+f.gimbal_gimbal_position_roll = ProtoField.int16 ("dji_p3.gimbal_gimbal_position_roll", "Gimbal Roll", base.DEC, nil, nil, "0.1, gimbal angular position, zero is parallel to earth, max right..left is about -410..410")
+f.gimbal_gimbal_position_yaw = ProtoField.int16 ("dji_p3.gimbal_gimbal_position_yaw", "Gimbal Yaw", base.DEC, nil, nil, "0.1, gimbal angular position, -1000 is forward, max right..left is about -1460..-540") -- TODO verify
+f.gimbal_gimbal_position_unkn6 = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_unkn6", "Unknown 06", base.HEX)
+f.gimbal_gimbal_position_unkn8 = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_unkn8", "Unknown 08", base.HEX)
+f.gimbal_gimbal_position_unknA = ProtoField.uint16 ("dji_p3.gimbal_gimbal_position_unknA", "Unknown 0A", base.HEX)
 
 local function main_gimbal_gimbal_position_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11

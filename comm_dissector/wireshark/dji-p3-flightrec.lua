@@ -24,6 +24,7 @@ DJI_P3_FLIGHT_RECORD_ENTRY_TYPE = {
     [0x0061] = 'Pt3 Gps Snr',
     [0x005b] = 'Imu 21100',
     [0x005c] = 'Imu Raw',
+    [0x0062] = 'Imu Raw 01',
     [0x0006] = 'Imu Init',
     [0x000c] = 'Osd General',
     [0x000d] = 'Osd Home',
@@ -2254,7 +2255,7 @@ f.rec_imu_init_gps_offset_x = ProtoField.float ("dji_p3.rec_imu_init_gps_offset_
 f.rec_imu_init_gps_offset_y = ProtoField.float ("dji_p3.rec_imu_init_gps_offset_y", "Gps Offset Y", base.DEC)
 f.rec_imu_init_gps_offset_z = ProtoField.float ("dji_p3.rec_imu_init_gps_offset_z", "Gps Offset Z", base.DEC)
 f.rec_imu_init_imu_dir = ProtoField.uint16 ("dji_p3.rec_imu_init_imu_dir", "Imu Dir", base.HEX, nil, nil, "equal to flyc param g_real.config.imu_gps.imu_dir")
-f.rec_imu_init_imu_key = ProtoField.uint8 ("dji_p3.rec_imu_init_imu_key", "Imu Key", base.HEX, nil, nil, "on P3, always zero")
+f.rec_imu_init_imu_key = ProtoField.uint8 ("dji_p3.rec_imu_init_imu_key", "Imu Key", base.HEX, nil, nil, "on P3, always zero; if non-zero, Imu Atti and Imu Ex packets are encrypted with it")
 f.rec_imu_init_o_sw = ProtoField.uint8 ("dji_p3.rec_imu_init_o_sw", "O Sw", base.HEX, nil, nil, "on P3, always zero")
 f.rec_imu_init_mag_bias_x = ProtoField.float ("dji_p3.rec_imu_init_mag_bias_x", "Mag Bias X", base.DEC)
 f.rec_imu_init_mag_bias_y = ProtoField.float ("dji_p3.rec_imu_init_mag_bias_y", "Mag Bias Y", base.DEC)
@@ -2529,7 +2530,7 @@ f.rec_osd_home_osd_home_state = ProtoField.uint16 ("dji_p3.rec_osd_home_osd_home
   f.rec_osd_home_e_is_dyn_homepoint = ProtoField.uint16 ("dji_p3.rec_osd_home_e_is_dyn_homepoint", "E Is Dyn Homepoint", base.HEX, nil, 0x08, nil)
   f.rec_osd_home_e_multiple = ProtoField.uint16 ("dji_p3.rec_osd_home_e_multiple", "E Multiple", base.HEX, nil, 0x40, nil)
   f.rec_osd_home_e_ioc_enable = ProtoField.uint16 ("dji_p3.rec_osd_home_e_ioc_enable", "E Ioc Enable", base.HEX, nil, 0x1000, nil)
-f.rec_osd_home_fixed_altitedue = ProtoField.uint16 ("dji_p3.rec_osd_home_fixed_altitedue", "Fixed Altitedue", base.HEX)
+f.rec_osd_home_fixed_altitude = ProtoField.uint16 ("dji_p3.rec_osd_home_fixed_altitude", "Fixed Altitude", base.HEX)
 f.rec_osd_home_course_lock_torsion = ProtoField.int16 ("dji_p3.rec_osd_home_course_lock_torsion", "Course Lock Torsion", base.DEC)
 f.rec_osd_home_fld1a = ProtoField.int8 ("dji_p3.rec_osd_home_fld1a", "field1A", base.DEC)
 f.rec_osd_home_fld1b = ProtoField.int8 ("dji_p3.rec_osd_home_fld1b", "field1B", base.DEC)
@@ -2559,7 +2560,7 @@ local function flightrec_osd_home_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_osd_home_e_ioc_enable, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rec_osd_home_fixed_altitedue, payload(offset, 2))
+    subtree:add_le (f.rec_osd_home_fixed_altitude, payload(offset, 2))
     offset = offset + 2
 
     subtree:add_le (f.rec_osd_home_course_lock_torsion, payload(offset, 2))
@@ -6775,8 +6776,8 @@ f.rec_smart_battery_info_g_evl_vol = ProtoField.float ("dji_p3.rec_smart_battery
 f.rec_smart_battery_info_g_delt_i = ProtoField.float ("dji_p3.rec_smart_battery_info_g_delt_i", "G Delt I", base.DEC)
 f.rec_smart_battery_info_fld70 = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_fld70", "Field70", base.HEX)
 f.rec_smart_battery_info_fld72 = ProtoField.uint8 ("dji_p3.rec_smart_battery_info_fld72", "Field72", base.HEX)
-f.rec_smart_battery_info_vol_lv1_prot = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_vol_lv1_prot", "Voltage Level 1 Protect", base.DEC)
-f.rec_smart_battery_info_vol_lv2_prot = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_vol_lv2_prot", "Voltage Level 2 Protect", base.DEC)
+f.rec_smart_battery_info_vol_lv1_prot = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_vol_lv1_prot", "Voltage Level 1 Protect, flyc param g_real.config.voltage.level_1_protect", base.DEC)
+f.rec_smart_battery_info_vol_lv2_prot = ProtoField.uint16 ("dji_p3.rec_smart_battery_info_vol_lv2_prot", "Voltage Level 2 Protect, flyc param g_real.config.voltage.level_2_protect", base.DEC)
 
 local function flightrec_smart_battery_info_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -7124,11 +7125,11 @@ end
 -- Flight log - Hp Data - 0x002a
 
 f.rec_hp_data_tgt_hp_alti = ProtoField.float ("dji_p3.rec_hp_data_tgt_hp_alti", "Tgt Hp Alti", base.DEC)
-f.rec_hp_data_tgt_ang_rate = ProtoField.float ("dji_p3.rec_hp_data_tgt_ang_rate", "Tgt Ang Rate", base.DEC)
+f.rec_hp_data_tgt_ang_rate = ProtoField.float ("dji_p3.rec_hp_data_tgt_ang_rate", "Tgt Ang Rate", base.DEC, nil, nil, "in degrees")
 f.rec_hp_data_tgt_radius = ProtoField.float ("dji_p3.rec_hp_data_tgt_radius", "Tgt Radius", base.DEC)
 f.rec_hp_data_distance_to_hp = ProtoField.float ("dji_p3.rec_hp_data_distance_to_hp", "Distance To Hp", base.DEC)
 f.rec_hp_data_cosine_angle = ProtoField.float ("dji_p3.rec_hp_data_cosine_angle", "Cosine Angle", base.DEC)
-f.rec_hp_data_angle_rate = ProtoField.float ("dji_p3.rec_hp_data_angle_rate", "Angle Rate", base.DEC)
+f.rec_hp_data_angle_rate = ProtoField.float ("dji_p3.rec_hp_data_angle_rate", "Angle Rate", base.DEC, nil, nil, "in degrees")
 f.rec_hp_data_radius = ProtoField.float ("dji_p3.rec_hp_data_radius", "Radius", base.DEC)
 f.rec_hp_data_pos_error_x = ProtoField.float ("dji_p3.rec_hp_data_pos_error_x", "Pos Error X", base.DEC)
 f.rec_hp_data_pos_error_y = ProtoField.float ("dji_p3.rec_hp_data_pos_error_y", "Pos Error Y", base.DEC)
@@ -7136,7 +7137,7 @@ f.rec_hp_data_pos_error_z = ProtoField.float ("dji_p3.rec_hp_data_pos_error_z", 
 f.rec_hp_data_vel_error_x = ProtoField.float ("dji_p3.rec_hp_data_vel_error_x", "Vel Error X", base.DEC)
 f.rec_hp_data_vel_error_y = ProtoField.float ("dji_p3.rec_hp_data_vel_error_y", "Vel Error Y", base.DEC)
 f.rec_hp_data_vel_error_z = ProtoField.float ("dji_p3.rec_hp_data_vel_error_z", "Vel Error Z", base.DEC)
-f.rec_hp_data_head_error = ProtoField.float ("dji_p3.rec_hp_data_head_error", "Head Error", base.DEC)
+f.rec_hp_data_head_error = ProtoField.float ("dji_p3.rec_hp_data_head_error", "Head Error", base.DEC, nil, nil, "in degrees")
 
 local function flightrec_hp_data_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -7223,6 +7224,15 @@ f.rec_follow_me_data_in_height_limit = ProtoField.uint8 ("dji_p3.rec_follow_me_d
 f.rec_follow_me_data_target_loss_count = ProtoField.uint8 ("dji_p3.rec_follow_me_data_target_loss_count", "Target Loss Count", base.HEX)
 f.rec_follow_me_data_mission_status = ProtoField.uint8 ("dji_p3.rec_follow_me_data_mission_status", "Mission Status", base.HEX)
 
+f.rec_follow_me_data_fld8B = ProtoField.uint32 ("dji_p3.rec_follow_me_data_fld8B", "Unknown 8B", base.HEX)
+f.rec_follow_me_data_fld8F = ProtoField.uint32 ("dji_p3.rec_follow_me_data_fld8F", "Unknown 8F", base.HEX)
+f.rec_follow_me_data_fld93 = ProtoField.uint32 ("dji_p3.rec_follow_me_data_fld93", "Unknown 93", base.HEX)
+f.rec_follow_me_data_fld97 = ProtoField.uint32 ("dji_p3.rec_follow_me_data_fld97", "Unknown 97", base.HEX)
+f.rec_follow_me_data_fld9B = ProtoField.double ("dji_p3.rec_follow_me_data_fld9B", "Unknown 9B", base.DEC)
+f.rec_follow_me_data_fldA3 = ProtoField.double ("dji_p3.rec_follow_me_data_fldA3", "Unknown A3", base.DEC)
+f.rec_follow_me_data_fldAB = ProtoField.uint32 ("dji_p3.rec_follow_me_data_fldAB", "Unknown AB", base.HEX)
+f.rec_follow_me_data_fldAf = ProtoField.uint32 ("dji_p3.rec_follow_me_data_fldAF", "Unknown AF", base.HEX)
+
 local function flightrec_follow_me_data_dissector(payload, pinfo, subtree)
     local offset = 0
 
@@ -7262,7 +7272,7 @@ local function flightrec_follow_me_data_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_follow_me_data_quadrotor2phone_offset_y, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_follow_me_data_quadrotor2phone_distance, payload(offset, 4))
+    subtree:add_le (f.rec_follow_me_data_quadrotor2phone_distance, payload(offset, 4)) -- offset = 64
     offset = offset + 4
 
     subtree:add_le (f.rec_follow_me_data_quadrotor2targetpoint_offset_x, payload(offset, 4))
@@ -7286,7 +7296,7 @@ local function flightrec_follow_me_data_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_follow_me_data_cur_vel_y, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_follow_me_data_cruise_vel_x, payload(offset, 4))
+    subtree:add_le (f.rec_follow_me_data_cruise_vel_x, payload(offset, 4)) -- offset = 96
     offset = offset + 4
 
     subtree:add_le (f.rec_follow_me_data_cruise_vel_y, payload(offset, 4))
@@ -7325,7 +7335,37 @@ local function flightrec_follow_me_data_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_follow_me_data_mission_status, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 139) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Follow Me Data: Offset does not match - internal inconsistency") end
+    -- Some old packets may stop at offset = 139
+
+    if (payload:len() >= 179) then
+
+        subtree:add_le (f.rec_follow_me_data_fld8B, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.rec_follow_me_data_fld8F, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.rec_follow_me_data_fld93, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.rec_follow_me_data_fld97, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.rec_follow_me_data_fld9B, payload(offset, 8))
+        offset = offset + 8
+
+        subtree:add_le (f.rec_follow_me_data_fldA3, payload(offset, 8))
+        offset = offset + 8
+
+        subtree:add_le (f.rec_follow_me_data_fldAB, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.rec_follow_me_data_fldAF, payload(offset, 4))
+        offset = offset + 4
+
+    end
+
+    if (offset ~= 139) and (offset ~= 179) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Follow Me Data: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Follow Me Data: Payload size different than expected") end
 end
 
@@ -8100,6 +8140,7 @@ DJI_P3_FLIGHT_RECORD_DISSECT = {
     [0x0061] = flightrec_pt3_gps_snr_dissector,
     [0x005b] = flightrec_imu_21100_dissector,
     [0x005c] = flightrec_imu_raw_dissector,
+    [0x0062] = flightrec_imu_raw_dissector, -- second type containing the same data
     [0x0006] = flightrec_imu_init_dissector,
     [0x000c] = flightrec_osd_general_dissector,
     [0x000d] = flightrec_osd_home_dissector,
