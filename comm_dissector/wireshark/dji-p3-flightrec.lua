@@ -5929,6 +5929,7 @@ f.rec_ctrl_horiz_api_horiz_ctrl_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_hori
 f.rec_ctrl_horiz_api_torsion_ctrl_mode = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_api_torsion_ctrl_mode", "Api Torsion Ctrl Mode", base.HEX)
 f.rec_ctrl_horiz_api_torsion_ctrl_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_api_torsion_ctrl_cmd_id", "Api Torsion Ctrl Cmd Id", base.HEX)
 f.rec_ctrl_horiz_api_atti_cmd_type = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_api_atti_cmd_type", "Api Atti Cmd Type", base.HEX)
+f.rec_ctrl_horiz_api_atti_unkn2C = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_api_atti_unkn2C", "Api Atti Unknown 2C", base.HEX)
 f.rec_ctrl_horiz_horiz_pos_tag_status = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_pos_tag_status", "Horiz Pos Tag Status", base.HEX)
 f.rec_ctrl_horiz_horiz_pos_tag_cmd_id = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_pos_tag_cmd_id", "Horiz Pos Tag Cmd Id", base.HEX)
 f.rec_ctrl_horiz_horiz_pos_tag_feedback_id = ProtoField.uint8 ("dji_p3.rec_ctrl_horiz_horiz_pos_tag_feedback_id", "Horiz Pos Tag Feedback Id", base.HEX)
@@ -5991,7 +5992,7 @@ local function flightrec_ctrl_horiz_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_hover_abs_pos_1, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_hover_rel_pos_0, payload(offset, 4))
+    subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_hover_rel_pos_0, payload(offset, 4)) -- offset = 19
     offset = offset + 4
 
     subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_hover_rel_pos_1, payload(offset, 4))
@@ -6006,7 +6007,7 @@ local function flightrec_ctrl_horiz_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_horiz_horiz_module_horiz_pos_offset_1, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.rec_ctrl_horiz_api_horiz_ctrl_mode, payload(offset, 1))
+    subtree:add_le (f.rec_ctrl_horiz_api_horiz_ctrl_mode, payload(offset, 1)) -- offset = 39
     offset = offset + 1
 
     subtree:add_le (f.rec_ctrl_horiz_api_horiz_ctrl_cmd_id, payload(offset, 1))
@@ -6021,7 +6022,10 @@ local function flightrec_ctrl_horiz_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_horiz_api_atti_cmd_type, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_tag_status, payload(offset, 1))
+    subtree:add_le (f.rec_ctrl_horiz_api_atti_unkn2C, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_ctrl_horiz_horiz_pos_tag_status, payload(offset, 1)) -- offset = 45
     offset = offset + 1
 
     subtree:add_le (f.rec_ctrl_horiz_horiz_pos_tag_cmd_id, payload(offset, 1))
@@ -6150,7 +6154,7 @@ local function flightrec_ctrl_horiz_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_ctrl_horiz_horiz_acc_output_y, payload(offset, 2))
     offset = offset + 2
 
-    if (offset ~= 121) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Horiz: Offset does not match - internal inconsistency") end
+    if (offset ~= 122) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Ctrl Horiz: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Ctrl Horiz: Payload size different than expected") end
 end
 
