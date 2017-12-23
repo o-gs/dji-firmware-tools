@@ -84,6 +84,7 @@ DJI_P3_FLIGHT_RECORD_ENTRY_TYPE = {
     [0x0029] = 'Fmu Device Run Time',
     [0x002a] = 'Hp Data',
     [0x002b] = 'Follow Me Data',
+    [0x002c] = 'Home Lock',
     [0x0013] = 'Imu Data Status',
     [0x0046] = 'Aircraft Condition Monitor',
     [0x0050] = 'Aircraft Model',
@@ -116,7 +117,7 @@ f.rec_controller_g_real_status_cotrol_command_mode = ProtoField.uint8 ("dji_p3.r
 f.rec_controller_g_real_status_control_real_mode = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_control_real_mode", "G Real Status Control Real Mode", base.HEX)
 f.rec_controller_g_real_status_ioc_control_command_mode = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_ioc_control_command_mode", "G Real Status Ioc Control Command Mode", base.HEX)
 f.rec_controller_g_real_status_rc_state = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_rc_state", "G Real Status Rc State", base.HEX)
-f.rec_controller_g_real_status_motor_status = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_motor_status", "G Real Status Motor Status", base.HEX)
+f.rec_controller_g_real_status_motor_status = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_motor_status", "G Real Status Motor Status", base.HEX, nil, nil, "includes flag to force allow start motors")
 f.rec_controller_imu_package_lost_count = ProtoField.uint32 ("dji_p3.rec_controller_imu_package_lost_count", "Imu Package Lost Count", base.HEX)
 f.rec_controller_g_real_status_main_batery_voltage = ProtoField.uint16 ("dji_p3.rec_controller_g_real_status_main_batery_voltage", "G Real Status Main Batery Voltage", base.HEX)
 f.rec_controller_imu_temp_real_ctl_out_per = ProtoField.uint8 ("dji_p3.rec_controller_imu_temp_real_ctl_out_per", "Imu Temp Real Ctl Out Per", base.HEX)
@@ -1933,7 +1934,7 @@ f.rec_pt3_gps_snr_pt3_gln_snr29 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_
 f.rec_pt3_gps_snr_pt3_gln_snr30 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr30", "Pt3 Gln Snr30", base.HEX)
 f.rec_pt3_gps_snr_pt3_gln_snr31 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr31", "Pt3 Gln Snr31", base.HEX)
 f.rec_pt3_gps_snr_pt3_gln_snr32 = ProtoField.uint8 ("dji_p3.rec_pt3_gps_snr_pt3_gln_snr32", "Pt3 Gln Snr32", base.HEX)
-f.rec_pt3_gps_snr_pt3_gln_cnt = ProtoField.uint16 ("dji_p3.rec_pt3_gps_snr_pt3_gln_cnt", "Pt3 Gln Cnt", base.HEX)
+f.rec_pt3_gps_snr_pt3_gln_cnt = ProtoField.uint16 ("dji_p3.rec_pt3_gps_snr_pt3_gln_cnt", "Pt3 Gln Cnt", base.HEX, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
 
 local function flightrec_pt3_gps_snr_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -7373,6 +7374,32 @@ local function flightrec_follow_me_data_dissector(payload, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Follow Me Data: Payload size different than expected") end
 end
 
+-- Flight log - Home Lock - 0x002c
+
+f.rec_home_lock_unkn0 = ProtoField.float ("dji_p3.rec_home_lock_unkn0", "Unknown 0", base.DEC)
+f.rec_home_lock_unkn4 = ProtoField.float ("dji_p3.rec_home_lock_unkn4", "Unknown 4", base.DEC)
+f.rec_home_lock_unkn8 = ProtoField.float ("dji_p3.rec_home_lock_unkn8", "Unknown 8", base.DEC)
+f.rec_home_lock_unknC = ProtoField.float ("dji_p3.rec_home_lock_unknC", "Unknown C", base.DEC)
+
+local function flightrec_home_lock_dissector(payload, pinfo, subtree)
+    local offset = 0
+
+    subtree:add_le (f.rec_home_lock_unkn0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_home_lock_unkn4, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_home_lock_unkn8, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_home_lock_unknC, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Home Lock: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Home Lock: Payload size different than expected") end
+end
+
 -- Flight log - Imu Data Status - 0x0013
 
 f.rec_imu_data_status_start_fan = ProtoField.uint8 ("dji_p3.rec_imu_data_status_start_fan", "Start Fan", base.HEX, nil, nil, "On Ph3, always 1")
@@ -8031,6 +8058,19 @@ end
 f.rec_waypoint_debug_wp_mission_status = ProtoField.uint8 ("dji_p3.rec_waypoint_debug_wp_mission_status", "Wp Mission Status", base.HEX)
 f.rec_waypoint_debug_wp_cur_num = ProtoField.uint8 ("dji_p3.rec_waypoint_debug_wp_cur_num", "Wp Cur Num", base.HEX)
 f.rec_waypoint_debug_wp_tgt_vel = ProtoField.uint16 ("dji_p3.rec_waypoint_debug_wp_tgt_vel", "Wp Tgt Vel", base.HEX)
+f.rec_waypoint_debug_wp_fld04 = ProtoField.uint16 ("dji_p3.rec_waypoint_debug_wp_fld04", "Wp Field 04", base.HEX)
+f.rec_waypoint_debug_wp_fld06 = ProtoField.uint8 ("dji_p3.rec_waypoint_debug_wp_fld06", "Wp Field 06", base.HEX)
+f.rec_waypoint_debug_wp_fld08 = ProtoField.uint16 ("dji_p3.rec_waypoint_debug_wp_fld08", "Wp Field 08", base.HEX)
+f.rec_waypoint_debug_wp_fld0A = ProtoField.uint32 ("dji_p3.rec_waypoint_debug_wp_fld0A", "Wp Field 0A", base.HEX)
+f.rec_waypoint_debug_wp_fld0E = ProtoField.uint32 ("dji_p3.rec_waypoint_debug_wp_fld0E", "Wp Field 0E", base.HEX)
+f.rec_waypoint_debug_wp_fld14 = ProtoField.uint32 ("dji_p3.rec_waypoint_debug_wp_fld14", "Wp Field 14", base.HEX)
+f.rec_waypoint_debug_wp_fld18 = ProtoField.uint32 ("dji_p3.rec_waypoint_debug_wp_fld18", "Wp Field 18", base.HEX)
+f.rec_waypoint_debug_wp_fld1C = ProtoField.uint32 ("dji_p3.rec_waypoint_debug_wp_fld1C", "Wp Field 1C", base.HEX)
+f.rec_waypoint_debug_wp_fld20 = ProtoField.uint32 ("dji_p3.rec_waypoint_debug_wp_fld20", "Wp Field 20", base.HEX)
+f.rec_waypoint_debug_wp_fld24 = ProtoField.uint32 ("dji_p3.rec_waypoint_debug_wp_fld24", "Wp Field 24", base.HEX)
+f.rec_waypoint_debug_wp_fld28 = ProtoField.uint32 ("dji_p3.rec_waypoint_debug_wp_fld28", "Wp Field 28", base.HEX)
+f.rec_waypoint_debug_wp_fld2C = ProtoField.uint32 ("dji_p3.rec_waypoint_debug_wp_fld2C", "Wp Field 2C", base.HEX)
+f.rec_waypoint_debug_wp_fld30 = ProtoField.uint8 ("dji_p3.rec_waypoint_debug_wp_fld30", "Wp Field 30", base.HEX)
 --f.rec_waypoint_debug_e_gps_lat = ProtoField.none ("dji_p3.rec_waypoint_debug_e_gps_lat", "E Gps Lat", base.NONE, nil, nil, "(gps_lat-225400000)/10000000*3.1415926/180*6370000")
 --f.rec_waypoint_debug_e_gps_lon = ProtoField.none ("dji_p3.rec_waypoint_debug_e_gps_lon", "E Gps Lon", base.NONE, nil, nil, "(gps_lon-1139468000)/10000000*3.1415926/180*6370000*cos(0.3933972)")
 --f.rec_waypoint_debug_e_atti_lat = ProtoField.none ("dji_p3.rec_waypoint_debug_e_atti_lat", "E Atti Lat", base.NONE, nil, nil, "(lati-0.3933972)*6370000")
@@ -8053,8 +8093,47 @@ local function flightrec_waypoint_debug_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_waypoint_debug_wp_tgt_vel, payload(offset, 2))
     offset = offset + 2
 
-    -- This struct is sometimes seen as size=44 or size=46; extend only if we know what we're doing
-    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Waypoint Debug: Offset does not match - internal inconsistency") end
+    subtree:add_le (f.rec_waypoint_debug_wp_fld04, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_waypoint_debug_wp_fld06, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rec_waypoint_debug_wp_fld08, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rec_waypoint_debug_wp_fld0A, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_waypoint_debug_wp_fld0E, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_waypoint_debug_wp_fld14, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_waypoint_debug_wp_fld18, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_waypoint_debug_wp_fld1C, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_waypoint_debug_wp_fld20, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_waypoint_debug_wp_fld24, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_waypoint_debug_wp_fld28, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_waypoint_debug_wp_fld2C, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rec_waypoint_debug_wp_fld30, payload(offset, 1))
+    offset = offset + 1
+
+    -- This struct is sometimes seen as size=44; needs checking what is that version
+    if (offset ~= 46) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Waypoint Debug: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Waypoint Debug: Payload size different than expected") end
 end
 
@@ -8204,6 +8283,7 @@ DJI_P3_FLIGHT_RECORD_DISSECT = {
     [0x0029] = flightrec_fmu_device_run_time_dissector,
     [0x002a] = flightrec_hp_data_dissector,
     [0x002b] = flightrec_follow_me_data_dissector,
+    [0x002c] = flightrec_home_lock_dissector,
     [0x0013] = flightrec_imu_data_status_dissector,
     [0x0046] = flightrec_aircraft_condition_monitor_dissector,
     [0x0050] = flightrec_aircraft_model_dissector,
