@@ -80,7 +80,7 @@ local SPECIAL_CMDS = {
 }
 
 local CAMERA_CMDS = {
-    [0x80] = 'TBD',
+    [0x80] = 'FW Update State',
 }
 
 local FLIGHT_CTRL_CMDS = {
@@ -265,7 +265,118 @@ local GENERAL_DISSECT = {
 local SPECIAL_DISSECT = {
 }
 
+-- Camera - FW Update State - 0x80
+f.camera_fw_update_state_unkn0 = ProtoField.uint8 ("dji_p3.camera_fw_update_state_unkn0", "Unknown 0", base.HEX)
+f.camera_fw_update_state_flags = ProtoField.uint8 ("dji_p3.camera_fw_update_state_flags", "Flags", base.HEX)
+  f.camera_fw_update_state_flags_in_progress = ProtoField.uint8 ("dji_p3.camera_fw_update_state_flags_in_progress", "FW Update In Progress", base.HEX, nil, 0x40)
+
+local function main_camera_fw_update_state_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_fw_update_state_unkn0, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_fw_update_state_flags, payload(offset, 1))
+    subtree:add_le (f.camera_fw_update_state_flags_in_progress, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FW Update State: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FW Update State: Payload size different than expected") end
+end
+
 local CAMERA_DISSECT = {
+    [0x80] = main_camera_fw_update_state_dissector,
+}
+
+local FLYC_OSD_GENERAL_MODE1_ENUM = {
+    [0]="Manual",
+    [1]="Atti",
+    [2]="Atti_CL",
+    [3]="Atti_Hover",
+    [4]="Hover",
+    [5]="GPS_Blake",
+    [6]="GPS_Atti",
+    [7]="GPS_CL",
+    [8]="GPS_HomeLock",
+    [9]="GPS_HotPoint",
+    [10]="AssitedTakeoff",
+    [11]="AutoTakeoff",
+    [12]="AutoLanding",
+    [13]="AttiLangding",
+    [14]="NaviGo",
+    [15]="GoHome",
+    [16]="ClickGo",
+    [17]="Joystick",
+    [23]="Atti_Limited",
+    [24]="GPS_Atti_Limited",
+    [25]="NaviMissionFollow",
+    [26]="NaviSubMode_Tracking",
+    [27]="NaviSubMode_Pointing",
+    [28]="PANO",
+    [29]="Farming",
+    [30]="FPV",
+    [31]="SPORT",
+    [32]="NOVICE",
+    [33]="FORCE_LANDING",
+    [35]="TERRAIN_TRACKING",
+    [36]="NAVI_ADV_GOHOME",
+    [37]="NAVI_ADV_LANDING",
+    [38]="TRIPOD_GPS",
+    [39]="TRACK_HEADLOCK",
+    [43]="GENTLE_GPS",
+    [100]="OTHER",
+}
+
+local FLYC_OSD_GENERAL_COMMAND_ENUM = {
+    [1]="AUTO_FLY",
+    [2]="AUTO_LANDING",
+    [3]="HOMEPOINT_NOW",
+    [4]="HOMEPOINT_HOT",
+    [5]="HOMEPOINT_LOC",
+    [6]="GOHOME",
+    [7]="START_MOTOR",
+    [8]="STOP_MOTOR",
+    [9]="Calibration",
+    [10]="DeformProtecClose",
+    [11]="DeformProtecOpen",
+    [12]="DropGohome",
+    [13]="DropTakeOff",
+    [14]="DropLanding",
+    [15]="DynamicHomePointOpen",
+    [16]="DynamicHomePointClose",
+    [17]="FollowFunctioonOpen",
+    [18]="FollowFunctionClose",
+    [19]="IOCOpen",
+    [20]="IOCClose",
+    [21]="DropCalibration",
+    [22]="PackMode",
+    [23]="UnPackMode",
+    [24]="EnterManaualMode",
+    [25]="StopDeform",
+    [28]="DownDeform",
+    [29]="UpDeform",
+    [30]="ForceLanding",
+    [31]="ForceLanding2",
+    [100]="OTHER",
+}
+
+local FLYC_OSD_GENERAL_BATT_TYPE_ENUM = {
+    [0]="Unknown",
+    [1]="NonSmart",
+    [2]="Smart",
+}
+
+local FLYC_OSD_GENERAL_GOHOME_STATE_ENUM = {
+    [0]="STANDBY",
+    [1]="PREASCENDING",
+    [2]="ALIGN",
+    [3]="ASCENDING",
+    [4]="CRUISE",
+    [5]="BRAKING",
+    [6]="BYPASSING",
+    [7]="OTHER",
 }
 
 -- Flight Controller - Osd General - 0x43, identical to flight recorder packet 0x000c
@@ -278,24 +389,33 @@ f.flyc_osd_general_vgz = ProtoField.int16 ("dji_p3.flyc_osd_general_vgz", "Vgz",
 f.flyc_osd_general_pitch = ProtoField.int16 ("dji_p3.flyc_osd_general_pitch", "Pitch", base.DEC, nil, nil, "0.1")
 f.flyc_osd_general_roll = ProtoField.int16 ("dji_p3.flyc_osd_general_roll", "Roll", base.DEC)
 f.flyc_osd_general_yaw = ProtoField.int16 ("dji_p3.flyc_osd_general_yaw", "Yaw", base.DEC)
-f.flyc_osd_general_mode1 = ProtoField.uint8 ("dji_p3.flyc_osd_general_mode1", "Mode1", base.HEX, nil, nil, "Flight Controller state1")
-f.flyc_osd_general_latest_cmd = ProtoField.uint8 ("dji_p3.flyc_osd_general_latest_cmd", "Latest Cmd", base.HEX, nil, nil, "controller exccute lastest cmd")
+f.flyc_osd_general_mode1 = ProtoField.uint8 ("dji_p3.flyc_osd_general_mode1", "Mode1", base.HEX, FLYC_OSD_GENERAL_MODE1_ENUM, nil, "Flight Controller state1")
+f.flyc_osd_general_latest_cmd = ProtoField.uint8 ("dji_p3.flyc_osd_general_latest_cmd", "Latest Cmd", base.HEX, FLYC_OSD_GENERAL_COMMAND_ENUM, nil, "controller exccute lastest cmd")
 f.flyc_osd_general_controller_state = ProtoField.uint32 ("dji_p3.flyc_osd_general_controller_state", "Controller State", base.HEX, nil, nil, "Flight Controller state flags")
+  f.flyc_osd_general_e_can_ioc_work = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_can_ioc_work", "E Can IOC Work", base.HEX, nil, 0x01, nil)
   f.flyc_osd_general_e_on_ground = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_on_ground", "E On Ground", base.HEX, nil, 0x02, nil)
   f.flyc_osd_general_e_in_air = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_in_air", "E In Air", base.HEX, nil, 0x04, nil)
   f.flyc_osd_general_e_motor_on = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_motor_on", "E Motor On", base.HEX, nil, 0x08, "Force allow start motors ignoring errors")
   f.flyc_osd_general_e_usonic_on = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_usonic_on", "E Usonic On", base.HEX, nil, 0x10, nil)
-  f.flyc_osd_general_e_gohome_state = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gohome_state", "E Gohome State", base.HEX, nil, 0xe0, nil)
-  f.flyc_osd_general_e_mvo_used = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_mvo_used", "E MVO Used", base.HEX, nil, 0x100, "MVO is used as horizonal velocity sensor")
+  f.flyc_osd_general_e_gohome_state = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gohome_state", "E Gohome State", base.HEX, FLYC_OSD_GENERAL_GOHOME_STATE_ENUM, 0xe0, nil)
+  f.flyc_osd_general_e_mvo_used = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_mvo_used", "E MVO Used", base.HEX, nil, 0x100, "Monocular Visual Odometry is used as horizonal velocity sensor")
   f.flyc_osd_general_e_battery_req_gohome = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_battery_req_gohome", "E Battery Req Gohome", base.HEX, nil, 0x200, nil)
   f.flyc_osd_general_e_battery_req_land = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_battery_req_land", "E Battery Req Land", base.HEX, nil, 0x400, "Landing required due to battery voltage low")
   f.flyc_osd_general_e_still_heating = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_still_heating", "E Still Heating", base.HEX, nil, 0x1000, nil)
   f.flyc_osd_general_e_rc_state = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_rc_state", "E RC State", base.HEX, nil, 0x6000, nil)
-  f.flyc_osd_general_e_gps_used = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gps_used", "E GPS Used", base.HEX, nil, 0x8000, "GPS is used as horizonal velocity sensor")
+  f.flyc_osd_general_e_gps_used = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gps_used", "E GPS Used", base.HEX, nil, 0x8000, "Satellite Positioning System is used as horizonal velocity sensor")
   f.flyc_osd_general_e_compass_over_range = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_compass_over_range", "E Compass Over Range", base.HEX, nil, 0x10000, nil)
-  f.flyc_osd_general_e_press_err = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_press_err", "E Press Err", base.HEX, nil, 0x4000000, nil)
-  f.flyc_osd_general_e_esc_stall = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_esc_stall", "E ESC is stall", base.HEX, nil, 0x8000000, nil)
-  f.flyc_osd_general_e_esc_empty = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_esc_empty", "E ESC is empty", base.HEX, nil, 0x20000000, nil)
+  f.flyc_osd_general_e_wave_err = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_wave_err", "E Wave Error", base.HEX, nil, 0x20000, nil)
+  f.flyc_osd_general_e_gps_level = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gps_level", "E GPS Level", base.HEX, nil, 0x3C0000, "Satellite Positioning System signal level")
+  f.flyc_osd_general_e_battery_type = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_battery_type", "E Battery Type", base.HEX, FLYC_OSD_GENERAL_BATT_TYPE_ENUM, 0xC00000, nil)
+  f.flyc_osd_general_e_accel_over_range = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_accel_over_range", "E Acceletor Over Range", base.HEX, nil, 0x1000000, nil)
+  f.flyc_osd_general_e_is_vibrating = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_is_vibrating", "E Is Vibrating", base.HEX, nil, 0x2000000, nil)
+  f.flyc_osd_general_e_press_err = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_press_err", "E Press Err", base.HEX, nil, 0x4000000, "Barometer error")
+  f.flyc_osd_general_e_esc_stall = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_esc_stall", "E ESC is stall", base.HEX, nil, 0x8000000, "ESC reports motor blocked")
+  f.flyc_osd_general_e_esc_empty = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_esc_empty", "E ESC is empty", base.HEX, nil, 0x10000000, "ESC reports not enough force")
+  f.flyc_osd_general_e_propeller_catapult = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_propeller_catapult", "E Is Propeller Catapult", base.HEX, nil, 0x20000000, nil)
+  f.flyc_osd_general_e_gohome_height_mod = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gohome_height_mod", "E GoHome Height Mod", base.HEX, nil, 0x40000000, "Go Home Height is Modified")
+  f.flyc_osd_general_e_out_of_limit = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_out_of_limit", "E Is Out Of Limit", base.HEX, nil, 0x80000000, nil)
 f.flyc_osd_general_gps_nums = ProtoField.uint8 ("dji_p3.flyc_osd_general_gps_nums", "Gps Nums", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
 f.flyc_osd_general_gohome_landing_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_gohome_landing_reason", "Gohome Landing Reason", base.HEX)
 f.flyc_osd_general_start_fail_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_start_fail_reason", "Start Fail Reason", base.HEX, DJI_P3_FLIGHT_RECORD_OSD_GENERAL_START_FAIL_REASON, nil, "Reason for failure to start motors")
@@ -332,7 +452,7 @@ local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo,
     subtree:add_le (f.flyc_osd_general_vgx, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_osd_general_vgy, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_general_vgy, payload(offset, 2)) -- offset = 20
     offset = offset + 2
 
     subtree:add_le (f.flyc_osd_general_vgz, payload(offset, 2))
@@ -354,6 +474,7 @@ local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo,
     offset = offset + 1
 
     subtree:add_le (f.flyc_osd_general_controller_state, payload(offset, 4))
+    subtree:add_le (f.flyc_osd_general_e_can_ioc_work, payload(offset, 4))
     subtree:add_le (f.flyc_osd_general_e_on_ground, payload(offset, 4))
     subtree:add_le (f.flyc_osd_general_e_in_air, payload(offset, 4))
     subtree:add_le (f.flyc_osd_general_e_motor_on, payload(offset, 4))
@@ -366,7 +487,17 @@ local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo,
     subtree:add_le (f.flyc_osd_general_e_rc_state, payload(offset, 4))
     subtree:add_le (f.flyc_osd_general_e_gps_used, payload(offset, 4))
     subtree:add_le (f.flyc_osd_general_e_compass_over_range, payload(offset, 4))
+    subtree:add_le (f.flyc_osd_general_e_wave_err, payload(offset, 4))
+    subtree:add_le (f.flyc_osd_general_e_gps_level, payload(offset, 4))
+    subtree:add_le (f.flyc_osd_general_e_battery_type, payload(offset, 4))
+    subtree:add_le (f.flyc_osd_general_e_accel_over_range, payload(offset, 4))
+    subtree:add_le (f.flyc_osd_general_e_is_vibrating, payload(offset, 4))
     subtree:add_le (f.flyc_osd_general_e_press_err, payload(offset, 4))
+    subtree:add_le (f.flyc_osd_general_e_esc_stall, payload(offset, 4))
+    subtree:add_le (f.flyc_osd_general_e_esc_empty, payload(offset, 4))
+    subtree:add_le (f.flyc_osd_general_e_propeller_catapult, payload(offset, 4))
+    subtree:add_le (f.flyc_osd_general_e_gohome_height_mod, payload(offset, 4))
+    subtree:add_le (f.flyc_osd_general_e_out_of_limit, payload(offset, 4))
     offset = offset + 4
 
     subtree:add_le (f.flyc_osd_general_gps_nums, payload(offset, 1))
@@ -382,7 +513,7 @@ local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo,
     subtree:add_le (f.flyc_osd_general_e_gps_state, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_osd_general_rsvd2, payload(offset, 1))
+    subtree:add_le (f.flyc_osd_general_rsvd2, payload(offset, 1)) -- offset = 40
     offset = offset + 1
 
     subtree:add_le (f.flyc_osd_general_ultrasonic_height, payload(offset, 1))
