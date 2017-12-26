@@ -290,6 +290,8 @@ local CAMERA_DISSECT = {
     [0x80] = main_camera_fw_update_state_dissector,
 }
 
+-- Flight Controller - Osd General - 0x43, identical to flight recorder packet 0x000c
+
 local FLYC_OSD_GENERAL_MODE1_ENUM = {
     [0]="Manual",
     [1]="Atti",
@@ -379,7 +381,182 @@ local FLYC_OSD_GENERAL_GOHOME_STATE_ENUM = {
     [7]="OTHER",
 }
 
--- Flight Controller - Osd General - 0x43, identical to flight recorder packet 0x000c
+local FLYC_OSD_GENERAL_GOHOME_REASON_ENUM = {
+    [0]="NONE",
+    [1]="WARNING_POWER_GOHOME",
+    [2]="WARNING_POWER_LANDING",
+    [3]="SMART_POWER_GOHOME",
+    [4]="SMART_POWER_LANDING",
+    [5]="LOW_VOLTAGE_LANDING",
+    [6]="LOW_VOLTAGE_GOHOME",
+    [7]="SERIOUS_LOW_VOLTAGE_LANDING",
+    [8]="RC_ONEKEY_GOHOME",
+    [9]="RC_ASSISTANT_TAKEOFF",
+    [10]="RC_AUTO_TAKEOFF",
+    [11]="RC_AUTO_LANDING",
+    [12]="APP_AUTO_GOHOME",
+    [13]="APP_AUTO_LANDING",
+    [14]="APP_AUTO_TAKEOFF",
+    [15]="OUTOF_CONTROL_GOHOME",
+    [16]="API_AUTO_TAKEOFF",
+    [17]="API_AUTO_LANDING",
+    [18]="API_AUTO_GOHOME",
+    [19]="AVOID_GROUND_LANDING",
+    [20]="AIRPORT_AVOID_LANDING",
+    [21]="TOO_CLOSE_GOHOME_LANDING",
+    [22]="TOO_FAR_GOHOME_LANDING",
+    [23]="APP_WP_MISSION",
+    [24]="WP_AUTO_TAKEOFF",
+    [25]="GOHOME_AVOID",
+    [26]="GOHOME_FINISH",
+    [27]="VERT_LOW_LIMIT_LANDING",
+    [28]="BATTERY_FORCE_LANDING",
+    [29]="MC_PROTECT_GOHOME",
+}
+
+local FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM = {
+    [0x00] = 'Allow start',
+    [0x01] = 'Compass error',
+    [0x02] = 'Assistant protected',
+    [0x03] = 'Device lock protect',
+    [0x04] = 'Off radius limit landed',
+    [0x05] = 'IMU need adv-calib',
+    [0x06] = 'IMU SN error',
+    [0x07] = 'Temperature cal not ready',
+    [0x08] = 'Compass calibration in progress',
+    [0x09] = 'Attitude error',
+    [0x0a] = 'Novice mode without gps',
+    [0x0b] = 'Battery cell error stop motor',
+    [0x0c] = 'Battery communite error stop motor',
+    [0x0d] = 'Battery voltage very low stop motor',
+    [0x0e] = 'Battery below user low land level stop motor',
+    [0x0f] = 'Battery main vol low stop motor',
+    [0x10] = 'Battery temp and vol low stop motor',
+    [0x11] = 'Battery smart low land stop motor',
+    [0x12] = 'Battery not ready stop motor',
+    [0x13] = 'May run simulator',
+    [0x14] = 'Gear pack mode',
+    [0x15] = 'Atti limit',
+    [0x16] = 'Product not activation, stop motor',
+    [0x17] = 'In fly limit area, need stop motor',
+    [0x18] = 'Bias limit',
+    [0x19] = 'ESC error',
+    [0x1a] = 'IMU is initing',
+    [0x1b] = 'System upgrade, stop motor',
+    [0x1c] = 'Have run simulator, please restart',
+    [0x1d] = 'IMU cali in progress',
+    [0x1e] = 'Too large tilt angle when auto take off, stop motor',
+    [0x1f] = 'Gyroscope is stuck',
+    [0x20] = 'Accel is stuck',
+    [0x21] = 'Compass is stuck',
+    [0x22] = 'Pressure sensor is stuck',
+    [0x23] = 'Pressure read is negative',
+    [0x24] = 'Compass mod is huge',
+    [0x25] = 'Gyro bias is large',
+    [0x26] = 'Accel bias is large',
+    [0x27] = 'Compass noise is large',
+    [0x28] = 'Pressure noise is large',
+    [0x29] = 'SN invalid',
+    [0x2a] = 'Pressure slope is large',
+    [0x2b] = 'Ahrs error is large',
+    [0x2c] = 'Flash operating',
+    [0x2d] = 'GPS disconnect',
+    [0x2e] = 'Out of whitelist area',
+    [0x2f] = 'SD Card Exception',
+    [0x3d] = 'IMU No connection',
+    [0x3e] = 'RC Calibration',
+    [0x3f] = 'RC Calibration Exception',
+    [0x40] = 'RC Calibration Unfinished',
+    [0x41] = 'RC Calibration Exception2',
+    [0x42] = 'RC Calibration Exception3',
+    [0x43] = 'Aircraft Type Mismatch',
+    [0x44] = 'Found Unfinished Module',
+    [0x46] = 'Cyro Abnormal',
+    [0x47] = 'Baro Abnormal',
+    [0x48] = 'Compass Abnormal',
+    [0x49] = 'GPS Abnormal',
+    [0x4a] = 'NS Abnormal',
+    [0x4b] = 'Topology Abnormal',
+    [0x4c] = 'RC Need Cali',
+    [0x4d] = 'Invalid Float',
+    [0x4e] = 'M600 Bat Too Little',
+    [0x4f] = 'M600 Bat Auth Err',
+    [0x50] = 'M600 Bat Comm Err',
+    [0x51] = 'M600 Bat Dif Volt Large 1',
+    [0x52] = 'M600 Bat Dif Volt Large 2',
+    [0x53] = 'Invalid Version',
+    [0x54] = 'Gimbal Gyro Abnormal',
+    [0x55] = 'Gimbal ESC Pitch Non Data',
+    [0x56] = 'Gimbal ESC Roll No Data',
+    [0x57] = 'Gimbal ESC Yaw No Data',
+    [0x58] = 'Gimbal Firm Is Updating',
+    [0x59] = 'Gimbal Disorder',
+    [0x5a] = 'Gimbal Pitch Shock',
+    [0x5b] = 'Gimbal Roll Shock',
+    [0x5c] = 'Gimbal Yaw Shock',
+    [0x5d] = 'IMU Calibration Finished',
+    [0x66] = 'RTK Bad Signal',
+    [0x67] = 'RTK Deviation Error',
+    [0x65] = 'Bat Version Error',
+    [0x72] = 'Gimbal Is Calibrating',
+    [0x100]= 'Other',
+}
+
+local FLYC_OSD_GENERAL_GPS_STATE_ENUM = {
+    [0]="ALREADY",
+    [1]="FORBIN",
+    [2]="GPSNUM_NONENOUGH",
+    [3]="GPS_HDOP_LARGE",
+    [4]="GPS_POSITION_NONMATCH",
+    [5]="SPEED_ERROR_LARGE",
+    [6]="YAW_ERROR_LARGE",
+    [7]="COMPASS_ERROR_LARGE",
+    [8]="UNKNOWN",
+}
+
+local FLYC_OSD_GENERAL_PRODUCT_TYPE_ENUM = {
+    [0]="Unknown",
+    [1]="Inspire",
+    [2]="P3S/P3X",
+    [3]="P3X",
+    [4]="P3C",
+    [5]="OpenFrame",
+    [6]="ACEONE",
+    [7]="WKM",
+    [8]="NAZA",
+    [9]="A2",
+    [10]="A3",
+    [11]="P4",
+    [14]="PM820",
+    [15]="P34K",
+    [16]="wm220",
+    [17]="Orange2",
+    [18]="Pomato",
+    [20]="N3",
+    [255]="NoFlyc",
+    [100]="None",
+}
+
+local FLYC_OSD_GENERAL_IMU_INIT_FAIL_RESON_ENUM = {
+    [0]="None/MonitorError",
+    [1]="ColletingData",
+    [2]="GyroDead",
+    [3]="AcceDead",
+    [4]="CompassDead",
+    [5]="BarometerDead",
+    [6]="BarometerNegative",
+    [7]="CompassModTooLarge",
+    [8]="GyroBiasTooLarge",
+    [9]="AcceBiasTooLarge",
+    [10]="CompassNoiseTooLarge",
+    [11]="BarometerNoiseTooLarge",
+    [12]="WaitingMcStationary",
+    [13]="AcceMoveTooLarge",
+    [14]="McHeaderMoved",
+    [15]="McVirbrated",
+    [100]="None",
+}
+
 f.flyc_osd_general_longtitude = ProtoField.double ("dji_p3.flyc_osd_general_longtitude", "Longtitude", base.DEC)
 f.flyc_osd_general_latitude = ProtoField.double ("dji_p3.flyc_osd_general_latitude", "Latitude", base.DEC)
 f.flyc_osd_general_relative_height = ProtoField.int16 ("dji_p3.flyc_osd_general_relative_height", "Relative Height", base.DEC, nil, nil, "0.1m, altitude to ground")
@@ -389,7 +566,8 @@ f.flyc_osd_general_vgz = ProtoField.int16 ("dji_p3.flyc_osd_general_vgz", "Vgz",
 f.flyc_osd_general_pitch = ProtoField.int16 ("dji_p3.flyc_osd_general_pitch", "Pitch", base.DEC, nil, nil, "0.1")
 f.flyc_osd_general_roll = ProtoField.int16 ("dji_p3.flyc_osd_general_roll", "Roll", base.DEC)
 f.flyc_osd_general_yaw = ProtoField.int16 ("dji_p3.flyc_osd_general_yaw", "Yaw", base.DEC)
-f.flyc_osd_general_mode1 = ProtoField.uint8 ("dji_p3.flyc_osd_general_mode1", "Mode1", base.HEX, FLYC_OSD_GENERAL_MODE1_ENUM, nil, "Flight Controller state1")
+f.flyc_osd_general_mode1 = ProtoField.uint8 ("dji_p3.flyc_osd_general_mode1", "Mode1", base.HEX, FLYC_OSD_GENERAL_MODE1_ENUM, 0x7F, "Flight Controller state1")
+f.flyc_osd_general_rc_state = ProtoField.uint8 ("dji_p3.flyc_osd_general_rc_state", "RC State", base.HEX, nil, 0x80, nil)
 f.flyc_osd_general_latest_cmd = ProtoField.uint8 ("dji_p3.flyc_osd_general_latest_cmd", "Latest Cmd", base.HEX, FLYC_OSD_GENERAL_COMMAND_ENUM, nil, "controller exccute lastest cmd")
 f.flyc_osd_general_controller_state = ProtoField.uint32 ("dji_p3.flyc_osd_general_controller_state", "Controller State", base.HEX, nil, nil, "Flight Controller state flags")
   f.flyc_osd_general_e_can_ioc_work = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_can_ioc_work", "E Can IOC Work", base.HEX, nil, 0x01, nil)
@@ -417,23 +595,24 @@ f.flyc_osd_general_controller_state = ProtoField.uint32 ("dji_p3.flyc_osd_genera
   f.flyc_osd_general_e_gohome_height_mod = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gohome_height_mod", "E GoHome Height Mod", base.HEX, nil, 0x40000000, "Go Home Height is Modified")
   f.flyc_osd_general_e_out_of_limit = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_out_of_limit", "E Is Out Of Limit", base.HEX, nil, 0x80000000, nil)
 f.flyc_osd_general_gps_nums = ProtoField.uint8 ("dji_p3.flyc_osd_general_gps_nums", "Gps Nums", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
-f.flyc_osd_general_gohome_landing_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_gohome_landing_reason", "Gohome Landing Reason", base.HEX)
-f.flyc_osd_general_start_fail_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_start_fail_reason", "Start Fail Reason", base.HEX, DJI_P3_FLIGHT_RECORD_OSD_GENERAL_START_FAIL_REASON, nil, "Reason for failure to start motors")
+f.flyc_osd_general_gohome_landing_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_gohome_landing_reason", "Gohome or Landing Reason", base.HEX, FLYC_OSD_GENERAL_GOHOME_REASON_ENUM, nil, "Reason for automatic GoHome or Landing")
+f.flyc_osd_general_start_fail_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_start_fail_reason", "Start Fail Reason", base.HEX, FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM, nil, "Reason for failure to start motors")
 f.flyc_osd_general_controller_state_ext = ProtoField.uint8 ("dji_p3.flyc_osd_general_controller_state_ext", "Controller State Ext", base.HEX)
-  f.flyc_osd_general_e_gps_state = ProtoField.uint8 ("dji_p3.flyc_osd_general_e_gps_state", "E Gps State", base.HEX, nil, 0x0f, nil)
-f.flyc_osd_general_rsvd2 = ProtoField.uint8 ("dji_p3.flyc_osd_general_rsvd2", "Reserved2", base.DEC, nil, nil, "On Ph3, Battery Remaining Capacity")
+  f.flyc_osd_general_e_gps_state = ProtoField.uint8 ("dji_p3.flyc_osd_general_e_gps_state", "E Gps State", base.HEX, FLYC_OSD_GENERAL_GPS_STATE_ENUM, 0x0f, nil)
+  f.flyc_osd_general_e_wp_limit_md = ProtoField.uint8 ("dji_p3.flyc_osd_general_e_wp_limit_md", "E Wp Limit Mode", base.HEX, nil, 0x10, "Waypoint Limit Mode")
+f.flyc_osd_general_batt_remain = ProtoField.uint8 ("dji_p3.flyc_osd_general_batt_remain", "Battery Remain", base.DEC, nil, nil, "Battery Remaining Capacity")
 f.flyc_osd_general_ultrasonic_height = ProtoField.uint8 ("dji_p3.flyc_osd_general_ultrasonic_height", "Ultrasonic Height", base.DEC)
 f.flyc_osd_general_motor_startup_time = ProtoField.uint16 ("dji_p3.flyc_osd_general_motor_startup_time", "Motor Startup Time", base.DEC)
-f.flyc_osd_general_motor_startup_times = ProtoField.uint8 ("dji_p3.flyc_osd_general_motor_startup_times", "Motor Startup Times", base.DEC)
+f.flyc_osd_general_motor_startup_times = ProtoField.uint8 ("dji_p3.flyc_osd_general_motor_startup_times", "Motor Startup Times", base.DEC, nil, nil, "aka Motor Revolution")
 f.flyc_osd_general_bat_alarm1 = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_alarm1", "Bat Alarm1", base.HEX)
   f.flyc_osd_general_bat_alarm1_ve = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_alarm1_ve", "Alarm Level 1 Voltage", base.DEC, nil, 0x7F)
   f.flyc_osd_general_bat_alarm1_fn = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_alarm1_fn", "Alarm Level 1 Function", base.DEC, nil, 0x80)
 f.flyc_osd_general_bat_alarm2 = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_alarm2", "Bat Alarm2", base.HEX)
   f.flyc_osd_general_bat_alarm2_ve = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_alarm2_ve", "Alarm Level 2 Voltage", base.DEC, nil, 0x7F)
   f.flyc_osd_general_bat_alarm2_fn = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_alarm2_fn", "Alarm Level 2 Function", base.DEC, nil, 0x80)
-f.flyc_osd_general_version_match = ProtoField.uint8 ("dji_p3.flyc_osd_general_version_match", "Version Match", base.HEX)
-f.flyc_osd_general_product_type = ProtoField.uint8 ("dji_p3.flyc_osd_general_product_type", "Product Type", base.HEX)
-f.flyc_osd_general_fld31 = ProtoField.int8 ("dji_p3.flyc_osd_general_fld31", "Field31", base.DEC)
+f.flyc_osd_general_version_match = ProtoField.uint8 ("dji_p3.flyc_osd_general_version_match", "Version Match", base.HEX, nil, nil, "Flight Controller version")
+f.flyc_osd_general_product_type = ProtoField.uint8 ("dji_p3.flyc_osd_general_product_type", "Product Type", base.HEX, FLYC_OSD_GENERAL_PRODUCT_TYPE_ENUM)
+f.flyc_osd_general_imu_init_fail_reson = ProtoField.int8 ("dji_p3.flyc_osd_general_imu_init_fail_reson", "IMU init Fail Reason", base.DEC, FLYC_OSD_GENERAL_IMU_INIT_FAIL_RESON_ENUM)
 
 local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -468,6 +647,7 @@ local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo,
     offset = offset + 2
 
     subtree:add_le (f.flyc_osd_general_mode1, payload(offset, 1))
+    subtree:add_le (f.flyc_osd_general_rc_state, payload(offset, 1))
     offset = offset + 1
 
     subtree:add_le (f.flyc_osd_general_latest_cmd, payload(offset, 1))
@@ -511,9 +691,10 @@ local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo,
 
     subtree:add_le (f.flyc_osd_general_controller_state_ext, payload(offset, 1))
     subtree:add_le (f.flyc_osd_general_e_gps_state, payload(offset, 1))
+    subtree:add_le (f.flyc_osd_general_e_wp_limit_md, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_osd_general_rsvd2, payload(offset, 1)) -- offset = 40
+    subtree:add_le (f.flyc_osd_general_batt_remain, payload(offset, 1)) -- offset = 40
     offset = offset + 1
 
     subtree:add_le (f.flyc_osd_general_ultrasonic_height, payload(offset, 1))
@@ -541,7 +722,7 @@ local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo,
     subtree:add_le (f.flyc_osd_general_product_type, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_osd_general_fld31, payload(offset, 1))
+    subtree:add_le (f.flyc_osd_general_imu_init_fail_reson, payload(offset, 1))
     offset = offset + 1
 
     if (offset ~= 50) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd General: Offset does not match - internal inconsistency") end
