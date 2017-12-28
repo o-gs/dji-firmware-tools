@@ -1,23 +1,10 @@
 #!/usr/bin/env python3
 
-""" Recorder Type Definitions parser with Wireshark LUA out
+""" Java Classes with Packet Definitions parser, with Wireshark LUA out
 
 If you don't know what this tool is, you most likely don't need it.
 
-Example input file:
----
-Op.[config]
-name   imu_data_status 
-type   19
-Op.uint8_t 	start_fan
-Op.uint8_t  	led_status
-Op.[string]
-name	        drv_log
-type			65530
----
-
-Such file can be extracted from DAT log files, or for older generations
-of hardware, from the Viewer included in Dji Assistant software.
+Input for this file is a decompiled Dji Go app, or other app with packets definitions.
 
 """
 
@@ -42,16 +29,18 @@ class RPropType(enum.IntEnum):
   none = 0
   int8_t = 1
   int16_t = 2
-  int32_t = 3
-  int64_t = 4
-  uint8_t = 5
-  uint16_t = 6
-  uint32_t = 7
-  uint64_t = 8
-  fp16 = 9
-  fp32 = 10
-  fp64 = 11
-  expr = 12
+  int24_t = 3
+  int32_t = 4
+  int64_t = 5
+  uint8_t = 6
+  uint16_t = 7
+  uint24_t = 8
+  uint32_t = 9
+  uint64_t = 10
+  fp16 = 11
+  fp32 = 12
+  fp64 = 13
+  expr = 14
 
 class RecProp:
   def __init__(self):
@@ -80,31 +69,37 @@ class JavaFunc:
       self.body = []
 
 def prop_type_len(ntype):
-  arr =[0, 1, 2, 4, 8, 1, 2, 4, 8, 2, 4, 8, 0]
+  arr =[0, 1, 2, 3, 4, 8, 1, 2, 3, 4, 8, 2, 4, 8, 0]
   return arr[ntype]
 
 def prop_len(prop):
   if (prop.arrlen > 0):
-      return prop_type_len(prop.ntype) * prop.arrlen
+      return prop_type_len(prop.base_type) * prop.arrlen
   else:
-      return prop_type_len(prop.ntype)
+      return prop_type_len(prop.base_type)
 
 def prop_typestr_to_ntype(typestr):
   sstr = typestr.strip().lower()
   # alternate names first
-  arr2 =["na", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "lofloat", "float", "double", "ex"]
+  arr2 =["na", "int8", "int16", "int24", "int32", "int64", "uint8", "uint16", "uint24", "uint32", "uint64", "lofloat", "float", "double", "ex"]
   if sstr in arr2:
       return arr2.index(sstr)
   # now the proper name search
-  arr =["none", "int8_t", "int16_t", "int32_t", "int64_t", "uint8_t", "uint16_t", "uint32_t", "uint64_t", "fp16", "fp32", "fp64", "expr"]
+  arr =["none", "int8_t", "int16_t", "int24_t", "int32_t", "int64_t", "uint8_t", "uint16_t", "uint24_t", "uint32_t", "uint64_t", "fp16", "fp32", "fp64", "expr"]
   return arr.index(sstr)
 
 def java_typestr_to_ntype(nbytes, typestr):
   sstr = typestr.strip().lower()+str(int(nbytes)*8)
   # alternate names first
-  arr2 =["na0", "integer8", "integer16", "integer32", "integer64", "uint8", "uint16", "uint32", "uint64", "float16", "float32", "double64", "ex0"]
+  arr3 =["na0", "integer8", "integer16", "integer24", "integer32", "integer64", "uint8", "uint16", "uint24", "uint32", "uint64", "float16", "float32", "double64", "ex0"]
+  if sstr in arr3:
+      return arr3.index(sstr)
+  arr2 =["na0", "short8", "short16", "short24", "short32", "short64", "uint8", "uint16", "uint24", "uint32", "uint64", "float16", "float32", "double64", "ex0"]
   if sstr in arr2:
       return arr2.index(sstr)
+  arr1 =["na0", "long8", "long16", "long24", "long32", "long64", "ulong8", "ulong16", "ulong24", "ulong32", "ulong64", "float16", "float32", "double64", "ex0"]
+  if sstr in arr1:
+      return arr1.index(sstr)
   return 0
 
 def cmdset_short_name_str(cmdset):
@@ -342,6 +337,25 @@ def java_func_to_property(po, fname, rst, func):
   if len(func.body) == 1:
       # Check known one-liners
       for line in func.body:
+          match = re.search("^return ([\(]?\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)[\)]?( >> ([A-Za-z0-9._-]+))? & ([A-Za-z0-9._-]+);$", line)
+          if match:
+              prop = RecProp()
+              prop.pos = int(match.group(2))
+              tmp1_name = func.name
+              if (tmp1_name.startswith("get")):
+                  tmp1_name = tmp1_name[3:]
+              prop.name = camel_to_snake(tmp1_name)
+              bit_mask_shift = int(match.group(6) or "0")
+              bit_mask_base = int(match.group(7))
+              prop.base_type = java_typestr_to_ntype(match.group(3),match.group(4))
+              prop.ntype = RPropType.expr
+              # Convert negative bitmasks to proper positive ones
+              if bit_mask_base < 0: bit_mask_base = (~bit_mask_base) & (pow(2,prop_type_len(prop.base_type)*8)-1)
+              prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
+              print("{}: Property type {} size {} at offs {}".format(fname,match.group(4),match.group(3),match.group(2)))
+              if (prop.base_type <= RPropType.none):
+                  eprint("{}: Property type {} size {} not recognized!".format(fname,match.group(4),match.group(3)))
+              return prop
           match = re.search("^return ([\(]?\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._]+), ([A-Za-z0-9._]+), ([A-Za-z0-9._]+).class\)[\)]?.*;$", line)
           if match:
               prop = RecProp()
@@ -355,7 +369,7 @@ def java_func_to_property(po, fname, rst, func):
               prop.base_type = java_typestr_to_ntype(match.group(3),match.group(4))
               prop.ntype = prop.base_type
               print("{}: Property type {} size {} at offs {}".format(fname,match.group(4),match.group(3),match.group(2)))
-              if (prop.ntype <= RPropType.none):
+              if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized!".format(fname,match.group(4),match.group(3)))
               return prop
   return None
@@ -366,8 +380,12 @@ def java_dupc_reclist_linearize(po, reclist):
       sorted_props = sorted(rst.props, key=lambda prop: prop.pos * 2 + (1 if prop.ntype == RPropType.expr else 0) )
       rst.props = []
       prv_prop = RecProp()
+      prv_prop.name="unknown{:02X}".format(0)
+      prv_prop.base_type = RPropType.uint8_t
+      prv_prop.pos = -1
       pktpos = 0
       for prop in sorted_props:
+
           if pktpos < prop.pos:
               nprop = RecProp()
               nprop.pos = pktpos
@@ -377,10 +395,22 @@ def java_dupc_reclist_linearize(po, reclist):
               if prop.pos - pktpos > 1:
                   nprop.arrlen = prop.pos - pktpos
               rst.props.append(nprop)
-              pktpos += prop_len(nprop)
-          elif pktpos > prop.pos:
+              prv_prop = nprop
+              pktpos += prop_len(prv_prop)
+
+          if pktpos > prop.pos:
+              # If we have properties with overlapping offsets, convert the current to expr.
+              # Unless it is already expr, which would mean this is already done in previous stge of parsing.
+              if prop.ntype != RPropType.expr:
+                  # Convert current to expr
+                  prop.val = "bitand(shift_r({},{}),{})".format(prv_prop.name,0,pow(2,prop_type_len(prop.base_type)*8)-1)
+                  prop.ntype = RPropType.expr
+              pktpos = prv_prop.pos
+
+          if pktpos == prop.pos:
               # Each pack of expr entries should start with non-expr base prop at the same offset
-              if prv_prop.pos < prop.pos:
+              # If we have no non-expr base or phony prv_prop, and expr props started - create the non-expr base
+              if (prv_prop.pos < prop.pos) and (prop.ntype == RPropType.expr):
                   # Create base property, without mask
                   bprop = RecProp()
                   bprop.pos = prop.pos
@@ -389,17 +419,16 @@ def java_dupc_reclist_linearize(po, reclist):
                   bprop.ntype = bprop.base_type
                   rst.props.append(bprop)
                   prv_prop = bprop
-              # If we have properties with overlapping offsets, convert the current to expr.
-              # Unless it is already expr, which would mean this is already done in previous stge of parsing.
-              if prop.ntype != RPropType.expr:
-                  # Convert current to expr
-                  prop.val = "bitand(shift_r({},{}),{})".format(prv_prop.name,0,pow(2,prop_type_len(prop.base_type)*8)-1)
-                  prop.ntype = RPropType.expr
-                  pktpos = prv_prop.pos
+                  pktpos += prop_len(prv_prop)
+
+          # Auto detect property names which were not set in previous stge of parsing.
+          if prop.ntype == RPropType.expr:
+              prop.val = prop.val.replace("(auto_detect_name,","("+prv_prop.name+",")
+
           if prop.ntype != RPropType.expr:
               prv_prop = prop
+              pktpos += prop_len(prv_prop)
           rst.props.append(prop)
-          pktpos += prop_len(prv_prop)
           
   return reclist
 
@@ -445,13 +474,13 @@ class LuaProtoField:
 def prop_best_lua_base(prop):
   if (prop.arrlen > 0):
       return "SPACE"
-  arr =["NONE", "DEC", "DEC", "DEC", "DEC", "HEX", "HEX", "HEX", "HEX", "HEX", "DEC", "DEC", "NONE"]
+  arr =["NONE", "DEC", "DEC", "DEC", "DEC", "DEC", "HEX", "HEX", "HEX", "HEX", "HEX", "HEX", "DEC", "DEC", "NONE"]
   return arr[prop.ntype]
 
 def prop_best_lua_proto_type(prop):
   if (prop.arrlen > 0):
       return "bytes"
-  arr =["none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "uint16", "float", "double", "none"]
+  arr =["none", "int8", "int16", "int24", "int32", "int64", "uint8", "uint16", "uint24", "uint32", "uint64", "uint16", "float", "double", "none"]
   return arr[prop.ntype]
 
 def recmsg_write_enum_lua(po, luafile, enum_list, enum_name, enum_modifier=""):
@@ -548,6 +577,8 @@ def recmsg_write_cmd_config_dissector_lua(po, luafile, rst):
                       proto.dt_mask = int(match.group(2))
                   if len(parent_field) < 1:
                       eprint("{}: Warning: Skipped expr property named '{}' in config '{}' - no bit mask format.".format(po.luafile,prop.name,rst.name))
+                      if (po.verbose > 2):
+                          eprint("{}: Skipped value: '{}'.".format(po.luafile,prop.val))
                       proto.commented = True
                       proto.descr = prop.val.strip()
                       proto_list.append(proto)
