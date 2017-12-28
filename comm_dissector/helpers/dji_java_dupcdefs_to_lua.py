@@ -122,6 +122,21 @@ def camel_to_snake(s):
     subbed = _underscorer1.sub(r'\1_\2', s)
     return _underscorer2.sub(r'\1_\2', subbed).lower()
 
+def mask_to_shift_and_base(whole_mask):
+    offset = 0
+    while ((whole_mask >> offset) & 1) == 0:
+        offset += 1
+    mask_shift = offset
+    while ((whole_mask >> offset) & 1) == 1:
+        offset += 1
+    mask_bits = offset - mask_shift
+    mask_base = 0
+    i = 0
+    while i < mask_base:
+        mask_base = (mask_base << 1) | 1
+        i += 1
+    return mask_shift, mask_base
+
 def java_cmdset_parse(po, cmdsetfile):
   """
 Parses command set file and gets class names for each cmdset from an enum like:
@@ -336,27 +351,54 @@ def java_func_to_property(po, fname, rst, func):
       return None
   if len(func.body) == 1:
       # Check known one-liners
-      for line in func.body:
+      line = func.body[0]
+      if True:
+          # Example: return (Integer)this.get(1, 1, Integer.class) >> 4 & 15;
           match = re.search("^return ([\(]?\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)[\)]?( >> ([A-Za-z0-9._-]+))? & ([A-Za-z0-9._-]+);$", line)
           if match:
               prop = RecProp()
               prop.pos = int(match.group(2))
+              prop_dsize = match.group(3)
+              prop_dtype = match.group(4)
               tmp1_name = func.name
               if (tmp1_name.startswith("get")):
                   tmp1_name = tmp1_name[3:]
               prop.name = camel_to_snake(tmp1_name)
               bit_mask_shift = int(match.group(6) or "0")
               bit_mask_base = int(match.group(7))
-              prop.base_type = java_typestr_to_ntype(match.group(3),match.group(4))
+              prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = RPropType.expr
               # Convert negative bitmasks to proper positive ones
               if bit_mask_base < 0: bit_mask_base = (~bit_mask_base) & (pow(2,prop_type_len(prop.base_type)*8)-1)
               prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
-              print("{}: Property type {} size {} at offs {}".format(fname,match.group(4),match.group(3),match.group(2)))
+              if (po.verbose > 2):
+                  print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
-                  eprint("{}: Property type {} size {} not recognized!".format(fname,match.group(4),match.group(3)))
+                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
               return prop
-          match = re.search("^return ([\(]?\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._]+), ([A-Za-z0-9._]+), ([A-Za-z0-9._]+).class\)[\)]?.*;$", line)
+          # Example: return (Integer)this.get(this.dataOffset + 1, 1, Integer.class);
+          match = re.search("^return ([\(]?\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+) \+ ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)[\)]?;$", line)
+          if match:
+              prop = RecProp()
+              prop_pos_shift = match.group(2)
+              prop.pos = int(match.group(3))
+              prop_dsize = match.group(4)
+              prop_dtype = match.group(5)
+              tmp1_name = func.name
+              if (tmp1_name.startswith("get")):
+                  tmp1_name = tmp1_name[3:]
+              prop.name = camel_to_snake(tmp1_name)
+              prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
+              prop.ntype = prop.base_type
+              prop.comment = "Offset shifted by unknown value {}".format(prop_pos_shift)
+              if (po.verbose > 2):
+                  print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
+              if (prop.base_type <= RPropType.none):
+                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              return prop
+          # Example 1: return (Integer)this.get(4, 1, Integer.class);
+          # Example 2: return ((Float)this.get(16, 4, Float.class)).floatValue();
+          match = re.search("^return ([\(]?\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._]+), ([A-Za-z0-9._]+), ([A-Za-z0-9._]+).class\)[\)]?([.][A-Za-z0-9._]+Value\(\))?;$", line)
           if match:
               prop = RecProp()
               prop.pos = int(match.group(2))
@@ -368,10 +410,96 @@ def java_func_to_property(po, fname, rst, func):
               #prop.comment = 
               prop.base_type = java_typestr_to_ntype(match.group(3),match.group(4))
               prop.ntype = prop.base_type
-              print("{}: Property type {} size {} at offs {}".format(fname,match.group(4),match.group(3),match.group(2)))
+              if (po.verbose > 2):
+                  print("{}: Property type {} size {} at offs {}".format(fname,match.group(4),match.group(3),match.group(2)))
               if (prop.base_type <= RPropType.none):
-                  eprint("{}: Property type {} size {} not recognized!".format(fname,match.group(4),match.group(3)))
+                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,match.group(4),match.group(3),func.name))
               return prop
+  if len(func.body) == 2:
+      line = func.body[1]
+      # Check for a 2-liner which returns bool
+      match = re.search("^return (true|false);$", line)
+      if match:
+          line = func.body[0]
+          # Example: if ((Integer)this.get(0, 1, Integer.class) == 0) return false;
+          match = re.search("^if \((\([A-Za-z0-9._]+\))?this.get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\) ([=!]+) ([A-Za-z0-9._-]+)\) return (true|false);$", line)
+          if match:
+              prop = RecProp()
+              prop.pos = int(match.group(2))
+              prop_dsize = match.group(3)
+              prop_dtype = match.group(4)
+              prop_op = match.group(5)
+              prop_val = int(match.group(6))
+              prop_bool = match.group(7)
+              tmp1_name = func.name
+              if (tmp1_name.startswith("is")):
+                  tmp1_name = tmp1_name[2:]
+              prop_neg = False
+              if (prop_op == "==") and (prop_val == 0):
+                  prop_neg = (prop_bool == "true")
+              elif (prop_op == "!=") and (prop_val == 0):
+                  prop_neg = (prop_bool == "false")
+              elif (prop_op == "==") and (prop_val == 1):
+                  prop_neg = (prop_bool == "false")
+              elif (prop_op == "!=") and (prop_val == 1):
+                  prop_neg = (prop_bool == "true")
+              else:
+                  prop.comment = "Unrecognized conditions in {}".format(func.name)
+                  eprint("{}: Unrecognized conditions combinationin bool function {}!".format(fname,func.name))
+              prop.name = camel_to_snake(tmp1_name)
+              if (prop_neg): prop.name = "not_"+prop.name
+              prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
+              prop.ntype = prop.base_type
+              if (po.verbose > 2):
+                  print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
+              if (prop.base_type <= RPropType.none):
+                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              return prop
+          # Example 1: if (((Integer)this.get(1, 1, Integer.class) & 2) != 2) return false;
+          # Example 2: if ((this.get(30, 1, Short.class) & 128) != 0) return false;
+          match = re.search("^if \(\((\([A-Za-z0-9._]+\))?this.get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\) & ([A-Za-z0-9._-]+)\) ([=!]+) ([A-Za-z0-9._-]+)[\)] return (true|false);$", line)
+          if match:
+              prop = RecProp()
+              prop.pos = int(match.group(2))
+              prop_dsize = match.group(3)
+              prop_dtype = match.group(4)
+              prop_mask = int(match.group(5))
+              prop_op = match.group(6)
+              prop_val = int(match.group(7))
+              prop_bool = match.group(8)
+              tmp1_name = func.name
+              if (tmp1_name.startswith("is")):
+                  tmp1_name = tmp1_name[2:]
+              bit_mask_shift, bit_mask_base = mask_to_shift_and_base(prop_mask)
+              prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
+              prop_neg = False
+              if (prop_op == "==") and (prop_val == 0):
+                  prop_neg = (prop_bool == "true")
+              elif (prop_op == "!=") and (prop_val == 0):
+                  prop_neg = (prop_bool == "false")
+              elif (prop_op == "==") and (prop_val == prop_mask):
+                  prop_neg = (prop_bool == "false")
+              elif (prop_op == "!=") and (prop_val == prop_mask):
+                  prop_neg = (prop_bool == "true")
+              else:
+                  prop.comment = "Unrecognized conditions in {}".format(func.name)
+                  eprint("{}: Unrecognized conditions combinationin bool function {}!".format(fname,func.name))
+              prop.name = camel_to_snake(tmp1_name)
+              if (prop_neg): prop.name = "not_"+prop.name
+              prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
+              prop.ntype = RPropType.expr
+              if (po.verbose > 2):
+                  print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
+              if (prop.base_type <= RPropType.none):
+                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              return prop
+
+
+  for line in func.body:
+      match = re.search("this[.]get\(", line)
+      if match:
+          eprint("{}: Function {} contains 'get' but its structure was not recognized!".format(fname,func.name))
+          break
   return None
 
 def java_dupc_reclist_linearize(po, reclist):
@@ -464,7 +592,8 @@ class LuaProtoField:
       else:
           add_params_str = ", {}, {}, {}".format(add_params[0],add_params[1],add_params[2])
       return "{}f.{}_{} = ProtoField.{} (\"{}.{}_{}\", \"{}\", base.{}{})\n".format("--" if self.commented else "",
-          self.cmdset_str, self.name_fltr, self.dt_type, protocol_name, self.cmdset_str, self.name_fltr, self.name_view, self.dt_style, add_params_str)
+          self.cmdset_str, self.name_fltr, self.dt_type, protocol_name, self.cmdset_str, self.name_fltr, self.name_view,
+          self.dt_style, add_params_str)
   def format_lua_protofield_inst(self, protocol_name):
       """ Format string containing LUA ProtoField instantiation
       """
