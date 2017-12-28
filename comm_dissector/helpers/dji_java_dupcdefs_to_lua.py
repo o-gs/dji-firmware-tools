@@ -38,23 +38,27 @@ class ProgOptions:
   product = 'dji_mavic'
   command = ''
 
-class RPropType(enum.Enum):
+class RPropType(enum.IntEnum):
   none = 0
   int8_t = 1
   int16_t = 2
   int32_t = 3
-  uint8_t = 4
-  uint16_t = 5
-  uint32_t = 6
-  fp32 = 7
-  fp64 = 8
-  expr = 9
+  int64_t = 4
+  uint8_t = 5
+  uint16_t = 6
+  uint32_t = 7
+  uint64_t = 8
+  fp16 = 9
+  fp32 = 10
+  fp64 = 11
+  expr = 12
 
 class RecProp:
   def __init__(self):
       self.name = ''
       self.pos = 0
-      self.ntype = 0
+      self.ntype = RPropType.none
+      self.base_type = RPropType.none
       self.arrlen = 0
       self.val = ''
       self.comment = ''
@@ -76,7 +80,7 @@ class JavaFunc:
       self.body = []
 
 def prop_type_len(ntype):
-  arr =[0, 1, 2, 4, 1, 2, 4, 4, 8, 0]
+  arr =[0, 1, 2, 4, 8, 1, 2, 4, 8, 2, 4, 8, 0]
   return arr[ntype]
 
 def prop_len(prop):
@@ -88,17 +92,17 @@ def prop_len(prop):
 def prop_typestr_to_ntype(typestr):
   sstr = typestr.strip().lower()
   # alternate names first
-  arr2 =["na", "int8", "int16", "int32", "uint8", "uint16", "uint32", "float", "double", "ex"]
+  arr2 =["na", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "lofloat", "float", "double", "ex"]
   if sstr in arr2:
       return arr2.index(sstr)
   # now the proper name search
-  arr =["none", "int8_t", "int16_t", "int32_t", "uint8_t", "uint16_t", "uint32_t", "fp32", "fp64", "expr"]
+  arr =["none", "int8_t", "int16_t", "int32_t", "int64_t", "uint8_t", "uint16_t", "uint32_t", "uint64_t", "fp16", "fp32", "fp64", "expr"]
   return arr.index(sstr)
 
 def java_typestr_to_ntype(nbytes, typestr):
   sstr = typestr.strip().lower()+str(int(nbytes)*8)
   # alternate names first
-  arr2 =["na0", "integer8", "integer16", "integer32", "uint8", "uint16", "uint32", "float32", "double64", "ex0"]
+  arr2 =["na0", "integer8", "integer16", "integer32", "integer64", "uint8", "uint16", "uint32", "uint64", "float16", "float32", "double64", "ex0"]
   if sstr in arr2:
       return arr2.index(sstr)
   return 0
@@ -348,38 +352,54 @@ def java_func_to_property(po, fname, rst, func):
               prop.name = camel_to_snake(tmp1_name)
               #prop.val = 
               #prop.comment = 
-              prop.ntype = java_typestr_to_ntype(match.group(3),match.group(4))
+              prop.base_type = java_typestr_to_ntype(match.group(3),match.group(4))
+              prop.ntype = prop.base_type
               print("{}: Property type {} size {} at offs {}".format(fname,match.group(4),match.group(3),match.group(2)))
-              if (prop.ntype < 1):
+              if (prop.ntype <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized!".format(fname,match.group(4),match.group(3)))
               return prop
   return None
 
 def java_dupc_reclist_linearize(po, reclist):
   for rst in reclist:
-      sorted_props = sorted(rst.props, key=lambda prop: prop.pos)
+      # Sort by pos, but if there are several entries with same pos, place other than RPropType.expr first
+      sorted_props = sorted(rst.props, key=lambda prop: prop.pos * 2 + (1 if prop.ntype == RPropType.expr else 0) )
       rst.props = []
-      prv_prop = None
+      prv_prop = RecProp()
       pktpos = 0
       for prop in sorted_props:
           if pktpos < prop.pos:
               nprop = RecProp()
               nprop.pos = pktpos
               nprop.name = "unknown{:02X}".format(pktpos)
-              nprop.ntype = 4 # uint8_t
+              nprop.base_type = RPropType.uint8_t
+              nprop.ntype = nprop.base_type
               if prop.pos - pktpos > 1:
                   nprop.arrlen = prop.pos - pktpos
               rst.props.append(nprop)
               pktpos += prop_len(nprop)
           elif pktpos > prop.pos:
-              if len(prv_prop) < 1:
-              else:
-                  rst.props.append(prop)
-              #TODO handle overlaping, ie. bitfields
-              pass
-          prv_prop = prop
+              # Each pack of expr entries should start with non-expr base prop at the same offset
+              if prv_prop.pos < prop.pos:
+                  # Create base property, without mask
+                  bprop = RecProp()
+                  bprop.pos = prop.pos
+                  bprop.name = "masked{:02X}".format(prop.pos)
+                  bprop.base_type = prop.base_type
+                  bprop.ntype = bprop.base_type
+                  rst.props.append(bprop)
+                  prv_prop = bprop
+              # If we have properties with overlapping offsets, convert the current to expr.
+              # Unless it is already expr, which would mean this is already done in previous stge of parsing.
+              if prop.ntype != RPropType.expr:
+                  # Convert current to expr
+                  prop.val = "bitand(shift_r({},{}),{})".format(prv_prop.name,0,pow(2,prop_type_len(prop.base_type)*8)-1)
+                  prop.ntype = RPropType.expr
+                  pktpos = prv_prop.pos
+          if prop.ntype != RPropType.expr:
+              prv_prop = prop
           rst.props.append(prop)
-          pktpos += prop_len(prop)
+          pktpos += prop_len(prv_prop)
           
   return reclist
 
@@ -425,13 +445,13 @@ class LuaProtoField:
 def prop_best_lua_base(prop):
   if (prop.arrlen > 0):
       return "SPACE"
-  arr =["NONE", "DEC", "DEC", "DEC", "HEX", "HEX", "HEX", "DEC", "DEC", "NONE"]
+  arr =["NONE", "DEC", "DEC", "DEC", "DEC", "HEX", "HEX", "HEX", "HEX", "HEX", "DEC", "DEC", "NONE"]
   return arr[prop.ntype]
 
 def prop_best_lua_proto_type(prop):
   if (prop.arrlen > 0):
       return "bytes"
-  arr =["none", "int8", "int16", "int32", "uint8", "uint16", "uint32", "float", "double", "none"]
+  arr =["none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "uint16", "float", "double", "none"]
   return arr[prop.ntype]
 
 def recmsg_write_enum_lua(po, luafile, enum_list, enum_name, enum_modifier=""):
@@ -503,7 +523,7 @@ def recmsg_write_cmd_config_dissector_lua(po, luafile, rst):
                       prop_best_lua_base(prop), prop_len(prop))
               proto.descr = prop.comment;
 
-              if prop.ntype == 9: # RPropType.expr
+              if prop.ntype == RPropType.expr:
                   # Try to match the expression to known mask formats
                   parent_field = ""
                   match = re.search("^bitand\([ \t]*shift_r[ \t]*\(([A-Za-z0-9._-]*)[ \t]*,([0-9._-]*)[ \t]*\),[ \t]*([0-9._-]*)[ \t]*\).*$", prop.val)
