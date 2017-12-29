@@ -377,6 +377,11 @@ def java_func_to_property(po, fname, rst, func):
       if match:
           func_nice_body.append(match.group(1))
           break
+      # Remove conditions in lines like: if (this._recData.length >= 38) return this.get(37, 2, Integer.class);
+      match = re.search("^if \(this[.]_recData[.]length >[=]? [A-Za-z0-9._]+\) (return .*this.get\(.*;)$", line)
+      if match:
+          func_nice_body.append(match.group(1))
+          break
       # Remove conditions in lines like: if (this._recData != null) return GOHOME_STATUS.find(this.get(32, 4, Integer.class) >> 5 & 7);
       match = re.search("^if \(this[.]_recData != null\) (return .*this.get\(.*;)$", line)
       if match:
@@ -406,8 +411,15 @@ def java_func_to_property(po, fname, rst, func):
       if match:
           in_block -= 1
       if in_block > 0:
-          func_nice_body2.append(line)
-      match = re.search("^if \(this[.]_recData != null && this[.]_recData.length > [A-Za-z0-9._]+\) \{$", line)
+          match = re.search("^(this[.][A-Za-z0-9_]+) = (.*this.get\(.*);$", line)
+          if match:
+              func_nice_body2.append("return {};".format(match.group(2)))
+          else:
+              func_nice_body2.append(line)
+      match = re.search("^if \([\(]?this[.]_recData != null[\)]? && [\(]?this[.]_recData.length > [A-Za-z0-9._]+[\)]?\) \{$", line)
+      if match:
+          in_block += 1
+      match = re.search("^if \([\(]?this[.]_recData != null[\)]? && [\(]?this[.]_recData\[[A-Za-z0-9._]+\].* [<>=!]+ [A-Za-z0-9._]+[\)]?\) \{$", line)
       if match:
           in_block += 1
   if len(func_nice_body2) > 0:
@@ -512,16 +524,17 @@ def java_func_to_property(po, fname, rst, func):
           # Example 1: return (Integer)this.get(4, 1, Integer.class);
           # Example 2: return ((Float)this.get(16, 4, Float.class)).floatValue();
           # Example 3: return (Integer)this.get(0, 1, Integer.class) - 256;
-          # Example 2: return this.get(8, 8, Double.class) * 180.0 / 3.141592653589793;
-          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._]+), ([A-Za-z0-9._]+), ([A-Za-z0-9._]+).class\)[\)]?([.][A-Za-z0-9._]+Value\(\))?( [*] ([A-Za-z0-9._]+))?( / ([A-Za-z0-9._]+))?( - ([A-Za-z0-9._]+))?;$", line)
+          # Example 4: return this.get(8, 8, Double.class) * 180.0 / 3.141592653589793;
+          # Example 5: return Math.round(((Float)this.get(0, 4, Float.class)).floatValue());
+          match = re.search("^return (Math[.]round)?[\(]?[\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._]+), ([A-Za-z0-9._]+), ([A-Za-z0-9._]+).class\)[\)]?([.][A-Za-z0-9._]+Value\(\))?[\)]?( [*] ([A-Za-z0-9._]+))?( / ([A-Za-z0-9._]+))?( - ([A-Za-z0-9._]+))?;$", line)
           if match:
               prop = RecProp()
-              prop.pos = int(match.group(2))
-              prop_dsize = match.group(3)
-              prop_dtype = match.group(4)
-              prop_mul = match.group(6)
-              prop_div = match.group(8)
-              prop_bias = match.group(10)
+              prop.pos = int(match.group(3))
+              prop_dsize = match.group(4)
+              prop_dtype = match.group(5)
+              prop_mul = match.group(7)
+              prop_div = match.group(9)
+              prop_bias = match.group(11)
               tmp1_name = func.name
               if (tmp1_name.startswith("get")):
                   tmp1_name = tmp1_name[3:]
@@ -537,11 +550,11 @@ def java_func_to_property(po, fname, rst, func):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
               return prop
           # Example 1: return AdvanceGoHomeState.find(this.get(4, 2, Integer.class) >> 2 & 7);
-          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)[.]find\((\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)( >>[>]? ([A-Za-z0-9._-]+))? & ([A-Za-z0-9._-]+)\)[\)]?;$", line)
+          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)?[.]find\((\([A-Za-z0-9._]+\))?[\(]?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)( >>[>]? ([A-Za-z0-9._-]+))? & ([A-Za-z0-9._-]+)\)[\)]?[\)]?;$", line)
           if match:
               prop = RecProp()
               prop.pos = int(match.group(4))
-              prop_enum_name = match.group(2)
+              prop_enum_name = match.group(2) # Value of None means 'this' is the enum
               prop_dsize = match.group(5)
               prop_dtype = match.group(6)
               tmp1_name = func.name
@@ -563,11 +576,11 @@ def java_func_to_property(po, fname, rst, func):
               return prop
           # Example 1: return PreciseLandingState.find((this.get(6, 2, Integer.class) & 6) >> 1);
           # Example 2: return RcModeChannel.find((this.get(32, 4, Integer.class) & 24576) >>> 13, this.getFlycVersion(), this.getDroneType(), false);
-          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)[.]find\([\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)( & ([A-Za-z0-9._-]+)\))? >>[>]? ([A-Za-z0-9._-]+)(, [A-Za-z0-9\(\)._-]+)?(, [A-Za-z0-9\(\)._-]+)?(, [A-Za-z0-9\(\)._-]+)?\)[\)]?;$", line)
+          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)?[.]find\([\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)( & ([A-Za-z0-9._-]+)\))? >>[>]? ([A-Za-z0-9._-]+)(, [A-Za-z0-9\(\)._-]+)?(, [A-Za-z0-9\(\)._-]+)?(, [A-Za-z0-9\(\)._-]+)?\)[\)]?;$", line)
           if match:
               prop = RecProp()
               prop.pos = int(match.group(4))
-              prop_enum_name = match.group(2)
+              prop_enum_name = match.group(2) # Value of None means 'this' is the enum
               prop_dsize = match.group(5)
               prop_dtype = match.group(6)
               tmp1_name = func.name
@@ -589,11 +602,11 @@ def java_func_to_property(po, fname, rst, func):
               return prop
           # Example 1: return VisionSensorType.find((Integer)this.get(2, 1, Integer.class));
           # Example 1: return FLIGHT_ACTION.find(this.get(37, 1, Short.class).shortValue());
-          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)[.]find\((\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)([.][A-Za-z0-9._]+Value\(\))?\)[\)]?;$", line)
+          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)?[.]find\((\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)([.][A-Za-z0-9._]+Value\(\))?\)[\)]?;$", line)
           if match:
               prop = RecProp()
               prop.pos = int(match.group(4))
-              prop_enum_name = match.group(2)
+              prop_enum_name = match.group(2) # Value of None means 'this' is the enum
               prop_dsize = match.group(5)
               prop_dtype = match.group(6)
               tmp1_name = func.name
