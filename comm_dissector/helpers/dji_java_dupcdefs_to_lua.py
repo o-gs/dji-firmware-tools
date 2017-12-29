@@ -433,22 +433,27 @@ def java_func_to_property(po, fname, rst, func):
               return prop
           # Example 1: return (Integer)this.get(4, 1, Integer.class);
           # Example 2: return ((Float)this.get(16, 4, Float.class)).floatValue();
-          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._]+), ([A-Za-z0-9._]+), ([A-Za-z0-9._]+).class\)[\)]?([.][A-Za-z0-9._]+Value\(\))?;$", line)
+          # Example 3: return (Integer)this.get(0, 1, Integer.class) - 256;
+          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._]+), ([A-Za-z0-9._]+), ([A-Za-z0-9._]+).class\)[\)]?([.][A-Za-z0-9._]+Value\(\))?( - ([A-Za-z0-9._]+))?;$", line)
           if match:
               prop = RecProp()
               prop.pos = int(match.group(2))
+              prop_dsize = match.group(3)
+              prop_dtype = match.group(4)
+              prop_bias = match.group(6)
               tmp1_name = func.name
               if (tmp1_name.startswith("get")):
                   tmp1_name = tmp1_name[3:]
               prop.name = camel_to_snake(tmp1_name)
               #prop.val = 
               #prop.comment = 
-              prop.base_type = java_typestr_to_ntype(match.group(3),match.group(4))
+              prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = prop.base_type
+              if (prop_bias is not None): prop.comment = "value bias {}".format(prop_bias)
               if (po.verbose > 2):
-                  print("{}: Property type {} size {} at offs {}".format(fname,match.group(4),match.group(3),match.group(2)))
+                  print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
-                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,match.group(4),match.group(3),func.name))
+                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
               return prop
           # Example 1: return AdvanceGoHomeState.find(this.get(4, 2, Integer.class) >> 2 & 7);
           match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)[.]find\((\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)( >>[>]? ([A-Za-z0-9._-]+))? & ([A-Za-z0-9._-]+)\)[\)]?;$", line)
@@ -563,16 +568,18 @@ def java_func_to_property(po, fname, rst, func):
               return prop
           # Example 1: if (((Integer)this.get(1, 1, Integer.class) & 2) != 2) return false;
           # Example 2: if ((this.get(30, 1, Short.class) & 128) != 0) return false;
-          match = re.search("^if \(\((\([A-Za-z0-9._]+\))?this.get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\) & ([A-Za-z0-9._-]+)\) ([=!]+) ([A-Za-z0-9._-]+)[\)] return (true|false);$", line)
+          # Example 3: if ((this.get(20, 2, Integer.class) & 16) >>> 4 == 0) return false;
+          match = re.search("^if \(\((\([A-Za-z0-9._]+\))?this.get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\) & ([A-Za-z0-9._-]+)\)( >>[>]? ([A-Za-z0-9._-]+))? ([=!]+) ([A-Za-z0-9._-]+)[\)] return (true|false);$", line)
           if match:
               prop = RecProp()
               prop.pos = int(match.group(2))
               prop_dsize = match.group(3)
               prop_dtype = match.group(4)
               prop_mask = int(match.group(5))
-              prop_op = match.group(6)
-              prop_val = int(match.group(7))
-              prop_bool = match.group(8)
+              #bit_mask_shift = int(match.group(7)) # No need - we will re-create the shift from shifted mask
+              prop_op = match.group(8)
+              prop_val = int(match.group(9))
+              prop_bool = match.group(10)
               tmp1_name = func.name
               if (tmp1_name.startswith("is")):
                   tmp1_name = tmp1_name[2:]
