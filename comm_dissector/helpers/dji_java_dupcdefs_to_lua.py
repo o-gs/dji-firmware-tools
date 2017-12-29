@@ -353,20 +353,47 @@ def java_func_to_property(po, fname, rst, func):
   if len(func.body) < 1:
       return None
   func_nice_body = []
+  in_block = 0
   for line in func.body:
+      # Remove heading like:
+      #  boolean bl = true;
+      match = re.search("^[A-Za-z0-9._]+ [A-Za-z0-9_]+ = [A-Za-z0-9._]+;$", line)
+      if match:
+          continue
       # Remove lines like: if (this._recData == null) return DataSingleSetPointPos.TapMode.a;
       match = re.search("^if \(this[.]_recData == null\) return [A-Za-z0-9._]+;$", line)
       if match:
           continue
       # Remove lines like: if (this._recData.length <= 20) return DataSingleSetPointPos.TapMode.a;
-      match = re.search("^if \(this[.]_recData.length <= [A-Za-z0-9._]+\) return [A-Za-z0-9._]+;$", line)
+      match = re.search("^if \(this[.]_recData[.]length <[=]? [A-Za-z0-9._]+\) return [A-Za-z0-9._]+;$", line)
       if match:
           continue
       # Remove lines like: if (DataOsdGetPushCommon.getInstance().getFlycVersion() < 16) return false;
       match = re.search("^if \([A-Za-z0-9._]+[.]getInstance\(\)[.]get[A-Za-z0-9._]+Version\(\) < [A-Za-z0-9._]+\) return [A-Za-z0-9._]+;$", line)
       if match:
           continue
-      func_nice_body.append(line)
+      # Remove conditions in lines like: if (this._recData.length != 0) return CHANNEL_STATUS.find((Integer)this.get(0, 1, Integer.class));
+      match = re.search("^if \(this[.]_recData[.]length != 0\) (return .*this.get\(.*;)$", line)
+      if match:
+          func_nice_body.append(match.group(1))
+          break
+      # Remove conditions in lines like: if (this._recData != null) return GOHOME_STATUS.find(this.get(32, 4, Integer.class) >> 5 & 7);
+      match = re.search("^if \(this[.]_recData != null\) (return .*this.get\(.*;)$", line)
+      if match:
+          func_nice_body.append(match.group(1))
+          break
+      # Remove block like:
+      #  if (this._recData == null) {
+      #      return bl;
+      #  }
+      match = re.search("^if \(this[.]_recData == null\) \{$", line)
+      if match:
+          in_block += 1
+      if in_block < 1:
+          func_nice_body.append(line)
+      match = re.search("\}", line)
+      if match:
+          in_block -= 1
 
   # Get content of a block like:
   #  if (this._recData != null && this._recData.length > 22) {
@@ -485,13 +512,16 @@ def java_func_to_property(po, fname, rst, func):
           # Example 1: return (Integer)this.get(4, 1, Integer.class);
           # Example 2: return ((Float)this.get(16, 4, Float.class)).floatValue();
           # Example 3: return (Integer)this.get(0, 1, Integer.class) - 256;
-          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._]+), ([A-Za-z0-9._]+), ([A-Za-z0-9._]+).class\)[\)]?([.][A-Za-z0-9._]+Value\(\))?( - ([A-Za-z0-9._]+))?;$", line)
+          # Example 2: return this.get(8, 8, Double.class) * 180.0 / 3.141592653589793;
+          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._]+), ([A-Za-z0-9._]+), ([A-Za-z0-9._]+).class\)[\)]?([.][A-Za-z0-9._]+Value\(\))?( [*] ([A-Za-z0-9._]+))?( / ([A-Za-z0-9._]+))?( - ([A-Za-z0-9._]+))?;$", line)
           if match:
               prop = RecProp()
               prop.pos = int(match.group(2))
               prop_dsize = match.group(3)
               prop_dtype = match.group(4)
-              prop_bias = match.group(6)
+              prop_mul = match.group(6)
+              prop_div = match.group(8)
+              prop_bias = match.group(10)
               tmp1_name = func.name
               if (tmp1_name.startswith("get")):
                   tmp1_name = tmp1_name[3:]
@@ -532,7 +562,8 @@ def java_func_to_property(po, fname, rst, func):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
               return prop
           # Example 1: return PreciseLandingState.find((this.get(6, 2, Integer.class) & 6) >> 1);
-          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)[.]find\([\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)( & ([A-Za-z0-9._-]+)\))? >>[>]? ([A-Za-z0-9._-]+)\)[\)]?;$", line)
+          # Example 2: return RcModeChannel.find((this.get(32, 4, Integer.class) & 24576) >>> 13, this.getFlycVersion(), this.getDroneType(), false);
+          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)[.]find\([\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)( & ([A-Za-z0-9._-]+)\))? >>[>]? ([A-Za-z0-9._-]+)(, [A-Za-z0-9\(\)._-]+)?(, [A-Za-z0-9\(\)._-]+)?(, [A-Za-z0-9\(\)._-]+)?\)[\)]?;$", line)
           if match:
               prop = RecProp()
               prop.pos = int(match.group(4))
@@ -557,7 +588,8 @@ def java_func_to_property(po, fname, rst, func):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
               return prop
           # Example 1: return VisionSensorType.find((Integer)this.get(2, 1, Integer.class));
-          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)[.]find\((\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)\)[\)]?;$", line)
+          # Example 1: return FLIGHT_ACTION.find(this.get(37, 1, Short.class).shortValue());
+          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)[.]find\((\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)([.][A-Za-z0-9._]+Value\(\))?\)[\)]?;$", line)
           if match:
               prop = RecProp()
               prop.pos = int(match.group(4))
@@ -756,7 +788,7 @@ def java_dupc_reclist_linearize(po, reclist):
                   # Convert current to expr
                   prop.val = "bitand(shift_r({},{}),{})".format(prv_prop.name,0,pow(2,prop_type_len(prop.base_type)*8)-1)
                   prop.ntype = RPropType.expr
-              pktpos = prv_prop.pos
+              #pktpos = prv_prop.pos # Do not update position by expr entry
 
           if pktpos == prop.pos:
               # Each pack of expr entries should start with non-expr base prop at the same offset
