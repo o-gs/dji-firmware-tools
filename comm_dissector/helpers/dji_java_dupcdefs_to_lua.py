@@ -24,6 +24,7 @@ class ProgOptions:
   verbose = 0
   product = 'dji_mavic'
   command = ''
+  stat_unrecognized = 0
 
 class RPropType(enum.IntEnum):
   none = 0
@@ -295,6 +296,8 @@ def java_dupc_classlist_parse(po, reclist):
       clsfile = open(rst.package.replace(".","/")+".java", "r")
       java_dupc_class_parse(po, rst, clsfile)
       clsfile.close();
+  if (po.verbose > 0):
+      print("In total, encoured {} unrecognized getter functions".format(po.stat_unrecognized))
   return reclist
 
 def java_dupc_class_parse(po, rst, clsfile):
@@ -352,14 +355,62 @@ def java_func_to_property(po, fname, rst, func):
   func_nice_body = []
   for line in func.body:
       # Remove lines like: if (this._recData == null) return DataSingleSetPointPos.TapMode.a;
-      match = re.search("^if \(this[.]_recData == null\) return .*;$", line)
+      match = re.search("^if \(this[.]_recData == null\) return [A-Za-z0-9._]+;$", line)
       if match:
           continue
       # Remove lines like: if (this._recData.length <= 20) return DataSingleSetPointPos.TapMode.a;
-      match = re.search("^if \(this[.]_recData.length <= .*\) return .*;$", line)
+      match = re.search("^if \(this[.]_recData.length <= [A-Za-z0-9._]+\) return [A-Za-z0-9._]+;$", line)
+      if match:
+          continue
+      # Remove lines like: if (DataOsdGetPushCommon.getInstance().getFlycVersion() < 16) return false;
+      match = re.search("^if \([A-Za-z0-9._]+[.]getInstance\(\)[.]get[A-Za-z0-9._]+Version\(\) < [A-Za-z0-9._]+\) return [A-Za-z0-9._]+;$", line)
       if match:
           continue
       func_nice_body.append(line)
+
+  # Get content of a block like:
+  #  if (this._recData != null && this._recData.length > 22) {
+  #      return TargetObjType.find((Integer)this.get(22, 1, Integer.class));
+  #  }
+  func_nice_body2 = []
+  in_block = 0
+  for line in func_nice_body:
+      match = re.search("\}", line)
+      if match:
+          in_block -= 1
+      if in_block > 0:
+          func_nice_body2.append(line)
+      match = re.search("^if \(this[.]_recData != null && this[.]_recData.length > [A-Za-z0-9._]+\) \{$", line)
+      if match:
+          in_block += 1
+  if len(func_nice_body2) > 0:
+      func_nice_body = func_nice_body2
+
+  # Skip heading like:
+  #  DataEyeGetPushFunctionList dataEyeGetPushFunctionList = DataEyeGetPushFunctionList.getInstance();
+  #  if (!dataEyeGetPushFunctionList.isGetted()) return true;
+  #  if (!dataEyeGetPushFunctionList.sensorStatusSource()) return true;
+  # Or like:
+  #  Enum enum_ = this.getDroneType();
+  #  if (enum_ == DroneType.Unknown) return BatteryType.Smart;
+  #  if (enum_ == DroneType.None) return BatteryType.Smart;
+  func_nice_body2 = []
+  in_template = False
+  for line in func_nice_body:
+      match = re.search("^([A-Za-z0-9._]+) ([A-Za-z0-9._]+) = ([A-Za-z0-9._]+)[.](get[A-Za-z0-9._]+)\(\);$", line)
+      if match:
+          in_template = True
+          continue
+      if (in_template):
+          match = re.search("^if \([!]?([A-Za-z0-9._]+).([A-Za-z0-9._]+)\(\)\) return [A-Za-z0-9._]+;$", line)
+          if match:
+              continue
+          match = re.search("^if \(([A-Za-z0-9._]+) [=!]+ ([A-Za-z0-9._]+)\) return [A-Za-z0-9._]+;$", line)
+          if match:
+              continue
+          func_nice_body2.append(line)
+  if len(func_nice_body2) > 0:
+      func_nice_body = func_nice_body2
 
   if len(func_nice_body) == 1:
       # Check known one-liners
@@ -527,13 +578,13 @@ def java_func_to_property(po, fname, rst, func):
               return prop
 
   if len(func_nice_body) == 2:
-      line = func_nice_body[1]
       # Check for a 2-liner which returns bool
+      line = func_nice_body[1]
       match = re.search("^return (true|false);$", line)
       if match:
           line = func_nice_body[0]
           # Example 1: if ((Integer)this.get(0, 1, Integer.class) == 0) return false;
-          match = re.search("^if \((\([A-Za-z0-9._]+\))?this.get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\) ([=!]+) ([A-Za-z0-9._-]+)\) return (true|false);$", line)
+          match = re.search("^if \((\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\) ([=!]+) ([A-Za-z0-9._-]+)\) return (true|false);$", line)
           if match:
               prop = RecProp()
               prop.pos = int(match.group(2))
@@ -556,7 +607,7 @@ def java_func_to_property(po, fname, rst, func):
                   prop_neg = (prop_bool == "true")
               else:
                   prop.comment = "Unrecognized conditions in {}".format(func.name)
-                  eprint("{}: Unrecognized conditions combinationin bool function {}!".format(fname,func.name))
+                  eprint("{}: Unrecognized conditions combination in bool function {}!".format(fname,func.name))
               prop.name = camel_to_snake(tmp1_name)
               if (prop_neg): prop.name = "not_"+prop.name
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
@@ -569,7 +620,7 @@ def java_func_to_property(po, fname, rst, func):
           # Example 1: if (((Integer)this.get(1, 1, Integer.class) & 2) != 2) return false;
           # Example 2: if ((this.get(30, 1, Short.class) & 128) != 0) return false;
           # Example 3: if ((this.get(20, 2, Integer.class) & 16) >>> 4 == 0) return false;
-          match = re.search("^if \(\((\([A-Za-z0-9._]+\))?this.get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\) & ([A-Za-z0-9._-]+)\)( >>[>]? ([A-Za-z0-9._-]+))? ([=!]+) ([A-Za-z0-9._-]+)[\)] return (true|false);$", line)
+          match = re.search("^if \(\((\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\) & ([A-Za-z0-9._-]+)\)( >>[>]? ([A-Za-z0-9._-]+))? ([=!]+) ([A-Za-z0-9._-]+)[\)] return (true|false);$", line)
           if match:
               prop = RecProp()
               prop.pos = int(match.group(2))
@@ -596,7 +647,44 @@ def java_func_to_property(po, fname, rst, func):
                   prop_neg = (prop_bool == "true")
               else:
                   prop.comment = "Unrecognized conditions in {}".format(func.name)
-                  eprint("{}: Unrecognized conditions combinationin bool function {}!".format(fname,func.name))
+                  eprint("{}: Unrecognized conditions combination in bool function {}!".format(fname,func.name))
+              prop.name = camel_to_snake(tmp1_name)
+              if (prop_neg): prop.name = "not_"+prop.name
+              prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
+              prop.ntype = RPropType.expr
+              if (po.verbose > 2):
+                  print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
+              if (prop.base_type <= RPropType.none):
+                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              return prop
+          # Example 1: if ((this.get(20, 2, Integer.class) >> 6 & 1) == 0) return false;
+          match = re.search("^if \(\((\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\) >>[>]? ([A-Za-z0-9._-]+)( & ([A-Za-z0-9._-]+))?\) ([=!]+) ([A-Za-z0-9._-]+)[\)] return (true|false);$", line)
+          if match:
+              prop = RecProp()
+              prop.pos = int(match.group(2))
+              prop_dsize = match.group(3)
+              prop_dtype = match.group(4)
+              bit_mask_shift = int(match.group(5) or "0")
+              bit_mask_base = int(match.group(7))
+              prop_op = match.group(8)
+              prop_val = int(match.group(9))
+              prop_bool = match.group(10)
+              tmp1_name = func.name
+              if (tmp1_name.startswith("is")):
+                  tmp1_name = tmp1_name[2:]
+              prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
+              prop_neg = False
+              if (prop_op == "==") and (prop_val == 0):
+                  prop_neg = (prop_bool == "true")
+              elif (prop_op == "!=") and (prop_val == 0):
+                  prop_neg = (prop_bool == "false")
+              elif (prop_op == "==") and (prop_val == bit_mask_base):
+                  prop_neg = (prop_bool == "false")
+              elif (prop_op == "!=") and (prop_val == bit_mask_base):
+                  prop_neg = (prop_bool == "true")
+              else:
+                  prop.comment = "Unrecognized conditions in {}".format(func.name)
+                  eprint("{}: Unrecognized conditions combination in bool function {}!".format(fname,func.name))
               prop.name = camel_to_snake(tmp1_name)
               if (prop_neg): prop.name = "not_"+prop.name
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
@@ -607,10 +695,33 @@ def java_func_to_property(po, fname, rst, func):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
               return prop
 
+      line = func_nice_body[1]
+      match = re.search("^return this[.]([A-Za-z0-9._]+);$", line)
+      if match:
+          ret_prop = match.group(1)
+          line = func_nice_body[0]
+          # Example 1: this.mSelectChannelCnt = (Integer)this.get(4, 4, Integer.class);
+          match = re.search("^this[.]([A-Za-z0-9._]+) = (\([A-Za-z0-9._]+\))this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\);$", line)
+          if match and ret_prop == match.group(1):
+              prop = RecProp()
+              prop.pos = int(match.group(3))
+              prop_dsize = match.group(4)
+              prop_dtype = match.group(5)
+              tmp1_name = func.name
+              prop.name = camel_to_snake(tmp1_name)
+              prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
+              prop.ntype = prop.base_type
+              if (po.verbose > 2):
+                  print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
+              if (prop.base_type <= RPropType.none):
+                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              return prop
+
   for line in func_nice_body:
       match = re.search("this[.]get\(", line)
       if match:
           eprint("{}: Function {} contains 'get' but its structure was not recognized!".format(fname,func.name))
+          po.stat_unrecognized += 1
           break
   return None
 
