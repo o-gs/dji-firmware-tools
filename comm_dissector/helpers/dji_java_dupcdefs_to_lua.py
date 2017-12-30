@@ -65,6 +65,8 @@ class RecProp:
       self.base_type = RPropType.none
       self.arrlen = 0
       self.val = ''
+      self.val_dict = {}
+      self.val_dict_name = ""
       self.comment = ''
 
 class RecStruct:
@@ -75,6 +77,7 @@ class RecStruct:
       self.cmdset = 0
       self.cmdidx = 0
       self.props = []
+      self.pdicts = {}
 
 class JavaFunc:
   def __init__(self):
@@ -331,6 +334,7 @@ But as long as it gets standard decompiler output, it will work.
   if (po.verbose > 2):
       print("{}: Parsing started".format(clsfile.name))
 
+  # First, read all enums
   clsfile.seek(0)
   enumblk = JavaBlock()
   enum_blocks = 0
@@ -362,9 +366,9 @@ But as long as it gets standard decompiler output, it will work.
               enumblk.body.append(ending_line)
           enum_blocks = 0
           # Enum ended - now it's time to analyze the body
-          pdict = java_enum_to_pdict(po, clsfile.name, rst, func)
+          pdict = java_enum_to_pdict(po, clsfile.name, rst, enumblk)
           if pdict is not None:
-              #rst.props.append(prop)
+              rst.pdicts[enumblk.name] = pdict
               continue
           if (po.verbose > 3):
               for bodyline in enumblk.body:
@@ -373,6 +377,7 @@ But as long as it gets standard decompiler output, it will work.
 
       enumblk.body.append(line.strip())
 
+  # Now, read all getter functions
   clsfile.seek(0)
   func = JavaFunc()
   func_blocks = 0
@@ -419,6 +424,30 @@ But as long as it gets standard decompiler output, it will work.
       func.body.append(line.strip())
 
   return rst
+
+def java_enum_to_pdict(po, fname, rst, enumblk):
+  pdict = {}
+  if len(enumblk.body) < 1:
+      return None
+  in_block = 0
+  for line in enumblk.body:
+      in_block += line.count("{")
+      in_block -= line.count("}")
+      if (in_block > 0):
+          continue;
+      # Example 1: NOTCONNECTED(-1),
+      match = re.search("^([A-Za-z0-9_]+)\(([0-9-]+)\)[,;]$", line)
+      if match:
+          enitm_name = match.group(1)
+          enitm_val = int(match.group(2))
+          if enitm_val in pdict:
+              if (po.verbose > 2):
+                  eprint("{}: Enum key {} used for two values: '{}' and '{}'".format(fname,enitm_val,pdict[enitm_val],enitm_name))
+              # If having two names, select the longer one
+              if (len(pdict[enitm_val]) > len(enitm_name)):
+                  continue
+          pdict[enitm_val] = enitm_name
+  return pdict
 
 def java_func_to_property(po, fname, rst, func):
   if len(func.body) < 1:
@@ -660,7 +689,21 @@ def java_func_to_property(po, fname, rst, func):
               # Convert negative bitmasks to proper positive ones
               if bit_mask_base < 0: bit_mask_base = (~bit_mask_base) & (pow(2,prop_type_len(prop.base_type)*8)-1)
               prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
-              prop.comment = "TODO values from enum {}".format(prop_enum_name)
+              # Assign enum to the property
+              if True:
+                  tmp1_name = prop_enum_name or ""
+                  if (tmp1_name in rst.pdicts):
+                      prop.val_dict = rst.pdicts[tmp1_name]
+              if (len(prop.val_dict) < 1):
+                  if "." in (prop_enum_name or ""):
+                      tmp1_name = (prop_enum_name or "").split(".",1)[1]
+                      if (tmp1_name in rst.pdicts):
+                          prop.val_dict = rst.pdicts[tmp1_name]
+              prop.val_dict_name = camel_to_snake(tmp1_name)
+              if (len(prop.val_dict) < 1):
+                  prop.comment = "TODO values from enum {}".format(prop_enum_name)
+                  if (po.verbose > 1):
+                      print("{}: Enum {} not found".format(fname,prop_enum_name))
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
@@ -690,7 +733,21 @@ def java_func_to_property(po, fname, rst, func):
               # Convert negative bitmasks to proper positive ones
               if bit_mask_base < 0: bit_mask_base = (~bit_mask_base) & (pow(2,prop_type_len(prop.base_type)*8)-1)
               prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
-              prop.comment = "TODO values from enum {}".format(prop_enum_name)
+              # Assign enum to the property
+              if True:
+                  tmp1_name = prop_enum_name or ""
+                  if (tmp1_name in rst.pdicts):
+                      prop.val_dict = rst.pdicts[tmp1_name]
+              if (len(prop.val_dict) < 1):
+                  if "." in (prop_enum_name or ""):
+                      tmp1_name = (prop_enum_name or "").split(".",1)[1]
+                      if (tmp1_name in rst.pdicts):
+                          prop.val_dict = rst.pdicts[tmp1_name]
+              prop.val_dict_name = camel_to_snake(tmp1_name)
+              if (len(prop.val_dict) < 1):
+                  prop.comment = "TODO values from enum {}".format(prop_enum_name)
+                  if (po.verbose > 1):
+                      print("{}: Enum {} not found".format(fname,prop_enum_name))
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
@@ -717,7 +774,21 @@ def java_func_to_property(po, fname, rst, func):
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = prop.base_type
               #prop.val = 
-              prop.comment = "TODO values from enum {}".format(prop_enum_name)
+              # Assign enum to the property
+              if True:
+                  tmp1_name = prop_enum_name or ""
+                  if (tmp1_name in rst.pdicts):
+                      prop.val_dict = rst.pdicts[tmp1_name]
+              if (len(prop.val_dict) < 1):
+                  if "." in (prop_enum_name or ""):
+                      tmp1_name = (prop_enum_name or "").split(".",1)[1]
+                      if (tmp1_name in rst.pdicts):
+                          prop.val_dict = rst.pdicts[tmp1_name]
+              prop.val_dict_name = camel_to_snake(tmp1_name)
+              if (len(prop.val_dict) < 1):
+                  prop.comment = "TODO values from enum {}".format(prop_enum_name)
+                  if (po.verbose > 1):
+                      print("{}: Enum {} not found".format(fname,prop_enum_name))
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
@@ -1107,9 +1178,20 @@ class LuaProtoField:
       self.dt_mask = -1
       self.dt_len = dlen
       self.dt_style = dstyle
-      self.enum_vals = []
+      self.enum_name = ""
+      self.enum_vals = {}
       self.subfields = []
       self.commented = False
+  def format_lua_enumlist_def(self, protocol_name):
+      """ Format string containing LUA list for enum definition
+      """
+      if (len(self.enum_vals) < 1):
+          return ""
+      str = "local {}_ENUM = {{\n".format(self.enum_name.upper())
+      for key, val in self.enum_vals.items():
+          str += "    [0x{:02x}] = '{}',\n".format(key,val)
+      str += "}\n\n"
+      return str
   def format_lua_protofield_def(self, protocol_name):
       """ Format string containing LUA ProtoField definition
       """
@@ -1118,6 +1200,8 @@ class LuaProtoField:
           add_params[2] = "\"" + self.descr + "\""
       if self.dt_mask > 0:
           add_params[1] = "0x{:02x}".format(self.dt_mask)
+      if (len(self.enum_vals) > 0):
+          add_params[0] = "{}_ENUM".format(self.enum_name.upper())
       if set(add_params) == set(['nil']):
           add_params_str = ""
       else:
@@ -1211,6 +1295,20 @@ def recmsg_write_cmd_config_dissector_lua(po, luafile, rst):
               proto = LuaProtoField(prop.name, pname_view, pname_title, cmdset_shstr, prop_best_lua_proto_type(prop),
                       prop_best_lua_base(prop), prop_len(prop))
               proto.descr = prop.comment;
+              enum_name_a = proto.cmdset_str.upper()
+              enum_name_b = proto.name_fltr.upper()
+              enum_name_c = prop.val_dict_name.upper()
+              if (enum_name_b.startswith(enum_name_a)):
+                  enum_name_b = enum_name_b[len(enum_name_a):].strip("_")
+              if (enum_name_b.endswith(enum_name_c)):
+                  enum_name_b = enum_name_b[:-len(enum_name_c)].strip("_")
+              proto.enum_name = "{}_{}_{}".format(enum_name_a,enum_name_b,enum_name_c)
+              for key, val in prop.val_dict.items():
+                  if (key >= 0) and (key <= (pow(2,prop_type_len(prop.base_type)*8)-1)):
+                      proto.enum_vals[key] = val
+                  else:
+                      if (po.verbose > 1):
+                          eprint("{}: Skipped enum val [{}]:{} in property named '{}'.".format(po.luafile,key,val,prop.name))
 
               if prop.ntype == RPropType.expr:
                   # Try to match the expression to known mask formats
@@ -1270,6 +1368,11 @@ def recmsg_write_cmd_config_dissector_lua(po, luafile, rst):
                       "NONE", 0)
               proto.commented = True
               proto_list.append(proto)
+
+          for proto in proto_list[:]:
+              luafile.write(proto.format_lua_enumlist_def(po.product.lower()))
+              for subproto in proto.subfields[:]:
+                  luafile.write(subproto.format_lua_enumlist_def(po.product.lower()))
 
           for proto in proto_list[:]:
               luafile.write(proto.format_lua_protofield_def(po.product.lower()))
