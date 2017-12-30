@@ -6,6 +6,16 @@ If you don't know what this tool is, you most likely don't need it.
 
 Input for this file is a decompiled Dji Go app, or other app with packets definitions.
 
+Example use:
+```
+$ cd dji
+
+$ grep -r '^[a-z \t]* String [^ ]* = \"CmdSet\";$' ./
+./midware/data/config/P3/p.java:    private static final String q = "CmdSet";
+
+$ ./dji_java_dupcdefs_to_lua.py -c ./midware/data/config/P3/p.java -l _packet_dissectors.lua -v
+```
+
 """
 
 from __future__ import print_function
@@ -25,6 +35,10 @@ class ProgOptions:
   product = 'dji_mavic'
   command = ''
   stat_unrecognized = 0
+  stat_questionable = 0
+  stat_no_mask = 0
+  stat_mask_shift = 0
+  stat_shift_mask = 0
 
 class RPropType(enum.IntEnum):
   none = 0
@@ -297,7 +311,11 @@ def java_dupc_classlist_parse(po, reclist):
       java_dupc_class_parse(po, rst, clsfile)
       clsfile.close();
   if (po.verbose > 0):
+      print("Masked properties with shift applied before mask in getters: {}".format(po.stat_shift_mask))
+      print("Masked properties with mask applied before shift in getters: {}".format(po.stat_mask_shift))
+      print("Unmasked properties extracted from getters: {}".format(po.stat_no_mask))
       print("In total, encoured {} unrecognized getter functions".format(po.stat_unrecognized))
+      print("Also, {} functions were converted in a questionable manner".format(po.stat_questionable))
   return reclist
 
 def java_dupc_class_parse(po, rst, clsfile):
@@ -457,6 +475,8 @@ def java_func_to_property(po, fname, rst, func):
       # Check known one-liners
       line = func_nice_body[0]
       if True:
+
+          # Masked entries with shift first, mask later
           # Example 1: return (Integer)this.get(1, 1, Integer.class) >> 4 & 15;
           match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)[\)]?( >>[>]? ([A-Za-z0-9._-]+))? & ([A-Za-z0-9._-]+);$", line)
           if match:
@@ -479,7 +499,10 @@ def java_func_to_property(po, fname, rst, func):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_shift_mask += 1
               return prop
+
+          # Masked entries with mask first, shift later
           # Example 1: return (this.get(2, 1, Integer.class) & 240) >>> 4;
           match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)( & ([A-Za-z0-9._-]+))?[\)]? >>[>]? ([A-Za-z0-9._-]+);$", line)
           if match:
@@ -502,28 +525,10 @@ def java_func_to_property(po, fname, rst, func):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_mask_shift += 1
               return prop
-          # Example 1: return (Integer)this.get(this.dataOffset + 1, 1, Integer.class);
-          # Example 2: return (Integer)this.get((n2 - 1) * 12 + 7, 2, Integer.class);
-          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9\(\). _\*\+-]+) \+ ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)[\)]?;$", line)
-          if match:
-              prop = RecProp()
-              prop_pos_shift = match.group(2)
-              prop.pos = int(match.group(3))
-              prop_dsize = match.group(4)
-              prop_dtype = match.group(5)
-              tmp1_name = func.name
-              if (tmp1_name.startswith("get")):
-                  tmp1_name = tmp1_name[3:]
-              prop.name = camel_to_snake(tmp1_name)
-              prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
-              prop.ntype = prop.base_type
-              prop.comment = "Offset shifted by unknown value {}".format(prop_pos_shift)
-              if (po.verbose > 2):
-                  print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
-              if (prop.base_type <= RPropType.none):
-                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
-              return prop
+
+          # Non-masked entries
           # Example 1: return (Integer)this.get(4, 1, Integer.class);
           # Example 2: return ((Float)this.get(16, 4, Float.class)).floatValue();
           # Example 3: return (Integer)this.get(0, 1, Integer.class) - 256;
@@ -552,7 +557,34 @@ def java_func_to_property(po, fname, rst, func):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_no_mask += 1
               return prop
+
+          # Non-masked entries with variable offset
+          # Example 1: return (Integer)this.get(this.dataOffset + 1, 1, Integer.class);
+          # Example 2: return (Integer)this.get((n2 - 1) * 12 + 7, 2, Integer.class);
+          match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9\(\). _\*\+-]+) \+ ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)[\)]?;$", line)
+          if match:
+              prop = RecProp()
+              prop_pos_shift = match.group(2)
+              prop.pos = int(match.group(3))
+              prop_dsize = match.group(4)
+              prop_dtype = match.group(5)
+              tmp1_name = func.name
+              if (tmp1_name.startswith("get")):
+                  tmp1_name = tmp1_name[3:]
+              prop.name = camel_to_snake(tmp1_name)
+              prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
+              prop.ntype = prop.base_type
+              prop.comment = "Offset shifted by unknown value {}".format(prop_pos_shift)
+              if (po.verbose > 2):
+                  print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
+              if (prop.base_type <= RPropType.none):
+                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_no_mask += 1
+              return prop
+
+          # Masked enum entries with shift first, mask later
           # Example 1: return AdvanceGoHomeState.find(this.get(4, 2, Integer.class) >> 2 & 7);
           # Example 2: return DataCameraGetStateInfo.SDCardState.find((int)(this.get(0, 4, Integer.class) >> 10 & 15));
           match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)?[.](find|ofData)\((\([A-Za-z0-9._]+\))?[\(]?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)( >>[>]? ([A-Za-z0-9._-]+))? & ([A-Za-z0-9._-]+)\)[\)]?[\)]?;$", line)
@@ -578,7 +610,10 @@ def java_func_to_property(po, fname, rst, func):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_shift_mask += 1
               return prop
+
+          # Masked enum entries with mask first, shift later
           # Example 1: return PreciseLandingState.find((this.get(6, 2, Integer.class) & 6) >> 1);
           # Example 2: return RcModeChannel.find((this.get(32, 4, Integer.class) & 24576) >>> 13, this.getFlycVersion(), this.getDroneType(), false);
           # Example 3: return DataOsdGetPushCommon.TRIPOD_STATUS.ofValue((byte)((this.get(0, 1, Integer.class) & 14) >>> 1));
@@ -605,7 +640,10 @@ def java_func_to_property(po, fname, rst, func):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_mask_shift += 1
               return prop
+
+          # Non-masked enum entries
           # Example 1: return VisionSensorType.find((Integer)this.get(2, 1, Integer.class));
           # Example 2: return FLIGHT_ACTION.find(this.get(37, 1, Short.class).shortValue());
           # Example 3: return DJIGimbalType.find(((Short)this.get(0, 1, Short.class)).shortValue());
@@ -628,7 +666,10 @@ def java_func_to_property(po, fname, rst, func):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_no_mask += 1
               return prop
+
+          # Non-masked hash entries
           # Example 1: return d.getNameByHash((long)((Long)this.get(1, 4, Long.class)));
           match = re.search("^return [\(]?(\([A-Za-z0-9._]+\))?([A-Za-z0-9._]+)?[.]getNameByHash\((\([A-Za-z0-9._]+\))?[\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+).class\)[\)]?([.][A-Za-z0-9._]+Value\(\))?\)[\)]?;$", line)
           if match:
@@ -647,6 +688,7 @@ def java_func_to_property(po, fname, rst, func):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_no_mask += 1
               return prop
 
   if len(func_nice_body) == 2:
@@ -655,6 +697,8 @@ def java_func_to_property(po, fname, rst, func):
       match = re.search("^return (true|false);$", line)
       if match:
           line = func_nice_body[0]
+
+          # Non-masked entries
           # Example 1: if ((Integer)this.get(0, 1, Integer.class) == 0) return false;
           match = re.search("^if \((\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\) ([=!]+) ([A-Za-z0-9._-]+)\) return (true|false);$", line)
           if match:
@@ -688,7 +732,10 @@ def java_func_to_property(po, fname, rst, func):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_no_mask += 1
               return prop
+
+          # Masked bool entries with mask first, shift later
           # Example 1: if (((Integer)this.get(1, 1, Integer.class) & 2) != 2) return false;
           # Example 2: if ((this.get(30, 1, Short.class) & 128) != 0) return false;
           # Example 3: if ((this.get(20, 2, Integer.class) & 16) >>> 4 == 0) return false;
@@ -728,7 +775,10 @@ def java_func_to_property(po, fname, rst, func):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_mask_shift += 1
               return prop
+
+          # Masked bool entries with shift first, mask later
           # Example 1: if ((this.get(20, 2, Integer.class) >> 6 & 1) == 0) return false;
           # Example 2: if (this.get(40, 2, Integer.class) >> 15 != 1) return false;
           match = re.search("^if \([\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\) >>[>]? ([A-Za-z0-9._-]+)( & ([A-Za-z0-9._-]+))?[\)]? ([=!]+) ([A-Za-z0-9._-]+)\) return (true|false);$", line)
@@ -767,8 +817,10 @@ def java_func_to_property(po, fname, rst, func):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_shift_mask += 1
               return prop
-          # A special block to support incompetent programmers
+
+          # Masked bool entries with shift first, mask later - a special block to support incompetent programmers
           # Example 1: if ((this.get(23, 2, Integer.class) << 6 & 1) != 1) return false;
           match = re.search("^if \([\(]?(\([A-Za-z0-9._]+\))?this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\) <<[<]? ([A-Za-z0-9._-]+)( & ([A-Za-z0-9._-]+))?[\)]? ([=!]+) ([A-Za-z0-9._-]+)\) return (true|false);$", line)
           if match:
@@ -806,13 +858,17 @@ def java_func_to_property(po, fname, rst, func):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_shift_mask += 1
               return prop
 
+      # Check for a 2-liner which returns this.something, and previously sets that property
       line = func_nice_body[1]
       match = re.search("^return this[.]([A-Za-z0-9._]+);$", line)
       if match:
           ret_prop = match.group(1)
           line = func_nice_body[0]
+
+          # Non-masked entries
           # Example 1: this.mSelectChannelCnt = (Integer)this.get(4, 4, Integer.class);
           match = re.search("^this[.]([A-Za-z0-9._]+) = (\([A-Za-z0-9._]+\))this[.]get\(([A-Za-z0-9._-]+), ([A-Za-z0-9._-]+), ([A-Za-z0-9._]+).class\);$", line)
           if match and ret_prop == match.group(1):
@@ -828,11 +884,91 @@ def java_func_to_property(po, fname, rst, func):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
                   eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              po.stat_no_mask += 1
               return prop
 
   for line in func_nice_body:
+      # Check functions of any size, without getting too much into surroundings of the `get` call
       match = re.search("this[.]get\(", line)
       if match:
+
+          # Masked entries with shift first, mask later
+          match = re.search("^.*this[.]get\(([0-9-]+), ([0-9-]+), ([A-Za-z0-9._]+).class\) >>[>]? ([0-9-]+)[\)]?( & ([0-9-]+))?.*$", line)
+          if match:
+              prop = RecProp()
+              prop.pos = int(match.group(1))
+              prop_dsize = int(match.group(2))
+              prop_dtype = match.group(3)
+              tmp1_name = func.name
+              prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
+              prop.ntype = RPropType.expr
+              bit_mask_shift = int(match.group(4))
+              bit_prop_len = prop_type_len(prop.base_type)*8
+              bit_mask_base = int(match.group(6) or ((pow(2,bit_prop_len)-1) >> bit_mask_shift))
+              if (tmp1_name.startswith("is")):
+                  tmp1_name = tmp1_name[2:]
+              elif (tmp1_name.startswith("get")):
+                  tmp1_name = tmp1_name[3:]
+              prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
+              prop.name = camel_to_snake(tmp1_name)
+              if (po.verbose > 2):
+                  print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
+              if (prop.base_type <= RPropType.none):
+                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              eprint("{}: Function {} understood without 'get' surroundings!".format(fname,func.name))
+              po.stat_questionable += 1
+              po.stat_shift_mask += 1
+              return prop
+
+          # Masked entries with mask first, shift later
+          match = re.search("^.*this[.]get\(([0-9-]+), ([0-9-]+), ([A-Za-z0-9._]+).class\) & ([0-9-]+)[\)]?( >>[>]? ([0-9-]+))?.*$", line)
+          if match:
+              prop = RecProp()
+              prop.pos = int(match.group(1))
+              prop_dsize = int(match.group(2))
+              prop_dtype = match.group(3)
+              tmp1_name = func.name
+              prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
+              prop.ntype = RPropType.expr
+              bit_mask_shift = int(match.group(6) or "0")
+              bit_mask_base = int(match.group(4)) >> bit_mask_shift
+              if (tmp1_name.startswith("is")):
+                  tmp1_name = tmp1_name[2:]
+              elif (tmp1_name.startswith("get")):
+                  tmp1_name = tmp1_name[3:]
+              prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
+              prop.name = camel_to_snake(tmp1_name)
+              if (po.verbose > 2):
+                  print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
+              if (prop.base_type <= RPropType.none):
+                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              eprint("{}: Function {} understood without 'get' surroundings!".format(fname,func.name))
+              po.stat_questionable += 1
+              po.stat_mask_shift += 1
+              return prop
+
+          # Non-masked entries
+          match = re.search("^.*this[.]get\(([0-9-]+), ([0-9-]+), ([A-Za-z0-9._]+).class\).*$", line)
+          if match:
+              prop = RecProp()
+              prop.pos = int(match.group(1))
+              prop_dsize = match.group(2)
+              prop_dtype = match.group(3)
+              tmp1_name = func.name
+              prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
+              prop.ntype = prop.base_type
+              if (tmp1_name.startswith("get")):
+                  tmp1_name = tmp1_name[3:]
+              prop.name = camel_to_snake(tmp1_name)
+              if (po.verbose > 2):
+                  print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
+              if (prop.base_type <= RPropType.none):
+                  eprint("{}: Property type {} size {} not recognized in function {}!".format(fname,prop_dtype,prop_dsize,func.name))
+              eprint("{}: Function {} understood without 'get' surroundings!".format(fname,func.name))
+              po.stat_questionable += 1
+              po.stat_no_mask += 1
+              return prop
+
           eprint("{}: Function {} contains 'get' but its structure was not recognized!".format(fname,func.name))
           po.stat_unrecognized += 1
           break
