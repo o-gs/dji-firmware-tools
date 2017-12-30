@@ -83,6 +83,11 @@ class JavaFunc:
       self.params = []
       self.body = []
 
+class JavaBlock:
+  def __init__(self):
+      self.name = ''
+      self.body = []
+
 def prop_type_len(ntype):
   arr =[0, 1, 2, 3, 4, 8, 1, 2, 3, 4, 8, 2, 4, 8, 0]
   return arr[ntype]
@@ -325,6 +330,50 @@ But as long as it gets standard decompiler output, it will work.
   """
   if (po.verbose > 2):
       print("{}: Parsing started".format(clsfile.name))
+
+  clsfile.seek(0)
+  enumblk = JavaBlock()
+  enum_blocks = 0
+  i = 0;
+  for line in clsfile:
+      i += 1
+      if (enum_blocks < 1):
+          # Find new enum start
+          match = re.search("^[ \t]*(public[ \t]+|private[ \t]+|protected[ \t]+)?(static[ \t]+)?enum[ \t]+([A-Za-z0-9._-]+) \{$", line)
+          if match:
+              enumblk = JavaBlock()
+              enumblk.name = match.group(3)
+              enum_blocks = 1
+              if (po.verbose > 2):
+                  print("{}: Found enum '{}'".format(clsfile.name,enumblk.name))
+              continue
+          # Not an enum - ignore
+          continue
+      # Ignore empty lines
+      if len(str.strip(line)) < 1:
+          continue
+
+      enum_blocks += line.count("{")
+      enum_blocks -= line.count("}")
+
+      if (enum_blocks < 1):
+          ending_line = line[:line.rindex('}')].strip()
+          if len(ending_line) > 0:
+              enumblk.body.append(ending_line)
+          enum_blocks = 0
+          # Enum ended - now it's time to analyze the body
+          pdict = java_enum_to_pdict(po, clsfile.name, rst, func)
+          if pdict is not None:
+              #rst.props.append(prop)
+              continue
+          if (po.verbose > 3):
+              for bodyline in enumblk.body:
+                  print("{}: BODY: {}".format(clsfile.name,bodyline))
+          continue
+
+      enumblk.body.append(line.strip())
+
+  clsfile.seek(0)
   func = JavaFunc()
   func_blocks = 0
   i = 0;
@@ -348,8 +397,10 @@ But as long as it gets standard decompiler output, it will work.
       # Ignore empty lines
       if len(str.strip(line)) < 1:
           continue
+
       func_blocks += line.count("{")
       func_blocks -= line.count("}")
+
       if (func_blocks < 1):
           ending_line = line[:line.rindex('}')].strip()
           if len(ending_line) > 0:
@@ -364,7 +415,9 @@ But as long as it gets standard decompiler output, it will work.
               for bodyline in func.body:
                   print("{}: BODY: {}".format(clsfile.name,bodyline))
           continue
+
       func.body.append(line.strip())
+
   return rst
 
 def java_func_to_property(po, fname, rst, func):
@@ -488,13 +541,14 @@ def java_func_to_property(po, fname, rst, func):
               if (tmp1_name.startswith("get")):
                   tmp1_name = tmp1_name[3:]
               prop.name = camel_to_snake(tmp1_name)
-              bit_mask_shift = int(match.group(6) or "0")
-              bit_mask_base = int(match.group(7))
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = RPropType.expr
+              bit_mask_shift = int(match.group(6) or "0")
+              bit_mask_base = int(match.group(7))
               # Convert negative bitmasks to proper positive ones
               if bit_mask_base < 0: bit_mask_base = (~bit_mask_base) & (pow(2,prop_type_len(prop.base_type)*8)-1)
               prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
+              #prop.comment = 
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
@@ -521,6 +575,7 @@ def java_func_to_property(po, fname, rst, func):
               # Convert negative bitmasks to proper positive ones
               if bit_mask_base < 0: bit_mask_base = (~bit_mask_base) & (pow(2,prop_type_len(prop.base_type)*8)-1)
               prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
+              #prop.comment = 
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
@@ -548,10 +603,9 @@ def java_func_to_property(po, fname, rst, func):
               if (tmp1_name.startswith("get")):
                   tmp1_name = tmp1_name[3:]
               prop.name = camel_to_snake(tmp1_name)
-              #prop.val = 
-              #prop.comment = 
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = prop.base_type
+              #prop.val = 
               if (prop_bias is not None): prop.comment = "value bias {}".format(prop_bias)
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
@@ -576,6 +630,7 @@ def java_func_to_property(po, fname, rst, func):
               prop.name = camel_to_snake(tmp1_name)
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = prop.base_type
+              #prop.val = 
               prop.comment = "Offset shifted by unknown value {}".format(prop_pos_shift)
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
@@ -602,10 +657,10 @@ def java_func_to_property(po, fname, rst, func):
               bit_mask_base = int(match.group(10))
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = RPropType.expr
-              prop.comment = "TODO values from enum {}".format(prop_enum_name)
               # Convert negative bitmasks to proper positive ones
               if bit_mask_base < 0: bit_mask_base = (~bit_mask_base) & (pow(2,prop_type_len(prop.base_type)*8)-1)
               prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
+              prop.comment = "TODO values from enum {}".format(prop_enum_name)
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
@@ -632,10 +687,10 @@ def java_func_to_property(po, fname, rst, func):
               prop.ntype = RPropType.expr
               bit_mask_shift = int(match.group(10))
               bit_mask_base = int(match.group(9) or (pow(2,prop_type_len(prop.base_type)*8)-1)) >> bit_mask_shift
-              prop.comment = "TODO values from enum {}".format(prop_enum_name)
               # Convert negative bitmasks to proper positive ones
               if bit_mask_base < 0: bit_mask_base = (~bit_mask_base) & (pow(2,prop_type_len(prop.base_type)*8)-1)
               prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
+              prop.comment = "TODO values from enum {}".format(prop_enum_name)
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
@@ -661,6 +716,7 @@ def java_func_to_property(po, fname, rst, func):
               prop.name = camel_to_snake(tmp1_name)
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = prop.base_type
+              #prop.val = 
               prop.comment = "TODO values from enum {}".format(prop_enum_name)
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
@@ -684,6 +740,7 @@ def java_func_to_property(po, fname, rst, func):
               prop.name = camel_to_snake(tmp1_name)+"_hash"
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = prop.base_type
+              #prop.val = 
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
@@ -728,6 +785,7 @@ def java_func_to_property(po, fname, rst, func):
               if (prop_neg): prop.name = "not_"+prop.name
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = prop.base_type
+              #prop.val = 
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
@@ -771,6 +829,7 @@ def java_func_to_property(po, fname, rst, func):
               if (prop_neg): prop.name = "not_"+prop.name
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = RPropType.expr
+              #prop.val = 
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
