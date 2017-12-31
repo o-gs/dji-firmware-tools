@@ -370,10 +370,11 @@ But as long as it gets standard decompiler output, it will work.
           # Enum ended - now it's time to analyze the body
           pdict = java_enum_to_pdict(po, clsfile.name, rst, enumblk)
           if pdict is not None:
+              enum_key = ".".join(enumblk.package.rsplit('.', 2)[1:])
               if (po.verbose > 0):
                   if enumblk.name in rst.pdicts:
-                      print("{}: Replacing previous definition of enum '{}'".format(clsfile.name,enumblk.name))
-              rst.pdicts[enumblk.name] = pdict
+                      print("{}: Replacing previous definition of enum '{}'".format(clsfile.name,enum_key))
+              rst.pdicts[enum_key] = pdict
               continue
           if (po.verbose > 3):
               for bodyline in enumblk.body:
@@ -1095,6 +1096,12 @@ def java_dupc_classlist_enums_parse(po, reclist):
               continue
           # Assign enum to the property
           prop_enum_name = prop.val_dict_name
+          if (prop_enum_name.count(".") < 1):
+              tmp1_name = rst.package.rsplit(".",1)[1]
+              if (tmp1_name == prop_enum_name):
+                  tmp1_name = rst.package.rsplit(".",2)[1]
+              prop_enum_name = tmp1_name + "." + prop_enum_name
+
           if True:
               tmp1_name = prop_enum_name
               if (tmp1_name in rst.pdicts):
@@ -1102,8 +1109,13 @@ def java_dupc_classlist_enums_parse(po, reclist):
           if (len(prop.val_dict) < 1):
               if "." in prop_enum_name:
                   tmp1_name = prop_enum_name.split(".",1)[1]
-                  if (tmp1_name in rst.pdicts):
-                      prop.val_dict = rst.pdicts[tmp1_name]
+                  for pdname, pdict in rst.pdicts.items():
+                      if pdname.endswith("."+tmp1_name):
+                          # If already set, show warning
+                          if len(prop.val_dict) > 0:
+                              eprint("{}: Property {} has ambiguous enum '{}' reference!".format(fname,prop.name,prop_enum_name))
+                          prop.val_dict = pdict
+
           prop.val_dict_name = camel_to_snake(tmp1_name)
           if (len(prop.val_dict) < 1):
               prop.comment = "TODO values from enum {}".format(prop_enum_name)
