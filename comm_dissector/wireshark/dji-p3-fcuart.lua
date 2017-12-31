@@ -69,48 +69,83 @@ DJI_P3_FLIGHT_CONTROL_UART_CMD_SET = {
 local GENERAL_UART_CMD_TEXT = {
     [0x01] = 'Inquiry',
     [0x07] = 'TBD',
-    [0x0B] = 'REBOOT',
-    [0x0C] = 'TBD',
-    [0x0E] = 'Message', -- It looks lik it was supposed to transmit text messages, but is always empty
+    [0x0b] = 'REBOOT',
+    [0x0c] = 'TBD',
+    [0x0e] = 'Message', -- It looks like it was supposed to transmit text messages, but is always empty
+    [0x0f] = 'Upgrade Self Request',
+    [0x24] = 'Camera Files',
+    [0x27] = 'Camera File',
     [0x32] = 'TBD',
-    [0xF1] = 'Component State', -- The component is identified by sender field
+    [0x42] = 'Common Upgrade Status',
+    [0x47] = 'Notify Disconnect',
+    [0x52] = 'Common App Gps Config',
+    [0xf1] = 'Component State', -- The component is identified by sender field
 }
 
 local SPECIAL_UART_CMD_TEXT = {
-    [0x01] = 'App Cmd',
+    [0x01] = 'Old Special Control',
+    [0x03] = 'New Special Control',
 }
 
 local CAMERA_UART_CMD_TEXT = {
-    [0x80] = 'FW Update State',
+    [0x7c] = 'Camera Shutter Cmd',
+    [0x80] = 'Camera State Info',
+    [0x81] = 'Camera Shot Params',
+    [0x82] = 'Camera Play Back Params',
+    [0x83] = 'Camera Chart Info',
+    [0x84] = 'Camera Recording Name',
+    [0x85] = 'Camera Raw Params',
+    [0x86] = 'Camera Cur Pano File Name',
+    [0x87] = 'Camera Shot Info',
+    [0x88] = 'Camera Timelapse Parms',
+    [0x89] = 'Camera Tracking Status',
+    [0x8a] = 'Camera Fov Param',
+    [0xb4] = 'Camera Prepare Open Fan',
+    [0xb8] = 'Camera Optics Zoom Mode',
+    [0xc7] = 'Camera Tap Zoom State Info',
+    [0xf2] = 'Camera Tau Param',
 }
 
 local FLYC_UART_CMD_TEXT = {
-    [0x1C] = 'TBD',
-    [0x2A] = 'App Cmd',
-    [0x2F] = 'Set Alarm',
+    [0x09] = 'Flyc Forbid Status',
+    [0x10] = 'A2 Commom',
+    [0x1c] = 'TBD',
+    [0x2a] = 'App Cmd',
+    [0x2f] = 'Set Alarm',
     [0x30] = 'Get Alarm',
     [0x31] = 'Set Home Point',   --AC/RC/APP
+    [0x32] = 'Flyc Deform Status',
     [0x33] = 'Set User String',
     [0x34] = 'Get User String',
     [0x39] = 'TBD',
-    [0x3A] = 'TBD',
-    [0x3B] = 'Set RC Lost Action',
-    [0x3C] = 'Get RC Lost Action',
-    [0x3D] = 'Set Timezone',
-    [0x3F] = 'TBD',     --Data transfer
+    [0x3a] = 'TBD',
+    [0x3b] = 'Set RC Lost Action',
+    [0x3c] = 'Get RC Lost Action',
+    [0x3d] = 'Set Timezone',
+    [0x3e] = 'Flyc Request Limit Update',
+    [0x3f] = 'TBD',     --Data transfer
     [0x41] = 'TBD',
+    [0x42] = 'Flyc Unlimit State',
     [0x43] = 'Osd General',
     [0x44] = 'Osd Home',
+    [0x45] = 'Flyc Gps Snr',
     [0x46] = 'TBD',
     [0x47] = 'Toggle Whitelist',
     [0x50] = 'Imu Data Status',
-    [0x51] = 'TBD',
+    [0x51] = 'Flyc Smart Battery',
     [0x52] = 'TBD',
-    [0x53] = 'TBD',
+    [0x53] = 'Flyc Avoid Param',
+    [0x55] = 'Flyc Limit State',
+    [0x56] = 'Flyc Led Status',
     [0x57] = 'Gps Glns',
     [0x60] = 'SVO API Transfer',
+    [0x61] = 'Flyc Active Request',
     [0x62] = 'TBD',
+    [0x63] = 'Flyc Board Recv',
     [0x64] = 'TBD',
+    [0x67] = 'Flyc Power Param',
+    [0x6a] = 'Flyc Avoid',
+    [0x6c] = 'Flyc Rtk Location Data',
     [0x70] = 'TBD',     --Some licensing string check
     [0x71] = 'TBD',     --Some licensing string check
     [0x74] = 'Get Serial Number',
@@ -123,11 +158,13 @@ local FLYC_UART_CMD_TEXT = {
     [0x85] = 'TBD',
     [0x86] = 'WP Mission go/stop',
     [0x87] = 'WP Mission pasue/resume',
-    [0x8A] = 'TBD',
-    [0x8B] = 'TBD',
-    [0x8C] = 'HP Mission pasue/resume',
-    [0x8D] = 'TBD',
-    [0x8E] = 'TBD',
+    [0x88] = 'Flyc Way Point Mission Info',
+    [0x89] = 'Flyc Way Point Mission Current Event',
+    [0x8a] = 'TBD',
+    [0x8b] = 'TBD',
+    [0x8c] = 'HP Mission pasue/resume',
+    [0x8d] = 'TBD',
+    [0x8e] = 'TBD',
     [0x90] = 'TBD',
     [0x91] = 'App Request Follow Mission',
     [0x92] = 'Follow Mission pasue/resume',
@@ -136,69 +173,131 @@ local FLYC_UART_CMD_TEXT = {
     [0x97] = 'TBD',
     [0x98] = 'TBD',
     [0x99] = 'TBD',
-    [0x9A] = 'TBD',
-    [0x9B] = 'TBD',
-    [0x9C] = 'Set WP Mission Idle V',
-    [0x9D] = 'Get WP Mission Idle V',
-
-    [0xAA] = 'TBD',
-    [0xAB] = 'Set Attitude',
-    [0xAC] = 'Set Tail Lock',
-    [0xF0] = 'TBD',
-    [0xF1] = 'TBD',
-    [0xF2] = 'TBD',
-    [0xF3] = 'TBD',
-    [0xF4] = 'TBD',
-    [0xF7] = 'TBD',
-    [0xF8] = 'TBD',
-    [0xF9] = 'TBD',
-    [0xFA] = 'Reset Flyc Params',
-    [0xFC] = 'TBD',
-    [0xFD] = 'TBD',
+    [0x9a] = 'TBD',
+    [0x9b] = 'TBD',
+    [0x9c] = 'Set WP Mission Idle V',
+    [0x9d] = 'Get WP Mission Idle V',
+    [0xa1] = 'Flyc Agps Status',
+    [0xaa] = 'TBD',
+    [0xab] = 'Set Attitude',
+    [0xac] = 'Set Tail Lock',
+    [0xad] = 'Flyc Flyc Install Error',
+    [0xb6] = 'Flyc Fault Inject',
+    [0xb9] = 'Flyc Redundancy Status',
+    [0xf0] = 'TBD',
+    [0xf1] = 'TBD',
+    [0xf2] = 'TBD',
+    [0xf3] = 'TBD',
+    [0xf4] = 'TBD',
+    [0xf7] = 'TBD',
+    [0xf8] = 'TBD',
+    [0xf9] = 'TBD',
+    [0xfa] = 'Reset Flyc Params',
+    [0xfb] = 'Flyc Params By Hash',
+    [0xfc] = 'TBD',
+    [0xfd] = 'TBD',
 }
 
 local GIMBAL_UART_CMD_TEXT = {
-    [0x05] = 'Gimbal Position',
-    [0x1C] = 'Gimbal Type',
+    [0x05] = 'Gimbal Params',
+    [0x1c] = 'Gimbal Type',
+    [0x24] = 'Gimbal User Params',
+    [0x27] = 'Gimbal Abnormal Status',
+    [0x2b] = 'Gimbal Tutorial Status',
+    [0x30] = 'Gimbal Auto Calibration Status',
+    [0x33] = 'Gimbal Battery Info',
+    [0x38] = 'Gimbal Timelapse Status',
 }
 
 local CENTER_BRD_UART_CMD_TEXT = {
+    [0x06] = 'Center Battery Common',
 }
 
 local RC_UART_CMD_TEXT = {
-    [0x1C] = 'TBD',
-    [0xF0] = 'Set Transciever Pwr Mode',
+    [0x05] = 'Rc Params',
+    [0x1c] = 'TBD',
+    [0xf0] = 'Set Transciever Pwr Mode',
 }
 
 local WIFI_UART_CMD_TEXT = {
-    [0x0E] = 'Get PSK',
-    [0x11] = 'TBD',
-    [0x1E] = 'Get SSID',
+    [0x09] = 'Wifi Signal',
+    [0x0e] = 'Get PSK',
+    [0x11] = 'Wifi First App Mac',
+    [0x12] = 'Wifi Elec Signal',
+    [0x1e] = 'Get SSID',
+    [0x2a] = 'Wifi Sweep Frequency',
 }
 
 local DM36X_UART_CMD_TEXT = {
+    [0x06] = 'Dm368 Status',
 }
 
 local HD_LINK_UART_CMD_TEXT = {
+    [0x01] = 'Osd Common',
+    [0x02] = 'Osd Home',
     [0x06] = 'Set Transciever Reg',
+    [0x08] = 'Osd Signal Quality',
+    [0x0a] = 'Osd Sweep Frequency',
+    [0x0b] = 'Osd Devices State',
+    [0x0c] = 'Osd Config',
+    [0x11] = 'Osd Channal Status',
+    [0x15] = 'Osd Max Mcs',
+    [0x16] = 'Osd Debug Info',
+    [0x20] = 'Osd Sdr Sweep Frequency',
+    [0x22] = 'Osd Sdr Config Info',
+    [0x24] = 'Osd Sdr Status Info',
+    [0x25] = 'Osd Sdr Status Ground Info',
+    [0x29] = 'Osd Sdr Upward Sweep Frequency',
+    [0x2a] = 'Osd Sdr Upward Select Channel',
+    [0x30] = 'Osd Wireless State',
+    [0x36] = 'Osd Sdr Push Custom Code Rate',
+    [0x37] = 'Osd Hdvt Push Exception',
+    [0x3a] = 'Osd Sdr Nf Params',
+    [0x3b] = 'Osd Sdr Bar Interference',
+    [0x52] = 'Osd Power Status',
+    [0x54] = 'Osd Osmo Calibration',
+    [0x59] = 'Osd Mic Info',
 }
 
 local MBINO_UART_CMD_TEXT = {
+    [0x01] = 'Eye Log',
+    [0x06] = 'Eye Avoidance Param',
+    [0x07] = 'Eye Front Avoidance',
+    [0x08] = 'Eye Point Avoidance',
+    [0x0d] = 'Eye Track Log',
+    [0x0e] = 'Eye Point Log',
+    [0x19] = 'Eye Flat Check',
+    [0x23] = 'Eye Track Status',
+    [0x26] = 'Eye Point State',
+    [0x2a] = 'Eye Exception',
+    [0x2e] = 'Eye Function List',
+    [0x2f] = 'Eye Sensor Exception',
+    [0x32] = 'Eye Easy Self Calibration',
+    [0x39] = 'Eye Vision Tip',
+    [0x3a] = 'Eye Precise Landing Energy',
 }
 
 local SIM_UART_CMD_TEXT = {
+    [0x01] = 'Simulator Connect Heart Packet',
+    [0x03] = 'Simulator Main Controller Return Params',
+    [0x06] = 'Simulator Flight Status Params',
+    [0x07] = 'Simulator Wind',
 }
 
 local ESC_UART_CMD_TEXT = {
 }
 
 local BATTERY_UART_CMD_TEXT = {
+    [0x02] = 'Smart Battery Dynamic Data',
+    [0x03] = 'Smart Battery Cell Voltage',
+    [0x31] = 'Smart Battery Re Arrangement',
 }
 
 local DATA_LOG_UART_CMD_TEXT = {
 }
 
 local RTK_UART_CMD_TEXT = {
+    [0x09] = 'Rtk Status',
 }
 
 local AUTO_UART_CMD_TEXT = {
