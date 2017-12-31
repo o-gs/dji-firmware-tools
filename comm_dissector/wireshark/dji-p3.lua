@@ -158,11 +158,11 @@ local function main_dissector(buffer, pinfo, subtree)
 
         -- [A] Cmd (has variable valuestring)
         local cmd = buffer(offset,1):uint()
-        local valuestring = DJI_P3_FLIGHT_CONTROL_UART_CMD_TYPE[cmdset] or {}
+        local valuestring = DJI_P3_FLIGHT_CONTROL_UART_CMD_TEXT[cmdset] or {}
         subtree:add (f.cmd, buffer(offset, 1), cmd, string.format("%s: %s (0x%02X)", "Cmd", valuestring[cmd] or "Unknown", cmd))
         offset = offset + 1
 
-        set_info(cmd, pinfo, DJI_P3_FLIGHT_CONTROL_UART_CMD_TYPE[cmdset])
+        set_info(cmd, pinfo, DJI_P3_FLIGHT_CONTROL_UART_CMD_TEXT[cmdset])
 
         assert(offset == 11, "Offset shifted - dissector internal inconsistency")
 
@@ -171,7 +171,7 @@ local function main_dissector(buffer, pinfo, subtree)
             payload_tree = subtree:add(f.payload, buffer(offset, pkt_length - offset - 2))
 
             -- If we have a dissector for this kind of command, run it
-            local dissector_group = DJI_P3_FLIGHT_CONTROL_UART_DISSECT[cmdset] or {}
+            local dissector_group = DJI_P3_FLIGHT_CONTROL_UART_CMD_DISSECT[cmdset] or {}
             local dissector = dissector_group[cmd]
 
             if dissector ~= nil then

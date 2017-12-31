@@ -65,7 +65,8 @@ DJI_P3_FLIGHT_CONTROL_UART_CMD_SET = {
 }
 
 -- CMD name decode tables
-local GENERAL_CMDS = {
+
+local GENERAL_UART_CMD_TEXT = {
     [0x01] = 'Inquiry',
     [0x07] = 'TBD',
     [0x0B] = 'REBOOT',
@@ -75,15 +76,15 @@ local GENERAL_CMDS = {
     [0xF1] = 'Component State', -- The component is identified by sender field
 }
 
-local SPECIAL_CMDS = {
+local SPECIAL_UART_CMD_TEXT = {
     [0x01] = 'App Cmd',
 }
 
-local CAMERA_CMDS = {
+local CAMERA_UART_CMD_TEXT = {
     [0x80] = 'FW Update State',
 }
 
-local FLIGHT_CTRL_CMDS = {
+local FLYC_UART_CMD_TEXT = {
     [0x1C] = 'TBD',
     [0x2A] = 'App Cmd',
     [0x2F] = 'Set Alarm',
@@ -156,71 +157,71 @@ local FLIGHT_CTRL_CMDS = {
     [0xFD] = 'TBD',
 }
 
-local GIMBAL_CMDS = {
+local GIMBAL_UART_CMD_TEXT = {
     [0x05] = 'Gimbal Position',
     [0x1C] = 'Gimbal Type',
 }
 
-local CENTER_BRD_CMDS = {
+local CENTER_BRD_UART_CMD_TEXT = {
 }
 
-local RC_CMDS = {
+local RC_UART_CMD_TEXT = {
     [0x1C] = 'TBD',
     [0xF0] = 'Set Transciever Pwr Mode',
 }
 
-local WIFI_CMDS = {
+local WIFI_UART_CMD_TEXT = {
     [0x0E] = 'Get PSK',
     [0x11] = 'TBD',
     [0x1E] = 'Get SSID',
 }
 
-local DM36X_CMDS = {
+local DM36X_UART_CMD_TEXT = {
 }
 
-local HD_LINK_CMDS = {
+local HD_LINK_UART_CMD_TEXT = {
     [0x06] = 'Set Transciever Reg',
 }
 
-local MBINO_CMDS = {
+local MBINO_UART_CMD_TEXT = {
 }
 
-local SIM_CMDS = {
+local SIM_UART_CMD_TEXT = {
 }
 
-local ESC_CMDS = {
+local ESC_UART_CMD_TEXT = {
 }
 
-local BATTERY_CMDS = {
+local BATTERY_UART_CMD_TEXT = {
 }
 
-local DATA_LOG_CMDS = {
+local DATA_LOG_UART_CMD_TEXT = {
 }
 
-local RTK_CMDS = {
+local RTK_UART_CMD_TEXT = {
 }
 
-local AUTO_CMDS = {
+local AUTO_UART_CMD_TEXT = {
 }
 
-DJI_P3_FLIGHT_CONTROL_UART_CMD_TYPE = {
-    [0] = GENERAL_CMDS,
-    [1] = SPECIAL_CMDS,
-    [2] = CAMERA_CMDS,
-    [3] = FLIGHT_CTRL_CMDS,
-    [4] = GIMBAL_CMDS,
-    [5] = CENTER_BRD_CMDS,
-    [6] = RC_CMDS,
-    [7] = WIFI_CMDS,
-    [8] = DM36X_CMDS,
-    [9] = HD_LINK_CMDS,
-    [10] = MBINO_CMDS,
-    [11] = SIM_CMDS,
-    [12] = ESC_CMDS,
-    [13] = BATTERY_CMDS,
-    [14] = DATA_LOG_CMDS,
-    [15] = RTK_CMDS,
-    [16] = AUTO_CMDS,
+DJI_P3_FLIGHT_CONTROL_UART_CMD_TEXT = {
+    [0x00] = GENERAL_UART_CMD_TEXT,
+    [0x01] = SPECIAL_UART_CMD_TEXT,
+    [0x02] = CAMERA_UART_CMD_TEXT,
+    [0x03] = FLYC_UART_CMD_TEXT,
+    [0x04] = GIMBAL_UART_CMD_TEXT,
+    [0x05] = CENTER_BRD_UART_CMD_TEXT,
+    [0x06] = RC_UART_CMD_TEXT,
+    [0x07] = WIFI_UART_CMD_TEXT,
+    [0x08] = DM36X_UART_CMD_TEXT,
+    [0x09] = HD_LINK_UART_CMD_TEXT,
+    [0x0a] = MBINO_UART_CMD_TEXT,
+    [0x0b] = SIM_UART_CMD_TEXT,
+    [0x0c] = ESC_UART_CMD_TEXT,
+    [0x0d] = BATTERY_UART_CMD_TEXT,
+    [0x0e] = DATA_LOG_UART_CMD_TEXT,
+    [0x0f] = RTK_UART_CMD_TEXT,
+    [0x10] = AUTO_UART_CMD_TEXT,
 }
 
 -- Component state packet
@@ -258,11 +259,11 @@ local function main_general_compn_state_dissector(pkt_length, buffer, pinfo, sub
 
 end
 
-local GENERAL_DISSECT = {
+local GENERAL_UART_CMD_DISSECT = {
     [0xf1] = main_general_compn_state_dissector,
 }
 
-local SPECIAL_DISSECT = {
+local SPECIAL_UART_CMD_DISSECT = {
 }
 
 -- Camera - FW Update State - 0x80
@@ -286,7 +287,7 @@ local function main_camera_fw_update_state_dissector(pkt_length, buffer, pinfo, 
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FW Update State: Payload size different than expected") end
 end
 
-local CAMERA_DISSECT = {
+local CAMERA_UART_CMD_DISSECT = {
     [0x80] = main_camera_fw_update_state_dissector,
 }
 
@@ -882,7 +883,7 @@ local function main_flight_ctrl_gps_glns_dissector(pkt_length, buffer, pinfo, su
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gps Glns: Payload size different than expected") end
 end
 
-local FLIGHT_CTRL_DISSECT = {
+local FLYC_UART_CMD_DISSECT = {
     [0x43] = main_flight_ctrl_osd_general_dissector,
     [0x44] = main_flight_ctrl_osd_home_dissector,
     [0x50] = main_flight_ctrl_imu_data_status_dissector,
@@ -942,21 +943,21 @@ local function main_gimbal_gimbal_position_dissector(pkt_length, buffer, pinfo, 
 end
 
 
-local GIMBAL_DISSECT = {
+local GIMBAL_UART_CMD_DISSECT = {
     [0x05] = main_gimbal_gimbal_position_dissector,
     [0x1C] = main_gimbal_gimbal_type_dissector,
 }
 
-local CENTER_BRD_DISSECT = {
+local CENTER_BRD_UART_CMD_DISSECT = {
 }
 
-local RC_DISSECT = {
+local RC_UART_CMD_DISSECT = {
 }
 
-local WIFI_DISSECT = {
+local WIFI_UART_CMD_DISSECT = {
 }
 
-local DM36X_DISSECT = {
+local DM36X_UART_CMD_DISSECT = {
 }
 
 -- Set transciever register packet
@@ -981,48 +982,48 @@ local function main_hd_link_set_transciever_reg_dissector(pkt_length, buffer, pi
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set Transciever Reg: Payload size different than expected") end
 end
 
-local HD_LINK_DISSECT = {
+local HD_LINK_UART_CMD_DISSECT = {
     [0x06] = main_hd_link_set_transciever_reg_dissector,
 }
 
-local MBINO_DISSECT = {
+local MBINO_UART_CMD_DISSECT = {
 }
 
-local SIM_DISSECT = {
+local SIM_UART_CMD_DISSECT = {
 }
 
-local ESC_DISSECT = {
+local ESC_UART_CMD_DISSECT = {
 }
 
-local BATTERY_DISSECT = {
+local BATTERY_UART_CMD_DISSECT = {
 }
 
-local DATA_LOG_DISSECT = {
+local DATA_LOG_UART_CMD_DISSECT = {
 }
 
-local RTK_DISSECT = {
+local RTK_UART_CMD_DISSECT = {
 }
 
-local AUTO_DISSECT = {
+local AUTO_UART_CMD_DISSECT = {
 }
 
 
-DJI_P3_FLIGHT_CONTROL_UART_DISSECT = {
-    [0x00] = GENERAL_DISSECT,
-    [0x01] = SPECIAL_DISSECT,
-    [0x02] = CAMERA_DISSECT,
-    [0x03] = FLIGHT_CTRL_DISSECT,
-    [0x04] = GIMBAL_DISSECT,
-    [0x05] = CENTER_BRD_DISSECT,
-    [0x06] = RC_DISSECT,
-    [0x07] = WIFI_DISSECT,
-    [0x08] = DM36X_DISSECT,
-    [0x09] = HD_LINK_DISSECT,
-    [0x0A] = MBINO_DISSECT,
-    [0x0B] = SIM_DISSECT,
-    [0x0c] = ESC_DISSECT,
-    [0x0D] = BATTERY_DISSECT,
-    [0x0E] = DATA_LOG_DISSECT,
-    [0x0F] = RTK_DISSECT,
-    [0x10] = AUTO_DISSECT,
+DJI_P3_FLIGHT_CONTROL_UART_CMD_DISSECT = {
+    [0x00] = GENERAL_UART_CMD_DISSECT,
+    [0x01] = SPECIAL_UART_CMD_DISSECT,
+    [0x02] = CAMERA_UART_CMD_DISSECT,
+    [0x03] = FLYC_UART_CMD_DISSECT,
+    [0x04] = GIMBAL_UART_CMD_DISSECT,
+    [0x05] = CENTER_BRD_UART_CMD_DISSECT,
+    [0x06] = RC_UART_CMD_DISSECT,
+    [0x07] = WIFI_UART_CMD_DISSECT,
+    [0x08] = DM36X_UART_CMD_DISSECT,
+    [0x09] = HD_LINK_UART_CMD_DISSECT,
+    [0x0a] = MBINO_UART_CMD_DISSECT,
+    [0x0b] = SIM_UART_CMD_DISSECT,
+    [0x0c] = ESC_UART_CMD_DISSECT,
+    [0x0d] = BATTERY_UART_CMD_DISSECT,
+    [0x0e] = DATA_LOG_UART_CMD_DISSECT,
+    [0x0f] = RTK_UART_CMD_DISSECT,
+    [0x10] = AUTO_UART_CMD_DISSECT,
 }
