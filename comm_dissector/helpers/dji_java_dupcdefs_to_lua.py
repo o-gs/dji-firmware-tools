@@ -78,6 +78,7 @@ class RecStruct:
       self.cmdidx = 0
       self.props = []
       self.pdicts = {}
+      self.imports = []
 
 class JavaFunc:
   def __init__(self):
@@ -89,6 +90,7 @@ class JavaFunc:
 class JavaBlock:
   def __init__(self):
       self.name = ''
+      self.package = ''
       self.body = []
 
 def prop_type_len(ntype):
@@ -312,11 +314,11 @@ Parses command file and gets class names for each cmd from an enum like:
   return cmdslist
 
 
-def java_dupc_classlist_parse(po, reclist):
+def java_dupc_classlist_getters_parse(po, reclist):
   for rst in reclist:
       # Package name can be easily converted to file name
       clsfile = open(rst.package.replace(".","/")+".java", "r")
-      java_dupc_class_parse(po, rst, clsfile)
+      java_dupc_class_getters_parse(po, rst, clsfile)
       clsfile.close();
   if (po.verbose > 0):
       print("Masked properties with shift applied before mask in getters: {}".format(po.stat_shift_mask))
@@ -326,16 +328,15 @@ def java_dupc_classlist_parse(po, reclist):
       print("Also, {} functions were converted in a questionable manner".format(po.stat_questionable))
   return reclist
 
-def java_dupc_class_parse(po, rst, clsfile):
+def java_dupc_class_enums_parse(po, rst, clsfile):
   """
 This function is far from being remotely comatible with Java syntax.
 But as long as it gets standard decompiler output, it will work.
   """
   if (po.verbose > 2):
-      print("{}: Parsing started".format(clsfile.name))
+      print("{}: Parsing enums started".format(clsfile.name))
 
-  # First, read all enums
-  clsfile.seek(0)
+  # Read all enums
   enumblk = JavaBlock()
   enum_blocks = 0
   i = 0;
@@ -347,6 +348,7 @@ But as long as it gets standard decompiler output, it will work.
           if match:
               enumblk = JavaBlock()
               enumblk.name = match.group(3)
+              enumblk.package = rst.package + "." + enumblk.name
               enum_blocks = 1
               if (po.verbose > 2):
                   print("{}: Found enum '{}'".format(clsfile.name,enumblk.name))
@@ -368,6 +370,9 @@ But as long as it gets standard decompiler output, it will work.
           # Enum ended - now it's time to analyze the body
           pdict = java_enum_to_pdict(po, clsfile.name, rst, enumblk)
           if pdict is not None:
+              if (po.verbose > 0):
+                  if enumblk.name in rst.pdicts:
+                      print("{}: Replacing previous definition of enum '{}'".format(clsfile.name,enumblk.name))
               rst.pdicts[enumblk.name] = pdict
               continue
           if (po.verbose > 3):
@@ -377,8 +382,17 @@ But as long as it gets standard decompiler output, it will work.
 
       enumblk.body.append(line.strip())
 
-  # Now, read all getter functions
-  clsfile.seek(0)
+  return rst
+
+def java_dupc_class_getters_parse(po, rst, clsfile):
+  """
+This function is far from being remotely comatible with Java syntax.
+But as long as it gets standard decompiler output, it will work.
+  """
+  if (po.verbose > 2):
+      print("{}: Parsing getters started".format(clsfile.name))
+
+  # Read all getter functions
   func = JavaFunc()
   func_blocks = 0
   i = 0;
@@ -397,7 +411,11 @@ But as long as it gets standard decompiler output, it will work.
               if (po.verbose > 2):
                   print("{}: Found function '{}'".format(clsfile.name,func.name))
               continue
-          # Not a function - ignore
+          # Find imports, to reach enums outside of this class
+          match = re.search("^[ \t]*import[ \t]+dji[.]([A-Za-z0-9._-]+);$", line)
+          if match:
+              rst.imports.append(match.group(1))
+          # Not a function nor import - ignore
           continue
       # Ignore empty lines
       if len(str.strip(line)) < 1:
@@ -675,35 +693,20 @@ def java_func_to_property(po, fname, rst, func):
           if match:
               prop = RecProp()
               prop.pos = int(match.group(5))
-              prop_enum_name = match.group(2) # Value of None means 'this' is the enum
+              prop.val_dict_name = match.group(2) or rst.package[rst.package.rindex('.')+1:] # Value of None means 'this' (or its parent) is the enum
               prop_dsize = match.group(6)
               prop_dtype = match.group(7)
               tmp1_name = func.name
               if (tmp1_name.startswith("get")):
                   tmp1_name = tmp1_name[3:]
               prop.name = camel_to_snake(tmp1_name)
-              bit_mask_shift = int(match.group(9) or "0")
-              bit_mask_base = int(match.group(10))
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = RPropType.expr
+              bit_mask_shift = int(match.group(9) or "0")
+              bit_mask_base = int(match.group(10))
               # Convert negative bitmasks to proper positive ones
               if bit_mask_base < 0: bit_mask_base = (~bit_mask_base) & (pow(2,prop_type_len(prop.base_type)*8)-1)
               prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
-              # Assign enum to the property
-              if True:
-                  tmp1_name = prop_enum_name or ""
-                  if (tmp1_name in rst.pdicts):
-                      prop.val_dict = rst.pdicts[tmp1_name]
-              if (len(prop.val_dict) < 1):
-                  if "." in (prop_enum_name or ""):
-                      tmp1_name = (prop_enum_name or "").split(".",1)[1]
-                      if (tmp1_name in rst.pdicts):
-                          prop.val_dict = rst.pdicts[tmp1_name]
-              prop.val_dict_name = camel_to_snake(tmp1_name)
-              if (len(prop.val_dict) < 1):
-                  prop.comment = "TODO values from enum {}".format(prop_enum_name)
-                  if (po.verbose > 1):
-                      print("{}: Enum {} not found".format(fname,prop_enum_name))
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
@@ -719,7 +722,7 @@ def java_func_to_property(po, fname, rst, func):
           if match:
               prop = RecProp()
               prop.pos = int(match.group(5))
-              prop_enum_name = match.group(2) # Value of None means 'this' is the enum
+              prop.val_dict_name = match.group(2) or rst.package[rst.package.rindex('.')+1:] # Value of None means 'this' (or its parent) is the enum
               prop_dsize = match.group(6)
               prop_dtype = match.group(7)
               tmp1_name = func.name
@@ -733,21 +736,6 @@ def java_func_to_property(po, fname, rst, func):
               # Convert negative bitmasks to proper positive ones
               if bit_mask_base < 0: bit_mask_base = (~bit_mask_base) & (pow(2,prop_type_len(prop.base_type)*8)-1)
               prop.val = "bitand(shift_r({},{}),{})".format("auto_detect_name",bit_mask_shift,bit_mask_base)
-              # Assign enum to the property
-              if True:
-                  tmp1_name = prop_enum_name or ""
-                  if (tmp1_name in rst.pdicts):
-                      prop.val_dict = rst.pdicts[tmp1_name]
-              if (len(prop.val_dict) < 1):
-                  if "." in (prop_enum_name or ""):
-                      tmp1_name = (prop_enum_name or "").split(".",1)[1]
-                      if (tmp1_name in rst.pdicts):
-                          prop.val_dict = rst.pdicts[tmp1_name]
-              prop.val_dict_name = camel_to_snake(tmp1_name)
-              if (len(prop.val_dict) < 1):
-                  prop.comment = "TODO values from enum {}".format(prop_enum_name)
-                  if (po.verbose > 1):
-                      print("{}: Enum {} not found".format(fname,prop_enum_name))
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
@@ -764,7 +752,7 @@ def java_func_to_property(po, fname, rst, func):
           if match:
               prop = RecProp()
               prop.pos = int(match.group(5))
-              prop_enum_name = match.group(2) # Value of None means 'this' is the enum
+              prop.val_dict_name = match.group(2) or rst.package[rst.package.rindex('.')+1:] # Value of None means 'this' (or its parent) is the enum
               prop_dsize = match.group(6)
               prop_dtype = match.group(7)
               tmp1_name = func.name
@@ -774,21 +762,6 @@ def java_func_to_property(po, fname, rst, func):
               prop.base_type = java_typestr_to_ntype(prop_dsize,prop_dtype)
               prop.ntype = prop.base_type
               #prop.val = 
-              # Assign enum to the property
-              if True:
-                  tmp1_name = prop_enum_name or ""
-                  if (tmp1_name in rst.pdicts):
-                      prop.val_dict = rst.pdicts[tmp1_name]
-              if (len(prop.val_dict) < 1):
-                  if "." in (prop_enum_name or ""):
-                      tmp1_name = (prop_enum_name or "").split(".",1)[1]
-                      if (tmp1_name in rst.pdicts):
-                          prop.val_dict = rst.pdicts[tmp1_name]
-              prop.val_dict_name = camel_to_snake(tmp1_name)
-              if (len(prop.val_dict) < 1):
-                  prop.comment = "TODO values from enum {}".format(prop_enum_name)
-                  if (po.verbose > 1):
-                      print("{}: Enum {} not found".format(fname,prop_enum_name))
               if (po.verbose > 2):
                   print("{}: Property type {} size {} at offs {}".format(fname,prop_dtype,prop_dsize,prop.pos))
               if (prop.base_type <= RPropType.none):
@@ -802,7 +775,7 @@ def java_func_to_property(po, fname, rst, func):
           if match:
               prop = RecProp()
               prop.pos = int(match.group(5))
-              prop_enum_name = match.group(2) # Value of None means 'this' is the enum
+              prop_hashlist_name = match.group(2) # Value of None means 'this' is the enum
               prop_dsize = match.group(6)
               prop_dtype = match.group(7)
               tmp1_name = func.name
@@ -1104,6 +1077,40 @@ def java_func_to_property(po, fname, rst, func):
           break
   return None
 
+def java_dupc_classlist_enums_parse(po, reclist):
+  for rst in reclist:
+      # Package name can be easily converted to file name
+      fname = rst.package.replace(".","/")+".java"
+      clsfile = open(fname, "r")
+      java_dupc_class_enums_parse(po, rst, clsfile)
+      clsfile.close();
+      # Parse not only direct enums, but also those in imports
+      for pkgname in rst.imports:
+          clsfile = open(pkgname.replace(".","/")+".java", "r")
+          java_dupc_class_enums_parse(po, rst, clsfile)
+          clsfile.close();
+      # Now we can assign enums to props
+      for prop in rst.props:
+          if len(prop.val_dict_name) < 1:
+              continue
+          # Assign enum to the property
+          prop_enum_name = prop.val_dict_name
+          if True:
+              tmp1_name = prop_enum_name
+              if (tmp1_name in rst.pdicts):
+                  prop.val_dict = rst.pdicts[tmp1_name]
+          if (len(prop.val_dict) < 1):
+              if "." in prop_enum_name:
+                  tmp1_name = prop_enum_name.split(".",1)[1]
+                  if (tmp1_name in rst.pdicts):
+                      prop.val_dict = rst.pdicts[tmp1_name]
+          prop.val_dict_name = camel_to_snake(tmp1_name)
+          if (len(prop.val_dict) < 1):
+              prop.comment = "TODO values from enum {}".format(prop_enum_name)
+              if (po.verbose > 1):
+                  print("{}: Enum {} not found".format(fname,prop_enum_name))
+  return reclist
+
 def java_dupc_reclist_linearize(po, reclist):
   for rst in reclist:
       # Sort by pos, but if there are several entries with same pos, place other than RPropType.expr first
@@ -1130,7 +1137,7 @@ def java_dupc_reclist_linearize(po, reclist):
 
           if pktpos > prop.pos:
               # If we have properties with overlapping offsets, convert the current to expr.
-              # Unless it is already expr, which would mean this is already done in previous stge of parsing.
+              # Unless it is already expr, which would mean this is already done in previous stage of parsing.
               if prop.ntype != RPropType.expr:
                   # Convert current to expr
                   prop.val = "bitand(shift_r({},{}),{})".format(prv_prop.name,0,pow(2,prop_type_len(prop.base_type)*8)-1)
@@ -1278,7 +1285,7 @@ def recmsg_write_cmdset_dissectors_lua(po, luafile, cmdset, reclist):
           dissect_list.append(disitm)
       else:
           eprint("{}: Warning: Skipped record named '{}' of category '{}'.".format(po.luafile,rst.name,rst.category))
-  recmsg_write_enum_lua(po, luafile, dissect_list, cmdset_enum_name, "local ")
+  recmsg_write_enum_lua(po, luafile, dissect_list, cmdset_enum_name, "local")
   return EnumEntry(cmdset_enum_name, cmdset)
 
 def recmsg_write_cmd_config_dissector_lua(po, luafile, rst):
@@ -1460,7 +1467,8 @@ def main(argv):
 
     reclist = java_cmdlists_parse(po, setslist)
 
-    reclist = java_dupc_classlist_parse(po, reclist)
+    reclist = java_dupc_classlist_getters_parse(po, reclist)
+    reclist = java_dupc_classlist_enums_parse(po, reclist)
     reclist = java_dupc_reclist_linearize(po, reclist)
     luafile = open(po.luafile, "w")
     recmsg_write_lua(po, luafile, reclist);
