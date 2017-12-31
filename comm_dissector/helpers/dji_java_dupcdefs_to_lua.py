@@ -1107,16 +1107,15 @@ def java_dupc_classlist_enums_parse(po, reclist):
               if (tmp1_name in rst.pdicts):
                   prop.val_dict = rst.pdicts[tmp1_name]
           if (len(prop.val_dict) < 1):
-              if "." in prop_enum_name:
-                  tmp1_name = prop_enum_name.split(".",1)[1]
-                  for pdname, pdict in rst.pdicts.items():
-                      if pdname.endswith("."+tmp1_name):
-                          # If already set, show warning
-                          if len(prop.val_dict) > 0:
-                              eprint("{}: Property {} has ambiguous enum '{}' reference!".format(fname,prop.name,prop_enum_name))
-                          prop.val_dict = pdict
+              tmp1_name = prop_enum_name.split(".",1)[1]
+              for pdname, pdict in rst.pdicts.items():
+                  if pdname.endswith("."+tmp1_name):
+                      # If already set, show warning
+                      if len(prop.val_dict) > 0:
+                          eprint("{}: Property {} has ambiguous enum '{}' reference!".format(fname,prop.name,prop_enum_name))
+                      prop.val_dict = pdict
 
-          prop.val_dict_name = camel_to_snake(tmp1_name)
+          prop.val_dict_name = camel_to_snake(prop_enum_name.split(".",1)[1]).replace(".","_")
           if (len(prop.val_dict) < 1):
               prop.comment = "TODO values from enum {}".format(prop_enum_name)
               if (po.verbose > 1):
@@ -1198,19 +1197,9 @@ class LuaProtoField:
       self.dt_len = dlen
       self.dt_style = dstyle
       self.enum_name = ""
-      self.enum_vals = {}
+      self.enum_vals = []
       self.subfields = []
       self.commented = False
-  def format_lua_enumlist_def(self, protocol_name):
-      """ Format string containing LUA list for enum definition
-      """
-      if (len(self.enum_vals) < 1):
-          return ""
-      str = "local {}_ENUM = {{\n".format(self.enum_name.upper())
-      for key, val in self.enum_vals.items():
-          str += "    [0x{:02x}] = '{}',\n".format(key,val)
-      str += "}\n\n"
-      return str
   def format_lua_protofield_def(self, protocol_name):
       """ Format string containing LUA ProtoField definition
       """
@@ -1220,7 +1209,7 @@ class LuaProtoField:
       if self.dt_mask > 0:
           add_params[1] = "0x{:02x}".format(self.dt_mask)
       if (len(self.enum_vals) > 0):
-          add_params[0] = "{}_ENUM".format(self.enum_name.upper())
+          add_params[0] = "enums.{}_ENUM".format(self.enum_name.upper())
       if set(add_params) == set(['nil']):
           add_params_str = ""
       else:
@@ -1253,34 +1242,43 @@ def recmsg_write_enum_lua(po, luafile, enum_list, enum_name, enum_modifier=""):
       luafile.write("    [0x{:02x}] = {},\n".format(enitm.idx, enitm.val))
   luafile.write("}\n")
 
+def recmsg_write_quoted_enum_lua(po, luafile, enum_list, enum_name, enum_modifier=""):
+  if len(enum_modifier) > 0: enum_modifier += " "
+  luafile.write("\n{}{} = {{\n".format(enum_modifier,enum_name))
+  for enitm in enum_list:
+      luafile.write("    [0x{:02x}] = '{}',\n".format(enitm.idx, enitm.val))
+  luafile.write("}\n")
+
 def recmsg_write_lua(po, luafile, reclist):
   luafile.write("local f = {}_PROTO.fields\n".format(po.product.upper()))
+  luafile.write("local enums = {}\n")
 
   alltext_list = []
   for cmdset in range(0,16):
       enitm = recmsg_write_cmdset_typetexts_lua(po, luafile, cmdset, reclist)
       alltext_list.append(enitm)
-  recmsg_write_enum_lua(po, luafile, alltext_list, "{}_{}_TEXT".format(po.product.upper(),"UART_CMD"))
+  recmsg_write_enum_lua(po, luafile, alltext_list, "{}_{}_{}_TEXT".format(po.product.upper(),"FLIGHT_CONTROL","UART_CMD"))
 
   alldiss_list = []
   for cmdset in range(0,16):
       enitm = recmsg_write_cmdset_dissectors_lua(po, luafile, cmdset, reclist)
       alldiss_list.append(enitm)
-  recmsg_write_enum_lua(po, luafile, alldiss_list, "{}_{}_DISSECT".format(po.product.upper(),"UART_CMD"))
+  recmsg_write_enum_lua(po, luafile, alldiss_list, "{}_{}_{}_DISSECT".format(po.product.upper(),"FLIGHT_CONTROL","UART_CMD"))
 
 def recmsg_write_cmdset_typetexts_lua(po, luafile, cmdset, reclist):
   cmdset_shstr = cmdset_short_name_str(cmdset)
   cmdset_enum_name = "{:s}_{:s}_TEXT".format(cmdset_shstr.upper(),"UART_CMD")
-  luafile.write("\nlocal {:s} = {{\n".format(cmdset_enum_name))
+  cmdtext_list = []
   for rst in reclist[:]:
       if rst.cmdset != cmdset: continue
       if rst.category == "config" and rst.cmdidx >= 0:
           name_title = rst.name.replace("_"," ").title()
-          luafile.write("    [0x{:02x}] = '{}',\n".format(rst.cmdidx, name_title))
+          cmdtext_list.append(EnumEntry(name_title, rst.cmdidx))
       elif rst.category == "string" or rst.category == "config_dump":
           name_title = rst.name.replace("_"," ").title()
-          luafile.write("    [0x{:02x}] = '{}',\n".format(rst.cmdidx, name_title))
-  luafile.write("}\n")
+          cmdtext_list.append(EnumEntry(name_title, rst.cmdidx))
+  recmsg_write_quoted_enum_lua(po, luafile, cmdtext_list, cmdset_enum_name, "local")
+  # Return entry for higher level enum
   return EnumEntry(cmdset_enum_name, cmdset)
 
 def recmsg_write_cmdset_dissectors_lua(po, luafile, cmdset, reclist):
@@ -1324,7 +1322,7 @@ def recmsg_write_cmd_config_dissector_lua(po, luafile, rst):
               proto.enum_name = "{}_{}_{}".format(enum_name_a,enum_name_b,enum_name_c)
               for key, val in prop.val_dict.items():
                   if (key >= 0) and (key <= (pow(2,prop_type_len(prop.base_type)*8)-1)):
-                      proto.enum_vals[key] = val
+                      proto.enum_vals.append(EnumEntry(val, key))
                   else:
                       if (po.verbose > 1):
                           eprint("{}: Skipped enum val [{}]:{} in property named '{}'.".format(po.luafile,key,val,prop.name))
@@ -1389,9 +1387,11 @@ def recmsg_write_cmd_config_dissector_lua(po, luafile, rst):
               proto_list.append(proto)
 
           for proto in proto_list[:]:
-              luafile.write(proto.format_lua_enumlist_def(po.product.lower()))
+              if len(proto.enum_vals) > 0:
+                  recmsg_write_quoted_enum_lua(po, luafile, proto.enum_vals, "enums.{}_ENUM".format(proto.enum_name.upper()))
               for subproto in proto.subfields[:]:
-                  luafile.write(subproto.format_lua_enumlist_def(po.product.lower()))
+                  if len(subproto.enum_vals) > 0:
+                      recmsg_write_quoted_enum_lua(po, luafile, subproto.enum_vals, "enums.{}_ENUM".format(subproto.enum_name.upper()))
 
           for proto in proto_list[:]:
               luafile.write(proto.format_lua_protofield_def(po.product.lower()))
@@ -1399,8 +1399,10 @@ def recmsg_write_cmd_config_dissector_lua(po, luafile, rst):
                   luafile.write("  " + subproto.format_lua_protofield_def(po.product.lower()))
 
           dissfunc_enum_name = "{:s}_{:s}_dissector".format(cmdset_shstr,name_view)
-          luafile.write("\nlocal function {:s}(payload, pinfo, subtree)\n".format(dissfunc_enum_name))
-          luafile.write("    local offset = 0\n")
+          luafile.write("\nlocal function {:s}(pkt_length, buffer, pinfo, subtree)\n".format(dissfunc_enum_name))
+          luafile.write("    local offset = 11\n")
+          luafile.write("    local payload = buffer(offset, pkt_length - offset - 2)\n")
+          luafile.write("    offset = 0\n")
           tot_len = 0
           for proto in proto_list[:]:
               if (proto.commented):
