@@ -1,4 +1,5 @@
 local f = DJI_P3_PROTO.fields
+local enums = {}
 
 DJI_P3_FLIGHT_CONTROL_UART_SRC_DEST = {
     [0] = 'Invalid',
@@ -323,7 +324,191 @@ DJI_P3_FLIGHT_CONTROL_UART_CMD_TEXT = {
     [0x10] = AUTO_UART_CMD_TEXT,
 }
 
--- Component state packet
+-- General - Message - 0x0e
+
+--f.general_message_unknown0 = ProtoField.none ("dji_p3.general_message_unknown0", "Unknown0", base.NONE)
+
+local function general_message_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Message: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Message: Payload size different than expected") end
+end
+
+-- General - Upgrade Self Request - 0x0f
+
+f.general_upgrade_self_request_unknown0 = ProtoField.uint8 ("dji_p3.general_upgrade_self_request_unknown0", "Unknown0", base.HEX)
+f.general_upgrade_self_request_unknown1 = ProtoField.uint8 ("dji_p3.general_upgrade_self_request_unknown1", "Unknown1", base.HEX)
+
+local function general_upgrade_self_request_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.general_upgrade_self_request_unknown0, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.general_upgrade_self_request_unknown1, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Upgrade Self Request: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Upgrade Self Request: Payload size different than expected") end
+end
+
+-- General - Camera Files - 0x24
+
+f.general_camera_files_index = ProtoField.int32 ("dji_p3.general_camera_files_index", "Index", base.DEC)
+f.general_camera_files_data = ProtoField.bytes ("dji_p3.general_camera_files_data", "Data", base.SPACE)
+
+local function general_camera_files_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.general_camera_files_index, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.general_camera_files_data, payload(offset, 495))
+    offset = offset + 495
+
+
+    if (offset ~= 499) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Files: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Files: Payload size different than expected") end
+end
+
+-- General - Camera File - 0x27
+
+--f.general_camera_file_unknown0 = ProtoField.none ("dji_p3.general_camera_file_unknown0", "Unknown0", base.NONE)
+
+local function general_camera_file_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera File: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera File: Payload size different than expected") end
+end
+
+-- General - Common Upgrade Status - 0x42
+
+enums.COMMON_UPGRADE_STATUS_UPGRADE_STATE_ENUM = {
+    [1]="Verify",
+    [2]="UserConfirm",
+    [3]="Upgrading",
+    [4]="Complete",
+}
+
+enums.COMMON_UPGRADE_STATUS_UPGRADE_COMPLETE_REASON_ENUM = {
+    [1]="Success",
+    [2]="Failure",
+    [3]="FirmwareError",
+    [4]="SameVersion",
+    [5]="UserCancel",
+    [6]="TimeOut",
+    [7]="MotorWorking",
+    [8]="FirmNotMatch",
+    [9]="IllegalDegrade",
+    [10]="NoConnectRC",
+}
+
+f.general_common_upgrade_status_upgrade_state = ProtoField.uint8 ("dji_p3.general_common_upgrade_status_upgrade_state", "Upgrade State", base.DEC, enums.COMMON_UPGRADE_STATUS_UPGRADE_STATE_ENUM, nil, nil)
+f.general_common_upgrade_status_user_time = ProtoField.uint8 ("dji_p3.general_common_upgrade_status_user_time", "User Time", base.DEC, nil, nil, "For upgrade_state==2")
+f.general_common_upgrade_status_user_reserve = ProtoField.uint8 ("dji_p3.general_common_upgrade_status_user_reserve", "User Reserve", base.HEX, nil, nil, "For upgrade_state==2")
+f.general_common_upgrade_status_upgrade_process = ProtoField.uint8 ("dji_p3.general_common_upgrade_status_upgrade_process", "Upgrade Process", base.DEC, nil, nil, "For upgrade_state==3")
+f.general_common_upgrade_status_cur_upgrade_index = ProtoField.uint8 ("dji_p3.general_common_upgrade_status_cur_upgrade_index", "Cur Upgrade Index", base.DEC, nil, 0xe0, "For upgrade_state==3")
+f.general_common_upgrade_status_upgrade_times_3 = ProtoField.uint8 ("dji_p3.general_common_upgrade_status_upgrade_times", "Upgrade Times", base.DEC, nil, 0x1f, "For upgrade_state==3")
+f.general_common_upgrade_status_upgrade_result = ProtoField.uint8 ("dji_p3.general_common_upgrade_status_upgrade_result", "Upgrade Result", base.HEX, enums.COMMON_UPGRADE_STATUS_UPGRADE_COMPLETE_REASON_ENUM, nil, "For upgrade_state==4")
+f.general_common_upgrade_status_upgrade_times_4 = ProtoField.uint8 ("dji_p3.general_common_upgrade_status_upgrade_times", "Upgrade Times", base.HEX, nil, nil, "For upgrade_state==4")
+
+local function general_common_upgrade_status_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    local upgrade_state = buffer(offset,1):le_uint()
+    subtree:add_le (f.general_common_upgrade_status_upgrade_state, payload(offset, 1))
+    offset = offset + 1
+
+    if upgrade_state == 2 then
+
+        subtree:add_le (f.general_common_upgrade_status_user_time, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.general_common_upgrade_status_user_reserve, payload(offset, 1))
+        offset = offset + 1
+
+        if (offset ~= 3) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Common Upgrade Status: Offset does not match - internal inconsistency") end
+
+    elseif upgrade_state == 3 then
+
+        subtree:add_le (f.general_common_upgrade_status_upgrade_process, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.general_common_upgrade_status_cur_upgrade_index, payload(offset, 1))
+        subtree:add_le (f.general_common_upgrade_status_upgrade_times_3, payload(offset, 1))
+        offset = offset + 1
+
+        if (offset ~= 3) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Common Upgrade Status: Offset does not match - internal inconsistency") end
+
+    elseif upgrade_state == 4 then
+
+        subtree:add_le (f.general_common_upgrade_status_upgrade_result, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.general_common_upgrade_status_upgrade_times_4, payload(offset, 1))
+        offset = offset + 1
+
+        if (offset ~= 3) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Common Upgrade Status: Offset does not match - internal inconsistency") end
+
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Common Upgrade Status: Payload size different than expected") end
+end
+
+-- General - Notify Disconnect - 0x47
+
+f.general_notify_disconnect_a = ProtoField.int8 ("dji_p3.general_notify_disconnect_a", "A", base.DEC, nil, nil, "TODO values from enum P3.DataNotifyDisconnect")
+f.general_notify_disconnect_b = ProtoField.int16 ("dji_p3.general_notify_disconnect_b", "B", base.DEC)
+
+local function general_notify_disconnect_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.general_notify_disconnect_a, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.general_notify_disconnect_b, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 3) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Notify Disconnect: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Notify Disconnect: Payload size different than expected") end
+end
+
+-- General - Common App Gps Config - 0x52
+
+f.general_common_app_gps_config_is_start = ProtoField.int8 ("dji_p3.general_common_app_gps_config_is_start", "Is Start", base.DEC)
+f.general_common_app_gps_config_get_push_interval = ProtoField.int32 ("dji_p3.general_common_app_gps_config_get_push_interval", "Get Push Interval", base.DEC)
+
+local function general_common_app_gps_config_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.general_common_app_gps_config_is_start, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.general_common_app_gps_config_get_push_interval, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Common App Gps Config: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Common App Gps Config: Payload size different than expected") end
+end
+
+-- General - Component state packet - 0xf1
+
 f.general_compn_state_current_state = ProtoField.uint32 ("dji_p3.general_compn_state_current_state", "Current state", base.HEX)
   -- Component state packet flags for OFDM
   f.general_compn_state_ofdm_curr_state_fpga_boot = ProtoField.uint32 ("dji_p3.general_compn_state_ofdm_curr_state_fpga_boot", "E FPGA Boot error", base.HEX, nil, 0x01, "Error in FPGA boot state, final state not reached")
@@ -335,7 +520,7 @@ f.general_compn_state_current_state = ProtoField.uint32 ("dji_p3.general_compn_s
   f.general_compn_state_ofdm_curr_state_rx_bad_crc = ProtoField.uint32 ("dji_p3.general_compn_state_ofdm_curr_state_rx_bad_crc", "E Received data CRC fail", base.HEX, nil, 0x400, "Meaning uncertain")
   f.general_compn_state_ofdm_curr_state_rx_bad_seq = ProtoField.uint32 ("dji_p3.general_compn_state_ofdm_curr_state_rx_bad_seq", "E Received data sequence fail", base.HEX, nil, 0x800, "Meaning uncertain")
 
-local function main_general_compn_state_dissector(pkt_length, buffer, pinfo, subtree)
+local function general_compn_state_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 4
     local sender = buffer(offset,1):uint()
     offset = 11
@@ -359,7 +544,14 @@ local function main_general_compn_state_dissector(pkt_length, buffer, pinfo, sub
 end
 
 local GENERAL_UART_CMD_DISSECT = {
-    [0xf1] = main_general_compn_state_dissector,
+    [0x0e] = general_message_dissector,
+    [0x0f] = general_upgrade_self_request_dissector,
+    [0x24] = general_camera_files_dissector,
+    [0x27] = general_camera_file_dissector,
+    [0x42] = general_common_upgrade_status_dissector,
+    [0x47] = general_notify_disconnect_dissector,
+    [0x52] = general_common_app_gps_config_dissector,
+    [0xf1] = general_compn_state_dissector,
 }
 
 local SPECIAL_UART_CMD_DISSECT = {
@@ -392,7 +584,7 @@ local CAMERA_UART_CMD_DISSECT = {
 
 -- Flight Controller - Osd General - 0x43, identical to flight recorder packet 0x000c
 
-local FLYC_OSD_GENERAL_MODE1_ENUM = {
+enums.FLYC_OSD_GENERAL_MODE1_ENUM = {
     [0]="Manual",
     [1]="Atti",
     [2]="Atti_CL",
@@ -431,7 +623,7 @@ local FLYC_OSD_GENERAL_MODE1_ENUM = {
     [100]="OTHER",
 }
 
-local FLYC_OSD_GENERAL_COMMAND_ENUM = {
+enums.FLYC_OSD_GENERAL_COMMAND_ENUM = {
     [1]="AUTO_FLY",
     [2]="AUTO_LANDING",
     [3]="HOMEPOINT_NOW",
@@ -464,13 +656,13 @@ local FLYC_OSD_GENERAL_COMMAND_ENUM = {
     [100]="OTHER",
 }
 
-local FLYC_OSD_GENERAL_BATT_TYPE_ENUM = {
+enums.FLYC_OSD_GENERAL_BATT_TYPE_ENUM = {
     [0]="Unknown",
     [1]="NonSmart",
     [2]="Smart",
 }
 
-local FLYC_OSD_GENERAL_GOHOME_STATE_ENUM = {
+enums.FLYC_OSD_GENERAL_GOHOME_STATE_ENUM = {
     [0]="STANDBY",
     [1]="PREASCENDING",
     [2]="ALIGN",
@@ -481,7 +673,7 @@ local FLYC_OSD_GENERAL_GOHOME_STATE_ENUM = {
     [7]="OTHER",
 }
 
-local FLYC_OSD_GENERAL_GOHOME_REASON_ENUM = {
+enums.FLYC_OSD_GENERAL_GOHOME_REASON_ENUM = {
     [0]="NONE",
     [1]="WARNING_POWER_GOHOME",
     [2]="WARNING_POWER_LANDING",
@@ -514,7 +706,7 @@ local FLYC_OSD_GENERAL_GOHOME_REASON_ENUM = {
     [29]="MC_PROTECT_GOHOME",
 }
 
-local FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM = {
+enums.FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM = {
     [0x00] = 'Allow start',
     [0x01] = 'Compass error',
     [0x02] = 'Assistant protected',
@@ -602,7 +794,7 @@ local FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM = {
     [0x100]= 'Other',
 }
 
-local FLYC_OSD_GENERAL_GPS_STATE_ENUM = {
+enums.FLYC_OSD_GENERAL_GPS_STATE_ENUM = {
     [0]="ALREADY",
     [1]="FORBIN",
     [2]="GPSNUM_NONENOUGH",
@@ -614,7 +806,7 @@ local FLYC_OSD_GENERAL_GPS_STATE_ENUM = {
     [8]="UNKNOWN",
 }
 
-local FLYC_OSD_GENERAL_PRODUCT_TYPE_ENUM = {
+enums.FLYC_OSD_GENERAL_PRODUCT_TYPE_ENUM = {
     [0]="Unknown",
     [1]="Inspire",
     [2]="P3S/P3X",
@@ -637,7 +829,7 @@ local FLYC_OSD_GENERAL_PRODUCT_TYPE_ENUM = {
     [100]="None",
 }
 
-local FLYC_OSD_GENERAL_IMU_INIT_FAIL_RESON_ENUM = {
+enums.FLYC_OSD_GENERAL_IMU_INIT_FAIL_RESON_ENUM = {
     [0]="None/MonitorError",
     [1]="ColletingData",
     [2]="GyroDead",
@@ -666,16 +858,16 @@ f.flyc_osd_general_vgz = ProtoField.int16 ("dji_p3.flyc_osd_general_vgz", "Vgz",
 f.flyc_osd_general_pitch = ProtoField.int16 ("dji_p3.flyc_osd_general_pitch", "Pitch", base.DEC, nil, nil, "0.1")
 f.flyc_osd_general_roll = ProtoField.int16 ("dji_p3.flyc_osd_general_roll", "Roll", base.DEC)
 f.flyc_osd_general_yaw = ProtoField.int16 ("dji_p3.flyc_osd_general_yaw", "Yaw", base.DEC)
-f.flyc_osd_general_mode1 = ProtoField.uint8 ("dji_p3.flyc_osd_general_mode1", "Mode1", base.HEX, FLYC_OSD_GENERAL_MODE1_ENUM, 0x7F, "Flight Controller state1")
+f.flyc_osd_general_mode1 = ProtoField.uint8 ("dji_p3.flyc_osd_general_mode1", "Mode1", base.HEX, enums.FLYC_OSD_GENERAL_MODE1_ENUM, 0x7F, "Flight Controller state1")
 f.flyc_osd_general_rc_state = ProtoField.uint8 ("dji_p3.flyc_osd_general_rc_state", "RC State", base.HEX, nil, 0x80, nil)
-f.flyc_osd_general_latest_cmd = ProtoField.uint8 ("dji_p3.flyc_osd_general_latest_cmd", "Latest Cmd", base.HEX, FLYC_OSD_GENERAL_COMMAND_ENUM, nil, "controller exccute lastest cmd")
+f.flyc_osd_general_latest_cmd = ProtoField.uint8 ("dji_p3.flyc_osd_general_latest_cmd", "Latest Cmd", base.HEX, enums.FLYC_OSD_GENERAL_COMMAND_ENUM, nil, "controller exccute lastest cmd")
 f.flyc_osd_general_controller_state = ProtoField.uint32 ("dji_p3.flyc_osd_general_controller_state", "Controller State", base.HEX, nil, nil, "Flight Controller state flags")
   f.flyc_osd_general_e_can_ioc_work = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_can_ioc_work", "E Can IOC Work", base.HEX, nil, 0x01, nil)
   f.flyc_osd_general_e_on_ground = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_on_ground", "E On Ground", base.HEX, nil, 0x02, nil)
   f.flyc_osd_general_e_in_air = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_in_air", "E In Air", base.HEX, nil, 0x04, nil)
   f.flyc_osd_general_e_motor_on = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_motor_on", "E Motor On", base.HEX, nil, 0x08, "Force allow start motors ignoring errors")
   f.flyc_osd_general_e_usonic_on = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_usonic_on", "E Usonic On", base.HEX, nil, 0x10, nil)
-  f.flyc_osd_general_e_gohome_state = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gohome_state", "E Gohome State", base.HEX, FLYC_OSD_GENERAL_GOHOME_STATE_ENUM, 0xe0, nil)
+  f.flyc_osd_general_e_gohome_state = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gohome_state", "E Gohome State", base.HEX, enums.FLYC_OSD_GENERAL_GOHOME_STATE_ENUM, 0xe0, nil)
   f.flyc_osd_general_e_mvo_used = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_mvo_used", "E MVO Used", base.HEX, nil, 0x100, "Monocular Visual Odometry is used as horizonal velocity sensor")
   f.flyc_osd_general_e_battery_req_gohome = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_battery_req_gohome", "E Battery Req Gohome", base.HEX, nil, 0x200, nil)
   f.flyc_osd_general_e_battery_req_land = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_battery_req_land", "E Battery Req Land", base.HEX, nil, 0x400, "Landing required due to battery voltage low")
@@ -685,7 +877,7 @@ f.flyc_osd_general_controller_state = ProtoField.uint32 ("dji_p3.flyc_osd_genera
   f.flyc_osd_general_e_compass_over_range = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_compass_over_range", "E Compass Over Range", base.HEX, nil, 0x10000, nil)
   f.flyc_osd_general_e_wave_err = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_wave_err", "E Wave Error", base.HEX, nil, 0x20000, nil)
   f.flyc_osd_general_e_gps_level = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gps_level", "E GPS Level", base.HEX, nil, 0x3C0000, "Satellite Positioning System signal level")
-  f.flyc_osd_general_e_battery_type = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_battery_type", "E Battery Type", base.HEX, FLYC_OSD_GENERAL_BATT_TYPE_ENUM, 0xC00000, nil)
+  f.flyc_osd_general_e_battery_type = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_battery_type", "E Battery Type", base.HEX, enums.FLYC_OSD_GENERAL_BATT_TYPE_ENUM, 0xC00000, nil)
   f.flyc_osd_general_e_accel_over_range = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_accel_over_range", "E Acceletor Over Range", base.HEX, nil, 0x1000000, nil)
   f.flyc_osd_general_e_is_vibrating = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_is_vibrating", "E Is Vibrating", base.HEX, nil, 0x2000000, nil)
   f.flyc_osd_general_e_press_err = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_press_err", "E Press Err", base.HEX, nil, 0x4000000, "Barometer error")
@@ -695,10 +887,10 @@ f.flyc_osd_general_controller_state = ProtoField.uint32 ("dji_p3.flyc_osd_genera
   f.flyc_osd_general_e_gohome_height_mod = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gohome_height_mod", "E GoHome Height Mod", base.HEX, nil, 0x40000000, "Go Home Height is Modified")
   f.flyc_osd_general_e_out_of_limit = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_out_of_limit", "E Is Out Of Limit", base.HEX, nil, 0x80000000, nil)
 f.flyc_osd_general_gps_nums = ProtoField.uint8 ("dji_p3.flyc_osd_general_gps_nums", "Gps Nums", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
-f.flyc_osd_general_gohome_landing_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_gohome_landing_reason", "Gohome or Landing Reason", base.HEX, FLYC_OSD_GENERAL_GOHOME_REASON_ENUM, nil, "Reason for automatic GoHome or Landing")
-f.flyc_osd_general_start_fail_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_start_fail_reason", "Start Fail Reason", base.HEX, FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM, nil, "Reason for failure to start motors")
+f.flyc_osd_general_gohome_landing_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_gohome_landing_reason", "Gohome or Landing Reason", base.HEX, enums.FLYC_OSD_GENERAL_GOHOME_REASON_ENUM, nil, "Reason for automatic GoHome or Landing")
+f.flyc_osd_general_start_fail_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_start_fail_reason", "Start Fail Reason", base.HEX, enums.FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM, nil, "Reason for failure to start motors")
 f.flyc_osd_general_controller_state_ext = ProtoField.uint8 ("dji_p3.flyc_osd_general_controller_state_ext", "Controller State Ext", base.HEX)
-  f.flyc_osd_general_e_gps_state = ProtoField.uint8 ("dji_p3.flyc_osd_general_e_gps_state", "E Gps State", base.HEX, FLYC_OSD_GENERAL_GPS_STATE_ENUM, 0x0f, nil)
+  f.flyc_osd_general_e_gps_state = ProtoField.uint8 ("dji_p3.flyc_osd_general_e_gps_state", "E Gps State", base.HEX, enums.FLYC_OSD_GENERAL_GPS_STATE_ENUM, 0x0f, nil)
   f.flyc_osd_general_e_wp_limit_md = ProtoField.uint8 ("dji_p3.flyc_osd_general_e_wp_limit_md", "E Wp Limit Mode", base.HEX, nil, 0x10, "Waypoint Limit Mode")
 f.flyc_osd_general_batt_remain = ProtoField.uint8 ("dji_p3.flyc_osd_general_batt_remain", "Battery Remain", base.DEC, nil, nil, "Battery Remaining Capacity")
 f.flyc_osd_general_ultrasonic_height = ProtoField.uint8 ("dji_p3.flyc_osd_general_ultrasonic_height", "Ultrasonic Height", base.DEC)
@@ -711,8 +903,8 @@ f.flyc_osd_general_bat_alarm2 = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_a
   f.flyc_osd_general_bat_alarm2_ve = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_alarm2_ve", "Alarm Level 2 Voltage", base.DEC, nil, 0x7F)
   f.flyc_osd_general_bat_alarm2_fn = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_alarm2_fn", "Alarm Level 2 Function", base.DEC, nil, 0x80)
 f.flyc_osd_general_version_match = ProtoField.uint8 ("dji_p3.flyc_osd_general_version_match", "Version Match", base.HEX, nil, nil, "Flight Controller version")
-f.flyc_osd_general_product_type = ProtoField.uint8 ("dji_p3.flyc_osd_general_product_type", "Product Type", base.HEX, FLYC_OSD_GENERAL_PRODUCT_TYPE_ENUM)
-f.flyc_osd_general_imu_init_fail_reson = ProtoField.int8 ("dji_p3.flyc_osd_general_imu_init_fail_reson", "IMU init Fail Reason", base.DEC, FLYC_OSD_GENERAL_IMU_INIT_FAIL_RESON_ENUM)
+f.flyc_osd_general_product_type = ProtoField.uint8 ("dji_p3.flyc_osd_general_product_type", "Product Type", base.HEX, enums.FLYC_OSD_GENERAL_PRODUCT_TYPE_ENUM)
+f.flyc_osd_general_imu_init_fail_reson = ProtoField.int8 ("dji_p3.flyc_osd_general_imu_init_fail_reson", "IMU init Fail Reason", base.DEC, enums.FLYC_OSD_GENERAL_IMU_INIT_FAIL_RESON_ENUM)
 
 local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
