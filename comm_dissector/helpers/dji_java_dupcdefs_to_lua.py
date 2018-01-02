@@ -114,15 +114,19 @@ def prop_typestr_to_ntype(typestr):
   return arr.index(sstr)
 
 def java_typestr_to_ntype(nbytes, typestr):
+  """
+  Returns unsigned types, even though there are no unsigned types in Java.
+  This is because unsigned types are more commonly used in packets.
+  """
   sstr = typestr.strip().lower()+str(int(nbytes)*8)
   # alternate names first
-  arr3 =["na0", "integer8", "integer16", "integer24", "integer32", "integer64", "uint8", "uint16", "uint24", "uint32", "uint64", "float16", "float32", "double64", "ex0"]
+  arr3 =["na0", "sint8", "sint16", "sint24", "sint32", "sint64", "integer8", "integer16", "integer24", "integer32", "integer64", "float16", "float32", "double64", "ex0"]
   if sstr in arr3:
       return arr3.index(sstr)
-  arr2 =["na0", "short8", "short16", "short24", "short32", "short64", "uint8", "uint16", "uint24", "uint32", "uint64", "float16", "float32", "double64", "ex0"]
+  arr2 =["na0", "sint8", "sint16", "sint24", "sint32", "sint64", "short8", "short16", "short24", "short32", "short64", "float16", "float32", "double64", "ex0"]
   if sstr in arr2:
       return arr2.index(sstr)
-  arr1 =["na0", "long8", "long16", "long24", "long32", "long64", "ulong8", "ulong16", "ulong24", "ulong32", "ulong64", "float16", "float32", "double64", "ex0"]
+  arr1 =["na0", "slong8", "slong16", "slong24", "slong32", "slong64", "long8", "long16", "long24", "long32", "long64", "float16", "float32", "double64", "ex0"]
   if sstr in arr1:
       return arr1.index(sstr)
   return 0
@@ -157,7 +161,7 @@ def mask_to_shift_and_base(whole_mask):
     mask_bits = offset - mask_shift
     mask_base = 0
     i = 0
-    while i < mask_base:
+    while i < mask_bits:
         mask_base = (mask_base << 1) | 1
         i += 1
     return mask_shift, mask_base
@@ -1386,6 +1390,11 @@ def recmsg_write_cmd_config_dissector_lua(po, luafile, rst):
               proto.commented = True
               proto_list.append(proto)
 
+          # Sort subfields by mask
+          for proto in proto_list[:]:
+              proto.subfields = sorted(proto.subfields, key=lambda pr: pr.dt_mask )
+
+          # Write enumerations
           for proto in proto_list[:]:
               if len(proto.enum_vals) > 0:
                   recmsg_write_quoted_enum_lua(po, luafile, proto.enum_vals, "enums.{}_ENUM".format(proto.enum_name.upper()))
