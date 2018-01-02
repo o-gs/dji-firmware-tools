@@ -853,7 +853,6 @@ end
 
 -- Camera - Camera Shot Params - 0x81
 
-
 enums.CAMERA_SHOT_PARAMS_ISO_TYPE_ENUM = {
     [0x00] = 'AUTO',
     [0x01] = 'AUTOHIGH',
@@ -1218,7 +1217,6 @@ end
 
 -- Camera - Camera Play Back Params - 0x82
 
-
 enums.CAMERA_PLAY_BACK_PARAMS_MODE_ENUM = {
     [0x00] = 'Single',
     [0x01] = 'SingleLarge',
@@ -1243,6 +1241,7 @@ enums.CAMERA_PLAY_BACK_PARAMS_DEL_FILE_STATUS_ENUM = {
     [0x02] = 'DELETING',
     [0x03] = 'COMPLETED',
 }
+
 f.camera_camera_play_back_params_mode = ProtoField.uint8 ("dji_p3.camera_camera_play_back_params_mode", "Mode", base.HEX, enums.CAMERA_PLAY_BACK_PARAMS_MODE_ENUM, nil, nil)
 f.camera_camera_play_back_params_file_type = ProtoField.uint16 ("dji_p3.camera_camera_play_back_params_file_type", "File Type", base.HEX, enums.CAMERA_PLAY_BACK_PARAMS_FILE_TYPE_ENUM, nil, nil)
 f.camera_camera_play_back_params_file_num = ProtoField.uint8 ("dji_p3.camera_camera_play_back_params_file_num", "File Num", base.DEC)
@@ -1351,13 +1350,13 @@ end
 
 -- Camera - Camera Recording Name - 0x84
 
-
 enums.CAMERA_RECORDING_FILE_TYPE_ENUM = {
     [0x00] = 'JPEG',
     [0x01] = 'DNG',
     [0x02] = 'VIDEO',
     [0x64] = 'OTHER',
 }
+
 f.camera_camera_recording_name_file_type = ProtoField.uint8 ("dji_p3.camera_camera_recording_name_file_type", "File Type", base.HEX, enums.CAMERA_RECORDING_FILE_TYPE_ENUM, nil, nil)
 f.camera_camera_recording_name_index = ProtoField.uint32 ("dji_p3.camera_camera_recording_name_index", "Index", base.HEX)
 f.camera_camera_recording_name_size = ProtoField.uint64 ("dji_p3.camera_camera_recording_name_size", "Size", base.HEX)
@@ -1386,7 +1385,6 @@ end
 
 -- Camera - Camera Raw Params - 0x85
 
-
 enums.CAMERA_RAW_PARAMS_DISK_STATUS_ENUM = {
     [0x00] = 'NA',
     [0x01] = 'WAITING',
@@ -1399,6 +1397,7 @@ enums.CAMERA_RAW_PARAMS_DISK_STATUS_ENUM = {
     [0x08] = 'FULL',
     [0x09] = 'OTHER',
 }
+
 f.camera_camera_raw_params_masked00 = ProtoField.uint8 ("dji_p3.camera_camera_raw_params_masked00", "Masked00", base.HEX)
   f.camera_camera_raw_params_disk_status = ProtoField.uint8 ("dji_p3.camera_camera_raw_params_disk_status", "Disk Status", base.HEX, enums.CAMERA_RAW_PARAMS_DISK_STATUS_ENUM, 0x0f, nil)
   f.camera_camera_raw_params_disk_connected = ProtoField.uint8 ("dji_p3.camera_camera_raw_params_disk_connected", "Disk Connected", base.HEX, nil, 0x10, nil)
@@ -1497,6 +1496,7 @@ enums.CAMERA_SHOT_INFO_FUSELAGE_FOCUS_MODE_ENUM = {
     [0x03] = 'ManualFine',
     [0x06] = 'OTHER',
 }
+
 f.camera_camera_shot_info_masked00 = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_masked00", "Masked00", base.HEX)
   f.camera_camera_shot_info_fuselage_focus_mode = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_fuselage_focus_mode", "Fuselage Focus Mode", base.HEX, enums.CAMERA_SHOT_INFO_FUSELAGE_FOCUS_MODE_ENUM, 0x03, nil)
   f.camera_camera_shot_info_shot_focus_mode = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_shot_focus_mode", "Shot Focus Mode", base.HEX, nil, 0x0c, "TODO values from enum P3.DataCameraGetPushShotInfo")
@@ -1670,8 +1670,8 @@ end
 
 f.camera_camera_tracking_status_masked00 = ProtoField.uint8 ("dji_p3.camera_camera_tracking_status_masked00", "Masked00", base.HEX)
   f.camera_camera_tracking_status_get_status = ProtoField.uint8 ("dji_p3.camera_camera_tracking_status_status", "Status", base.HEX, nil, 0x01, nil)
-f.camera_camera_tracking_status_x_coord = ProtoField.uint16 ("dji_p3.camera_camera_tracking_status_x_coord", "X Coord", base.HEX)
-f.camera_camera_tracking_status_y_coord = ProtoField.uint16 ("dji_p3.camera_camera_tracking_status_y_coord", "Y Coord", base.HEX)
+f.camera_camera_tracking_status_x_coord = ProtoField.uint16 ("dji_p3.camera_camera_tracking_status_x_coord", "X Coord", base.DEC)
+f.camera_camera_tracking_status_y_coord = ProtoField.uint16 ("dji_p3.camera_camera_tracking_status_y_coord", "Y Coord", base.DEC)
 
 local function camera_camera_tracking_status_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -1697,7 +1697,7 @@ end
 f.camera_camera_fov_param_image_width = ProtoField.uint32 ("dji_p3.camera_camera_fov_param_image_width", "Image Width", base.DEC)
 f.camera_camera_fov_param_image_height = ProtoField.uint32 ("dji_p3.camera_camera_fov_param_image_height", "Image Height", base.DEC)
 f.camera_camera_fov_param_image_ratio = ProtoField.uint32 ("dji_p3.camera_camera_fov_param_image_ratio", "Image Ratio", base.HEX)
-f.camera_camera_fov_param_lens_focal_length = ProtoField.uint32 ("dji_p3.camera_camera_fov_param_lens_focal_length", "Lens Focal Length", base.HEX)
+f.camera_camera_fov_param_lens_focal_length = ProtoField.uint32 ("dji_p3.camera_camera_fov_param_lens_focal_length", "Lens Focal Length", base.DEC)
 
 local function camera_camera_fov_param_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -1720,6 +1720,396 @@ local function camera_camera_fov_param_dissector(pkt_length, buffer, pinfo, subt
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Fov Param: Payload size different than expected") end
 end
 
+-- Camera - Camera Prepare Open Fan - 0xb4
+
+f.camera_camera_prepare_open_fan_left_seconds = ProtoField.uint8 ("dji_p3.camera_camera_prepare_open_fan_left_seconds", "Left Seconds", base.DEC)
+
+local function camera_camera_prepare_open_fan_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_prepare_open_fan_left_seconds, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Prepare Open Fan: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Prepare Open Fan: Payload size different than expected") end
+end
+
+-- Camera - Camera Optics Zoom Mode - 0xb8
+
+enums.CAMERA_OPTICS_ZOOM_MODE_ZOOM_MODE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+}
+
+enums.CAMERA_OPTICS_ZOOM_MODE_ZOOM_SPEED_ENUM = {
+    [0x78] = 'a',
+    [0x79] = 'b',
+    [0x7a] = 'c',
+    [0x7b] = 'd',
+    [0x7c] = 'e',
+    [0x7d] = 'f',
+    [0x7e] = 'g',
+}
+
+f.camera_camera_optics_zoom_mode_optics_zomm_mode = ProtoField.uint8 ("dji_p3.camera_camera_optics_zoom_mode_optics_zomm_mode", "Optics Zomm Mode", base.HEX, enums.CAMERA_OPTICS_ZOOM_MODE_ZOOM_MODE_ENUM, nil, nil)
+f.camera_camera_optics_zoom_mode_zoom_speed = ProtoField.uint8 ("dji_p3.camera_camera_optics_zoom_mode_zoom_speed", "Zoom Speed", base.HEX, enums.CAMERA_OPTICS_ZOOM_MODE_ZOOM_SPEED_ENUM, nil, nil)
+f.camera_camera_optics_zoom_mode_c = ProtoField.uint8 ("dji_p3.camera_camera_optics_zoom_mode_c", "C", base.HEX)
+f.camera_camera_optics_zoom_mode_d = ProtoField.uint8 ("dji_p3.camera_camera_optics_zoom_mode_d", "D", base.HEX)
+
+local function camera_camera_optics_zoom_mode_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_optics_zoom_mode_optics_zomm_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_optics_zoom_mode_zoom_speed, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_optics_zoom_mode_c, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_optics_zoom_mode_d, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Optics Zoom Mode: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Optics Zoom Mode: Payload size different than expected") end
+end
+
+-- Camera - Camera Tap Zoom State Info - 0xc7
+
+enums.CAMERA_TAP_ZOOM_STATE_INFO_WORKING_STATE_ENUM = {
+    [0x00] = 'IDLE',
+    [0x01] = 'ZOOM_IN',
+    [0x02] = 'ZOOM_OUT',
+    [0xff] = 'Unknown',
+}
+
+f.camera_camera_tap_zoom_state_info_working_state = ProtoField.uint8 ("dji_p3.camera_camera_tap_zoom_state_info_working_state", "Working State", base.HEX, enums.CAMERA_TAP_ZOOM_STATE_INFO_WORKING_STATE_ENUM, nil, nil)
+f.camera_camera_tap_zoom_state_info_gimbal_state = ProtoField.uint8 ("dji_p3.camera_camera_tap_zoom_state_info_gimbal_state", "Gimbal State", base.HEX)
+f.camera_camera_tap_zoom_state_info_multiplier = ProtoField.uint8 ("dji_p3.camera_camera_tap_zoom_state_info_multiplier", "Multiplier", base.HEX)
+
+local function camera_camera_tap_zoom_state_info_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_tap_zoom_state_info_working_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tap_zoom_state_info_gimbal_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tap_zoom_state_info_multiplier, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 3) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Tap Zoom State Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Tap Zoom State Info: Payload size different than expected") end
+end
+
+-- Camera - Camera Tau Param - 0xf2
+
+enums.CAMERA_TAU_PARAM_ZOOM_MODE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x02] = 'c',
+}
+
+enums.CAMERA_TAU_PARAM_AGC_AGC_TYPE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x02] = 'c',
+    [0x03] = 'd',
+    [0x04] = 'e',
+    [0x05] = 'f',
+    [0x06] = 'g',
+    [0x07] = 'h',
+    [0x08] = 'i',
+    [0x64] = 'j',
+}
+
+enums.CAMERA_TAU_PARAM_ROI_TYPE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x02] = 'c',
+    [0x64] = 'd',
+}
+
+enums.CAMERA_TAU_PARAM_THERMOMETRIC_TYPE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x02] = 'c',
+    [0x63] = 'd',
+}
+
+enums.CAMERA_TAU_PARAM_GAIN_MODE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x02] = 'c',
+    [0x64] = 'd',
+}
+
+enums.CAMERA_TAU_PARAM_VIDEO_RESOLUTION_ENUM = {
+    [0x00] = 'VR_640',
+    [0x01] = 'VR_336',
+    [0xff] = 'UNKNOWN',
+}
+
+enums.CAMERA_TAU_PARAM_LEN_FOCUS_LENGTH_ENUM = {
+    [0x00] = 'LFL_68',
+    [0x01] = 'LFL_75',
+    [0x02] = 'LFL_90',
+    [0x03] = 'LFL_130',
+    [0x04] = 'LFL_190',
+    [0xff] = 'UNKNOWN',
+}
+
+enums.CAMERA_TAU_PARAM_LEN_FPS_ENUM = {
+    [0x00] = 'FPS_LESS_9',
+    [0x04] = 'FPS_30',
+    [0xff] = 'UNKNOWN',
+}
+
+enums.CAMERA_TAU_PARAM_FFC_MODE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x64] = 'c',
+}
+
+enums.CAMERA_TAU_PARAM_EXTER_PARAM_TYPE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x02] = 'c',
+    [0x63] = 'd',
+}
+
+f.camera_camera_tau_param_image_format = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_image_format", "Image Format", base.HEX)
+f.camera_camera_tau_param_video_format = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_video_format", "Video Format", base.HEX)
+f.camera_camera_tau_param_video_fps = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_video_fps", "Video Fps", base.HEX)
+f.camera_camera_tau_param_zoom_mode = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_zoom_mode", "Zoom Mode", base.HEX, enums.CAMERA_TAU_PARAM_ZOOM_MODE_ENUM, nil, nil)
+f.camera_camera_tau_param_zoom_scale = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_zoom_scale", "Zoom Scale", base.HEX)
+f.camera_camera_tau_param_digital_filter = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_digital_filter", "Digital Filter", base.HEX)
+f.camera_camera_tau_param_agc = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_agc", "Agc", base.HEX, enums.CAMERA_TAU_PARAM_AGC_AGC_TYPE_ENUM, nil, nil)
+f.camera_camera_tau_param_dde = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_dde", "Dde", base.HEX)
+f.camera_camera_tau_param_ace = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_ace", "Ace", base.HEX)
+f.camera_camera_tau_param_sso = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_sso", "Sso", base.HEX)
+f.camera_camera_tau_param_contrast = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_contrast", "Contrast", base.HEX)
+f.camera_camera_tau_param_brightness = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_brightness", "Brightness", base.HEX)
+f.camera_camera_tau_param_thermometric_x_axis = ProtoField.float ("dji_p3.camera_camera_tau_param_thermometric_x_axis", "Thermometric X Axis", base.DEC)
+f.camera_camera_tau_param_thermometric_y_axis = ProtoField.float ("dji_p3.camera_camera_tau_param_thermometric_y_axis", "Thermometric Y Axis", base.DEC)
+f.camera_camera_tau_param_thermometric_temp = ProtoField.float ("dji_p3.camera_camera_tau_param_thermometric_temp", "Thermometric Temp", base.DEC)
+f.camera_camera_tau_param_shot_count_down = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_shot_count_down", "Shot Count Down", base.HEX)
+f.camera_camera_tau_param_roi_type = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_roi_type", "Roi Type", base.HEX, enums.CAMERA_TAU_PARAM_ROI_TYPE_ENUM, nil, nil)
+f.camera_camera_tau_param_masked1f = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_masked1f", "Masked1F", base.HEX)
+  f.camera_camera_tau_param_isotherm_enable = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_isotherm_enable", "Isotherm Enable", base.HEX, nil, 0x01, nil)
+f.camera_camera_tau_param_isotherm_unit = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_isotherm_unit", "Isotherm Unit", base.HEX)
+f.camera_camera_tau_param_isotherm_lower = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_isotherm_lower", "Isotherm Lower", base.HEX)
+f.camera_camera_tau_param_isotherm_middle = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_isotherm_middle", "Isotherm Middle", base.HEX)
+f.camera_camera_tau_param_isotherm_upper = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_isotherm_upper", "Isotherm Upper", base.HEX)
+f.camera_camera_tau_param_thermometric_type = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_thermometric_type", "Thermometric Type", base.HEX, enums.CAMERA_TAU_PARAM_THERMOMETRIC_TYPE_ENUM, nil, nil)
+f.camera_camera_tau_param_object_control = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_object_control", "Object Control", base.HEX)
+f.camera_camera_tau_param_gain_mode = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_gain_mode", "Gain Mode", base.HEX, enums.CAMERA_TAU_PARAM_GAIN_MODE_ENUM, nil, nil)
+f.camera_camera_tau_param_video_resolution = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_video_resolution", "Video Resolution", base.HEX, enums.CAMERA_TAU_PARAM_VIDEO_RESOLUTION_ENUM, nil, nil)
+f.camera_camera_tau_param_len_focus_length = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_len_focus_length", "Len Focus Length", base.HEX, enums.CAMERA_TAU_PARAM_LEN_FOCUS_LENGTH_ENUM, nil, nil)
+f.camera_camera_tau_param_len_fps = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_len_fps", "Len Fps", base.HEX, enums.CAMERA_TAU_PARAM_LEN_FPS_ENUM, nil, nil)
+f.camera_camera_tau_param_photo_interval = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_photo_interval", "Photo Interval", base.HEX)
+f.camera_camera_tau_param_unknown2e = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_unknown2e", "Unknown2E", base.HEX)
+f.camera_camera_tau_param_ffc_mode = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_ffc_mode", "Ffc Mode", base.HEX, enums.CAMERA_TAU_PARAM_FFC_MODE_ENUM, nil, nil)
+f.camera_camera_tau_param_masked30 = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_masked30", "Masked30", base.HEX)
+  f.camera_camera_tau_param_support_spot_thermometric = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_support_spot_thermometric", "Support Spot Thermometric", base.HEX, nil, 0x01, nil)
+  f.camera_camera_tau_param_thermometric_valid = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_thermometric_valid", "Thermometric Valid", base.HEX, nil, 0x80, nil)
+f.camera_camera_tau_param_exter_param_type = ProtoField.uint8 ("dji_p3.camera_camera_tau_param_exter_param_type", "Exter Param Type", base.HEX, enums.CAMERA_TAU_PARAM_EXTER_PARAM_TYPE_ENUM, nil, nil)
+f.camera_camera_tau_param_target_emissivity = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_target_emissivity", "Target Emissivity", base.HEX)
+f.camera_camera_tau_param_atmosphere_transmission = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_atmosphere_transmission", "Atmosphere Transmission", base.HEX)
+f.camera_camera_tau_param_atmosphere_temperature = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_atmosphere_temperature", "Atmosphere Temperature", base.HEX)
+f.camera_camera_tau_param_background_temperature = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_background_temperature", "Background Temperature", base.HEX)
+f.camera_camera_tau_param_window_transmission = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_window_transmission", "Window Transmission", base.HEX)
+f.camera_camera_tau_param_window_temperature = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_window_temperature", "Window Temperature", base.HEX)
+f.camera_camera_tau_param_window_reflection = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_window_reflection", "Window Reflection", base.HEX)
+f.camera_camera_tau_param_window_reflected_temperature = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_window_reflected_temperature", "Window Reflected Temperature", base.HEX)
+f.camera_camera_tau_param_area_thermometric_left = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_area_thermometric_left", "Area Thermometric Left", base.HEX)
+f.camera_camera_tau_param_area_thermometric_top = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_area_thermometric_top", "Area Thermometric Top", base.HEX)
+f.camera_camera_tau_param_area_thermometric_right = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_area_thermometric_right", "Area Thermometric Right", base.HEX)
+f.camera_camera_tau_param_area_thermometric_bottom = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_area_thermometric_bottom", "Area Thermometric Bottom", base.HEX)
+f.camera_camera_tau_param_area_thermometric_average = ProtoField.float ("dji_p3.camera_camera_tau_param_area_thermometric_average", "Area Thermometric Average", base.DEC)
+f.camera_camera_tau_param_area_thermometric_min = ProtoField.float ("dji_p3.camera_camera_tau_param_area_thermometric_min", "Area Thermometric Min", base.DEC)
+f.camera_camera_tau_param_area_thermometric_max = ProtoField.float ("dji_p3.camera_camera_tau_param_area_thermometric_max", "Area Thermometric Max", base.DEC)
+f.camera_camera_tau_param_area_thermometric_min_x = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_area_thermometric_min_x", "Area Thermometric Min X", base.HEX)
+f.camera_camera_tau_param_area_thermometric_min_y = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_area_thermometric_min_y", "Area Thermometric Min Y", base.HEX)
+f.camera_camera_tau_param_area_thermometric_max_x = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_area_thermometric_max_x", "Area Thermometric Max X", base.HEX)
+f.camera_camera_tau_param_area_thermometric_max_y = ProtoField.uint16 ("dji_p3.camera_camera_tau_param_area_thermometric_max_y", "Area Thermometric Max Y", base.HEX)
+
+local function camera_camera_tau_param_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_tau_param_image_format, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_video_format, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_video_fps, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_zoom_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_zoom_scale, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_digital_filter, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_agc, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_dde, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_ace, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_sso, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_contrast, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_brightness, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_thermometric_x_axis, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_tau_param_thermometric_y_axis, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_tau_param_thermometric_temp, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_tau_param_shot_count_down, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_roi_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_masked1f, payload(offset, 1))
+    subtree:add_le (f.camera_camera_tau_param_isotherm_enable, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_isotherm_unit, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_isotherm_lower, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_isotherm_middle, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_isotherm_upper, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_thermometric_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_object_control, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_gain_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_video_resolution, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_len_focus_length, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_len_fps, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_photo_interval, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_unknown2e, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_ffc_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_masked30, payload(offset, 1))
+    subtree:add_le (f.camera_camera_tau_param_support_spot_thermometric, payload(offset, 1))
+    subtree:add_le (f.camera_camera_tau_param_thermometric_valid, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_exter_param_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tau_param_target_emissivity, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_atmosphere_transmission, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_atmosphere_temperature, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_background_temperature, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_window_transmission, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_window_temperature, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_window_reflection, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_window_reflected_temperature, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_area_thermometric_left, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_area_thermometric_top, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_area_thermometric_right, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_area_thermometric_bottom, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_area_thermometric_average, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_tau_param_area_thermometric_min, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_tau_param_area_thermometric_max, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_tau_param_area_thermometric_min_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_area_thermometric_min_y, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_area_thermometric_max_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tau_param_area_thermometric_max_y, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 94) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Tau Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Tau Param: Payload size different than expected") end
+end
+
 local CAMERA_UART_CMD_DISSECT = {
     [0x7c] = camera_camera_shutter_cmd_dissector,
     [0x80] = camera_camera_state_info_dissector,
@@ -1733,11 +2123,183 @@ local CAMERA_UART_CMD_DISSECT = {
     [0x88] = camera_camera_timelapse_parms_dissector,
     [0x89] = camera_camera_tracking_status_dissector,
     [0x8a] = camera_camera_fov_param_dissector,
+    [0xb4] = camera_camera_prepare_open_fan_dissector,
+    [0xb8] = camera_camera_optics_zoom_mode_dissector,
+    [0xc7] = camera_camera_tap_zoom_state_info_dissector,
+    [0xf2] = camera_camera_tau_param_dissector,
 }
+
+-- Flight Controller - Flyc Forbid Status - 0x09
+
+
+enums.FLYC_FORBID_STATUS_FLIGHT_LIMIT_AREA_STATE_DJI_FLIGHT_LIMIT_AREA_STATE_ENUM = {
+    [0x00] = 'None',
+    [0x01] = 'NearLimit',
+    [0x02] = 'InHalfLimit',
+    [0x03] = 'InSlowDownArea',
+    [0x04] = 'InnerLimit',
+    [0x05] = 'InnerUnLimit',
+    [0x64] = 'OTHER',
+}
+
+enums.FLYC_FORBID_STATUS_DJI_FLIGHT_LIMIT_ACTION_EVENT_ENUM = {
+    [0x00] = 'None',
+    [0x01] = 'ExitLanding',
+    [0x02] = 'Collision',
+    [0x03] = 'StartLanding',
+    [0x04] = 'StopMotor',
+    [0x64] = 'OTHER',
+}
+f.flyc_flyc_forbid_status_flight_limit_area_state = ProtoField.uint8 ("dji_p3.flyc_flyc_forbid_status_flight_limit_area_state", "Flight Limit Area State", base.HEX, enums.FLYC_FORBID_STATUS_FLIGHT_LIMIT_AREA_STATE_DJI_FLIGHT_LIMIT_AREA_STATE_ENUM, nil, nil)
+f.flyc_flyc_forbid_status_dji_flight_limit_action_event = ProtoField.uint8 ("dji_p3.flyc_flyc_forbid_status_dji_flight_limit_action_event", "Dji Flight Limit Action Event", base.HEX, enums.FLYC_FORBID_STATUS_DJI_FLIGHT_LIMIT_ACTION_EVENT_ENUM, nil, nil)
+f.flyc_flyc_forbid_status_limit_space_num = ProtoField.uint8 ("dji_p3.flyc_flyc_forbid_status_limit_space_num", "Limit Space Num", base.HEX)
+
+local function flyc_flyc_forbid_status_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_forbid_status_flight_limit_area_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_forbid_status_dji_flight_limit_action_event, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_forbid_status_limit_space_num, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 3) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Forbid Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Forbid Status: Payload size different than expected") end
+end
+
+-- Flight Controller - A2 Commom - 0x10
+
+
+enums.FLYC_A2_COMMOM_E_DJIA2_CTRL_MODE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x02] = 'c',
+    [0x06] = 'd',
+    [0x07] = 'e',
+    [0x08] = 'f',
+    [0x12] = 'g',
+}
+f.flyc_a2_commom_a = ProtoField.uint8 ("dji_p3.flyc_a2_commom_a", "A", base.HEX)
+f.flyc_a2_commom_b = ProtoField.uint8 ("dji_p3.flyc_a2_commom_b", "B", base.HEX)
+f.flyc_a2_commom_c = ProtoField.uint32 ("dji_p3.flyc_a2_commom_c", "C", base.HEX)
+f.flyc_a2_commom_d = ProtoField.uint32 ("dji_p3.flyc_a2_commom_d", "D", base.HEX)
+f.flyc_a2_commom_control_mode = ProtoField.uint8 ("dji_p3.flyc_a2_commom_control_mode", "Control Mode", base.HEX, enums.FLYC_A2_COMMOM_E_DJIA2_CTRL_MODE_ENUM, nil, nil)
+f.flyc_a2_commom_f = ProtoField.uint8 ("dji_p3.flyc_a2_commom_f", "F", base.HEX)
+
+local function flyc_a2_commom_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_a2_commom_a, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_a2_commom_b, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_a2_commom_c, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_a2_commom_d, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_a2_commom_control_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_a2_commom_f, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"A2 Commom: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"A2 Commom: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Deform Status - 0x32
+
+
+enums.FLYC_DEFORM_STATUS_DEFORM_STATUS_TRIPOD_STATUS_ENUM = {
+    [0x00] = 'UNKNOWN',
+    [0x01] = 'FOLD_COMPELTE',
+    [0x02] = 'FOLOING',
+    [0x03] = 'STRETCH_COMPLETE',
+    [0x04] = 'STRETCHING',
+    [0x05] = 'STOP_DEFORMATION',
+}
+
+enums.FLYC_DEFORM_STATUS_DEFORM_MODE_ENUM = {
+    [0x00] = 'Pack',
+    [0x01] = 'Protect',
+    [0x02] = 'Normal',
+    [0x03] = 'OTHER',
+}
+f.flyc_flyc_deform_status_masked00 = ProtoField.uint8 ("dji_p3.flyc_flyc_deform_status_masked00", "Masked00", base.HEX)
+  f.flyc_flyc_deform_status_deform_protected = ProtoField.uint8 ("dji_p3.flyc_flyc_deform_status_deform_protected", "Deform Protected", base.HEX, nil, 0x01, nil)
+  f.flyc_flyc_deform_status_deform_status = ProtoField.uint8 ("dji_p3.flyc_flyc_deform_status_deform_status", "Deform Status", base.HEX, enums.FLYC_DEFORM_STATUS_DEFORM_STATUS_TRIPOD_STATUS_ENUM, 0x0e, nil)
+  f.flyc_flyc_deform_status_deform_mode = ProtoField.uint8 ("dji_p3.flyc_flyc_deform_status_deform_mode", "Deform Mode", base.HEX, enums.FLYC_DEFORM_STATUS_DEFORM_MODE_ENUM, 0x30, nil)
+
+local function flyc_flyc_deform_status_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_deform_status_masked00, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_deform_status_deform_protected, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_deform_status_deform_status, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_deform_status_deform_mode, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Deform Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Deform Status: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Request Limit Update - 0x3e
+
+--f.flyc_flyc_request_limit_update_unknown0 = ProtoField.none ("dji_p3.flyc_flyc_request_limit_update_unknown0", "Unknown0", base.NONE)
+
+local function flyc_flyc_request_limit_update_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Request Limit Update: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Request Limit Update: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Unlimit State - 0x42
+
+f.flyc_flyc_unlimit_state_is_in_unlimit_area = ProtoField.uint8 ("dji_p3.flyc_flyc_unlimit_state_is_in_unlimit_area", "Is In Unlimit Area", base.HEX)
+f.flyc_flyc_unlimit_state_unlimit_areas_action = ProtoField.uint8 ("dji_p3.flyc_flyc_unlimit_state_unlimit_areas_action", "Unlimit Areas Action", base.HEX)
+f.flyc_flyc_unlimit_state_unlimit_areas_size = ProtoField.uint8 ("dji_p3.flyc_flyc_unlimit_state_unlimit_areas_size", "Unlimit Areas Size", base.HEX)
+f.flyc_flyc_unlimit_state_unlimit_areas_enabled = ProtoField.uint8 ("dji_p3.flyc_flyc_unlimit_state_unlimit_areas_enabled", "Unlimit Areas Enabled", base.HEX)
+
+local function flyc_flyc_unlimit_state_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_unlimit_state_is_in_unlimit_area, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_unlimit_state_unlimit_areas_action, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_unlimit_state_unlimit_areas_size, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_unlimit_state_unlimit_areas_enabled, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Unlimit State: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Unlimit State: Payload size different than expected") end
+end
 
 -- Flight Controller - Osd General - 0x43, identical to flight recorder packet 0x000c
 
-enums.FLYC_OSD_GENERAL_MODE1_ENUM = {
+enums.FLYC_OSD_COMMON_FLYC_STATE_ENUM = {
     [0]="Manual",
     [1]="Atti",
     [2]="Atti_CL",
@@ -1777,86 +2339,154 @@ enums.FLYC_OSD_GENERAL_MODE1_ENUM = {
 }
 
 enums.FLYC_OSD_GENERAL_COMMAND_ENUM = {
-    [1]="AUTO_FLY",
-    [2]="AUTO_LANDING",
-    [3]="HOMEPOINT_NOW",
-    [4]="HOMEPOINT_HOT",
-    [5]="HOMEPOINT_LOC",
-    [6]="GOHOME",
-    [7]="START_MOTOR",
-    [8]="STOP_MOTOR",
-    [9]="Calibration",
-    [10]="DeformProtecClose",
-    [11]="DeformProtecOpen",
-    [12]="DropGohome",
-    [13]="DropTakeOff",
-    [14]="DropLanding",
-    [15]="DynamicHomePointOpen",
-    [16]="DynamicHomePointClose",
-    [17]="FollowFunctioonOpen",
-    [18]="FollowFunctionClose",
-    [19]="IOCOpen",
-    [20]="IOCClose",
-    [21]="DropCalibration",
-    [22]="PackMode",
-    [23]="UnPackMode",
-    [24]="EnterManaualMode",
-    [25]="StopDeform",
-    [28]="DownDeform",
-    [29]="UpDeform",
-    [30]="ForceLanding",
-    [31]="ForceLanding2",
-    [100]="OTHER",
-}
-
-enums.FLYC_OSD_GENERAL_BATT_TYPE_ENUM = {
-    [0]="Unknown",
-    [1]="NonSmart",
-    [2]="Smart",
+    [0x01] = 'AUTO_FLY',
+    [0x02] = 'AUTO_LANDING',
+    [0x03] = 'HOMEPOINT_NOW',
+    [0x04] = 'HOMEPOINT_HOT',
+    [0x05] = 'HOMEPOINT_LOC',
+    [0x06] = 'GOHOME',
+    [0x07] = 'START_MOTOR',
+    [0x08] = 'STOP_MOTOR',
+    [0x09] = 'Calibration',
+    [0x0a] = 'DeformProtecClose',
+    [0x0b] = 'DeformProtecOpen',
+    [0x0c] = 'DropGohome',
+    [0x0d] = 'DropTakeOff',
+    [0x0e] = 'DropLanding',
+    [0x0f] = 'DynamicHomePointOpen',
+    [0x10] = 'DynamicHomePointClose',
+    [0x11] = 'FollowFunctioonOpen',
+    [0x12] = 'FollowFunctionClose',
+    [0x13] = 'IOCOpen',
+    [0x14] = 'IOCClose',
+    [0x15] = 'DropCalibration',
+    [0x16] = 'PackMode',
+    [0x17] = 'UnPackMode',
+    [0x18] = 'EnterManaualMode',
+    [0x19] = 'StopDeform',
+    [0x1c] = 'DownDeform',
+    [0x1d] = 'UpDeform',
+    [0x1e] = 'ForceLanding',
+    [0x1f] = 'ForceLanding2',
+    [0x64] = 'OTHER',
 }
 
 enums.FLYC_OSD_GENERAL_GOHOME_STATE_ENUM = {
-    [0]="STANDBY",
-    [1]="PREASCENDING",
-    [2]="ALIGN",
-    [3]="ASCENDING",
-    [4]="CRUISE",
-    [5]="BRAKING",
-    [6]="BYPASSING",
-    [7]="OTHER",
+    [0x00] = 'STANDBY',
+    [0x01] = 'PREASCENDING',
+    [0x02] = 'ALIGN',
+    [0x03] = 'ASCENDING',
+    [0x04] = 'CRUISE',
+    [0x05] = 'BRAKING',
+    [0x06] = 'BYPASSING',
+    [0x07] = 'OTHER',
+}
+
+enums.FLYC_OSD_GENERAL_MODE_CHANNEL_RC_MODE_CHANNEL_ENUM = {
+    [0x00] = 'CHANNEL_MANUAL',
+    [0x01] = 'CHANNEL_A',
+    [0x02] = 'CHANNEL_P',
+    [0x03] = 'CHANNEL_NAV',
+    [0x04] = 'CHANNEL_FPV',
+    [0x05] = 'CHANNEL_FARM',
+    [0x06] = 'CHANNEL_S',
+    [0x07] = 'CHANNEL_F',
+    [0xff] = 'CHANNEL_UNKNOWN',
+}
+
+enums.FLYC_OSD_GENERAL_BATT_TYPE_ENUM = {
+    [0x00] = 'Unknown',
+    [0x01] = 'NonSmart',
+    [0x02] = 'Smart',
 }
 
 enums.FLYC_OSD_GENERAL_GOHOME_REASON_ENUM = {
-    [0]="NONE",
-    [1]="WARNING_POWER_GOHOME",
-    [2]="WARNING_POWER_LANDING",
-    [3]="SMART_POWER_GOHOME",
-    [4]="SMART_POWER_LANDING",
-    [5]="LOW_VOLTAGE_LANDING",
-    [6]="LOW_VOLTAGE_GOHOME",
-    [7]="SERIOUS_LOW_VOLTAGE_LANDING",
-    [8]="RC_ONEKEY_GOHOME",
-    [9]="RC_ASSISTANT_TAKEOFF",
-    [10]="RC_AUTO_TAKEOFF",
-    [11]="RC_AUTO_LANDING",
-    [12]="APP_AUTO_GOHOME",
-    [13]="APP_AUTO_LANDING",
-    [14]="APP_AUTO_TAKEOFF",
-    [15]="OUTOF_CONTROL_GOHOME",
-    [16]="API_AUTO_TAKEOFF",
-    [17]="API_AUTO_LANDING",
-    [18]="API_AUTO_GOHOME",
-    [19]="AVOID_GROUND_LANDING",
-    [20]="AIRPORT_AVOID_LANDING",
-    [21]="TOO_CLOSE_GOHOME_LANDING",
-    [22]="TOO_FAR_GOHOME_LANDING",
-    [23]="APP_WP_MISSION",
-    [24]="WP_AUTO_TAKEOFF",
-    [25]="GOHOME_AVOID",
-    [26]="GOHOME_FINISH",
-    [27]="VERT_LOW_LIMIT_LANDING",
-    [28]="BATTERY_FORCE_LANDING",
-    [29]="MC_PROTECT_GOHOME",
+    [0x00] = 'NONE',
+    [0x01] = 'WARNING_POWER_GOHOME',
+    [0x02] = 'WARNING_POWER_LANDING',
+    [0x03] = 'SMART_POWER_GOHOME',
+    [0x04] = 'SMART_POWER_LANDING',
+    [0x05] = 'LOW_VOLTAGE_LANDING',
+    [0x06] = 'LOW_VOLTAGE_GOHOME',
+    [0x07] = 'SERIOUS_LOW_VOLTAGE_LANDING',
+    [0x08] = 'RC_ONEKEY_GOHOME',
+    [0x09] = 'RC_ASSISTANT_TAKEOFF',
+    [0x0a] = 'RC_AUTO_TAKEOFF',
+    [0x0b] = 'RC_AUTO_LANDING',
+    [0x0c] = 'APP_AUTO_GOHOME',
+    [0x0d] = 'APP_AUTO_LANDING',
+    [0x0e] = 'APP_AUTO_TAKEOFF',
+    [0x0f] = 'OUTOF_CONTROL_GOHOME',
+    [0x10] = 'API_AUTO_TAKEOFF',
+    [0x11] = 'API_AUTO_LANDING',
+    [0x12] = 'API_AUTO_GOHOME',
+    [0x13] = 'AVOID_GROUND_LANDING',
+    [0x14] = 'AIRPORT_AVOID_LANDING',
+    [0x15] = 'TOO_CLOSE_GOHOME_LANDING',
+    [0x16] = 'TOO_FAR_GOHOME_LANDING',
+    [0x17] = 'APP_WP_MISSION',
+    [0x18] = 'WP_AUTO_TAKEOFF',
+    [0x19] = 'GOHOME_AVOID',
+    [0x1a] = 'GOHOME_FINISH',
+    [0x1b] = 'VERT_LOW_LIMIT_LANDING',
+    [0x1c] = 'BATTERY_FORCE_LANDING',
+    [0x1d] = 'MC_PROTECT_GOHOME',
+}
+
+enums.FLYC_OSD_GENERAL_GPS_STATE_ENUM = {
+    [0x00] = 'ALREADY',
+    [0x01] = 'FORBIN',
+    [0x02] = 'GPSNUM_NONENOUGH',
+    [0x03] = 'GPS_HDOP_LARGE',
+    [0x04] = 'GPS_POSITION_NONMATCH',
+    [0x05] = 'SPEED_ERROR_LARGE',
+    [0x06] = 'YAW_ERROR_LARGE',
+    [0x07] = 'COMPASS_ERROR_LARGE',
+    [0x08] = 'UNKNOWN',
+}
+
+enums.FLYC_OSD_GENERAL_PRODUCT_TYPE_ENUM = {
+    [0x00] = 'Unknown',
+    [0x01] = 'Inspire',
+    [0x02] = 'P3S/P3X',
+    [0x03] = 'P3X',
+    [0x04] = 'P3C',
+    [0x05] = 'OpenFrame',
+    [0x06] = 'ACEONE',
+    [0x07] = 'WKM',
+    [0x08] = 'NAZA',
+    [0x09] = 'A2',
+    [0x0a] = 'A3',
+    [0x0b] = 'P4',
+    [0x0e] = 'PM820',
+    [0x0f] = 'P34K',
+    [0x10] = 'wm220',
+    [0x11] = 'Orange2',
+    [0x12] = 'Pomato',
+    [0x14] = 'N3',
+    [0x17] = 'PM820PRO',
+    [0xff] = 'NoFlyc',
+    [0x64] = 'None',
+}
+
+enums.FLYC_OSD_GENERAL_IMU_INIT_FAIL_RESON_ENUM = {
+    [0x00] = 'None/MonitorError',
+    [0x01] = 'ColletingData',
+    [0x02] = 'GyroDead',
+    [0x03] = 'AcceDead',
+    [0x04] = 'CompassDead',
+    [0x05] = 'BarometerDead',
+    [0x06] = 'BarometerNegative',
+    [0x07] = 'CompassModTooLarge',
+    [0x08] = 'GyroBiasTooLarge',
+    [0x09] = 'AcceBiasTooLarge',
+    [0x0a] = 'CompassNoiseTooLarge',
+    [0x0b] = 'BarometerNoiseTooLarge',
+    [0x0c] = 'WaitingMcStationary',
+    [0x0d] = 'AcceMoveTooLarge',
+    [0x0e] = 'McHeaderMoved',
+    [0x0f] = 'McVirbrated',
+    [0x64] = 'None',
 }
 
 enums.FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM = {
@@ -1940,6 +2570,13 @@ enums.FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM = {
     [0x5b] = 'Gimbal Roll Shock',
     [0x5c] = 'Gimbal Yaw Shock',
     [0x5d] = 'IMU Calibration Finished',
+    [0x5e] = 'Takeoff Exception',
+    [0x5f] = 'Esc Stall Near Ground',
+    [0x60] = 'Esc Unbalance On Grd',
+    [0x61] = 'Esc Part Empty On Grd',
+    [0x62] = 'Engine Start Failed',
+    [0x63] = 'Auto Takeoff Lanch Failed',
+    [0x64] = 'Roll Over On Grd',
     [0x66] = 'RTK Bad Signal',
     [0x67] = 'RTK Deviation Error',
     [0x65] = 'Bat Version Error',
@@ -1947,88 +2584,34 @@ enums.FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM = {
     [0x100]= 'Other',
 }
 
-enums.FLYC_OSD_GENERAL_GPS_STATE_ENUM = {
-    [0]="ALREADY",
-    [1]="FORBIN",
-    [2]="GPSNUM_NONENOUGH",
-    [3]="GPS_HDOP_LARGE",
-    [4]="GPS_POSITION_NONMATCH",
-    [5]="SPEED_ERROR_LARGE",
-    [6]="YAW_ERROR_LARGE",
-    [7]="COMPASS_ERROR_LARGE",
-    [8]="UNKNOWN",
-}
-
-enums.FLYC_OSD_GENERAL_PRODUCT_TYPE_ENUM = {
-    [0]="Unknown",
-    [1]="Inspire",
-    [2]="P3S/P3X",
-    [3]="P3X",
-    [4]="P3C",
-    [5]="OpenFrame",
-    [6]="ACEONE",
-    [7]="WKM",
-    [8]="NAZA",
-    [9]="A2",
-    [10]="A3",
-    [11]="P4",
-    [14]="PM820",
-    [15]="P34K",
-    [16]="wm220",
-    [17]="Orange2",
-    [18]="Pomato",
-    [20]="N3",
-    [255]="NoFlyc",
-    [100]="None",
-}
-
-enums.FLYC_OSD_GENERAL_IMU_INIT_FAIL_RESON_ENUM = {
-    [0]="None/MonitorError",
-    [1]="ColletingData",
-    [2]="GyroDead",
-    [3]="AcceDead",
-    [4]="CompassDead",
-    [5]="BarometerDead",
-    [6]="BarometerNegative",
-    [7]="CompassModTooLarge",
-    [8]="GyroBiasTooLarge",
-    [9]="AcceBiasTooLarge",
-    [10]="CompassNoiseTooLarge",
-    [11]="BarometerNoiseTooLarge",
-    [12]="WaitingMcStationary",
-    [13]="AcceMoveTooLarge",
-    [14]="McHeaderMoved",
-    [15]="McVirbrated",
-    [100]="None",
-}
-
 f.flyc_osd_general_longtitude = ProtoField.double ("dji_p3.flyc_osd_general_longtitude", "Longtitude", base.DEC)
 f.flyc_osd_general_latitude = ProtoField.double ("dji_p3.flyc_osd_general_latitude", "Latitude", base.DEC)
 f.flyc_osd_general_relative_height = ProtoField.int16 ("dji_p3.flyc_osd_general_relative_height", "Relative Height", base.DEC, nil, nil, "0.1m, altitude to ground")
-f.flyc_osd_general_vgx = ProtoField.int16 ("dji_p3.flyc_osd_general_vgx", "Vgx", base.DEC, nil, nil, "0.1m/s, to ground")
-f.flyc_osd_general_vgy = ProtoField.int16 ("dji_p3.flyc_osd_general_vgy", "Vgy", base.DEC, nil, nil, "0.1m/s, to ground")
-f.flyc_osd_general_vgz = ProtoField.int16 ("dji_p3.flyc_osd_general_vgz", "Vgz", base.DEC, nil, nil, "0.1m/s, to ground")
+f.flyc_osd_general_vgx = ProtoField.int16 ("dji_p3.flyc_osd_general_vgx", "Vgx speed", base.DEC, nil, nil, "0.1m/s, to ground")
+f.flyc_osd_general_vgy = ProtoField.int16 ("dji_p3.flyc_osd_general_vgy", "Vgy speed", base.DEC, nil, nil, "0.1m/s, to ground")
+f.flyc_osd_general_vgz = ProtoField.int16 ("dji_p3.flyc_osd_general_vgz", "Vgz speed", base.DEC, nil, nil, "0.1m/s, to ground")
 f.flyc_osd_general_pitch = ProtoField.int16 ("dji_p3.flyc_osd_general_pitch", "Pitch", base.DEC, nil, nil, "0.1")
 f.flyc_osd_general_roll = ProtoField.int16 ("dji_p3.flyc_osd_general_roll", "Roll", base.DEC)
 f.flyc_osd_general_yaw = ProtoField.int16 ("dji_p3.flyc_osd_general_yaw", "Yaw", base.DEC)
-f.flyc_osd_general_mode1 = ProtoField.uint8 ("dji_p3.flyc_osd_general_mode1", "Mode1", base.HEX, enums.FLYC_OSD_GENERAL_MODE1_ENUM, 0x7F, "Flight Controller state1")
-f.flyc_osd_general_rc_state = ProtoField.uint8 ("dji_p3.flyc_osd_general_rc_state", "RC State", base.HEX, nil, 0x80, nil)
-f.flyc_osd_general_latest_cmd = ProtoField.uint8 ("dji_p3.flyc_osd_general_latest_cmd", "Latest Cmd", base.HEX, enums.FLYC_OSD_GENERAL_COMMAND_ENUM, nil, "controller exccute lastest cmd")
+f.flyc_osd_general_ctrl_info = ProtoField.uint8 ("dji_p3.flyc_osd_general_ctrl_info", "Control Info", base.HEX)
+  f.flyc_osd_general_fc_state = ProtoField.uint8 ("dji_p3.flyc_osd_general_fc_state", "FC State", base.HEX, enums.FLYC_OSD_COMMON_FLYC_STATE_ENUM, 0x7F, "Flight Controller state1")
+  f.flyc_osd_general_rc_state = ProtoField.uint8 ("dji_p3.flyc_osd_general_rc_state", "RC State", base.HEX, nil, 0x80, nil)
+f.flyc_osd_general_latest_cmd = ProtoField.uint8 ("dji_p3.flyc_osd_general_latest_cmd", "Latest App Cmd", base.HEX, enums.FLYC_OSD_GENERAL_COMMAND_ENUM, nil, "controller exccute lastest cmd")
 f.flyc_osd_general_controller_state = ProtoField.uint32 ("dji_p3.flyc_osd_general_controller_state", "Controller State", base.HEX, nil, nil, "Flight Controller state flags")
   f.flyc_osd_general_e_can_ioc_work = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_can_ioc_work", "E Can IOC Work", base.HEX, nil, 0x01, nil)
   f.flyc_osd_general_e_on_ground = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_on_ground", "E On Ground", base.HEX, nil, 0x02, nil)
   f.flyc_osd_general_e_in_air = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_in_air", "E In Air", base.HEX, nil, 0x04, nil)
   f.flyc_osd_general_e_motor_on = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_motor_on", "E Motor On", base.HEX, nil, 0x08, "Force allow start motors ignoring errors")
-  f.flyc_osd_general_e_usonic_on = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_usonic_on", "E Usonic On", base.HEX, nil, 0x10, nil)
+  f.flyc_osd_general_e_usonic_on = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_usonic_on", "E Usonic On", base.HEX, nil, 0x10, "Ultrasonic wave sonar in use")
   f.flyc_osd_general_e_gohome_state = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gohome_state", "E Gohome State", base.HEX, enums.FLYC_OSD_GENERAL_GOHOME_STATE_ENUM, 0xe0, nil)
   f.flyc_osd_general_e_mvo_used = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_mvo_used", "E MVO Used", base.HEX, nil, 0x100, "Monocular Visual Odometry is used as horizonal velocity sensor")
   f.flyc_osd_general_e_battery_req_gohome = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_battery_req_gohome", "E Battery Req Gohome", base.HEX, nil, 0x200, nil)
   f.flyc_osd_general_e_battery_req_land = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_battery_req_land", "E Battery Req Land", base.HEX, nil, 0x400, "Landing required due to battery voltage low")
   f.flyc_osd_general_e_still_heating = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_still_heating", "E Still Heating", base.HEX, nil, 0x1000, nil)
-  f.flyc_osd_general_e_rc_state = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_rc_state", "E RC State", base.HEX, nil, 0x6000, nil)
+  f.flyc_osd_general_e_rc_state = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_rc_state", "E RC Mode Channel", base.HEX, enums.FLYC_OSD_GENERAL_MODE_CHANNEL_RC_MODE_CHANNEL_ENUM, 0x6000, nil)
   f.flyc_osd_general_e_gps_used = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gps_used", "E GPS Used", base.HEX, nil, 0x8000, "Satellite Positioning System is used as horizonal velocity sensor")
   f.flyc_osd_general_e_compass_over_range = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_compass_over_range", "E Compass Over Range", base.HEX, nil, 0x10000, nil)
-  f.flyc_osd_general_e_wave_err = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_wave_err", "E Wave Error", base.HEX, nil, 0x20000, nil)
+  f.flyc_osd_general_e_wave_err = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_wave_err", "E Wave Error", base.HEX, nil, 0x20000, "Ultrasonic sensor error")
   f.flyc_osd_general_e_gps_level = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_gps_level", "E GPS Level", base.HEX, nil, 0x3C0000, "Satellite Positioning System signal level")
   f.flyc_osd_general_e_battery_type = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_battery_type", "E Battery Type", base.HEX, enums.FLYC_OSD_GENERAL_BATT_TYPE_ENUM, 0xC00000, nil)
   f.flyc_osd_general_e_accel_over_range = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_accel_over_range", "E Acceletor Over Range", base.HEX, nil, 0x1000000, nil)
@@ -2041,14 +2624,16 @@ f.flyc_osd_general_controller_state = ProtoField.uint32 ("dji_p3.flyc_osd_genera
   f.flyc_osd_general_e_out_of_limit = ProtoField.uint32 ("dji_p3.flyc_osd_general_e_out_of_limit", "E Is Out Of Limit", base.HEX, nil, 0x80000000, nil)
 f.flyc_osd_general_gps_nums = ProtoField.uint8 ("dji_p3.flyc_osd_general_gps_nums", "Gps Nums", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
 f.flyc_osd_general_gohome_landing_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_gohome_landing_reason", "Gohome or Landing Reason", base.HEX, enums.FLYC_OSD_GENERAL_GOHOME_REASON_ENUM, nil, "Reason for automatic GoHome or Landing")
-f.flyc_osd_general_start_fail_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_start_fail_reason", "Start Fail Reason", base.HEX, enums.FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM, nil, "Reason for failure to start motors")
+f.flyc_osd_general_start_fail_state = ProtoField.uint8 ("dji_p3.flyc_osd_general_start_fail_state", "Motor Start Failure State", base.HEX)
+  f.flyc_osd_general_start_fail_reason = ProtoField.uint8 ("dji_p3.flyc_osd_general_start_fail_reason", "Motor Start Fail Reason", base.HEX, enums.FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM, 0x7f, "Reason for failure to start motors")
+  f.flyc_osd_common_start_fail_happened = ProtoField.uint8 ("dji_p3.flyc_osd_common_start_fail_happened", "Motor Start Fail Happened", base.HEX, nil, 0x80, nil)
 f.flyc_osd_general_controller_state_ext = ProtoField.uint8 ("dji_p3.flyc_osd_general_controller_state_ext", "Controller State Ext", base.HEX)
   f.flyc_osd_general_e_gps_state = ProtoField.uint8 ("dji_p3.flyc_osd_general_e_gps_state", "E Gps State", base.HEX, enums.FLYC_OSD_GENERAL_GPS_STATE_ENUM, 0x0f, nil)
   f.flyc_osd_general_e_wp_limit_md = ProtoField.uint8 ("dji_p3.flyc_osd_general_e_wp_limit_md", "E Wp Limit Mode", base.HEX, nil, 0x10, "Waypoint Limit Mode")
 f.flyc_osd_general_batt_remain = ProtoField.uint8 ("dji_p3.flyc_osd_general_batt_remain", "Battery Remain", base.DEC, nil, nil, "Battery Remaining Capacity")
-f.flyc_osd_general_ultrasonic_height = ProtoField.uint8 ("dji_p3.flyc_osd_general_ultrasonic_height", "Ultrasonic Height", base.DEC)
-f.flyc_osd_general_motor_startup_time = ProtoField.uint16 ("dji_p3.flyc_osd_general_motor_startup_time", "Motor Startup Time", base.DEC)
-f.flyc_osd_general_motor_startup_times = ProtoField.uint8 ("dji_p3.flyc_osd_general_motor_startup_times", "Motor Startup Times", base.DEC, nil, nil, "aka Motor Revolution")
+f.flyc_osd_general_ultrasonic_height = ProtoField.uint8 ("dji_p3.flyc_osd_general_ultrasonic_height", "Ultrasonic Height", base.DEC, nil, nil, "Height as reported by ultrasonic sensor")
+f.flyc_osd_general_motor_startup_time = ProtoField.uint16 ("dji_p3.flyc_osd_general_motor_startup_time", "Motor Started Time", base.DEC)
+f.flyc_osd_general_motor_startup_times = ProtoField.uint8 ("dji_p3.flyc_osd_general_motor_startup_times", "Motor Starts Count", base.DEC, nil, nil, "aka Motor Revolution")
 f.flyc_osd_general_bat_alarm1 = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_alarm1", "Bat Alarm1", base.HEX)
   f.flyc_osd_general_bat_alarm1_ve = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_alarm1_ve", "Alarm Level 1 Voltage", base.DEC, nil, 0x7F)
   f.flyc_osd_general_bat_alarm1_fn = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_alarm1_fn", "Alarm Level 1 Function", base.DEC, nil, 0x80)
@@ -2058,8 +2643,13 @@ f.flyc_osd_general_bat_alarm2 = ProtoField.uint8 ("dji_p3.flyc_osd_general_bat_a
 f.flyc_osd_general_version_match = ProtoField.uint8 ("dji_p3.flyc_osd_general_version_match", "Version Match", base.HEX, nil, nil, "Flight Controller version")
 f.flyc_osd_general_product_type = ProtoField.uint8 ("dji_p3.flyc_osd_general_product_type", "Product Type", base.HEX, enums.FLYC_OSD_GENERAL_PRODUCT_TYPE_ENUM)
 f.flyc_osd_general_imu_init_fail_reson = ProtoField.int8 ("dji_p3.flyc_osd_general_imu_init_fail_reson", "IMU init Fail Reason", base.DEC, enums.FLYC_OSD_GENERAL_IMU_INIT_FAIL_RESON_ENUM)
+-- Non existing in P3 packets - next gen only?
+--f.flyc_osd_common_motor_fail_reason = ProtoField.uint8 ("dji_p3.flyc_osd_common_motor_fail_reason", "Motor Fail Reason", base.HEX, enums.FLYC_OSD_COMMON_MOTOR_FAIL_REASON_ENUM, nil, nil)
+--f.flyc_osd_common_masked33 = ProtoField.uint8 ("dji_p3.flyc_osd_common_masked33", "Masked33", base.HEX)
+--  f.flyc_osd_common_motor_start_cause_no_start_action = ProtoField.uint8 ("dji_p3.flyc_osd_common_motor_start_cause_no_start_action", "Motor Start Cause No Start Action", base.HEX, enums.FLYC_OSD_COMMON_MOTOR_START_CAUSE_NO_START_ACTION_MOTOR_START_FAILED_CAUSE_ENUM, 0xff, nil)
+--f.flyc_osd_common_sdk_ctrl_device = ProtoField.uint8 ("dji_p3.flyc_osd_common_sdk_ctrl_device", "Sdk Ctrl Device", base.HEX, enums.FLYC_OSD_COMMON_SDK_CTRL_DEVICE_ENUM, nil, nil)
 
-local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo, subtree)
+local function flyc_osd_general_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
@@ -2091,7 +2681,8 @@ local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo,
     subtree:add_le (f.flyc_osd_general_yaw, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_osd_general_mode1, payload(offset, 1))
+    subtree:add_le (f.flyc_osd_general_ctrl_info, payload(offset, 1))
+    subtree:add_le (f.flyc_osd_general_fc_state, payload(offset, 1))
     subtree:add_le (f.flyc_osd_general_rc_state, payload(offset, 1))
     offset = offset + 1
 
@@ -2131,7 +2722,9 @@ local function main_flight_ctrl_osd_general_dissector(pkt_length, buffer, pinfo,
     subtree:add_le (f.flyc_osd_general_gohome_landing_reason, payload(offset, 1))
     offset = offset + 1
 
+    subtree:add_le (f.flyc_osd_general_start_fail_state, payload(offset, 1))
     subtree:add_le (f.flyc_osd_general_start_fail_reason, payload(offset, 1))
+    subtree:add_le (f.flyc_osd_common_start_fail_happened, payload(offset, 1))
     offset = offset + 1
 
     subtree:add_le (f.flyc_osd_general_controller_state_ext, payload(offset, 1))
@@ -2176,26 +2769,67 @@ end
 
 -- Flight Controller - OSD Home - 0x44, identical to flight recorder packet 0x000d
 
+enums.FLYC_OSD_HOME_IOC_MODE_ENUM = {
+    [0x01] = 'CourseLock',
+    [0x02] = 'HomeLock',
+    [0x03] = 'HotspotSurround',
+    [0x64] = 'OTHER',
+}
+
+enums.FLYC_OSD_HOME_HEIGHT_LIMIT_STATUS_ENUM = {
+    [0x00] = 'NON_LIMIT',
+    [0x01] = 'NON_GPS',
+    [0x02] = 'ORIENTATION_NEED_CALI',
+    [0x03] = 'ORIENTATION_GO',
+    [0x04] = 'AVOID_GROUND',
+    [0x05] = 'NORMAL_LIMIT',
+}
+
 f.flyc_osd_home_osd_lon = ProtoField.double ("dji_p3.flyc_osd_home_osd_lon", "OSD Longitude", base.DEC) -- home point coords?
 f.flyc_osd_home_osd_lat = ProtoField.double ("dji_p3.flyc_osd_home_osd_lat", "OSD Latitude", base.DEC) -- home point coords?
 f.flyc_osd_home_osd_alt = ProtoField.float ("dji_p3.flyc_osd_home_osd_alt", "OSD Altitude", base.DEC, nil, nil, "0.1m, altitude")
 f.flyc_osd_home_osd_home_state = ProtoField.uint16 ("dji_p3.flyc_osd_home_osd_home_state", "OSD Home State", base.HEX)
   f.flyc_osd_home_e_homepoint_set = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_homepoint_set", "E Homepoint Set", base.HEX, nil, 0x01, nil)
-  f.flyc_osd_home_e_method = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_method", "E Method", base.HEX, nil, 0x02, nil)
-  f.flyc_osd_home_e_heading = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_heading", "E Heading", base.HEX, nil, 0x04, nil)
-  f.flyc_osd_home_e_is_dyn_homepoint = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_is_dyn_homepoint", "E Is Dyn Homepoint", base.HEX, nil, 0x08, nil)
-  f.flyc_osd_home_e_multiple = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_multiple", "E Multiple", base.HEX, nil, 0x40, nil)
+  f.flyc_osd_home_e_go_home_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_go_home_mode", "E Go Home Mode", base.HEX, nil, 0x02, nil)
+  f.flyc_osd_home_e_heading = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_heading", "E Heading", base.HEX, nil, 0x04, "Aircraft Head Direction")
+  f.flyc_osd_home_e_is_dyn_homepoint = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_is_dyn_homepoint", "E Is Dyn Homepoint", base.HEX, nil, 0x08, "Dynamic Home Piont Enable")
+  f.flyc_osd_home_e_reach_limit_distance = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_reach_limit_distance", "E Reach Limit Distance", base.HEX, nil, 0x10, nil)
+  f.flyc_osd_home_e_reach_limit_height = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_reach_limit_height", "E Reach Limit Height", base.HEX, nil, 0x20, nil)
+  f.flyc_osd_home_e_multiple_mode_open = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_multiple_mode_open", "E Multiple Mode Open", base.HEX, nil, 0x40, nil)
+  f.flyc_osd_home_e_has_go_home = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_has_go_home", "E Has Go Home", base.HEX, nil, 0x80, nil)
+  f.flyc_osd_home_e_compass_cele_status = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_compass_cele_status", "E Compass Cele Status", base.HEX, nil, 0x300, nil)
+  f.flyc_osd_home_e_compass_celeing = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_compass_celeing", "E Compass Celeing", base.HEX, nil, 0x400, nil)
+  f.flyc_osd_home_e_beginner_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_beginner_mode", "E Beginner Mode", base.HEX, nil, 0x800, nil)
   f.flyc_osd_home_e_ioc_enable = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_ioc_enable", "E Ioc Enable", base.HEX, nil, 0x1000, nil)
-f.flyc_osd_home_fixed_altitedue = ProtoField.uint16 ("dji_p3.flyc_osd_home_fixed_altitedue", "Fixed Altitedue", base.HEX)
-f.flyc_osd_home_course_lock_torsion = ProtoField.int16 ("dji_p3.flyc_osd_home_course_lock_torsion", "Course Lock Torsion", base.DEC)
-f.flyc_osd_home_fld1a = ProtoField.int8 ("dji_p3.flyc_osd_home_fld1a", "field1A", base.DEC)
-f.flyc_osd_home_fld1b = ProtoField.int8 ("dji_p3.flyc_osd_home_fld1b", "field1B", base.DEC)
-f.flyc_osd_home_fld1c = ProtoField.int16 ("dji_p3.flyc_osd_home_fld1c", "field1C", base.DEC)
-f.flyc_osd_home_fld1e = ProtoField.int16 ("dji_p3.flyc_osd_home_fld1e", "field1E", base.DEC)
-f.flyc_osd_home_fld20 = ProtoField.int8 ("dji_p3.flyc_osd_home_fld20", "field20", base.DEC)
-f.flyc_osd_home_fld21 = ProtoField.int8 ("dji_p3.flyc_osd_home_fld21", "field21", base.DEC) -- seem to not be filled
+  f.flyc_osd_home_e_ioc_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_ioc_mode", "E Ioc Mode", base.HEX, enums.FLYC_OSD_HOME_IOC_MODE_ENUM, 0xe000, nil)
+f.flyc_osd_home_go_home_height = ProtoField.uint16 ("dji_p3.flyc_osd_home_go_home_height", "Go Home Height", base.DEC, nil, nil, "aka Fixed Altitude")
+f.flyc_osd_home_course_lock_angle = ProtoField.uint16 ("dji_p3.flyc_osd_home_course_lock_angle", "Course Lock Angle", base.DEC, nil, nil, "Course Lock Torsion")
+f.flyc_osd_home_data_recorder_status = ProtoField.uint8 ("dji_p3.flyc_osd_home_data_recorder_status", "Data Recorder Status", base.HEX)
+f.flyc_osd_home_data_recorder_remain_capacity = ProtoField.uint8 ("dji_p3.flyc_osd_home_data_recorder_remain_capacity", "Data Recorder Remain Capacity", base.HEX)
+f.flyc_osd_home_data_recorder_remain_time = ProtoField.uint16 ("dji_p3.flyc_osd_home_data_recorder_remain_time", "Data Recorder Remain Time", base.HEX)
+f.flyc_osd_home_cur_data_recorder_file_index = ProtoField.uint16 ("dji_p3.flyc_osd_home_cur_data_recorder_file_index", "Cur Data Recorder File Index", base.HEX)
+-- Version of the packet from newer firmwares, 34 bytes long
+f.flyc_osd_home_ver1_masked20 = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_masked20", "Masked20", base.HEX)
+  f.flyc_osd_home_ver1_flyc_in_simulation_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_flyc_in_simulation_mode", "Flyc In Simulation Mode", base.HEX, nil, 0x01, nil)
+  f.flyc_osd_home_ver1_flyc_in_navigation_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_flyc_in_navigation_mode", "Flyc In Navigation Mode", base.HEX, nil, 0x02, nil)
+  f.flyc_osd_home_ver1_height_limit_status = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_height_limit_status", "Height Limit Status", base.HEX, enums.FLYC_OSD_HOME_HEIGHT_LIMIT_STATUS_ENUM, 0x1f, nil)
+  f.flyc_osd_home_ver1_use_absolute_height = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_use_absolute_height", "Use Absolute Height", base.HEX, nil, 0x20, nil)
+-- Version of the packet from older firmwares, 68 bytes long
+f.flyc_osd_home_masked20 = ProtoField.uint32 ("dji_p3.flyc_osd_home_masked20", "Masked20", base.HEX)
+  f.flyc_osd_home_flyc_in_simulation_mode = ProtoField.uint32 ("dji_p3.flyc_osd_home_flyc_in_simulation_mode", "Flyc In Simulation Mode", base.HEX, nil, 0x01, nil)
+  f.flyc_osd_home_flyc_in_navigation_mode = ProtoField.uint32 ("dji_p3.flyc_osd_home_flyc_in_navigation_mode", "Flyc In Navigation Mode", base.HEX, nil, 0x02, nil)
+  f.flyc_osd_home_height_limit_status = ProtoField.uint32 ("dji_p3.flyc_osd_home_height_limit_status", "Height Limit Status", base.HEX, enums.FLYC_OSD_HOME_HEIGHT_LIMIT_STATUS_ENUM, 0x1f, nil)
+  f.flyc_osd_home_use_absolute_height = ProtoField.uint32 ("dji_p3.flyc_osd_home_use_absolute_height", "Use Absolute Height", base.HEX, nil, 0x20, nil)
+  f.flyc_osd_home_wing_broken = ProtoField.uint32 ("dji_p3.flyc_osd_home_wing_broken", "Wing Broken", base.HEX, nil, 0x1000, nil)
+  f.flyc_osd_home_big_gale = ProtoField.uint32 ("dji_p3.flyc_osd_home_big_gale", "Big Gale", base.HEX, nil, 0x4000, nil)
+  f.flyc_osd_home_big_gale_warning = ProtoField.uint32 ("dji_p3.flyc_osd_home_big_gale_warning", "Big Gale Warning", base.HEX, nil, 0x100000, nil)
+  f.flyc_osd_home_compass_install_err = ProtoField.uint32 ("dji_p3.flyc_osd_home_compass_install_err", "Compass Install Err", base.HEX, nil, 0x800000, nil)
+f.flyc_osd_home_height_limit_value = ProtoField.float ("dji_p3.flyc_osd_home_height_limit_value", "Height Limit Value", base.DEC)
+f.flyc_osd_home_unknown28 = ProtoField.bytes ("dji_p3.flyc_osd_home_unknown28", "Unknown28", base.SPACE)
+f.flyc_osd_home_force_landing_height = ProtoField.uint8 ("dji_p3.flyc_osd_home_force_landing_height", "Force Landing Height", base.HEX)
+f.flyc_osd_home_unknown2E = ProtoField.bytes ("dji_p3.flyc_osd_home_unknown2E", "Unknown2E", base.SPACE)
 
-local function main_flight_ctrl_osd_home_dissector(pkt_length, buffer, pinfo, subtree)
+local function flyc_osd_home_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
@@ -2211,43 +2845,79 @@ local function main_flight_ctrl_osd_home_dissector(pkt_length, buffer, pinfo, su
 
     subtree:add_le (f.flyc_osd_home_osd_home_state, payload(offset, 2))
     subtree:add_le (f.flyc_osd_home_e_homepoint_set, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_method, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_go_home_mode, payload(offset, 2))
     subtree:add_le (f.flyc_osd_home_e_heading, payload(offset, 2))
     subtree:add_le (f.flyc_osd_home_e_is_dyn_homepoint, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_multiple, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_reach_limit_distance, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_reach_limit_height, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_multiple_mode_open, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_has_go_home, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_compass_cele_status, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_compass_celeing, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_beginner_mode, payload(offset, 2))
     subtree:add_le (f.flyc_osd_home_e_ioc_enable, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_e_ioc_mode, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_osd_home_fixed_altitedue, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_go_home_height, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_osd_home_course_lock_torsion, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_course_lock_angle, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_osd_home_fld1a, payload(offset, 1))
+    subtree:add_le (f.flyc_osd_home_data_recorder_status, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_osd_home_fld1b, payload(offset, 1))
+    subtree:add_le (f.flyc_osd_home_data_recorder_remain_capacity, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_osd_home_fld1c, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_data_recorder_remain_time, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_osd_home_fld1e, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_cur_data_recorder_file_index, payload(offset, 2))
     offset = offset + 2
-
-    subtree:add_le (f.flyc_osd_home_fld20, payload(offset, 1))
-    offset = offset + 1
-
-    subtree:add_le (f.flyc_osd_home_fld21, payload(offset, 1))
-    offset = offset + 1
 
     -- Before firmware P3X_FW_V01.07.0060, the packet was 68 bytes long
-    if (payload:len() == offset + 34) then
-        offset = offset + 34
+    if (payload:len() < 68) then
+
+        subtree:add_le (f.flyc_osd_home_ver1_masked20, payload(offset, 2))
+        subtree:add_le (f.flyc_osd_home_ver1_flyc_in_simulation_mode, payload(offset, 2))
+        subtree:add_le (f.flyc_osd_home_ver1_flyc_in_navigation_mode, payload(offset, 2))
+        subtree:add_le (f.flyc_osd_home_ver1_height_limit_status, payload(offset, 2))
+        subtree:add_le (f.flyc_osd_home_ver1_use_absolute_height, payload(offset, 2))
+        offset = offset + 2
+
+        if (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
+
+    else
+
+        subtree:add_le (f.flyc_osd_home_masked20, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_flyc_in_simulation_mode, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_flyc_in_navigation_mode, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_height_limit_status, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_use_absolute_height, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_wing_broken, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_big_gale, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_big_gale_warning, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_compass_install_err, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.flyc_osd_home_height_limit_value, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.flyc_osd_home_unknown28, payload(offset, 5))
+        offset = offset + 5
+
+        subtree:add_le (f.flyc_osd_home_force_landing_height, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_osd_home_unknown2E, payload(offset, 22))
+        offset = offset + 22
+
+        if (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
+
     end
 
-    if (offset ~= 34) and (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Home: Payload size different than expected") end
 end
 
@@ -2256,7 +2926,7 @@ end
 f.flyc_imu_data_status_start_fan = ProtoField.uint8 ("dji_p3.flyc_imu_data_status_start_fan", "Start Fan", base.HEX, nil, nil, "On Ph3, always 1")
 f.flyc_imu_data_status_led_status = ProtoField.uint8 ("dji_p3.flyc_imu_data_status_led_status", "Led Status", base.HEX, nil, nil, "On Ph3, always 0")
 
-local function main_flight_ctrl_imu_data_status_dissector(pkt_length, buffer, pinfo, subtree)
+local function flyc_imu_data_status_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
@@ -2285,7 +2955,7 @@ f.flyc_gps_glns_gpsglns_cnt = ProtoField.uint16 ("dji_p3.flyc_gps_glns_gpsglns_c
 f.flyc_gps_glns_unkn20 = ProtoField.uint8 ("dji_p3.flyc_gps_glns_unkn20", "Unknown 20", base.DEC)
 f.flyc_gps_glns_homepoint_set = ProtoField.uint8 ("dji_p3.flyc_gps_glns_homepoint_set", "Homepoint Set", base.DEC)
 
-local function main_flight_ctrl_gps_glns_dissector(pkt_length, buffer, pinfo, subtree)
+local function flyc_gps_glns_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
@@ -2328,10 +2998,15 @@ local function main_flight_ctrl_gps_glns_dissector(pkt_length, buffer, pinfo, su
 end
 
 local FLYC_UART_CMD_DISSECT = {
-    [0x43] = main_flight_ctrl_osd_general_dissector,
-    [0x44] = main_flight_ctrl_osd_home_dissector,
-    [0x50] = main_flight_ctrl_imu_data_status_dissector,
-    [0x57] = main_flight_ctrl_gps_glns_dissector,
+    [0x09] = flyc_flyc_forbid_status_dissector,
+    [0x10] = flyc_a2_commom_dissector,
+    [0x32] = flyc_flyc_deform_status_dissector,
+    [0x3e] = flyc_flyc_request_limit_update_dissector,
+    [0x42] = flyc_flyc_unlimit_state_dissector,
+    [0x43] = flyc_osd_general_dissector,
+    [0x44] = flyc_osd_home_dissector,
+    [0x50] = flyc_imu_data_status_dissector,
+    [0x57] = flyc_gps_glns_dissector,
 }
 
 -- Gimbal - Gimbal Type - 0x1C
