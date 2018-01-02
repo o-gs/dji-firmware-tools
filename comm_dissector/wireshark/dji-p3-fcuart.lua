@@ -469,8 +469,8 @@ end
 
 -- General - Notify Disconnect - 0x47
 
-f.general_notify_disconnect_a = ProtoField.int8 ("dji_p3.general_notify_disconnect_a", "A", base.DEC, nil, nil, "TODO values from enum P3.DataNotifyDisconnect")
-f.general_notify_disconnect_b = ProtoField.int16 ("dji_p3.general_notify_disconnect_b", "B", base.DEC)
+f.general_notify_disconnect_a = ProtoField.uint8 ("dji_p3.general_notify_disconnect_a", "A", base.DEC, nil, nil, "TODO values from enum P3.DataNotifyDisconnect")
+f.general_notify_disconnect_b = ProtoField.uint16 ("dji_p3.general_notify_disconnect_b", "B", base.DEC)
 
 local function general_notify_disconnect_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -489,8 +489,8 @@ end
 
 -- General - Common App Gps Config - 0x52
 
-f.general_common_app_gps_config_is_start = ProtoField.int8 ("dji_p3.general_common_app_gps_config_is_start", "Is Start", base.DEC)
-f.general_common_app_gps_config_get_push_interval = ProtoField.int32 ("dji_p3.general_common_app_gps_config_get_push_interval", "Get Push Interval", base.DEC)
+f.general_common_app_gps_config_is_start = ProtoField.uint8 ("dji_p3.general_common_app_gps_config_is_start", "Is Start", base.DEC)
+f.general_common_app_gps_config_get_push_interval = ProtoField.uint32 ("dji_p3.general_common_app_gps_config_get_push_interval", "Get Push Interval", base.DEC)
 
 local function general_common_app_gps_config_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -621,7 +621,7 @@ local SPECIAL_UART_CMD_DISSECT = {
 
 -- Camera - Camera Shutter Cmd - 0x7c
 
-f.camera_camera_shutter_cmd_shutter_type = ProtoField.int8 ("dji_p3.camera_camera_shutter_cmd_shutter_type", "Shutter Type", base.DEC)
+f.camera_camera_shutter_cmd_shutter_type = ProtoField.uint8 ("dji_p3.camera_camera_shutter_cmd_shutter_type", "Shutter Type", base.DEC)
 
 local function camera_camera_shutter_cmd_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -713,51 +713,51 @@ enums.CAMERA_STATE_INFO_CAMERA_TYPE_ENUM = {
     [0xff] = 'OTHER',
 }
 f.camera_camera_state_info_masked00 = ProtoField.uint32 ("dji_p3.camera_camera_state_info_masked00", "Masked00", base.HEX)
-  f.camera_camera_state_info_connect_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_connect_state", "Connect State", base.DEC, nil, 0x0001, nil)
-  f.camera_camera_state_info_usb_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_usb_state", "Usb State", base.DEC, nil, 0x0002, nil)
-  f.camera_camera_state_info_time_sync_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_time_sync_state", "Time Sync State", base.DEC, nil, 0x0004, nil)
-  f.camera_camera_state_info_photo_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_photo_state", "Photo State", base.DEC, enums.CAMERA_STATE_INFO_PHOTO_STATE_ENUM, 0x38, nil)
-  f.camera_camera_state_info_record_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_record_state", "Record State", base.DEC, nil, 0x00c0, "TODO values from enum P3.DataCameraGetPushStateInfo")
-  f.camera_camera_state_info_sensor_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_sensor_state", "Sensor State", base.DEC, nil, 0x0100, nil)
-  f.camera_camera_state_info_sd_card_insert_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_sd_card_insert_state", "Sd Card Insert State", base.DEC, nil, 0x200, nil)
-  f.camera_camera_state_info_sd_card_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_sd_card_state", "Sd Card State", base.DEC, enums.CAMERA_STATE_INFO_SD_CARD_STATE_ENUM, 0x3c00, nil)
-  f.camera_camera_state_info_firm_upgrade_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_firm_upgrade_state", "Firm Upgrade State", base.DEC, nil, 0x4000, nil)
-  f.camera_camera_state_info_firm_upgrade_error_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_firm_upgrade_error_state", "Firm Upgrade Error State", base.DEC, enums.CAMERA_STATE_INFO_FIRM_UPGRADE_ERROR_STATE_FIRM_ERROR_TYPE_ENUM, 0x18000, nil)
-  f.camera_camera_state_info_hot_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_hot_state", "Hot State", base.DEC, nil, 0x020000, nil)
-  f.camera_camera_state_info_not_enabled_photo = ProtoField.uint32 ("dji_p3.camera_camera_state_info_not_enabled_photo", "Not Enabled Photo", base.DEC, nil, 0x040000, nil)
-  f.camera_camera_state_info_is_storing = ProtoField.uint32 ("dji_p3.camera_camera_state_info_is_storing", "Is Storing", base.DEC, nil, 0x080000, nil)
-  f.camera_camera_state_info_is_time_photoing = ProtoField.uint32 ("dji_p3.camera_camera_state_info_is_time_photoing", "Is Time Photoing", base.DEC, nil, 0x100000, nil)
-  f.camera_camera_state_info_encrypt_status = ProtoField.uint32 ("dji_p3.camera_camera_state_info_encrypt_status", "Encrypt Status", base.DEC, nil, 0xc00000, "TODO values from enum P3.DataCameraGetPushStateInfo")
-  f.camera_camera_state_info_is_gimbal_busy = ProtoField.uint32 ("dji_p3.camera_camera_state_info_is_gimbal_busy", "Is Gimbal Busy", base.DEC, nil, 0x08000000, nil)
-  f.camera_camera_state_info_in_tracking_mode = ProtoField.uint32 ("dji_p3.camera_camera_state_info_in_tracking_mode", "In Tracking Mode", base.DEC, nil, 0x10000000, nil)
-f.camera_camera_state_info_mode = ProtoField.uint8 ("dji_p3.camera_camera_state_info_mode", "Camera Mode", base.DEC, enums.CAMERA_STATE_INFO_MODE_ENUM, nil, nil)
-f.camera_camera_state_info_sd_card_total_size = ProtoField.int32 ("dji_p3.camera_camera_state_info_sd_card_total_size", "Sd Card Total Size", base.DEC)
-f.camera_camera_state_info_sd_card_free_size = ProtoField.int32 ("dji_p3.camera_camera_state_info_sd_card_free_size", "Sd Card Free Size", base.DEC)
-f.camera_camera_state_info_remained_shots = ProtoField.int32 ("dji_p3.camera_camera_state_info_remained_shots", "Remained Shots", base.DEC)
-f.camera_camera_state_info_remained_time = ProtoField.int32 ("dji_p3.camera_camera_state_info_remained_time", "Remained Time", base.DEC)
-f.camera_camera_state_info_file_index_mode = ProtoField.int8 ("dji_p3.camera_camera_state_info_file_index_mode", "File Index Mode", base.DEC, enums.CAMERA_STATE_INFO_FILE_INDEX_MODE_ENUM, nil, nil)
-f.camera_camera_state_info_fast_play_back_info = ProtoField.uint8 ("dji_p3.camera_camera_state_info_fast_play_back_info", "Fast Play Back Info", base.DEC)
-  f.camera_camera_state_info_fast_play_back_enabled = ProtoField.uint8 ("dji_p3.camera_camera_state_info_fast_play_back_enabled", "Fast Play Back Enabled", base.DEC, nil, 0x80, nil)
+  f.camera_camera_state_info_connect_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_connect_state", "Connect State", base.HEX, nil, 0x0001, nil)
+  f.camera_camera_state_info_usb_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_usb_state", "Usb State", base.HEX, nil, 0x0002, nil)
+  f.camera_camera_state_info_time_sync_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_time_sync_state", "Time Sync State", base.HEX, nil, 0x0004, nil)
+  f.camera_camera_state_info_photo_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_photo_state", "Photo State", base.HEX, enums.CAMERA_STATE_INFO_PHOTO_STATE_ENUM, 0x38, nil)
+  f.camera_camera_state_info_record_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_record_state", "Record State", base.HEX, nil, 0x00c0, "TODO values from enum P3.DataCameraGetPushStateInfo")
+  f.camera_camera_state_info_sensor_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_sensor_state", "Sensor State", base.HEX, nil, 0x0100, nil)
+  f.camera_camera_state_info_sd_card_insert_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_sd_card_insert_state", "Sd Card Insert State", base.HEX, nil, 0x200, nil)
+  f.camera_camera_state_info_sd_card_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_sd_card_state", "Sd Card State", base.HEX, enums.CAMERA_STATE_INFO_SD_CARD_STATE_ENUM, 0x3c00, nil)
+  f.camera_camera_state_info_firm_upgrade_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_firm_upgrade_state", "Firm Upgrade State", base.HEX, nil, 0x4000, nil)
+  f.camera_camera_state_info_firm_upgrade_error_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_firm_upgrade_error_state", "Firm Upgrade Error State", base.HEX, enums.CAMERA_STATE_INFO_FIRM_UPGRADE_ERROR_STATE_FIRM_ERROR_TYPE_ENUM, 0x18000, nil)
+  f.camera_camera_state_info_hot_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_hot_state", "Hot State", base.HEX, nil, 0x020000, nil)
+  f.camera_camera_state_info_not_enabled_photo = ProtoField.uint32 ("dji_p3.camera_camera_state_info_not_enabled_photo", "Not Enabled Photo", base.HEX, nil, 0x040000, nil)
+  f.camera_camera_state_info_is_storing = ProtoField.uint32 ("dji_p3.camera_camera_state_info_is_storing", "Is Storing", base.HEX, nil, 0x080000, nil)
+  f.camera_camera_state_info_is_time_photoing = ProtoField.uint32 ("dji_p3.camera_camera_state_info_is_time_photoing", "Is Time Photoing", base.HEX, nil, 0x100000, nil)
+  f.camera_camera_state_info_encrypt_status = ProtoField.uint32 ("dji_p3.camera_camera_state_info_encrypt_status", "Encrypt Status", base.HEX, nil, 0xc00000, "TODO values from enum P3.DataCameraGetPushStateInfo")
+  f.camera_camera_state_info_is_gimbal_busy = ProtoField.uint32 ("dji_p3.camera_camera_state_info_is_gimbal_busy", "Is Gimbal Busy", base.HEX, nil, 0x08000000, nil)
+  f.camera_camera_state_info_in_tracking_mode = ProtoField.uint32 ("dji_p3.camera_camera_state_info_in_tracking_mode", "In Tracking Mode", base.HEX, nil, 0x10000000, nil)
+f.camera_camera_state_info_mode = ProtoField.uint8 ("dji_p3.camera_camera_state_info_mode", "Camera Mode", base.HEX, enums.CAMERA_STATE_INFO_MODE_ENUM, nil, nil)
+f.camera_camera_state_info_sd_card_total_size = ProtoField.uint32 ("dji_p3.camera_camera_state_info_sd_card_total_size", "Sd Card Total Size", base.DEC)
+f.camera_camera_state_info_sd_card_free_size = ProtoField.uint32 ("dji_p3.camera_camera_state_info_sd_card_free_size", "Sd Card Free Size", base.DEC)
+f.camera_camera_state_info_remained_shots = ProtoField.uint32 ("dji_p3.camera_camera_state_info_remained_shots", "Remained Shots", base.DEC)
+f.camera_camera_state_info_remained_time = ProtoField.uint32 ("dji_p3.camera_camera_state_info_remained_time", "Remained Time", base.DEC)
+f.camera_camera_state_info_file_index_mode = ProtoField.uint8 ("dji_p3.camera_camera_state_info_file_index_mode", "File Index Mode", base.DEC, enums.CAMERA_STATE_INFO_FILE_INDEX_MODE_ENUM, nil, nil)
+f.camera_camera_state_info_fast_play_back_info = ProtoField.uint8 ("dji_p3.camera_camera_state_info_fast_play_back_info", "Fast Play Back Info", base.HEX)
+  f.camera_camera_state_info_fast_play_back_enabled = ProtoField.uint8 ("dji_p3.camera_camera_state_info_fast_play_back_enabled", "Fast Play Back Enabled", base.HEX, nil, 0x80, nil)
   f.camera_camera_state_info_fast_play_back_time = ProtoField.uint8 ("dji_p3.camera_camera_state_info_fast_play_back_time", "Fast Play Back Time", base.DEC, nil, 0x7f, nil)
 f.camera_camera_state_info_photo_osd_info = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_info", "Photo Osd Info", base.HEX)
-  f.camera_camera_state_info_photo_osd_aperture_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_aperture_is_show", "Photo Osd Aperture Is Show", base.DEC, nil, 0x02, nil)
-  f.camera_camera_state_info_photo_osd_shutter_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_shutter_is_show", "Photo Osd Shutter Is Show", base.DEC, nil, 0x04, nil)
-  f.camera_camera_state_info_photo_osd_iso_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_iso_is_show", "Photo Osd Iso Is Show", base.DEC, nil, 0x08, nil)
-  f.camera_camera_state_info_photo_osd_exposure_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_exposure_is_show", "Photo Osd Exposure Is Show", base.DEC, nil, 0x10, nil)
-  f.camera_camera_state_info_photo_osd_sharpe_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_sharpe_is_show", "Photo Osd Sharpe Is Show", base.DEC, nil, 0x20, nil)
-  f.camera_camera_state_info_photo_osd_contrast_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_contrast_is_show", "Photo Osd Contrast Is Show", base.DEC, nil, 0x40, nil)
-  f.camera_camera_state_info_photo_osd_saturation_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_saturation_is_show", "Photo Osd Saturation Is Show", base.DEC, nil, 0x80, nil)
-  f.camera_camera_state_info_photo_osd_time_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_time_is_show", "Photo Osd Time Is Show", base.DEC)
+  f.camera_camera_state_info_photo_osd_time_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_time_is_show", "Photo Osd Time Is Show", base.HEX, nil, 0x01, nil)
+  f.camera_camera_state_info_photo_osd_aperture_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_aperture_is_show", "Photo Osd Aperture Is Show", base.HEX, nil, 0x02, nil)
+  f.camera_camera_state_info_photo_osd_shutter_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_shutter_is_show", "Photo Osd Shutter Is Show", base.HEX, nil, 0x04, nil)
+  f.camera_camera_state_info_photo_osd_iso_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_iso_is_show", "Photo Osd Iso Is Show", base.HEX, nil, 0x08, nil)
+  f.camera_camera_state_info_photo_osd_exposure_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_exposure_is_show", "Photo Osd Exposure Is Show", base.HEX, nil, 0x10, nil)
+  f.camera_camera_state_info_photo_osd_sharpe_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_sharpe_is_show", "Photo Osd Sharpe Is Show", base.HEX, nil, 0x20, nil)
+  f.camera_camera_state_info_photo_osd_contrast_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_contrast_is_show", "Photo Osd Contrast Is Show", base.HEX, nil, 0x40, nil)
+  f.camera_camera_state_info_photo_osd_saturation_is_show = ProtoField.uint16 ("dji_p3.camera_camera_state_info_photo_osd_saturation_is_show", "Photo Osd Saturation Is Show", base.HEX, nil, 0x80, nil)
 f.camera_camera_state_info_unknown19 = ProtoField.bytes ("dji_p3.camera_camera_state_info_unknown19", "Unknown19", base.SPACE)
-f.camera_camera_state_info_in_debug_mode = ProtoField.int8 ("dji_p3.camera_camera_state_info_in_debug_mode", "In Debug Mode", base.DEC)
+f.camera_camera_state_info_in_debug_mode = ProtoField.uint8 ("dji_p3.camera_camera_state_info_in_debug_mode", "In Debug Mode", base.HEX)
 f.camera_camera_state_info_unknown1c = ProtoField.uint8 ("dji_p3.camera_camera_state_info_unknown1c", "Unknown1C", base.HEX)
-f.camera_camera_state_info_video_record_time = ProtoField.int16 ("dji_p3.camera_camera_state_info_video_record_time", "Video Record Time", base.DEC)
-f.camera_camera_state_info_max_photo_num = ProtoField.int8 ("dji_p3.camera_camera_state_info_max_photo_num", "Max Photo Num", base.DEC)
-f.camera_camera_state_info_masked20 = ProtoField.uint8 ("dji_p3.camera_camera_state_info_masked20", "Masked20", base.DEC)
-  f.camera_camera_state_info_histogram_enable = ProtoField.uint8 ("dji_p3.camera_camera_state_info_histogram_enable", "Histogram Enable", base.DEC, nil, 0x01, nil)
-f.camera_camera_state_info_camera_type = ProtoField.int8 ("dji_p3.camera_camera_state_info_camera_type", "Camera Type", base.DEC, enums.CAMERA_STATE_INFO_CAMERA_TYPE_ENUM, nil, nil)
+f.camera_camera_state_info_video_record_time = ProtoField.uint16 ("dji_p3.camera_camera_state_info_video_record_time", "Video Record Time", base.DEC)
+f.camera_camera_state_info_max_photo_num = ProtoField.uint8 ("dji_p3.camera_camera_state_info_max_photo_num", "Max Photo Num", base.DEC)
+f.camera_camera_state_info_masked20 = ProtoField.uint8 ("dji_p3.camera_camera_state_info_masked20", "Masked20", base.HEX)
+  f.camera_camera_state_info_histogram_enable = ProtoField.uint8 ("dji_p3.camera_camera_state_info_histogram_enable", "Histogram Enable", base.HEX, nil, 0x01, nil)
+f.camera_camera_state_info_camera_type = ProtoField.uint8 ("dji_p3.camera_camera_state_info_camera_type", "Camera Type", base.HEX, enums.CAMERA_STATE_INFO_CAMERA_TYPE_ENUM, nil, nil)
 f.camera_camera_state_info_unknown22 = ProtoField.bytes ("dji_p3.camera_camera_state_info_unknown22", "Unknown22", base.SPACE)
-f.camera_camera_state_info_verstion = ProtoField.int8 ("dji_p3.camera_camera_state_info_verstion", "Verstion", base.DEC)
+f.camera_camera_state_info_version = ProtoField.uint8 ("dji_p3.camera_camera_state_info_version", "Version", base.DEC)
 
 local function camera_camera_state_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -844,7 +844,7 @@ local function camera_camera_state_info_dissector(pkt_length, buffer, pinfo, sub
     subtree:add_le (f.camera_camera_state_info_unknown22, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.camera_camera_state_info_verstion, payload(offset, 1))
+    subtree:add_le (f.camera_camera_state_info_version, payload(offset, 1))
     offset = offset + 1
 
     if (offset ~= 37) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera State Info: Offset does not match - internal inconsistency") end
