@@ -637,7 +637,6 @@ end
 
 -- Camera - Camera State Info - 0x80
 
-
 enums.CAMERA_STATE_INFO_FIRM_UPGRADE_ERROR_STATE_FIRM_ERROR_TYPE_ENUM = {
     [0x00] = 'NO',
     [0x01] = 'Nomatch',
@@ -688,8 +687,8 @@ enums.CAMERA_STATE_INFO_MODE_ENUM = {
 }
 
 enums.CAMERA_STATE_INFO_FILE_INDEX_MODE_ENUM = {
-    [0x00] = 'a',
-    [0x01] = 'b',
+    [0x00] = 'Reset',
+    [0x01] = 'Sequence',
 }
 
 enums.CAMERA_STATE_INFO_CAMERA_TYPE_ENUM = {
@@ -712,14 +711,15 @@ enums.CAMERA_STATE_INFO_CAMERA_TYPE_ENUM = {
     [0x14] = 'DJICameraTypeGD600',
     [0xff] = 'OTHER',
 }
+
 f.camera_camera_state_info_masked00 = ProtoField.uint32 ("dji_p3.camera_camera_state_info_masked00", "Masked00", base.HEX)
   f.camera_camera_state_info_connect_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_connect_state", "Connect State", base.HEX, nil, 0x0001, nil)
   f.camera_camera_state_info_usb_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_usb_state", "Usb State", base.HEX, nil, 0x0002, nil)
   f.camera_camera_state_info_time_sync_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_time_sync_state", "Time Sync State", base.HEX, nil, 0x0004, nil)
-  f.camera_camera_state_info_photo_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_photo_state", "Photo State", base.HEX, enums.CAMERA_STATE_INFO_PHOTO_STATE_ENUM, 0x38, nil)
+  f.camera_camera_state_info_photo_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_photo_state", "Photo State", base.HEX, enums.CAMERA_STATE_INFO_PHOTO_STATE_ENUM, 0x0038, nil)
   f.camera_camera_state_info_record_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_record_state", "Record State", base.HEX, nil, 0x00c0, "TODO values from enum P3.DataCameraGetPushStateInfo")
   f.camera_camera_state_info_sensor_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_sensor_state", "Sensor State", base.HEX, nil, 0x0100, nil)
-  f.camera_camera_state_info_sd_card_insert_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_sd_card_insert_state", "Sd Card Insert State", base.HEX, nil, 0x200, nil)
+  f.camera_camera_state_info_sd_card_insert_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_sd_card_insert_state", "Sd Card Insert State", base.HEX, nil, 0x0200, nil)
   f.camera_camera_state_info_sd_card_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_sd_card_state", "Sd Card State", base.HEX, enums.CAMERA_STATE_INFO_SD_CARD_STATE_ENUM, 0x3c00, nil)
   f.camera_camera_state_info_firm_upgrade_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_firm_upgrade_state", "Firm Upgrade State", base.HEX, nil, 0x4000, nil)
   f.camera_camera_state_info_firm_upgrade_error_state = ProtoField.uint32 ("dji_p3.camera_camera_state_info_firm_upgrade_error_state", "Firm Upgrade Error State", base.HEX, enums.CAMERA_STATE_INFO_FIRM_UPGRADE_ERROR_STATE_FIRM_ERROR_TYPE_ENUM, 0x18000, nil)
@@ -851,29 +851,888 @@ local function camera_camera_state_info_dissector(pkt_length, buffer, pinfo, sub
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera State Info: Payload size different than expected") end
 end
 
--- Camera - FW Update State - 0x80
-f.camera_fw_update_state_unkn0 = ProtoField.uint8 ("dji_p3.camera_fw_update_state_unkn0", "Unknown 0", base.HEX)
-f.camera_fw_update_state_flags = ProtoField.uint8 ("dji_p3.camera_fw_update_state_flags", "Flags", base.HEX)
-  f.camera_fw_update_state_flags_in_progress = ProtoField.uint8 ("dji_p3.camera_fw_update_state_flags_in_progress", "FW Update In Progress", base.HEX, nil, 0x40)
+-- Camera - Camera Shot Params - 0x81
 
-local function main_camera_fw_update_state_dissector(pkt_length, buffer, pinfo, subtree)
+
+enums.CAMERA_SHOT_PARAMS_ISO_TYPE_ENUM = {
+    [0x00] = 'AUTO',
+    [0x01] = 'AUTOHIGH',
+    [0x02] = 'ISO50',
+    [0x03] = 'ISO100',
+    [0x04] = 'ISO200',
+    [0x05] = 'ISO400',
+    [0x06] = 'ISO800',
+    [0x07] = 'ISO1600',
+    [0x08] = 'ISO3200',
+    [0x09] = 'ISO6400',
+    [0x0a] = 'ISO12800',
+    [0x0b] = 'ISO25600',
+}
+
+enums.CAMERA_SHOT_PARAMS_IMAGE_SIZE_SIZE_TYPE_ENUM = {
+    [0x00] = 'DEFAULT',
+    [0x01] = 'SMALLEST',
+    [0x02] = 'SMALL',
+    [0x03] = 'MIDDLE',
+    [0x04] = 'LARGE',
+    [0x05] = 'LARGEST',
+    [0x06] = 'OTHER',
+}
+
+enums.CAMERA_SHOT_PARAMS_IMAGE_RATIO_TYPE_ENUM = {
+    [0x00] = 'R 4:3',
+    [0x01] = 'R 16:9',
+    [0x02] = 'R 3:2',
+    [0x06] = 'R OTHER',
+}
+
+enums.CAMERA_SHOT_PARAMS_EXPOSURE_MODE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'Program',
+    [0x02] = 'ShutterPriority',
+    [0x03] = 'AperturePriority',
+    [0x04] = 'Manual',
+    [0x05] = 'f',
+    [0x06] = 'g',
+    [0x07] = 'Cine',
+    [0x64] = 'i',
+}
+
+enums.CAMERA_SHOT_PARAMS_PHOTO_TYPE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x02] = 'c',
+    [0x03] = 'd',
+    [0x04] = 'e',
+    [0x05] = 'f',
+    [0x06] = 'g',
+    [0x07] = 'h',
+    [0x0a] = 'i',
+}
+
+enums.CAMERA_SHOT_PARAMS_VIDEO_ENCODE_TYPE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x64] = 'c',
+}
+
+f.camera_camera_shot_params_aperture_size = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_aperture_size", "Aperture Size", base.HEX)
+f.camera_camera_shot_params_user_shutter = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_user_shutter", "User Shutter", base.HEX)
+  f.camera_camera_shot_params_reciprocal = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_reciprocal", "Reciprocal", base.HEX, nil, 0x8000, nil)
+f.camera_camera_shot_params_shutter_speed_decimal = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_shutter_speed_decimal", "Shutter Speed Decimal", base.DEC)
+f.camera_camera_shot_params_iso = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_iso", "Iso", base.HEX, enums.CAMERA_SHOT_PARAMS_ISO_TYPE_ENUM, nil, nil)
+f.camera_camera_shot_params_exposure_compensation = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_exposure_compensation", "Exposure Compensation", base.HEX)
+f.camera_camera_shot_params_ctr_object_for_one = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_ctr_object_for_one", "Ctr Object For One", base.HEX)
+f.camera_camera_shot_params_ctr_object_for_two = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_ctr_object_for_two", "Ctr Object For Two", base.HEX)
+f.camera_camera_shot_params_image_size = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_image_size", "Image Size", base.HEX, enums.CAMERA_SHOT_PARAMS_IMAGE_SIZE_SIZE_TYPE_ENUM, nil, nil)
+f.camera_camera_shot_params_image_ratio = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_image_ratio", "Image Ratio", base.HEX, enums.CAMERA_SHOT_PARAMS_IMAGE_RATIO_TYPE_ENUM, nil, nil)
+f.camera_camera_shot_params_image_quality = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_image_quality", "Image Quality", base.HEX)
+f.camera_camera_shot_params_image_format = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_image_format", "Image Format", base.HEX)
+f.camera_camera_shot_params_video_format = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_video_format", "Video Format", base.HEX)
+f.camera_camera_shot_params_video_fps = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_video_fps", "Video Fps", base.HEX)
+f.camera_camera_shot_params_video_fov = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_video_fov", "Video Fov", base.HEX)
+f.camera_camera_shot_params_video_second_open = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_video_second_open", "Video Second Open", base.HEX)
+f.camera_camera_shot_params_video_second_ratio = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_video_second_ratio", "Video Second Ratio", base.HEX)
+f.camera_camera_shot_params_video_quality = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_video_quality", "Video Quality", base.HEX)
+f.camera_camera_shot_params_video_store_format = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_video_store_format", "Video Store Format", base.HEX)
+f.camera_camera_shot_params_exposure_mode = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_exposure_mode", "Exposure Mode", base.HEX, enums.CAMERA_SHOT_PARAMS_EXPOSURE_MODE_ENUM, nil, nil)
+f.camera_camera_shot_params_scene_mode = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_scene_mode", "Scene Mode", base.HEX)
+f.camera_camera_shot_params_metering = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_metering", "Metering", base.HEX)
+f.camera_camera_shot_params_white_balance = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_white_balance", "White Balance", base.HEX)
+f.camera_camera_shot_params_color_temp = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_color_temp", "Color Temp", base.HEX)
+f.camera_camera_shot_params_mctf_enable = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_mctf_enable", "Mctf Enable", base.HEX)
+f.camera_camera_shot_params_mctf_strength = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_mctf_strength", "Mctf Strength", base.HEX)
+f.camera_camera_shot_params_sharpe = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_sharpe", "Sharpe", base.HEX)
+f.camera_camera_shot_params_contrast = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_contrast", "Contrast", base.HEX)
+f.camera_camera_shot_params_saturation = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_saturation", "Saturation", base.HEX)
+f.camera_camera_shot_params_tonal = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_tonal", "Tonal", base.HEX)
+f.camera_camera_shot_params_digital_filter = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_digital_filter", "Digital Filter", base.HEX)
+f.camera_camera_shot_params_anti_flicker = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_anti_flicker", "Anti Flicker", base.HEX)
+f.camera_camera_shot_params_continuous = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_continuous", "Continuous", base.HEX)
+f.camera_camera_shot_params_time_params_type = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_time_params_type", "Time Params Type", base.HEX)
+f.camera_camera_shot_params_time_params_num = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_time_params_num", "Time Params Num", base.HEX)
+f.camera_camera_shot_params_time_params_period = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_time_params_period", "Time Params Period", base.HEX)
+f.camera_camera_shot_params_real_aperture_size = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_real_aperture_size", "Real Aperture Size", base.HEX)
+f.camera_camera_shot_params_real_shutter = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_real_shutter", "Real Shutter", base.HEX)
+  f.camera_camera_shot_params_rel_reciprocal = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_rel_reciprocal", "Rel Reciprocal", base.HEX, nil, 0x8000, nil)
+f.camera_camera_shot_params_rel_shutter_speed_decimal = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_rel_shutter_speed_decimal", "Real Shutter Speed Decimal", base.DEC)
+f.camera_camera_shot_params_rel_iso = ProtoField.uint32 ("dji_p3.camera_camera_shot_params_rel_iso", "Real Iso", base.HEX)
+f.camera_camera_shot_params_rel_exposure_compensation = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_rel_exposure_compensation", "Real Exposure Compensation", base.HEX)
+f.camera_camera_shot_params_time_countdown = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_time_countdown", "Time Countdown", base.HEX)
+f.camera_camera_shot_params_cap_min_shutter = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_cap_min_shutter", "Cap Min Shutter", base.HEX)
+  f.camera_camera_shot_params_cap_min_shutter_reciprocal = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_cap_min_shutter_reciprocal", "Cap Min Shutter Reciprocal", base.HEX, nil, 0x8000, nil)
+f.camera_camera_shot_params_cap_min_shutter_decimal = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_cap_min_shutter_decimal", "Cap Min Shutter Decimal", base.DEC)
+f.camera_camera_shot_params_cap_max_shutter = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_cap_max_shutter", "Cap Max Shutter", base.HEX)
+  f.camera_camera_shot_params_cap_max_shutter_reciprocal = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_cap_max_shutter_reciprocal", "Cap Max Shutter Reciprocal", base.HEX, nil, 0x8000, nil)
+f.camera_camera_shot_params_cap_max_shutter_decimal = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_cap_max_shutter_decimal", "Cap Max Shutter Decimal", base.DEC)
+f.camera_camera_shot_params_video_standard = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_video_standard", "Video Standard", base.HEX)
+f.camera_camera_shot_params_ae_lock = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_ae_lock", "Ae Lock", base.HEX)
+f.camera_camera_shot_params_photo_type = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_photo_type", "Photo Type", base.HEX, enums.CAMERA_SHOT_PARAMS_PHOTO_TYPE_ENUM, nil, nil)
+f.camera_camera_shot_params_spot_area_bottom_right_pos = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_spot_area_bottom_right_pos", "Spot Area Bottom Right Pos", base.HEX)
+f.camera_camera_shot_params_unknown3b = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_unknown3b", "Unknown3B", base.HEX)
+f.camera_camera_shot_params_aeb_number = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_aeb_number", "Aeb Number", base.HEX)
+f.camera_camera_shot_params_pano_mode = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_pano_mode", "Pano Mode", base.HEX, nil, nil, "TODO values from enum P3.DataCameraGetPushShotParams")
+f.camera_camera_shot_params_cap_min_aperture = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_cap_min_aperture", "Cap Min Aperture", base.HEX)
+f.camera_camera_shot_params_cap_max_aperture = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_cap_max_aperture", "Cap Max Aperture", base.HEX)
+f.camera_camera_shot_params_masked42 = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_masked42", "Masked42", base.HEX)
+  f.camera_camera_shot_params_auto_turn_off_fore_led = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_auto_turn_off_fore_led", "Auto Turn Off Fore Led", base.HEX, nil, 0x01, nil)
+f.camera_camera_shot_params_exposure_status = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_exposure_status", "Exposure Status", base.HEX)
+f.camera_camera_shot_params_locked_gimbal_when_shot = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_locked_gimbal_when_shot", "Locked Gimbal When Shot", base.HEX)
+f.camera_camera_shot_params_encode_types = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_encode_types", "Video Encode Types", base.HEX)
+  f.camera_camera_shot_params_primary_video_encode_type = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_primary_video_encode_type", "Primary Video Encode Type", base.HEX, enums.CAMERA_SHOT_PARAMS_VIDEO_ENCODE_TYPE_ENUM, 0x0f, nil)
+  f.camera_camera_shot_params_secondary_video_encode_type = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_secondary_video_encode_type", "Secondary Video Encode Type", base.HEX, enums.CAMERA_SHOT_PARAMS_VIDEO_ENCODE_TYPE_ENUM, 0xf0, nil)
+f.camera_camera_shot_params_not_auto_ae_unlock = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_not_auto_ae_unlock", "Not Auto Ae Unlock", base.HEX)
+f.camera_camera_shot_params_unknown47 = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_unknown47", "Unknown47", base.HEX)
+f.camera_camera_shot_params_constrast_ehance = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_constrast_ehance", "Constrast Ehance", base.HEX)
+f.camera_camera_shot_params_video_record_mode = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_video_record_mode", "Video Record Mode", base.HEX)
+f.camera_camera_shot_params_timelapse_save_type = ProtoField.uint8 ("dji_p3.camera_camera_shot_params_timelapse_save_type", "Timelapse Save Type", base.HEX)
+f.camera_camera_shot_params_video_record_interval_time = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_video_record_interval_time", "Video Record Interval Time", base.HEX)
+f.camera_camera_shot_params_timelapse_duration = ProtoField.uint32 ("dji_p3.camera_camera_shot_params_timelapse_duration", "Timelapse Duration", base.HEX)
+f.camera_camera_shot_params_timelapse_time_count_down = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_timelapse_time_count_down", "Timelapse Time Count Down", base.HEX)
+f.camera_camera_shot_params_timelapse_recorded_frame = ProtoField.uint32 ("dji_p3.camera_camera_shot_params_timelapse_recorded_frame", "Timelapse Recorded Frame", base.HEX)
+f.camera_camera_shot_params_optics_scale = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_optics_scale", "Optics Scale", base.HEX)
+f.camera_camera_shot_params_digital_zoom_scale = ProtoField.uint16 ("dji_p3.camera_camera_shot_params_digital_zoom_scale", "Digital Zoom Scale", base.HEX)
+
+local function camera_camera_shot_params_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.camera_fw_update_state_unkn0, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_params_aperture_size, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_params_user_shutter, payload(offset, 2))
+    subtree:add_le (f.camera_camera_shot_params_reciprocal, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_params_shutter_speed_decimal, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.camera_fw_update_state_flags, payload(offset, 1))
-    subtree:add_le (f.camera_fw_update_state_flags_in_progress, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_params_iso, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FW Update State: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FW Update State: Payload size different than expected") end
+    subtree:add_le (f.camera_camera_shot_params_exposure_compensation, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_ctr_object_for_one, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_ctr_object_for_two, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_image_size, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_image_ratio, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_image_quality, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_image_format, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_video_format, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_video_fps, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_video_fov, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_video_second_open, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_video_second_ratio, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_video_quality, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_video_store_format, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_exposure_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_scene_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_metering, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_white_balance, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_color_temp, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_mctf_enable, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_mctf_strength, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_sharpe, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_contrast, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_saturation, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_tonal, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_digital_filter, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_anti_flicker, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_continuous, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_time_params_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_time_params_num, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_time_params_period, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_params_real_aperture_size, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_params_real_shutter, payload(offset, 2))
+    subtree:add_le (f.camera_camera_shot_params_rel_reciprocal, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_params_rel_shutter_speed_decimal, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_rel_iso, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_shot_params_rel_exposure_compensation, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_time_countdown, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_cap_min_shutter, payload(offset, 2))
+    subtree:add_le (f.camera_camera_shot_params_cap_min_shutter_reciprocal, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_params_cap_min_shutter_decimal, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_cap_max_shutter, payload(offset, 2))
+    subtree:add_le (f.camera_camera_shot_params_cap_max_shutter_reciprocal, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_params_cap_max_shutter_decimal, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_video_standard, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_ae_lock, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_photo_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_spot_area_bottom_right_pos, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_unknown3b, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_aeb_number, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_pano_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_cap_min_aperture, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_params_cap_max_aperture, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_params_masked42, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_params_auto_turn_off_fore_led, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_exposure_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_locked_gimbal_when_shot, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_encode_types, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_params_primary_video_encode_type, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_params_secondary_video_encode_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_not_auto_ae_unlock, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_unknown47, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_constrast_ehance, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_video_record_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_timelapse_save_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_params_video_record_interval_time, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_params_timelapse_duration, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_shot_params_timelapse_time_count_down, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_params_timelapse_recorded_frame, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_shot_params_optics_scale, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_params_digital_zoom_scale, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 91) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Shot Params: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Shot Params: Payload size different than expected") end
+end
+
+-- Camera - Camera Play Back Params - 0x82
+
+
+enums.CAMERA_PLAY_BACK_PARAMS_MODE_ENUM = {
+    [0x00] = 'Single',
+    [0x01] = 'SingleLarge',
+    [0x02] = 'SinglePlay',
+    [0x03] = 'SinglePause',
+    [0x04] = 'MultipleDel',
+    [0x05] = 'Multiple',
+    [0x06] = 'Download',
+    [0x07] = 'SingleOver',
+    [0x64] = 'OTHER',
+}
+
+enums.CAMERA_PLAY_BACK_PARAMS_FILE_TYPE_ENUM = {
+    [0x00] = 'JPEG',
+    [0x01] = 'DNG',
+    [0x02] = 'VIDEO',
+    [0x64] = 'OTHER',
+}
+
+enums.CAMERA_PLAY_BACK_PARAMS_DEL_FILE_STATUS_ENUM = {
+    [0x00] = 'NORMAL',
+    [0x02] = 'DELETING',
+    [0x03] = 'COMPLETED',
+}
+f.camera_camera_play_back_params_mode = ProtoField.uint8 ("dji_p3.camera_camera_play_back_params_mode", "Mode", base.HEX, enums.CAMERA_PLAY_BACK_PARAMS_MODE_ENUM, nil, nil)
+f.camera_camera_play_back_params_file_type = ProtoField.uint16 ("dji_p3.camera_camera_play_back_params_file_type", "File Type", base.HEX, enums.CAMERA_PLAY_BACK_PARAMS_FILE_TYPE_ENUM, nil, nil)
+f.camera_camera_play_back_params_file_num = ProtoField.uint8 ("dji_p3.camera_camera_play_back_params_file_num", "File Num", base.DEC)
+f.camera_camera_play_back_params_total_num = ProtoField.uint16 ("dji_p3.camera_camera_play_back_params_total_num", "Total Num", base.DEC)
+f.camera_camera_play_back_params_index = ProtoField.uint16 ("dji_p3.camera_camera_play_back_params_index", "Index", base.DEC)
+f.camera_camera_play_back_params_progress = ProtoField.uint8 ("dji_p3.camera_camera_play_back_params_progress", "Progress", base.HEX)
+f.camera_camera_play_back_params_total_time = ProtoField.uint16 ("dji_p3.camera_camera_play_back_params_total_time", "Total Time", base.HEX)
+f.camera_camera_play_back_params_current = ProtoField.uint16 ("dji_p3.camera_camera_play_back_params_current", "Current", base.HEX)
+f.camera_camera_play_back_params_delete_chioce_num = ProtoField.uint16 ("dji_p3.camera_camera_play_back_params_delete_chioce_num", "Delete Chioce Num", base.HEX)
+f.camera_camera_play_back_params_zoom_size = ProtoField.uint16 ("dji_p3.camera_camera_play_back_params_zoom_size", "Zoom Size", base.HEX)
+f.camera_camera_play_back_params_total_photo_num = ProtoField.uint16 ("dji_p3.camera_camera_play_back_params_total_photo_num", "Total Photo Num", base.HEX)
+f.camera_camera_play_back_params_total_video_num = ProtoField.uint16 ("dji_p3.camera_camera_play_back_params_total_video_num", "Total Video Num", base.HEX)
+f.camera_camera_play_back_params_photo_width = ProtoField.uint32 ("dji_p3.camera_camera_play_back_params_photo_width", "Photo Width", base.HEX)
+f.camera_camera_play_back_params_photo_height = ProtoField.uint32 ("dji_p3.camera_camera_play_back_params_photo_height", "Photo Height", base.HEX)
+f.camera_camera_play_back_params_center_x = ProtoField.uint32 ("dji_p3.camera_camera_play_back_params_center_x", "Center X", base.HEX)
+f.camera_camera_play_back_params_center_y = ProtoField.uint32 ("dji_p3.camera_camera_play_back_params_center_y", "Center Y", base.HEX)
+f.camera_camera_play_back_params_cur_page_selected = ProtoField.uint8 ("dji_p3.camera_camera_play_back_params_cur_page_selected", "Cur Page Selected", base.HEX)
+f.camera_camera_play_back_params_del_file_status = ProtoField.uint8 ("dji_p3.camera_camera_play_back_params_del_file_status", "Del File Status", base.HEX, enums.CAMERA_PLAY_BACK_PARAMS_DEL_FILE_STATUS_ENUM, nil, nil)
+f.camera_camera_play_back_params_not_select_file_valid = ProtoField.uint8 ("dji_p3.camera_camera_play_back_params_not_select_file_valid", "Not Select File Valid", base.HEX)
+f.camera_camera_play_back_params_single_downloaded = ProtoField.uint8 ("dji_p3.camera_camera_play_back_params_single_downloaded", "Single Downloaded", base.HEX)
+
+local function camera_camera_play_back_params_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_play_back_params_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_play_back_params_file_type, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_play_back_params_file_num, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_play_back_params_total_num, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_play_back_params_index, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_play_back_params_progress, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_play_back_params_total_time, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_play_back_params_current, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_play_back_params_delete_chioce_num, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_play_back_params_zoom_size, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_play_back_params_total_photo_num, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_play_back_params_total_video_num, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_play_back_params_photo_width, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_play_back_params_photo_height, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_play_back_params_center_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_play_back_params_center_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_play_back_params_cur_page_selected, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_play_back_params_del_file_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_play_back_params_not_select_file_valid, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_play_back_params_single_downloaded, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 41) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Play Back Params: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Play Back Params: Payload size different than expected") end
+end
+
+-- Camera - Camera Chart Info - 0x83
+
+f.camera_camera_chart_info_light_values = ProtoField.bytes ("dji_p3.camera_camera_chart_info_light_values", "Light Values", base.NONE)
+
+local function camera_camera_chart_info_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_chart_info_light_values, payload(offset, 4)) -- size not known
+    offset = offset + 4
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Chart Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Chart Info: Payload size different than expected") end
+end
+
+-- Camera - Camera Recording Name - 0x84
+
+
+enums.CAMERA_RECORDING_FILE_TYPE_ENUM = {
+    [0x00] = 'JPEG',
+    [0x01] = 'DNG',
+    [0x02] = 'VIDEO',
+    [0x64] = 'OTHER',
+}
+f.camera_camera_recording_name_file_type = ProtoField.uint8 ("dji_p3.camera_camera_recording_name_file_type", "File Type", base.HEX, enums.CAMERA_RECORDING_FILE_TYPE_ENUM, nil, nil)
+f.camera_camera_recording_name_index = ProtoField.uint32 ("dji_p3.camera_camera_recording_name_index", "Index", base.HEX)
+f.camera_camera_recording_name_size = ProtoField.uint64 ("dji_p3.camera_camera_recording_name_size", "Size", base.HEX)
+f.camera_camera_recording_name_time = ProtoField.uint32 ("dji_p3.camera_camera_recording_name_time", "Time", base.HEX)
+
+local function camera_camera_recording_name_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_recording_name_file_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_recording_name_index, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_recording_name_size, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.camera_camera_recording_name_time, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 17) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Recording Name: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Recording Name: Payload size different than expected") end
+end
+
+-- Camera - Camera Raw Params - 0x85
+
+
+enums.CAMERA_RAW_PARAMS_DISK_STATUS_ENUM = {
+    [0x00] = 'NA',
+    [0x01] = 'WAITING',
+    [0x02] = 'STORING',
+    [0x03] = 'LOW_FORMATING',
+    [0x04] = 'FAST_FORMATING',
+    [0x05] = 'INITIALIZING',
+    [0x06] = 'DEVICE_ERROR',
+    [0x07] = 'VERIFY_ERROR',
+    [0x08] = 'FULL',
+    [0x09] = 'OTHER',
+}
+f.camera_camera_raw_params_masked00 = ProtoField.uint8 ("dji_p3.camera_camera_raw_params_masked00", "Masked00", base.HEX)
+  f.camera_camera_raw_params_disk_status = ProtoField.uint8 ("dji_p3.camera_camera_raw_params_disk_status", "Disk Status", base.HEX, enums.CAMERA_RAW_PARAMS_DISK_STATUS_ENUM, 0x0f, nil)
+  f.camera_camera_raw_params_disk_connected = ProtoField.uint8 ("dji_p3.camera_camera_raw_params_disk_connected", "Disk Connected", base.HEX, nil, 0x10, nil)
+  f.camera_camera_raw_params_disk_capacity = ProtoField.uint8 ("dji_p3.camera_camera_raw_params_disk_capacity", "Disk Capacity", base.HEX, nil, 0x60, nil)
+f.camera_camera_raw_params_disk_available_time = ProtoField.uint16 ("dji_p3.camera_camera_raw_params_disk_available_time", "Disk Available Time", base.HEX)
+f.camera_camera_raw_params_available_capacity = ProtoField.uint32 ("dji_p3.camera_camera_raw_params_available_capacity", "Available Capacity", base.HEX)
+f.camera_camera_raw_params_resolution = ProtoField.uint8 ("dji_p3.camera_camera_raw_params_resolution", "Resolution", base.HEX)
+f.camera_camera_raw_params_fps = ProtoField.uint8 ("dji_p3.camera_camera_raw_params_fps", "Fps", base.HEX)
+f.camera_camera_raw_params_ahci_status = ProtoField.uint8 ("dji_p3.camera_camera_raw_params_ahci_status", "Ahci Status", base.HEX)
+
+local function camera_camera_raw_params_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_raw_params_masked00, payload(offset, 1))
+    subtree:add_le (f.camera_camera_raw_params_disk_status, payload(offset, 1))
+    subtree:add_le (f.camera_camera_raw_params_disk_connected, payload(offset, 1))
+    subtree:add_le (f.camera_camera_raw_params_disk_capacity, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_raw_params_disk_available_time, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_raw_params_available_capacity, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_raw_params_resolution, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_raw_params_fps, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_raw_params_ahci_status, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Raw Params: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Raw Params: Payload size different than expected") end
+end
+
+-- Camera - Camera Cur Pano File Name - 0x86
+
+f.camera_camera_cur_pano_file_name_index = ProtoField.uint32 ("dji_p3.camera_camera_cur_pano_file_name_index", "Index", base.HEX)
+f.camera_camera_cur_pano_file_name_unknown04 = ProtoField.bytes ("dji_p3.camera_camera_cur_pano_file_name_unknown04", "Unknown04", base.SPACE)
+f.camera_camera_cur_pano_file_name_pano_create_time = ProtoField.uint32 ("dji_p3.camera_camera_cur_pano_file_name_pano_create_time", "Pano Create Time", base.HEX)
+f.camera_camera_cur_pano_file_name_cur_saved_number = ProtoField.uint8 ("dji_p3.camera_camera_cur_pano_file_name_cur_saved_number", "Cur Saved Number", base.HEX)
+f.camera_camera_cur_pano_file_name_cur_taken_number = ProtoField.uint8 ("dji_p3.camera_camera_cur_pano_file_name_cur_taken_number", "Cur Taken Number", base.HEX)
+f.camera_camera_cur_pano_file_name_total_number = ProtoField.uint8 ("dji_p3.camera_camera_cur_pano_file_name_total_number", "Total Number", base.HEX)
+f.camera_camera_cur_pano_file_name_unknown13 = ProtoField.uint8 ("dji_p3.camera_camera_cur_pano_file_name_unknown13", "Unknown13", base.HEX)
+f.camera_camera_cur_pano_file_name_file_size = ProtoField.uint64 ("dji_p3.camera_camera_cur_pano_file_name_file_size", "File Size", base.HEX)
+f.camera_camera_cur_pano_file_name_create_time = ProtoField.uint32 ("dji_p3.camera_camera_cur_pano_file_name_create_time", "Create Time", base.HEX)
+
+local function camera_camera_cur_pano_file_name_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_cur_pano_file_name_index, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_cur_pano_file_name_unknown04, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.camera_camera_cur_pano_file_name_pano_create_time, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_cur_pano_file_name_cur_saved_number, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_cur_pano_file_name_cur_taken_number, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_cur_pano_file_name_total_number, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_cur_pano_file_name_unknown13, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_cur_pano_file_name_file_size, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.camera_camera_cur_pano_file_name_create_time, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Cur Pano File Name: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Cur Pano File Name: Payload size different than expected") end
+end
+
+-- Camera - Camera Shot Info - 0x87
+
+
+enums.CAMERA_SHOT_INFO_FUSELAGE_FOCUS_MODE_ENUM = {
+    [0x00] = 'Manual',
+    [0x01] = 'OneAuto',
+    [0x02] = 'ContinuousAuto',
+    [0x03] = 'ManualFine',
+    [0x06] = 'OTHER',
+}
+f.camera_camera_shot_info_masked00 = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_masked00", "Masked00", base.HEX)
+  f.camera_camera_shot_info_fuselage_focus_mode = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_fuselage_focus_mode", "Fuselage Focus Mode", base.HEX, enums.CAMERA_SHOT_INFO_FUSELAGE_FOCUS_MODE_ENUM, 0x03, nil)
+  f.camera_camera_shot_info_shot_focus_mode = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_shot_focus_mode", "Shot Focus Mode", base.HEX, nil, 0x0c, "TODO values from enum P3.DataCameraGetPushShotInfo")
+  f.camera_camera_shot_info_zoom_focus_type = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_zoom_focus_type", "Zoom Focus Type", base.HEX, nil, 0x10, nil)
+  f.camera_camera_shot_info_shot_type = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_shot_type", "Shot Type", base.HEX, nil, 0x20, "TODO values from enum P3.DataCameraGetPushShotInfo")
+  f.camera_camera_shot_info_shot_fd_type = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_shot_fd_type", "Shot Fd Type", base.HEX, nil, 0x40, "TODO values from enum P3.DataCameraGetPushShotInfo")
+  f.camera_camera_shot_info_shot_connected = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_shot_connected", "Shot Connected", base.HEX, nil, 0x80, nil)
+f.camera_camera_shot_info_shot_focus_max_stroke = ProtoField.uint16 ("dji_p3.camera_camera_shot_info_shot_focus_max_stroke", "Shot Focus Max Stroke", base.HEX)
+f.camera_camera_shot_info_shot_focus_cur_stroke = ProtoField.uint16 ("dji_p3.camera_camera_shot_info_shot_focus_cur_stroke", "Shot Focus Cur Stroke", base.HEX)
+f.camera_camera_shot_info_obj_distance = ProtoField.float ("dji_p3.camera_camera_shot_info_obj_distance", "Obj Distance", base.DEC)
+f.camera_camera_shot_info_min_aperture = ProtoField.uint16 ("dji_p3.camera_camera_shot_info_min_aperture", "Min Aperture", base.HEX)
+f.camera_camera_shot_info_max_aperture = ProtoField.uint16 ("dji_p3.camera_camera_shot_info_max_aperture", "Max Aperture", base.HEX)
+f.camera_camera_shot_info_spot_af_axis_x = ProtoField.float ("dji_p3.camera_camera_shot_info_spot_af_axis_x", "Spot Af Axis X", base.DEC)
+f.camera_camera_shot_info_spot_af_axis_y = ProtoField.float ("dji_p3.camera_camera_shot_info_spot_af_axis_y", "Spot Af Axis Y", base.DEC)
+f.camera_camera_shot_info_masked15 = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_masked15", "Masked15", base.HEX)
+  f.camera_camera_shot_info_focus_status = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_focus_status", "Focus Status", base.HEX, nil, 0x03, nil)
+f.camera_camera_shot_info_mf_focus_probability = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_mf_focus_probability", "Mf Focus Probability", base.HEX)
+f.camera_camera_shot_info_min_focus_distance = ProtoField.uint16 ("dji_p3.camera_camera_shot_info_min_focus_distance", "Min Focus Distance", base.HEX)
+f.camera_camera_shot_info_max_focus_distance = ProtoField.uint16 ("dji_p3.camera_camera_shot_info_max_focus_distance", "Max Focus Distance", base.HEX)
+f.camera_camera_shot_info_cur_focus_distance = ProtoField.uint16 ("dji_p3.camera_camera_shot_info_cur_focus_distance", "Cur Focus Distance", base.HEX)
+f.camera_camera_shot_info_min_focus_distance_step = ProtoField.uint16 ("dji_p3.camera_camera_shot_info_min_focus_distance_step", "Min Focus Distance Step", base.HEX)
+f.camera_camera_shot_info_masked1f = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_masked1f", "Masked1F", base.HEX)
+  f.camera_camera_shot_info_digital_focus_m_enable = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_digital_focus_m_enable", "Digital Focus M Enable", base.HEX, nil, 0x01, nil)
+  f.camera_camera_shot_info_digital_focus_a_enable = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_digital_focus_a_enable", "Digital Focus A Enable", base.HEX, nil, 0x02, nil)
+f.camera_camera_shot_info_x_axis_focus_window_num = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_x_axis_focus_window_num", "X Axis Focus Window Num", base.HEX)
+f.camera_camera_shot_info_y_axis_focus_window_num = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_y_axis_focus_window_num", "Y Axis Focus Window Num", base.HEX)
+f.camera_camera_shot_info_mf_focus_status = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_mf_focus_status", "Mf Focus Status", base.HEX)
+f.camera_camera_shot_info_focus_window_start_x = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_focus_window_start_x", "Focus Window Start X", base.HEX)
+f.camera_camera_shot_info_focus_window_real_num_x = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_focus_window_real_num_x", "Focus Window Real Num X", base.HEX)
+f.camera_camera_shot_info_focus_window_start_y = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_focus_window_start_y", "Focus Window Start Y", base.HEX)
+f.camera_camera_shot_info_focus_window_real_num_y = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_focus_window_real_num_y", "Focus Window Real Num Y", base.HEX)
+f.camera_camera_shot_info_support_type = ProtoField.uint8 ("dji_p3.camera_camera_shot_info_support_type", "Support Type", base.HEX)
+
+local function camera_camera_shot_info_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_shot_info_masked00, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_info_fuselage_focus_mode, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_info_shot_focus_mode, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_info_zoom_focus_type, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_info_shot_type, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_info_shot_fd_type, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_info_shot_connected, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_info_shot_focus_max_stroke, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_info_shot_focus_cur_stroke, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_info_obj_distance, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_shot_info_min_aperture, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_info_max_aperture, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_info_spot_af_axis_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_shot_info_spot_af_axis_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_shot_info_masked15, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_info_focus_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_info_mf_focus_probability, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_info_min_focus_distance, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_info_max_focus_distance, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_info_cur_focus_distance, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_info_min_focus_distance_step, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_shot_info_masked1f, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_info_digital_focus_m_enable, payload(offset, 1))
+    subtree:add_le (f.camera_camera_shot_info_digital_focus_a_enable, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_info_x_axis_focus_window_num, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_info_y_axis_focus_window_num, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_info_mf_focus_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_info_focus_window_start_x, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_info_focus_window_real_num_x, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_info_focus_window_start_y, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_info_focus_window_real_num_y, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_shot_info_support_type, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 40) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Shot Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Shot Info: Payload size different than expected") end
+end
+
+-- Camera - Camera Timelapse Parms - 0x88
+
+f.camera_camera_timelapse_parms_masked00 = ProtoField.uint8 ("dji_p3.camera_camera_timelapse_parms_masked00", "Masked00", base.HEX)
+  f.camera_camera_timelapse_parms_control_mode = ProtoField.uint8 ("dji_p3.camera_camera_timelapse_parms_control_mode", "Control Mode", base.HEX, nil, 0x03, nil)
+  f.camera_camera_timelapse_parms_gimbal_point_count = ProtoField.uint8 ("dji_p3.camera_camera_timelapse_parms_gimbal_point_count", "Gimbal Point Count", base.HEX, nil, 0xfc, nil)
+-- for i=0..point_count, each entry 12 bytes
+f.camera_camera_timelapse_parms_interval = ProtoField.uint16 ("dji_p3.camera_camera_timelapse_parms_interval", "Point Interval", base.HEX)
+f.camera_camera_timelapse_parms_duration = ProtoField.uint32 ("dji_p3.camera_camera_timelapse_parms_duration", "Point Duration", base.HEX)
+f.camera_camera_timelapse_parms_yaw = ProtoField.uint16 ("dji_p3.camera_camera_timelapse_parms_yaw", "Point Yaw", base.HEX, nil, nil)
+f.camera_camera_timelapse_parms_roll = ProtoField.uint16 ("dji_p3.camera_camera_timelapse_parms_roll", "Point Roll", base.HEX, nil, nil)
+f.camera_camera_timelapse_parms_pitch = ProtoField.uint16 ("dji_p3.camera_camera_timelapse_parms_pitch", "Point Pitch", base.HEX, nil, nil)
+
+local function camera_camera_timelapse_parms_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_timelapse_parms_masked00, payload(offset, 1))
+    subtree:add_le (f.camera_camera_timelapse_parms_control_mode, payload(offset, 1))
+    local point_count = bit.band(buffer(offset,1):le_uint(), 0xfc)
+    subtree:add_le (f.camera_camera_timelapse_parms_gimbal_point_count, payload(offset, 1))
+    offset = offset + 1
+
+    local i = 0
+    repeat
+
+        subtree:add_le (f.camera_camera_timelapse_parms_interval, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.camera_camera_timelapse_parms_duration, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.camera_camera_timelapse_parms_yaw, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.camera_camera_timelapse_parms_roll, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.camera_camera_timelapse_parms_pitch, payload(offset, 2))
+        offset = offset + 2
+
+        i = i + 1
+
+    until i >= point_count
+
+    if (offset ~= 12 * point_count + 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Timelapse Parms: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Timelapse Parms: Payload size different than expected") end
+end
+
+-- Camera - Camera Tracking Status - 0x89
+
+f.camera_camera_tracking_status_masked00 = ProtoField.uint8 ("dji_p3.camera_camera_tracking_status_masked00", "Masked00", base.HEX)
+  f.camera_camera_tracking_status_get_status = ProtoField.uint8 ("dji_p3.camera_camera_tracking_status_status", "Status", base.HEX, nil, 0x01, nil)
+f.camera_camera_tracking_status_x_coord = ProtoField.uint16 ("dji_p3.camera_camera_tracking_status_x_coord", "X Coord", base.HEX)
+f.camera_camera_tracking_status_y_coord = ProtoField.uint16 ("dji_p3.camera_camera_tracking_status_y_coord", "Y Coord", base.HEX)
+
+local function camera_camera_tracking_status_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_tracking_status_masked00, payload(offset, 1))
+    subtree:add_le (f.camera_camera_tracking_status_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.camera_camera_tracking_status_x_coord, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.camera_camera_tracking_status_y_coord, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Tracking Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Tracking Status: Payload size different than expected") end
+end
+
+-- Camera - Camera Fov Param - 0x8a
+
+f.camera_camera_fov_param_image_width = ProtoField.uint32 ("dji_p3.camera_camera_fov_param_image_width", "Image Width", base.DEC)
+f.camera_camera_fov_param_image_height = ProtoField.uint32 ("dji_p3.camera_camera_fov_param_image_height", "Image Height", base.DEC)
+f.camera_camera_fov_param_image_ratio = ProtoField.uint32 ("dji_p3.camera_camera_fov_param_image_ratio", "Image Ratio", base.HEX)
+f.camera_camera_fov_param_lens_focal_length = ProtoField.uint32 ("dji_p3.camera_camera_fov_param_lens_focal_length", "Lens Focal Length", base.HEX)
+
+local function camera_camera_fov_param_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.camera_camera_fov_param_image_width, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_fov_param_image_height, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_fov_param_image_ratio, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.camera_camera_fov_param_lens_focal_length, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Fov Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Fov Param: Payload size different than expected") end
 end
 
 local CAMERA_UART_CMD_DISSECT = {
-    [0x80] = main_camera_fw_update_state_dissector,
+    [0x7c] = camera_camera_shutter_cmd_dissector,
+    [0x80] = camera_camera_state_info_dissector,
+    [0x81] = camera_camera_shot_params_dissector,
+    [0x82] = camera_camera_play_back_params_dissector,
+    [0x83] = camera_camera_chart_info_dissector,
+    [0x84] = camera_camera_recording_name_dissector,
+    [0x85] = camera_camera_raw_params_dissector,
+    [0x86] = camera_camera_cur_pano_file_name_dissector,
+    [0x87] = camera_camera_shot_info_dissector,
+    [0x88] = camera_camera_timelapse_parms_dissector,
+    [0x89] = camera_camera_tracking_status_dissector,
+    [0x8a] = camera_camera_fov_param_dissector,
 }
 
 -- Flight Controller - Osd General - 0x43, identical to flight recorder packet 0x000c
