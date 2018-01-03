@@ -2131,7 +2131,6 @@ local CAMERA_UART_CMD_DISSECT = {
 
 -- Flight Controller - Flyc Forbid Status - 0x09
 
-
 enums.FLYC_FORBID_STATUS_FLIGHT_LIMIT_AREA_STATE_DJI_FLIGHT_LIMIT_AREA_STATE_ENUM = {
     [0x00] = 'None',
     [0x01] = 'NearLimit',
@@ -2150,9 +2149,11 @@ enums.FLYC_FORBID_STATUS_DJI_FLIGHT_LIMIT_ACTION_EVENT_ENUM = {
     [0x04] = 'StopMotor',
     [0x64] = 'OTHER',
 }
+
 f.flyc_flyc_forbid_status_flight_limit_area_state = ProtoField.uint8 ("dji_p3.flyc_flyc_forbid_status_flight_limit_area_state", "Flight Limit Area State", base.HEX, enums.FLYC_FORBID_STATUS_FLIGHT_LIMIT_AREA_STATE_DJI_FLIGHT_LIMIT_AREA_STATE_ENUM, nil, nil)
 f.flyc_flyc_forbid_status_dji_flight_limit_action_event = ProtoField.uint8 ("dji_p3.flyc_flyc_forbid_status_dji_flight_limit_action_event", "Dji Flight Limit Action Event", base.HEX, enums.FLYC_FORBID_STATUS_DJI_FLIGHT_LIMIT_ACTION_EVENT_ENUM, nil, nil)
 f.flyc_flyc_forbid_status_limit_space_num = ProtoField.uint8 ("dji_p3.flyc_flyc_forbid_status_limit_space_num", "Limit Space Num", base.HEX)
+f.flyc_flyc_forbid_status_unknown3 = ProtoField.bytes ("dji_p3.flyc_flyc_forbid_status_unknown3", "Unknown3", base.SPACE)
 
 local function flyc_flyc_forbid_status_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -2168,12 +2169,14 @@ local function flyc_flyc_forbid_status_dissector(pkt_length, buffer, pinfo, subt
     subtree:add_le (f.flyc_flyc_forbid_status_limit_space_num, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 3) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Forbid Status: Offset does not match - internal inconsistency") end
+    subtree:add_le (f.flyc_flyc_forbid_status_unknown3, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 7) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Forbid Status: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Forbid Status: Payload size different than expected") end
 end
 
 -- Flight Controller - A2 Commom - 0x10
-
 
 enums.FLYC_A2_COMMOM_E_DJIA2_CTRL_MODE_ENUM = {
     [0x00] = 'a',
@@ -2184,6 +2187,7 @@ enums.FLYC_A2_COMMOM_E_DJIA2_CTRL_MODE_ENUM = {
     [0x08] = 'f',
     [0x12] = 'g',
 }
+
 f.flyc_a2_commom_a = ProtoField.uint8 ("dji_p3.flyc_a2_commom_a", "A", base.HEX)
 f.flyc_a2_commom_b = ProtoField.uint8 ("dji_p3.flyc_a2_commom_b", "B", base.HEX)
 f.flyc_a2_commom_c = ProtoField.uint32 ("dji_p3.flyc_a2_commom_c", "C", base.HEX)
@@ -2220,7 +2224,6 @@ end
 
 -- Flight Controller - Flyc Deform Status - 0x32
 
-
 enums.FLYC_DEFORM_STATUS_DEFORM_STATUS_TRIPOD_STATUS_ENUM = {
     [0x00] = 'UNKNOWN',
     [0x01] = 'FOLD_COMPELTE',
@@ -2236,6 +2239,7 @@ enums.FLYC_DEFORM_STATUS_DEFORM_MODE_ENUM = {
     [0x02] = 'Normal',
     [0x03] = 'OTHER',
 }
+
 f.flyc_flyc_deform_status_masked00 = ProtoField.uint8 ("dji_p3.flyc_flyc_deform_status_masked00", "Masked00", base.HEX)
   f.flyc_flyc_deform_status_deform_protected = ProtoField.uint8 ("dji_p3.flyc_flyc_deform_status_deform_protected", "Deform Protected", base.HEX, nil, 0x01, nil)
   f.flyc_flyc_deform_status_deform_status = ProtoField.uint8 ("dji_p3.flyc_flyc_deform_status_deform_status", "Deform Status", base.HEX, enums.FLYC_DEFORM_STATUS_DEFORM_STATUS_TRIPOD_STATUS_ENUM, 0x0e, nil)
@@ -2812,21 +2816,19 @@ f.flyc_osd_home_cur_data_recorder_file_index = ProtoField.uint16 ("dji_p3.flyc_o
 f.flyc_osd_home_ver1_masked20 = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_masked20", "Masked20", base.HEX)
   f.flyc_osd_home_ver1_flyc_in_simulation_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_flyc_in_simulation_mode", "Flyc In Simulation Mode", base.HEX, nil, 0x01, nil)
   f.flyc_osd_home_ver1_flyc_in_navigation_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_flyc_in_navigation_mode", "Flyc In Navigation Mode", base.HEX, nil, 0x02, nil)
-  f.flyc_osd_home_ver1_height_limit_status = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_height_limit_status", "Height Limit Status", base.HEX, enums.FLYC_OSD_HOME_HEIGHT_LIMIT_STATUS_ENUM, 0x1f, nil)
-  f.flyc_osd_home_ver1_use_absolute_height = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_use_absolute_height", "Use Absolute Height", base.HEX, nil, 0x20, nil)
 -- Version of the packet from older firmwares, 68 bytes long
 f.flyc_osd_home_masked20 = ProtoField.uint32 ("dji_p3.flyc_osd_home_masked20", "Masked20", base.HEX)
   f.flyc_osd_home_flyc_in_simulation_mode = ProtoField.uint32 ("dji_p3.flyc_osd_home_flyc_in_simulation_mode", "Flyc In Simulation Mode", base.HEX, nil, 0x01, nil)
   f.flyc_osd_home_flyc_in_navigation_mode = ProtoField.uint32 ("dji_p3.flyc_osd_home_flyc_in_navigation_mode", "Flyc In Navigation Mode", base.HEX, nil, 0x02, nil)
-  f.flyc_osd_home_height_limit_status = ProtoField.uint32 ("dji_p3.flyc_osd_home_height_limit_status", "Height Limit Status", base.HEX, enums.FLYC_OSD_HOME_HEIGHT_LIMIT_STATUS_ENUM, 0x1f, nil)
-  f.flyc_osd_home_use_absolute_height = ProtoField.uint32 ("dji_p3.flyc_osd_home_use_absolute_height", "Use Absolute Height", base.HEX, nil, 0x20, nil)
   f.flyc_osd_home_wing_broken = ProtoField.uint32 ("dji_p3.flyc_osd_home_wing_broken", "Wing Broken", base.HEX, nil, 0x1000, nil)
   f.flyc_osd_home_big_gale = ProtoField.uint32 ("dji_p3.flyc_osd_home_big_gale", "Big Gale", base.HEX, nil, 0x4000, nil)
   f.flyc_osd_home_big_gale_warning = ProtoField.uint32 ("dji_p3.flyc_osd_home_big_gale_warning", "Big Gale Warning", base.HEX, nil, 0x100000, nil)
   f.flyc_osd_home_compass_install_err = ProtoField.uint32 ("dji_p3.flyc_osd_home_compass_install_err", "Compass Install Err", base.HEX, nil, 0x800000, nil)
+  f.flyc_osd_home_height_limit_status = ProtoField.uint32 ("dji_p3.flyc_osd_home_height_limit_status", "Height Limit Status", base.HEX, enums.FLYC_OSD_HOME_HEIGHT_LIMIT_STATUS_ENUM, 0x1f000000, nil)
+  f.flyc_osd_home_use_absolute_height = ProtoField.uint32 ("dji_p3.flyc_osd_home_use_absolute_height", "Use Absolute Height", base.HEX, nil, 0x20000000, nil)
 f.flyc_osd_home_height_limit_value = ProtoField.float ("dji_p3.flyc_osd_home_height_limit_value", "Height Limit Value", base.DEC)
 f.flyc_osd_home_unknown28 = ProtoField.bytes ("dji_p3.flyc_osd_home_unknown28", "Unknown28", base.SPACE)
-f.flyc_osd_home_force_landing_height = ProtoField.uint8 ("dji_p3.flyc_osd_home_force_landing_height", "Force Landing Height", base.HEX)
+f.flyc_osd_home_force_landing_height = ProtoField.uint8 ("dji_p3.flyc_osd_home_force_landing_height", "Force Landing Height", base.DEC)
 f.flyc_osd_home_unknown2E = ProtoField.bytes ("dji_p3.flyc_osd_home_unknown2E", "Unknown2E", base.SPACE)
 
 local function flyc_osd_home_dissector(pkt_length, buffer, pinfo, subtree)
@@ -2883,8 +2885,6 @@ local function flyc_osd_home_dissector(pkt_length, buffer, pinfo, subtree)
         subtree:add_le (f.flyc_osd_home_ver1_masked20, payload(offset, 2))
         subtree:add_le (f.flyc_osd_home_ver1_flyc_in_simulation_mode, payload(offset, 2))
         subtree:add_le (f.flyc_osd_home_ver1_flyc_in_navigation_mode, payload(offset, 2))
-        subtree:add_le (f.flyc_osd_home_ver1_height_limit_status, payload(offset, 2))
-        subtree:add_le (f.flyc_osd_home_ver1_use_absolute_height, payload(offset, 2))
         offset = offset + 2
 
         if (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
@@ -2894,12 +2894,12 @@ local function flyc_osd_home_dissector(pkt_length, buffer, pinfo, subtree)
         subtree:add_le (f.flyc_osd_home_masked20, payload(offset, 4))
         subtree:add_le (f.flyc_osd_home_flyc_in_simulation_mode, payload(offset, 4))
         subtree:add_le (f.flyc_osd_home_flyc_in_navigation_mode, payload(offset, 4))
-        subtree:add_le (f.flyc_osd_home_height_limit_status, payload(offset, 4))
-        subtree:add_le (f.flyc_osd_home_use_absolute_height, payload(offset, 4))
         subtree:add_le (f.flyc_osd_home_wing_broken, payload(offset, 4))
         subtree:add_le (f.flyc_osd_home_big_gale, payload(offset, 4))
         subtree:add_le (f.flyc_osd_home_big_gale_warning, payload(offset, 4))
         subtree:add_le (f.flyc_osd_home_compass_install_err, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_height_limit_status, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_use_absolute_height, payload(offset, 4))
         offset = offset + 4
 
         subtree:add_le (f.flyc_osd_home_height_limit_value, payload(offset, 4))
@@ -2921,10 +2921,23 @@ local function flyc_osd_home_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Home: Payload size different than expected") end
 end
 
+-- Flight Controller - Flyc Gps Snr - 0x45
+
+--f.flyc_flyc_gps_snr_unknown0 = ProtoField.none ("dji_p3.flyc_flyc_gps_snr_unknown0", "Unknown0", base.NONE)
+
+local function flyc_flyc_gps_snr_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Gps Snr: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Gps Snr: Payload size different than expected") end
+end
+
 -- Flight Controller - Imu Data Status - 0x50, identical to flight recorder packet 0x0013
 
-f.flyc_imu_data_status_start_fan = ProtoField.uint8 ("dji_p3.flyc_imu_data_status_start_fan", "Start Fan", base.HEX, nil, nil, "On Ph3, always 1")
-f.flyc_imu_data_status_led_status = ProtoField.uint8 ("dji_p3.flyc_imu_data_status_led_status", "Led Status", base.HEX, nil, nil, "On Ph3, always 0")
+f.flyc_imu_data_status_start_fan = ProtoField.uint8 ("dji_p3.flyc_imu_data_status_start_fan", "Start Fan", base.HEX, nil, nil, "On P3, always 1")
+f.flyc_imu_data_status_led_status = ProtoField.uint8 ("dji_p3.flyc_imu_data_status_led_status", "Led Status", base.HEX, nil, nil, "On P3, always 0")
 
 local function flyc_imu_data_status_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -2939,6 +2952,223 @@ local function flyc_imu_data_status_dissector(pkt_length, buffer, pinfo, subtree
 
     if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Imu Data Status: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Data Status: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Smart Battery - 0x51
+
+enums.FLYC_SMART_BATTERY_GO_HOME_STATUS_SMART_GO_HOME_STATUS_ENUM = {
+    [0x00] = 'NON_GOHOME',
+    [0x01] = 'GOHOME',
+    [0x02] = 'GOHOME_ALREADY',
+}
+
+f.flyc_flyc_smart_battery_useful_time = ProtoField.uint16 ("dji_p3.flyc_flyc_smart_battery_useful_time", "Useful Time", base.DEC)
+f.flyc_flyc_smart_battery_go_home_time = ProtoField.uint16 ("dji_p3.flyc_flyc_smart_battery_go_home_time", "Go Home Time", base.DEC)
+f.flyc_flyc_smart_battery_land_time = ProtoField.uint16 ("dji_p3.flyc_flyc_smart_battery_land_time", "Land Time", base.DEC)
+f.flyc_flyc_smart_battery_go_home_battery = ProtoField.uint16 ("dji_p3.flyc_flyc_smart_battery_go_home_battery", "Go Home Battery", base.DEC)
+f.flyc_flyc_smart_battery_land_battery = ProtoField.uint16 ("dji_p3.flyc_flyc_smart_battery_land_battery", "Land Battery", base.DEC)
+f.flyc_flyc_smart_battery_safe_fly_radius = ProtoField.float ("dji_p3.flyc_flyc_smart_battery_safe_fly_radius", "Safe Fly Radius", base.DEC)
+f.flyc_flyc_smart_battery_volume_comsume = ProtoField.float ("dji_p3.flyc_flyc_smart_battery_volume_comsume", "Volume Comsume", base.DEC)
+f.flyc_flyc_smart_battery_status = ProtoField.uint32 ("dji_p3.flyc_flyc_smart_battery_status", "Status", base.HEX)
+f.flyc_flyc_smart_battery_go_home_status = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_go_home_status", "Go Home Status", base.HEX, enums.FLYC_SMART_BATTERY_GO_HOME_STATUS_SMART_GO_HOME_STATUS_ENUM, nil, nil)
+f.flyc_flyc_smart_battery_go_home_count_down = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_go_home_count_down", "Go Home Count Down", base.HEX)
+f.flyc_flyc_smart_battery_voltage = ProtoField.uint16 ("dji_p3.flyc_flyc_smart_battery_voltage", "Voltage", base.DEC)
+f.flyc_flyc_smart_battery_battery_percent = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_battery_percent", "Battery Percent", base.DEC)
+f.flyc_flyc_smart_battery_masked1b = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_masked1b", "Masked1B", base.HEX)
+  f.flyc_flyc_smart_battery_low_warning = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_low_warning", "Low Warning", base.HEX, nil, 0x7f, nil)
+  f.flyc_flyc_smart_battery_low_warning_go_home = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_low_warning_go_home", "Low Warning Go Home", base.HEX, nil, 0x80, nil)
+f.flyc_flyc_smart_battery_masked1c = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_masked1c", "Masked1C", base.HEX)
+  f.flyc_flyc_smart_battery_serious_low_warning = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_serious_low_warning", "Serious Low Warning", base.HEX, nil, 0x7f, nil)
+  f.flyc_flyc_smart_battery_serious_low_warning_landing = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_serious_low_warning_landing", "Serious Low Warning Landing", base.HEX, nil, 0x80, nil)
+f.flyc_flyc_smart_battery_voltage_percent = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_voltage_percent", "Voltage Percent", base.DEC)
+
+local function flyc_flyc_smart_battery_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_smart_battery_useful_time, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_flyc_smart_battery_go_home_time, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_flyc_smart_battery_land_time, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_flyc_smart_battery_go_home_battery, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_flyc_smart_battery_land_battery, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_flyc_smart_battery_safe_fly_radius, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_flyc_smart_battery_volume_comsume, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_flyc_smart_battery_status, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_flyc_smart_battery_go_home_status, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_smart_battery_go_home_count_down, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_smart_battery_voltage, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_flyc_smart_battery_battery_percent, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_smart_battery_masked1b, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_smart_battery_low_warning, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_smart_battery_low_warning_go_home, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_smart_battery_masked1c, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_smart_battery_serious_low_warning, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_smart_battery_serious_low_warning_landing, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_smart_battery_voltage_percent, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Smart Battery: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Smart Battery: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Avoid Param - 0x53
+
+f.flyc_flyc_avoid_param_masked00 = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_masked00", "Masked00", base.HEX)
+  f.flyc_flyc_avoid_param_avoid_obstacle_enable = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_avoid_obstacle_enable", "Avoid Obstacle Enable", base.HEX, nil, 0x01, nil)
+  f.flyc_flyc_avoid_param_user_avoid_enable = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_user_avoid_enable", "User Avoid Enable", base.HEX, nil, 0x02, nil)
+  f.flyc_flyc_avoid_param_get_avoid_obstacle_work_flag = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_get_avoid_obstacle_work_flag", "Get Avoid Obstacle Work Flag", base.HEX, nil, 0x04, nil)
+  f.flyc_flyc_avoid_param_get_emergency_brake_work_flag = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_get_emergency_brake_work_flag", "Get Emergency Brake Work Flag", base.HEX, nil, 0x08, nil)
+  f.flyc_flyc_avoid_param_gohome_avoid_enable = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_gohome_avoid_enable", "Gohome Avoid Enable", base.HEX, nil, 0x10, nil)
+  f.flyc_flyc_avoid_param_avoid_ground_force_landing = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_avoid_ground_force_landing", "Avoid Ground Force Landing", base.HEX, nil, 0x20, nil)
+  f.flyc_flyc_avoid_param_radius_limit_working = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_radius_limit_working", "Radius Limit Working", base.HEX, nil, 0x40, nil)
+  f.flyc_flyc_avoid_param_airport_limit_working = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_airport_limit_working", "Airport Limit Working", base.HEX, nil, 0x80, nil)
+  f.flyc_flyc_avoid_param_avoid_obstacle_working = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_avoid_obstacle_working", "Avoid Obstacle Working", base.HEX, nil, 0x100, nil)
+  f.flyc_flyc_avoid_param_horiz_near_boundary = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_horiz_near_boundary", "Horiz Near Boundary", base.HEX, nil, 0x200, nil)
+  f.flyc_flyc_avoid_param_avoid_overshot_act = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_avoid_overshot_act", "Avoid Overshot Act", base.HEX, nil, 0x400, nil)
+  f.flyc_flyc_avoid_param_vert_low_limit_work_flag = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_vert_low_limit_work_flag", "Vert Low Limit Work Flag", base.HEX, nil, 0x800, nil)
+
+local function flyc_flyc_avoid_param_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_avoid_param_masked00, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_avoid_param_avoid_obstacle_enable, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_avoid_param_user_avoid_enable, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_avoid_param_get_avoid_obstacle_work_flag, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_avoid_param_get_emergency_brake_work_flag, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_avoid_param_gohome_avoid_enable, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_avoid_param_avoid_ground_force_landing, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_avoid_param_radius_limit_working, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_avoid_param_airport_limit_working, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_avoid_param_avoid_obstacle_working, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_avoid_param_horiz_near_boundary, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_avoid_param_avoid_overshot_act, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_avoid_param_vert_low_limit_work_flag, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Avoid Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Avoid Param: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Limit State - 0x55
+
+f.flyc_flyc_limit_state_latitude = ProtoField.double ("dji_p3.flyc_flyc_limit_state_latitude", "Latitude", base.DEC)
+f.flyc_flyc_limit_state_longitude = ProtoField.double ("dji_p3.flyc_flyc_limit_state_longitude", "Longitude", base.DEC)
+f.flyc_flyc_limit_state_inner_radius = ProtoField.uint16 ("dji_p3.flyc_flyc_limit_state_inner_radius", "Inner Radius", base.HEX)
+f.flyc_flyc_limit_state_outer_radius = ProtoField.uint16 ("dji_p3.flyc_flyc_limit_state_outer_radius", "Outer Radius", base.HEX)
+f.flyc_flyc_limit_state_type = ProtoField.uint8 ("dji_p3.flyc_flyc_limit_state_type", "Type", base.HEX)
+f.flyc_flyc_limit_state_area_state = ProtoField.uint8 ("dji_p3.flyc_flyc_limit_state_area_state", "Area State", base.HEX)
+f.flyc_flyc_limit_state_action_state = ProtoField.uint8 ("dji_p3.flyc_flyc_limit_state_action_state", "Action State", base.HEX)
+f.flyc_flyc_limit_state_enable = ProtoField.uint8 ("dji_p3.flyc_flyc_limit_state_enable", "Enable", base.HEX)
+
+local function flyc_flyc_limit_state_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_limit_state_latitude, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.flyc_flyc_limit_state_longitude, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.flyc_flyc_limit_state_inner_radius, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_flyc_limit_state_outer_radius, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_flyc_limit_state_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_limit_state_area_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_limit_state_action_state, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_limit_state_enable, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Limit State: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Limit State: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Led Status - 0x56
+
+enums.FLYC_LED_STATUS_LED_REASON_ENUM = {
+    [0x00] = 'SET_HOME',
+    [0x01] = 'SET_HOT_POINT',
+    [0x02] = 'SET_COURSE_LOCK',
+    [0x03] = 'TEST_LED',
+    [0x04] = 'USB_IS_VALID',
+    [0x05] = 'PACKING_FAIL',
+    [0x06] = 'PACKING_NORMAL',
+    [0x07] = 'NO_ATTI',
+    [0x08] = 'COMPASS_CALI_STEP0',
+    [0x09] = 'COMPASS_CALI_STEP1',
+    [0x0a] = 'COMPASS_CALI_ERROR',
+    [0x0b] = 'SENSOR_TEMP_NOT_READY',
+    [0x0c] = 'IMU_OR_GYRO_LOST',
+    [0x0d] = 'IMU_BAD_ATTI',
+    [0x0e] = 'SYSTEM_ERROR',
+    [0x0f] = 'IMU_ERROR',
+    [0x10] = 'IMU_NEED_CALI',
+    [0x11] = 'COMPASS_OUT_RANGE',
+    [0x12] = 'RC_COMPLETELY_LOST',
+    [0x13] = 'BATTERY_WARNING',
+    [0x14] = 'BATTERY_ERROR',
+    [0x15] = 'IMU_WARNING',
+    [0x16] = 'SET_FLY_LIMIT',
+    [0x17] = 'NORMAL_LED',
+    [0x18] = 'FDI_VIBRATE',
+    [0x19] = 'CODE_ERROR',
+    [0x1a] = 'SYSTEM_RECONSTRUCTION',
+    [0x1b] = 'RECORDER_ERROR',
+}
+
+f.flyc_flyc_led_status_led_reason = ProtoField.uint32 ("dji_p3.flyc_flyc_led_status_led_reason", "Led Reason", base.HEX, enums.FLYC_LED_STATUS_LED_REASON_ENUM, nil, nil)
+
+local function flyc_flyc_led_status_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_led_status_led_reason, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Led Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Led Status: Payload size different than expected") end
 end
 
 -- Flight Controller - Gps Glns - 0x57, similar to flight recorder packet 0x0005
@@ -2997,6 +3227,498 @@ local function flyc_gps_glns_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gps Glns: Payload size different than expected") end
 end
 
+-- Flight Controller - Flyc Active Request - 0x61
+
+f.flyc_flyc_active_request_app_id = ProtoField.uint32 ("dji_p3.flyc_flyc_active_request_app_id", "App Id", base.HEX)
+f.flyc_flyc_active_request_app_level = ProtoField.uint32 ("dji_p3.flyc_flyc_active_request_app_level", "App Level", base.HEX)
+f.flyc_flyc_active_request_app_version = ProtoField.uint32 ("dji_p3.flyc_flyc_active_request_app_version", "App Version", base.HEX)
+
+local function flyc_flyc_active_request_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_active_request_app_id, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_flyc_active_request_app_level, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_flyc_active_request_app_version, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Active Request: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Active Request: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Board Recv - 0x63
+
+--f.flyc_flyc_board_recv_unknown0 = ProtoField.none ("dji_p3.flyc_flyc_board_recv_unknown0", "Unknown0", base.NONE)
+
+local function flyc_flyc_board_recv_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Board Recv: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Board Recv: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Power Param - 0x67
+
+f.flyc_flyc_power_param_esc_average_speed = ProtoField.float ("dji_p3.flyc_flyc_power_param_esc_average_speed", "Esc Average Speed", base.DEC)
+f.flyc_flyc_power_param_lift = ProtoField.float ("dji_p3.flyc_flyc_power_param_lift", "Lift", base.DEC)
+
+local function flyc_flyc_power_param_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_power_param_esc_average_speed, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_flyc_power_param_lift, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Power Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Power Param: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Avoid - 0x6a
+
+f.flyc_flyc_avoid_masked00 = ProtoField.uint8 ("dji_p3.flyc_flyc_avoid_masked00", "Masked00", base.HEX)
+  f.flyc_flyc_avoid_visual_sensor_enable = ProtoField.uint8 ("dji_p3.flyc_flyc_avoid_visual_sensor_enable", "Visual Sensor Enable", base.HEX, nil, 0x01, nil)
+  f.flyc_flyc_avoid_visual_sensor_work = ProtoField.uint8 ("dji_p3.flyc_flyc_avoid_visual_sensor_work", "Visual Sensor Work", base.HEX, nil, 0x02, nil)
+  f.flyc_flyc_avoid_in_stop = ProtoField.uint8 ("dji_p3.flyc_flyc_avoid_in_stop", "In Stop", base.HEX, nil, 0x04, nil)
+
+local function flyc_flyc_avoid_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_avoid_masked00, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_avoid_visual_sensor_enable, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_avoid_visual_sensor_work, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_avoid_in_stop, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Avoid: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Avoid: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Rtk Location Data - 0x6c
+
+f.flyc_flyc_rtk_location_data_longitude = ProtoField.double ("dji_p3.flyc_flyc_rtk_location_data_longitude", "Longitude", base.DEC)
+f.flyc_flyc_rtk_location_data_latitude = ProtoField.double ("dji_p3.flyc_flyc_rtk_location_data_latitude", "Latitude", base.DEC)
+f.flyc_flyc_rtk_location_data_height = ProtoField.float ("dji_p3.flyc_flyc_rtk_location_data_height", "Height", base.DEC)
+f.flyc_flyc_rtk_location_data_heading = ProtoField.uint16 ("dji_p3.flyc_flyc_rtk_location_data_heading", "Heading", base.HEX)
+f.flyc_flyc_rtk_location_data_rtk_connected = ProtoField.uint8 ("dji_p3.flyc_flyc_rtk_location_data_rtk_connected", "Rtk Connected", base.HEX)
+f.flyc_flyc_rtk_location_data_rtk_canbe_used = ProtoField.uint8 ("dji_p3.flyc_flyc_rtk_location_data_rtk_canbe_used", "Rtk Canbe Used", base.HEX)
+
+local function flyc_flyc_rtk_location_data_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_rtk_location_data_longitude, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.flyc_flyc_rtk_location_data_latitude, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.flyc_flyc_rtk_location_data_height, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_flyc_rtk_location_data_heading, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.flyc_flyc_rtk_location_data_rtk_connected, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_rtk_location_data_rtk_canbe_used, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Rtk Location Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Rtk Location Data: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Way Point Mission Info - 0x88
+
+enums.FLYC_WAY_POINT_MISSION_INFO_MISSION_TYPE_ENUM = {
+    [0x01] = 'Way Point',
+    [0x02] = 'Hot Point',
+    [0x03] = 'Follow Me',
+    [0x04] = 'Course Lock/Home Lock',
+    [0x05] = 'TBD',
+}
+
+enums.FLYC_WAY_POINT_MISSION_INFO_RUNNING_STATUS_ENUM = {
+    [0x00] = 'NotRunning',
+    [0x01] = 'Running',
+    [0x02] = 'Paused',
+}
+
+f.flyc_flyc_way_point_mission_info_mission_type = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_mission_type", "Mission Type", base.HEX, enums.FLYC_WAY_POINT_MISSION_INFO_MISSION_TYPE_ENUM)
+-- Way Point mission (unverified)
+f.flyc_flyc_way_point_mission_info_target_way_point = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_target_way_point", "Target Way Point", base.DEC)
+f.flyc_flyc_way_point_mission_info_limited_height = ProtoField.uint16 ("dji_p3.flyc_flyc_way_point_mission_info_limited_height", "Limited Height", base.HEX)
+f.flyc_flyc_way_point_mission_info_running_status = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_running_status", "Way Point Running Status", base.HEX, enums.FLYC_WAY_POINT_MISSION_INFO_RUNNING_STATUS_ENUM)
+f.flyc_flyc_way_point_mission_info_wp_unknown5 = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_wp_unknown5", "Way Point Unknown5", base.HEX)
+-- Hot Point mission
+f.flyc_flyc_way_point_mission_info_hot_point_mission_status = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_hot_point_mission_status", "Hot Point Mission Status", base.HEX)
+f.flyc_flyc_way_point_mission_info_hot_point_radius = ProtoField.uint16 ("dji_p3.flyc_flyc_way_point_mission_info_hot_point_radius", "Hot Point Radius", base.DEC)
+f.flyc_flyc_way_point_mission_info_hot_point_reason = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_hot_point_reason", "Hot Point Reason", base.HEX)
+f.flyc_flyc_way_point_mission_info_hot_point_speed = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_hot_point_speed", "Hot Point Speed", base.DEC)
+-- Follow Me mission
+f.flyc_flyc_way_point_mission_info_follow_me_flags = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_follow_me_flags", "Follow Me Flags", base.HEX)
+  f.flyc_flyc_way_point_mission_info_follow_me_status = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_follow_me_status", "Follow Me Status", base.HEX, nil, 0x0f, nil)
+  f.flyc_flyc_way_point_mission_info_follow_me_gps_level = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_follow_me_gps_level", "Follow Me Gps Level", base.HEX, nil, 0xf0, nil)
+f.flyc_flyc_way_point_mission_info_follow_me_distance = ProtoField.uint16 ("dji_p3.flyc_flyc_way_point_mission_info_follow_me_distance", "Follow Me Distance", base.Dec)
+f.flyc_flyc_way_point_mission_info_follow_me_reason = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_follow_me_reason", "Follow Me Reason", base.HEX)
+f.flyc_flyc_way_point_mission_info_follow_me_unknown6 = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_follow_me_unknown6", "Follow Me Unknown6", base.HEX)
+-- Any other mission (unverified)
+f.flyc_flyc_way_point_mission_info_mission_flags = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_mission_flags", "Mission Flags", base.HEX)
+  f.flyc_flyc_way_point_mission_info_mission_status = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_mission_status", "Mission Status", base.HEX, nil, 0x03, nil)
+  f.flyc_flyc_way_point_mission_info_position_valid = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_position_valid", "Position Valid", base.HEX, nil, 0x04, nil)
+f.flyc_flyc_way_point_mission_info_current_status = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_current_status", "Current Status", base.HEX)
+f.flyc_flyc_way_point_mission_info_error_notification = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_error_notification", "Error Notification", base.HEX)
+f.flyc_flyc_way_point_mission_info_current_height = ProtoField.uint16 ("dji_p3.flyc_flyc_way_point_mission_info_current_height", "Current Height", base.HEX)
+-- All types
+f.flyc_flyc_way_point_mission_info_is_tracking_enabled = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_info_is_tracking_enabled", "Is Tracking Enabled", base.HEX)
+
+local function flyc_flyc_way_point_mission_info_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    local mission_type = buffer(offset,1):le_uint()
+    subtree:add_le (f.flyc_flyc_way_point_mission_info_mission_type, payload(offset, 1))
+    offset = offset + 1
+
+    if (mission_type == 0x01) then
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_target_way_point, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_limited_height, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_running_status, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_wp_unknown5, payload(offset, 1))
+        offset = offset + 1
+
+    elseif (mission_type == 0x02) then
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_hot_point_mission_status, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_hot_point_radius, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_hot_point_reason, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_hot_point_speed, payload(offset, 1))
+        offset = offset + 1
+
+    elseif (mission_type == 0x03) then
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_follow_me_flags, payload(offset, 1))
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_follow_me_status, payload(offset, 1))
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_follow_me_gps_level, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_follow_me_distance, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_follow_me_reason, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_follow_me_unknown6, payload(offset, 1))
+        offset = offset + 1
+
+    else
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_mission_flags, payload(offset, 1))
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_mission_status, payload(offset, 1))
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_position_valid, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_current_status, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_error_notification, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_info_current_height, payload(offset, 2))
+        offset = offset + 2
+
+    end
+
+    subtree:add_le (f.flyc_flyc_way_point_mission_info_is_tracking_enabled, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 7) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Way Point Mission Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Way Point Mission Info: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Way Point Mission Current Event - 0x89
+
+enums.FLYC_WAY_POINT_MISSION_CURRENT_EVENT_EVENT_TYPE_ENUM = {
+    [0x01] = 'Finish Incident',
+    [0x02] = 'Reach Incident',
+    [0x03] = 'Upload Incident',
+}
+
+f.flyc_flyc_way_point_mission_current_event_event_type = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_current_event_event_type", "Event Type", base.HEX, enums.FLYC_WAY_POINT_MISSION_CURRENT_EVENT_EVENT_TYPE_ENUM)
+-- Finish Incident
+f.flyc_flyc_way_point_mission_current_event_finish_incident_is_repeat = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_current_event_finish_incident_is_repeat", "Finish Incident Is Repeat", base.HEX)
+f.flyc_flyc_way_point_mission_current_event_finish_incident_resrved = ProtoField.uint16 ("dji_p3.flyc_flyc_way_point_mission_current_event_finish_incident_resrved", "Finish Incident Resrved", base.HEX)
+-- Reach Incident
+f.flyc_flyc_way_point_mission_current_event_reach_incident_way_point_index = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_current_event_reach_incident_way_point_index", "Reach Incident Way Point Index", base.HEX, nil, 0xff, nil)
+f.flyc_flyc_way_point_mission_current_event_reach_incident_current_status = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_current_event_reach_incident_current_status", "Reach Incident Current Status", base.HEX, nil, 0xff, nil)
+f.flyc_flyc_way_point_mission_current_event_reach_incident_reserved = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_current_event_reach_incident_reserved", "Reach Incident Reserved", base.HEX, nil, 0xff, nil)
+-- Upload Incident
+f.flyc_flyc_way_point_mission_current_event_upload_incident_is_valid = ProtoField.uint8 ("dji_p3.flyc_flyc_way_point_mission_current_event_upload_incident_is_valid", "Upload Incident Is Valid", base.HEX, nil, 0xff, nil)
+f.flyc_flyc_way_point_mission_current_event_upload_incident_estimated_time = ProtoField.uint16 ("dji_p3.flyc_flyc_way_point_mission_current_event_upload_incident_estimated_time", "Upload Incident Estimated Time", base.HEX, nil, 0xffff, nil)
+--f.flyc_flyc_way_point_mission_current_event_upload_incident_reserved = ProtoField.uint16 ("dji_p3.flyc_flyc_way_point_mission_current_event_upload_incident_reserved", "Upload Incident Reserved", base.HEX)
+
+local function flyc_flyc_way_point_mission_current_event_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    local event_type = buffer(offset,1):le_uint()
+    subtree:add_le (f.flyc_flyc_way_point_mission_current_event_event_type, payload(offset, 1))
+    offset = offset + 1
+
+    if (event_type == 0x02) then
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_current_event_reach_incident_way_point_index, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_current_event_reach_incident_current_status, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_current_event_reach_incident_reserved, payload(offset, 1))
+        offset = offset + 1
+
+    elseif (event_type == 0x03) then
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_current_event_upload_incident_is_valid, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_current_event_upload_incident_estimated_time, payload(offset, 2))
+        offset = offset + 2
+
+        --subtree:add_le (f.flyc_flyc_way_point_mission_current_event_upload_incident_reserved, payload(offset, 2))
+        --offset = offset + 2
+
+    else
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_current_event_finish_incident_is_repeat, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_way_point_mission_current_event_finish_incident_resrved, payload(offset, 2))
+        offset = offset + 2
+
+    end
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Way Point Mission Current Event: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Way Point Mission Current Event: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Agps Status - 0xa1
+
+f.flyc_flyc_agps_status_time_stamp = ProtoField.uint32 ("dji_p3.flyc_flyc_agps_status_time_stamp", "Time Stamp", base.HEX)
+f.flyc_flyc_agps_status_data_length = ProtoField.uint32 ("dji_p3.flyc_flyc_agps_status_data_length", "Data Length", base.HEX)
+f.flyc_flyc_agps_status_crc16_hash = ProtoField.uint16 ("dji_p3.flyc_flyc_agps_status_crc16_hash", "Crc16 Hash", base.HEX)
+
+local function flyc_flyc_agps_status_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_agps_status_time_stamp, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_flyc_agps_status_data_length, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.flyc_flyc_agps_status_crc16_hash, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Agps Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Agps Status: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Flyc Install Error - 0xad
+
+f.flyc_flyc_flyc_install_error_masked00 = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_masked00", "Masked00", base.HEX)
+  f.flyc_flyc_flyc_install_error_yaw_install_error_level = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_yaw_install_error_level", "Yaw Install Error Level", base.HEX, nil, 0x03, nil)
+  f.flyc_flyc_flyc_install_error_roll_install_error_level = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_roll_install_error_level", "Roll Install Error Level", base.HEX, nil, 0x0c, nil)
+  f.flyc_flyc_flyc_install_error_pitch_install_error_level = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_pitch_install_error_level", "Pitch Install Error Level", base.HEX, nil, 0x30, nil)
+  f.flyc_flyc_flyc_install_error_gyro_x_install_error_level = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_gyro_x_install_error_level", "Gyro X Install Error Level", base.HEX, nil, 0xc0, nil)
+  f.flyc_flyc_flyc_install_error_gyro_y_install_error_level = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_gyro_y_install_error_level", "Gyro Y Install Error Level", base.HEX, nil, 0x300, nil)
+  f.flyc_flyc_flyc_install_error_gyro_z_install_error_level = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_gyro_z_install_error_level", "Gyro Z Install Error Level", base.HEX, nil, 0xc00, nil)
+  f.flyc_flyc_flyc_install_error_acc_x_install_error_level = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_acc_x_install_error_level", "Acc X Install Error Level", base.HEX, nil, 0x3000, nil)
+  f.flyc_flyc_flyc_install_error_acc_y_install_error_level = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_acc_y_install_error_level", "Acc Y Install Error Level", base.HEX, nil, 0xc000, nil)
+  f.flyc_flyc_flyc_install_error_acc_z_install_error_level = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_acc_z_install_error_level", "Acc Z Install Error Level", base.HEX, nil, 0x30000, nil)
+  f.flyc_flyc_flyc_install_error_thrust_install_error_level = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_thrust_install_error_level", "Thrust Install Error Level", base.HEX, nil, 0xc0000, nil)
+
+local function flyc_flyc_flyc_install_error_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_flyc_install_error_masked00, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_flyc_install_error_yaw_install_error_level, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_flyc_install_error_roll_install_error_level, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_flyc_install_error_pitch_install_error_level, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_flyc_install_error_gyro_x_install_error_level, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_flyc_install_error_gyro_y_install_error_level, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_flyc_install_error_gyro_z_install_error_level, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_flyc_install_error_acc_x_install_error_level, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_flyc_install_error_acc_y_install_error_level, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_flyc_install_error_acc_z_install_error_level, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_flyc_install_error_thrust_install_error_level, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Flyc Install Error: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Flyc Install Error: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Fault Inject - 0xb6
+
+enums.FLYC_FAULT_INJECT_STATUS_ENUM = {
+    [0x01] = 'FIT_VERSION_UNMATCH',
+    [0x02] = 'FIT_OPEN_FAILED',
+    [0x03] = 'FIT_OPEN_SUCCESS',
+    [0x04] = 'FIT_CLOSE_SUCCESS',
+    [0x05] = 'FIT_INJECT_SUCCESS',
+    [0x06] = 'FIT_INJECT_FAILED',
+    [0x07] = 'FIT_FDI_DETECT_SUCCESS',
+    [0x08] = 'FIT_FDI_DETECT_FAILED',
+    [0x09] = 'FIT_AUTO_STOP_FOR_SAFE',
+    [0x0a] = 'FIT_TIME_PARA_INVALID',
+    [0x0b] = 'FIT_DENY_FOR_UNSAFE',
+    [0x0c] = 'FIT_DENY_FOR_FAULT',
+    [0x0d] = 'FIT_DENY_FOR_DISCONNECT',
+    [0x0e] = 'FIT_UNKNOWN_FAULT_TYPE',
+    [0x0f] = 'FIT_INVALID_SYSTEM_ID',
+    [0x10] = 'FIT_UNKNOWN_MODULE_TYPE',
+    [0x11] = 'FIT_MODULE_CANNOT_FOUND',
+    [0x12] = 'FIT_UNKNOWN_CMD_ID',
+    [0x13] = 'FIT_UNSUPPORT_NOW',
+    [0x14] = 'FIT_DENY_FOR_UNOPEN',
+    [0x15] = 'FIT_DENY_FOR_FUNC_CLOSED',
+    [0x16] = 'FIT_MSG_LEN_ERR',
+    [0x17] = 'FIT_ROUTE_FAILED',
+}
+
+f.flyc_flyc_fault_inject_status = ProtoField.uint8 ("dji_p3.flyc_flyc_fault_inject_status", "Status", base.HEX, enums.FLYC_FAULT_INJECT_STATUS_ENUM, nil, nil)
+
+local function flyc_flyc_fault_inject_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_fault_inject_status, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Fault Inject: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Fault Inject: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Redundancy Status - 0xb9
+
+enums.FLYC_REDUNDANCY_STATUS_CMD_TYPE_ENUM = {
+    [0x01] = 'a',
+    [0x02] = 'b',
+    [0x03] = 'c',
+    [0x04] = 'd',
+}
+
+f.flyc_flyc_redundancy_status_cmd_type = ProtoField.uint8 ("dji_p3.flyc_flyc_redundancy_status_cmd_type", "Command Type", base.HEX, enums.FLYC_REDUNDANCY_STATUS_CMD_TYPE_ENUM)
+f.flyc_flyc_redundancy_status_unknown1 = ProtoField.uint8 ("dji_p3.flyc_flyc_redundancy_status_unknown1", "Unknown1", base.HEX)
+f.flyc_flyc_redundancy_status_unknown2 = ProtoField.uint8 ("dji_p3.flyc_flyc_redundancy_status_unknown2", "Unknown2", base.HEX)
+f.flyc_flyc_redundancy_status_unknown3 = ProtoField.uint8 ("dji_p3.flyc_flyc_redundancy_status_unknown3", "Unknown3", base.HEX)
+f.flyc_flyc_redundancy_status_unknown4 = ProtoField.uint8 ("dji_p3.flyc_flyc_redundancy_status_unknown4", "Unknown4", base.HEX)
+f.flyc_flyc_redundancy_status_unknown5 = ProtoField.uint8 ("dji_p3.flyc_flyc_redundancy_status_unknown5", "Unknown5", base.HEX)
+f.flyc_flyc_redundancy_status_unknown6 = ProtoField.uint8 ("dji_p3.flyc_flyc_redundancy_status_unknown6", "Unknown6", base.HEX)
+f.flyc_flyc_redundancy_status_unknown7 = ProtoField.uint8 ("dji_p3.flyc_flyc_redundancy_status_unknown7", "Unknown7", base.HEX)
+f.flyc_flyc_redundancy_status_unknown8 = ProtoField.uint8 ("dji_p3.flyc_flyc_redundancy_status_unknown8", "Unknown8", base.HEX)
+f.flyc_flyc_redundancy_status_unknown9 = ProtoField.uint8 ("dji_p3.flyc_flyc_redundancy_status_unknown9", "Unknown9", base.HEX)
+f.flyc_flyc_redundancy_status_unknownA = ProtoField.uint8 ("dji_p3.flyc_flyc_redundancy_status_unknownA", "UnknownA", base.HEX)
+f.flyc_flyc_redundancy_status_unknownB = ProtoField.uint8 ("dji_p3.flyc_flyc_redundancy_status_unknownB", "UnknownB", base.HEX)
+
+local function flyc_flyc_redundancy_status_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_redundancy_status_cmd_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_redundancy_status_unknown1, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_redundancy_status_unknown2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_redundancy_status_unknown3, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_redundancy_status_unknown4, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_redundancy_status_unknown5, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_redundancy_status_unknown6, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_redundancy_status_unknown7, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_redundancy_status_unknown8, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_redundancy_status_unknown9, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_redundancy_status_unknownA, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_redundancy_status_unknownB, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Redundancy Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Redundancy Status: Payload size different than expected") end
+end
+
+-- Flight Controller - Flyc Params By Hash - 0xfb
+
+f.flyc_flyc_params_by_hash_unknown00 = ProtoField.uint8 ("dji_p3.flyc_flyc_params_by_hash_unknown00", "Unknown00", base.HEX)
+f.flyc_flyc_params_by_hash_first_index_hash = ProtoField.uint32 ("dji_p3.flyc_flyc_params_by_hash_first_index_hash", "First Index Hash", base.HEX)
+
+local function flyc_flyc_params_by_hash_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_flyc_params_by_hash_unknown00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_flyc_params_by_hash_first_index_hash, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Params By Hash: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Params By Hash: Payload size different than expected") end
+end
+
 local FLYC_UART_CMD_DISSECT = {
     [0x09] = flyc_flyc_forbid_status_dissector,
     [0x10] = flyc_a2_commom_dissector,
@@ -3005,8 +3727,25 @@ local FLYC_UART_CMD_DISSECT = {
     [0x42] = flyc_flyc_unlimit_state_dissector,
     [0x43] = flyc_osd_general_dissector,
     [0x44] = flyc_osd_home_dissector,
+    [0x45] = flyc_flyc_gps_snr_dissector,
+    [0x51] = flyc_flyc_smart_battery_dissector,
+    [0x53] = flyc_flyc_avoid_param_dissector,
+    [0x55] = flyc_flyc_limit_state_dissector,
+    [0x56] = flyc_flyc_led_status_dissector,
     [0x50] = flyc_imu_data_status_dissector,
     [0x57] = flyc_gps_glns_dissector,
+    [0x61] = flyc_flyc_active_request_dissector,
+    [0x63] = flyc_flyc_board_recv_dissector,
+    [0x67] = flyc_flyc_power_param_dissector,
+    [0x6a] = flyc_flyc_avoid_dissector,
+    [0x6c] = flyc_flyc_rtk_location_data_dissector,
+    [0x88] = flyc_flyc_way_point_mission_info_dissector,
+    [0x89] = flyc_flyc_way_point_mission_current_event_dissector,
+    [0xa1] = flyc_flyc_agps_status_dissector,
+    [0xad] = flyc_flyc_flyc_install_error_dissector,
+    [0xb6] = flyc_flyc_fault_inject_dissector,
+    [0xb9] = flyc_flyc_redundancy_status_dissector,
+    [0xfb] = flyc_flyc_params_by_hash_dissector,
 }
 
 -- Gimbal - Gimbal Type - 0x1C
