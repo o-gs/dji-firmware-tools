@@ -5029,27 +5029,1148 @@ local HD_LINK_UART_CMD_DISSECT = {
     [0x59] = hd_link_osd_mic_info_dissector,
 }
 
-local MBINO_UART_CMD_DISSECT = {
+-- Mono/Binocular - Eye Log - 0x01
+
+--f.mbino_eye_log_unknown0 = ProtoField.none ("dji_p3.mbino_eye_log_unknown0", "Unknown0", base.NONE)
+
+local function mbino_eye_log_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Log: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Log: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Avoidance Param - 0x06
+
+f.mbino_eye_avoidance_param_masked00 = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_masked00", "Masked00", base.HEX)
+  f.mbino_eye_avoidance_param_braking = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_braking", "Braking", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_avoidance_param_visual_sensor_working = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_visual_sensor_working", "Visual Sensor Working", base.HEX, nil, 0x02, nil)
+  f.mbino_eye_avoidance_param_avoid_open = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_open", "Avoid Open", base.HEX, nil, 0x04, nil)
+  f.mbino_eye_avoidance_param_be_shuttle_mode = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_be_shuttle_mode", "Be Shuttle Mode", base.HEX, nil, 0x08, nil)
+  f.mbino_eye_avoidance_param_avoid_front_work = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_front_work", "Avoid Front Work", base.HEX, nil, 0x10, nil)
+  f.mbino_eye_avoidance_param_avoid_right_work = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_right_work", "Avoid Right Work", base.HEX, nil, 0x20, nil)
+  f.mbino_eye_avoidance_param_avoid_behind_work = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_behind_work", "Avoid Behind Work", base.HEX, nil, 0x40, nil)
+  f.mbino_eye_avoidance_param_avoid_left_work = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_left_work", "Avoid Left Work", base.HEX, nil, 0x80, nil)
+f.mbino_eye_avoidance_param_masked01 = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_masked01", "Masked01", base.HEX)
+  f.mbino_eye_avoidance_param_avoid_front_distance_level = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_front_distance_level", "Avoid Front Distance Level", base.HEX, nil, 0x0f, nil)
+  f.mbino_eye_avoidance_param_avoid_front_alert_level = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_front_alert_level", "Avoid Front Alert Level", base.HEX, nil, 0xf0, nil)
+f.mbino_eye_avoidance_param_masked02 = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_masked02", "Masked02", base.HEX)
+  f.mbino_eye_avoidance_param_avoid_right_distance_level = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_right_distance_level", "Avoid Right Distance Level", base.HEX, nil, 0x0f, nil)
+  f.mbino_eye_avoidance_param_avoid_right_alert_level = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_right_alert_level", "Avoid Right Alert Level", base.HEX, nil, 0xf0, nil)
+f.mbino_eye_avoidance_param_masked03 = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_masked03", "Masked03", base.HEX)
+  f.mbino_eye_avoidance_param_avoid_behind_distance_level = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_behind_distance_level", "Avoid Behind Distance Level", base.HEX, nil, 0x0f, nil)
+  f.mbino_eye_avoidance_param_avoid_behind_alert_level = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_behind_alert_level", "Avoid Behind Alert Level", base.HEX, nil, 0xf0, nil)
+f.mbino_eye_avoidance_param_masked04 = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_masked04", "Masked04", base.HEX)
+  f.mbino_eye_avoidance_param_avoid_left_distance_level = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_left_distance_level", "Avoid Left Distance Level", base.HEX, nil, 0x0f, nil)
+  f.mbino_eye_avoidance_param_avoid_left_alert_level = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_avoid_left_alert_level", "Avoid Left Alert Level", base.HEX, nil, 0xf0, nil)
+f.mbino_eye_avoidance_param_masked05 = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_masked05", "Masked05", base.HEX)
+  f.mbino_eye_avoidance_param_allow_front = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_allow_front", "Allow Front", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_avoidance_param_allow_right = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_allow_right", "Allow Right", base.HEX, nil, 0x02, nil)
+  f.mbino_eye_avoidance_param_allow_back = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_allow_back", "Allow Back", base.HEX, nil, 0x04, nil)
+  f.mbino_eye_avoidance_param_allow_left = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_allow_left", "Allow Left", base.HEX, nil, 0x08, nil)
+f.mbino_eye_avoidance_param_index = ProtoField.uint8 ("dji_p3.mbino_eye_avoidance_param_index", "Index", base.HEX)
+
+local function mbino_eye_avoidance_param_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.mbino_eye_avoidance_param_masked00, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_braking, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_visual_sensor_working, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_open, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_be_shuttle_mode, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_front_work, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_right_work, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_behind_work, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_left_work, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_avoidance_param_masked01, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_front_distance_level, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_front_alert_level, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_avoidance_param_masked02, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_right_distance_level, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_right_alert_level, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_avoidance_param_masked03, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_behind_distance_level, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_behind_alert_level, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_avoidance_param_masked04, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_left_distance_level, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_avoid_left_alert_level, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_avoidance_param_masked05, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_allow_front, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_allow_right, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_allow_back, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_avoidance_param_allow_left, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_avoidance_param_index, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 7) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Avoidance Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Avoidance Param: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Front Avoidance - 0x07
+
+enums.MBINO_EYE_FRONT_AVOIDANCE_SENSOR_TYPE_ENUM = {
+    [0x00] = 'Front',
+    [0x01] = 'Back',
+    [0x02] = 'Right',
+    [0x03] = 'Left',
+    [0x04] = 'Top',
+    [0x05] = 'Bottom',
+    [0x64] = 'OTHER',
 }
 
+f.mbino_eye_front_avoidance_masked00 = ProtoField.uint8 ("dji_p3.mbino_eye_front_avoidance_masked00", "Masked00", base.HEX)
+  f.mbino_eye_front_avoidance_observe_count = ProtoField.uint8 ("dji_p3.mbino_eye_front_avoidance_observe_count", "Observe Count", base.HEX, nil, 0x1f, nil)
+  f.mbino_eye_front_avoidance_sensor_type = ProtoField.uint8 ("dji_p3.mbino_eye_front_avoidance_sensor_type", "Sensor Type", base.HEX, enums.MBINO_EYE_FRONT_AVOIDANCE_SENSOR_TYPE_ENUM, 0xe0, nil)
+
+local function mbino_eye_front_avoidance_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.mbino_eye_front_avoidance_masked00, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_front_avoidance_observe_count, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_front_avoidance_sensor_type, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Front Avoidance: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Front Avoidance: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Point Avoidance - 0x08
+
+f.mbino_eye_point_avoidance_alert_level = ProtoField.uint8 ("dji_p3.mbino_eye_point_avoidance_alert_level", "Alert Level", base.HEX)
+f.mbino_eye_point_avoidance_observe_count = ProtoField.uint8 ("dji_p3.mbino_eye_point_avoidance_observe_count", "Observe Count", base.DEC)
+
+local function mbino_eye_point_avoidance_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.mbino_eye_point_avoidance_alert_level, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_point_avoidance_observe_count, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Point Avoidance: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Point Avoidance: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Track Log - 0x0d
+
+f.mbino_eye_track_log_text = ProtoField.string ("dji_p3.mbino_eye_track_log_text", "Track Log", base.ASCII)
+
+local function mbino_eye_track_log_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    local log_text = payload(offset, payload:len() - offset)
+    subtree:add (f.mbino_eye_track_log_text, log_text)
+
+    --if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Track Log: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Track Log: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Point Log - 0x0e
+
+f.mbino_eye_point_log_text = ProtoField.string ("dji_p3.mbino_eye_point_log_text", "Point Log", base.ASCII)
+
+local function mbino_eye_point_log_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    local log_text = payload(offset, payload:len() - offset)
+    subtree:add (f.mbino_eye_point_log_text, log_text)
+
+    --if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Point Log: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Point Log: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Flat Check - 0x19
+
+f.mbino_eye_flat_check_tink_count = ProtoField.uint8 ("dji_p3.mbino_eye_flat_check_tink_count", "Tink Count", base.HEX)
+
+local function mbino_eye_flat_check_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.mbino_eye_flat_check_tink_count, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Flat Check: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Flat Check: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Track Status - 0x23
+
+enums.MBINO_EYE_TRACK_STATUS_RECT_MODE_TRACK_MODE_ENUM = {
+    [0x00] = 'LOST',
+    [0x01] = 'NORMAL',
+    [0x02] = 'WEAK',
+    [0x03] = 'DETECT_AFTER_LOST',
+    [0x04] = 'TRACKING',
+    [0x05] = 'CONFIRM',
+    [0x06] = 'PERSON',
+    [0x64] = 'OTHER',
+}
+
+enums.MBINO_EYE_TRACK_STATUS_TRACKING_MODE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x02] = 'c',
+    [0x03] = 'd',
+    [0x04] = 'e',
+    [0x05] = 'f',
+    [0xff] = 'g',
+}
+
+enums.MBINO_EYE_TRACK_STATUS_TARGET_TYPE_TARGET_OBJ_TYPE_ENUM = {
+    [0x00] = 'UNKNOWN',
+    [0x01] = 'PERSON',
+    [0x02] = 'CAR',
+    [0x03] = 'VAN',
+    [0x04] = 'BIKE',
+    [0x05] = 'ANIMAL',
+    [0x06] = 'BOAT',
+    [0x64] = 'OTHER',
+}
+
+enums.MBINO_EYE_TRACK_STATUS_TARGET_ACTION_ENUM = {
+    [0x00] = 'Non',
+    [0x01] = 'JUMP',
+    [0x64] = 'OTHER',
+}
+
+f.mbino_eye_track_status_rect_mode = ProtoField.uint8 ("dji_p3.mbino_eye_track_status_rect_mode", "Rect Mode", base.HEX, enums.MBINO_EYE_TRACK_STATUS_RECT_MODE_TRACK_MODE_ENUM, nil, nil)
+f.mbino_eye_track_status_center_x = ProtoField.float ("dji_p3.mbino_eye_track_status_center_x", "Center X", base.DEC)
+f.mbino_eye_track_status_center_y = ProtoField.float ("dji_p3.mbino_eye_track_status_center_y", "Center Y", base.DEC)
+f.mbino_eye_track_status_width = ProtoField.float ("dji_p3.mbino_eye_track_status_width", "Width", base.DEC)
+f.mbino_eye_track_status_height = ProtoField.float ("dji_p3.mbino_eye_track_status_height", "Height", base.DEC)
+f.mbino_eye_track_status_unknown11 = ProtoField.uint8 ("dji_p3.mbino_eye_track_status_unknown11", "Unknown11", base.HEX)
+f.mbino_eye_track_status_session_id = ProtoField.uint16 ("dji_p3.mbino_eye_track_status_session_id", "Session Id", base.HEX)
+f.mbino_eye_track_status_masked14 = ProtoField.uint8 ("dji_p3.mbino_eye_track_status_masked14", "Masked14", base.HEX)
+  f.mbino_eye_track_status_human_target = ProtoField.uint8 ("dji_p3.mbino_eye_track_status_human_target", "Human Target", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_track_status_head_lock = ProtoField.uint8 ("dji_p3.mbino_eye_track_status_head_lock", "Head Lock", base.HEX, nil, 0x02, nil)
+f.mbino_eye_track_status_tracking_mode = ProtoField.uint8 ("dji_p3.mbino_eye_track_status_tracking_mode", "Tracking Mode", base.HEX, enums.MBINO_EYE_TRACK_STATUS_TRACKING_MODE_ENUM, nil, nil)
+f.mbino_eye_track_status_target_type = ProtoField.uint8 ("dji_p3.mbino_eye_track_status_target_type", "Target Type", base.HEX, enums.MBINO_EYE_TRACK_STATUS_TARGET_TYPE_TARGET_OBJ_TYPE_ENUM, nil, nil)
+f.mbino_eye_track_status_target_action = ProtoField.uint8 ("dji_p3.mbino_eye_track_status_target_action", "Target Action", base.HEX, enums.MBINO_EYE_TRACK_STATUS_TARGET_ACTION_ENUM, nil, nil)
+
+local function mbino_eye_track_status_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.mbino_eye_track_status_rect_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_track_status_center_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.mbino_eye_track_status_center_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.mbino_eye_track_status_width, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.mbino_eye_track_status_height, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.mbino_eye_track_status_unknown11, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_track_status_session_id, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.mbino_eye_track_status_masked14, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_track_status_human_target, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_track_status_head_lock, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_track_status_tracking_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_track_status_target_type, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_track_status_target_action, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Track Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Track Status: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Point State - 0x26
+
+enums.MBINO_EYE_POINT_STATE_TRAGET_MODE_POINT_MODE_ENUM = {
+    [0x00] = 'HIDE',
+    [0x01] = 'CANT_FLY',
+    [0x02] = 'FLYING',
+    [0x64] = 'OTHER',
+}
+
+enums.MBINO_EYE_POINT_STATE_TAP_MODE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x02] = 'c',
+    [0x03] = 'd',
+    [0x64] = 'e',
+}
+
+f.mbino_eye_point_state_traget_mode = ProtoField.uint8 ("dji_p3.mbino_eye_point_state_traget_mode", "Traget Mode", base.HEX, enums.MBINO_EYE_POINT_STATE_TRAGET_MODE_POINT_MODE_ENUM, nil, nil)
+f.mbino_eye_point_state_masked01 = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_masked01", "Masked01", base.HEX)
+  f.mbino_eye_point_state_rc_not_in_f_mode = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_rc_not_in_f_mode", "Rc Not In F Mode", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_point_state_cant_detour = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_cant_detour", "Cant Detour", base.HEX, nil, 0x02, nil)
+  f.mbino_eye_point_state_braked_by_collision = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_braked_by_collision", "Braked By Collision", base.HEX, nil, 0x04, nil)
+  f.mbino_eye_point_state_detour_up = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_detour_up", "Detour Up", base.HEX, nil, 0x08, nil)
+  f.mbino_eye_point_state_detour_left = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_detour_left", "Detour Left", base.HEX, nil, 0x10, nil)
+  f.mbino_eye_point_state_detour_right = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_detour_right", "Detour Right", base.HEX, nil, 0x20, nil)
+  f.mbino_eye_point_state_stick_add = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_stick_add", "Stick Add", base.HEX, nil, 0x40, nil)
+  f.mbino_eye_point_state_out_of_range = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_out_of_range", "Out Of Range", base.HEX, nil, 0x80, nil)
+  f.mbino_eye_point_state_user_quick_pull_pitch = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_user_quick_pull_pitch", "User Quick Pull Pitch", base.HEX, nil, 0x100, nil)
+  f.mbino_eye_point_state_in_low_flying = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_in_low_flying", "In Low Flying", base.HEX, nil, 0x200, nil)
+  f.mbino_eye_point_state_running_delay = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_running_delay", "Running Delay", base.HEX, nil, 0x400, nil)
+  f.mbino_eye_point_state_in_pointing = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_in_pointing", "In Pointing", base.HEX, nil, 0x800, nil)
+  f.mbino_eye_point_state_terrian_follow = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_terrian_follow", "Terrian Follow", base.HEX, nil, 0x1000, nil)
+  f.mbino_eye_point_state_paused = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_paused", "Paused", base.HEX, nil, 0x2000, nil)
+  f.mbino_eye_point_state_front_image_over_exposure = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_front_image_over_exposure", "Front Image Over Exposure", base.HEX, nil, 0x10000, nil)
+  f.mbino_eye_point_state_front_image_under_exposure = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_front_image_under_exposure", "Front Image Under Exposure", base.HEX, nil, 0x20000, nil)
+  f.mbino_eye_point_state_front_image_diff = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_front_image_diff", "Front Image Diff", base.HEX, nil, 0x40000, nil)
+  f.mbino_eye_point_state_front_demark_error = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_front_demark_error", "Front Demark Error", base.HEX, nil, 0x80000, nil)
+  f.mbino_eye_point_state_non_in_flying = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_non_in_flying", "Non In Flying", base.HEX, nil, 0x100000, nil)
+  f.mbino_eye_point_state_had_tap_stop = ProtoField.uint24 ("dji_p3.mbino_eye_point_state_had_tap_stop", "Had Tap Stop", base.HEX, nil, 0x200000, nil)
+f.mbino_eye_point_state_axis_x = ProtoField.float ("dji_p3.mbino_eye_point_state_axis_x", "Axis X", base.DEC)
+f.mbino_eye_point_state_axis_y = ProtoField.float ("dji_p3.mbino_eye_point_state_axis_y", "Axis Y", base.DEC)
+f.mbino_eye_point_state_axis_z = ProtoField.float ("dji_p3.mbino_eye_point_state_axis_z", "Axis Z", base.DEC)
+f.mbino_eye_point_state_max_speed = ProtoField.uint16 ("dji_p3.mbino_eye_point_state_max_speed", "Max Speed", base.HEX)
+f.mbino_eye_point_state_session_id = ProtoField.uint16 ("dji_p3.mbino_eye_point_state_session_id", "Session Id", base.HEX)
+f.mbino_eye_point_state_tap_mode = ProtoField.uint8 ("dji_p3.mbino_eye_point_state_tap_mode", "Tap Mode", base.HEX, enums.MBINO_EYE_POINT_STATE_TAP_MODE_ENUM, nil, nil)
+
+local function mbino_eye_point_state_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.mbino_eye_point_state_traget_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_point_state_masked01, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_rc_not_in_f_mode, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_cant_detour, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_braked_by_collision, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_detour_up, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_detour_left, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_detour_right, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_stick_add, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_out_of_range, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_user_quick_pull_pitch, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_in_low_flying, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_running_delay, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_in_pointing, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_terrian_follow, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_paused, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_front_image_over_exposure, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_front_image_under_exposure, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_front_image_diff, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_front_demark_error, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_non_in_flying, payload(offset, 3))
+    subtree:add_le (f.mbino_eye_point_state_had_tap_stop, payload(offset, 3))
+    offset = offset + 3
+
+    subtree:add_le (f.mbino_eye_point_state_axis_x, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.mbino_eye_point_state_axis_y, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.mbino_eye_point_state_axis_z, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.mbino_eye_point_state_max_speed, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.mbino_eye_point_state_session_id, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.mbino_eye_point_state_tap_mode, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 21) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Point State: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Point State: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Exception - 0x2a
+
+enums.MBINO_EYE_EXCEPTION_TRACK_STATUS_TRACK_EXCEPTION_STATUS_ENUM = {
+    [0x00] = 'NORMAL',
+    [0x01] = 'LOST_TIMEOUT',
+    [0x02] = 'INVALID_SPEED',
+    [0x03] = 'NONE_IMAGE',
+    [0x04] = 'LOW_FRAME',
+    [0x05] = 'NFZ',
+    [0x06] = 'RCCONN_TIMEOUT',
+    [0x07] = 'APPCONN_TIMEOUT',
+    [0x09] = 'LOST_CONTROL',
+    [0x64] = 'OTHER',
+}
+
+enums.MBINO_EYE_EXCEPTION_ADVANCE_GO_HOME_STATE_ENUM = {
+    [0x00] = 'NO_ACTION',
+    [0x01] = 'TURNING_YAW',
+    [0x02] = 'EXECUTING_GO_HOME',
+    [0x03] = 'HOVERING_AT_SAFE_POINT',
+    [0x04] = 'PLANING',
+    [0x64] = 'OTHER',
+}
+
+enums.MBINO_EYE_EXCEPTION_ADVANCE_GO_HOME_STRATEGY_ENUM = {
+    [0x00] = 'NO_STRATEGY',
+    [0x01] = 'SAFE_STRATEGY',
+    [0x02] = 'EXPLORE_STRATEGY',
+    [0x64] = 'OTHER',
+}
+
+enums.MBINO_EYE_EXCEPTION_PRECISE_LANDING_STATE_ENUM = {
+    [0x00] = 'NO_ACTION',
+    [0x01] = 'TURNING_YAW',
+    [0x02] = 'LANDING',
+    [0x64] = 'OTHER',
+}
+
+f.mbino_eye_exception_masked00 = ProtoField.uint16 ("dji_p3.mbino_eye_exception_masked00", "Masked00", base.HEX)
+  f.mbino_eye_exception_track_system_abnormal = ProtoField.uint16 ("dji_p3.mbino_eye_exception_track_system_abnormal", "Track System Abnormal", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_exception_point_system_abnormal = ProtoField.uint16 ("dji_p3.mbino_eye_exception_point_system_abnormal", "Point System Abnormal", base.HEX, nil, 0x02, nil)
+  f.mbino_eye_exception_disparity_pack_lost = ProtoField.uint16 ("dji_p3.mbino_eye_exception_disparity_pack_lost", "Disparity Pack Lost", base.HEX, nil, 0x04, nil)
+  f.mbino_eye_exception_imu_pack_lost = ProtoField.uint16 ("dji_p3.mbino_eye_exception_imu_pack_lost", "Imu Pack Lost", base.HEX, nil, 0x08, nil)
+  f.mbino_eye_exception_gimbal_pack_lost = ProtoField.uint16 ("dji_p3.mbino_eye_exception_gimbal_pack_lost", "Gimbal Pack Lost", base.HEX, nil, 0x10, nil)
+  f.mbino_eye_exception_rc_pack_lost = ProtoField.uint16 ("dji_p3.mbino_eye_exception_rc_pack_lost", "Rc Pack Lost", base.HEX, nil, 0x20, nil)
+  f.mbino_eye_exception_visual_data_abnormal = ProtoField.uint16 ("dji_p3.mbino_eye_exception_visual_data_abnormal", "Visual Data Abnormal", base.HEX, nil, 0x40, nil)
+  f.mbino_eye_exception_fron_image_over_exposure = ProtoField.uint16 ("dji_p3.mbino_eye_exception_fron_image_over_exposure", "Fron Image Over Exposure", base.HEX, nil, 0x100, nil)
+  f.mbino_eye_exception_fron_image_under_exposure = ProtoField.uint16 ("dji_p3.mbino_eye_exception_fron_image_under_exposure", "Fron Image Under Exposure", base.HEX, nil, 0x200, nil)
+  f.mbino_eye_exception_front_image_diff = ProtoField.uint16 ("dji_p3.mbino_eye_exception_front_image_diff", "Front Image Diff", base.HEX, nil, 0x400, nil)
+  f.mbino_eye_exception_front_sensor_demark_abnormal = ProtoField.uint16 ("dji_p3.mbino_eye_exception_front_sensor_demark_abnormal", "Front Sensor Demark Abnormal", base.HEX, nil, 0x800, nil)
+  f.mbino_eye_exception_non_flying = ProtoField.uint16 ("dji_p3.mbino_eye_exception_non_flying", "Non Flying", base.HEX, nil, 0x1000, nil)
+  f.mbino_eye_exception_user_tap_stop = ProtoField.uint16 ("dji_p3.mbino_eye_exception_user_tap_stop", "User Tap Stop", base.HEX, nil, 0x2000, nil)
+  f.mbino_eye_exception_tripod_folded = ProtoField.uint16 ("dji_p3.mbino_eye_exception_tripod_folded", "Tripod Folded", base.HEX, nil, 0x4000, nil)
+f.mbino_eye_exception_masked02 = ProtoField.uint8 ("dji_p3.mbino_eye_exception_masked02", "Masked02", base.HEX)
+  f.mbino_eye_exception_rc_disconnect = ProtoField.uint8 ("dji_p3.mbino_eye_exception_rc_disconnect", "Rc Disconnect", base.HEX, nil, 0x1, nil)
+  f.mbino_eye_exception_app_disconnect = ProtoField.uint8 ("dji_p3.mbino_eye_exception_app_disconnect", "App Disconnect", base.HEX, nil, 0x2, nil)
+  f.mbino_eye_exception_out_of_control = ProtoField.uint8 ("dji_p3.mbino_eye_exception_out_of_control", "Out Of Control", base.HEX, nil, 0x4, nil)
+  f.mbino_eye_exception_in_non_fly_zone = ProtoField.uint8 ("dji_p3.mbino_eye_exception_in_non_fly_zone", "In Non Fly Zone", base.HEX, nil, 0x8, nil)
+  f.mbino_eye_exception_fusion_data_abnormal = ProtoField.uint8 ("dji_p3.mbino_eye_exception_fusion_data_abnormal", "Fusion Data Abnormal", base.HEX, nil, 0x10, nil)
+f.mbino_eye_exception_masked03 = ProtoField.uint8 ("dji_p3.mbino_eye_exception_masked03", "Masked03", base.HEX)
+  f.mbino_eye_exception_in_tracking = ProtoField.uint8 ("dji_p3.mbino_eye_exception_in_tracking", "In Tracking", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_exception_in_tap_fly = ProtoField.uint8 ("dji_p3.mbino_eye_exception_in_tap_fly", "In Tap Fly", base.HEX, nil, 0x02, nil)
+  f.mbino_eye_exception_in_advance_homing = ProtoField.uint8 ("dji_p3.mbino_eye_exception_in_advance_homing", "In Advance Homing", base.HEX, nil, 0x04, nil)
+  f.mbino_eye_exception_in_precise_landing = ProtoField.uint8 ("dji_p3.mbino_eye_exception_in_precise_landing", "In Precise Landing", base.HEX, nil, 0x08, nil)
+  f.mbino_eye_exception_face_detect_enable = ProtoField.uint8 ("dji_p3.mbino_eye_exception_face_detect_enable", "Face Detect Enable", base.HEX, nil, 0x10, nil)
+  f.mbino_eye_exception_moving_object_detect_enable = ProtoField.uint8 ("dji_p3.mbino_eye_exception_moving_object_detect_enable", "Moving Object Detect Enable", base.HEX, nil, 0x20, nil)
+  f.mbino_eye_exception_gps_tracking_enable = ProtoField.uint8 ("dji_p3.mbino_eye_exception_gps_tracking_enable", "Gps Tracking Enable", base.HEX, nil, 0x40, nil)
+f.mbino_eye_exception_masked04 = ProtoField.uint8 ("dji_p3.mbino_eye_exception_masked04", "Masked04", base.HEX)
+  -- Not sure how to choose between this and alternate content
+  f.mbino_eye_exception_gps_error = ProtoField.uint8 ("dji_p3.mbino_eye_exception_gps_error", "Gps Error", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_exception_front_visoin_error = ProtoField.uint8 ("dji_p3.mbino_eye_exception_front_visoin_error", "Front Visoin Error", base.HEX, nil, 0x02, nil)
+  f.mbino_eye_exception_advance_go_home_state = ProtoField.uint8 ("dji_p3.mbino_eye_exception_advance_go_home_state", "Advance Go Home State", base.HEX, enums.MBINO_EYE_EXCEPTION_ADVANCE_GO_HOME_STATE_ENUM, 0x1c, nil)
+  f.mbino_eye_exception_advance_go_home_strategy = ProtoField.uint8 ("dji_p3.mbino_eye_exception_advance_go_home_strategy", "Advance Go Home Strategy", base.HEX, enums.MBINO_EYE_EXCEPTION_ADVANCE_GO_HOME_STRATEGY_ENUM, 0x60, nil)
+  -- Alternate content of the masked04 field
+  f.mbino_eye_exception_track_status = ProtoField.uint8 ("dji_p3.mbino_eye_exception_track_status", "Track Status", base.HEX, enums.MBINO_EYE_EXCEPTION_TRACK_STATUS_TRACK_EXCEPTION_STATUS_ENUM, 0x0f, nil)
+  f.mbino_eye_exception_aircraft_gps_abnormal = ProtoField.uint8 ("dji_p3.mbino_eye_exception_aircraft_gps_abnormal", "Aircraft Gps Abnormal", base.HEX, nil, 0x10, nil)
+  f.mbino_eye_exception_phone_gps_abnormal = ProtoField.uint8 ("dji_p3.mbino_eye_exception_phone_gps_abnormal", "Phone Gps Abnormal", base.HEX, nil, 0x20, nil)
+  f.mbino_eye_exception_gps_tracking_flusion_abnormal = ProtoField.uint8 ("dji_p3.mbino_eye_exception_gps_tracking_flusion_abnormal", "Gps Tracking Flusion Abnormal", base.HEX, nil, 0x40, nil)
+f.mbino_eye_exception_masked05 = ProtoField.uint8 ("dji_p3.mbino_eye_exception_masked05", "Masked05", base.HEX)
+  f.mbino_eye_exception_avoid_ok_in_tracking = ProtoField.uint8 ("dji_p3.mbino_eye_exception_avoid_ok_in_tracking", "Avoid Ok In Tracking", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_exception_cant_detour_in_tracking = ProtoField.uint8 ("dji_p3.mbino_eye_exception_cant_detour_in_tracking", "Cant Detour In Tracking", base.HEX, nil, 0x02, nil)
+  f.mbino_eye_exception_decelerating_in_tracking = ProtoField.uint8 ("dji_p3.mbino_eye_exception_decelerating_in_tracking", "Decelerating In Tracking", base.HEX, nil, 0x04, nil)
+  f.mbino_eye_exception_braked_by_collision_in_tracking = ProtoField.uint8 ("dji_p3.mbino_eye_exception_braked_by_collision_in_tracking", "Braked By Collision In Tracking", base.HEX, nil, 0x08, nil)
+  f.mbino_eye_exception_detour_up_in_tracking = ProtoField.uint8 ("dji_p3.mbino_eye_exception_detour_up_in_tracking", "Detour Up In Tracking", base.HEX, nil, 0x10, nil)
+  f.mbino_eye_exception_detour_down_in_tracking = ProtoField.uint8 ("dji_p3.mbino_eye_exception_detour_down_in_tracking", "Detour Down In Tracking", base.HEX, nil, 0x20, nil)
+  f.mbino_eye_exception_detour_left_in_tracking = ProtoField.uint8 ("dji_p3.mbino_eye_exception_detour_left_in_tracking", "Detour Left In Tracking", base.HEX, nil, 0x40, nil)
+  f.mbino_eye_exception_detour_right_in_tracking = ProtoField.uint8 ("dji_p3.mbino_eye_exception_detour_right_in_tracking", "Detour Right In Tracking", base.HEX, nil, 0x80, nil)
+f.mbino_eye_exception_masked06 = ProtoField.uint16 ("dji_p3.mbino_eye_exception_masked06", "Masked06", base.HEX)
+  -- Not sure how to choose between this and alternate content (again)
+  f.mbino_eye_exception_effected_by_obstacle = ProtoField.uint16 ("dji_p3.mbino_eye_exception_effected_by_obstacle", "Effected By Obstacle", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_exception_cant_detour = ProtoField.uint16 ("dji_p3.mbino_eye_exception_cant_detour", "Cant Detour", base.HEX, nil, 0x02, nil)
+  f.mbino_eye_exception_braked_by_collision = ProtoField.uint16 ("dji_p3.mbino_eye_exception_braked_by_collision", "Braked By Collision", base.HEX, nil, 0x04, nil)
+  f.mbino_eye_exception_detour_up = ProtoField.uint16 ("dji_p3.mbino_eye_exception_detour_up", "Detour Up", base.HEX, nil, 0x08, nil)
+  f.mbino_eye_exception_detour_left = ProtoField.uint16 ("dji_p3.mbino_eye_exception_detour_left", "Detour Left", base.HEX, nil, 0x10, nil)
+  f.mbino_eye_exception_detour_right = ProtoField.uint16 ("dji_p3.mbino_eye_exception_detour_right", "Detour Right", base.HEX, nil, 0x20, nil)
+  f.mbino_eye_exception_stick_add = ProtoField.uint16 ("dji_p3.mbino_eye_exception_stick_add", "Stick Add", base.HEX, nil, 0x40, nil)
+  f.mbino_eye_exception_out_of_range = ProtoField.uint16 ("dji_p3.mbino_eye_exception_out_of_range", "Out Of Range", base.HEX, nil, 0x80, nil)
+  -- Alternate content of the masked04 field
+  f.mbino_eye_exception_rc_not_in_f_mode = ProtoField.uint16 ("dji_p3.mbino_eye_exception_rc_not_in_f_mode", "Rc Not In F Mode", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_exception_precise_landing_state = ProtoField.uint16 ("dji_p3.mbino_eye_exception_precise_landing_state", "Precise Landing State", base.HEX, enums.MBINO_EYE_EXCEPTION_PRECISE_LANDING_STATE_ENUM, 0x06, nil)
+  f.mbino_eye_exception_adjusting_precise_landing = ProtoField.uint16 ("dji_p3.mbino_eye_exception_adjusting_precise_landing", "Adjusting Precise Landing", base.HEX, nil, 0x08, nil)
+  f.mbino_eye_exception_executing_precise_landing = ProtoField.uint16 ("dji_p3.mbino_eye_exception_executing_precise_landing", "Executing Precise Landing", base.HEX, nil, 0x10, nil)
+  -- Back to one path
+  f.mbino_eye_exception_user_quick_pull_pitch = ProtoField.uint16 ("dji_p3.mbino_eye_exception_user_quick_pull_pitch", "User Quick Pull Pitch", base.HEX, nil, 0x100, nil)
+  f.mbino_eye_exception_in_low_flying = ProtoField.uint16 ("dji_p3.mbino_eye_exception_in_low_flying", "In Low Flying", base.HEX, nil, 0x200, nil)
+  f.mbino_eye_exception_running_delay = ProtoField.uint16 ("dji_p3.mbino_eye_exception_running_delay", "Running Delay", base.HEX, nil, 0x400, nil)
+  f.mbino_eye_exception_in_pointing = ProtoField.uint16 ("dji_p3.mbino_eye_exception_in_pointing", "In Pointing", base.HEX, nil, 0x800, nil)
+f.mbino_eye_exception_vision_version = ProtoField.uint32 ("dji_p3.mbino_eye_exception_vision_version", "Vision Version", base.HEX)
+
+local function mbino_eye_exception_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.mbino_eye_exception_masked00, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_track_system_abnormal, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_point_system_abnormal, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_disparity_pack_lost, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_imu_pack_lost, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_gimbal_pack_lost, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_rc_pack_lost, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_visual_data_abnormal, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_fron_image_over_exposure, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_fron_image_under_exposure, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_front_image_diff, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_front_sensor_demark_abnormal, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_non_flying, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_user_tap_stop, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_tripod_folded, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.mbino_eye_exception_masked02, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_rc_disconnect, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_app_disconnect, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_out_of_control, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_in_non_fly_zone, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_fusion_data_abnormal, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_exception_masked03, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_in_tracking, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_in_tap_fly, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_in_advance_homing, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_in_precise_landing, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_face_detect_enable, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_moving_object_detect_enable, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_gps_tracking_enable, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_exception_masked04, payload(offset, 1))
+    if (true) then -- it is not known what the condition should be
+        subtree:add_le (f.mbino_eye_exception_gps_error, payload(offset, 1))
+        subtree:add_le (f.mbino_eye_exception_front_visoin_error, payload(offset, 1))
+        subtree:add_le (f.mbino_eye_exception_advance_go_home_state, payload(offset, 1))
+        subtree:add_le (f.mbino_eye_exception_advance_go_home_strategy, payload(offset, 1))
+    else
+        subtree:add_le (f.mbino_eye_exception_track_status, payload(offset, 1))
+        subtree:add_le (f.mbino_eye_exception_aircraft_gps_abnormal, payload(offset, 1))
+        subtree:add_le (f.mbino_eye_exception_phone_gps_abnormal, payload(offset, 1))
+        subtree:add_le (f.mbino_eye_exception_gps_tracking_flusion_abnormal, payload(offset, 1))
+    end
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_exception_masked05, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_avoid_ok_in_tracking, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_cant_detour_in_tracking, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_decelerating_in_tracking, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_braked_by_collision_in_tracking, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_detour_up_in_tracking, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_detour_down_in_tracking, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_detour_left_in_tracking, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_exception_detour_right_in_tracking, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_exception_masked06, payload(offset, 2))
+    if (true) then -- it is not known what the condition should be
+        subtree:add_le (f.mbino_eye_exception_effected_by_obstacle, payload(offset, 2))
+        subtree:add_le (f.mbino_eye_exception_cant_detour, payload(offset, 2))
+        subtree:add_le (f.mbino_eye_exception_braked_by_collision, payload(offset, 2))
+        subtree:add_le (f.mbino_eye_exception_detour_up, payload(offset, 2))
+        subtree:add_le (f.mbino_eye_exception_detour_left, payload(offset, 2))
+        subtree:add_le (f.mbino_eye_exception_detour_right, payload(offset, 2))
+        subtree:add_le (f.mbino_eye_exception_stick_add, payload(offset, 2))
+        subtree:add_le (f.mbino_eye_exception_out_of_range, payload(offset, 2))
+    else
+        subtree:add_le (f.mbino_eye_exception_rc_not_in_f_mode, payload(offset, 2))
+        subtree:add_le (f.mbino_eye_exception_precise_landing_state, payload(offset, 2))
+        subtree:add_le (f.mbino_eye_exception_adjusting_precise_landing, payload(offset, 2))
+        subtree:add_le (f.mbino_eye_exception_executing_precise_landing, payload(offset, 2))
+    end
+    subtree:add_le (f.mbino_eye_exception_user_quick_pull_pitch, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_in_low_flying, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_running_delay, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_exception_in_pointing, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.mbino_eye_exception_vision_version, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Exception: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Exception: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Function List - 0x2e
+
+f.mbino_eye_function_list_tink_count = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_tink_count", "Tink Count", base.HEX)
+f.mbino_eye_function_list_masked01 = ProtoField.uint32 ("dji_p3.mbino_eye_function_list_masked01", "Masked01", base.HEX)
+  f.mbino_eye_function_list_support_self_cal = ProtoField.uint32 ("dji_p3.mbino_eye_function_list_support_self_cal", "Support Self Cal", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_function_list_sensor_status_source = ProtoField.uint32 ("dji_p3.mbino_eye_function_list_sensor_status_source", "Sensor Status Source", base.HEX, nil, 0x02, nil)
+f.mbino_eye_function_list_front_disable = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_front_disable", "Front Disable", base.HEX)
+  f.mbino_eye_function_list_front_disable_when_auto_landing = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_front_disable_when_auto_landing", "Front Disable When Auto Landing", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_function_list_front_disable_by_tripod = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_front_disable_by_tripod", "Front Disable By Tripod", base.HEX, nil, 0x02, nil)
+  f.mbino_eye_function_list_front_disable_by_switch_sensor = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_front_disable_by_switch_sensor", "Front Disable By Switch Sensor", base.HEX, nil, 0x04, nil)
+  f.mbino_eye_function_list_front_atti_too_large = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_front_atti_too_large", "Front Atti Too Large", base.HEX, nil, 0x08, nil)
+f.mbino_eye_function_list_back_disable = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_back_disable", "Back Disable", base.HEX)
+  f.mbino_eye_function_list_back_disable_when_auto_landing = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_back_disable_when_auto_landing", "Back Disable When Auto Landing", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_function_list_back_disable_by_tripod = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_back_disable_by_tripod", "Back Disable By Tripod", base.HEX, nil, 0x02, nil)
+  f.mbino_eye_function_list_back_disable_by_switch_sensor = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_back_disable_by_switch_sensor", "Back Disable By Switch Sensor", base.HEX, nil, 0x04, nil)
+  f.mbino_eye_function_list_back_atti_too_large = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_back_atti_too_large", "Back Atti Too Large", base.HEX, nil, 0x08, nil)
+f.mbino_eye_function_list_right_disable = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_right_disable", "Right Disable", base.HEX)
+  f.mbino_eye_function_list_right_disable_when_auto_landing = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_right_disable_when_auto_landing", "Right Disable When Auto Landing", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_function_list_right_disable_by_tripod = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_right_disable_by_tripod", "Right Disable By Tripod", base.HEX, nil, 0x02, nil)
+  f.mbino_eye_function_list_right_atti_too_large = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_right_atti_too_large", "Right Atti Too Large", base.HEX, nil, 0x08, nil)
+f.mbino_eye_function_list_left_disable = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_left_disable", "Left Disable", base.HEX)
+  f.mbino_eye_function_list_left_disable_when_auto_landing = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_left_disable_when_auto_landing", "Left Disable When Auto Landing", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_function_list_left_disable_by_tripod = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_left_disable_by_tripod", "Left Disable By Tripod", base.HEX, nil, 0x02, nil)
+  f.mbino_eye_function_list_left_atti_too_large = ProtoField.uint8 ("dji_p3.mbino_eye_function_list_left_atti_too_large", "Left Atti Too Large", base.HEX, nil, 0x08, nil)
+
+local function mbino_eye_function_list_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.mbino_eye_function_list_tink_count, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_function_list_masked01, payload(offset, 4))
+    subtree:add_le (f.mbino_eye_function_list_support_self_cal, payload(offset, 4))
+    subtree:add_le (f.mbino_eye_function_list_sensor_status_source, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.mbino_eye_function_list_front_disable, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_front_disable_when_auto_landing, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_front_disable_by_tripod, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_front_disable_by_switch_sensor, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_front_atti_too_large, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_function_list_back_disable, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_back_disable_when_auto_landing, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_back_disable_by_tripod, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_back_disable_by_switch_sensor, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_back_atti_too_large, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_function_list_right_disable, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_right_disable_when_auto_landing, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_right_disable_by_tripod, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_right_atti_too_large, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_function_list_left_disable, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_left_disable_when_auto_landing, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_left_disable_by_tripod, payload(offset, 1))
+    subtree:add_le (f.mbino_eye_function_list_left_atti_too_large, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 9) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Function List: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Function List: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Sensor Exception - 0x2f
+
+f.mbino_eye_sensor_exception_cnt_index = ProtoField.uint8 ("dji_p3.mbino_eye_sensor_exception_cnt_index", "Cnt Index", base.HEX)
+f.mbino_eye_sensor_exception_masked01 = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_masked01", "Masked01", base.HEX)
+  f.mbino_eye_sensor_exception_bottom_image_exposure_too_long = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_bottom_image_exposure_too_long", "Bottom Image Exposure Too Long", base.HEX, nil, 0x08, nil)
+  f.mbino_eye_sensor_exception_bottom_image_diff = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_bottom_image_diff", "Bottom Image Diff", base.HEX, nil, 0x10, nil)
+  f.mbino_eye_sensor_exception_bottom_under_exposure = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_bottom_under_exposure", "Bottom Under Exposure", base.HEX, nil, 0x20, nil)
+  f.mbino_eye_sensor_exception_bottom_over_exposure = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_bottom_over_exposure", "Bottom Over Exposure", base.HEX, nil, 0x40, nil)
+  f.mbino_eye_sensor_exception_bottom_image_exception = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_bottom_image_exception", "Bottom Image Exception", base.HEX, nil, 0x80, nil)
+f.mbino_eye_sensor_exception_masked03 = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_masked03", "Masked03", base.HEX)
+  f.mbino_eye_sensor_exception_front_image_exposure_too_long = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_front_image_exposure_too_long", "Front Image Exposure Too Long", base.HEX, nil, 0x08, nil)
+  f.mbino_eye_sensor_exception_front_image_diff = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_front_image_diff", "Front Image Diff", base.HEX, nil, 0x10, nil)
+  f.mbino_eye_sensor_exception_front_under_exposure = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_front_under_exposure", "Front Under Exposure", base.HEX, nil, 0x20, nil)
+  f.mbino_eye_sensor_exception_front_over_exposure = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_front_over_exposure", "Front Over Exposure", base.HEX, nil, 0x40, nil)
+  f.mbino_eye_sensor_exception_front_image_exception = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_front_image_exception", "Front Image Exception", base.HEX, nil, 0x80, nil)
+f.mbino_eye_sensor_exception_masked05 = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_masked05", "Masked05", base.HEX)
+  f.mbino_eye_sensor_exception_back_image_exposure_too_long = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_back_image_exposure_too_long", "Back Image Exposure Too Long", base.HEX, nil, 0x08, nil)
+  f.mbino_eye_sensor_exception_back_image_diff = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_back_image_diff", "Back Image Diff", base.HEX, nil, 0x10, nil)
+  f.mbino_eye_sensor_exception_back_under_exposure = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_back_under_exposure", "Back Under Exposure", base.HEX, nil, 0x20, nil)
+  f.mbino_eye_sensor_exception_back_over_exposure = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_back_over_exposure", "Back Over Exposure", base.HEX, nil, 0x40, nil)
+  f.mbino_eye_sensor_exception_back_image_exception = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_back_image_exception", "Back Image Exception", base.HEX, nil, 0x80, nil)
+f.mbino_eye_sensor_exception_masked07 = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_masked07", "Masked07", base.HEX)
+  f.mbino_eye_sensor_exception_right3_dtof_abnormal = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_right3_dtof_abnormal", "Right3 Dtof Abnormal", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_sensor_exception_right_image_exposure_too_long = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_right_image_exposure_too_long", "Right Image Exposure Too Long", base.HEX, nil, 0x08, nil)
+  f.mbino_eye_sensor_exception_right_image_diff = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_right_image_diff", "Right Image Diff", base.HEX, nil, 0x10, nil)
+  f.mbino_eye_sensor_exception_right_under_exposure = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_right_under_exposure", "Right Under Exposure", base.HEX, nil, 0x20, nil)
+  f.mbino_eye_sensor_exception_right_over_exposure = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_right_over_exposure", "Right Over Exposure", base.HEX, nil, 0x40, nil)
+  f.mbino_eye_sensor_exception_right_image_exception = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_right_image_exception", "Right Image Exception", base.HEX, nil, 0x80, nil)
+f.mbino_eye_sensor_exception_masked09 = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_masked09", "Masked09", base.HEX)
+  f.mbino_eye_sensor_exception_left3_dtof_abnormal = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_left3_dtof_abnormal", "Left3 Dtof Abnormal", base.HEX, nil, 0x01, nil)
+  f.mbino_eye_sensor_exception_left_image_exposure_too_long = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_left_image_exposure_too_long", "Left Image Exposure Too Long", base.HEX, nil, 0x08, nil)
+  f.mbino_eye_sensor_exception_left_image_diff = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_left_image_diff", "Left Image Diff", base.HEX, nil, 0x10, nil)
+  f.mbino_eye_sensor_exception_left_under_exposure = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_left_under_exposure", "Left Under Exposure", base.HEX, nil, 0x20, nil)
+  f.mbino_eye_sensor_exception_left_over_exposure = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_left_over_exposure", "Left Over Exposure", base.HEX, nil, 0x40, nil)
+  f.mbino_eye_sensor_exception_left_image_exception = ProtoField.uint16 ("dji_p3.mbino_eye_sensor_exception_left_image_exception", "Left Image Exception", base.HEX, nil, 0x80, nil)
+
+local function mbino_eye_sensor_exception_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.mbino_eye_sensor_exception_cnt_index, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_sensor_exception_masked01, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_bottom_image_exposure_too_long, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_bottom_image_diff, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_bottom_under_exposure, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_bottom_over_exposure, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_bottom_image_exception, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.mbino_eye_sensor_exception_masked03, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_front_image_exposure_too_long, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_front_image_diff, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_front_under_exposure, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_front_over_exposure, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_front_image_exception, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.mbino_eye_sensor_exception_masked05, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_back_image_exposure_too_long, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_back_image_diff, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_back_under_exposure, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_back_over_exposure, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_back_image_exception, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.mbino_eye_sensor_exception_masked07, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_right3_dtof_abnormal, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_right_image_exposure_too_long, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_right_image_diff, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_right_under_exposure, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_right_over_exposure, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_right_image_exception, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.mbino_eye_sensor_exception_masked09, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_left3_dtof_abnormal, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_left_image_exposure_too_long, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_left_image_diff, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_left_under_exposure, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_left_over_exposure, payload(offset, 2))
+    subtree:add_le (f.mbino_eye_sensor_exception_left_image_exception, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 11) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Sensor Exception: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Sensor Exception: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Easy Self Calibration - 0x32
+
+enums.MBINO_EYE_EASY_SELF_CALIBRATION_SENSOR_TYPE_VISION_SENSOR_TYPE_ENUM = {
+    [0x00] = 'None',
+    [0x01] = 'Bottom',
+    [0x02] = 'Forward',
+    [0x03] = 'Right',
+    [0x04] = 'Backward',
+    [0x05] = 'Left',
+    [0x06] = 'Top',
+    [0x64] = 'OTHER',
+}
+
+f.mbino_eye_easy_self_calibration_tink_count = ProtoField.uint8 ("dji_p3.mbino_eye_easy_self_calibration_tink_count", "Tink Count", base.HEX)
+f.mbino_eye_easy_self_calibration_unknown01 = ProtoField.uint8 ("dji_p3.mbino_eye_easy_self_calibration_unknown01", "Unknown01", base.HEX)
+f.mbino_eye_easy_self_calibration_sensor_type = ProtoField.uint8 ("dji_p3.mbino_eye_easy_self_calibration_sensor_type", "Sensor Type", base.HEX, enums.MBINO_EYE_EASY_SELF_CALIBRATION_SENSOR_TYPE_VISION_SENSOR_TYPE_ENUM, nil, nil)
+
+local function mbino_eye_easy_self_calibration_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.mbino_eye_easy_self_calibration_tink_count, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_easy_self_calibration_unknown01, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_easy_self_calibration_sensor_type, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 3) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Easy Self Calibration: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Easy Self Calibration: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Vision Tip - 0x39
+
+enums.MBINO_EYE_VISION_TIP_B_TRACKING_TIP_TYPE_ENUM = {
+    [0x00] = 'a',
+    [0x01] = 'b',
+    [0x02] = 'c',
+    [0x03] = 'd',
+    [0x04] = 'e',
+    [0x05] = 'f',
+    [0x06] = 'g',
+}
+
+f.mbino_eye_vision_tip_a = ProtoField.uint8 ("dji_p3.mbino_eye_vision_tip_a", "A", base.HEX)
+f.mbino_eye_vision_tip_b = ProtoField.uint8 ("dji_p3.mbino_eye_vision_tip_b", "B", base.HEX, enums.MBINO_EYE_VISION_TIP_B_TRACKING_TIP_TYPE_ENUM, nil, nil)
+f.mbino_eye_vision_tip_c = ProtoField.uint8 ("dji_p3.mbino_eye_vision_tip_c", "C", base.HEX)
+f.mbino_eye_vision_tip_d = ProtoField.uint8 ("dji_p3.mbino_eye_vision_tip_d", "D", base.HEX)
+
+local function mbino_eye_vision_tip_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.mbino_eye_vision_tip_a, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_vision_tip_b, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_vision_tip_c, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.mbino_eye_vision_tip_d, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Vision Tip: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Vision Tip: Payload size different than expected") end
+end
+
+-- Mono/Binocular - Eye Precise Landing Energy - 0x3a
+
+f.mbino_eye_precise_landing_energy_enery = ProtoField.uint8 ("dji_p3.mbino_eye_precise_landing_energy_enery", "Enery", base.HEX)
+
+local function mbino_eye_precise_landing_energy_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.mbino_eye_precise_landing_energy_enery, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Eye Precise Landing Energy: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Precise Landing Energy: Payload size different than expected") end
+end
+
+local MBINO_UART_CMD_DISSECT = {
+    [0x01] = mbino_eye_log_dissector,
+    [0x06] = mbino_eye_avoidance_param_dissector,
+    [0x07] = mbino_eye_front_avoidance_dissector,
+    [0x08] = mbino_eye_point_avoidance_dissector,
+    [0x0d] = mbino_eye_track_log_dissector,
+    [0x0e] = mbino_eye_point_log_dissector,
+    [0x19] = mbino_eye_flat_check_dissector,
+    [0x23] = mbino_eye_track_status_dissector,
+    [0x26] = mbino_eye_point_state_dissector,
+    [0x2a] = mbino_eye_exception_dissector,
+    [0x2e] = mbino_eye_function_list_dissector,
+    [0x2f] = mbino_eye_sensor_exception_dissector,
+    [0x32] = mbino_eye_easy_self_calibration_dissector,
+    [0x39] = mbino_eye_vision_tip_dissector,
+    [0x3a] = mbino_eye_precise_landing_energy_dissector,
+}
+
+-- Simulation - Simulator Connect Heart Packet - 0x01
+
+f.sim_simulator_connect_heart_packet_unknown00 = ProtoField.uint8 ("dji_p3.sim_simulator_connect_heart_packet_unknown00", "Unknown00", base.HEX)
+f.sim_simulator_connect_heart_packet_result = ProtoField.uint8 ("dji_p3.sim_simulator_connect_heart_packet_result", "Result", base.HEX)
+
+local function sim_simulator_connect_heart_packet_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.sim_simulator_connect_heart_packet_unknown00, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.sim_simulator_connect_heart_packet_result, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Connect Heart Packet: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Connect Heart Packet: Payload size different than expected") end
+end
+
+-- Simulation - Simulator Main Controller Return Params - 0x03
+
+f.sim_simulator_main_controller_return_params_drone_type = ProtoField.uint8 ("dji_p3.sim_simulator_main_controller_return_params_drone_type", "Drone Type", base.HEX)
+
+local function sim_simulator_main_controller_return_params_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.sim_simulator_main_controller_return_params_drone_type, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Main Controller Return Params: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Main Controller Return Params: Payload size different than expected") end
+end
+
+-- Simulation - Simulator Flight Status Params - 0x06
+
+f.sim_simulator_flight_status_params_length = ProtoField.uint8 ("dji_p3.sim_simulator_flight_status_params_length", "Length", base.HEX)
+f.sim_simulator_flight_status_params_masked01 = ProtoField.uint8 ("dji_p3.sim_simulator_flight_status_params_masked01", "Masked01", base.HEX)
+  f.sim_simulator_flight_status_params_has_motor_turned_on = ProtoField.uint8 ("dji_p3.sim_simulator_flight_status_params_has_motor_turned_on", "Has Motor Turned On", base.HEX, nil, 0x01, nil)
+  f.sim_simulator_flight_status_params_in_the_air = ProtoField.uint8 ("dji_p3.sim_simulator_flight_status_params_in_the_air", "In The Air", base.HEX, nil, 0x02, nil)
+
+local function sim_simulator_flight_status_params_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.sim_simulator_flight_status_params_length, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.sim_simulator_flight_status_params_masked01, payload(offset, 1))
+    subtree:add_le (f.sim_simulator_flight_status_params_has_motor_turned_on, payload(offset, 1))
+    subtree:add_le (f.sim_simulator_flight_status_params_in_the_air, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Flight Status Params: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Flight Status Params: Payload size different than expected") end
+end
+
+-- Simulation - Simulator Wind - 0x07
+
+f.sim_simulator_wind_wind_speed_x = ProtoField.uint16 ("dji_p3.sim_simulator_wind_wind_speed_x", "Wind Speed X", base.HEX)
+f.sim_simulator_wind_wind_speed_y = ProtoField.uint16 ("dji_p3.sim_simulator_wind_wind_speed_y", "Wind Speed Y", base.HEX)
+
+local function sim_simulator_wind_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.sim_simulator_wind_wind_speed_x, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.sim_simulator_wind_wind_speed_y, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Simulator Wind: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Simulator Wind: Payload size different than expected") end
+end
+
 local SIM_UART_CMD_DISSECT = {
+    [0x01] = sim_simulator_connect_heart_packet_dissector,
+    [0x03] = sim_simulator_main_controller_return_params_dissector,
+    [0x06] = sim_simulator_flight_status_params_dissector,
+    [0x07] = sim_simulator_wind_dissector,
 }
 
 local ESC_UART_CMD_DISSECT = {
 }
 
+-- Battery - Smart Battery Dynamic Data - 0x02
+
+f.battery_smart_battery_dynamic_data_index = ProtoField.uint8 ("dji_p3.battery_smart_battery_dynamic_data_index", "Index", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+  f.battery_smart_battery_dynamic_data_result = ProtoField.uint8 ("dji_p3.battery_smart_battery_dynamic_data_result", "Result", base.HEX, nil, 0xff, nil)
+f.battery_smart_battery_dynamic_data_voltage = ProtoField.uint32 ("dji_p3.battery_smart_battery_dynamic_data_voltage", "Voltage", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_smart_battery_dynamic_data_current = ProtoField.uint32 ("dji_p3.battery_smart_battery_dynamic_data_current", "Current", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_smart_battery_dynamic_data_full_capacity = ProtoField.uint32 ("dji_p3.battery_smart_battery_dynamic_data_full_capacity", "Full Capacity", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_smart_battery_dynamic_data_remain_capacity = ProtoField.uint32 ("dji_p3.battery_smart_battery_dynamic_data_remain_capacity", "Remain Capacity", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_smart_battery_dynamic_data_temperature = ProtoField.uint16 ("dji_p3.battery_smart_battery_dynamic_data_temperature", "Temperature", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_smart_battery_dynamic_data_cell_size = ProtoField.uint8 ("dji_p3.battery_smart_battery_dynamic_data_cell_size", "Cell Size", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_smart_battery_dynamic_data_relative_capacity_percentage = ProtoField.uint8 ("dji_p3.battery_smart_battery_dynamic_data_relative_capacity_percentage", "Relative Capacity Percentage", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_smart_battery_dynamic_data_status = ProtoField.uint64 ("dji_p3.battery_smart_battery_dynamic_data_status", "Status", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_smart_battery_dynamic_data_version = ProtoField.uint8 ("dji_p3.battery_smart_battery_dynamic_data_version", "Version", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+
+local function battery_smart_battery_dynamic_data_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.battery_smart_battery_dynamic_data_index, payload(offset, 1))
+    subtree:add_le (f.battery_smart_battery_dynamic_data_result, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.battery_smart_battery_dynamic_data_voltage, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.battery_smart_battery_dynamic_data_current, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.battery_smart_battery_dynamic_data_full_capacity, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.battery_smart_battery_dynamic_data_remain_capacity, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.battery_smart_battery_dynamic_data_temperature, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.battery_smart_battery_dynamic_data_cell_size, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.battery_smart_battery_dynamic_data_relative_capacity_percentage, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.battery_smart_battery_dynamic_data_status, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.battery_smart_battery_dynamic_data_version, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Smart Battery Dynamic Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Smart Battery Dynamic Data: Payload size different than expected") end
+end
+
+-- Battery - Smart Battery Cell Voltage - 0x03
+
+f.battery_smart_battery_cell_voltage_index = ProtoField.uint8 ("dji_p3.battery_smart_battery_cell_voltage_index", "Index", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+  f.battery_smart_battery_cell_voltage_result = ProtoField.uint8 ("dji_p3.battery_smart_battery_cell_voltage_result", "Result", base.HEX, nil, 0xff, nil)
+f.battery_smart_battery_cell_voltage_cells = ProtoField.uint8 ("dji_p3.battery_smart_battery_cell_voltage_cells", "Cells", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+
+local function battery_smart_battery_cell_voltage_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.battery_smart_battery_cell_voltage_index, payload(offset, 1))
+    subtree:add_le (f.battery_smart_battery_cell_voltage_result, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.battery_smart_battery_cell_voltage_cells, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Smart Battery Cell Voltage: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Smart Battery Cell Voltage: Payload size different than expected") end
+end
+
+-- Battery - Smart Battery Re-Arrangement - 0x31
+
+--f.battery_smart_battery_re_arrangement_unknown0 = ProtoField.none ("dji_p3.battery_smart_battery_re_arrangement_unknown0", "Unknown0", base.NONE)
+
+local function battery_smart_battery_re_arrangement_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Smart Battery Re Arrangement: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Smart Battery Re Arrangement: Payload size different than expected") end
+end
+
 local BATTERY_UART_CMD_DISSECT = {
+    [0x02] = battery_smart_battery_dynamic_data_dissector,
+    [0x03] = battery_smart_battery_cell_voltage_dissector,
+    [0x31] = battery_smart_battery_re_arrangement_dissector,
 }
 
 local DATA_LOG_UART_CMD_DISSECT = {
 }
 
+-- RTK - Rtk Status - 0x09
+
+f.rtk_rtk_status_a = ProtoField.uint8 ("dji_p3.rtk_rtk_status_a", "A", base.HEX)
+f.rtk_rtk_status_b = ProtoField.uint8 ("dji_p3.rtk_rtk_status_b", "B", base.HEX)
+f.rtk_rtk_status_c = ProtoField.uint8 ("dji_p3.rtk_rtk_status_c", "C", base.HEX)
+f.rtk_rtk_status_d = ProtoField.uint8 ("dji_p3.rtk_rtk_status_d", "D", base.HEX)
+f.rtk_rtk_status_e = ProtoField.uint8 ("dji_p3.rtk_rtk_status_e", "E", base.HEX)
+f.rtk_rtk_status_f = ProtoField.uint8 ("dji_p3.rtk_rtk_status_f", "F", base.HEX)
+f.rtk_rtk_status_g = ProtoField.uint8 ("dji_p3.rtk_rtk_status_g", "G", base.HEX)
+f.rtk_rtk_status_h = ProtoField.uint8 ("dji_p3.rtk_rtk_status_h", "H", base.HEX)
+f.rtk_rtk_status_i = ProtoField.uint8 ("dji_p3.rtk_rtk_status_i", "I", base.HEX)
+f.rtk_rtk_status_j = ProtoField.uint8 ("dji_p3.rtk_rtk_status_j", "J", base.HEX)
+f.rtk_rtk_status_k = ProtoField.uint8 ("dji_p3.rtk_rtk_status_k", "K", base.HEX)
+f.rtk_rtk_status_l = ProtoField.double ("dji_p3.rtk_rtk_status_l", "L", base.DEC)
+f.rtk_rtk_status_m = ProtoField.double ("dji_p3.rtk_rtk_status_m", "M", base.DEC)
+f.rtk_rtk_status_n = ProtoField.float ("dji_p3.rtk_rtk_status_n", "N", base.DEC)
+f.rtk_rtk_status_o = ProtoField.double ("dji_p3.rtk_rtk_status_o", "O", base.DEC)
+f.rtk_rtk_status_p = ProtoField.double ("dji_p3.rtk_rtk_status_p", "P", base.DEC)
+f.rtk_rtk_status_q = ProtoField.float ("dji_p3.rtk_rtk_status_q", "Q", base.DEC)
+f.rtk_rtk_status_r = ProtoField.float ("dji_p3.rtk_rtk_status_r", "R", base.DEC)
+f.rtk_rtk_status_s = ProtoField.uint8 ("dji_p3.rtk_rtk_status_s", "S", base.HEX)
+f.rtk_rtk_status_t = ProtoField.uint8 ("dji_p3.rtk_rtk_status_t", "T", base.HEX)
+
+local function rtk_rtk_status_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.rtk_rtk_status_a, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rtk_rtk_status_b, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rtk_rtk_status_c, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rtk_rtk_status_d, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rtk_rtk_status_e, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rtk_rtk_status_f, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rtk_rtk_status_g, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rtk_rtk_status_h, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rtk_rtk_status_i, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rtk_rtk_status_j, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rtk_rtk_status_k, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rtk_rtk_status_l, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rtk_rtk_status_m, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rtk_rtk_status_n, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rtk_rtk_status_o, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rtk_rtk_status_p, payload(offset, 8))
+    offset = offset + 8
+
+    subtree:add_le (f.rtk_rtk_status_q, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rtk_rtk_status_r, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.rtk_rtk_status_s, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rtk_rtk_status_t, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 57) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Rtk Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Rtk Status: Payload size different than expected") end
+end
+
 local RTK_UART_CMD_DISSECT = {
+    [0x09] = rtk_rtk_status_dissector,
 }
 
 local AUTO_UART_CMD_DISSECT = {
 }
-
 
 DJI_P3_FLIGHT_CONTROL_UART_CMD_DISSECT = {
     [0x00] = GENERAL_UART_CMD_DISSECT,
