@@ -201,6 +201,7 @@ local FLYC_UART_CMD_TEXT = {
 
 local GIMBAL_UART_CMD_TEXT = {
     [0x05] = 'Gimbal Params',
+    [0x15] = 'Gimbal Movement',
     [0x1c] = 'Gimbal Type',
     [0x24] = 'Gimbal User Params',
     [0x27] = 'Gimbal Abnormal Status',
@@ -3772,16 +3773,17 @@ enums.GIMBAL_PARAMS_MODE_ENUM = {
     [0x00] = 'YawNoFollow',
     [0x01] = 'FPV',
     [0x02] = 'YawFollow',
+    [0x03] = 'AutoCalibrate',
     [0x64] = 'OTHER',
 }
 
-f.gimbal_gimbal_params_pitch = ProtoField.uint16 ("dji_p3.gimbal_gimbal_params_pitch", "Gimbal Pitch", base.DEC, nil, nil, "0.1, gimbal angular position, zero is forward, max down..up is about -900..470")
-f.gimbal_gimbal_params_roll = ProtoField.uint16 ("dji_p3.gimbal_gimbal_params_roll", "Gimbal Roll", base.DEC, nil, nil, "0.1, gimbal angular position, zero is parallel to earth, max right..left is about -410..410")
-f.gimbal_gimbal_params_yaw = ProtoField.uint16 ("dji_p3.gimbal_gimbal_params_yaw", "Gimbal Yaw", base.DEC, nil, nil, "0.1, gimbal angular position, -1000 is forward, max right..left is about -1460..-540") -- TODO verify
+f.gimbal_gimbal_params_pitch = ProtoField.int16 ("dji_p3.gimbal_gimbal_params_pitch", "Gimbal Pitch", base.DEC, nil, nil, "0.1 degree, gimbal angular position, zero is forward, max down..up is about -900..470")
+f.gimbal_gimbal_params_roll = ProtoField.int16 ("dji_p3.gimbal_gimbal_params_roll", "Gimbal Roll", base.DEC, nil, nil, "0.1 degree, gimbal angular position, zero is parallel to earth, max right..left is about -410..410")
+f.gimbal_gimbal_params_yaw = ProtoField.int16 ("dji_p3.gimbal_gimbal_params_yaw", "Gimbal Yaw", base.DEC, nil, nil, "0.1 degree, gimbal angular position, -1000 is forward, max right..left is about -1460..-540") -- TODO verify
 f.gimbal_gimbal_params_masked06 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_masked06", "Masked06", base.HEX)
   f.gimbal_gimbal_params_sub_mode = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_sub_mode", "Sub Mode", base.HEX, nil, 0x20, nil)
   f.gimbal_gimbal_params_mode = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_mode", "Mode", base.HEX, enums.GIMBAL_PARAMS_MODE_ENUM, 0xc0, nil)
-f.gimbal_gimbal_params_roll_adjust = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_roll_adjust", "Roll Adjust", base.HEX)
+f.gimbal_gimbal_params_roll_adjust = ProtoField.int8 ("dji_p3.gimbal_gimbal_params_roll_adjust", "Roll Adjust", base.DEC)
 f.gimbal_gimbal_params_yaw_angle = ProtoField.uint16 ("dji_p3.gimbal_gimbal_params_yaw_angle", "Yaw Angle", base.HEX, nil, nil, "Not sure whether Yaw angle or Joytick Direction")
   f.gimbal_gimbal_params_joystick_ver_direction = ProtoField.uint16 ("dji_p3.gimbal_gimbal_params_joystick_ver_direction", "Joystick Ver Direction", base.HEX, nil, 0x03, nil)
   f.gimbal_gimbal_params_joystick_hor_direction = ProtoField.uint16 ("dji_p3.gimbal_gimbal_params_joystick_hor_direction", "Joystick Hor Direction", base.HEX, nil, 0x0c, nil)
@@ -3843,6 +3845,58 @@ local function gimbal_gimbal_params_dissector(pkt_length, buffer, pinfo, subtree
 
     if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Params: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Params: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Movement - 0x15
+
+f.gimbal_gimbal_move_unknown0 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown0", "Unknown0", base.DEC, nil, nil, "0.04 degree")
+f.gimbal_gimbal_move_unknown1 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown1", "Unknown1", base.DEC, nil, nil, "0.04 degree")
+f.gimbal_gimbal_move_unknown2 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown2", "Unknown2", base.DEC, nil, nil, "0.04 degree")
+f.gimbal_gimbal_move_unknown3 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown3", "Unknown3", base.DEC, nil, nil, "0.1 degree")
+f.gimbal_gimbal_move_unknown4 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown4", "Unknown4", base.DEC, nil, nil, "0.1 degree")
+f.gimbal_gimbal_move_unknown5 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown5", "Unknown5", base.DEC, nil, nil, "0.1 degree")
+f.gimbal_gimbal_move_unknown6 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_move_unknown6", "Unknown6", base.DEC, nil, nil, "percent")
+f.gimbal_gimbal_move_unknown7 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_move_unknown7", "Unknown7", base.DEC, nil, nil, "percent")
+f.gimbal_gimbal_move_roll_adjust = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_roll_adjust", "Roll Adjust", base.DEC)
+f.gimbal_gimbal_move_reserved = ProtoField.bytes ("dji_p3.gimbal_gimbal_move_reserved", "Reserved", base.SPACE, nil, nil, "should be zero-filled")
+
+local function gimbal_gimbal_move_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.gimbal_gimbal_move_unknown0, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.gimbal_gimbal_move_unknown1, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.gimbal_gimbal_move_unknown2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.gimbal_gimbal_move_unknown3, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.gimbal_gimbal_move_unknown4, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.gimbal_gimbal_move_unknown5, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.gimbal_gimbal_move_unknown6, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.gimbal_gimbal_move_unknown7, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.gimbal_gimbal_params_roll_adjust, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.gimbal_gimbal_move_reserved, payload(offset, 11))
+    offset = offset + 11
+
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Move: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Move: Payload size different than expected") end
 end
 
 -- Gimbal - Gimbal Type - 0x1c
@@ -4210,6 +4264,7 @@ end
 
 local GIMBAL_UART_CMD_DISSECT = {
     [0x05] = gimbal_gimbal_params_dissector,
+    [0x15] = gimbal_gimbal_move_dissector,
     [0x1c] = gimbal_gimbal_type_dissector,
     [0x24] = gimbal_gimbal_user_params_dissector,
     [0x27] = gimbal_gimbal_abnormal_status_dissector,
