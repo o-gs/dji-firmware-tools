@@ -12,6 +12,7 @@ import itertools
 from ctypes import *
 from time import gmtime, strftime, strptime
 from calendar import timegm
+from Crypto.Cipher import AES
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
@@ -20,6 +21,7 @@ class ProgOptions:
   fwpkgfile = ''
   dcprefix = ''
   verbose = 0
+  no_crypto = 0
   force_continue = 0
   command = ''
 
@@ -298,9 +300,28 @@ def dji_calculate_crc16_part(buf, pcrc):
   """A non-standard crc16 hashing algorithm, looks like 32-bit one from Ambarella simply cut down in bits."""
   crc = pcrc
   for octet in buf:
-    crc = crc16_tab[(crc ^ octet) & 0xff] ^ (crc >> 8);
+      crc = crc16_tab[(crc ^ octet) & 0xff] ^ (crc >> 8)
   return crc & 0xffff
 
+def dji_decrypt_block(cipher_buf, enc_key, enc_iv):
+  """ Decrypts a buffer with AES in a DJI way. """
+  block_sz = 256
+  plain_buf = b""
+  for cbpos in range(0, len(cipher_buf), block_sz):
+      # Reinit the crypto for each block, this is how Dji does it
+      crypto = AES.new(enc_key, AES.MODE_CBC, enc_iv)
+      plain_buf += crypto.decrypt(cipher_buf[cbpos:cbpos+block_sz])
+  return plain_buf, enc_iv
+
+def dji_encrypt_block(cipher_buf, enc_key, enc_iv):
+  """ Encrypts a buffer with AES in a DJI way. """
+  block_sz = 256
+  plain_buf = b""
+  for cbpos in range(0, len(cipher_buf), block_sz):
+      # Reinit the crypto for each block, this is how Dji does it
+      crypto = AES.new(enc_key, AES.MODE_CBC, enc_iv)
+      plain_buf += crypto.encrypt(cipher_buf[cbpos:cbpos+block_sz])
+  return plain_buf, enc_iv
 
 def dji_write_fwpkg_head(po, pkghead, minames):
   fname = "{:s}_head.ini".format(po.dcprefix)
@@ -372,11 +393,10 @@ def dji_extract(po, fwpkgfile):
       raise EOFError("Couldn't read firmware package file header.")
   pkgformat = pkghead.get_format_version()
   if pkgformat == 0:
-      if (po.force_continue):
-          eprint("{}: Warning: Unexpected magic value in main header; will try to extract anyway.".format(po.fwpkgfile))
-      else:
+      if (not po.force_continue):
           eprint("{}: Error: Unexpected magic value in main header; input file is not a firmware package.".format(po.fwpkgfile))
           exit(1)
+      eprint("{}: Warning: Unexpected magic value in main header; will try to extract anyway.".format(po.fwpkgfile))
   if (po.verbose > 1):
       print("{}: Package format version {:d} detected".format(po.fwpkgfile,pkgformat))
   if (pkghead.ver_latest_enc == 0 and pkghead.ver_rollbk_enc == 0):
@@ -400,9 +420,14 @@ def dji_extract(po, fwpkgfile):
           eprint("{}: Warning: decrypted size differs from stored one, {:d} instead of {:d}; this is not supported.".format(po.fwpkgfile,hde.decrypted_len,hde.stored_len))
       chksum_enctype = hde.get_encrypt_type()
       if (chksum_enctype != 0):
-          #TODO Find out what the encryption algorithm is, then write a decoder
-          # Since we cannot decode the encryption, mark the entry as pre-encrypted to extract in encrypted form
-          hde.preencrypted = 1
+          if (po.no_crypto):
+              hde.preencrypted = 1
+          #elif (chksum_enctype == 1):
+          #TODO Find out what the key is
+          else:
+              # Since we cannot decode the encryption, mark the entry as pre-encrypted to extract in encrypted form
+              eprint("{}: Warning: Unknown encryption {:d} in module {:d}, extracting encrypted.".format(po.fwpkgfile,chksum_enctype,i))
+              hde.preencrypted = 1
       pkgmodules.append(hde)
 
   pkghead_checksum = c_ushort()
@@ -458,22 +483,23 @@ def dji_extract(po, fwpkgfile):
       stored_n = 0
       decrypted_n = 0
       while stored_n < hde.stored_len:
+          # read block limit must be a multiplication of encryption block size
           copy_buffer = fwpkgfile.read(min(1024 * 1024, hde.stored_len - stored_n))
           if not copy_buffer:
               break
           stored_n += len(copy_buffer)
-          stored_chksum.update(copy_buffer);
-          #TODO Find out what the encryption algorithm is, then write a decoder
-          #if (chksum_enctype != 0) and (not hde.preencrypted):
-          #    copy_buffer = some_decrypt_func(copy_buffer)
+          stored_chksum.update(copy_buffer)
+          if (chksum_enctype != 0) and (not hde.preencrypted):
+              copy_buffer, encrypt_iv = dji_decrypt_block(copy_buffer, encrypt_key, encrypt_iv)
           fwitmfile.write(copy_buffer)
           decrypted_n += len(copy_buffer)
-          decrypted_chksum.update(copy_buffer);
+          decrypted_chksum.update(copy_buffer)
       fwitmfile.close()
       if (stored_chksum.hexdigest() != hde.hex_stored_md5()):
           eprint("{}: Warning: Module index {:d} stored checksum mismatch; got {:s}, expected {:s}.".format(po.fwpkgfile,i,stored_chksum.hexdigest(),hde.hex_stored_md5()))
       if (not hde.preencrypted) and (decrypted_chksum.hexdigest() != hde.hex_decrypted_md5()):
           eprint("{}: Warning: Module index {:d} decrypted checksum mismatch; got {:s}, expected {:s}.".format(po.fwpkgfile,i,decrypted_chksum.hexdigest(),hde.hex_decrypted_md5()))
+          eprint("{}: Module index {:d} may be damaged due to bad decryption; use no-crypto option to leave it as-is.".format(po.fwpkgfile,i))
       if (not hde.preencrypted) and (decrypted_n != hde.decrypted_len):
           eprint("{}: Warning: decrypted size mismatch, {:d} instead of {:d}.".format(po.fwpkgfile,decrypted_n,hde.decrypted_len))
       if (po.verbose > 1):
@@ -510,30 +536,42 @@ def dji_create(po, fwpkgfile):
       if (os.stat(fname).st_size < 1):
           eprint("{}: Warning: module index {:d} empty".format(po.fwpkgfile,i))
           continue
-      chksum_enctype = hde.get_encrypt_type();
+      chksum_enctype = hde.get_encrypt_type()
       epos = fwpkgfile.tell()
       # Check for data encryption
       if (chksum_enctype != 0) and (not hde.preencrypted):
-          if (chksum_enctype == 1):
+          if (po.no_crypto):
+              if (not po.force_continue):
+                  eprint("{}: Error: Module {:d} needs encryption {:d}, but crypto is disabled.".format(po.fwpkgfile,chksum_enctype,i))
+                  exit(1)
+              eprint("{}: Warning: Module {:d} needs encryption {:d}, but crypto is disabled; switching to unencrypted.".format(po.fwpkgfile,chksum_enctype,i))
+              hde.set_encrypt_type(0)
+              chksum_enctype = hde.get_encrypt_type()
+          elif (chksum_enctype == 1):
               #TODO Find out what the encryption algorithm is, then write an encoder
               eprint("{}: Warning: NOT IMPLEMENTED encryption {:d} in module {:d}; decrypted checksum bad.".format(po.fwpkgfile,chksum_enctype,i))
           else:
-              eprint("{}: Warning: Unknown encryption {:d} in module {:d}; decrypted checksum skipped.".format(po.fwpkgfile,chksum_enctype,i))
+              if (not po.force_continue):
+                  eprint("{}: Error: Unknown encryption {:d} in module {:d}; cannot encrypt.".format(po.fwpkgfile,chksum_enctype,i))
+                  exit(1)
+              eprint("{}: Warning: Unknown encryption {:d} in module {:d}; switching to unencrypted.".format(po.fwpkgfile,chksum_enctype,i))
+              hde.set_encrypt_type(0)
+              chksum_enctype = hde.get_encrypt_type()
       # Copy partition data and compute checksum
       fwitmfile = open(fname, "rb")
       stored_chksum = hashlib.md5()
       decrypted_chksum = hashlib.md5()
       decrypted_n = 0
       while True:
+          # read block limit must be a multiplication of encryption block size
           copy_buffer = fwitmfile.read(1024 * 1024)
           if not copy_buffer:
               break
-          decrypted_chksum.update(copy_buffer);
+          decrypted_chksum.update(copy_buffer)
           decrypted_n += len(copy_buffer)
-          #TODO Find out what the encryption algorithm is, then write an encoder
-          #if (chksum_enctype != 0) and (not hde.preencrypted):
-          #    copy_buffer = some_encrypt_func(copy_buffer)
-          stored_chksum.update(copy_buffer);
+          if (chksum_enctype != 0) and (not hde.preencrypted):
+              copy_buffer, encrypt_iv = dji_encrypt_block(copy_buffer, encrypt_key, encrypt_iv)
+          stored_chksum.update(copy_buffer)
           fwpkgfile.write(copy_buffer)
       fwitmfile.close()
       hde.dt_offs = epos
@@ -568,24 +606,25 @@ def main(argv):
   # Parse command line options
   po = ProgOptions()
   try:
-     opts, args = getopt.getopt(argv,"hxavp:m:",["help","version","extract","add","fwpkg=","mdprefix="])
+     opts, args = getopt.getopt(argv,"hcfxavp:m:",["help","version","no-crypto","force-continue","extract","add","fwpkg=","mdprefix="])
   except getopt.GetoptError:
      print("Unrecognized options; check dji_fwcon.py --help")
      sys.exit(2)
   for opt, arg in opts:
      if opt in ("-h", "--help"):
         print("DJI Firmware Container tool")
-        print("dji_fwcon.py <-x|-a> [-v] -p <fwpkgfile> [-d <dcprefix>]")
+        print("dji_fwcon.py <-x|-a> [-v] [-f] [-c] -p <fwpkgfile> [-d <dcprefix>]")
         print("  -p <fwpkgfile> - name of the firmware package file")
         print("  -m <mdprefix> - file name prefix for the single decomposed firmware modules")
         print("                  defaults to base name of firmware package file")
         print("  -f - force continuing execution despite warning signs of issues")
+        print("  -c - disable cryptography - do not encrypt/decrypt modules")
         print("  -x - extract firmware package into modules")
         print("  -a - add module files to firmware package")
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
-        print("dji_fwcon.py version 0.2.0")
+        print("dji_fwcon.py version 0.3.0")
         sys.exit()
      elif opt == '-v':
         po.verbose += 1
@@ -593,6 +632,8 @@ def main(argv):
         po.fwpkgfile = arg
      elif opt in ("-m", "--mdprefix"):
         po.dcprefix = arg
+     elif opt in ("-c", "--no-crypto"):
+        po.no_crypto = 1
      elif opt in ("-f", "--force-continue"):
         po.force_continue = 1
      elif opt in ("-x", "--extract"):
@@ -610,7 +651,7 @@ def main(argv):
 
     dji_extract(po,fwpkgfile)
 
-    fwpkgfile.close();
+    fwpkgfile.close()
 
   elif (po.command == 'a'):
 
@@ -620,7 +661,7 @@ def main(argv):
 
     dji_create(po,fwpkgfile)
 
-    fwpkgfile.close();
+    fwpkgfile.close()
 
   else:
 
