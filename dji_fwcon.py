@@ -422,8 +422,9 @@ def dji_extract(po, fwpkgfile):
       if (chksum_enctype != 0):
           if (po.no_crypto):
               hde.preencrypted = 1
-          #elif (chksum_enctype == 1):
-          #TODO Find out what the key is
+          elif (chksum_enctype == 1):
+              encrypt_key = bytes.fromhex("96709aD326674AC382B66927E6d88421")
+              encrypt_iv  = bytes.fromhex("00000000000000000000000000000000")
           else:
               # Since we cannot decode the encryption, mark the entry as pre-encrypted to extract in encrypted form
               eprint("{}: Warning: Unknown encryption {:d} in module {:d}, extracting encrypted.".format(po.fwpkgfile,chksum_enctype,i))
@@ -548,8 +549,8 @@ def dji_create(po, fwpkgfile):
               hde.set_encrypt_type(0)
               chksum_enctype = hde.get_encrypt_type()
           elif (chksum_enctype == 1):
-              #TODO Find out what the encryption algorithm is, then write an encoder
-              eprint("{}: Warning: NOT IMPLEMENTED encryption {:d} in module {:d}; decrypted checksum bad.".format(po.fwpkgfile,chksum_enctype,i))
+              encrypt_key = bytes.fromhex("96709aD326674AC382B66927E6d88421")
+              encrypt_iv  = bytes.fromhex("00000000000000000000000000000000")
           else:
               if (not po.force_continue):
                   eprint("{}: Error: Unknown encryption {:d} in module {:d}; cannot encrypt.".format(po.fwpkgfile,chksum_enctype,i))
