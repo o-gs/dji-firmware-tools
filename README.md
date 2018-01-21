@@ -94,6 +94,8 @@ Optimized examples for specific firmwares:
 
 ```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x0D510:0 --section .bss@0x17FF7700:0x5A00 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x2200 --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p P3X_FW_V01.08.0080_m0900.bin```
 
+```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x0136D0:0 --section .bss@0x17FF7700:0xC900 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x7000 --section .bss5@0x48058800:0x100 -p P3X_FW_V01.11.0030_m0400.bin```
+
 ### amba_sys2elf.py
 
 Ambarella A7/A9 firmware "System Software" partition converter. The partition

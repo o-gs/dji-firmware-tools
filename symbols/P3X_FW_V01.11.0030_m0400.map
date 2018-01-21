@@ -1,0 +1,103 @@
+﻿
+ Start         Length     Name                   Class
+ 0003:00000000 0000136D0H .text                  CODE
+ 0004:00000000 000004438H .data                  DATA
+ 0005:00000000 00000C900H .bss                   BSS
+ 0009:00000000 000006700H .bss2                  BSS
+ 0008:00000000 000005500H .bss3                  BSS
+ 0007:00000000 000007000H .bss4                  BSS
+ 0006:00000000 000000100H .bss5                  BSS
+ 0001:00000000 000000008H EXIDX                  DATA
+
+
+  Address         Publics by Value
+
+ 0003:080093E4       recompute_packet_crc16
+ 0003:08009410       recompute_packet_crc8
+ 0003:0800CA4C       jpt_800CA48
+ 0003:0800CB36       def_800CA48
+ 0003:0800CCF8       jpt_800CCF4
+ 0003:0800CDF0       def_800CCF4
+ 0003:0800DF80       compute_crc16
+ 0003:0800DFB4       compute_crc8
+ 0003:0801141A       jpt_8011416
+ 0003:080114BC       def_8011416
+ 0003:08011A8C       verify_packet_crc16
+ 0003:08013774       packet_answer1_set00_cmd30
+ 0003:08013864       packet_send_set00_cmd30_a
+ 0003:08013A18       packet_send_set00_cmd30_b
+ 0003:08013B40       packet_send_set00_cmd30_c
+ 0003:08013F64       payld_flags
+ 0003:08013FCC       packet_exec_univ_cmd30
+ 0003:08014228       jpt_8014224
+ 0003:0801431E       def_8014224
+ 0003:08014F02       jpt_8014EFE
+ 0003:08014FFC       def_8014EFE
+ 0003:0801584A       jpt_8015846
+ 0003:08015944       def_8015846
+ 0003:08015984       pkt
+ 0003:08015A50       packet_exec_gimb_cmd0A
+ 0003:08015C88       packet_exec_gimb_cmd0C
+ 0003:08015EB4       packet_exec_gimb_cmd0B
+ 0003:08015FE0       packet_exec_gimb_cmd14
+ 0003:08016188       packet_exec_univ_cmd09
+ 0003:080161E8       packet_exec_gimb_cmd13
+ 0003:08016254       packet_exec_univ_cmd01
+ 0003:080162E4       packet_exec_univ_cmd0A
+ 0003:08016338       packet_exec_univ_cmd07
+ 0003:080163C4       packet_exec_gimb_cmd10
+ 0003:08016492       jpt_801648E
+ 0003:080164D8       def_801648E
+ 0003:08016518       packet_switch_sender_and_receiver
+ 0003:08016564       packet_exec_gimb_cmd01
+ 0003:08016634       packet_exec_flyc_cmd42
+ 0003:0801675C       packet_exec_gimb_cmd06
+ 0003:080167E0       packet_exec_gimb_cmd0E
+ 0003:08016840       packet_exec_univ_cmd0B
+ 0003:080168AC       packet_exec_gimb_cmd07
+ 0003:08016930       packet_exec_gimb_cmd11
+ 0003:08016990       packet_exec_gimb_cmd08
+ 0003:08016A98       packet_exec_gimb_cmd0F
+ 0003:08016BF8       packet_exec_univ_cmd0D
+ 0003:08016C78       packet_exec_spec_cmd01
+ 0003:08016CDC       packet_exec_univ_cmd08
+ 0003:08016D30       packet_exec_univ_cmd0C
+ 0003:08016D94       send_packet
+ 0003:08016E14       packet_exec_gimb_cmd20
+ 0003:08016E30       packet_exec_gimb_cmd21
+ 0003:08016EAC       packet_exec_gimb_cmd0D
+ 0003:08016EF0       packet_send_set04_cmd47
+ 0003:08016FF4       packet_exec_receive_cb
+ 0003:080172C2       jpt_80172BE
+ 0003:080173BC       def_80172BE
+ 0003:08019636       jpt_8019632
+ 0003:080196CC       def_8019632
+ 0003:0801A7E6       jpt_801A7E2
+ 0003:0801A8E0       def_801A7E2
+ 0003:0801A918       packet_send_set04_cmd05
+ 0003:0801ABA0       packet_send_set04_cmd15
+ 0003:0801ADE0       packet_send_component_state
+ 0003:0801AF6E       jpt_801AF6A
+ 0003:0801B068       def_801AF6A
+ 0004:0801B6D4       crc16_table
+ 0004:0801B8D7       crc8_table
+ 0004:0801C230       aMotorStop
+ 0004:0801C23B       aRecordEnc
+ 0004:0801C246       aReadBackup
+ 0004:0801C252       a080e0000
+ 0004:0801C25B       a080a0000
+ 0004:0801D46C       receive_commands
+ 0005:20000344       params_stuck_count
+ 0005:20000354       gimbal_params_mode
+ 0005:20000374       pkt_gimbal_params_seqctr
+ 0005:200047A4       pos_real_roll
+ 0005:200047A8       pos_real_pitch
+ 0005:200047AC       pos_real_yaw
+ 0005:20004B1C       yaw_angle
+ 0005:20004B20       yaw_angle_2
+ 0005:20004B58       yaw_angle_limit_1
+ 0005:20004B5C       yaw_angle_limit_2
+ 0005:20004C04       auto_calibration_result
+ 0005:20005041       roll_adjust
+
+Program entry point at 0003:00000000
