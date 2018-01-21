@@ -1,4 +1,4 @@
-
+﻿
  Start         Length     Name                   Class
  0001:00000000 00000D510H .text                  CODE
  0002:00000000 000004E54H .data                  DATA
@@ -12,12 +12,22 @@
 
   Address         Publics by Value
 
+ 0001:0800A764       USART_Init
+ 0001:0800AE90       USARTx
+ 0001:0800B0AC       packet_send_sub1
  0001:0800B508       SPI_UsrWaitTransferComplete
  0001:0800B5F0       spi_ad936x_transfer_mark
  0001:0800B5FE       spi_ad936x_transfer_clear
  0001:0800BC1E       memcpy
  0001:0800C2C0       log_printf
+ 0001:0800C2F4       nullsub_7
+ 0001:0800C2F6       nullsub_8
  0001:0800C2F8       decrypt_payload
+ 0001:0800C328       ofdm_tx_state_set_flag
+ 0001:0800C332       ofdm_tx_state_get_flag
+ 0001:0800C342       ofdm_tx_state_clear_flag
+ 0001:0800C34C       ofdm_tx_state_get_all
+ 0001:0800C4C4       payload
  0001:0800CE24       src
  0001:0800CE8A       spi_ad936x_raw_write_xE
  0001:0800CEAE       spi_ad936x_raw_read_xF
@@ -35,14 +45,19 @@
  0001:0800DD36       nullsub_5
  0001:0800DD38       nullsub_4
  0001:0800DD3A       nullsub_3
+ 0001:0800E01C       packet0C_decrypt_and_exec
  0001:0800E28C       dest
+ 0001:0800E322       spipacket_verify_checksum
  0001:0800E99E       packet_receive
  0001:0800F3B4       aErrorAd9363Reg
  0001:0800F3D0       aErrorAr8003Reg
+ 0001:0800F54A       spipacket_sub_800F54A
  0001:0800F87C       a_2x_2x_2x_2x_0
  0001:0800FC7A       j_ad936x_reg_sync_write
+ 0001:0800FCB8       prev_seqno
  0001:0800FCBC       a_2x_2x_2x_2x_1
  0001:0800FCEC       aSetAlterD
+ 0001:0800FE7E       packet_sub_800FE7E
  0001:08010130       dst
  0001:08010154       a3
  0001:08010158       cb
@@ -50,7 +65,11 @@
  0001:08010234       jpt_8010230
  0001:08010272       def_8010230
  0001:080105A4       a_2x_2x_2x_2x_2
+ 0001:0801106C       packet_make_and_send_response
+ 0001:08011080       send_func
+ 0001:08011084       packet_sub_8011084
  0001:08011330       nullsub_2
+ 0001:080114D8       packet_sub_80114D8
  0001:08011580       packet_send
  0001:08011594       jpt_8011590
  0001:08011638       def_8011590
@@ -59,7 +78,11 @@
  0001:0801174E       jpt_801174A
  0001:08011834       def_801174A
  0001:08011896       packet_crc_correct_cb
+ 0001:080118CE       packet_make
+ 0001:08011980       packet_sub_8011980
+ 0001:08011A16       packet_make_response
  0001:08011AA8       compute_buf_crc8
+ 0001:08011AE4       packet_make_head_checksum
  0001:08011B04       compute_buf_crc16
  0001:08011B2A       packet_crc_correct
  0001:08011B5E       packet_make_checksum
@@ -87,6 +110,7 @@
  0001:08012222       cmd_exec_set00_cmdFE
  0001:0801226C       cmd_exec_set09_cmd2C
  0001:0801227C       aWm32xA4_fpga20
+ 0001:08012298       packet_sub_8012298
  0001:08012426       packet_hw_receive
  0001:080125E2       memcpy2
  0001:0801266C       memmove
@@ -95,12 +119,36 @@
  0001:08012910       aHeapMemoryCorr
  0001:08014884       jpt_8014880
  0001:0801524A       jpt_8015246
- 0002:08015612       payload_hashtable
+ 0002:08015612       pkt_payload_dec_table
+ 0002:080196FE       packet_input_buf_a
+ 0002:080198A2       packet_input_buf_b
  0002:08019C80       ofdm_exec_commands
  0002:08019D60       crc8_tab
  0002:08019E60       crc16_tab
+ 0003:200000E8       ofdm_tx_state
+ 0003:200000F0       ofdm_tx_state_seqno
+ 0003:200000F4       last_ofdm_tx_state
  0003:20001920       input_buf
+ 0003:20001A30       spipacket_buf
+ 0003:20001C48       pkt_20001C48
+ 0003:20001D58       pkt_20001D58
+ 0003:200022A0       pkt_200022A0
+ 0003:200024A8       pkt_200024A8
  0003:200024F8       payload_s03_p43
  0003:20002524       payload_s03_p44
+ 0003:20002558       pkt_20002558
+ 0008:40002800       RTC
+ 0008:40002C00       WWDG
+ 0008:40003000       IWDG
+ 0008:40003800       SPI2
+ 0008:40003C00       SPI3
+ 0008:40004400       USART2
+ 0008:40004800       USART3
+ 0008:40004C00       UART4
+ 0008:40005000       UART5
+ 0008:40005400       I2C1
+ 0008:40005800       I2C2
+ 0007:40013000       SPI1
+ 0007:40013800       USART1
 
 Program entry point at 0001:00000000

@@ -1,4 +1,4 @@
-
+﻿
  Start         Length     Name                   Class
  0001:00000000 000483E4CH .text                  CODE
  0002:00000000 000452FF4H .data                  DATA
@@ -17930,6 +17930,7 @@
  0001:0E71FD68       snprintf
  0001:0E71FDD8       AmbaUNK2_Init
  0001:0E71FE8C       AmbaRTSL_TimerGetTickCount
+ 0001:0E71FEA4       strcat
  0001:0E71FED4       strlen
  0001:0E71FF28       sprintf
  0001:0E7200B4       AmbaDSP_Suspend
@@ -19221,6 +19222,7 @@
  0001:0E8336D4       Liveview_Entry
  0001:0E833964       Liveview_SuperViewLoadWarpTable
  0001:0E833B48       Liveview_SuperViewReSetupWarpTable
+ 0001:0E834AB8       aPal
  0001:0E835668       AmbaLiveview_SensorConfig
  0001:0E835928       AmbaLiveview_LowDelayCtrl
  0001:0E835B14       AmbaLiveview_LiveviewStart
@@ -20116,6 +20118,7 @@
  0001:0E8D44F4       DjiExifGenerate
  0001:0E8D4914       StorageTaskEntry
  0001:0E8D60D0       AmbaCaptureStorageTask
+ 0001:0E8D6354       VideoTuner_Log_Printf
  0001:0E8D64B0       VideoTuner_RawSeqCreate
  0001:0E8D6B28       VideoTuner_RawSeqDelete
  0001:0E8D6C10       VideoTuner_RawSeqStart
@@ -20125,6 +20128,7 @@
  0001:0E8D6FA8       VideoTuner_RawSeqPullRaw
  0001:0E8D7190       VideoTuner_RawDataEventHandler
  0001:0E8D71F0       VideoTuner_RawCap
+ 0001:0E8D72D8       func
  0001:0E8D72E8       VideoTuner_RawCapStart
  0001:0E8D74AC       VideoTuner_RawCapDefaultSetting
  0001:0E8D75D8       VideoTuner_RawCapUpdateSetting
@@ -20142,6 +20146,7 @@
  0001:0E8D8BD0       VideoTuner_VidEncConfig
  0001:0E8D8D5C       VideoTuner_VidEncDefaultSetting
  0001:0E8D8F88       VideoTuner_VidEncUpdateSetting
+ 0001:0E8D939C       aR
  0001:0E8D9618       VideoTuner_VidEncPrintInfo
  0001:0E8D9BB0       VideoTuner_VidEncSwitchMode
  0001:0E8D9DA8       VideoTuner_VidEncStart
@@ -20305,6 +20310,7 @@
  0001:0E8ECFF4       DjiTranscodeResGet
  0001:0E8ED0A4       DjiTranscodeSrcDurationSet
  0001:0E8ED108       DjiTranscodeDesStateSet
+ 0001:0E8ED200       fname
  0001:0E8ED3E0       DjiTranscodeStoreFpsSet
  0001:0E8ED4DC       DjiTranscodeFpsGet
  0001:0E8ED5E0       DjiXcodeFnumSet
@@ -21710,7 +21716,46 @@
  0002:0EA901E3       aAmba_5
  0002:0EA901EB       aAmbaVideoClass
  0002:0EA90200       a0001_11
+ 0002:0EA97168       feed_raw_pre_process_hdlr
+ 0002:0EA9716C       yuv_data_hdlr
+ 0002:0EA97170       video_data_hdlr
+ 0002:0EA9F774       h264_RawSeqFilePath
+ 0002:0EAB166C       VideoEncode_DataFmt
+ 0002:0EAB166D       VideoEncode_IsIntervalCap
+ 0002:0EAB166E       VideoEncode_StreamID_StreamID
+ 0002:0EAB166F       VideoEncode_StreamID_ViewZoneID
+ 0002:0EAB1674       VideoEncode_Window_Width
+ 0002:0EAB1676       VideoEncode_Window_Height
+ 0002:0EAB1678       VideoEncode_FrameRateDivisor
+ 0002:0EAB167E       h264_IsCabac
+ 0002:0EAB167F       h264_M
+ 0002:0EAB1680       h264_N
+ 0002:0EAB1684       h264_QualityLevel
+ 0002:0EAB1688       h264_BitRateSetting
+ 0002:0EAB168A       h264_VbrPercent
+ 0002:0EAB168C       h264_VbrMinRatio
+ 0002:0EAB168E       h264_VbrMaxRatio
+ 0002:0EAB1690       h264_IdrInterval
+ 0002:0EAB1694       h264_pBitsBufAddr
+ 0002:0EAB1698       h264_BitsBufSize
+ 0002:0EAB169C       h264_BitRate
+ 0002:0EAB16AC       VideoEncode_RotateConfig
+ 0002:0EAB16B0       VideoEncode_FrameRate_Interlace
+ 0002:0EAB16B4       VideoEncode_FrameRate_TimeScale
+ 0002:0EAB16B8       VideoEncode_FrameRate_NumUnitsInTick
+ 0002:0EAB16C0       VideoTuner_CompressRaw
+ 0002:0EAB16C2       VideoTuner_Pitch
+ 0002:0EAB16C4       VideoTuner_Width
+ 0002:0EAB16C6       VideoTuner_Height
+ 0002:0EAB16C8       VideoTuner_FrameSize
+ 0002:0EAB16D0       h264_EnableReadRawData
+ 0002:0EAB16D1       h264_EnableSaveYuvData
+ 0002:0EAB16D2       h264_EnableSaveVidData
+ 0002:0EAB16DC       h264_YuvSeqFilePath
+ 0002:0EAB171C       h264_VidBitStreamFilePath
+ 0002:0ECB5B48       vid_settings
  0002:0ECB69D4       aAmbademo
+ 0002:0ECB6A24       video_thumbnail_enabled
  0002:0ECB84E4       aFc300x_1
  0002:0ECB8504       aDji
  0002:0ECB8524       aV01_30_5036_2
@@ -21762,41 +21807,7 @@
  0002:0ED8B184       aSuperviewwar_1
  0002:0ED8B294       aSuperviewwar_2
  0002:0ED8C0D0       AmbaDSP_ImgArchConfig
- 0002:0ED92DD8       aAe_op
- 0002:0ED93018       aEv_index
- 0002:0ED93888       aLuma_index
- 0002:0ED97548       aEnable_12
- 0002:0ED97D28       aEnable_13
- 0002:0ED986B8       aHorz_warp_en_0
- 0002:0ED98E98       aSensor_id
- 0002:0ED990D8       aR_black
- 0002:0ED99318       aEnable_14
- 0002:0ED993A8       aEnable_15
- 0002:0ED995E8       aEnable_16
- 0002:0ED99948       aEnable_17
- 0002:0ED9A368       aEnable_18
- 0002:0ED9A3F8       aGain_0
- 0002:0ED9A488       aR_gain
- 0002:0ED9A638       aLevel_red
- 0002:0ED9A878       aEnable_19
- 0002:0ED9AC68       aReg_path
- 0002:0ED9AD88       aCurve_red
- 0002:0ED9B5F8       aEnable_20
- 0002:0ED9B718       aEnable_21
- 0002:0ED9BB08       aActivity_thr_0
- 0002:0ED9BF88       aNarrow_enable
- 0002:0ED9C1C8       aEnable_22
- 0002:0ED9CB58       aFir_specify
- 0002:0ED9D4E8       aFir_specify_0
  0002:0ED9D8D8       aCoring_table
- 0002:0ED9D968       aHigh_0
- 0002:0ED9DDE8       aEnable_23
- 0002:0ED9F4F8       aY_temporal_m_0
- 0002:0EDA0428       aEnable_24
- 0002:0EDA37E8       aEnable_28
- 0002:0EDA3B48       aEdge_start_cb
- 0002:0EDA3D88       aEnable_29
- 0002:0EDA4058       aT0_cb
  0002:0EDA98BC       aAmbarell
  0002:0EDA98C8       aA9DscEvkPlatfo
  0002:0EDA98DC       a1000
@@ -21813,7 +21824,7 @@
  0002:0EDA9A44       aAmbarella_1
  0002:0EDA9A50       aA9_dsc_platfor
  0002:0EDA9A60       a6668828
- 0002:0EDA9C70       aStatus_3
+ 0002:0EDA9C40       aBpcMode_0
  0002:0EDB4BB4       dji_cmm_state
  0002:0EDB4C34       aDjiPrivate
  0002:0EDB4D40       aFc300x_2
@@ -21934,18 +21945,14 @@
  0002:0EE052F0       aStgStg2IdxPrfC
  0002:0EE0531C       ambsh_nftl_list
  0002:0EE06EA8       aMicrosoft_com1
- 0002:0EE251E0       aSyvzsyvz
- 0002:0EE26500       aLkkk
- 0002:0EE2650C       aSss
- 0002:0EE26520       aTItMM
- 0002:0EE26568       aIiiiSsslkkkQuu
- 0002:0EE265A4       aYvzYvzYvzYvzYv
- 0002:0EE265D8       aYvz
  0002:0EE26E60       aFjEF
  0002:0EE26E70       aFjE
  0002:0EE27C2C       a98765443210_
  0002:0EE27E2C       aSg
  0002:0EE28760       a98765443210__0
+ 0003:0EF7A548       VideoEnc_TimeScale
+ 0003:0EF7A54C       VideoEnc_NumUnitsInTick
+ 0003:0EF7A550       VideoEnc_PtsOff
  0003:0EFC4540       SdHostAmb
  0003:0F2D6E40       unused_after_end
  0003:107112AC       _DjiDspImgFirData

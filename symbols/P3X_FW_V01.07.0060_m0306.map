@@ -1,4 +1,4 @@
-
+﻿
  Start         Length     Name                   Class
  0001:00000000 000085D34H .text                  CODE
  0002:00000000 00003AC80H .data                  DATA
@@ -151,6 +151,8 @@
  0001:080247EA       jpt_80247E6
  0001:08024830       def_80247E6
  0001:08024B5C       aTryToStartSimu
+ 0001:08025024       source
+ 0001:08025028       destination
  0001:08025246       packet_send_s00_cE0
  0001:08025378       jpt_8025374
  0001:08025394       def_8025374
@@ -172,6 +174,9 @@
  0001:08025BD4       aConnect_countU
  0001:08025BEC       aDisconect_coun
  0001:08025C04       aConnect_flagU
+ 0001:08025C8E       get_motor_startup_time
+ 0001:08025CB0       get_motor_start_error_code
+ 0001:08025CBC       get_motor_startup_times
  0001:08025CC2       check_allow_start_motors
  0001:0802600C       aMotorStart2dTo
  0001:08026034       aOffRadiusLimit
@@ -225,18 +230,23 @@
  0001:08026850       aStop
  0001:08026858       aM_5sS
  0001:08026864       aM_startSFailS
- 0001:08027260       packet_send_s03_c57
+ 0001:08027260       packet_send_gps_glns
  0001:08027352       packet_send_s00_c01
+ 0001:0802740E       packet_sub_802740E
+ 0001:0802748C       cb
  0001:080274A6       packet_encrypt_head
  0001:08028170       aFitlerAngular_
  0001:0802819C       aFcFHzDelayFMs
  0001:080281C4       aFitlerAngula_0
  0001:080281FC       aFc1FHzFc2FHzDe
  0001:08028224       aFitlerLinear_a
+ 0001:080288AA       temperature_cali_done
  0001:08028C02       OS_StatTaskInit
  0001:08028CD4       aUcOsIiiStatTas
  0001:08028F08       hal_compass_add
  0001:0802915C       aCompass
+ 0001:08029170       str
+ 0001:08029184       check_bit_field_u64
  0001:08029654       jpt_8029650
  0001:08029688       def_8029650
  0001:08029C60       OSCfg_Init
@@ -254,12 +264,49 @@
  0001:0802BA40       def_802BA2C
  0001:0802BB4A       jpt_802BB46
  0001:0802BB60       def_802BB46
+ 0001:0802BE44       check_set_home
+ 0001:0802BE5A       check_set_hot_point
+ 0001:0802BE72       check_set_course_lock
+ 0001:0802BE8A       check_test_led_when_startup
+ 0001:0802BE9C       check_packing_fail
+ 0001:0802BEB4       check_packing_mode
+ 0001:0802BEDC       check_usb_in_msc_or_valid
+ 0001:0802BEF2       check_mag_calib_st0
+ 0001:0802BF0A       check_mag_calib_st1
+ 0001:0802BF20       check_mag_calib_err
+ 0001:0802BF3A       check_temp_not_ready
+ 0001:0802BF68       check_bad_imu_atti
+ 0001:0802BFCC       check_sys_error
+ 0001:0802BFDC       check_imu_error
+ 0001:0802BFEC       check_compass_out_of_range
+ 0001:0802BFFC       check_rc_complt_lost
+ 0001:0802C00C       check_battery_warn
+ 0001:0802C048       check_battery_error
+ 0001:0802C070       check_imu_warning
+ 0001:0802C08E       check_fly_limit
+ 0001:0802C092       check_fdi_vibration
+ 0001:0802C096       check_imu_no_atti
+ 0001:0802C0B0       set_led_error
+ 0001:0802C0D4       set_led_status
+ 0001:0802C2CC       state_arr
  0001:0802C2D0       aLedChangedS
+ 0001:0802C2EC       copy_led_status
+ 0001:0802C512       flight_rec_store_fdi
  0001:0802C552       nullsub_32
+ 0001:0802D95C       imu_encrypt_buf
+ 0001:0802D976       flight_rec_store_CFF5
+ 0001:0802D97E       store_raw_gps_snr
+ 0001:0802D9C4       flight_rec_store_CFFx
  0001:0802E1B4       aComm_imu_initC
  0001:0802E2DC       nullsub_43
  0001:0802E318       nullsub_19
+ 0001:0802E3B6       packet_6bhead_802E3B6
+ 0001:0802E444       flight_rec_store_imu_tail
  0001:0802E61C       payload
+ 0001:0802E658       a1
+ 0001:0802EA88       inbuf
+ 0001:0802EAA4       outbuf
+ 0001:0802EAB0       imu_dt
  0001:0802EBAA       jpt_802EBA6
  0001:0802EC38       def_802EBA6
  0001:0802EC74       jpt_802EC70
@@ -420,6 +467,8 @@
  0001:08041F78       aStickCenterOut
  0001:08041F90       aStickMappingEr
  0001:08041FA4       get_receive_command_cb
+ 0001:08041FD0       packet_sub_8041FD0
+ 0001:08042052       j_packet_sub_8041FD0
  0001:08042090       cmd_exec_uni_01
  0001:080420E0       cmd_exec_fc_FD
  0001:080420F2       cmd_exec_uni_07
@@ -590,6 +639,8 @@
  0001:08048A94       aNullPointer
  0001:08048AA4       aSendBufferFull
  0001:08048AC0       aAssistantProte
+ 0001:08048ADC       cmd_get_reply_set00_cmd01
+ 0001:08048B0C       cmd_get_reply_set06_cmd32
  0001:08048B3C       get_reply_command_cb
  0001:0804923C       nullsub_24
  0001:080494C8       jpt_80494C4
@@ -608,6 +659,9 @@
  0001:08049AE8       nullsub_44
  0001:08049AEA       nullsub_85
  0001:08049AEC       nullsub_27
+ 0001:0804A472       update_near_gnd_state
+ 0001:0804A664       get_near_gnd_state
+ 0001:0804A66A       get_launch_state
  0001:0804A8DA       cmd_exec_fc_FC
  0001:0804AA28       aAppConnectChan
  0001:0804AA54       aAssistantConne
@@ -621,10 +675,23 @@
  0001:0804B22C       aSendByNavigati
  0001:0804B510       compute_buf_crc16
  0001:0804B558       packet_recompute_tail_checksum
+ 0001:0804BB1E       fill_imu_atti_acc_gyro
+ 0001:0804BB54       fill_imu_atti_gyro_itemp
+ 0001:0804BB86       fill_imu_atti_m
+ 0001:0804BBB8       fill_imu_atti_pos
+ 0001:0804BC44       fill_imu_atti_svn
+ 0001:0804BC52       fill_imu_atti_vg
+ 0001:0804BC9C       fill_imu_atti_ag
+ 0001:0804BCBE       fill_imu_atti_qs
+ 0001:0804BD0E       fill_imu_atti_gb
+ 0001:0804BD2C       flightrec_prepare_imu_ex
  0001:0804BE9C       printf_sub_804BE9C
  0001:0804C06C       aWorkqueue_hi_t
+ 0001:0804CA72       flight_rec_store_imu_raw
+ 0001:0804CA84       flight_rec_store_0062
  0001:0804CCC8       jpt_804CCC4
  0001:0804CD04       def_804CCC4
+ 0001:0804CD54       snprintf_va
  0001:0804CE24       kctrl_init_asst_takeoff
  0001:0804CE34       kctrl_init_auto_takeoff
  0001:0804CED0       ctrl_auto_takeoff
@@ -661,6 +728,10 @@
  0001:0804E726       jpt_804E722
  0001:0804E792       def_804E722
  0001:0804EC0A       find_stru_80B2DE0_fld0_to_fld4
+ 0001:0804F46E       api_camera_shot_handler
+ 0001:0804F4B6       api_camera_start_video_handler
+ 0001:0804F4FE       api_camera_stop_video_handler
+ 0001:0804F568       api_ctrl_mode_status_request_handler
  0001:0804F7E4       aCameraCameraSh
  0001:0804F804       aCameraSendSimp
  0001:0804F820       aCameraCameraSt
@@ -673,9 +744,12 @@
  0001:0804F930       aDD
  0001:0804F93C       aUserSendAckR_0
  0001:0804F960       aUserRevReqCmdS
- 0001:0804FC30       api_mission_planner_wp_set_info_handle
- 0001:0804FC72       api_mission_planner_wp_data_upload_handle
- 0001:0804FCA6       api_mission_planner_wp_request_cmd_handle
+ 0001:0804FA16       api_ctrl_mode_emergency_brake_handler
+ 0001:0804FA84       api_ctrl_mode_serial_open_nav_handler
+ 0001:0804FBA0       api_ctrl_mode_cmd_status_request
+ 0001:0804FC30       api_mission_planner_wp_set_info_handler
+ 0001:0804FC72       api_mission_planner_wp_data_upload_handler
+ 0001:0804FCA6       api_mission_planner_wp_request_cmd_handler
  0001:0804FD16       app_mission_hp_start_handler
  0001:0804FD68       aSdkUserApi_ctr
  0001:0804FDA0       aDisableEmergen
@@ -701,6 +775,10 @@
  0001:080500A4       aCallApi_miss_1
  0001:080500D4       aWpCmdD
  0001:080500E0       aCallApp_missio
+ 0001:08050266       api_mission_handler_hp_stop_handler
+ 0001:080502C8       api_mission_hp_pause_handler
+ 0001:0805035A       api_mission_hp_set_default_vel_handler
+ 0001:0805043A       api_mission_hp_set_radius_handler
  0001:080504BC       aUserHpFailedTo
  0001:080504E0       aUserHpFailed_0
  0001:08050520       aUserHpFailed_1
@@ -719,6 +797,11 @@
  0001:08050788       aAnticlockwise
  0001:08050798       aUserHpTryToCha
  0001:080507C8       aCallApi_miss_5
+ 0001:0805081A       api_mission_hp_set_radius_handler_0
+ 0001:08050866       api_mission_fm_init_start_handler
+ 0001:080509C2       api_mission_fm_stop_handler
+ 0001:08050A28       api_mission_fm_pause_handler
+ 0001:08050B30       api_reg_ver0_version_query
  0001:08050B98       aUserHpTryToC_0
  0001:08050BC8       aUserHpResetHea
  0001:08050BE0       aCallApi_miss_6
@@ -740,7 +823,11 @@
  0001:08050E94       aSdkUserErrorCm
  0001:08050EAC       aSdkUserReg_ver
  0001:08050ED4       aSdkUserAckX
+ 0001:08050F3E       api_reg_user_activation
+ 0001:08050FCE       api_reg_info_query
+ 0001:08050FFC       api_reg_echo
  0001:08051036       def_ack_func
+ 0001:08051132       api_init_dji_api_protocol
  0001:08051212       send_msg_serial_close_by_app
  0001:080512EC       aSdkUserVersion
  0001:08051308       aSdkUserVersi_0
@@ -755,6 +842,7 @@
  0001:0805143C       aSdkUserBaud_ra
  0001:08051458       aSdkUserStartSd
  0001:08051494       aSend_msg_seria
+ 0001:08051D2C       api_ctrl_health_flag
  0001:08051EE4       aCmd_agencyFini
  0001:08051F08       aCmd_agencyGetC
  0001:08051F2C       aCmd_agencySetT
@@ -767,6 +855,7 @@
  0001:080529CC       aUart
  0001:080529D4       aUsb
  0001:080529DC       bit_shift_left
+ 0001:08052A04       sprintf
  0001:08052CDC       src
  0001:08052CF0       aHomegpsLat11_7
  0001:08052D2C       aIoc_plLat11_7f
@@ -897,12 +986,26 @@
  0001:0805A3E8       aFlyModeCanTExe
  0001:0805A804       aD0xX
  0001:0805A938       app_pre_malloc_ack
+ 0001:0805A964       store_200270EC_msg
  0001:0805AAB0       aPleaseSetHwF_0
  0001:0805AAD0       aPleaseSetHwFun
  0001:0805C838       aNoNameFat
  0001:0805CC8C       aNoNameFat32
+ 0001:0805CF72       vector_op_mul_array_and_vec
+ 0001:0805DA1C       invec2
+ 0001:0805DA34       outarr
+ 0001:0805DE74       invec
+ 0001:0805DE78       invec1
+ 0001:0805E2F8       outvec
+ 0001:0805F02C       inarr1
  0001:0805F458       nullsub_36
+ 0001:0805F8A4       inarr2
  0001:080609F6       nullsub_54
+ 0001:080614CC       vector_op_zero
+ 0001:080614D8       vector_op_add
+ 0001:080614FC       vector_op_subtr
+ 0001:08061520       vector_op_mul_by_scalar
+ 0001:0806153A       vector_op_copy
  0001:08061570       nullsub_37
  0001:08061906       jpt_8061902
  0001:08061962       def_8061902
@@ -1006,6 +1109,8 @@
  0001:08065E38       OS_IdleTask
  0001:08065E56       OS_IdleTaskInit
  0001:08065EB2       OSInit
+ 0001:0806604A       OSSchedLock
+ 0001:0806608A       OSSchedUnlock
  0001:08066234       aUcOsIiiIdleTas
  0001:080662A4       aTaskQ
  0001:080662AC       aTaskSem
@@ -1016,6 +1121,8 @@
  0001:0806668C       def_8066616
  0001:08066DE8       nullsub_29
  0001:08067398       aLaunchCraftWit
+ 0001:08068410       flight_rec_store_battery_info
+ 0001:08068EFA       get_battery_error_flags
  0001:0806902C       aBatteryResetDe
  0001:080690BA       get_battery_stat
  0001:0806B01C       packet_send_response
@@ -1023,14 +1130,20 @@
  0001:0806BFAE       jpt_806BFAA
  0001:0806BFF0       def_806BFAA
  0001:0806CB2C       copy_16_bytes
- 0001:0806CF8A       gh_set_craft_homepoint
+ 0001:0806CF82       get_gps_signal_levels
+ 0001:0806CF8A       check_gps_ctrl_levels
+ 0001:0806D2A4       get_horiz_vel_sensor_id
  0001:0806D410       a10_7f10_7f6_2f
+ 0001:0806D534       flight_rec_store_payload
  0001:0806D6A6       packet_sub_806D6A6
  0001:0806D91C       aFly03d_dat
  0001:0806D930       aSys_dji
+ 0001:0806DD2E       flight_rec_store_textmsg
  0001:0806DD68       aDjiFlyLog
+ 0001:0806DF28       CPU_IntDisMeasStart
+ 0001:0806DF30       CPU_IntDisMeasStop
  0001:0806DFC6       printf_send_c0E_sub_806DFC6
- 0001:0806E08A       printf_send_c0E_sub_806E08A
+ 0001:0806E08A       flight_rec_printf_send_c0E
  0001:0806E0F6       packet_send_s00_c0Fa
  0001:0806E136       packet_send_s00_c0Fb
  0001:0806E17E       packet_send_s00_c0Fc
@@ -1066,9 +1179,18 @@
  0001:0806FF10       aStd_unknown_de
  0001:0806FF5C       aErrorTheDmIsNu
  0001:08070008       calculate_cali_matrix
+ 0001:08070060       double_to_float
+ 0001:080703E8       math_double_mul
  0001:0807053C       memcpy
+ 0001:080705C6       memcpy_0
+ 0001:0807089C       set_global_status_bit
+ 0001:080708DE       get_global_status_bit
+ 0001:08070930       get_motors_count
  0001:0807093E       jpt_807093A
  0001:08070952       def_807093A
+ 0001:08070956       update_esc_status
+ 0001:080709A0       get_esc_status
+ 0001:080709B4       get_esc_val_80709B4
  0001:080713FE       jpt_80713FA
  0001:08071414       def_80713FA
  0001:08071458       aCraftModelInfo
@@ -1077,6 +1199,8 @@
  0001:08071584       def_8071538
  0001:08073188       nullsub_38
  0001:080736D4       nullsub_39
+ 0001:08074312       nullsub_2
+ 0001:08074328       nullsub_3
  0001:080743E0       nullsub_12
  0001:08075458       aOld_iocResetIn
  0001:0807589C       aIocModeHomeLoc
@@ -1118,9 +1242,11 @@
  0001:080794EC       def_80794D8
  0001:080797C2       jpt_80797BE
  0001:080797E4       def_80797BE
+ 0001:08079870       motor_rec_fill
  0001:08079A68       aFilter_motor_p
  0001:08079A98       aFcFHzDelayFM_0
  0001:0807A692       packet_send_s03_c3E
+ 0001:0807A860       flight_rec_store_airport_limit_data
  0001:0807A9E4       aInvalidLimitDb
  0001:0807AA04       aInvalidFlashKe
  0001:0807AA24       aAirportLimitIn
@@ -1276,8 +1402,9 @@
  0001:0807F958       aBatteryBarcode
  0001:0807FCA0       aBatteryPowerOf
  0001:0807FCB4       packet_sub_807FCB4
- 0001:0807FD30       packet_sub_807FD30
+ 0001:0807FD30       packet_6bhead_807FD30
  0001:0807FDA6       packet_sub_807FDA6
+ 0001:0807FECE       packet_check_807FECE
  0001:0807FEDE       jpt_807FEDA
  0001:0807FFD2       def_807FEDA
  0001:0808001E       packet_payload_encrypt
@@ -1287,6 +1414,8 @@
  0001:08080D64       ctrl_navi_go_home
  0001:08080E04       jpt_8080E00
  0001:08080EEA       def_8080E00
+ 0001:080813DE       get_gohome_stage
+ 0001:080813E6       get_go_home_state
  0001:08082252       jpt_808224E
  0001:0808226E       def_808224E
  0001:08083028       aWFLiftF
@@ -1294,11 +1423,19 @@
  0001:08083102       nullsub_87
  0001:08083104       aDRollFPitchF_0
  0001:08083128       aCraftConfigu_0
+ 0001:08083148       cmd_get_reply_set02_cmdANY
  0001:08083198       cmd_exec_cam_80
  0001:080831EC       aCamReceiveRepl
  0001:08083220       aCamNoOneWaitsF
  0001:08083240       aCamCmdSeqDSucc
  0001:0808325C       aCamCmdSeqDFail
+ 0001:08083284       update_gimbal_pos_from_packet
+ 0001:0808330A       get_gimbal_pitch
+ 0001:0808331A       get_gimbal_roll
+ 0001:0808332A       get_gimbal_yaw
+ 0001:0808333A       get_gimbal_flag
+ 0001:0808334E       get_gimbal_type
+ 0001:08083354       set_gimbal_type
  0001:08083364       aGimbalPitchDRo
  0001:0808338C       find_no_fly_airport_latitude_index
  0001:080838E2       nullsub_40
@@ -1312,6 +1449,9 @@
  0001:080845AE       packet_send_s04_c14a
  0001:08084754       aRatePitch4_3fR
  0001:08084784       packet_send_s04_c14b
+ 0001:08084908       packet_esc_8084908
+ 0001:080849F0       packet_esc_80849F0
+ 0001:08084A80       packet_esc_8084A80
  0001:08084AF2       packet_send_s00_c0X
  0001:08084C18       aEscBugEscSendA
  0001:08084C3C       aEscNonperiodSl
@@ -1327,23 +1467,33 @@
  0001:08084FEA       packet_sub_8084FEA
  0001:08085474       jpt_8085470
  0001:08085488       def_8085470
+ 0001:0808577A       print_esc_status
  0001:08085870       aEscAliveInfo0x
  0001:08085890       aEscDProtocolEr
  0001:080858B0       aEscDVersionPro
  0001:080858E4       aLoaderV02d_02d
  0001:08085908       aFirmwareV02d_0
  0001:08085930       aEscDGetVersion
+ 0001:08085ADE       get_single_esc_status
+ 0001:08085AF8       get_single_esc_fieldC
+ 0001:08085B12       get_single_esc_field12
+ 0001:08085B2A       update_esc_is_stall
+ 0001:08085B7E       update_esc_is_empty
+ 0001:08085C08       request_esc_real_states
  0001:08085CC6       esc_link_up_sub_8085CC6
  0001:08085D44       aEsc_is_stallSt
  0001:08085D84       aEsc_is_emptySt
  0001:08085DD4       aEscDLinkUp
  0001:08085EE8       aEscDLinkDown
+ 0001:0808610C       outdt
  0001:08089690       jpt_808968C
  0001:08089786       def_808968C
  0001:08089BC6       cmd_exec_fc_51
  0001:08089C52       cmd_exec_fc_52_unused
  0001:08089C88       cmd_exec_fc_53
  0001:0808A6E0       a_D
+ 0001:0808A72A       packet_esc_808A72A
+ 0001:0808A7CA       uart_esc_set_baud
  0001:0808B564       jpt_808B560
  0001:0808BF70       aLine_enterFFF
  0001:0808BF88       aLine_exitFFF
@@ -1354,6 +1504,8 @@
  0001:0808C51C       aVel_limit_ente
  0001:0808D2B4       nullsub_13
  0001:0808D2C4       packet_send_s03_c43_0
+ 0001:0808D37E       flight_rec_store_ac_condition_mon
+ 0001:0808E6E0       flight_rec_store_input_state
  0001:0808EFBC       nullsub_14
  0001:0808EFBE       mark_fw_upgrading_start
  0001:0808EFC6       mark_fw_upgrading_finish
@@ -1710,10 +1862,14 @@
  0001:080A5CAC       aGh_set_user__0
  0001:080A5CF0       aHomegpsLat11_0
  0002:080A612C       aFollow_meInitG
+ 0002:080A64BC       eeprom_config_list
  0002:080A6678       receive_commands
  0002:080A6900       flyc_params
  0002:080AE100       flyc_params_pt2
  0002:080B2DB0       reply_commands
+ 0002:080B56BC       led_status_errors
+ 0002:080B5BC4       led_error_checks
+ 0002:080B5C74       led_status_normal
  0002:080B5CAC       no_fly_airports
  0002:080BDF64       array_80B5CAC_length
  0002:080BDF68       no_fly_areas
@@ -2848,9 +3004,25 @@
  0002:080DF930       aTemp_z
  0002:080DFB1C       a123456
  0002:080DFB28       aSdkV1_0BetaM10
+ 0005:20000084       api_vert_ctrl_mode
+ 0005:20000085       api_vert_ctrl_cmd_id
+ 0005:20000086       api_horiz_ctrl_mode
+ 0005:20000087       api_horiz_ctrl_cmd_id
+ 0005:20000088       api_torsion_ctrl_mode
+ 0005:20000089       api_torsion_ctrl_cmd_id
+ 0005:2000008A       api_atti_cmd_type
+ 0005:2000008B       api_atti_unkn2C
  0005:200000E4       ofdm_last_state
  0005:200000E8       test_deformation
+ 0005:200002EA       packet_seqctr
  0005:20000324       fw_upgrading
+ 0005:20000498       compass_mag_x
+ 0005:2000049A       compass_mag_y
+ 0005:2000049C       compass_mag_z
+ 0005:20000AC8       esc_is_stall
+ 0005:20000ACC       esc_is_empty
+ 0005:20000DB1       OSSchedLockNestingCtr
+ 0005:200010E8       g_config__unknown0
  0005:200010FC       g_config__device
  0005:20001100       g_config__system_command
  0005:2000111C       g_config__aircraft
@@ -2870,7 +3042,7 @@
  0005:200012F0       g_config__output_servo
  0005:20001316       g_config__unknown1
  0005:20001330       g_config__voltage2
- 0005:2000133C       g_config__fdi
+ 0005:2000133C       g_config__fdi0
  0005:2000140C       g_config__fdi_open
  0005:20001420       g_config__fdi_inject
  0005:20001428       g_config__imu_para_cfg
@@ -2879,10 +3051,11 @@
  0005:20001484       g_config__gps_cfg
  0005:20001494       g_config__gear_cfg
  0005:200014A4       g_config__esc_cfg
- 0005:200014A8       g_config__serial_api_cfg
+ 0005:200014A5       g_config__mvo_cfg
+ 0005:200014A6       g_config__serial_api_cfg
  0005:200014B0       g_config__imu_dir
  0005:200014D4       g_config__api_entry_cfg
- 0005:20001509       g_config__airport_limit_cfg
+ 0005:20001508       g_config__airport_limit_cfg
  0005:20001534       g_config__avoid_obstacle_limit_cfg
  0005:20001550       g_config__misc_cfg
  0005:20001560       g_config__hotpoint_cfg
@@ -2890,18 +3063,47 @@
  0005:200015C0       g_config__followme_cfg
  0005:20001600       g_config__waypoint_cfg
  0005:20001618       g_config__bat_limit
+ 0005:20001678       g_real__aircraft_status
+ 0005:2000167C       g_real__field_4
  0005:20001680       g_real__input
  0005:20001784       g_real__imu
+ 0005:20001804       ultrasonic_height
+ 0005:20001811       us_fail_flag
  0005:20001830       home_coords
+ 0005:20001840       coords_20001840
+ 0005:20001860       dis_to_home_x
+ 0005:20001864       dis_to_home_y
  0005:2000186D       g_real__status
  0005:20001880       g_real__knob
+ 0005:2000188C       g_real__config
  0005:20001E1C       g_real__config_status
  0005:20001E82       g_real__wm610_app_command
  0005:20001E84       g_real__force_on
  0005:20001F48       g_raw__input
+ 0005:20001F8C       gps_glns
+ 0005:20001FE4       rec_compass
  0005:2000206C       g_raw__battery_info
  0005:20002099       g_raw__gps_snr
+ 0005:200020E0       gohome_state
+ 0005:20002160       waypoint_debug
+ 0005:20002828       curr_gps_coords
+ 0005:20002854       ultrasonic_enabled
+ 0005:20002858       follow_me_cur_vel_x
+ 0005:2000285C       follow_me_cur_vel_y
  0005:20002864       g_navi_data.horiz_vel_sensor_id
+ 0005:20002A98       ctrl_horiz_horiz_pos
+ 0005:20002D1C       horiz_atti
+ 0005:20002F5C       horiz_ang_acc
+ 0005:20002FCC       ctrl_vert_vert_module
+ 0005:20003088       ctrl_vert_vert_pos
+ 0005:2000313C       ctrl_vert_vert_vel
+ 0005:200031B4       motor_specs
+ 0005:20003788       mag_bias_x
+ 0005:2000378C       mag_bias_y
+ 0005:20003790       mag_bias_z
+ 0005:20003794       mag_scale_x
+ 0005:20003798       mag_scale_y
+ 0005:2000379C       mag_scale_z
  0005:20008550       wp_setting.length
  0005:20008554       wp_setting.vel_cmd_range
  0005:20008558       wp_setting.idle_vel
@@ -2910,19 +3112,64 @@
  0005:2000855E       wp_setting.yaw_mode
  0005:2000855F       wp_setting.trace_mode
  0005:20008560       wp_setting.action_on_rc_lost
- 0005:2000B4B4       AttiData_200Hz.press
+ 0005:200097A8       gyrox_bias_raw
+ 0005:200097AC       gyroy_bias_raw
+ 0005:200097B0       gyroz_bias_raw
+ 0005:200097B4       gyro_bias_raw_flag
+ 0005:20009868       ns_abnormal_all
+ 0005:2000986C       history_ns_abnormal_all
+ 0005:20009BB8       rec_imu_init
+ 0005:2000B3CC       rec_imu_ex
+ 0005:2000B488       imu_atti
  0005:2000B578       imu_data
+ 0005:2000BBF8       pkt_flt_2000BBF8
+ 0005:2000BEA8       imu_gyro_x
+ 0005:2000BEAC       imu_gyro_y
+ 0005:2000BEB0       imu_gyro_z
+ 0005:2000BEB4       imu_acc_x
+ 0005:2000BEB8       imu_acc_y
+ 0005:2000BEBC       imu_acc_z
+ 0005:2000BED4       imu_m2_x
+ 0005:2000BED8       imu_m2_y
+ 0005:2000BEDC       imu_m2_z
+ 0005:2000C248       imu_alti
+ 0005:2000C2BC       imu_gb_x
+ 0005:2000C2C0       imu_gb_y
+ 0005:2000C2C4       imu_gb_z
+ 0005:2000C30C       imu_vg_x
+ 0005:2000C32C       imu_ag
+ 0005:2000C3BC       arr_3x3_2000C3BC
+ 0005:2000C4D8       imu_press
+ 0005:2000C4DC       imu_vg_z
+ 0005:2000C4E0       imu_ag_z
+ 0005:2000C529       imu_svn
+ 0005:2000C538       imu_lati
+ 0005:2000C540       imu_longi
+ 0005:2000C68C       imu_vo_vx
+ 0005:2000C690       imu_vo_vy
+ 0005:2000C694       imu_vo_vz
+ 0005:2000C6A0       imu_vo_px
+ 0005:2000C6A4       imu_vo_py
+ 0005:2000C6A8       imu_vo_pz
+ 0005:2000C6E4       imu_us_p
+ 0005:2000C6EC       imu_us_v
+ 0005:20015DD8       gps_byte_20015DD8
+ 0005:2001620C       rec_pt3_gps_snr
+ 0005:20016784       esc_real_state
  0005:20018760       OSIdleTaskTCB
+ 0005:20019758       battery_info
  0005:2001A7CC       debugr
  0005:2001A824       g_cfg_debug
  0005:2001C0B4       standard_range_min
  0005:2001C0B8       standard_range_max
+ 0005:2001C0DB       per_esc_error_bits
  0005:2001C154       local_simulator
  0005:2001C156       config_parameter__assistant_timeout
  0005:2001C158       config_parameter__motor_stop_lock
  0005:2001C2B2       imu_check_status.check_flag
  0005:2001C2B3       imu_check_status.status
  0005:2001C784       g_swdg_timeout_max
+ 0005:2001C914       OSIntNestingCtr
  0005:2001C948       default_gps_svn
  0005:2001C960       initial_lati
  0005:2001C968       initial_longti
@@ -2931,30 +3178,101 @@
  0005:2001C990       wall_dis_right
  0005:2001C994       wall_dis_back
  0005:2001C998       wall_dis_left
+ 0005:2001CAA8       follow_me_mission_status
+ 0005:2001CAD0       follow_me_dist_phone2phone
+ 0005:2001CAD4       follow_me_dist_drone2drone
+ 0005:2001CAD8       follow_me_curr_gimbal_pitch
+ 0005:2001CADC       follow_me_best_gimbal_pitch
+ 0005:2001CAF8       follow_me_heading_ref
+ 0005:2001CAFC       follow_me_heading_error
+ 0005:2001CB00       follow_me_heading_rate
+ 0005:2001CB04       follow_me_ascending_tgt_height
+ 0005:2001CB08       follow_me_ascending_error
+ 0005:2001CB0C       follow_me_ascending_vel
+ 0005:2001CB14       follow_me_cruise_vel_x
+ 0005:2001CB18       follow_me_cruise_vel_y
+ 0005:2001CB68       follow_me_pitch_error
+ 0005:2001CB6C       follow_me_best_pitch
+ 0005:2001CB70       gimbal_pitch_error
+ 0005:2001CB98       rec_follow_me_data
+ 0005:2001CD58       ctrl_horiz_horiz_module
+ 0005:2001CD88       svo_avoid_debug
+ 0005:2001CF08       ctrl_horiz_horiz_vel
+ 0005:2001CFDC       ctrl_vert_vert_acc
+ 0005:2001D350       wp_curve
+ 0005:2001D518       gimbal
+ 0005:2001D660       serial_api_inputs
+ 0005:2001D774       gimbal_roll
+ 0005:2001D778       gimbal_pitch
+ 0005:2001D77C       gimbal_yaw
+ 0005:2001DB5C       rec_fdi
+ 0005:2001DDE0       unkn_target_gimbal_yaw
+ 0005:2001DDE4       unkn_gimbal_yaw_error
+ 0005:2001DDE8       unkn_gimbal_yaw_error_x3
+ 0005:2001DDEC       unkn_target_gimbal_roll
+ 0005:2001DDF0       unkn_gimbal_roll_error
+ 0005:2001DDF4       unkn_gimbal_roll_error_x3
+ 0005:2001DDF8       unkn_target_gimbal_pitch
+ 0005:2001DDFC       unkn_gimbal_pitch_error
+ 0005:2001DE00       unkn_gimbal_pitch_error_x3
+ 0005:2001E0D0       gps_offset_x
+ 0005:2001E0D4       gps_offset_y
+ 0005:2001E0D8       gps_offset_z
+ 0005:2001E148       pkt_data_6bhead_imu
+ 0005:2001E210       temp_ctl_data
  0005:2001E234       imu_temp
+ 0005:20020011       motor_start_error_code
+ 0005:20020054       curr_follow_me_mission
+ 0005:200200B4       gimbal_type
  0005:200200D0       ioc_type
  0005:200200D8       cfg_var_table_size
+ 0005:200201CE       imu_init_counter
+ 0005:2002020C       imu_package_lost_count
+ 0005:20020220       rec_0002_seqno
+ 0005:20020B72       imu_m1_x
+ 0005:20020B74       imu_m1_y
+ 0005:20020B76       imu_m1_z
+ 0005:20020CD4       check_comm_state
  0005:20021514       g_hardfault_info
+ 0005:20021594       OSRunning
+ 0005:20021659       smatr_batt_cfg_l1
+ 0005:2002165A       smatr_batt_cfg_l2
+ 0005:20021664       g_filter_vol
+ 0005:20021668       g_filter_i
+ 0005:2002166C       g_evl_vol
+ 0005:20021670       g_delt_i
  0005:20021794       imu_type
+ 0005:20021994       vincent_debug_data
  0005:20021A84       g_debug.sim_flag
  0005:20021A88       g_debug.sim_var
  0005:20021AC3       is_home_point_set
+ 0005:20021E88       rec_hp_data
+ 0005:20022140       gps_signal_levels
  0005:20022148       global__status
+ 0005:20022580       ctrl_ccpm_dyn_ccpm
+ 0005:200226A4       ctrl_horiz_horiz_acc
+ 0005:2002284C       horiz_ang_vel
+ 0005:20022894       ctrl_vert_vert_thrust
+ 0005:200228A0       ctrl_motor
+ 0005:20022AB0       rec_ctrl_motor
+ 0005:20022AD4       craft_flight_mode
+ 0005:20022AF0       ac_condition_mon
  0005:20022BAC       fix_send_index
  0005:20022C0C       fix_send
+ 0005:20022C84       active_ledstatus
+ 0005:20022D1C       led_errors
+ 0005:20022DBC       gear_debug_info
+ 0005:20023148       airport_limit_dt0
+ 0005:20023168       airport_limit_dt1
+ 0005:20023188       airport_limit_dt2
  0005:20023F94       airport_limit_flash_key_20023F94
- 0005:20027AA0       imu_app_temp_cali.start_flag
- 0005:20027AA1       imu_app_temp_cali.state
- 0005:20027AA2       imu_app_temp_cali.cali_cnt
- 0005:20027AA3       imu_app_temp_cali.temp_ready
- 0005:20027AA4       imu_app_temp_cali.step
- 0005:20027AAB       imu_app_temp_cali.dst_cali_temp
- 0005:20027AAC       imu_app_temp_cali.bias_flag.temp_min
- 0005:20027AB0       imu_app_temp_cali.bias_flag.temp_max
- 0005:20027AB4       imu_app_temp_cali.bias_flag.temp_cali_status
- 0005:20027AB5       imu_app_temp_cali.bias_flag.base_cali_status
- 0005:20027AB6       imu_app_temp_cali.bias_flag.cfg_temp_cali_fw_version
- 0005:20027AB7       imu_app_temp_cali.bias_flag.cur_temp_cali_fw_version
+ 0005:200248B0       acc_or_count
+ 0005:20026D98       pkt_input_buf
+ 0005:20027928       imu_offset_x
+ 0005:2002792C       imu_offset_y
+ 0005:20027930       imu_offset_z
+ 0005:20027AA0       imu_app_temp_cali
  0005:2002A44C       wind_speed
+ 0005:2002B984       rec_imu_raw
 
 Program entry point at 0001:00000000
