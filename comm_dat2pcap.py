@@ -379,7 +379,7 @@ def main(argv):
   po = ProgOptions()
   # Parse command line options
   try:
-     opts, args = getopt.getopt(argv,"hvbd:p:u:",["help","version","storebad","datfile=","pcapfile=","userdlt="])
+     opts, args = getopt.getopt(argv,"hved:p:u:",["help","version","storebad","datfile=","pcapfile=","userdlt="])
   except getopt.GetoptError:
      print("Unrecognized options; check comm_dat2pcap.py --help")
      sys.exit(2)
