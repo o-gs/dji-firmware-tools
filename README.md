@@ -127,6 +127,12 @@ Example of extracting and then updating the flight controller parameters:
 
 ```./dji_flyc_param_ed.py -vv -u -m P3X_FW_V01.07.0060_m0306.bin```
 
+More examples, for other products:
+
+```./dji_flyc_param_ed.py -vv -x -b 0x420000 -m A3_FW_V01.02.00.00_m0306.bin```
+
+```./dji_flyc_param_ed.py -vv -x -b 0x420000 -m wm220_0306_v03.02.35.05_20170525.pro.bin```
+
 ### comm_dat2pcap.py
 
 DJI Universal Packet Container stream pareser with pcap output format.
