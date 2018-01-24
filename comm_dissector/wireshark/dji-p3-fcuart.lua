@@ -242,7 +242,9 @@ local HD_LINK_UART_CMD_TEXT = {
     [0x0a] = 'Osd Sweep Frequency',
     [0x0b] = 'Osd Devices State',
     [0x0c] = 'Osd Config',
+    [0x0d] = 'Osd Alter',
     [0x11] = 'Osd Channal Status',
+    [0x12] = 'Set Transciever Config',
     [0x15] = 'Osd Max Mcs',
     [0x16] = 'Osd Debug Info',
     [0x20] = 'Osd Sdr Sweep Frequency',
@@ -4557,9 +4559,6 @@ local function hd_link_set_transciever_reg_dissector(pkt_length, buffer, pinfo, 
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    --TODO verify
-    offset = offset + 2
-
     subtree:add_le (f.hd_link_transciever_reg_addr, payload(offset, 2))
     offset = offset + 2
 
@@ -4590,14 +4589,17 @@ end
 
 -- HD Link - Osd Sweep Frequency - 0x0a
 
---f.hd_link_osd_sweep_frequency_unknown0 = ProtoField.none ("dji_p3.hd_link_osd_sweep_frequency_unknown0", "Unknown0", base.NONE)
+f.hd_link_osd_sweep_frequency_unknown0 = ProtoField.bytes ("dji_p3.hd_link_osd_sweep_frequency_unknown0", "Unknown0", base.SPACE)
 
 local function hd_link_osd_sweep_frequency_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Sweep Frequency: Offset does not match - internal inconsistency") end
+    subtree:add_le (f.hd_link_osd_sweep_frequency_unknown0, payload(offset, 32))
+    offset = offset + 32
+
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Sweep Frequency: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Sweep Frequency: Payload size different than expected") end
 end
 
@@ -4704,6 +4706,34 @@ local function hd_link_osd_channal_status_dissector(pkt_length, buffer, pinfo, s
 
     if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Channal Status: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Channal Status: Payload size different than expected") end
+end
+
+-- HD Link - Set Transciever Config - 0x12
+
+f.hd_link_set_transciever_config_flag_20001A28_D_E = ProtoField.uint8 ("dji_p3.hd_link_set_transciever_config_flag_20001A28_D_E", "flag 20001A28 D and E", base.HEX, nil, nil, nil)
+f.hd_link_set_transciever_config_flag_20001A28_A_B = ProtoField.uint8 ("dji_p3.hd_link_set_transciever_config_flag_20001A28_A_B", "flag 20001A28 A and B", base.HEX, nil, nil, nil)
+f.hd_link_set_transciever_config_attenuation = ProtoField.uint8 ("dji_p3.hd_link_set_transciever_config_attenuation", "Tcx Attenuation", base.HEX, nil, nil, "dB; attenuation set to REG_TXn_ATTEN_0 register of AD9363")
+f.hd_link_set_transciever_config_flag_20001A28_C = ProtoField.uint8 ("dji_p3.hd_link_set_transciever_config_flag_20001A28_C", "flag 20001A28 C", base.HEX, nil, nil, nil)
+
+local function hd_link_set_transciever_config_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.hd_link_set_transciever_config_flag_20001A28_D_E, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.hd_link_set_transciever_config_flag_20001A28_A_B, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.hd_link_set_transciever_config_attenuation, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.hd_link_set_transciever_config_flag_20001A28_C, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set Transciever Config: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set Transciever Config: Payload size different than expected") end
 end
 
 -- HD Link - Osd Max Mcs - 0x15
@@ -5066,6 +5096,7 @@ local HD_LINK_UART_CMD_DISSECT = {
     [0x0b] = hd_link_osd_devices_state_dissector,
     [0x0c] = hd_link_osd_config_dissector,
     [0x11] = hd_link_osd_channal_status_dissector,
+    [0x12] = hd_link_set_transciever_config_dissector,
     [0x15] = hd_link_osd_max_mcs_dissector,
     [0x16] = hd_link_osd_debug_info_dissector,
     [0x20] = hd_link_osd_sdr_sweep_frequency_dissector,
