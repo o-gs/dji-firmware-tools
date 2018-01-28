@@ -23,8 +23,12 @@ import hashlib
 import binascii
 import time
 import argparse
+from Crypto.Cipher import AES
 from ctypes import *
 from os.path import basename
+
+encrypt_key = # TODO add key
+encrypt_iv = # TODO add init vector
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
@@ -137,8 +141,11 @@ def unpack(args):
         print('ERROR: Trailing bytes!')
         return -1
 
-    #TODO Add decryption
-    dec_buffer = enc_buffer
+    dec_buffer = bytes()
+    for i in range((header.size + 255) // 256):
+        enc_buffer = data[(i * 256):((i + 1) * 256)]
+        cipher = AES.new(encrypt_key, AES.MODE_CBC, encrypt_iv)
+        dec_buffer += cipher.decrypt(enc_buffer)
 
     md5_data = hashlib.md5()
     md5_data.update(dec_buffer)
@@ -213,8 +220,11 @@ def pack(args):
     print(header)
 
     # Encrypt the file
-    #TODO Add encryption
-    enc_buffer = dec_buffer
+    enc_buffer = bytes()
+    for i in range((int(len(data) + 255) // 256)):
+        dec_buffer = data[(i * 256):((i + 1) * 256)]
+        cipher = AES.new(encrypt_key, AES.MODE_CBC, encrypt_iv)
+        enc_buffer += cipher.encrypt(dec_buffer)
 
     if args.output == None:
         file_out = os.path.splitext(basename(args.input.name))[0] + '.encrypted.bin'
