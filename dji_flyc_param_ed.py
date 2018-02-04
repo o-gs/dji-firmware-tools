@@ -627,7 +627,9 @@ def flyc_parameter_blocks_pos_search(po, fwmdlfile, start_pos, func_align, data_
                   print("{}: Matching parameter block at 0x{:08x}: {:d} entries, format {:d}".format(po.mdlfile,pos,entry_count,ver))
               matches[match_pos] = entry_count
               match_entries += entry_count
-          else:
+          elif entry_count > 0:
+              if (po.verbose > 1):
+                  print("{}: Skipped parameter block at 0x{:08x} which was close to matching, format {:d}".format(po.mdlfile,pos,ver))
               entry_count = 0
       # Set position to search for next entry
       if entry_count > 0:
@@ -672,22 +674,26 @@ def flyc_param_get(po, fwmdlfile, param_pos, index, ver):
   parprop['size'] = eexpar.valsize
   parprop['attribute'] = eexpar.attribute
   if flyc_param_limit_unsigned_int(po, eexpar):
-     parprop['minValue'] = eexpar.limit_u.min
-     parprop['maxValue'] = eexpar.limit_u.max
-     parprop['defaultValue'] = eexpar.limit_u.deflt
+      parprop['minValue'] = eexpar.limit_u.min
+      parprop['maxValue'] = eexpar.limit_u.max
+      parprop['defaultValue'] = eexpar.limit_u.deflt
   elif flyc_param_limit_signed_int(po, eexpar):
-     parprop['minValue'] = eexpar.limit_i.min
-     parprop['maxValue'] = eexpar.limit_i.max
-     parprop['defaultValue'] = eexpar.limit_i.deflt
+      parprop['minValue'] = eexpar.limit_i.min
+      parprop['maxValue'] = eexpar.limit_i.max
+      parprop['defaultValue'] = eexpar.limit_i.deflt
   else:
-     parprop['minValue'] = eexpar.limit_f.min
-     parprop['maxValue'] = eexpar.limit_f.max
-     parprop['defaultValue'] = eexpar.limit_f.deflt
+      parprop['minValue'] = eexpar.limit_f.min
+      parprop['maxValue'] = eexpar.limit_f.max
+      parprop['defaultValue'] = eexpar.limit_f.deflt
   # Read property name
   fwmdlfile.seek(eexpar.nameptr - po.address_base, os.SEEK_SET)
   parprop['name'] = fwmdlfile.read(256).split(b'\0',1)[0].decode('UTF-8')
+  # Read property alias name
+  if hasattr(eexpar, 'aliasptr') and (eexpar.aliasptr > 0):
+      fwmdlfile.seek(eexpar.aliasptr - po.address_base, os.SEEK_SET)
+      parprop['alias'] = fwmdlfile.read(256).split(b'\0',1)[0].decode('UTF-8')
   if ((eexpar.attribute & 0x0B) == 0x0B): # Just a guess
-     parprop['modify'] = True
+      parprop['modify'] = True
   return parprop
 
 def flyc_param_set_type(po, fwmdlfile, param_pos, index, parprop, ver):
@@ -768,12 +774,15 @@ def flyc_list(po, fwmdlfile):
   (po.param_poslist, po.param_ver) = flyc_parameter_array_pos_search_any(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
   if len(po.param_poslist) <= 0:
       raise ValueError("Flight controller parameters array signature not detected in input file.")
+  full_index = 0
   for param_pos, param_count in po.param_poslist.items():
       if (po.verbose > 1):
         print("{}: Listing parameters array at 0x{:08x}: {:d} entries".format(po.mdlfile,param_pos,param_count))
       for i in range(0,param_count):
         parprop = flyc_param_get(po, fwmdlfile, param_pos, i, po.param_ver)
+        parprop['index'] = full_index
         print("{:3d} {:40s} {:2d} {:2d} 0x{:x} {:6.1f} {:6.1f} {:6.1f}".format(parprop['index'],parprop['name'],parprop['typeID'],parprop['size'],parprop['attribute'],parprop['minValue'],parprop['maxValue'],parprop['defaultValue']))
+        full_index += 1
 
 def flyc_extract(po, fwmdlfile):
   """ Extracts all flight controller parameters from firmware to JSON format text file.
@@ -783,15 +792,14 @@ def flyc_extract(po, fwmdlfile):
       raise ValueError("Flight controller parameters array signature not detected in input file.")
   inffile = open(po.inffile, "w")
   inffile.write("[\n")
-  first_entry = True
+  full_index = 0
   for param_pos, param_count in po.param_poslist.items():
       if (po.verbose > 1):
           print("{}: Extracting parameters array at 0x{:08x}: {:d} entries".format(po.mdlfile,param_pos,param_count))
       for i in range(0,param_count):
           parprop = flyc_param_get(po, fwmdlfile, param_pos, i, po.param_ver)
-          if (first_entry):
-              first_entry = False
-          else:
+          parprop['index'] = full_index
+          if (full_index != 0):
               inffile.write(",\n")
           inffile.write("\t{\n")
           for ppname in ('index',):
@@ -808,11 +816,16 @@ def flyc_extract(po, fwmdlfile):
           for ppname in ('name',):
               inffile.write(",\n")
               inffile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,parprop[ppname]))
+          for ppname in ('alias',):
+              if not ppname in parprop: continue
+              inffile.write(",\n")
+              inffile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,parprop[ppname]))
           if parprop['modify']:
               inffile.write(",\n")
               inffile.write("\t\t\"{:s}\" : {:s}".format('modify','true'))
           inffile.write("\n")
           inffile.write("\t}")
+          full_index += 1
   inffile.write("\n")
   inffile.write("]\n")
   inffile.close()
@@ -826,11 +839,13 @@ def flyc_update(po, fwmdlfile):
   with open(po.inffile) as inffile:
       nxparprops = json.load(inffile)
   update_count = 0
+  full_index = 0
   for param_pos, param_count in po.param_poslist.items():
       if (po.verbose > 1):
           print("{}: Updating parameters array at 0x{:08x}: {:d} entries".format(po.mdlfile,param_pos,param_count))
       for i in range(0, param_count):
           pvparprop = flyc_param_get(po, fwmdlfile, param_pos, i, po.param_ver)
+          pvparprop['index'] = full_index
           nxparprop = None
           for parprop in nxparprops:
               if (parprop['name'] == pvparprop['name']):
@@ -870,6 +885,7 @@ def flyc_update(po, fwmdlfile):
               flyc_param_set_attribs(po, fwmdlfile, param_pos, pvparprop['index'], nxparprop, po.param_ver)
           if (update_limits):
               flyc_param_set_limits(po, fwmdlfile, param_pos, pvparprop['index'], nxparprop, po.param_ver)
+          full_index += 1
   if (po.verbose > 0):
       print("{}: Updated {:d} parameter entries".format(po.mdlfile,update_count))
 
