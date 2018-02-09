@@ -24,8 +24,15 @@ assert(register_menu, wireshark_name .. " does not have the register_menu func!"
 local default_settings =
 {
     packets = {},
-    path_type       = 0,
+    lookat_lon = 0.0,
+    lookat_lat = 0.0,
+    lookat_alt = 0.0,
+    lookat_rng = 1.0,
+    path_type = 0,
 }
+
+-- Enums
+local TYP_NULL, TYP_AIR_POS = 0, 1
 
 ----------------------------------------
 -- in Lua, we have access to encapsulation types in the 'wtap_encaps' table,
@@ -100,14 +107,87 @@ function ExportCaptureInfo:create()
 end
 
 -- Go though packets and interpolate missing values
-local function process_packets(packets, til_end)
-    local start_pkt = {
-        typ = 0,
-    }
-    for key,pkt in pairs(packets) do
-        --pkt.lon
-        --pkt.lat
-        --pkt.alt
+local function process_packets(file_settings, packets, til_end)
+    debug("process_packets() called")
+    local start_air_pos = -1
+    min_lon = 180.0
+    min_lat = 180.0
+    min_alt = 999999999.0
+    max_lon = -180.0
+    max_lat = -180.0
+    max_alt = -999999999.0
+    for pos,pkt in pairs(packets) do
+        if (pkt.typ == TYP_AIR_POS) then
+            if (pkt.lon ~= 0.0) or (pkt.lat ~= 0.0) then
+                -- Add the value to limits
+                if (pkt.lon < min_lon) then
+                    min_lon = pkt.lon
+                end
+                if (pkt.lat < min_lat) then
+                    min_lat = pkt.lat
+                end
+                if (pkt.alt < min_alt) then
+                    min_alt = pkt.alt
+                end
+                if (pkt.lon > max_lon) then
+                    max_lon = pkt.lon
+                end
+                if (pkt.lat > max_lat) then
+                    max_lat = pkt.lat
+                end
+                if (pkt.alt > max_alt) then
+                    max_alt = pkt.alt
+                end
+                if (pos - start_air_pos > 1) then
+                    -- We've reached the end of a block with unset air_pos inside
+                    local spkt = {}
+                    if (start_air_pos >= 0) then
+                        spkt = packets[start_air_pos]
+                    else
+                        spkt = packets[pos]
+                        start_air_pos = 0
+                    end
+                    for cpos = start_air_pos+1, pos-1, 1 do
+                        local cpkt = packets[cpos]
+                        -- TODO we should assume linear time, not linear index
+                        cpkt.lon = spkt.lon + (pkt.lon - spkt.lon) * (cpos - start_air_pos) / (pos - start_air_pos)
+                        cpkt.lat = spkt.lat + (pkt.lat - spkt.lat) * (cpos - start_air_pos) / (pos - start_air_pos)
+                        -- mark the packet as fixed in postprocessing, not from real measurement
+                        cpkt.fixd = true
+                        -- mark the packet as processed
+                        cpkt.proc = true
+                    end
+                end
+                start_air_pos = pos
+                -- mark the packet as processed
+                pkt.proc = true
+            end
+        end
+    end
+    if (file_settings.lookat_lon == 0.0) or (file_settings.lookat_lat == 0.0) then
+        if (min_lon < 0) and (max_lon > 0) then
+            local max_tmp = max_lon
+            max_lon = 180.0 - min_lon
+            min_lon = max_tmp
+        end
+        if (min_lat < 0) and (max_lat > 0) then
+            local max_tmp = max_lat
+            max_lat = 180.0 - min_lat
+            min_lat = max_tmp
+        end
+        file_settings.lookat_lon = min_lon + (max_lon - min_lon)/2
+        file_settings.lookat_lat = min_lat + (max_lat - min_lat)/2
+        file_settings.lookat_alt = min_alt + (max_alt - min_alt)/2
+        
+        local R = 6378137.0 -- Radius of earth in meters
+        local angular_dist = max_lon * math.pi / 180 - min_lon * math.pi / 180
+        local a = math.sin(angular_dist/2) * math.sin(angular_dist/2)
+        local c_lon = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        local angular_dist = max_lat * math.pi / 180 - min_lat * math.pi / 180
+        local a = math.sin(angular_dist/2) * math.sin(angular_dist/2)
+        local c_lat = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        -- Compute range as max of path dimensions plus not lower than 10 m
+        file_settings.lookat_rng = math.max(R * math.max(c_lon, c_lat), 10.0)
     end
 end
 
@@ -140,7 +220,7 @@ local canwrite = {
 -- open a file for reading and write it out, at the same time, so we cerate another file_settings
 -- instance.
 local function create_writer_file_settings()
-    debug("create_writer_file_settings called")
+    debug("create_writer_file_settings() called")
 
     local file_settings = new_settings()
 
@@ -227,7 +307,9 @@ local function write(fh, capture, pinfo)
 
     -- Get fields from new packet
     local curr_pkt = {
-        typ = 0,
+        typ = TYP_NULL,
+        proc = false,
+        fixd = false,
     }
 
     local pkt_rec_etype = { dji_p3_rec_etype() }
@@ -240,12 +322,19 @@ local function write(fh, capture, pinfo)
         curr_pkt.lon = (new_air_longtitude[1].value * 180.0 / math.pi)
         curr_pkt.lat = (new_air_latitude[1].value * 180.0 / math.pi)
         curr_pkt.alt = new_air_rel_altitude[1].value * 0.1
-        curr_pkt.typ = 1
+        curr_pkt.typ = TYP_AIR_POS
     end
 
-    if (curr_pkt.typ ~= 0) then
+    if (curr_pkt.typ ~= TYP_NULL) then
         table.insert(file_settings.packets, curr_pkt)
     end
+
+    -- It would be nice to store packets when we're starting to keep too much of them;
+    -- but with all the features we have, that probably won't be possible
+    --if table.getn(file_settings.packets) > 1024 then
+    --    process_packets(file_settings, file_settings.packets, false)
+    --    ...
+    --end
 
     --warn("aaa" .. tostring(new_air_longtitude))
     -- first get times
@@ -267,28 +356,28 @@ local function write_close(fh, capture)
         return false
     end
 
-    process_packets(file_settings.packets, true)
+    process_packets(file_settings, file_settings.packets, true)
 
     local pathblk_head = [[    <Folder>
       <name>Paths</name>
-      <visibility>0</visibility>
+      <visibility>1</visibility>
       <description>Flight path.</description>
       <Placemark>
         <name>Absolute Extruded</name>
         <visibility>0</visibility>
-        <description>Transparent green wall with yellow outlines</description>
+        <description>Flight path line</description>
         <LookAt>
-          <longitude>-112.2643334742529</longitude>
-          <latitude>36.08563154742419</latitude>
-          <altitude>0</altitude>
-          <heading>-125.7518698668815</heading>
-          <tilt>44.61038665812578</tilt>
-          <range>4451.842204068102</range>
+          <longitude>]] .. file_settings.lookat_lon .. [[</longitude>
+          <latitude>]] .. file_settings.lookat_lat .. [[</latitude>
+          <altitude>]] .. file_settings.lookat_alt .. [[</altitude>
+          <heading>-45.0</heading>
+          <tilt>45.0</tilt>
+          <range>]] .. file_settings.lookat_rng .. [[</range>
         </LookAt>
         <styleUrl>#yellowLineGreenPoly</styleUrl>
         <LineString>
           <extrude>1</extrude>
-          <tessellate>1</tessellate>
+          <tessellate>0</tessellate>
           <!-- <altitudeMode>absolute</altitudeMode> -->
           <altitudeMode>relativeToGround</altitudeMode>
           <coordinates>
@@ -298,7 +387,7 @@ local function write_close(fh, capture)
         return false
     end
 
-    for key,pkt in pairs(file_settings.packets) do
+    for pos,pkt in pairs(file_settings.packets) do
         local pathblk_line = "            " .. pkt.lon .. "," .. pkt.lat .. "," .. pkt.alt .. "\n"
         if not fh:write(pathblk_line) then
             info("write: error writing path block line to file")
