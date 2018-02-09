@@ -2,6 +2,9 @@
 --------------------------------------------------------------------------------
 --[[
     This is a Wireshark Lua-based KML file exporter for DJI packets.
+
+    To enable debug output in LUA console, set `console.log.level: 252` in
+    Wireshark `preferences` file.
 --]]
 --------------------------------------------------------------------------------
 
@@ -243,12 +246,19 @@ local function write_open(fh, capture)
 
     -- write out file header
     local hdr = [[<?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2">
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
   <Document>
     <name>Dji Flight Log - FILENAME</name>
     <open>1</open>
     <description>Path configuration: TODO</description>
+    <!-- For best viewing experience, select "Do not automatically tilt while zooming"
+         option in Google Earth "Navigation" config tab. -->
     <Style id="purpleLineGreenPoly">
+      <IconStyle>
+        <Icon>
+          <href>http://maps.macnoise.com/scripts/plane.png</href>
+        </Icon>
+      </IconStyle>
       <LineStyle>
         <color>7fff00ff</color>
         <width>4</width>
@@ -258,6 +268,11 @@ local function write_open(fh, capture)
       </PolyStyle>
     </Style>
     <Style id="yellowLineGreenPoly">
+      <IconStyle>
+        <Icon>
+          <href>http://maps.macnoise.com/scripts/plane.png</href>
+        </Icon>
+      </IconStyle>
       <LineStyle>
         <color>7f00ffff</color>
         <width>4</width>
@@ -358,12 +373,12 @@ local function write_close(fh, capture)
 
     process_packets(file_settings, file_settings.packets, true)
 
-    local pathblk_head = [[    <Folder>
+    local pathblk_part = [[    <Folder>
       <name>Paths</name>
       <visibility>1</visibility>
       <description>Flight path.</description>
       <Placemark>
-        <name>Absolute Extruded</name>
+        <name>Whole path</name>
         <visibility>0</visibility>
         <description>Flight path line</description>
         <LookAt>
@@ -382,7 +397,7 @@ local function write_close(fh, capture)
           <altitudeMode>relativeToGround</altitudeMode>
           <coordinates>
 ]]
-    if not fh:write(pathblk_head) then
+    if not fh:write(pathblk_part) then
         info("write: error writing path block head to file")
         return false
     end
@@ -395,12 +410,54 @@ local function write_close(fh, capture)
         end
     end
 
-    local pathblk_tail = [[          </coordinates>
+    local pathblk_part = [[          </coordinates>
         </LineString>
+      </Placemark>
+      <Placemark>
+        <name>Path in time</name>
+        <visibility>1</visibility>
+        <styleUrl>#yellowLineGreenPoly</styleUrl>
+        <gx:Track>
+          <extrude>1</extrude>
+          <!-- <altitudeMode>absolute</altitudeMode> -->
+          <altitudeMode>relativeToGround</altitudeMode>
+]]
+    if not fh:write(pathblk_part) then
+        info("write: error writing path block head to file")
+        return false
+    end
+
+    for pos,pkt in pairs(file_settings.packets) do
+        -- TODO use proper timestamp when available
+        local ts = os.time() + pos / 1000
+        local pathblk_line = "          <when>" .. os.date('%Y-%m-%dT%H:%M:%S', ts) .. string.format(".%03d",pos % 1000) .. "</when>\n"
+        if not fh:write(pathblk_line) then
+            info("write: error writing path block line to file")
+            return false
+        end
+    end
+
+    for pos,pkt in pairs(file_settings.packets) do
+        local pathblk_line = "          <gx:coord>" .. pkt.lon .. " " .. pkt.lat .. " " .. pkt.alt .. "</gx:coord>\n"
+        if not fh:write(pathblk_line) then
+            info("write: error writing path block line to file")
+            return false
+        end
+    end
+
+    for pos,pkt in pairs(file_settings.packets) do
+        local pathblk_line = "          <gx:angles>" .. 20.0 .. " " .. 0.0 .. " " .. 0.0 .. "</gx:angles>\n"
+        if not fh:write(pathblk_line) then
+            info("write: error writing path block line to file")
+            return false
+        end
+    end
+
+    local pathblk_part = [[        </gx:Track>
       </Placemark>
     </Folder>
 ]]
-    if not fh:write(pathblk_tail) then
+    if not fh:write(pathblk_part) then
         info("write: error writing path block tail to file")
         return false
     end
