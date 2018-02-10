@@ -256,8 +256,13 @@ local function write_open(fh, capture)
     <Style id="purpleLineGreenPoly">
       <IconStyle>
         <Icon>
-          <href>http://maps.macnoise.com/scripts/plane.png</href>
+          <href>onepx_trans.png</href>
         </Icon>
+        <scale>0</scale>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
       </IconStyle>
       <LineStyle>
         <color>7fff00ff</color>
@@ -270,9 +275,13 @@ local function write_open(fh, capture)
     <Style id="yellowLineGreenPoly">
       <IconStyle>
         <Icon>
-          <href>http://maps.macnoise.com/scripts/plane.png</href>
+          <href>onepx_trans.png</href>
         </Icon>
+        <scale>0</scale>
       </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
       <LineStyle>
         <color>7f00ffff</color>
         <width>4</width>
@@ -373,6 +382,20 @@ local function write_close(fh, capture)
 
     process_packets(file_settings, file_settings.packets, true)
 
+    local lookat_blk = [[      <LookAt>
+        <longitude>]] .. file_settings.lookat_lon .. [[</longitude>
+        <latitude>]] .. file_settings.lookat_lat .. [[</latitude>
+        <altitude>]] .. file_settings.lookat_alt .. [[</altitude>
+        <heading>-45.0</heading>
+        <tilt>45.0</tilt>
+        <range>]] .. file_settings.lookat_rng .. [[</range>
+      </LookAt>
+]]
+    if not fh:write(lookat_blk) then
+        info("write: error writing lookat block to file")
+        return false
+    end
+
     local pathblk_part = [[    <Folder>
       <name>Paths</name>
       <visibility>1</visibility>
@@ -421,6 +444,22 @@ local function write_close(fh, capture)
           <extrude>1</extrude>
           <!-- <altitudeMode>absolute</altitudeMode> -->
           <altitudeMode>relativeToGround</altitudeMode>
+          <Model id="aircraftBody">
+            <Orientation>
+              <heading>0.0</heading>
+              <tilt>-90.0</tilt>
+              <roll>0.0</roll>
+            </Orientation>
+            <Scale>
+              <x>0.005</x>
+              <y>0.005</y>
+              <z>0.005</z>
+            </Scale>
+            <Link>
+              <href>Phantom3_body_all.dae</href>
+              <refreshMode>once</refreshMode>
+            </Link>
+          </Model>
 ]]
     if not fh:write(pathblk_part) then
         info("write: error writing path block head to file")
