@@ -33,7 +33,7 @@ local default_settings =
 }
 
 -- Enums
-local TYP_NULL, TYP_AIR_POS = 0, 1
+local TYP_NULL, TYP_AIR_POS, TYP_RC_STAT, TYP_MOTOR_STAT = 0, 1, 2, 3
 
 ----------------------------------------
 -- in Lua, we have access to encapsulation types in the 'wtap_encaps' table,
@@ -355,9 +355,21 @@ end
 
 -- declare some field extractors
 local dji_p3_rec_etype = Field.new("dji_p3.rec_etype")
+-- P3 flight record packet 0x000c
 local dji_p3_rec_osd_general_longtitude = Field.new("dji_p3.rec_osd_general_longtitude")
 local dji_p3_rec_osd_general_latitude = Field.new("dji_p3.rec_osd_general_latitude")
 local dji_p3_rec_osd_general_relative_height = Field.new("dji_p3.rec_osd_general_relative_height")
+-- P3 flight record packet 0x0000
+local dji_p3_rec_controller_g_real_input_channel_command_aileron = Field.new("dji_p3.rec_controller_g_real_input_channel_command_aileron")
+local dji_p3_rec_controller_g_real_input_channel_command_elevator = Field.new("dji_p3.rec_controller_g_real_input_channel_command_elevator")
+local dji_p3_rec_controller_g_real_input_channel_command_throttle = Field.new("dji_p3.rec_controller_g_real_input_channel_command_throttle")
+local dji_p3_rec_controller_g_real_input_channel_command_rudder = Field.new("dji_p3.rec_controller_g_real_input_channel_command_rudder")
+local dji_p3_rec_controller_g_real_input_channel_command_mode = Field.new("dji_p3.rec_controller_g_real_input_channel_command_mode")
+local dji_p3_rec_controller_g_real_status_control_real_mode = Field.new("dji_p3.rec_controller_g_real_status_control_real_mode")
+local dji_p3_rec_controller_g_real_status_ioc_control_command_mode = Field.new("dji_p3.rec_controller_g_real_status_ioc_control_command_mode")
+local dji_p3_rec_controller_g_real_status_rc_state = Field.new("dji_p3.rec_controller_g_real_status_rc_state")
+local dji_p3_rec_controller_g_real_status_motor_status = Field.new("dji_p3.rec_controller_g_real_status_motor_status")
+local dji_p3_rec_controller_g_real_status_main_batery_voltage = Field.new("dji_p3.rec_controller_g_real_status_main_batery_voltage")
 
 local function write(fh, capture, pinfo)
     debug("write() called")
@@ -391,6 +403,36 @@ local function write(fh, capture, pinfo)
         curr_pkt.lat = (new_air_latitude[1].value * 180.0 / math.pi)
         curr_pkt.alt = new_air_rel_altitude[1].value * 0.1
         curr_pkt.typ = TYP_AIR_POS
+    elseif (pkt_rec_etype[1].value == 0x0000) then
+        local new_motor_status = { dji_p3_rec_controller_g_real_status_motor_status() }
+        curr_pkt.motor_status = new_motor_status[1].value
+        curr_pkt.typ = TYP_MOTOR_STAT
+        table.insert(file_settings.packets, curr_pkt)
+
+        --local new_batery_voltage = { dji_p3_rec_controller_g_real_status_main_batery_voltage() }
+
+        local curr_pkt = {
+            typ = TYP_NULL,
+            proc = false,
+            fixd = false,
+        }
+        local new_input_aileron = { dji_p3_rec_controller_g_real_input_channel_command_aileron() }
+        local new_input_elevator = { dji_p3_rec_controller_g_real_input_channel_command_elevator() }
+        local new_input_throttle = { dji_p3_rec_controller_g_real_input_channel_command_throttle() }
+        local new_input_rudder = { dji_p3_rec_controller_g_real_input_channel_command_rudder() }
+        local new_input_mode = { dji_p3_rec_controller_g_real_input_channel_command_mode() }
+        local new_control_real_mode = { dji_p3_rec_controller_g_real_status_control_real_mode() }
+        local new_ioc_control_mode = { dji_p3_rec_controller_g_real_status_ioc_control_command_mode() }
+        local new_rc_state = { dji_p3_rec_controller_g_real_status_rc_state() }
+        curr_pkt.aileron = new_input_aileron[1].value
+        curr_pkt.elevator = new_input_elevator[1].value
+        curr_pkt.throttle = new_input_throttle[1].value
+        curr_pkt.rudder = new_input_rudder[1].value
+        curr_pkt.input_mode = new_input_mode[1].value
+        curr_pkt.real_mode = new_control_real_mode[1].value
+        curr_pkt.control_mode = new_ioc_control_mode[1].value
+        curr_pkt.rc_state = new_rc_state[1].value
+        curr_pkt.typ = TYP_RC_STAT
     end
 
     if (curr_pkt.typ ~= TYP_NULL) then
@@ -465,10 +507,12 @@ local function write_static_paths_folder(fh, file_settings)
     end
 
     for pos,pkt in pairs(file_settings.packets) do
-        local pathblk_line = "            " .. pkt.lon .. "," .. pkt.lat .. "," .. pkt.alt .. "\n"
-        if not fh:write(pathblk_line) then
-            info("write: error writing path block line to file")
-            return false
+        if (pkt.typ == TYP_AIR_POS) then
+            local pathblk_line = "            " .. pkt.lon .. "," .. pkt.lat .. "," .. pkt.alt .. "\n"
+            if not fh:write(pathblk_line) then
+                info("write: error writing path block line to file")
+                return false
+            end
         end
     end
 
@@ -517,34 +561,40 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
     end
 
     for pos,pkt in pairs(file_settings.packets) do
-        -- TODO use proper timestamp when available
-        local ts = os.time{year=2018, month=1, day=1, hour=0} + pos / 100
-        -- First entry must be at a whole second, or stranger things will happen
-        if (pos == 1) then
-            ts = math.floor(ts)
-        end
-        local pathblk_line = "          <when>" .. os.date('%Y-%m-%dT%H:%M:%S', ts) .. string.format(".%03dZ", (ts * 1000) % 1000) .. "</when>\n"
-        if not fh:write(pathblk_line) then
-            info("write: error writing path block line to file")
-            return false
-        end
-    end
-
-    for pos,pkt in pairs(file_settings.packets) do
-        local coord = {}
-        geom_wgs84_coords_shift_xyz(coord, pkt, model_info.shift_x, model_info.shift_y, file_settings.ground_altitude + model_info.shift_z)
-        local pathblk_line = "          <gx:coord>" .. coord.lon .. " " .. coord.lat .. " " .. coord.alt .. "</gx:coord>\n"
-        if not fh:write(pathblk_line) then
-            info("write: error writing path block line to file")
-            return false
+        if (pkt.typ == TYP_AIR_POS) then
+            -- TODO use proper timestamp when available
+            local ts = os.time{year=2018, month=1, day=1, hour=0} + pos / 100
+            -- First entry must be at a whole second, or stranger things will happen
+            if (pos == 1) then
+                ts = math.floor(ts)
+            end
+            local pathblk_line = "          <when>" .. os.date('%Y-%m-%dT%H:%M:%S', ts) .. string.format(".%03dZ", (ts * 1000) % 1000) .. "</when>\n"
+            if not fh:write(pathblk_line) then
+                info("write: error writing path block line to file")
+                return false
+            end
         end
     end
 
     for pos,pkt in pairs(file_settings.packets) do
-        local pathblk_line = "          <gx:angles>" .. 0.0 .. " " .. 0.0 .. " " .. 0.0 .. "</gx:angles>\n"
-        if not fh:write(pathblk_line) then
-            info("write: error writing path block line to file")
-            return false
+        if (pkt.typ == TYP_AIR_POS) then
+            local coord = {}
+            geom_wgs84_coords_shift_xyz(coord, pkt, model_info.shift_x, model_info.shift_y, file_settings.ground_altitude + model_info.shift_z)
+            local pathblk_line = "          <gx:coord>" .. coord.lon .. " " .. coord.lat .. " " .. coord.alt .. "</gx:coord>\n"
+            if not fh:write(pathblk_line) then
+                info("write: error writing path block line to file")
+                return false
+            end
+        end
+    end
+
+    for pos,pkt in pairs(file_settings.packets) do
+        if (pkt.typ == TYP_AIR_POS) then
+            local pathblk_line = "          <gx:angles>" .. 0.0 .. " " .. 0.0 .. " " .. 0.0 .. "</gx:angles>\n"
+            if not fh:write(pathblk_line) then
+                info("write: error writing path block line to file")
+                return false
+            end
         end
     end
 
@@ -574,19 +624,19 @@ local function write_dynamic_paths_folder(fh, file_settings)
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop1", fname="phantom_3_prop_singl_run1.dae", shift_x=0.0109, shift_y=0.0109, shift_z=0.15 }
+        part_name="Prop1", fname="phantom_3_prop_singl_run2.dae", shift_x=0.0109, shift_y=0.0109, shift_z=0.15 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop2", fname="phantom_3_prop_singl_run1.dae", shift_x=0.0109, shift_y=-0.0109, shift_z=0.15 }
+        part_name="Prop2", fname="phantom_3_prop_singl_run2.dae", shift_x=0.0109, shift_y=-0.0109, shift_z=0.15 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop3", fname="phantom_3_prop_singl_run1.dae", shift_x=-0.0109, shift_y=-0.0109, shift_z=0.15 }
+        part_name="Prop3", fname="phantom_3_prop_singl_run2.dae", shift_x=-0.0109, shift_y=-0.0109, shift_z=0.15 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop4", fname="phantom_3_prop_singl_run1.dae", shift_x=-0.0109, shift_y=0.0109, shift_z=0.15 }
+        part_name="Prop4", fname="phantom_3_prop_singl_run2.dae", shift_x=-0.0109, shift_y=0.0109, shift_z=0.15 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local blk = [[    </Folder>
@@ -638,7 +688,7 @@ local function init_payload_dump(filename, ground_alt_val, path_style_val)
 
     local packet_count = 0
     -- Osd General
-    local filter = "dji_p3.rec_etype == 0x000c"
+    local filter = "dji_p3.rec_etype == 0x000c or dji_p3.rec_etype == 0x0000"
     local tap = Listener.new(nil,filter)
     local fh = assert(io.open(filename, "w+"))
 
