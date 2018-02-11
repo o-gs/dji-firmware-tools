@@ -27,10 +27,7 @@ assert(register_menu, wireshark_name .. " does not have the register_menu func!"
 local default_settings =
 {
     packets = {},
-    lookat_lon = 0.0,
-    lookat_lat = 0.0,
-    lookat_alt = 0.0,
-    lookat_rng = 1.0,
+    lookat = { lon = 0.0, lat = 0.0, alt = 0.0, rng = 1.0, },
     path_type = 0,
 }
 
@@ -101,12 +98,24 @@ local ExportCaptureInfo = {}
 ExportCaptureInfo.__index = ExportCaptureInfo
 
 function ExportCaptureInfo:create()
-   local acnt = {}             -- our new object
-   setmetatable(acnt,ExportCaptureInfo)  -- make ExportCaptureInfo handle lookup
-   -- initialize attribs
-   acnt.user_app = wireshark_name
-   acnt.private_table = {}
-   return acnt
+    local acnt = {}             -- our new object
+    setmetatable(acnt,ExportCaptureInfo)  -- make ExportCaptureInfo handle lookup
+    -- initialize attribs
+    acnt.user_app = wireshark_name
+    acnt.private_table = {}
+    return acnt
+end
+
+-- Shifts given WGS84+Z coordinates by (x,y,z) shift given in meters
+local function geom_wgs84_coords_shift_xyz(ocoord, icoord, shift_meters_x, shift_meters_y, shift_meters_z)
+    -- one degree of longitude on the Earth surface equals 111320 meters (at the equator)
+    angular_lat = icoord.lat * math.pi / 180
+    delta_longitude = shift_meters_x / (111320.0 * math.cos(angular_lat))
+    -- one degree of latitude on the Earth surface equals 110540 meters
+    delta_latitude = shift_meters_y / 110540.0
+    ocoord.lon = icoord.lon + delta_longitude * 180 / math.pi
+    ocoord.lat = icoord.lat + delta_latitude * 180 / math.pi
+    ocoord.alt = icoord.alt + shift_meters_z
 end
 
 -- Go though packets and interpolate missing values
@@ -167,7 +176,7 @@ local function process_packets(file_settings, packets, til_end)
             end
         end
     end
-    if (file_settings.lookat_lon == 0.0) or (file_settings.lookat_lat == 0.0) then
+    if (file_settings.lookat.lon == 0.0) or (file_settings.lookat.lat == 0.0) then
         if (min_lon < 0) and (max_lon > 0) then
             local max_tmp = max_lon
             max_lon = 180.0 - min_lon
@@ -178,9 +187,9 @@ local function process_packets(file_settings, packets, til_end)
             max_lat = 180.0 - min_lat
             min_lat = max_tmp
         end
-        file_settings.lookat_lon = min_lon + (max_lon - min_lon)/2
-        file_settings.lookat_lat = min_lat + (max_lat - min_lat)/2
-        file_settings.lookat_alt = min_alt + (max_alt - min_alt)/2
+        file_settings.lookat.lon = min_lon + (max_lon - min_lon)/2
+        file_settings.lookat.lat = min_lat + (max_lat - min_lat)/2
+        file_settings.lookat.alt = min_alt + (max_alt - min_alt)/2
         
         local R = 6378137.0 -- Radius of earth in meters
         local angular_dist = max_lon * math.pi / 180 - min_lon * math.pi / 180
@@ -190,7 +199,7 @@ local function process_packets(file_settings, packets, til_end)
         local a = math.sin(angular_dist/2) * math.sin(angular_dist/2)
         local c_lat = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
         -- Compute range as max of path dimensions plus not lower than 10 m
-        file_settings.lookat_rng = math.max(R * math.max(c_lon, c_lat), 10.0)
+        file_settings.lookat.rng = math.max(R * math.max(c_lon, c_lat), 10.0)
     end
 end
 
@@ -263,7 +272,6 @@ local function write_open(fh, capture)
       <LabelStyle>
         <scale>0</scale>
       </LabelStyle>
-      </IconStyle>
       <LineStyle>
         <color>7fff00ff</color>
         <width>4</width>
@@ -290,13 +298,31 @@ local function write_open(fh, capture)
         <color>7f00ff00</color>
       </PolyStyle>
     </Style>
+    <Style id="noLineNoPoly">
+      <IconStyle>
+        <Icon>
+          <href>onepx_trans.png</href>
+        </Icon>
+        <scale>0</scale>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <LineStyle>
+        <color>00ffffff</color>
+        <width>0</width>
+      </LineStyle>
+      <PolyStyle>
+        <color>00ffffff</color>
+        <fill>0</fill>
+        <outline>0</outline>
+      </PolyStyle>
+    </Style>
 ]]
     if not hdr then
         info("write_open: error generating file header")
         return false
     end
-
-    debug("write_open generating:" .. Struct.tohex(hdr))
 
     if not fh:write(hdr) then
         info("write_open: error writing file header to file")
@@ -370,49 +396,42 @@ local function write(fh, capture, pinfo)
     return true
 end
 
-local function write_close(fh, capture)
-    debug("write_close() called")
-
-    -- get file settings
-    local file_settings = capture.private_table
-    if not file_settings then
-        info("write() failed to get private table file settings")
-        return false
-    end
-
-    process_packets(file_settings, file_settings.packets, true)
-
-    local lookat_blk = [[      <LookAt>
-        <longitude>]] .. file_settings.lookat_lon .. [[</longitude>
-        <latitude>]] .. file_settings.lookat_lat .. [[</latitude>
-        <altitude>]] .. file_settings.lookat_alt .. [[</altitude>
-        <heading>-45.0</heading>
-        <tilt>45.0</tilt>
-        <range>]] .. file_settings.lookat_rng .. [[</range>
-      </LookAt>
+local function write_lookat(fh, indent, lookat, head, tilt)
+    local blk = indent .. [[<LookAt>
+]] .. indent .. [[  <longitude>]] .. lookat.lon .. [[</longitude>
+]] .. indent .. [[  <latitude>]] .. lookat.lat .. [[</latitude>
+]] .. indent .. [[  <altitude>]] .. lookat.alt .. [[</altitude>
+]] .. indent .. [[  <heading>]] .. head .. [[</heading>
+]] .. indent .. [[  <tilt>]] .. tilt .. [[</tilt>
+]] .. indent .. [[  <range>]] .. lookat.rng .. [[</range>
+]] .. indent .. [[</LookAt>
 ]]
-    if not fh:write(lookat_blk) then
-        info("write: error writing lookat block to file")
-        return false
-    end
+    return fh:write(blk)
+end
 
-    local pathblk_part = [[    <Folder>
-      <name>Paths</name>
-      <visibility>1</visibility>
+local function write_static_paths_folder(fh, file_settings)
+    debug("write_static_paths_folder() called")
+    local blk = [[    <Folder>
+      <name>Static paths</name>
+      <visibility>0</visibility>
       <description>Flight path.</description>
       <Placemark>
         <name>Whole path</name>
         <visibility>0</visibility>
         <description>Flight path line</description>
-        <LookAt>
-          <longitude>]] .. file_settings.lookat_lon .. [[</longitude>
-          <latitude>]] .. file_settings.lookat_lat .. [[</latitude>
-          <altitude>]] .. file_settings.lookat_alt .. [[</altitude>
-          <heading>-45.0</heading>
-          <tilt>45.0</tilt>
-          <range>]] .. file_settings.lookat_rng .. [[</range>
-        </LookAt>
-        <styleUrl>#yellowLineGreenPoly</styleUrl>
+]]
+
+    if not fh:write(blk) then
+        info("write: error writing path block head to file")
+        return false
+    end
+
+    if not write_lookat(fh, "          ", file_settings.lookat, -45.0, 45.0) then
+        info("write: error writing lookat block to file")
+        return false
+    end
+
+    local blk = [[        <styleUrl>#yellowLineGreenPoly</styleUrl>
         <LineString>
           <extrude>1</extrude>
           <tessellate>0</tessellate>
@@ -420,7 +439,7 @@ local function write_close(fh, capture)
           <altitudeMode>relativeToGround</altitudeMode>
           <coordinates>
 ]]
-    if not fh:write(pathblk_part) then
+    if not fh:write(blk) then
         info("write: error writing path block head to file")
         return false
     end
@@ -433,43 +452,58 @@ local function write_close(fh, capture)
         end
     end
 
-    local pathblk_part = [[          </coordinates>
+    local blk = [[          </coordinates>
         </LineString>
       </Placemark>
-      <Placemark>
-        <name>Path in time</name>
+    </Folder>
+]]
+    if not fh:write(blk) then
+        info("write: error writing path block tail to file")
+        return false
+    end
+end
+
+local function write_dynamic_paths_placemark(fh, file_settings, model_info)
+    debug("write_dynamic_paths_placemark() called")
+
+    local blk = [[      <Placemark>
+        <name>Aircraft ]] .. model_info.part_name .. [[ path</name>
         <visibility>1</visibility>
-        <styleUrl>#yellowLineGreenPoly</styleUrl>
+        <styleUrl>#]] .. model_info.line_style .. [[</styleUrl>
         <gx:Track>
-          <extrude>1</extrude>
+          <extrude>0</extrude>
           <!-- <altitudeMode>absolute</altitudeMode> -->
           <altitudeMode>relativeToGround</altitudeMode>
-          <Model id="aircraftBody">
+          <Model id="aircraft]] .. model_info.part_name .. [[">
             <Orientation>
-              <heading>0.0</heading>
-              <tilt>-90.0</tilt>
-              <roll>0.0</roll>
+              <heading>]] .. model_info.head .. [[</heading>
+              <tilt>]] .. model_info.tilt .. [[</tilt>
+              <roll>]] .. model_info.roll .. [[</roll>
             </Orientation>
             <Scale>
-              <x>0.005</x>
-              <y>0.005</y>
-              <z>0.005</z>
+              <x>]] .. model_info.scale .. [[</x>
+              <y>]] .. model_info.scale .. [[</y>
+              <z>]] .. model_info.scale .. [[</z>
             </Scale>
             <Link>
-              <href>Phantom3_body_all.dae</href>
+              <href>]] .. model_info.fname .. [[</href>
               <refreshMode>once</refreshMode>
             </Link>
           </Model>
 ]]
-    if not fh:write(pathblk_part) then
+    if not fh:write(blk) then
         info("write: error writing path block head to file")
         return false
     end
 
     for pos,pkt in pairs(file_settings.packets) do
         -- TODO use proper timestamp when available
-        local ts = os.time() + pos / 1000
-        local pathblk_line = "          <when>" .. os.date('%Y-%m-%dT%H:%M:%S', ts) .. string.format(".%03d",pos % 1000) .. "</when>\n"
+        local ts = os.time{year=2018, month=1, day=1, hour=0} + pos / 100
+        -- First entry must be at a whole second, or stranger things will happen
+        if (pos == 1) then
+            ts = math.floor(ts)
+        end
+        local pathblk_line = "          <when>" .. os.date('%Y-%m-%dT%H:%M:%S', ts) .. string.format(".%03dZ", (ts * 1000) % 1000) .. "</when>\n"
         if not fh:write(pathblk_line) then
             info("write: error writing path block line to file")
             return false
@@ -477,7 +511,14 @@ local function write_close(fh, capture)
     end
 
     for pos,pkt in pairs(file_settings.packets) do
-        local pathblk_line = "          <gx:coord>" .. pkt.lon .. " " .. pkt.lat .. " " .. pkt.alt .. "</gx:coord>\n"
+        local coord = {}
+        -- First entry must be identical for all the paths and have no heigh increase
+        if (pos == 1) then
+            geom_wgs84_coords_shift_xyz(coord, pkt, 0, 0, 0)
+        else
+            geom_wgs84_coords_shift_xyz(coord, pkt, model_info.shift_x, model_info.shift_y, model_info.shift_z)
+        end
+        local pathblk_line = "          <gx:coord>" .. coord.lon .. " " .. coord.lat .. " " .. coord.alt .. "</gx:coord>\n"
         if not fh:write(pathblk_line) then
             info("write: error writing path block line to file")
             return false
@@ -485,21 +526,85 @@ local function write_close(fh, capture)
     end
 
     for pos,pkt in pairs(file_settings.packets) do
-        local pathblk_line = "          <gx:angles>" .. 20.0 .. " " .. 0.0 .. " " .. 0.0 .. "</gx:angles>\n"
+        local pathblk_line = "          <gx:angles>" .. 0.0 .. " " .. 0.0 .. " " .. 0.0 .. "</gx:angles>\n"
         if not fh:write(pathblk_line) then
             info("write: error writing path block line to file")
             return false
         end
     end
 
-    local pathblk_part = [[        </gx:Track>
+    local blk = [[        </gx:Track>
       </Placemark>
-    </Folder>
 ]]
-    if not fh:write(pathblk_part) then
+    if not fh:write(blk) then
         info("write: error writing path block tail to file")
         return false
     end
+end
+
+local function write_dynamic_paths_folder(fh, file_settings)
+    debug("write_dynamic_paths_folder() called")
+    local blk = [[    <Folder>
+      <name>Dynamic paths</name>
+      <visibility>1</visibility>
+      <description>Flight path over time.</description>
+]]
+    if not fh:write(blk) then
+        info("write: error writing path block head to file")
+        return false
+    end
+
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "yellowLineGreenPoly",
+        part_name="Body", fname="phantom_3_body_dec2.dae", shift_x=0.0, shift_y=0.0, shift_z=0.1 }
+    write_dynamic_paths_placemark(fh, file_settings, model_info)
+
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="Prop1", fname="phantom_3_prop_singl_run1.dae", shift_x=0.0109, shift_y=0.0109, shift_z=0.1 }
+    write_dynamic_paths_placemark(fh, file_settings, model_info)
+
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="Prop2", fname="phantom_3_prop_singl_run1.dae", shift_x=0.0109, shift_y=-0.0109, shift_z=0.1 }
+    write_dynamic_paths_placemark(fh, file_settings, model_info)
+
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="Prop3", fname="phantom_3_prop_singl_run1.dae", shift_x=-0.0109, shift_y=-0.0109, shift_z=0.1 }
+    write_dynamic_paths_placemark(fh, file_settings, model_info)
+
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="Prop4", fname="phantom_3_prop_singl_run1.dae", shift_x=-0.0109, shift_y=0.0109, shift_z=0.1 }
+    write_dynamic_paths_placemark(fh, file_settings, model_info)
+
+    local blk = [[    </Folder>
+]]
+    if not fh:write(blk) then
+        info("write: error writing path block tail to file")
+        return false
+    end
+end
+
+local function write_close(fh, capture)
+    debug("write_close() called")
+
+    -- get file settings
+    local file_settings = capture.private_table
+    if not file_settings then
+        info("write() failed to get private table file settings")
+        return false
+    end
+
+    process_packets(file_settings, file_settings.packets, true)
+
+    -- Write global LookAt block
+    if not write_lookat(fh, "      ", file_settings.lookat, -45.0, 45.0) then
+        info("write: error writing lookat block to file")
+        return false
+    end
+
+    -- Write static paths (without time dependencies)
+    write_static_paths_folder(fh, file_settings)
+
+    -- Write the more interesting, dynamic paths
+    write_dynamic_paths_folder(fh, file_settings)
 
     local footer = [[  </Document>
 </kml>
