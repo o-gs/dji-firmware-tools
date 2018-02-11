@@ -29,6 +29,7 @@ local default_settings =
     packets = {},
     lookat = { lon = 0.0, lat = 0.0, alt = 0.0, rng = 1.0, },
     path_type = 0,
+    ground_altitude = 500.0,
 }
 
 -- Enums
@@ -103,6 +104,7 @@ function ExportCaptureInfo:create()
     -- initialize attribs
     acnt.user_app = wireshark_name
     acnt.private_table = {}
+    acnt.user_options = {}
     return acnt
 end
 
@@ -189,7 +191,7 @@ local function process_packets(file_settings, packets, til_end)
         end
         file_settings.lookat.lon = min_lon + (max_lon - min_lon)/2
         file_settings.lookat.lat = min_lat + (max_lat - min_lat)/2
-        file_settings.lookat.alt = min_alt + (max_alt - min_alt)/2
+        file_settings.lookat.alt = min_alt + (max_alt - min_alt)/2 + file_settings.ground_altitude
         
         local R = 6378137.0 -- Radius of earth in meters
         local angular_dist = max_lon * math.pi / 180 - min_lon * math.pi / 180
@@ -252,6 +254,22 @@ local function write_open(fh, capture)
     debug("write_open() called")
 
     local file_settings = create_writer_file_settings()
+
+    -- It would be nice to keep altitude relative to ground. Unfortunately, one
+    -- of KML restrictions is that there is no way to make a path relative to
+    -- one specific point on the ground. Relative path is relative in every point.
+    -- Obviously this is not what we want, so the only solution is to use absolute
+    -- positions. Without that, even parts of the drone model would have different
+    -- positions on different coordinates.
+    local tmp_val = tonumber(capture.user_options.ground_alt, 10)
+    if (tmp_val ~= nil) then
+        file_settings.ground_altitude = tmp_val
+    end
+
+    local tmp_val = capture.user_options.path_style
+    if (tmp_val ~= nil and tmp_val ~= '') then
+        file_settings.path_style = tmp_val
+    end
 
     -- write out file header
     local hdr = [[<?xml version="1.0" encoding="UTF-8"?>
@@ -396,7 +414,7 @@ local function write(fh, capture, pinfo)
     return true
 end
 
-local function write_lookat(fh, indent, lookat, head, tilt)
+local function write_lookat(fh, indent, lookat, head, tilt, altmode)
     local blk = indent .. [[<LookAt>
 ]] .. indent .. [[  <longitude>]] .. lookat.lon .. [[</longitude>
 ]] .. indent .. [[  <latitude>]] .. lookat.lat .. [[</latitude>
@@ -404,6 +422,7 @@ local function write_lookat(fh, indent, lookat, head, tilt)
 ]] .. indent .. [[  <heading>]] .. head .. [[</heading>
 ]] .. indent .. [[  <tilt>]] .. tilt .. [[</tilt>
 ]] .. indent .. [[  <range>]] .. lookat.rng .. [[</range>
+]] .. indent .. [[  <altitudeMode>]] .. altmode .. [[</altitudeMode>
 ]] .. indent .. [[</LookAt>
 ]]
     return fh:write(blk)
@@ -413,12 +432,13 @@ local function write_static_paths_folder(fh, file_settings)
     debug("write_static_paths_folder() called")
     local blk = [[    <Folder>
       <name>Static paths</name>
-      <visibility>0</visibility>
+      <visibility>1</visibility>
       <description>Flight path.</description>
       <Placemark>
         <name>Whole path</name>
-        <visibility>0</visibility>
+        <visibility>1</visibility>
         <description>Flight path line</description>
+        <styleUrl>#purpleLineGreenPoly</styleUrl>
 ]]
 
     if not fh:write(blk) then
@@ -426,17 +446,17 @@ local function write_static_paths_folder(fh, file_settings)
         return false
     end
 
-    if not write_lookat(fh, "          ", file_settings.lookat, -45.0, 45.0) then
+    if not write_lookat(fh, "        ", file_settings.lookat, -45.0, 45.0, "relativeToGround") then
         info("write: error writing lookat block to file")
         return false
     end
 
-    local blk = [[        <styleUrl>#yellowLineGreenPoly</styleUrl>
-        <LineString>
-          <extrude>1</extrude>
+    local blk = [[        <LineString>
+          <extrude>0</extrude>
           <tessellate>0</tessellate>
           <!-- <altitudeMode>absolute</altitudeMode> -->
-          <altitudeMode>relativeToGround</altitudeMode>
+          <!-- <altitudeMode>relativeToGround</altitudeMode> -->
+          <altitudeMode>clampToGround</altitudeMode>
           <coordinates>
 ]]
     if not fh:write(blk) then
@@ -472,8 +492,8 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
         <styleUrl>#]] .. model_info.line_style .. [[</styleUrl>
         <gx:Track>
           <extrude>0</extrude>
-          <!-- <altitudeMode>absolute</altitudeMode> -->
-          <altitudeMode>relativeToGround</altitudeMode>
+          <altitudeMode>absolute</altitudeMode>
+          <!-- <altitudeMode>relativeToGround</altitudeMode> -->
           <Model id="aircraft]] .. model_info.part_name .. [[">
             <Orientation>
               <heading>]] .. model_info.head .. [[</heading>
@@ -512,12 +532,7 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     for pos,pkt in pairs(file_settings.packets) do
         local coord = {}
-        -- First entry must be identical for all the paths and have no heigh increase
-        if (pos == 1) then
-            geom_wgs84_coords_shift_xyz(coord, pkt, 0, 0, 0)
-        else
-            geom_wgs84_coords_shift_xyz(coord, pkt, model_info.shift_x, model_info.shift_y, model_info.shift_z)
-        end
+        geom_wgs84_coords_shift_xyz(coord, pkt, model_info.shift_x, model_info.shift_y, file_settings.ground_altitude + model_info.shift_z)
         local pathblk_line = "          <gx:coord>" .. coord.lon .. " " .. coord.lat .. " " .. coord.alt .. "</gx:coord>\n"
         if not fh:write(pathblk_line) then
             info("write: error writing path block line to file")
@@ -559,19 +574,19 @@ local function write_dynamic_paths_folder(fh, file_settings)
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop1", fname="phantom_3_prop_singl_run1.dae", shift_x=0.0109, shift_y=0.0109, shift_z=0.1 }
+        part_name="Prop1", fname="phantom_3_prop_singl_run1.dae", shift_x=0.0109, shift_y=0.0109, shift_z=0.15 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop2", fname="phantom_3_prop_singl_run1.dae", shift_x=0.0109, shift_y=-0.0109, shift_z=0.1 }
+        part_name="Prop2", fname="phantom_3_prop_singl_run1.dae", shift_x=0.0109, shift_y=-0.0109, shift_z=0.15 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop3", fname="phantom_3_prop_singl_run1.dae", shift_x=-0.0109, shift_y=-0.0109, shift_z=0.1 }
+        part_name="Prop3", fname="phantom_3_prop_singl_run1.dae", shift_x=-0.0109, shift_y=-0.0109, shift_z=0.15 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop4", fname="phantom_3_prop_singl_run1.dae", shift_x=-0.0109, shift_y=0.0109, shift_z=0.1 }
+        part_name="Prop4", fname="phantom_3_prop_singl_run1.dae", shift_x=-0.0109, shift_y=0.0109, shift_z=0.15 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local blk = [[    </Folder>
@@ -595,7 +610,7 @@ local function write_close(fh, capture)
     process_packets(file_settings, file_settings.packets, true)
 
     -- Write global LookAt block
-    if not write_lookat(fh, "      ", file_settings.lookat, -45.0, 45.0) then
+    if not write_lookat(fh, "    ", file_settings.lookat, -45.0, 45.0, "absolute") then
         info("write: error writing lookat block to file")
         return false
     end
@@ -619,7 +634,7 @@ local function write_close(fh, capture)
 end
 
 -- do a payload dump when prompted by the user
-local function init_payload_dump(filename, path_style)
+local function init_payload_dump(filename, ground_alt_val, path_style_val)
 
     local packet_count = 0
     -- Osd General
@@ -628,6 +643,7 @@ local function init_payload_dump(filename, path_style)
     local fh = assert(io.open(filename, "w+"))
 
     capture = ExportCaptureInfo:create()
+    capture.user_options = { ground_alt=ground_alt_val, path_style=path_style_val }
     write_open(fh, capture)
     
     -- this function is going to be called once each time our filter matches
@@ -661,7 +677,8 @@ end
 local function begin_dialog_menu()    
     new_dialog("KML path of DJI drone flight writer", init_payload_dump,
       "Output file\n(type KML file name)",
-      "Path style\n(flat, line, wall)")
+      "Ground level altitude\n(altitude at the starting point, in meters; default="..default_settings.ground_altitude..")",
+      "Path style\n(flat, line, wall) UNUSED")
 end
 
 register_menu("Export KML from DJI drone flight", begin_dialog_menu, MENU_TOOLS_UNSORTED)
