@@ -117,7 +117,7 @@ f.rec_controller_g_real_status_cotrol_command_mode = ProtoField.uint8 ("dji_p3.r
 f.rec_controller_g_real_status_control_real_mode = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_control_real_mode", "G Real Status Control Real Mode", base.HEX)
 f.rec_controller_g_real_status_ioc_control_command_mode = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_ioc_control_command_mode", "G Real Status Ioc Control Command Mode", base.HEX)
 f.rec_controller_g_real_status_rc_state = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_rc_state", "G Real Status Rc State", base.HEX)
-f.rec_controller_g_real_status_motor_status = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_motor_status", "G Real Status Motor Status", base.HEX, nil, nil, "includes flag to force allow start motors")
+f.rec_controller_g_real_status_motor_status = ProtoField.uint8 ("dji_p3.rec_controller_g_real_status_motor_status", "G Real Status Motor Status", base.HEX, nil, nil, "Zero if motors off, 1 if motors running")
 f.rec_controller_imu_package_lost_count = ProtoField.uint32 ("dji_p3.rec_controller_imu_package_lost_count", "Imu Package Lost Count", base.HEX)
 f.rec_controller_g_real_status_main_batery_voltage = ProtoField.uint16 ("dji_p3.rec_controller_g_real_status_main_batery_voltage", "G Real Status Main Batery Voltage", base.HEX)
 f.rec_controller_imu_temp_real_ctl_out_per = ProtoField.uint8 ("dji_p3.rec_controller_imu_temp_real_ctl_out_per", "Imu Temp Real Ctl Out Per", base.HEX)
@@ -1516,23 +1516,23 @@ end
 
 -- Flight log - Gps Glns - 0x0005
 
-f.rec_gps_glns_gps_date = ProtoField.uint32 ("dji_p3.rec_gps_glns_gps_date", "Gps Date", base.HEX)
-f.rec_gps_glns_gps_time = ProtoField.uint32 ("dji_p3.rec_gps_glns_gps_time", "Gps Time", base.HEX)
-f.rec_gps_glns_gps_lon = ProtoField.int32 ("dji_p3.rec_gps_glns_gps_lon", "Gps Lon", base.DEC)
-f.rec_gps_glns_gps_lat = ProtoField.int32 ("dji_p3.rec_gps_glns_gps_lat", "Gps Lat", base.DEC)
-f.rec_gps_glns_hmsl = ProtoField.int32 ("dji_p3.rec_gps_glns_hmsl", "Hmsl", base.DEC)
+f.rec_gps_glns_gps_date = ProtoField.uint32 ("dji_p3.rec_gps_glns_gps_date", "Gps Date", base.DEC)
+f.rec_gps_glns_gps_time = ProtoField.uint32 ("dji_p3.rec_gps_glns_gps_time", "Gps Time", base.DEC)
+f.rec_gps_glns_gps_lon = ProtoField.int32 ("dji_p3.rec_gps_glns_gps_lon", "Gps Lon", base.DEC, nil, nil, "degrees; coordinate with 7 digits accuracy after decimal point")
+f.rec_gps_glns_gps_lat = ProtoField.int32 ("dji_p3.rec_gps_glns_gps_lat", "Gps Lat", base.DEC, nil, nil, "degrees; coordinate with 7 digits accuracy after decimal point")
+f.rec_gps_glns_hmsl = ProtoField.int32 ("dji_p3.rec_gps_glns_hmsl", "hMSL", base.DEC, nil, nil, "mm; height above mean sea level (height above geoid)")
 f.rec_gps_glns_vel_n = ProtoField.float ("dji_p3.rec_gps_glns_vel_n", "Vel N", base.DEC)
 f.rec_gps_glns_vel_e = ProtoField.float ("dji_p3.rec_gps_glns_vel_e", "Vel E", base.DEC)
 f.rec_gps_glns_vel_d = ProtoField.float ("dji_p3.rec_gps_glns_vel_d", "Vel D", base.DEC)
-f.rec_gps_glns_hdop = ProtoField.float ("dji_p3.rec_gps_glns_hdop", "Hdop", base.DEC)
-f.rec_gps_glns_pdop = ProtoField.float ("dji_p3.rec_gps_glns_pdop", "Pdop", base.DEC)
+f.rec_gps_glns_hdop = ProtoField.float ("dji_p3.rec_gps_glns_hdop", "HDoP", base.DEC, nil, nil, "horizontal dilution of precision")
+f.rec_gps_glns_pdop = ProtoField.float ("dji_p3.rec_gps_glns_pdop", "PDoP", base.DEC, nil, nil, "position dilution of precision")
 f.rec_gps_glns_gps_fix = ProtoField.float ("dji_p3.rec_gps_glns_gps_fix", "GPS Fix", base.DEC)
 f.rec_gps_glns_gnss_flag = ProtoField.float ("dji_p3.rec_gps_glns_gnss_flag", "GNSS Flag", base.DEC)
 f.rec_gps_glns_hacc = ProtoField.float ("dji_p3.rec_gps_glns_hacc", "Hacc", base.DEC)
 f.rec_gps_glns_sacc = ProtoField.float ("dji_p3.rec_gps_glns_sacc", "Sacc", base.DEC)
-f.rec_gps_glns_gps_used = ProtoField.uint32 ("dji_p3.rec_gps_glns_gps_used", "GPS Used", base.DEC)
-f.rec_gps_glns_gln_used = ProtoField.uint32 ("dji_p3.rec_gps_glns_gln_used", "GLN Used", base.DEC)
-f.rec_gps_glns_numsv = ProtoField.uint16 ("dji_p3.rec_gps_glns_numsv", "NumSV", base.DEC, nil, nil, "Number of Global Nav System positioning satellites")
+f.rec_gps_glns_gps_used = ProtoField.uint32 ("dji_p3.rec_gps_glns_gps_used", "GPS Used", base.DEC, nil, nil, "Number of GPS satellites")
+f.rec_gps_glns_gln_used = ProtoField.uint32 ("dji_p3.rec_gps_glns_gln_used", "GLN Used", base.DEC, nil, nil, "Number of GLNS satellites")
+f.rec_gps_glns_numsv = ProtoField.uint16 ("dji_p3.rec_gps_glns_numsv", "NumSV", base.DEC, nil, nil, "Total number of Global Nav System positioning satellites")
 --f.rec_gps_glns_gpsstate = ProtoField.uint16 ("dji_p3.rec_gps_glns_gpsstate", "GPS State", base.HEX)
 f.rec_gps_glns_gpsglns_cnt = ProtoField.uint16 ("dji_p3.rec_gps_glns_gpsglns_cnt", "Gps Glns Count", base.DEC, nil, nil, "Sequence counter increased each time the packet of this type is prepared")
 
@@ -1540,16 +1540,31 @@ f.rec_gps_glns_gpsglns_cnt = ProtoField.uint16 ("dji_p3.rec_gps_glns_gpsglns_cnt
 local function flightrec_gps_glns_dissector(payload, pinfo, subtree)
     local offset = 0
 
-    subtree:add_le (f.rec_gps_glns_gps_date, payload(offset, 4))
+
+    local gps_date = payload(offset, 4):le_uint()
+    local ts_year = (gps_date / 10000)
+    local ts_month = (gps_date / 100) % 100
+    local ts_day = (gps_date) % 100
+    local gps_date_str = string.format("GPS Date: %d-%02d-%02d", ts_year, ts_month, ts_day)
+    subtree:add_le (f.rec_gps_glns_gps_date, payload(offset, 4), gps_date, gps_date_str)
     offset = offset + 4
 
-    subtree:add_le (f.rec_gps_glns_gps_time, payload(offset, 4))
+    local gps_time = payload(offset, 4):le_uint()
+    local ts_hour = (gps_time / 10000)
+    local ts_min = (gps_time / 100) % 100
+    local ts_sec = (gps_time) % 100
+    local gps_time_str = string.format("GPS Time: %02d:%02d:%02d", ts_hour, ts_min, ts_sec)
+    subtree:add_le (f.rec_gps_glns_gps_time, payload(offset, 4), gps_time, gps_time_str)
     offset = offset + 4
 
-    subtree:add_le (f.rec_gps_glns_gps_lon, payload(offset, 4))
+    local gps_lon = payload(offset, 4):le_uint()
+    local gps_lon_str = string.format("GPS Longitude: %.7f", gps_lon / 10000000)
+    subtree:add_le (f.rec_gps_glns_gps_lon, payload(offset, 4), gps_lon, gps_lon_str)
     offset = offset + 4
 
-    subtree:add_le (f.rec_gps_glns_gps_lat, payload(offset, 4))
+    local gps_lat = payload(offset, 4):le_uint()
+    local gps_lat_str = string.format("GPS Latitude: %.7f", gps_lat / 10000000)
+    subtree:add_le (f.rec_gps_glns_gps_lat, payload(offset, 4), gps_lat, gps_lat_str)
     offset = offset + 4
 
     subtree:add_le (f.rec_gps_glns_hmsl, payload(offset, 4))
