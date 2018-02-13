@@ -27,9 +27,9 @@ assert(register_menu, wireshark_name .. " does not have the register_menu func!"
 local default_settings =
 {
     packets = {},
-    lookat = { lon = 0.0, lat = 0.0, alt = 0.0, rng = 1.0, },
+    lookat = { lon = 0.0, lat = 0.0, rel_alt = 0.0, abs_alt = 0.0, rng = 1.0, },
     path_type = 0,
-    ground_altitude = 500.0,
+    ground_altitude = nil,
 }
 
 -- Enums
@@ -117,19 +117,197 @@ local function geom_wgs84_coords_shift_xyz(ocoord, icoord, shift_meters_x, shift
     delta_latitude = shift_meters_y / 110540.0
     ocoord.lon = icoord.lon + delta_longitude * 180 / math.pi
     ocoord.lat = icoord.lat + delta_latitude * 180 / math.pi
-    ocoord.alt = icoord.alt + shift_meters_z
+    ocoord.abs_alt = icoord.abs_alt + shift_meters_z
+    ocoord.rel_alt = icoord.rel_alt + shift_meters_z
 end
 
 -- Go though packets and interpolate missing values
 local function process_packets(file_settings, packets, til_end)
     debug("process_packets() called")
+
+    -- Timestamp precision increase
+    -- Find groups with the same timestamp, and make it increasing miliseconds
+    local last_pkt_pos = 0 -- Total number of packets - we will need it sometimes
+    local start_tmstamp = -1 -- Position of the packet which starts the group being currently updated
+    local count_tmstamp = 0 -- Amount of same timestamps in thr group
+    for pos,pkt in pairs(packets) do
+        if (pkt.tmstamp ~= nil) then
+            local spkt = {}
+            if (start_tmstamp >= 0) then
+                spkt = packets[start_tmstamp]
+            else
+                spkt = {tmstamp=pkt.tmstamp-1.0}
+            end
+            -- When the timestamp has changed, go through all from last change, and make them increasing
+            if (pkt.tmstamp > spkt.tmstamp) then
+                if (start_tmstamp < 0) then
+                    start_tmstamp = 0
+                end
+                local tmstamp_dt = pkt.tmstamp - spkt.tmstamp
+                local count_cpkt = 1
+                if (count_tmstamp > 1) then
+                    for cpos = start_tmstamp+1, pos-1, 1 do
+                        local cpkt = packets[cpos]
+                        -- Only update packets which already have a timestamp set; other we will set in next pass
+                        -- Since packets with timestamps are periodic, this should increase accuracy
+                        if (cpkt.tmstamp ~= nil) then
+                            cpkt.tmstamp = spkt.tmstamp + tmstamp_dt * count_cpkt / count_tmstamp
+                            count_cpkt = count_cpkt+1
+                        end
+                    end
+                end
+                start_tmstamp = pos
+                count_tmstamp = 0
+            end
+            count_tmstamp = count_tmstamp+1
+        end
+        last_pkt_pos = pos
+    end
+    -- For packets with same timestamps at end, make the spacing of 250ms
+    if (start_tmstamp >= 0) and (last_pkt_pos > start_tmstamp+1) then
+        if (count_tmstamp > 1) then
+            spkt = packets[start_tmstamp]
+            local count_cpkt = 1
+            for cpos = start_tmstamp+1, last_pkt_pos, 1 do
+                local cpkt = packets[cpos]
+                if (cpkt.tmstamp ~= nil) then
+                    cpkt.tmstamp = spkt.tmstamp + 0.25 * count_cpkt
+                    count_cpkt = count_cpkt+1
+                end
+            end
+        end
+    end
+
+    -- Interpolate timestamp for entries without it
+    local start_tmstamp = -1 -- Position of the packet which starts the group being currently updated
+    for pos,pkt in pairs(packets) do
+        if (pkt.tmstamp ~= nil) then
+            local spkt = {}
+            if (start_tmstamp >= 0) then
+                spkt = packets[start_tmstamp]
+            else
+                spkt = {tmstamp=pkt.tmstamp-1.0}
+                start_tmstamp = 0
+            end
+            local tmstamp_dt = pkt.tmstamp - spkt.tmstamp
+            -- make sure we have enough milisecs to make each packet separated by no less than 2ms
+            tmstamp_dt = math.max(tmstamp_dt, (pos - start_tmstamp) / 500)
+            -- set timestamps in a rage of packets which don't have them
+            for cpos = start_tmstamp+1, pos-1, 1 do
+                local cpkt = packets[cpos]
+                cpkt.tmstamp = spkt.tmstamp + tmstamp_dt * (cpos - start_tmstamp) / (pos - start_tmstamp)
+            end
+            start_tmstamp = pos
+        end
+    end
+    -- For packets with same timestamps at end, make the spacing of 10ms
+    if (start_tmstamp >= 0) and (last_pkt_pos > start_tmstamp+1) then
+        if true then
+            spkt = packets[start_tmstamp]
+            for cpos = start_tmstamp+1, last_pkt_pos, 1 do
+                local cpkt = packets[cpos]
+                cpkt.tmstamp = spkt.tmstamp + 0.01 * (cpos - start_tmstamp)
+            end
+        end
+    else
+        --TODO support no timestamps situation
+        error("No timestamps defined in the input packets. Aborting due to lack of time reference.")
+    end
+
+    -- Final updates for the timestamp - first and last packet must be on a full second
+    if (last_pkt_pos > 3) then
+        pkt = packets[1]
+        pkt.tmstamp = math.floor(pkt.tmstamp)
+        pkt = packets[last_pkt_pos]
+        pkt.tmstamp = math.ceil(pkt.tmstamp)
+    end
+
+    -- Compute height above ground levels, by averaging all the measurements
+    -- (difference between GPS altitude and baro altitude)
+    if (file_settings.ground_altitude == nil) then
+        local gnd_alt_sum = 0
+        local gnd_alt_num = 0
+        local curr_rel_alt = 0
+        for pos,pkt in pairs(packets) do
+            if (pkt.typ == TYP_AIR_POS) then
+                if (pkt.rel_alt ~= nil) then
+                    curr_rel_alt = pkt.rel_alt
+                elseif (pkt.abs_alt ~= nil) then
+                    gnd_alt_sum = gnd_alt_sum + (pkt.abs_alt - curr_rel_alt)
+                    gnd_alt_num = gnd_alt_num + 1
+                end
+            end
+        end
+        average_gnd_alt = 0
+        if (gnd_alt_num > 0) then
+            file_settings.ground_altitude = gnd_alt_sum / gnd_alt_num
+        else
+            file_settings.ground_altitude = 0.0
+        end
+        debug("Ground height at start point computed: " .. file_settings.ground_altitude)
+    end
+
+    -- Compute missing relative heights, and replace all absolute heights with relative+ground_altitude
+    -- (difference between GPS altitude and baro altitude)
+    local prev_rel_pkt = { rel_alt=0.0, tmstamp=1.0 }
+    local start_abs_pos = -1
+    for pos,pkt in pairs(packets) do
+        if (pkt.typ == TYP_AIR_POS) then
+            -- The packet has either only relative or only absolute altitude set
+            if (pkt.rel_alt ~= nil) then
+                -- if we've seen absolute packets before this one, update them
+                if (start_abs_pos >= 0) then
+                    -- We have two relative alts, and one or more absolute alt between; replace with linear change
+                    for cpos = start_abs_pos, pos-1, 1 do
+                        local cpkt = packets[cpos]
+                        if (cpkt.rel_alt == nil) then
+                            local tmstamp_dt1 = cpkt.tmstamp - prev_rel_pkt.tmstamp
+                            local tmstamp_dt2 = pkt.tmstamp - cpkt.tmstamp
+                            cpkt.rel_alt = (prev_rel_pkt.rel_alt * tmstamp_dt1 + pkt.rel_alt * tmstamp_dt2) / (tmstamp_dt1 + tmstamp_dt2)
+                            -- replace absolute alt - the one from GPS is too inaccurate
+                            cpkt.abs_alt = cpkt.rel_alt + file_settings.ground_altitude
+                        end
+                    end
+                    start_abs_pos = -1
+                end
+                pkt.abs_alt = pkt.rel_alt + file_settings.ground_altitude
+                prev_rel_pkt = pkt
+            elseif (pkt.abs_alt ~= nil) then
+                -- store position of first absolute packet encoured
+                if (start_abs_pos < 0) then
+                    start_abs_pos = pos
+                end
+            else
+                error("Impossible condition reached in relative alt computation")
+            end
+        end
+    end
+    -- If we have remaining absolute alt at end, replace with last known good
+    if (start_abs_pos >= 0) then
+        for cpos = start_abs_pos, last_pkt_pos, 1 do
+            local cpkt = packets[cpos]
+            if (cpkt.typ == TYP_AIR_POS) then
+                if (cpkt.rel_alt == nil) then
+                    cpkt.rel_alt = prev_rel_pkt.rel_alt
+                    -- replace absolute alt - the one from GPS is too inaccurate
+                    cpkt.abs_alt = cpkt.rel_alt + file_settings.ground_altitude
+                else
+                    error("Impossible condition reached in relative alt finisher")
+                end
+            end
+        end
+    end
+
+    -- Now we can use timestamps as spacers for interpolating other params
     local start_air_pos = -1
     min_lon = 180.0
-    min_lat = 180.0
-    min_alt = 999999999.0
     max_lon = -180.0
+    min_lat = 180.0
     max_lat = -180.0
-    max_alt = -999999999.0
+    min_rel_alt = 999999999.0
+    max_rel_alt = -999999999.0
+    min_abs_alt = 999999999.0
+    max_abs_alt = -999999999.0
     for pos,pkt in pairs(packets) do
         if (pkt.typ == TYP_AIR_POS) then
             if (pkt.lon ~= 0.0) or (pkt.lat ~= 0.0) then
@@ -137,20 +315,29 @@ local function process_packets(file_settings, packets, til_end)
                 if (pkt.lon < min_lon) then
                     min_lon = pkt.lon
                 end
-                if (pkt.lat < min_lat) then
-                    min_lat = pkt.lat
-                end
-                if (pkt.alt < min_alt) then
-                    min_alt = pkt.alt
-                end
                 if (pkt.lon > max_lon) then
                     max_lon = pkt.lon
+                end
+                if (pkt.lat < min_lat) then
+                    min_lat = pkt.lat
                 end
                 if (pkt.lat > max_lat) then
                     max_lat = pkt.lat
                 end
-                if (pkt.alt > max_alt) then
-                    max_alt = pkt.alt
+                if (pkt.rel_alt ~= nil) then
+                    if (pkt.rel_alt < min_rel_alt) then
+                        min_rel_alt = pkt.rel_alt
+                    end
+                    if (pkt.rel_alt > max_rel_alt) then
+                        max_rel_alt = pkt.rel_alt
+                    end
+                else
+                    if (pkt.abs_alt < min_abs_alt) then
+                        min_abs_alt = pkt.abs_alt
+                    end
+                    if (pkt.abs_alt > max_abs_alt) then
+                        max_abs_alt = pkt.abs_alt
+                    end
                 end
                 if (pos - start_air_pos > 1) then
                     -- We've reached the end of a block with unset air_pos inside
@@ -161,6 +348,7 @@ local function process_packets(file_settings, packets, til_end)
                         spkt = packets[pos]
                         start_air_pos = 0
                     end
+                    -- set coords in a rage of packets which don't have them
                     for cpos = start_air_pos+1, pos-1, 1 do
                         local cpkt = packets[cpos]
                         -- TODO we should assume linear time, not linear index
@@ -191,7 +379,8 @@ local function process_packets(file_settings, packets, til_end)
         end
         file_settings.lookat.lon = min_lon + (max_lon - min_lon)/2
         file_settings.lookat.lat = min_lat + (max_lat - min_lat)/2
-        file_settings.lookat.alt = min_alt + (max_alt - min_alt)/2 + file_settings.ground_altitude
+        file_settings.lookat.rel_alt = min_rel_alt + (max_rel_alt - min_rel_alt)/2 + file_settings.ground_altitude
+        file_settings.lookat.abs_alt = min_abs_alt + (max_abs_alt - min_abs_alt)/2 + file_settings.ground_altitude
         
         local R = 6378137.0 -- Radius of earth in meters
         local angular_dist = max_lon * math.pi / 180 - min_lon * math.pi / 180
@@ -359,6 +548,7 @@ local dji_p3_rec_etype = Field.new("dji_p3.rec_etype")
 local dji_p3_rec_osd_general_longtitude = Field.new("dji_p3.rec_osd_general_longtitude")
 local dji_p3_rec_osd_general_latitude = Field.new("dji_p3.rec_osd_general_latitude")
 local dji_p3_rec_osd_general_relative_height = Field.new("dji_p3.rec_osd_general_relative_height")
+local dji_p3_rec_osd_general_gps_nums = Field.new("dji_p3.rec_osd_general_gps_nums")
 -- P3 flight record packet 0x0000
 local dji_p3_rec_controller_g_real_input_channel_command_aileron = Field.new("dji_p3.rec_controller_g_real_input_channel_command_aileron")
 local dji_p3_rec_controller_g_real_input_channel_command_elevator = Field.new("dji_p3.rec_controller_g_real_input_channel_command_elevator")
@@ -370,6 +560,15 @@ local dji_p3_rec_controller_g_real_status_ioc_control_command_mode = Field.new("
 local dji_p3_rec_controller_g_real_status_rc_state = Field.new("dji_p3.rec_controller_g_real_status_rc_state")
 local dji_p3_rec_controller_g_real_status_motor_status = Field.new("dji_p3.rec_controller_g_real_status_motor_status")
 local dji_p3_rec_controller_g_real_status_main_batery_voltage = Field.new("dji_p3.rec_controller_g_real_status_main_batery_voltage")
+-- P3 flight record packet 0x0005
+local dji_p3_rec_gps_glns_gps_date = Field.new("dji_p3.rec_gps_glns_gps_date")
+local dji_p3_rec_gps_glns_gps_time = Field.new("dji_p3.rec_gps_glns_gps_time")
+local dji_p3_rec_gps_glns_gps_lon = Field.new("dji_p3.rec_gps_glns_gps_lon")
+local dji_p3_rec_gps_glns_gps_lat = Field.new("dji_p3.rec_gps_glns_gps_lat")
+local dji_p3_rec_gps_glns_hmsl = Field.new("dji_p3.rec_gps_glns_hmsl")
+local dji_p3_rec_gps_glns_hdop = Field.new("dji_p3.rec_gps_glns_hdop")
+local dji_p3_rec_gps_glns_pdop = Field.new("dji_p3.rec_gps_glns_pdop")
+local dji_p3_rec_gps_glns_numsv = Field.new("dji_p3.rec_gps_glns_numsv")
 
 local function write(fh, capture, pinfo)
     debug("write() called")
@@ -388,6 +587,7 @@ local function write(fh, capture, pinfo)
     -- Get fields from new packet
     local curr_pkt = {
         typ = TYP_NULL,
+        tmstamp = nil,
         proc = false,
         fixd = false,
     }
@@ -398,10 +598,12 @@ local function write(fh, capture, pinfo)
         local new_air_longtitude = { dji_p3_rec_osd_general_longtitude() }
         local new_air_latitude = { dji_p3_rec_osd_general_latitude() }
         local new_air_rel_altitude = { dji_p3_rec_osd_general_relative_height() }
+        local new_gps_nums = { dji_p3_rec_osd_general_gps_nums() }
 
         curr_pkt.lon = (new_air_longtitude[1].value * 180.0 / math.pi)
         curr_pkt.lat = (new_air_latitude[1].value * 180.0 / math.pi)
-        curr_pkt.alt = new_air_rel_altitude[1].value * 0.1
+        curr_pkt.rel_alt = new_air_rel_altitude[1].value * 0.1
+        curr_pkt.numsv = new_gps_nums[1].value
         curr_pkt.typ = TYP_AIR_POS
     elseif (pkt_rec_etype[1].value == 0x0000) then
         local new_motor_status = { dji_p3_rec_controller_g_real_status_motor_status() }
@@ -413,6 +615,7 @@ local function write(fh, capture, pinfo)
 
         local curr_pkt = {
             typ = TYP_NULL,
+            tmstamp = nil,
             proc = false,
             fixd = false,
         }
@@ -433,6 +636,35 @@ local function write(fh, capture, pinfo)
         curr_pkt.control_mode = new_ioc_control_mode[1].value
         curr_pkt.rc_state = new_rc_state[1].value
         curr_pkt.typ = TYP_RC_STAT
+    elseif (pkt_rec_etype[1].value == 0x0005) then
+        local new_gps_date = { dji_p3_rec_gps_glns_gps_date() }
+        local new_gps_time = { dji_p3_rec_gps_glns_gps_time() }
+        local gps_date_int = new_gps_date[1].value
+        local gps_time_int = new_gps_time[1].value
+        local tm = os.time{
+            year=math.floor(gps_date_int/10000),
+            month=math.floor(gps_date_int/100)%100,
+            day=math.floor(gps_date_int)%100,
+            hour=math.floor(gps_time_int/10000),
+            min=math.floor(gps_time_int/100)%100,
+            sec=math.floor(gps_time_int)%100 }
+        -- Accept only valid timestamps
+        if (tm ~= nil) and (tm > 1.0) then
+            curr_pkt.tmstamp = tm
+        end
+
+        local new_gps_lon = { dji_p3_rec_gps_glns_gps_lon() }
+        local new_gps_lat = { dji_p3_rec_gps_glns_gps_lat() }
+        local new_hmsl = { dji_p3_rec_gps_glns_hmsl() }
+        --local new_hdop = { dji_p3_rec_gps_glns_hdop() }
+        --local new_pdop = { dji_p3_rec_gps_glns_pdop() }
+        local new_numsv = { dji_p3_rec_gps_glns_numsv() }
+
+        curr_pkt.lon = (new_gps_lon[1].value / 10000000)
+        curr_pkt.lat = (new_gps_lat[1].value / 10000000)
+        curr_pkt.abs_alt = new_hmsl[1].value * 0.001
+        curr_pkt.numsv = new_numsv[1].value
+        curr_pkt.typ = TYP_AIR_POS
     end
 
     if (curr_pkt.typ ~= TYP_NULL) then
@@ -446,21 +678,18 @@ local function write(fh, capture, pinfo)
     --    ...
     --end
 
-    --warn("aaa" .. tostring(new_air_longtitude))
-    -- first get times
-    --local nstime = fldinfo.time
-
-    -- pcap format is in usecs, but wireshark's internal is nsecs
-    --local nsecs = nstime.nsecs
-
     return true
 end
 
 local function write_lookat(fh, indent, lookat, head, tilt, altmode)
+    local altval = lookat.rel_alt
+    if (altmode == "absolute") then
+        altval = lookat.abs_alt
+    end
     local blk = indent .. [[<LookAt>
 ]] .. indent .. [[  <longitude>]] .. lookat.lon .. [[</longitude>
 ]] .. indent .. [[  <latitude>]] .. lookat.lat .. [[</latitude>
-]] .. indent .. [[  <altitude>]] .. lookat.alt .. [[</altitude>
+]] .. indent .. [[  <altitude>]] .. altval .. [[</altitude>
 ]] .. indent .. [[  <heading>]] .. head .. [[</heading>
 ]] .. indent .. [[  <tilt>]] .. tilt .. [[</tilt>
 ]] .. indent .. [[  <range>]] .. lookat.rng .. [[</range>
@@ -508,7 +737,8 @@ local function write_static_paths_folder(fh, file_settings)
 
     for pos,pkt in pairs(file_settings.packets) do
         if (pkt.typ == TYP_AIR_POS) then
-            local pathblk_line = "            " .. pkt.lon .. "," .. pkt.lat .. "," .. pkt.alt .. "\n"
+            -- For angular coords, 8 digits after dot is enough fo achieve 1.1mm accuracy
+            local pathblk_line = string.format("            %.8f,%.8f,%.3f\n", pkt.lon, pkt.lat, pkt.rel_alt)
             if not fh:write(pathblk_line) then
                 info("write: error writing path block line to file")
                 return false
@@ -562,35 +792,22 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     for pos,pkt in pairs(file_settings.packets) do
         if (pkt.typ == TYP_AIR_POS) then
-            -- TODO use proper timestamp when available
-            local ts = os.time{year=2018, month=1, day=1, hour=0} + pos / 100
-            -- First entry must be at a whole second, or stranger things will happen
-            if (pos == 1) then
-                ts = math.floor(ts)
-            end
-            local pathblk_line = "          <when>" .. os.date('%Y-%m-%dT%H:%M:%S', ts) .. string.format(".%03dZ", (ts * 1000) % 1000) .. "</when>\n"
+            local pathblk_line = "          <when>" .. os.date('!%Y-%m-%dT%H:%M:%S', pkt.tmstamp) .. string.format(".%03dZ", (pkt.tmstamp * 1000) % 1000) .. "</when>"
             if not fh:write(pathblk_line) then
                 info("write: error writing path block line to file")
                 return false
             end
-        end
-    end
 
-    for pos,pkt in pairs(file_settings.packets) do
-        if (pkt.typ == TYP_AIR_POS) then
             local coord = {}
-            geom_wgs84_coords_shift_xyz(coord, pkt, model_info.shift_x, model_info.shift_y, file_settings.ground_altitude + model_info.shift_z)
-            local pathblk_line = "          <gx:coord>" .. coord.lon .. " " .. coord.lat .. " " .. coord.alt .. "</gx:coord>\n"
+            geom_wgs84_coords_shift_xyz(coord, pkt, model_info.shift_x, model_info.shift_y, model_info.shift_z)
+            -- Precision of our angular coords is up to "%.12f", but 8 digits after dot is enough fo achieve 1.1mm accuracy
+            local pathblk_line = "<gx:coord>" .. string.format("%.8f %.8f %.3f", coord.lon, coord.lat, coord.abs_alt) .. "</gx:coord>"
             if not fh:write(pathblk_line) then
                 info("write: error writing path block line to file")
                 return false
             end
-        end
-    end
 
-    for pos,pkt in pairs(file_settings.packets) do
-        if (pkt.typ == TYP_AIR_POS) then
-            local pathblk_line = "          <gx:angles>" .. 0.0 .. " " .. 0.0 .. " " .. 0.0 .. "</gx:angles>\n"
+            local pathblk_line = "<gx:angles>" .. string.format("%.3f %.3f %.3f", 0, 0, 0) .. "</gx:angles>\n"
             if not fh:write(pathblk_line) then
                 info("write: error writing path block line to file")
                 return false
@@ -688,7 +905,7 @@ local function init_payload_dump(filename, ground_alt_val, path_style_val)
 
     local packet_count = 0
     -- Osd General
-    local filter = "dji_p3.rec_etype == 0x000c or dji_p3.rec_etype == 0x0000"
+    local filter = "dji_p3.rec_etype == 0x0000 or dji_p3.rec_etype == 0x0005 or dji_p3.rec_etype == 0x000c"
     local tap = Listener.new(nil,filter)
     local fh = assert(io.open(filename, "w+"))
 
@@ -727,7 +944,7 @@ end
 local function begin_dialog_menu()    
     new_dialog("KML path of DJI drone flight writer", init_payload_dump,
       "Output file\n(type KML file name)",
-      "Ground level altitude\n(altitude at the starting point, in meters; default="..default_settings.ground_altitude..")",
+      "Ground level altitude\n(altitude above sea at the starting point, in meters;\nif empty, measurements average will be used)",
       "Path style\n(flat, line, wall) UNUSED")
 end
 
