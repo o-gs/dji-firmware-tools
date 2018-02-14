@@ -27,9 +27,10 @@ assert(register_menu, wireshark_name .. " does not have the register_menu func!"
 local TYP_NULL, -- no packet
     TYP_AIR_POS_GPS, -- raw position data from GPS, with absolute altitude included
     TYP_AIR_POS_ACC, -- position data extended and averaged from all data sources
+    TYP_AIR_ROTAT, -- aircraft rotation angles
     TYP_RC_STAT, -- Remote Controller status
     TYP_MOTOR_STAT -- ESCs and motors status
-       = 0, 1, 2, 3, 4
+       = 0, 1, 2, 3, 4, 5
 
 -- Default settings to be stored within private_table
 local default_settings =
@@ -477,6 +478,11 @@ local function write_open(fh, capture)
         file_settings.ground_altitude = tmp_val
     end
 
+    local tmp_val = tonumber(capture.user_options.dist_shift, 10)
+    if (tmp_val ~= nil) then
+        file_settings.min_dist_shift = tmp_val/1000
+    end
+
     local tmp_val = capture.user_options.path_style
     if (tmp_val ~= nil and tmp_val ~= '') then
         file_settings.path_style = tmp_val
@@ -580,6 +586,9 @@ local dji_p3_rec_osd_general_longtitude = Field.new("dji_p3.rec_osd_general_long
 local dji_p3_rec_osd_general_latitude = Field.new("dji_p3.rec_osd_general_latitude")
 local dji_p3_rec_osd_general_relative_height = Field.new("dji_p3.rec_osd_general_relative_height")
 local dji_p3_rec_osd_general_gps_nums = Field.new("dji_p3.rec_osd_general_gps_nums")
+local dji_p3_rec_osd_general_pitch = Field.new("dji_p3.rec_osd_general_pitch")
+local dji_p3_rec_osd_general_roll = Field.new("dji_p3.rec_osd_general_roll")
+local dji_p3_rec_osd_general_yaw = Field.new("dji_p3.rec_osd_general_yaw")
 -- P3 flight record packet 0x0000
 local dji_p3_rec_controller_g_real_input_channel_command_aileron = Field.new("dji_p3.rec_controller_g_real_input_channel_command_aileron")
 local dji_p3_rec_controller_g_real_input_channel_command_elevator = Field.new("dji_p3.rec_controller_g_real_input_channel_command_elevator")
@@ -626,6 +635,21 @@ local function write(fh, capture, pinfo)
     local pkt_rec_etype = { dji_p3_rec_etype() }
 
     if (pkt_rec_etype[1].value == 0x000c) then
+        local new_air_pitch = { dji_p3_rec_osd_general_pitch() }
+        local new_air_roll = { dji_p3_rec_osd_general_roll() }
+        local new_air_yaw = { dji_p3_rec_osd_general_yaw() }
+        curr_pkt.pitch = new_air_pitch[1].value * 0.1
+        curr_pkt.roll = new_air_roll[1].value * 0.1
+        curr_pkt.yaw = new_air_yaw[1].value * 0.1
+        curr_pkt.typ = TYP_AIR_ROTAT
+        table.insert(file_settings.packets, curr_pkt)
+
+        curr_pkt = {
+            typ = TYP_NULL,
+            tmstamp = nil,
+            proc = false,
+            fixd = false,
+        }
         local new_air_longtitude = { dji_p3_rec_osd_general_longtitude() }
         local new_air_latitude = { dji_p3_rec_osd_general_latitude() }
         local new_air_rel_altitude = { dji_p3_rec_osd_general_relative_height() }
@@ -636,6 +660,7 @@ local function write(fh, capture, pinfo)
         curr_pkt.rel_alt = new_air_rel_altitude[1].value * 0.1
         curr_pkt.numsv = new_gps_nums[1].value
         curr_pkt.typ = TYP_AIR_POS_ACC
+
     elseif (pkt_rec_etype[1].value == 0x0000) then
         local new_motor_status = { dji_p3_rec_controller_g_real_status_motor_status() }
         curr_pkt.motor_status = new_motor_status[1].value
@@ -644,7 +669,7 @@ local function write(fh, capture, pinfo)
 
         --local new_batery_voltage = { dji_p3_rec_controller_g_real_status_main_batery_voltage() }
 
-        local curr_pkt = {
+        curr_pkt = {
             typ = TYP_NULL,
             tmstamp = nil,
             proc = false,
@@ -750,8 +775,9 @@ local function write_info(fh, indent, file_settings)
     end
 
     local blk = indent .. [[<description>Path configuration:
- Ground level altitude at start point: ]] .. file_settings.ground_altitude .. [[
- Positioning type: ]] .. pos_type_str .. [[</description>
+ Ground level altitude at start point: ]] .. file_settings.ground_altitude .. [[ m
+ Positioning type: ]] .. pos_type_str .. [[
+ Minimal position difference: ]] .. file_settings.min_dist_shift .. [[ m</description>
 ]]
     return fh:write(blk)
 end
@@ -867,6 +893,11 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
     min_shift.lon = math.abs(min_shift.lon - file_settings.lookat.lon)
     min_shift.rel_alt = math.abs(min_shift.rel_alt - file_settings.lookat.rel_alt)
     min_shift.tmstamp = 0.99 -- if there was no packet in last second, leave it even if no coords change
+    local pkt_num_total = 0
+    local pkt_num_pos = 0
+    local pkt_num_add = 0
+    local curr_rot_pkt = { pitch=0, roll=0, yaw=0 }
+    local prev_rot_pkt = curr_rot_pkt
     local prev_pkt = {lat=0, lon=0, rel_alt=-999999, tmstamp=1.0}
     for pos,pkt in pairs(file_settings.packets) do
         if (pkt.typ == file_settings.air_pos_pkt_typ) then
@@ -890,15 +921,22 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
                     return false
                 end
 
-                local blk_line = "<gx:angles>" .. string.format("%.3f %.3f %.3f", 0, 0, 0) .. "</gx:angles>\n"
+                local blk_line = "<gx:angles>" .. string.format("%.3f %.3f %.3f", curr_rot_pkt.pitch, curr_rot_pkt.roll, curr_rot_pkt.yaw) .. "</gx:angles>\n"
                 if not fh:write(blk_line) then
                     info("write: error writing path block line to file")
                     return false
                 end
                 prev_pkt = pkt
+                pkt_num_add = pkt_num_add + 1
             end
+            pkt_num_pos = pkt_num_pos + 1
+        elseif (pkt.typ == TYP_AIR_ROTAT) then
+            prev_rot_pkt = curr_rot_pkt
+            curr_rot_pkt = pkt
         end
+        pkt_num_total = pkt_num_total + 1
     end
+    debug(string.format("processed %d packets, %d stored path data, added to track %d of them",pkt_num_total,pkt_num_pos,pkt_num_add))
 
     local blk = [[        </gx:Track>
       </Placemark>
@@ -997,7 +1035,7 @@ local function write_close(fh, capture)
 end
 
 -- do a payload dump when prompted by the user
-local function init_payload_dump(filename, ground_alt_val, pos_typ_val, path_style_val)
+local function init_payload_dump(filename, ground_alt_val, pos_typ_val, min_dist_shift_val, path_style_val)
 
     local packet_count = 0
     -- Osd General
@@ -1006,7 +1044,7 @@ local function init_payload_dump(filename, ground_alt_val, pos_typ_val, path_sty
     local fh = assert(io.open(filename, "w+"))
 
     capture = ExportCaptureInfo:create()
-    capture.user_options = { ground_alt=ground_alt_val, pos_typ=pos_typ_val, path_style=path_style_val }
+    capture.user_options = { ground_alt=ground_alt_val, pos_typ=pos_typ_val, dist_shift=min_dist_shift_val, path_style=path_style_val }
     write_open(fh, capture)
     
     -- this function is going to be called once each time our filter matches
@@ -1041,7 +1079,8 @@ local function begin_dialog_menu()
     new_dialog("KML path of DJI drone flight writer", init_payload_dump,
       "Output file\n(type KML file name)",
       "Ground level altitude\n(altitude above sea at the starting point, in meters;\nif empty, measurements average will be used)",
-      "Positioning type\n('a' for accurate, using combined data from all sensors\n'g' for GNSS, using data only from satellites)",
+      "Positioning type\n('a' for accurate, using combined data from all sensors\n'g' for GNSS, using data only from satellites;\nif empty, 'a' will be used)",
+      "Minimal registered position difference\n(distance in milimeters below which\na path point will be optimized out;\nif empty, 12 will be used)",
       "Path style\n(flat, line, wall) UNUSED")
 end
 
