@@ -23,17 +23,24 @@ end
 -- verify we have the FileHandler class in wireshark
 assert(register_menu, wireshark_name .. " does not have the register_menu func!")
 
+-- Enums
+local TYP_NULL, -- no packet
+    TYP_AIR_POS_GPS, -- raw position data from GPS, with absolute altitude included
+    TYP_AIR_POS_ACC, -- position data extended and averaged from all data sources
+    TYP_RC_STAT, -- Remote Controller status
+    TYP_MOTOR_STAT -- ESCs and motors status
+       = 0, 1, 2, 3, 4
+
 -- Default settings to be stored within private_table
 local default_settings =
 {
     packets = {},
     lookat = { lon = 0.0, lat = 0.0, rel_alt = 0.0, abs_alt = 0.0, rng = 1.0, },
     path_type = 0,
+    min_dist_shift = 0.02,
     ground_altitude = nil,
+    air_pos_pkt_typ = TYP_AIR_POS_ACC,
 }
-
--- Enums
-local TYP_NULL, TYP_AIR_POS, TYP_RC_STAT, TYP_MOTOR_STAT = 0, 1, 2, 3
 
 ----------------------------------------
 -- in Lua, we have access to encapsulation types in the 'wtap_encaps' table,
@@ -111,14 +118,27 @@ end
 -- Shifts given WGS84+Z coordinates by (x,y,z) shift given in meters
 local function geom_wgs84_coords_shift_xyz(ocoord, icoord, shift_meters_x, shift_meters_y, shift_meters_z)
     -- one degree of longitude on the Earth surface equals 111320 meters (at the equator)
-    angular_lat = icoord.lat * math.pi / 180
-    delta_longitude = shift_meters_x / (111320.0 * math.cos(angular_lat))
+    local angular_lat = icoord.lat * math.pi / 180
+    local delta_longitude = shift_meters_x / (111320.0 * math.cos(angular_lat))
     -- one degree of latitude on the Earth surface equals 110540 meters
-    delta_latitude = shift_meters_y / 110540.0
+    local delta_latitude = shift_meters_y / 110540.0
     ocoord.lon = icoord.lon + delta_longitude * 180 / math.pi
     ocoord.lat = icoord.lat + delta_latitude * 180 / math.pi
     ocoord.abs_alt = icoord.abs_alt + shift_meters_z
     ocoord.rel_alt = icoord.rel_alt + shift_meters_z
+end
+
+local function geom_wgs84_coords_distance_meters(icoord1, icoord2)
+    local R = 6378137.0 -- Radius of earth in meters
+    local lon_dt = math.rad(icoord2.lon) - math.rad(icoord1.lon)
+    local lat_dt = math.rad(icoord2.lat) - math.rad(icoord1.lat)
+
+    local a = math.sin(lat_dt/2) * math.sin(lat_dt/2) +
+               math.cos(math.rad(icoord1.lat)) * math.cos(math.rad(icoord2.lat)) *
+               math.sin(lon_dt/2) * math.sin(lon_dt/2)
+
+    local c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    return (R * c)
 end
 
 -- Go though packets and interpolate missing values
@@ -229,7 +249,7 @@ local function process_packets(file_settings, packets, til_end)
         local gnd_alt_num = 0
         local curr_rel_alt = 0
         for pos,pkt in pairs(packets) do
-            if (pkt.typ == TYP_AIR_POS) then
+            if (pkt.typ == TYP_AIR_POS_GPS) or (pkt.typ == TYP_AIR_POS_ACC) then
                 if (pkt.rel_alt ~= nil) then
                     curr_rel_alt = pkt.rel_alt
                 elseif (pkt.abs_alt ~= nil) then
@@ -244,15 +264,14 @@ local function process_packets(file_settings, packets, til_end)
         else
             file_settings.ground_altitude = 0.0
         end
-        debug("Ground height at start point computed: " .. file_settings.ground_altitude)
+        info("Ground height at start point computed: " .. file_settings.ground_altitude)
     end
 
-    -- Compute missing relative heights, and replace all absolute heights with relative+ground_altitude
-    -- (difference between GPS altitude and baro altitude)
+    -- Compute missing relative heights (in abssolute-only packets) and absolute heights (in relative-only packets)
     local prev_rel_pkt = { rel_alt=0.0, tmstamp=1.0 }
     local start_abs_pos = -1
     for pos,pkt in pairs(packets) do
-        if (pkt.typ == TYP_AIR_POS) then
+        if (pkt.typ == TYP_AIR_POS_GPS) or (pkt.typ == TYP_AIR_POS_ACC) then
             -- The packet has either only relative or only absolute altitude set
             if (pkt.rel_alt ~= nil) then
                 -- if we've seen absolute packets before this one, update them
@@ -260,12 +279,17 @@ local function process_packets(file_settings, packets, til_end)
                     -- We have two relative alts, and one or more absolute alt between; replace with linear change
                     for cpos = start_abs_pos, pos-1, 1 do
                         local cpkt = packets[cpos]
-                        if (cpkt.rel_alt == nil) then
-                            local tmstamp_dt1 = cpkt.tmstamp - prev_rel_pkt.tmstamp
-                            local tmstamp_dt2 = pkt.tmstamp - cpkt.tmstamp
-                            cpkt.rel_alt = (prev_rel_pkt.rel_alt * tmstamp_dt1 + pkt.rel_alt * tmstamp_dt2) / (tmstamp_dt1 + tmstamp_dt2)
-                            -- replace absolute alt - the one from GPS is too inaccurate
-                            cpkt.abs_alt = cpkt.rel_alt + file_settings.ground_altitude
+                        if (cpkt.typ == TYP_AIR_POS_GPS) or (cpkt.typ == TYP_AIR_POS_ACC) then
+                            if (cpkt.rel_alt == nil) then
+                                local tmstamp_dt1 = cpkt.tmstamp - prev_rel_pkt.tmstamp
+                                local tmstamp_dt2 = pkt.tmstamp - cpkt.tmstamp
+                                cpkt.rel_alt = (prev_rel_pkt.rel_alt * tmstamp_dt1 + pkt.rel_alt * tmstamp_dt2) / (tmstamp_dt1 + tmstamp_dt2)
+                                -- absolute alt from GPS is inaccurate, but we will not mix
+                                -- GPS and ACC coords in one path anyway, so set only if empty
+                                if (cpkt.abs_alt == nil) then
+                                    cpkt.abs_alt = cpkt.rel_alt + file_settings.ground_altitude
+                                end
+                            end
                         end
                     end
                     start_abs_pos = -1
@@ -282,15 +306,18 @@ local function process_packets(file_settings, packets, til_end)
             end
         end
     end
-    -- If we have remaining absolute alt at end, replace with last known good
+    -- If we have remaining absolute alt at end, set last known good relative there
     if (start_abs_pos >= 0) then
         for cpos = start_abs_pos, last_pkt_pos, 1 do
             local cpkt = packets[cpos]
-            if (cpkt.typ == TYP_AIR_POS) then
+            if (cpkt.typ == TYP_AIR_POS_GPS) or (cpkt.typ == TYP_AIR_POS_ACC) then
                 if (cpkt.rel_alt == nil) then
                     cpkt.rel_alt = prev_rel_pkt.rel_alt
-                    -- replace absolute alt - the one from GPS is too inaccurate
-                    cpkt.abs_alt = cpkt.rel_alt + file_settings.ground_altitude
+                    -- absolute alt from GPS is inaccurate, but we will not mix
+                    -- GPS and ACC coords in one path anyway, so set only if empty
+                    if (cpkt.abs_alt == nil) then
+                        cpkt.abs_alt = cpkt.rel_alt + file_settings.ground_altitude
+                    end
                 else
                     error("Impossible condition reached in relative alt finisher")
                 end
@@ -309,7 +336,7 @@ local function process_packets(file_settings, packets, til_end)
     min_abs_alt = 999999999.0
     max_abs_alt = -999999999.0
     for pos,pkt in pairs(packets) do
-        if (pkt.typ == TYP_AIR_POS) then
+        if (pkt.typ == TYP_AIR_POS_GPS) or (pkt.typ == TYP_AIR_POS_ACC) then
             if (pkt.lon ~= 0.0) or (pkt.lat ~= 0.0) then
                 -- Add the value to limits
                 if (pkt.lon < min_lon) then
@@ -349,11 +376,12 @@ local function process_packets(file_settings, packets, til_end)
                         start_air_pos = 0
                     end
                     -- set coords in a rage of packets which don't have them
+                    local tmstamp_span = math.max(pkt.tmstamp - spkt.tmstamp, 0.002)
                     for cpos = start_air_pos+1, pos-1, 1 do
                         local cpkt = packets[cpos]
-                        -- TODO we should assume linear time, not linear index
-                        cpkt.lon = spkt.lon + (pkt.lon - spkt.lon) * (cpos - start_air_pos) / (pos - start_air_pos)
-                        cpkt.lat = spkt.lat + (pkt.lat - spkt.lat) * (cpos - start_air_pos) / (pos - start_air_pos)
+                        local tmstamp_dt = pkt.tmstamp - spkt.tmstamp
+                        cpkt.lon = spkt.lon + (pkt.lon - spkt.lon) * tmstamp_dt / tmstamp_span
+                        cpkt.lat = spkt.lat + (pkt.lat - spkt.lat) * tmstamp_dt / tmstamp_span
                         -- mark the packet as fixed in postprocessing, not from real measurement
                         cpkt.fixd = true
                         -- mark the packet as processed
@@ -379,18 +407,12 @@ local function process_packets(file_settings, packets, til_end)
         end
         file_settings.lookat.lon = min_lon + (max_lon - min_lon)/2
         file_settings.lookat.lat = min_lat + (max_lat - min_lat)/2
-        file_settings.lookat.rel_alt = min_rel_alt + (max_rel_alt - min_rel_alt)/2 + file_settings.ground_altitude
-        file_settings.lookat.abs_alt = min_abs_alt + (max_abs_alt - min_abs_alt)/2 + file_settings.ground_altitude
+        file_settings.lookat.rel_alt = min_rel_alt + (max_rel_alt - min_rel_alt)/2
+        file_settings.lookat.abs_alt = min_abs_alt + (max_abs_alt - min_abs_alt)/2
         
-        local R = 6378137.0 -- Radius of earth in meters
-        local angular_dist = max_lon * math.pi / 180 - min_lon * math.pi / 180
-        local a = math.sin(angular_dist/2) * math.sin(angular_dist/2)
-        local c_lon = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-        local angular_dist = max_lat * math.pi / 180 - min_lat * math.pi / 180
-        local a = math.sin(angular_dist/2) * math.sin(angular_dist/2)
-        local c_lat = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-        -- Compute range as max of path dimensions plus not lower than 10 m
-        file_settings.lookat.rng = math.max(R * math.max(c_lon, c_lat), 10.0)
+        local lonlat_dist = geom_wgs84_coords_distance_meters({lon=min_lon, lat=min_lat}, {lon=max_lon, lat=max_lat})
+        -- Compute range as path dimensions but not lower than 10 m
+        file_settings.lookat.rng = math.max(lonlat_dist, 10.0)
     end
 end
 
@@ -458,6 +480,16 @@ local function write_open(fh, capture)
     local tmp_val = capture.user_options.path_style
     if (tmp_val ~= nil and tmp_val ~= '') then
         file_settings.path_style = tmp_val
+    end
+
+    local tmp_val = capture.user_options.pos_typ
+    if (tmp_val ~= nil and tmp_val ~= '') then
+        if (tmp_val == 'g') or (tmp_val == 'G') then
+            file_settings.air_pos_pkt_typ = TYP_AIR_POS_GPS
+        else
+            -- This is default, so no need to set
+            --file_settings.air_pos_pkt_typ = TYP_AIR_POS_ACC
+        end
     end
 
     -- write out file header
@@ -604,7 +636,7 @@ local function write(fh, capture, pinfo)
         curr_pkt.lat = (new_air_latitude[1].value * 180.0 / math.pi)
         curr_pkt.rel_alt = new_air_rel_altitude[1].value * 0.1
         curr_pkt.numsv = new_gps_nums[1].value
-        curr_pkt.typ = TYP_AIR_POS
+        curr_pkt.typ = TYP_AIR_POS_ACC
     elseif (pkt_rec_etype[1].value == 0x0000) then
         local new_motor_status = { dji_p3_rec_controller_g_real_status_motor_status() }
         curr_pkt.motor_status = new_motor_status[1].value
@@ -664,7 +696,7 @@ local function write(fh, capture, pinfo)
         curr_pkt.lat = (new_gps_lat[1].value / 10000000)
         curr_pkt.abs_alt = new_hmsl[1].value * 0.001
         curr_pkt.numsv = new_numsv[1].value
-        curr_pkt.typ = TYP_AIR_POS
+        curr_pkt.typ = TYP_AIR_POS_GPS
     end
 
     if (curr_pkt.typ ~= TYP_NULL) then
@@ -681,10 +713,22 @@ local function write(fh, capture, pinfo)
     return true
 end
 
-local function write_lookat(fh, indent, lookat, head, tilt, altmode)
-    local altval = lookat.rel_alt
-    if (altmode == "absolute") then
-        altval = lookat.abs_alt
+-- Writes LookAt block with given data
+local function write_lookat(fh, indent, file_settings, lookat, head, tilt, altmode)
+    local altval = 0
+    -- Use either GPS data or ACC data to set the altitude
+    if (file_settings.air_pos_pkt_typ == TYP_AIR_POS_ACC) then
+        if (altmode == "absolute") then
+            altval = lookat.rel_alt + file_settings.ground_altitude
+        else
+            altval = lookat.rel_alt
+        end
+    else
+        if (altmode == "absolute") then
+            altval = lookat.abs_alt
+        else
+            altval = lookat.abs_alt - file_settings.ground_altitude
+        end
     end
     local blk = indent .. [[<LookAt>
 ]] .. indent .. [[  <longitude>]] .. lookat.lon .. [[</longitude>
@@ -698,6 +742,14 @@ local function write_lookat(fh, indent, lookat, head, tilt, altmode)
 ]]
     return fh:write(blk)
 end
+
+-- Writes informational comments with given data
+local function write_info(fh, indent, file_settings)
+    local blk = indent .. [[<!-- Ground height at start point: ]] .. file_settings.ground_altitude .. [[ -->
+]]
+    return fh:write(blk)
+end
+
 
 local function write_static_paths_folder(fh, file_settings)
     debug("write_static_paths_folder() called")
@@ -717,7 +769,7 @@ local function write_static_paths_folder(fh, file_settings)
         return false
     end
 
-    if not write_lookat(fh, "        ", file_settings.lookat, -45.0, 45.0, "relativeToGround") then
+    if not write_lookat(fh, "        ", file_settings, file_settings.lookat, -45.0, 45.0, "relativeToGround") then
         info("write: error writing lookat block to file")
         return false
     end
@@ -735,13 +787,25 @@ local function write_static_paths_folder(fh, file_settings)
         return false
     end
 
+    local min_shift = {}
+    geom_wgs84_coords_shift_xyz(min_shift, file_settings.lookat, file_settings.min_dist_shift/2, file_settings.min_dist_shift/2, file_settings.min_dist_shift/2)
+    min_shift.lat = math.abs(min_shift.lat - file_settings.lookat.lat)
+    min_shift.lon = math.abs(min_shift.lon - file_settings.lookat.lon)
+    min_shift.rel_alt = math.abs(min_shift.rel_alt - file_settings.lookat.rel_alt)
+    local prev_pkt = {lat=0, lon=0, rel_alt=-999999}
     for pos,pkt in pairs(file_settings.packets) do
-        if (pkt.typ == TYP_AIR_POS) then
-            -- For angular coords, 8 digits after dot is enough fo achieve 1.1mm accuracy
-            local pathblk_line = string.format("            %.8f,%.8f,%.3f\n", pkt.lon, pkt.lat, pkt.rel_alt)
-            if not fh:write(pathblk_line) then
-                info("write: error writing path block line to file")
-                return false
+        if (pkt.typ == file_settings.air_pos_pkt_typ) then
+            -- only add points which have coordinates changed
+            if (math.abs(pkt.lat - prev_pkt.lat) > min_shift.lat) or
+               (math.abs(pkt.lon - prev_pkt.lon) > min_shift.lon) or
+               (math.abs(pkt.rel_alt - prev_pkt.rel_alt) > min_shift.rel_alt) then
+                -- For angular coords, 8 digits after dot is enough fo achieve 1.1mm accuracy
+                local blk_line = string.format("            %.8f,%.8f,%.3f\n", pkt.lon, pkt.lat, pkt.rel_alt)
+                if not fh:write(blk_line) then
+                    info("write: error writing path block line to file")
+                    return false
+                end
+                prev_pkt = pkt
             end
         end
     end
@@ -790,27 +854,40 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
         return false
     end
 
+    local min_shift = {}
+    geom_wgs84_coords_shift_xyz(min_shift, file_settings.lookat, file_settings.min_dist_shift/2, file_settings.min_dist_shift/2, file_settings.min_dist_shift/2)
+    min_shift.lat = math.abs(min_shift.lat - file_settings.lookat.lat)
+    min_shift.lon = math.abs(min_shift.lon - file_settings.lookat.lon)
+    min_shift.rel_alt = math.abs(min_shift.rel_alt - file_settings.lookat.rel_alt)
+    min_shift.tmstamp = 0.99 -- if there was no packet in last second, leave it even if no coords change
+    local prev_pkt = {lat=0, lon=0, rel_alt=-999999, tmstamp=1.0}
     for pos,pkt in pairs(file_settings.packets) do
-        if (pkt.typ == TYP_AIR_POS) then
-            local pathblk_line = "          <when>" .. os.date('!%Y-%m-%dT%H:%M:%S', pkt.tmstamp) .. string.format(".%03dZ", (pkt.tmstamp * 1000) % 1000) .. "</when>"
-            if not fh:write(pathblk_line) then
-                info("write: error writing path block line to file")
-                return false
-            end
+        if (pkt.typ == file_settings.air_pos_pkt_typ) then
+            -- only add points which have coordinates changed
+            if (math.abs(pkt.lat - prev_pkt.lat) > min_shift.lat) or
+               (math.abs(pkt.lon - prev_pkt.lon) > min_shift.lon) or
+               (math.abs(pkt.rel_alt - prev_pkt.rel_alt) > min_shift.rel_alt) or
+               (math.abs(pkt.tmstamp - prev_pkt.tmstamp) > min_shift.tmstamp) then
+                local blk_line = "          <when>" .. os.date('!%Y-%m-%dT%H:%M:%S', pkt.tmstamp) .. string.format(".%03dZ", (pkt.tmstamp * 1000) % 1000) .. "</when>"
+                if not fh:write(blk_line) then
+                    info("write: error writing path block line to file")
+                    return false
+                end
 
-            local coord = {}
-            geom_wgs84_coords_shift_xyz(coord, pkt, model_info.shift_x, model_info.shift_y, model_info.shift_z)
-            -- Precision of our angular coords is up to "%.12f", but 8 digits after dot is enough fo achieve 1.1mm accuracy
-            local pathblk_line = "<gx:coord>" .. string.format("%.8f %.8f %.3f", coord.lon, coord.lat, coord.abs_alt) .. "</gx:coord>"
-            if not fh:write(pathblk_line) then
-                info("write: error writing path block line to file")
-                return false
-            end
+                local coord = {}
+                geom_wgs84_coords_shift_xyz(coord, pkt, model_info.shift_x, model_info.shift_y, model_info.shift_z)
+                -- Precision of our angular coords is up to "%.12f", but 8 digits after dot is enough fo achieve 1.1mm accuracy
+                local blk_line = "<gx:coord>" .. string.format("%.8f %.8f %.3f", coord.lon, coord.lat, coord.abs_alt) .. "</gx:coord>"
+                if not fh:write(blk_line) then
+                    info("write: error writing path block line to file")
+                    return false
+                end
 
-            local pathblk_line = "<gx:angles>" .. string.format("%.3f %.3f %.3f", 0, 0, 0) .. "</gx:angles>\n"
-            if not fh:write(pathblk_line) then
-                info("write: error writing path block line to file")
-                return false
+                local blk_line = "<gx:angles>" .. string.format("%.3f %.3f %.3f", 0, 0, 0) .. "</gx:angles>\n"
+                if not fh:write(blk_line) then
+                    info("write: error writing path block line to file")
+                    return false
+                end
             end
         end
     end
@@ -876,8 +953,13 @@ local function write_close(fh, capture)
 
     process_packets(file_settings, file_settings.packets, true)
 
+    if not write_info(fh, "  ", file_settings) then
+        info("write: error writing info block to file")
+        return false
+    end
+
     -- Write global LookAt block
-    if not write_lookat(fh, "    ", file_settings.lookat, -45.0, 45.0, "absolute") then
+    if not write_lookat(fh, "    ", file_settings, file_settings.lookat, -45.0, 60.0, "absolute") then
         info("write: error writing lookat block to file")
         return false
     end
@@ -901,7 +983,7 @@ local function write_close(fh, capture)
 end
 
 -- do a payload dump when prompted by the user
-local function init_payload_dump(filename, ground_alt_val, path_style_val)
+local function init_payload_dump(filename, ground_alt_val, pos_typ_val, path_style_val)
 
     local packet_count = 0
     -- Osd General
@@ -910,7 +992,7 @@ local function init_payload_dump(filename, ground_alt_val, path_style_val)
     local fh = assert(io.open(filename, "w+"))
 
     capture = ExportCaptureInfo:create()
-    capture.user_options = { ground_alt=ground_alt_val, path_style=path_style_val }
+    capture.user_options = { ground_alt=ground_alt_val, pos_typ=pos_typ_val, path_style=path_style_val }
     write_open(fh, capture)
     
     -- this function is going to be called once each time our filter matches
@@ -945,6 +1027,7 @@ local function begin_dialog_menu()
     new_dialog("KML path of DJI drone flight writer", init_payload_dump,
       "Output file\n(type KML file name)",
       "Ground level altitude\n(altitude above sea at the starting point, in meters;\nif empty, measurements average will be used)",
+      "Positioning type\n('a' for accurate, using combined data from all sensors\n'g' for GNSS, using data only from satellites)",
       "Path style\n(flat, line, wall) UNUSED")
 end
 
