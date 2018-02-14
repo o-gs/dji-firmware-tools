@@ -37,7 +37,7 @@ local default_settings =
     packets = {},
     lookat = { lon = 0.0, lat = 0.0, rel_alt = 0.0, abs_alt = 0.0, rng = 1.0, },
     path_type = 0,
-    min_dist_shift = 0.02,
+    min_dist_shift = 0.012,
     ground_altitude = nil,
     air_pos_pkt_typ = TYP_AIR_POS_ACC,
 }
@@ -498,7 +498,6 @@ local function write_open(fh, capture)
   <Document>
     <name>Dji Flight Log - FILENAME</name>
     <open>1</open>
-    <description>Path configuration: TODO</description>
     <!-- For best viewing experience, select "Do not automatically tilt while zooming"
          option in Google Earth "Navigation" config tab. -->
     <Style id="purpleLineGreenPoly">
@@ -745,7 +744,14 @@ end
 
 -- Writes informational comments with given data
 local function write_info(fh, indent, file_settings)
-    local blk = indent .. [[<!-- Ground height at start point: ]] .. file_settings.ground_altitude .. [[ -->
+    local pos_type_str = "Accurate"
+    if (file_settings.pos_typ == TYP_AIR_POS_GPS) then
+        pos_type_str = "Gps only"
+    end
+
+    local blk = indent .. [[<description>Path configuration:
+ Ground level altitude at start point: ]] .. file_settings.ground_altitude .. [[
+ Positioning type: ]] .. pos_type_str .. [[</description>
 ]]
     return fh:write(blk)
 end
@@ -769,7 +775,8 @@ local function write_static_paths_folder(fh, file_settings)
         return false
     end
 
-    if not write_lookat(fh, "        ", file_settings, file_settings.lookat, -45.0, 45.0, "relativeToGround") then
+    -- Write folder LookAt block
+    if not write_lookat(fh, "        ", file_settings, file_settings.lookat, -45.0, 30.0, "relativeToGround") then
         info("write: error writing lookat block to file")
         return false
     end
@@ -888,6 +895,7 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
                     info("write: error writing path block line to file")
                     return false
                 end
+                prev_pkt = pkt
             end
         end
     end
@@ -910,6 +918,12 @@ local function write_dynamic_paths_folder(fh, file_settings)
 ]]
     if not fh:write(blk) then
         info("write: error writing path block head to file")
+        return false
+    end
+
+    -- Write folder LookAt block
+    if not write_lookat(fh, "      ", file_settings, file_settings.lookat, -45.0, 60.0, "absolute") then
+        info("write: error writing lookat block to file")
         return false
     end
 
@@ -959,7 +973,7 @@ local function write_close(fh, capture)
     end
 
     -- Write global LookAt block
-    if not write_lookat(fh, "    ", file_settings, file_settings.lookat, -45.0, 60.0, "absolute") then
+    if not write_lookat(fh, "    ", file_settings, file_settings.lookat, -45.0, 45.0, "absolute") then
         info("write: error writing lookat block to file")
         return false
     end
