@@ -160,24 +160,34 @@ local function geom_wgs84_coords_distance_meters(icoord1, icoord2)
     return (R * c)
 end
 
--- Creates transformation matrix for rotations in order: yaw,pitch,roll
+-- Creates rotation matrix from Euler angles in order: yaw,pitch,roll
 local function geom_make_transform_matrix_from_yaw_pitch_roll(rot_vec)
     local y = rot_vec.yaw
     local p = rot_vec.pitch
     local r = rot_vec.roll
-    -- Matrix created by multiplying yaw x pitch x roll transformation matrices
+    -- Matrix created by multiplying yaw x pitch x roll single rotation matrices
     local Row1 = { math.cos(y)*math.cos(p), math.cos(y)*math.sin(p)*math.sin(r) - math.sin(y)*math.cos(r), math.cos(y)*math.sin(p)*math.cos(r) + math.sin(y)*math.sin(r) }
     local Row2 = { math.sin(y)*math.cos(p), math.sin(y)*math.sin(p)*math.sin(r) + math.cos(y)*math.cos(r), math.sin(y)*math.sin(p)*math.cos(r) - math.cos(y)*math.sin(r) }
     local Row3 = { -math.sin(p), math.cos(p)*math.sin(r), math.cos(p)*math.cos(r) }
     return {Row1, Row2, Row3}
 end
 
--- Creates rotation vactor in order: yaw,pitch,roll fron a transformation matrix
+-- Creates Euler angles with order: yaw,pitch,roll from a rotation matrix
 local function geom_make_yaw_pitch_roll_from_transform_matrix(mx)
     -- There are several ways to do that, this one generates smallest error
     local y = math.atan2(mx[2][1],mx[1][1])
     local p = math.asin(-mx[3][1])
     local r = math.atan2(-mx[3][2],mx[3][3])
+    return {yaw=y, pitch=p, roll=r}
+end
+
+-- Creates Euler angles with order: roll,pitch,yaw from a rotation matrix
+local function geom_make_roll_pitch_yaw_from_transform_matrix(mx)
+    -- TODO fix the roll component of rotation
+    -- (this really requires changing all components, as roll should be applied first)
+    local y = math.atan2(mx[2][1],mx[1][1])
+    local p = math.asin(-mx[3][1])
+    local r = 0 -- math.atan2(-mx[3][2],mx[3][3])
     return {yaw=y, pitch=p, roll=r}
 end
 
@@ -955,32 +965,34 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
                     return false
                 end
 
-                -- TODO add roll
                 local rot_len = math.sqrt(model_info.shift_x * model_info.shift_x + model_info.shift_y * model_info.shift_y + model_info.shift_z * model_info.shift_z)
                 if (rot_len == 0) then
                     rot_len = 1e-30 -- small enough to not get into formatting accuracy
                 end
-                -- Create transformation matrix
+                -- Create rotation matrix
                 local rad_yaw = math.atan2(model_info.shift_y,model_info.shift_x)
                 local rad_pitch = math.asin(-model_info.shift_z / rot_len)
                 local rot_mx1 = geom_make_transform_matrix_from_yaw_pitch_roll({yaw=rad_yaw, pitch=rad_pitch, roll=0})
-                local rot_mx2 = geom_make_transform_matrix_from_yaw_pitch_roll({yaw=math.rad(curr_rot_pkt.yaw+180), pitch=math.rad(curr_rot_pkt.pitch), roll=0})
+                local rot_mx2 = geom_make_transform_matrix_from_yaw_pitch_roll({yaw=math.rad(curr_rot_pkt.yaw+180), pitch=math.rad(curr_rot_pkt.pitch), roll=math.rad(curr_rot_pkt.roll)})
                 rot_mx1 = matrix_mul(rot_mx2, rot_mx1)
-                local rot_qt = geom_make_yaw_pitch_roll_from_transform_matrix(rot_mx1)
-
-                local rot_shift_x = rot_len * math.sin(rot_qt.yaw) * math.cos(rot_qt.pitch)
-                local rot_shift_y = rot_len * math.cos(rot_qt.yaw) * math.cos(rot_qt.pitch)
-                local rot_shift_z = -rot_len * math.sin(rot_qt.pitch)
-
+                -- To shift world coordinates, we will use the standard yaw-pitch-roll angles
+                local rot_qt1 = geom_make_yaw_pitch_roll_from_transform_matrix(rot_mx1)
+                -- Rotation angles for inserting into KML have different apply order
+                local rot_qt2 = geom_make_roll_pitch_yaw_from_transform_matrix(rot_mx2)
+                -- Prepare shifted world coordinates
+                local rot_shift_x = rot_len * math.sin(rot_qt1.yaw) * math.cos(rot_qt1.pitch)
+                local rot_shift_y = rot_len * math.cos(rot_qt1.yaw) * math.cos(rot_qt1.pitch)
+                local rot_shift_z = -rot_len * math.sin(rot_qt1.pitch)
                 local coord = {}
                 geom_wgs84_coords_shift_xyz(coord, pkt, rot_shift_x, rot_shift_y, rot_shift_z)
+
                 -- Precision of our angular coords is up to "%.12f", but 8 digits after dot is enough fo achieve 1.1mm accuracy
                 local blk_line = "<gx:coord>" .. string.format("%.8f %.8f %.3f", coord.lon, coord.lat, coord.abs_alt + model_info.shift_up) .. "</gx:coord>"
                 if not fh:write(blk_line) then
                     info("write: error writing path block line to file")
                     return false
                 end
-                local blk_line = "<gx:angles>" .. string.format("%.1f %.1f %.1f", curr_rot_pkt.yaw+180, curr_rot_pkt.pitch, 0) .. "</gx:angles><!-- roll="..curr_rot_pkt.roll.." -->\n"
+                local blk_line = "<gx:angles>" .. string.format("%.1f %.1f %.1f", math.deg(rot_qt2.yaw), math.deg(rot_qt2.pitch), math.deg(rot_qt2.roll)) .. "</gx:angles>\n"
                 if not fh:write(blk_line) then
                     info("write: error writing path block line to file")
                     return false
@@ -1056,6 +1068,112 @@ end
 
 local function write_screen_overlays_folder(fh, file_settings)
     debug("write_dynamic_paths_folder() called")
+    if (file_settings.packets[1] == nil) then
+        info("no packets, skipping")
+        return false
+    end
+    local blk = [[    <Folder>
+      <name>Screen Overlays</name>
+      <visibility>1</visibility>
+      <description>Overlays showing controller state.</description>
+      <ScreenOverlay>
+        <name>Controller left scale</name>
+        <visibility>1</visibility>
+        <Icon>
+          <href>virtual_control_stick_back.png</href>
+        </Icon>
+        <overlayXY x="0" y="0" xunits="fraction" yunits="fraction"/>
+        <screenXY x="0" y="0" xunits="fraction" yunits="fraction"/>
+        <rotationXY x="0" y="0" xunits="fraction" yunits="fraction"/>
+        <size x="0.2" y="0" xunits="fraction" yunits="fraction"/>
+      </ScreenOverlay>
+      <ScreenOverlay>
+        <name>Controller right scale</name>
+        <visibility>1</visibility>
+        <Icon>
+          <href>virtual_control_stick_back.png</href>
+        </Icon>
+        <overlayXY x="1" y="0" xunits="fraction" yunits="fraction"/>
+        <screenXY x="1" y="0" xunits="fraction" yunits="fraction"/>
+        <rotationXY x="0" y="0" xunits="fraction" yunits="fraction"/>
+        <size x="0.2" y="0" xunits="fraction" yunits="fraction"/>
+      </ScreenOverlay>
+]]
+    if not fh:write(blk) then
+        info("write: error writing screen overlays to file")
+        return false
+    end
+
+    local pkt_num_total = 0
+    local pkt_num_ctrl = 0
+    local prev_left_pkt = { elevator = 0, rudder = 0,  aileron = 0, throttle = 0, tmstamp=file_settings.packets[1].tmstamp }
+    local prev_right_pkt = prev_left_pkt
+    for pos,pkt in pairs(file_settings.packets) do
+        if (pkt.typ == TYP_RC_STAT) then
+
+            if (pkt.tmstamp - prev_left_pkt.tmstamp) > 0.05 and
+              ((math.abs(pkt.throttle - prev_left_pkt.throttle) > 50) or
+               (math.abs(pkt.throttle - prev_left_pkt.throttle) > 5) and (pkt.throttle < 100) or
+               (math.abs(pkt.rudder - prev_left_pkt.rudder) > 50) or
+               (math.abs(pkt.rudder - prev_left_pkt.rudder) > 5) and (pkt.rudder < 100)) then
+
+                local throttle = -4.5 - prev_left_pkt.throttle * 4.5/10000
+                local rudder = -4.5 - prev_left_pkt.rudder * 4.5/10000
+                local blk = [[      <ScreenOverlay>
+        <name>Controller left knob</name>
+        <visibility>1</visibility>
+        <TimeSpan><begin>]] .. os.date('!%Y-%m-%dT%H:%M:%S', prev_left_pkt.tmstamp) .. string.format(".%03dZ", (prev_left_pkt.tmstamp * 1000) % 1000) .. [[</begin><end>]] .. os.date('!%Y-%m-%dT%H:%M:%S', pkt.tmstamp) .. string.format(".%03dZ", (pkt.tmstamp * 1000) % 1000) .. [[</end></TimeSpan>
+        <Icon><href>virtual_control_stick_knob.png</href></Icon>
+        <overlayXY x="]] .. rudder .. [[" y="]] .. throttle .. [[" xunits="fraction" yunits="fraction"/>
+        <screenXY x="0" y="0" xunits="fraction" yunits="fraction"/>
+        <rotationXY x="0" y="0" xunits="fraction" yunits="fraction"/>
+        <size x="0.02" y="0" xunits="fraction" yunits="fraction"/>
+      </ScreenOverlay>
+]]
+                if not fh:write(blk) then
+                    info("write: error writing screen overlays to file")
+                    return false
+                end
+                prev_left_pkt = pkt
+            end
+
+            if (pkt.tmstamp - prev_right_pkt.tmstamp) > 0.05 and
+              ((math.abs(pkt.aileron - prev_right_pkt.aileron) > 50) or
+               (math.abs(pkt.aileron - prev_right_pkt.aileron) > 5) and (pkt.aileron < 100) or
+               (math.abs(pkt.elevator - prev_right_pkt.elevator) > 50) or
+               (math.abs(pkt.elevator - prev_right_pkt.elevator) > 5) and (pkt.elevator < 100)) then
+
+                local aileron = 5.5 + prev_right_pkt.aileron * 4.5/10000
+                local elevator = -4.5 - prev_right_pkt.elevator * 4.5/10000
+                local blk = [[      <ScreenOverlay>
+        <name>Controller right knob</name>
+        <visibility>1</visibility>
+        <TimeSpan><begin>]] .. os.date('!%Y-%m-%dT%H:%M:%S', prev_right_pkt.tmstamp) .. string.format(".%03dZ", (prev_right_pkt.tmstamp * 1000) % 1000) .. [[</begin><end>]] .. os.date('!%Y-%m-%dT%H:%M:%S', pkt.tmstamp) .. string.format(".%03dZ", (pkt.tmstamp * 1000) % 1000) .. [[</end></TimeSpan>
+        <Icon><href>virtual_control_stick_knob.png</href></Icon>
+        <overlayXY x="]] .. aileron .. [[" y="]] .. elevator .. [[" xunits="fraction" yunits="fraction"/>
+        <screenXY x="1" y="0" xunits="fraction" yunits="fraction"/>
+        <rotationXY x="0" y="0" xunits="fraction" yunits="fraction"/>
+        <size x="0.02" y="0" xunits="fraction" yunits="fraction"/>
+      </ScreenOverlay>
+]]
+                if not fh:write(blk) then
+                    info("write: error writing screen overlays to file")
+                    return false
+                end
+                prev_right_pkt = pkt
+            end
+            pkt_num_ctrl = pkt_num_ctrl + 1
+        end
+        pkt_num_total = pkt_num_total + 1
+    end
+    debug(string.format("processed %d packets, %d stored controller data",pkt_num_total,pkt_num_ctrl))
+
+    local blk = [[    </Folder>
+]]
+    if not fh:write(blk) then
+        info("write: error writing screen overlays to file")
+        return false
+    end
     return true
 end
 
