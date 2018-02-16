@@ -82,6 +82,24 @@ local pcap2wtap = {
     [195] = wtap_encaps.IEEE802_15_4,
 }
 
+-- Multiply two matrices; m1 columns must be equal to m2 rows
+-- e.g. #m1[1] == #m2
+function matrix_mul( m1, m2 )
+	-- multiply rows with columns
+	local mtx = {}
+	for i = 1,#m1 do
+		mtx[i] = {}
+		for j = 1,#m2[1] do
+			local num = m1[i][1] * m2[1][j]
+			for n = 2,#m1[1] do
+				num = num + m1[i][n] * m2[n][j]
+			end
+			mtx[i][j] = num
+		end
+	end
+	return mtx
+end
+
 -- Makes a copy of the default settings per file
 local function new_settings()
     debug("creating new file_settings")
@@ -119,12 +137,12 @@ end
 -- Shifts given WGS84+Z coordinates by (x,y,z) shift given in meters
 local function geom_wgs84_coords_shift_xyz(ocoord, icoord, shift_meters_x, shift_meters_y, shift_meters_z)
     -- one degree of longitude on the Earth surface equals 111320 meters (at the equator)
-    local angular_lat = icoord.lat * math.pi / 180
+    local angular_lat = math.rad(icoord.lat)
     local delta_longitude = shift_meters_x / (111320.0 * math.cos(angular_lat))
     -- one degree of latitude on the Earth surface equals 110540 meters
     local delta_latitude = shift_meters_y / 110540.0
-    ocoord.lon = icoord.lon + delta_longitude * 180 / math.pi
-    ocoord.lat = icoord.lat + delta_latitude * 180 / math.pi
+    ocoord.lon = icoord.lon + delta_longitude
+    ocoord.lat = icoord.lat + delta_latitude
     ocoord.abs_alt = icoord.abs_alt + shift_meters_z
     ocoord.rel_alt = icoord.rel_alt + shift_meters_z
 end
@@ -140,6 +158,27 @@ local function geom_wgs84_coords_distance_meters(icoord1, icoord2)
 
     local c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
     return (R * c)
+end
+
+-- Creates transformation matrix for rotations in order: yaw,pitch,roll
+local function geom_make_transform_matrix_from_yaw_pitch_roll(rot_vec)
+    local y = rot_vec.yaw
+    local p = rot_vec.pitch
+    local r = rot_vec.roll
+    -- Matrix created by multiplying yaw x pitch x roll transformation matrices
+    local Row1 = { math.cos(y)*math.cos(p), math.cos(y)*math.sin(p)*math.sin(r) - math.sin(y)*math.cos(r), math.cos(y)*math.sin(p)*math.cos(r) + math.sin(y)*math.sin(r) }
+    local Row2 = { math.sin(y)*math.cos(p), math.sin(y)*math.sin(p)*math.sin(r) + math.cos(y)*math.cos(r), math.sin(y)*math.sin(p)*math.cos(r) - math.cos(y)*math.sin(r) }
+    local Row3 = { -math.sin(p), math.cos(p)*math.sin(r), math.cos(p)*math.cos(r) }
+    return {Row1, Row2, Row3}
+end
+
+-- Creates rotation vactor in order: yaw,pitch,roll fron a transformation matrix
+local function geom_make_yaw_pitch_roll_from_transform_matrix(mx)
+    -- There are several ways to do that, this one generates smallest error
+    local y = math.atan2(mx[2][1],mx[1][1])
+    local p = math.asin(-mx[3][1])
+    local r = math.atan2(-mx[3][2],mx[3][3])
+    return {yaw=y, pitch=p, roll=r}
 end
 
 -- Go though packets and interpolate missing values
@@ -892,6 +931,7 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
     min_shift.lat = math.abs(min_shift.lat - file_settings.lookat.lat)
     min_shift.lon = math.abs(min_shift.lon - file_settings.lookat.lon)
     min_shift.rel_alt = math.abs(min_shift.rel_alt - file_settings.lookat.rel_alt)
+    min_shift.rot = 2.0 -- Two degrees rotation is not much for the small drone
     min_shift.tmstamp = 0.99 -- if there was no packet in last second, leave it even if no coords change
     local pkt_num_total = 0
     local pkt_num_pos = 0
@@ -905,6 +945,9 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
             if (math.abs(pkt.lat - prev_pkt.lat) > min_shift.lat) or
                (math.abs(pkt.lon - prev_pkt.lon) > min_shift.lon) or
                (math.abs(pkt.rel_alt - prev_pkt.rel_alt) > min_shift.rel_alt) or
+               (math.abs(curr_rot_pkt.yaw - prev_rot_pkt.yaw) > min_shift.rot) or
+               (math.abs(curr_rot_pkt.pitch - prev_rot_pkt.pitch) > min_shift.rot) or
+               (math.abs(curr_rot_pkt.roll - prev_rot_pkt.roll) > min_shift.rot) or
                (math.abs(pkt.tmstamp - prev_pkt.tmstamp) > min_shift.tmstamp) then
                 local blk_line = "          <when>" .. os.date('!%Y-%m-%dT%H:%M:%S', pkt.tmstamp) .. string.format(".%03dZ", (pkt.tmstamp * 1000) % 1000) .. "</when>"
                 if not fh:write(blk_line) then
@@ -912,26 +955,42 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
                     return false
                 end
 
+                -- TODO add roll
+                local rot_len = math.sqrt(model_info.shift_x * model_info.shift_x + model_info.shift_y * model_info.shift_y + model_info.shift_z * model_info.shift_z)
+                if (rot_len == 0) then
+                    rot_len = 1e-30 -- small enough to not get into formatting accuracy
+                end
+                -- Create transformation matrix
+                local rad_yaw = math.atan2(model_info.shift_y,model_info.shift_x)
+                local rad_pitch = math.asin(-model_info.shift_z / rot_len)
+                local rot_mx1 = geom_make_transform_matrix_from_yaw_pitch_roll({yaw=rad_yaw, pitch=rad_pitch, roll=0})
+                local rot_mx2 = geom_make_transform_matrix_from_yaw_pitch_roll({yaw=math.rad(curr_rot_pkt.yaw+180), pitch=math.rad(curr_rot_pkt.pitch), roll=0})
+                rot_mx1 = matrix_mul(rot_mx2, rot_mx1)
+                local rot_qt = geom_make_yaw_pitch_roll_from_transform_matrix(rot_mx1)
+
+                local rot_shift_x = rot_len * math.sin(rot_qt.yaw) * math.cos(rot_qt.pitch)
+                local rot_shift_y = rot_len * math.cos(rot_qt.yaw) * math.cos(rot_qt.pitch)
+                local rot_shift_z = -rot_len * math.sin(rot_qt.pitch)
+
                 local coord = {}
-                geom_wgs84_coords_shift_xyz(coord, pkt, model_info.shift_x, model_info.shift_y, model_info.shift_z)
+                geom_wgs84_coords_shift_xyz(coord, pkt, rot_shift_x, rot_shift_y, rot_shift_z)
                 -- Precision of our angular coords is up to "%.12f", but 8 digits after dot is enough fo achieve 1.1mm accuracy
-                local blk_line = "<gx:coord>" .. string.format("%.8f %.8f %.3f", coord.lon, coord.lat, coord.abs_alt) .. "</gx:coord>"
+                local blk_line = "<gx:coord>" .. string.format("%.8f %.8f %.3f", coord.lon, coord.lat, coord.abs_alt + model_info.shift_up) .. "</gx:coord>"
                 if not fh:write(blk_line) then
                     info("write: error writing path block line to file")
                     return false
                 end
-
-                local blk_line = "<gx:angles>" .. string.format("%.3f %.3f %.3f", curr_rot_pkt.pitch, curr_rot_pkt.roll, curr_rot_pkt.yaw) .. "</gx:angles>\n"
+                local blk_line = "<gx:angles>" .. string.format("%.1f %.1f %.1f", curr_rot_pkt.yaw+180, curr_rot_pkt.pitch, 0) .. "</gx:angles><!-- roll="..curr_rot_pkt.roll.." -->\n"
                 if not fh:write(blk_line) then
                     info("write: error writing path block line to file")
                     return false
                 end
                 prev_pkt = pkt
+                prev_rot_pkt = curr_rot_pkt
                 pkt_num_add = pkt_num_add + 1
             end
             pkt_num_pos = pkt_num_pos + 1
         elseif (pkt.typ == TYP_AIR_ROTAT) then
-            prev_rot_pkt = curr_rot_pkt
             curr_rot_pkt = pkt
         end
         pkt_num_total = pkt_num_total + 1
@@ -945,6 +1004,7 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
         info("write: error writing path block tail to file")
         return false
     end
+    return true
 end
 
 local function write_dynamic_paths_folder(fh, file_settings)
@@ -965,24 +1025,24 @@ local function write_dynamic_paths_folder(fh, file_settings)
         return false
     end
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "yellowLineGreenPoly",
-        part_name="Body", fname="phantom_3_body_dec2.dae", shift_x=0.0, shift_y=0.0, shift_z=0.1 }
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "yellowLineGreenPoly", shift_up=0.1,
+        part_name="Body", fname="phantom_3_body_dec2.dae", shift_x=0.0, shift_y=0.0, shift_z=0.0 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop1", fname="phantom_3_prop_singl_run2.dae", shift_x=0.0109, shift_y=0.0109, shift_z=0.15 }
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly", shift_up=0.1,
+        part_name="Prop1", fname="phantom_3_prop_singl_run2.dae", shift_x=0.624, shift_y=0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop2", fname="phantom_3_prop_singl_run2.dae", shift_x=0.0109, shift_y=-0.0109, shift_z=0.15 }
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly", shift_up=0.1,
+        part_name="Prop2", fname="phantom_3_prop_singl_run2.dae", shift_x=0.624, shift_y=-0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop3", fname="phantom_3_prop_singl_run2.dae", shift_x=-0.0109, shift_y=-0.0109, shift_z=0.15 }
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly", shift_up=0.1,
+        part_name="Prop3", fname="phantom_3_prop_singl_run2.dae", shift_x=-0.624, shift_y=-0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop4", fname="phantom_3_prop_singl_run2.dae", shift_x=-0.0109, shift_y=0.0109, shift_z=0.15 }
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly", shift_up=0.1,
+        part_name="Prop4", fname="phantom_3_prop_singl_run2.dae", shift_x=-0.624, shift_y=0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local blk = [[    </Folder>
@@ -991,7 +1051,14 @@ local function write_dynamic_paths_folder(fh, file_settings)
         info("write: error writing path block tail to file")
         return false
     end
+    return true
 end
+
+local function write_screen_overlays_folder(fh, file_settings)
+    debug("write_dynamic_paths_folder() called")
+    return true
+end
+
 
 local function write_close(fh, capture)
     debug("write_close() called")
@@ -1021,6 +1088,9 @@ local function write_close(fh, capture)
 
     -- Write the more interesting, dynamic paths
     write_dynamic_paths_folder(fh, file_settings)
+
+    -- Write screen overlays
+    write_screen_overlays_folder(fh, file_settings)
 
     local footer = [[  </Document>
 </kml>
