@@ -903,8 +903,43 @@ local function write_static_paths_folder(fh, file_settings)
     end
 end
 
+local function write_dynamic_path_element(fh, model_info, tmstamp, pkt, curr_rot_pkt)
+
+    local rot_len = math.sqrt(model_info.shift_x * model_info.shift_x + model_info.shift_y * model_info.shift_y + model_info.shift_z * model_info.shift_z)
+    if (rot_len == 0) then
+        rot_len = 1e-30 -- small enough to not get into formatting accuracy
+    end
+    -- Create rotation matrix
+    local rad_yaw = math.atan2(model_info.shift_y,model_info.shift_x)
+    local rad_pitch = math.asin(-model_info.shift_z / rot_len)
+    local rot_mx1 = geom_make_transform_matrix_from_yaw_pitch_roll({yaw=rad_yaw, pitch=rad_pitch, roll=0})
+    local rot_mx2 = geom_make_transform_matrix_from_yaw_pitch_roll({yaw=math.rad(curr_rot_pkt.yaw+180), pitch=math.rad(curr_rot_pkt.pitch), roll=math.rad(curr_rot_pkt.roll)})
+    rot_mx1 = matrix_mul(rot_mx2, rot_mx1)
+    -- To shift world coordinates, we will use the standard yaw-pitch-roll angles
+    local rot_qt1 = geom_make_yaw_pitch_roll_from_transform_matrix(rot_mx1)
+    -- Rotation angles for inserting into KML have different apply order
+    local rot_qt2 = geom_make_roll_pitch_yaw_from_transform_matrix(rot_mx2)
+    -- Prepare shifted world coordinates
+    local rot_shift_x = rot_len * math.sin(rot_qt1.yaw) * math.cos(rot_qt1.pitch)
+    local rot_shift_y = rot_len * math.cos(rot_qt1.yaw) * math.cos(rot_qt1.pitch)
+    local rot_shift_z = -rot_len * math.sin(rot_qt1.pitch)
+    local coord = {}
+    geom_wgs84_coords_shift_xyz(coord, pkt, rot_shift_x, rot_shift_y, rot_shift_z)
+
+    local blk_line = "          <when>" .. os.date('!%Y-%m-%dT%H:%M:%S', tmstamp) .. string.format(".%03dZ", (tmstamp * 1000) % 1000) .. "</when>"
+    -- Precision of our angular coords is up to "%.12f", but 8 digits after dot is enough fo achieve 1.1mm accuracy
+    blk_line = blk_line .. "<gx:coord>" .. string.format("%.8f %.8f %.3f", coord.lon, coord.lat, coord.abs_alt + model_info.shift_up) .. "</gx:coord>"
+    blk_line = blk_line .. "<gx:angles>" .. string.format("%.1f %.1f %.1f", math.deg(rot_qt2.yaw), math.deg(rot_qt2.pitch), math.deg(rot_qt2.roll)) .. "</gx:angles>\n"
+    if not fh:write(blk_line) then
+        info("write: error writing path block line to file")
+        return false
+    end
+    return true
+end
+
 local function write_dynamic_paths_placemark(fh, file_settings, model_info)
     debug("write_dynamic_paths_placemark() called")
+    local packets = file_settings.packets
 
     local blk = [[      <Placemark>
         <name>Aircraft ]] .. model_info.part_name .. [[ path</name>
@@ -946,10 +981,11 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
     local pkt_num_total = 0
     local pkt_num_pos = 0
     local pkt_num_add = 0
-    local curr_rot_pkt = { pitch=0, roll=0, yaw=0 }
-    local prev_rot_pkt = curr_rot_pkt
-    local prev_pkt = {lat=0, lon=0, rel_alt=-999999, tmstamp=1.0}
-    for pos,pkt in pairs(file_settings.packets) do
+    local curr_rot_pkt = { pitch=0, roll=0, yaw=0 } -- current (not necessarily added) rotation packet
+    local prev_rot_pkt = curr_rot_pkt -- previous added rotation packet
+    local prev_pkt = {lat=0, lon=0, rel_alt=-999999, tmstamp=1.0} -- previous added pos packet
+    local curr_pkt = prev_pkt -- current (not necessarily added) pos packet
+    for pos,pkt in pairs(packets) do
         if (pkt.typ == file_settings.air_pos_pkt_typ) then
             -- only add points which have coordinates changed
             if (math.abs(pkt.lat - prev_pkt.lat) > min_shift.lat) or
@@ -959,53 +995,35 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
                (math.abs(curr_rot_pkt.pitch - prev_rot_pkt.pitch) > min_shift.rot) or
                (math.abs(curr_rot_pkt.roll - prev_rot_pkt.roll) > min_shift.rot) or
                (math.abs(pkt.tmstamp - prev_pkt.tmstamp) > min_shift.tmstamp) then
-                local blk_line = "          <when>" .. os.date('!%Y-%m-%dT%H:%M:%S', pkt.tmstamp) .. string.format(".%03dZ", (pkt.tmstamp * 1000) % 1000) .. "</when>"
-                if not fh:write(blk_line) then
-                    info("write: error writing path block line to file")
-                    return false
+
+                local tmstamp
+                if (pkt_num_add == 0) then
+                    local fpkt = packets[1]
+                    tmstamp = fpkt.tmstamp
+                else
+                    tmstamp = pkt.tmstamp
                 end
 
-                local rot_len = math.sqrt(model_info.shift_x * model_info.shift_x + model_info.shift_y * model_info.shift_y + model_info.shift_z * model_info.shift_z)
-                if (rot_len == 0) then
-                    rot_len = 1e-30 -- small enough to not get into formatting accuracy
-                end
-                -- Create rotation matrix
-                local rad_yaw = math.atan2(model_info.shift_y,model_info.shift_x)
-                local rad_pitch = math.asin(-model_info.shift_z / rot_len)
-                local rot_mx1 = geom_make_transform_matrix_from_yaw_pitch_roll({yaw=rad_yaw, pitch=rad_pitch, roll=0})
-                local rot_mx2 = geom_make_transform_matrix_from_yaw_pitch_roll({yaw=math.rad(curr_rot_pkt.yaw+180), pitch=math.rad(curr_rot_pkt.pitch), roll=math.rad(curr_rot_pkt.roll)})
-                rot_mx1 = matrix_mul(rot_mx2, rot_mx1)
-                -- To shift world coordinates, we will use the standard yaw-pitch-roll angles
-                local rot_qt1 = geom_make_yaw_pitch_roll_from_transform_matrix(rot_mx1)
-                -- Rotation angles for inserting into KML have different apply order
-                local rot_qt2 = geom_make_roll_pitch_yaw_from_transform_matrix(rot_mx2)
-                -- Prepare shifted world coordinates
-                local rot_shift_x = rot_len * math.sin(rot_qt1.yaw) * math.cos(rot_qt1.pitch)
-                local rot_shift_y = rot_len * math.cos(rot_qt1.yaw) * math.cos(rot_qt1.pitch)
-                local rot_shift_z = -rot_len * math.sin(rot_qt1.pitch)
-                local coord = {}
-                geom_wgs84_coords_shift_xyz(coord, pkt, rot_shift_x, rot_shift_y, rot_shift_z)
+                write_dynamic_path_element(fh, model_info, tmstamp, pkt, curr_rot_pkt)
 
-                -- Precision of our angular coords is up to "%.12f", but 8 digits after dot is enough fo achieve 1.1mm accuracy
-                local blk_line = "<gx:coord>" .. string.format("%.8f %.8f %.3f", coord.lon, coord.lat, coord.abs_alt + model_info.shift_up) .. "</gx:coord>"
-                if not fh:write(blk_line) then
-                    info("write: error writing path block line to file")
-                    return false
-                end
-                local blk_line = "<gx:angles>" .. string.format("%.1f %.1f %.1f", math.deg(rot_qt2.yaw), math.deg(rot_qt2.pitch), math.deg(rot_qt2.roll)) .. "</gx:angles>\n"
-                if not fh:write(blk_line) then
-                    info("write: error writing path block line to file")
-                    return false
-                end
                 prev_pkt = pkt
                 prev_rot_pkt = curr_rot_pkt
                 pkt_num_add = pkt_num_add + 1
             end
+            curr_pkt = pkt
             pkt_num_pos = pkt_num_pos + 1
         elseif (pkt.typ == TYP_AIR_ROTAT) then
             curr_rot_pkt = pkt
         end
         pkt_num_total = pkt_num_total + 1
+    end
+    -- Make sure the track does not end before timestamp of last packet
+    if (prev_pkt.tmstamp > 1.0) then
+        local lpkt = packets[#packets]
+        if (lpkt.tmstamp > prev_pkt.tmstamp) then
+            -- write previous match packet one more time, but with timestamp from very last packet
+            write_dynamic_path_element(fh, model_info, lpkt.tmstamp, curr_pkt, curr_rot_pkt)
+        end
     end
     debug(string.format("processed %d packets, %d stored path data, added to track %d of them",pkt_num_total,pkt_num_pos,pkt_num_add))
 
@@ -1066,9 +1084,53 @@ local function write_dynamic_paths_folder(fh, file_settings)
     return true
 end
 
+local function write_screen_overlay_left_stick(fh, beg_tmstamp, end_tmstamp, pkt)
+    local throttle = -4.5 - pkt.throttle * 4.5/10000
+    local rudder = -4.5 - pkt.rudder * 4.5/10000
+    local blk = [[      <ScreenOverlay>
+        <name>Controller left knob</name>
+        <visibility>1</visibility>
+        <TimeSpan><begin>]] .. os.date('!%Y-%m-%dT%H:%M:%S', beg_tmstamp) .. string.format(".%03dZ", (beg_tmstamp * 1000) % 1000) .. [[</begin><end>]] .. os.date('!%Y-%m-%dT%H:%M:%S', end_tmstamp) .. string.format(".%03dZ", (end_tmstamp * 1000) % 1000) .. [[</end></TimeSpan>
+        <Icon><href>virtual_control_stick_knob.png</href></Icon>
+        <overlayXY x="]] .. rudder .. [[" y="]] .. throttle .. [[" xunits="fraction" yunits="fraction"/>
+        <screenXY x="0" y="0" xunits="fraction" yunits="fraction"/>
+        <rotationXY x="0" y="0" xunits="fraction" yunits="fraction"/>
+        <size x="0.02" y="0" xunits="fraction" yunits="fraction"/>
+      </ScreenOverlay>
+]]
+    if not fh:write(blk) then
+        info("write: error writing screen overlays to file")
+        return false
+    end
+    return true
+end
+
+local function write_screen_overlay_right_stick(fh, beg_tmstamp, end_tmstamp, pkt)
+    local aileron = 5.5 + pkt.aileron * 4.5/10000
+    local elevator = -4.5 - pkt.elevator * 4.5/10000
+    local blk = [[      <ScreenOverlay>
+        <name>Controller right knob</name>
+        <visibility>1</visibility>
+        <TimeSpan><begin>]] .. os.date('!%Y-%m-%dT%H:%M:%S', beg_tmstamp) .. string.format(".%03dZ", (beg_tmstamp * 1000) % 1000) .. [[</begin><end>]] .. os.date('!%Y-%m-%dT%H:%M:%S', end_tmstamp) .. string.format(".%03dZ", (end_tmstamp * 1000) % 1000) .. [[</end></TimeSpan>
+        <Icon><href>virtual_control_stick_knob.png</href></Icon>
+        <overlayXY x="]] .. aileron .. [[" y="]] .. elevator .. [[" xunits="fraction" yunits="fraction"/>
+        <screenXY x="1" y="0" xunits="fraction" yunits="fraction"/>
+        <rotationXY x="0" y="0" xunits="fraction" yunits="fraction"/>
+        <size x="0.02" y="0" xunits="fraction" yunits="fraction"/>
+      </ScreenOverlay>
+]]
+    if not fh:write(blk) then
+        info("write: error writing screen overlays to file")
+        return false
+    end
+    return true
+end
+
 local function write_screen_overlays_folder(fh, file_settings)
     debug("write_dynamic_paths_folder() called")
-    if (file_settings.packets[1] == nil) then
+    local packets = file_settings.packets
+
+    if (packets[1] == nil) then
         info("no packets, skipping")
         return false
     end
@@ -1106,9 +1168,10 @@ local function write_screen_overlays_folder(fh, file_settings)
 
     local pkt_num_total = 0
     local pkt_num_ctrl = 0
-    local prev_left_pkt = { elevator = 0, rudder = 0,  aileron = 0, throttle = 0, tmstamp=file_settings.packets[1].tmstamp }
+    local prev_left_pkt = { elevator = 0, rudder = 0,  aileron = 0, throttle = 0, tmstamp=packets[1].tmstamp }
     local prev_right_pkt = prev_left_pkt
-    for pos,pkt in pairs(file_settings.packets) do
+    local curr_pkt = prev_left_pkt
+    for pos,pkt in pairs(packets) do
         if (pkt.typ == TYP_RC_STAT) then
 
             if (pkt.tmstamp - prev_left_pkt.tmstamp) > 0.05 and
@@ -1117,23 +1180,8 @@ local function write_screen_overlays_folder(fh, file_settings)
                (math.abs(pkt.rudder - prev_left_pkt.rudder) > 50) or
                (math.abs(pkt.rudder - prev_left_pkt.rudder) > 5) and (pkt.rudder < 100)) then
 
-                local throttle = -4.5 - prev_left_pkt.throttle * 4.5/10000
-                local rudder = -4.5 - prev_left_pkt.rudder * 4.5/10000
-                local blk = [[      <ScreenOverlay>
-        <name>Controller left knob</name>
-        <visibility>1</visibility>
-        <TimeSpan><begin>]] .. os.date('!%Y-%m-%dT%H:%M:%S', prev_left_pkt.tmstamp) .. string.format(".%03dZ", (prev_left_pkt.tmstamp * 1000) % 1000) .. [[</begin><end>]] .. os.date('!%Y-%m-%dT%H:%M:%S', pkt.tmstamp) .. string.format(".%03dZ", (pkt.tmstamp * 1000) % 1000) .. [[</end></TimeSpan>
-        <Icon><href>virtual_control_stick_knob.png</href></Icon>
-        <overlayXY x="]] .. rudder .. [[" y="]] .. throttle .. [[" xunits="fraction" yunits="fraction"/>
-        <screenXY x="0" y="0" xunits="fraction" yunits="fraction"/>
-        <rotationXY x="0" y="0" xunits="fraction" yunits="fraction"/>
-        <size x="0.02" y="0" xunits="fraction" yunits="fraction"/>
-      </ScreenOverlay>
-]]
-                if not fh:write(blk) then
-                    info("write: error writing screen overlays to file")
-                    return false
-                end
+                write_screen_overlay_left_stick(fh, prev_left_pkt.tmstamp, pkt.tmstamp, prev_left_pkt)
+
                 prev_left_pkt = pkt
             end
 
@@ -1143,28 +1191,25 @@ local function write_screen_overlays_folder(fh, file_settings)
                (math.abs(pkt.elevator - prev_right_pkt.elevator) > 50) or
                (math.abs(pkt.elevator - prev_right_pkt.elevator) > 5) and (pkt.elevator < 100)) then
 
-                local aileron = 5.5 + prev_right_pkt.aileron * 4.5/10000
-                local elevator = -4.5 - prev_right_pkt.elevator * 4.5/10000
-                local blk = [[      <ScreenOverlay>
-        <name>Controller right knob</name>
-        <visibility>1</visibility>
-        <TimeSpan><begin>]] .. os.date('!%Y-%m-%dT%H:%M:%S', prev_right_pkt.tmstamp) .. string.format(".%03dZ", (prev_right_pkt.tmstamp * 1000) % 1000) .. [[</begin><end>]] .. os.date('!%Y-%m-%dT%H:%M:%S', pkt.tmstamp) .. string.format(".%03dZ", (pkt.tmstamp * 1000) % 1000) .. [[</end></TimeSpan>
-        <Icon><href>virtual_control_stick_knob.png</href></Icon>
-        <overlayXY x="]] .. aileron .. [[" y="]] .. elevator .. [[" xunits="fraction" yunits="fraction"/>
-        <screenXY x="1" y="0" xunits="fraction" yunits="fraction"/>
-        <rotationXY x="0" y="0" xunits="fraction" yunits="fraction"/>
-        <size x="0.02" y="0" xunits="fraction" yunits="fraction"/>
-      </ScreenOverlay>
-]]
-                if not fh:write(blk) then
-                    info("write: error writing screen overlays to file")
-                    return false
-                end
+                write_screen_overlay_right_stick(fh, prev_right_pkt.tmstamp, pkt.tmstamp, prev_right_pkt)
+
                 prev_right_pkt = pkt
             end
+            curr_pkt = pkt
             pkt_num_ctrl = pkt_num_ctrl + 1
         end
         pkt_num_total = pkt_num_total + 1
+    end
+    -- Make sure the track does not end before timestamp of last packet
+    if (true) then
+        local lpkt = packets[#packets]
+        -- write previous match packets one more time, but with timestamp from very last packet
+        if (lpkt.tmstamp > prev_left_pkt.tmstamp) then
+            write_screen_overlay_left_stick(fh, prev_left_pkt.tmstamp, lpkt.tmstamp, curr_pkt)
+        end
+        if (lpkt.tmstamp > prev_right_pkt.tmstamp) then
+            write_screen_overlay_right_stick(fh, prev_right_pkt.tmstamp, lpkt.tmstamp, curr_pkt)
+        end
     end
     debug(string.format("processed %d packets, %d stored controller data",pkt_num_total,pkt_num_ctrl))
 
