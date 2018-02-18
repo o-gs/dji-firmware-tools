@@ -40,6 +40,7 @@ local default_settings =
     path_type = 0,
     min_dist_shift = 0.012,
     ground_altitude = nil,
+    model_detail_lv = 2,
     air_pos_pkt_typ = TYP_AIR_POS_ACC,
 }
 
@@ -532,6 +533,11 @@ local function write_open(fh, capture)
         file_settings.min_dist_shift = tmp_val/1000
     end
 
+    local tmp_val = tonumber(capture.user_options.model_detail, 10)
+    if (tmp_val ~= nil) then
+        file_settings.model_detail_lv = math.floor(tmp_val)
+    end
+
     local tmp_val = capture.user_options.path_style
     if (tmp_val ~= nil and tmp_val ~= '') then
         file_settings.path_style = tmp_val
@@ -558,7 +564,7 @@ local function write_open(fh, capture)
     <Style id="purpleLineGreenPoly">
       <IconStyle>
         <Icon>
-          <href>onepx_trans.png</href>
+          <href>res/one_px_transparent.png</href>
         </Icon>
         <scale>0</scale>
       </IconStyle>
@@ -576,7 +582,7 @@ local function write_open(fh, capture)
     <Style id="yellowLineGreenPoly">
       <IconStyle>
         <Icon>
-          <href>onepx_trans.png</href>
+          <href>res/one_px_transparent.png</href>
         </Icon>
         <scale>0</scale>
       </IconStyle>
@@ -594,7 +600,7 @@ local function write_open(fh, capture)
     <Style id="noLineNoPoly">
       <IconStyle>
         <Icon>
-          <href>onepx_trans.png</href>
+          <href>res/one_px_transparent.png</href>
         </Icon>
         <scale>0</scale>
       </IconStyle>
@@ -941,6 +947,8 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
     debug("write_dynamic_paths_placemark() called")
     local packets = file_settings.packets
 
+    local full_fname = string.format("res/%s_det%d.dae",model_info.fname,file_settings.model_detail_lv)
+
     local blk = [[      <Placemark>
         <name>Aircraft ]] .. model_info.part_name .. [[ path</name>
         <visibility>1</visibility>
@@ -961,7 +969,7 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
               <z>]] .. model_info.scale .. [[</z>
             </Scale>
             <Link>
-              <href>]] .. model_info.fname .. [[</href>
+              <href>]] .. full_fname .. [[</href>
               <refreshMode>once</refreshMode>
             </Link>
           </Model>
@@ -1055,24 +1063,36 @@ local function write_dynamic_paths_folder(fh, file_settings)
         return false
     end
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "yellowLineGreenPoly", shift_up=0.1,
-        part_name="Body", fname="phantom_3_body_dec2.dae", shift_x=0.0, shift_y=0.0, shift_z=0.0 }
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "yellowLineGreenPoly",
+        part_name="Body", fname="phantom_3_pro_body", altfname="",
+        shift_up=0.1, shift_x=0.0, shift_y=0.0, shift_z=0.0 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly", shift_up=0.1,
-        part_name="Prop1", fname="phantom_3_prop_singl_run2.dae", shift_x=0.624, shift_y=0.624, shift_z=0.05 }
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="Prop1", fname="phantom_3_pro_prop_spin", altfname="phantom_3_pro_prop_stat",
+        shift_up=0.1, shift_x=0.624, shift_y=0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly", shift_up=0.1,
-        part_name="Prop2", fname="phantom_3_prop_singl_run2.dae", shift_x=0.624, shift_y=-0.624, shift_z=0.05 }
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="Prop2", fname="phantom_3_pro_prop_spin", altfname="phantom_3_pro_prop_stat",
+        shift_up=0.1, shift_x=0.624, shift_y=-0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly", shift_up=0.1,
-        part_name="Prop3", fname="phantom_3_prop_singl_run2.dae", shift_x=-0.624, shift_y=-0.624, shift_z=0.05 }
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="Prop3", fname="phantom_3_pro_prop_spin", altfname="phantom_3_pro_prop_stat",
+        shift_up=0.1, shift_x=-0.624, shift_y=-0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly", shift_up=0.1,
-        part_name="Prop4", fname="phantom_3_prop_singl_run2.dae", shift_x=-0.624, shift_y=0.624, shift_z=0.05 }
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="Prop4", fname="phantom_3_pro_prop_spin", altfname="",
+        shift_up=0.1, shift_x=-0.624, shift_y=0.624, shift_z=0.05 }
+    write_dynamic_paths_placemark(fh, file_settings, model_info)
+
+    -- TODO make support of independent gimbal arm movement
+    -- while there's no support, we can keep all gimbal arms as one
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="GimbalYaw", fname="phantom_3_pro_gimbal_arms",
+        shift_up=0.1, shift_x=-0.109, shift_y=0.0, shift_z=-0.442 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local blk = [[    </Folder>
@@ -1091,7 +1111,7 @@ local function write_screen_overlay_left_stick(fh, beg_tmstamp, end_tmstamp, pkt
         <name>Controller left knob</name>
         <visibility>1</visibility>
         <TimeSpan><begin>]] .. os.date('!%Y-%m-%dT%H:%M:%S', beg_tmstamp) .. string.format(".%03dZ", (beg_tmstamp * 1000) % 1000) .. [[</begin><end>]] .. os.date('!%Y-%m-%dT%H:%M:%S', end_tmstamp) .. string.format(".%03dZ", (end_tmstamp * 1000) % 1000) .. [[</end></TimeSpan>
-        <Icon><href>virtual_control_stick_knob.png</href></Icon>
+        <Icon><href>res/virtual_control_stick_knob.png</href></Icon>
         <overlayXY x="]] .. rudder .. [[" y="]] .. throttle .. [[" xunits="fraction" yunits="fraction"/>
         <screenXY x="0" y="0" xunits="fraction" yunits="fraction"/>
         <rotationXY x="0" y="0" xunits="fraction" yunits="fraction"/>
@@ -1112,7 +1132,7 @@ local function write_screen_overlay_right_stick(fh, beg_tmstamp, end_tmstamp, pk
         <name>Controller right knob</name>
         <visibility>1</visibility>
         <TimeSpan><begin>]] .. os.date('!%Y-%m-%dT%H:%M:%S', beg_tmstamp) .. string.format(".%03dZ", (beg_tmstamp * 1000) % 1000) .. [[</begin><end>]] .. os.date('!%Y-%m-%dT%H:%M:%S', end_tmstamp) .. string.format(".%03dZ", (end_tmstamp * 1000) % 1000) .. [[</end></TimeSpan>
-        <Icon><href>virtual_control_stick_knob.png</href></Icon>
+        <Icon><href>res/virtual_control_stick_knob.png</href></Icon>
         <overlayXY x="]] .. aileron .. [[" y="]] .. elevator .. [[" xunits="fraction" yunits="fraction"/>
         <screenXY x="1" y="0" xunits="fraction" yunits="fraction"/>
         <rotationXY x="0" y="0" xunits="fraction" yunits="fraction"/>
@@ -1142,7 +1162,7 @@ local function write_screen_overlays_folder(fh, file_settings)
         <name>Controller left scale</name>
         <visibility>1</visibility>
         <Icon>
-          <href>virtual_control_stick_back.png</href>
+          <href>res/virtual_control_stick_back.png</href>
         </Icon>
         <overlayXY x="0" y="0" xunits="fraction" yunits="fraction"/>
         <screenXY x="0" y="0" xunits="fraction" yunits="fraction"/>
@@ -1153,7 +1173,7 @@ local function write_screen_overlays_folder(fh, file_settings)
         <name>Controller right scale</name>
         <visibility>1</visibility>
         <Icon>
-          <href>virtual_control_stick_back.png</href>
+          <href>res/virtual_control_stick_back.png</href>
         </Icon>
         <overlayXY x="1" y="0" xunits="fraction" yunits="fraction"/>
         <screenXY x="1" y="0" xunits="fraction" yunits="fraction"/>
@@ -1268,7 +1288,7 @@ local function write_close(fh, capture)
 end
 
 -- do a payload dump when prompted by the user
-local function init_payload_dump(filename, ground_alt_val, pos_typ_val, min_dist_shift_val, path_style_val)
+local function init_payload_dump(filename, ground_alt_val, pos_typ_val, min_dist_shift_val, model_detail_val, path_style_val)
 
     local packet_count = 0
     -- Osd General
@@ -1277,7 +1297,7 @@ local function init_payload_dump(filename, ground_alt_val, pos_typ_val, min_dist
     local fh = assert(io.open(filename, "w+"))
 
     capture = ExportCaptureInfo:create()
-    capture.user_options = { ground_alt=ground_alt_val, pos_typ=pos_typ_val, dist_shift=min_dist_shift_val, path_style=path_style_val }
+    capture.user_options = { ground_alt=ground_alt_val, pos_typ=pos_typ_val, dist_shift=min_dist_shift_val, model_detail=model_detail_val, path_style=path_style_val }
     write_open(fh, capture)
     
     -- this function is going to be called once each time our filter matches
@@ -1314,6 +1334,7 @@ local function begin_dialog_menu()
       "Ground level altitude\n(altitude above sea at the starting point, in meters;\nif empty, measurements average will be used)",
       "Positioning type\n('a' for accurate, using combined data from all sensors\n'g' for GNSS, using data only from satellites;\nif empty, 'a' will be used)",
       "Minimal registered position difference\n(distance in milimeters below which\na path point will be optimized out;\nif empty, 12 will be used)",
+      "3D Model detail level\n(controls amount of faces in aircraft model:\n0 - max complexity,\n1 - up to 20k faces,\n2 - up to 2k faces, default)",
       "Path style\n(flat, line, wall) UNUSED")
 end
 
