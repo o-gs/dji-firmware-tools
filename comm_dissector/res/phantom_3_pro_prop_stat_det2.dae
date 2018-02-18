@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 2.79.0 commit date:2017-09-11, commit time:10:43, hash:5bd8ac9</authoring_tool>
+    </contributor>
+    <created>2018-02-18T15:25:44</created>
+    <modified>2018-02-18T15:25:44</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_images/>
+  <library_effects>
+    <effect id="plastic-white-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <emission>
+              <color sid="emission">0.2 0.2 0.2 1</color>
+            </emission>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.72 0.72 0.72 1</color>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.5 0.5 0.5 1</color>
+            </specular>
+            <shininess>
+              <float sid="shininess">1</float>
+            </shininess>
+            <index_of_refraction>
+              <float sid="index_of_refraction">1</float>
+            </index_of_refraction>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="plastic-white-material" name="plastic-white">
+      <instance_effect url="#plastic-white-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Part__Feature011-mesh" name="Part__Feature011">
+      <mesh>
+        <source id="Part__Feature011-mesh-positions">
+          <float_array id="Part__Feature011-mesh-positions-array" count="27">-126.1292 120.241 -61.43007 -51.09769 125.8305 -156.2355 -45.78536 121.8371 -149.5943 -133.9336 123.6327 -69.30252 -52.09721 123.9505 -151.6182 -60.19815 117.1444 -116.2713 -133.2937 125.6005 -68.65688 -44.85922 123.3589 -149.8449 -52.17415 126.329 -151.2078</float_array>
+          <technique_common>
+            <accessor source="#Part__Feature011-mesh-positions-array" count="9" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Part__Feature011-mesh-normals">
+          <float_array id="Part__Feature011-mesh-normals-array" count="42">-0.2327688 -0.9436985 -0.2350569 0.8366215 -0.4602548 0.2970356 0.9777358 -0.004573225 0.2097902 -0.6625717 0.4191307 -0.6207482 0.09309011 -0.2166627 -0.9717981 -0.7101823 -5.39338e-5 0.7040179 0.3521078 0.1702058 -0.9203533 0.3042718 0.9017744 0.3069556 -0.23957 -0.9417011 -0.2362318 -0.212417 -0.9562037 -0.2013794 -0.4180494 -0.8061625 -0.4187323 -0.1380116 0.982261 -0.1269502 0.3218934 0.8847582 0.3370279 0.3082528 0.9002465 0.307468</float_array>
+          <technique_common>
+            <accessor source="#Part__Feature011-mesh-normals-array" count="14" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Part__Feature011-mesh-vertices">
+          <input semantic="POSITION" source="#Part__Feature011-mesh-positions"/>
+        </vertices>
+        <triangles material="plastic-white-material" count="14">
+          <input semantic="VERTEX" source="#Part__Feature011-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Part__Feature011-mesh-normals" offset="1"/>
+          <p>4 0 5 0 3 0 5 1 2 1 7 1 1 2 8 2 4 2 1 3 3 3 6 3 2 4 8 4 7 4 6 5 3 5 0 5 8 6 2 6 4 6 8 7 6 7 5 7 4 8 2 8 5 8 5 9 0 9 3 9 3 10 1 10 4 10 8 11 1 11 6 11 6 12 0 12 5 12 5 13 7 13 8 13</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="Part__Feature012-mesh" name="Part__Feature012">
+      <mesh>
+        <source id="Part__Feature012-mesh-positions">
+          <float_array id="Part__Feature012-mesh-positions-array" count="126">29.91494 120.241 -244.9191 -52.11756 137.8807 -152.6648 -51.96614 120.5807 -154.2272 -50.34143 137.8807 -156.6436 -48.5288 120.5807 -157.4711 -46.70992 137.8807 -157.0366 -44.33124 137.9308 -149.2299 -48.97145 134.2182 -145.3565 -40.30833 134.1849 -153.527 -49.73739 137.1754 -147.2554 -41.97219 134.3873 -157.6385 -42.14882 137.1647 -154.396 -44.38045 138.1071 -156.7414 -42.65767 134.0032 -147.6696 -42.54574 123.3198 -158.7528 -40.24214 127.9418 -154.0475 -42.25247 120.5241 -158.7531 -40.40925 125.5247 -152.2772 -40.63027 120.5807 -151.1352 -44.30506 120.5802 -146.1837 -52.28821 120.5811 -146.3992 -56.03728 120.5817 -153.4546 -55.16521 134.192 -149.7375 -51.74205 120.5408 -160.3071 -48.80443 121.9543 -160.972 -45.80222 134.2464 -160.5595 -43.81351 124.8677 -159.7435 -46.29374 120.5804 -149.2545 -51.13322 120.5807 -150.4345 -44.11882 120.5807 -154.2605 -52.39625 137.0966 -157.6456 -55.72007 134.5303 -153.9232 -52.68566 134.1949 -159.5959 -54.05356 137.1901 -151.6719 -48.30842 138.0705 -158.3322 -50.82563 138.8377 -151.3733 -44.0335 137.8807 -153.8543 -45.29141 137.8807 -150.3335 -49.15177 137.8813 -149.1428 -36.30146 117.1717 -189.8891 37.07951 125.6005 -237.6923 37.71938 123.6327 -237.0466</float_array>
+          <technique_common>
+            <accessor source="#Part__Feature012-mesh-positions-array" count="42" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Part__Feature012-mesh-normals">
+          <float_array id="Part__Feature012-mesh-normals-array" count="240">-0.2944679 -0.04248416 -0.9547167 -1.57147e-6 -1 -7.18922e-7 -0.02692842 -0.06969952 0.9972046 0.8448081 0.4282438 -0.3207907 0.9763431 0.02790999 -0.2144183 -0.5759377 0.07785344 0.813778 -0.8904595 0.4286823 0.1526874 0.2529736 -0.938248 0.2359985 0.7643274 -0.03948485 -0.6436184 0.3716256 0.9281811 0.01934719 0.006529629 0.927873 0.3728395 -0.9906793 0.02701389 0.13351 0.2366597 0.04535758 -0.9705333 -0.44039 0.8874359 -0.1360666 0.148721 0.156922 -0.9763491 0.318598 0.4641036 0.8265007 0.5132881 0.5004687 -0.6971846 -0.88082 -0.07138949 0.4680382 0.6039964 0.05892336 -0.794806 0.7101841 -7.59969e-5 -0.7040161 0.9127696 -0.02880871 0.4074578 4.26524e-5 -1 -5.03155e-5 -0.4411453 0.7856561 0.4337457 -0.2647827 0.5559735 -0.7878983 -2.26314e-4 -1 4.55374e-5 0.9267742 0.04366046 0.373073 0.6772063 0.4037307 0.6151367 -0.5880619 0.04153949 0.8077486 -0.8816611 0.004201114 -0.4718648 0.03065741 0.9946568 -0.09858006 0.8091628 0.4796328 0.3394229 0.2905794 0.6166059 -0.7316835 0.3451972 0.06130635 0.9365258 -0.5803925 0.5824201 0.5691498 -0.9416277 0.01254314 -0.3364222 -0.804281 0.3846619 -0.4529541 0.1074889 -0.03625679 0.993545 0.8587485 -0.05341601 -0.5096056 -0.3022098 0.9032492 -0.3046479 0.9335873 0.04049909 0.3560545 -8.82947e-5 -1 2.42324e-4 0 -1 0 3.61661e-6 -1 0 0.212014 -0.9562093 0.2017773 0.1337364 -0.966804 0.2177259 0.2320849 -0.9438884 0.2349712 -0.2584784 0.94556 -0.1977503 0.3273125 0.03443795 -0.9442884 -0.2362865 0.03425329 -0.9710795 -0.1368873 -0.1146346 -0.9839313 0.1252943 -0.6234183 -0.7717843 0.2117878 0.5663255 0.7965058 0.7007715 0.5602203 -0.4416703 0.6858747 0.03710234 0.7267733 3.65597e-5 -1 -6.93207e-5 -0.007038056 -0.9999285 0.009673297 -0.008222222 -0.9999242 0.009177684 -0.1280133 0.4351777 -0.8911975 -9.00151e-5 -1 8.18013e-5 -1.13549e-4 -1 2.53405e-5 -0.004981637 -0.9997931 0.01972162 0.006426036 -0.9999563 0.006807625 -2.19767e-4 -1 4.71968e-5 0.001017808 -0.9999777 0.006605803 0.8025883 -0.03256469 0.5956438 0.6725994 0.4188779 0.610042 -0.7652601 -0.01133656 0.6436215 -0.8469849 -0.03088855 -0.5307189 0.1310206 0.9911264 0.02240788 0.7893665 0.5605608 0.2503445 -0.5418817 0.3502456 0.7639976 -0.9168114 0.02827477 -0.3983182 -0.7358602 0.6423592 -0.2142066 0.9268937 0.04093497 -0.3730852 -0.2940559 0.9059636 -0.3045671 -0.3214568 0.8847546 -0.3374534 -0.417276 0.8501875 -0.3210328 0.9728074 0.1020718 -0.2079118 0.9952545 0.002441227 0.0972768 0.9544652 -0.1069928 -0.2784758</float_array>
+          <technique_common>
+            <accessor source="#Part__Feature012-mesh-normals-array" count="80" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Part__Feature012-mesh-vertices">
+          <input semantic="POSITION" source="#Part__Feature012-mesh-positions"/>
+        </vertices>
+        <triangles material="plastic-white-material" count="80">
+          <input semantic="VERTEX" source="#Part__Feature012-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Part__Feature012-mesh-normals" offset="1"/>
+          <p>27 0 38 0 37 0 1 1 5 1 37 1 7 2 20 2 19 2 10 3 11 3 8 3 2 4 1 4 28 4 20 5 7 5 22 5 31 6 22 6 33 6 14 7 39 7 17 7 38 8 28 8 1 8 11 9 12 9 6 9 9 10 6 10 35 10 21 11 22 11 31 11 38 12 27 12 28 12 35 13 30 13 33 13 32 14 26 14 24 14 6 15 7 15 13 15 12 16 10 16 25 16 21 17 20 17 22 17 10 18 26 18 25 18 40 19 41 19 0 19 2 20 3 20 1 20 29 21 18 21 27 21 9 22 35 22 33 22 34 23 32 23 30 23 28 24 21 24 2 24 13 25 18 25 8 25 41 26 15 26 17 26 29 27 5 27 4 27 32 28 21 28 31 28 35 29 12 29 34 29 8 30 6 30 13 30 34 31 12 31 25 31 7 32 19 32 13 32 22 33 9 33 33 33 29 34 37 34 36 34 31 35 30 35 32 35 3 36 4 36 5 36 10 37 15 37 26 37 40 38 39 38 15 38 8 39 18 39 17 39 37 40 38 40 1 40 1 41 3 41 5 41 5 42 36 42 37 42 0 43 41 43 39 43 14 44 24 44 39 44 41 45 17 45 39 45 35 46 34 46 30 46 14 47 16 47 24 47 23 48 32 48 24 48 25 49 26 49 32 49 24 50 16 50 23 50 6 51 9 51 7 51 12 52 11 52 10 52 2 53 4 53 3 53 19 54 27 54 18 54 29 55 4 55 16 55 16 56 18 56 29 56 34 57 25 57 32 57 28 58 27 58 20 58 19 59 20 59 27 59 23 60 16 60 4 60 23 61 4 61 2 61 28 62 20 62 21 62 21 63 23 63 2 63 13 64 19 64 18 64 41 65 40 65 15 65 29 66 36 66 5 66 32 67 23 67 21 67 35 68 6 68 12 68 8 69 11 69 6 69 22 70 7 70 9 70 29 71 27 71 37 71 31 72 33 72 30 72 10 73 8 73 15 73 26 74 15 74 39 74 40 75 0 75 39 75 39 76 24 76 26 76 18 77 16 77 14 77 17 78 15 78 8 78 18 79 14 79 17 79</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_controllers/>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="node3" name="node3" type="NODE">
+        <matrix sid="transform">1 0 0 48.20113 0 1 0 -120 0 0 1 153.2212 0 0 0 1</matrix>
+        <instance_geometry url="#Part__Feature011-mesh" name="node3">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="plastic-white-material" target="#plastic-white-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="node4" name="node4" type="NODE">
+        <matrix sid="transform">1 0 0 48.20113 0 1 0 -120 0 0 1 153.2212 0 0 0 1</matrix>
+        <instance_geometry url="#Part__Feature012-mesh" name="node4">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="plastic-white-material" target="#plastic-white-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>
