@@ -237,13 +237,33 @@ local function process_packets(file_settings, packets, til_end)
     -- For packets with same timestamps at end, make the spacing of 250ms
     if (start_tmstamp >= 0) and (last_pkt_pos > start_tmstamp+1) then
         if (count_tmstamp > 1) then
-            spkt = packets[start_tmstamp]
+            local spkt = packets[start_tmstamp]
             local count_cpkt = 1
             for cpos = start_tmstamp+1, last_pkt_pos, 1 do
                 local cpkt = packets[cpos]
                 if (cpkt.tmstamp ~= nil) then
                     cpkt.tmstamp = spkt.tmstamp + 0.25 * count_cpkt
                     count_cpkt = count_cpkt+1
+                end
+            end
+        end
+    end
+    -- Replace starting timestamps which are older that 12 hours than last timestamp - drone can't run that long
+    -- This will remove any bad timestamps recorded before we get proper one from GPS
+    if (start_tmstamp >= 0) then
+        local spkt = packets[start_tmstamp]
+        local limit_tmstamp = math.max(spkt.tmstamp - 12*60*60, 1.0)
+        local min_tmstamp = spkt.tmstamp
+        local count_cpkt = 1
+        for cpos = start_tmstamp, 1, -1 do
+            local cpkt = packets[cpos]
+            if (cpkt.tmstamp ~= nil) then
+                if (cpkt.tmstamp < limit_tmstamp) then
+                    cpkt.tmstamp = min_tmstamp - 0.25 * count_cpkt
+                    count_cpkt = count_cpkt+1
+                else
+                    min_tmstamp = cpkt.tmstamp
+                    count_cpkt = 1
                 end
             end
         end
@@ -1146,6 +1166,38 @@ local function write_screen_overlay_right_stick(fh, beg_tmstamp, end_tmstamp, pk
     return true
 end
 
+local function overlay_stick_needs_refersh(file_settings, val, prev_val, tmstamp, prev_tmstamp)
+    local min_delta_time = 0.05
+    local min_delta_stick = 50
+
+    if (tmstamp - prev_tmstamp) <= min_delta_time then
+        return false
+    end
+
+    if (math.abs(val - prev_val) > min_delta_stick) then
+        return true
+    end
+
+    if (tmstamp - prev_tmstamp) <= 4*min_delta_time then
+        return false
+    end
+
+    if (math.abs(val - prev_val) > min_delta_stick/4) then
+        return true
+    end
+
+    if (tmstamp - prev_tmstamp) <= 8*min_delta_time then
+        return false
+    end
+
+    -- Register even smallest changes near central position
+    if (math.abs(val - prev_val) > 1) and (val < min_delta_stick) then
+        return true
+    end
+
+    return false
+end
+
 local function write_screen_overlays_folder(fh, file_settings)
     debug("write_dynamic_paths_folder() called")
     local packets = file_settings.packets
@@ -1194,22 +1246,16 @@ local function write_screen_overlays_folder(fh, file_settings)
     for pos,pkt in pairs(packets) do
         if (pkt.typ == TYP_RC_STAT) then
 
-            if (pkt.tmstamp - prev_left_pkt.tmstamp) > 0.05 and
-              ((math.abs(pkt.throttle - prev_left_pkt.throttle) > 50) or
-               (math.abs(pkt.throttle - prev_left_pkt.throttle) > 5) and (pkt.throttle < 100) or
-               (math.abs(pkt.rudder - prev_left_pkt.rudder) > 50) or
-               (math.abs(pkt.rudder - prev_left_pkt.rudder) > 5) and (pkt.rudder < 100)) then
+            if (overlay_stick_needs_refersh(file_settings, pkt.throttle, prev_left_pkt.throttle, pkt.tmstamp, prev_left_pkt.tmstamp)) or
+               (overlay_stick_needs_refersh(file_settings, pkt.rudder, prev_left_pkt.rudder, pkt.tmstamp, prev_left_pkt.tmstamp)) then
 
                 write_screen_overlay_left_stick(fh, prev_left_pkt.tmstamp, pkt.tmstamp, prev_left_pkt)
 
                 prev_left_pkt = pkt
             end
 
-            if (pkt.tmstamp - prev_right_pkt.tmstamp) > 0.05 and
-              ((math.abs(pkt.aileron - prev_right_pkt.aileron) > 50) or
-               (math.abs(pkt.aileron - prev_right_pkt.aileron) > 5) and (pkt.aileron < 100) or
-               (math.abs(pkt.elevator - prev_right_pkt.elevator) > 50) or
-               (math.abs(pkt.elevator - prev_right_pkt.elevator) > 5) and (pkt.elevator < 100)) then
+            if (overlay_stick_needs_refersh(file_settings, pkt.aileron, prev_right_pkt.aileron, pkt.tmstamp, prev_right_pkt.tmstamp)) or
+               (overlay_stick_needs_refersh(file_settings, pkt.elevator, prev_right_pkt.elevator, pkt.tmstamp, prev_right_pkt.tmstamp)) then
 
                 write_screen_overlay_right_stick(fh, prev_right_pkt.tmstamp, pkt.tmstamp, prev_right_pkt)
 
