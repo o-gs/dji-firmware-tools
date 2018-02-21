@@ -29,8 +29,9 @@ local TYP_NULL, -- no packet
     TYP_AIR_POS_ACC, -- position data extended and averaged from all data sources
     TYP_AIR_ROTAT, -- aircraft rotation angles
     TYP_RC_STAT, -- Remote Controller status
+    TYP_FLYC_STAT, -- Flight Controller status
     TYP_MOTOR_STAT -- ESCs and motors status
-       = 0, 1, 2, 3, 4, 5
+       = 0, 1, 2, 3, 4, 5, 6
 
 local CONDTN_NONE, -- unconditional
     CONDTN_MOTOR_ON, -- show only when motors on
@@ -669,6 +670,29 @@ local dji_p3_rec_osd_general_gps_nums = Field.new("dji_p3.rec_osd_general_gps_nu
 local dji_p3_rec_osd_general_pitch = Field.new("dji_p3.rec_osd_general_pitch")
 local dji_p3_rec_osd_general_roll = Field.new("dji_p3.rec_osd_general_roll")
 local dji_p3_rec_osd_general_yaw = Field.new("dji_p3.rec_osd_general_yaw")
+local dji_p3_rec_osd_general_mode1 = Field.new("dji_p3.rec_osd_general_mode1")
+
+local dji_p3_rec_osd_general_e_motor_on = Field.new("dji_p3.rec_osd_general_e_motor_on")
+local dji_p3_rec_osd_general_e_usonic_on = Field.new("dji_p3.rec_osd_general_e_usonic_on")
+local dji_p3_rec_osd_general_e_gohome_state = Field.new("dji_p3.rec_osd_general_e_gohome_state")
+local dji_p3_rec_osd_general_e_mvo_used = Field.new("dji_p3.rec_osd_general_e_mvo_used")
+local dji_p3_rec_osd_general_e_battery_req_gohome = Field.new("dji_p3.rec_osd_general_e_battery_req_gohome")
+local dji_p3_rec_osd_general_e_battery_req_land = Field.new("dji_p3.rec_osd_general_e_battery_req_land")
+local dji_p3_rec_osd_general_e_rc_state = Field.new("dji_p3.rec_osd_general_e_rc_state")
+local dji_p3_rec_osd_general_e_compass_over_range = Field.new("dji_p3.rec_osd_general_e_compass_over_range")
+local dji_p3_rec_osd_general_e_wave_err = Field.new("dji_p3.rec_osd_general_e_wave_err")
+local dji_p3_rec_osd_general_e_gps_level = Field.new("dji_p3.rec_osd_general_e_gps_level")
+local dji_p3_rec_osd_general_e_battery_type = Field.new("dji_p3.rec_osd_general_e_battery_type")
+local dji_p3_rec_osd_general_e_accel_over_range = Field.new("dji_p3.rec_osd_general_e_accel_over_range")
+local dji_p3_rec_osd_general_e_is_vibrating = Field.new("dji_p3.rec_osd_general_e_is_vibrating")
+local dji_p3_rec_osd_general_e_press_err = Field.new("dji_p3.rec_osd_general_e_press_err")
+local dji_p3_rec_osd_general_e_esc_stall = Field.new("dji_p3.rec_osd_general_e_esc_stall")
+local dji_p3_rec_osd_general_e_esc_empty = Field.new("dji_p3.rec_osd_general_e_esc_empty")
+local dji_p3_rec_osd_general_e_propeller_catapult = Field.new("dji_p3.rec_osd_general_e_propeller_catapult")
+local dji_p3_rec_osd_general_e_gohome_height_mod = Field.new("dji_p3.rec_osd_general_e_gohome_height_mod")
+local dji_p3_rec_osd_general_e_out_of_limit = Field.new("dji_p3.rec_osd_general_e_out_of_limit")
+local dji_p3_rec_osd_general_gohome_landing_reason = Field.new("dji_p3.rec_osd_general_gohome_landing_reason")
+local dji_p3_rec_osd_general_start_fail_reason = Field.new("dji_p3.rec_osd_general_start_fail_reason")
 -- P3 flight record packet 0x0000
 local dji_p3_rec_controller_g_real_input_channel_command_aileron = Field.new("dji_p3.rec_controller_g_real_input_channel_command_aileron")
 local dji_p3_rec_controller_g_real_input_channel_command_elevator = Field.new("dji_p3.rec_controller_g_real_input_channel_command_elevator")
@@ -715,6 +739,20 @@ local function write(fh, capture, pinfo)
     local pkt_rec_etype = { dji_p3_rec_etype() }
 
     if (pkt_rec_etype[1].value == 0x000c) then
+        -- TODO fill FC mode packet
+        local new_fc_mode1 = { dji_p3_rec_osd_general_mode1() }
+        curr_pkt.mode1 = new_fc_mode1[1].value
+        curr_pkt.mode1_text = new_fc_mode1[1].display
+        curr_pkt.typ = TYP_FLYC_STAT
+        table.insert(file_settings.packets, curr_pkt)
+
+        curr_pkt = {
+            typ = TYP_NULL,
+            tmstamp = nil,
+            proc = false,
+            fixd = false,
+        }
+
         local new_air_pitch = { dji_p3_rec_osd_general_pitch() }
         local new_air_roll = { dji_p3_rec_osd_general_roll() }
         local new_air_yaw = { dji_p3_rec_osd_general_yaw() }
@@ -1236,6 +1274,24 @@ local function write_screen_overlay_right_stick(fh, beg_tmstamp, end_tmstamp, pk
     return true
 end
 
+local function write_screen_overlay_flyc_mode1(fh, beg_tmstamp, end_tmstamp, pkt)
+    local blk = [[      <ScreenOverlay>
+        <name>FlyC mode1</name>
+        <visibility>1</visibility>
+        <TimeSpan><begin>]] .. os.date('!%Y-%m-%dT%H:%M:%S', beg_tmstamp) .. string.format(".%03dZ", (beg_tmstamp * 1000) % 1000) .. [[</begin><end>]] .. os.date('!%Y-%m-%dT%H:%M:%S', end_tmstamp) .. string.format(".%03dZ", (end_tmstamp * 1000) % 1000) .. [[</end></TimeSpan>
+        <Icon><href>]] .. string.format("<![CDATA[http://chart.apis.google.com/chart?chst=d_text_outline&chld=DDDDFF|36|h|0000BB|b|%s]]>",pkt.mode1_text) .. [[</href></Icon>
+        <overlayXY x="0.5" y="0.5" xunits="fraction" yunits="fraction"/>
+        <screenXY x="0.1" y="0.2" xunits="fraction" yunits="fraction"/>
+        <size x="0" y="0.03" xunits="fraction" yunits="fraction"/>
+      </ScreenOverlay>
+]]
+    if not fh:write(blk) then
+        info("write: error writing screen overlays to file")
+        return false
+    end
+    return true
+end
+
 local function overlay_stick_needs_refersh(file_settings, val, prev_val, tmstamp, prev_tmstamp)
     local min_delta_time = 0.05
     local min_delta_stick = 50
@@ -1262,6 +1318,20 @@ local function overlay_stick_needs_refersh(file_settings, val, prev_val, tmstamp
 
     -- Register even smallest changes near central position
     if (math.abs(val - prev_val) > 1) and (val < min_delta_stick) then
+        return true
+    end
+
+    return false
+end
+
+local function overlay_int_switch_needs_refersh(file_settings, val, prev_val, tmstamp, prev_tmstamp)
+    local min_delta_time = 0.02
+
+    if (tmstamp - prev_tmstamp) <= min_delta_time then
+        return false
+    end
+
+    if (val ~= prev_val) then
         return true
     end
 
@@ -1310,17 +1380,19 @@ local function write_screen_overlays_folder(fh, file_settings)
 
     local pkt_num_total = 0
     local pkt_num_ctrl = 0
+    local pkt_num_flyc = 0
     local prev_left_pkt = { elevator = 0, rudder = 0,  aileron = 0, throttle = 0, tmstamp=packets[1].tmstamp }
     local prev_right_pkt = prev_left_pkt
-    local curr_pkt = prev_left_pkt
+    local curr_rc_pkt = prev_left_pkt
+    local prev_mode1_pkt = { mode1 = 0, mode1_text = "Startup", tmstamp=packets[1].tmstamp }
     for pos,pkt in pairs(packets) do
+
         if (pkt.typ == TYP_RC_STAT) then
 
             if (overlay_stick_needs_refersh(file_settings, pkt.throttle, prev_left_pkt.throttle, pkt.tmstamp, prev_left_pkt.tmstamp)) or
                (overlay_stick_needs_refersh(file_settings, pkt.rudder, prev_left_pkt.rudder, pkt.tmstamp, prev_left_pkt.tmstamp)) then
 
                 write_screen_overlay_left_stick(fh, prev_left_pkt.tmstamp, pkt.tmstamp, prev_left_pkt)
-
                 prev_left_pkt = pkt
             end
 
@@ -1328,11 +1400,19 @@ local function write_screen_overlays_folder(fh, file_settings)
                (overlay_stick_needs_refersh(file_settings, pkt.elevator, prev_right_pkt.elevator, pkt.tmstamp, prev_right_pkt.tmstamp)) then
 
                 write_screen_overlay_right_stick(fh, prev_right_pkt.tmstamp, pkt.tmstamp, prev_right_pkt)
-
                 prev_right_pkt = pkt
             end
-            curr_pkt = pkt
+            curr_rc_pkt = pkt
             pkt_num_ctrl = pkt_num_ctrl + 1
+
+        elseif (pkt.typ == TYP_FLYC_STAT) then
+
+            if (overlay_int_switch_needs_refersh(file_settings, pkt.mode1, prev_mode1_pkt.mode1, pkt.tmstamp, prev_mode1_pkt.tmstamp)) then
+                write_screen_overlay_flyc_mode1(fh, prev_mode1_pkt.tmstamp, pkt.tmstamp, prev_mode1_pkt)
+                prev_mode1_pkt = pkt
+            end
+            pkt_num_flyc = pkt_num_flyc + 1
+
         end
         pkt_num_total = pkt_num_total + 1
     end
@@ -1341,13 +1421,16 @@ local function write_screen_overlays_folder(fh, file_settings)
         local lpkt = packets[#packets]
         -- write previous match packets one more time, but with timestamp from very last packet
         if (lpkt.tmstamp > prev_left_pkt.tmstamp) then
-            write_screen_overlay_left_stick(fh, prev_left_pkt.tmstamp, lpkt.tmstamp, curr_pkt)
+            write_screen_overlay_left_stick(fh, prev_left_pkt.tmstamp, lpkt.tmstamp, curr_rc_pkt)
         end
         if (lpkt.tmstamp > prev_right_pkt.tmstamp) then
-            write_screen_overlay_right_stick(fh, prev_right_pkt.tmstamp, lpkt.tmstamp, curr_pkt)
+            write_screen_overlay_right_stick(fh, prev_right_pkt.tmstamp, lpkt.tmstamp, curr_rc_pkt)
+        end
+        if (lpkt.tmstamp > prev_mode1_pkt.tmstamp) then
+            write_screen_overlay_flyc_mode1(fh, prev_mode1_pkt.tmstamp, lpkt.tmstamp, prev_mode1_pkt)
         end
     end
-    debug(string.format("processed %d packets, %d stored controller data",pkt_num_total,pkt_num_ctrl))
+    debug(string.format("processed %d packets, %d radio controller data, %d flight controller data",pkt_num_total,pkt_num_ctrl,pkt_num_flyc))
 
     local blk = [[    </Folder>
 ]]
