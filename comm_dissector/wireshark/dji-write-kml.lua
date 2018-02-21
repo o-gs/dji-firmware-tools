@@ -32,6 +32,11 @@ local TYP_NULL, -- no packet
     TYP_MOTOR_STAT -- ESCs and motors status
        = 0, 1, 2, 3, 4, 5
 
+local CONDTN_NONE, -- unconditional
+    CONDTN_MOTOR_ON, -- show only when motors on
+    CONDTN_MOTOR_OFF -- show only when motors not running
+       = 0, 1, 2
+
 -- Default settings to be stored within private_table
 local default_settings =
 {
@@ -963,13 +968,30 @@ local function write_dynamic_path_element(fh, model_info, tmstamp, pkt, curr_rot
     return true
 end
 
+-- Check if the condition to make model visible is met (or is just switching from met to unmet)
+local function is_model_condition_met(model_info, pos_pkt, rot_pkt, mot_pkt, visible_switch)
+
+    return ((model_info.condtn == CONDTN_MOTOR_ON) and ((mot_pkt.motor_status ~= 0) or
+            (mot_pkt.motor_status == 0) and (visible_switch))) or
+           ((model_info.condtn == CONDTN_MOTOR_OFF) and ((mot_pkt.motor_status == 0) or
+            (mot_pkt.motor_status ~= 0) and (visible_switch))) or
+           (model_info.condtn == CONDTN_NONE)
+end
+
+-- Checks if the condition to make model visible was met for the last time (visibility is switching and previous was visible).
+local function is_model_condition_last_met(model_info, pos_pkt, rot_pkt, mot_pkt, visible_switch)
+
+    return ((model_info.condtn == CONDTN_MOTOR_ON) and (mot_pkt.motor_status == 0) and (visible_switch)) or
+           ((model_info.condtn == CONDTN_MOTOR_OFF) and (mot_pkt.motor_status ~= 0) and (visible_switch))
+end
+
 local function write_dynamic_paths_placemark(fh, file_settings, model_info)
     debug("write_dynamic_paths_placemark() called")
     local packets = file_settings.packets
 
     local full_fname = string.format("res/%s_det%d.dae",model_info.fname,file_settings.model_detail_lv)
 
-    local blk = [[      <Placemark>
+    local blk_head = [[      <Placemark>
         <name>Aircraft ]] .. model_info.part_name .. [[ path</name>
         <visibility>1</visibility>
         <styleUrl>#]] .. model_info.line_style .. [[</styleUrl>
@@ -994,10 +1016,9 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
             </Link>
           </Model>
 ]]
-    if not fh:write(blk) then
-        info("write: error writing path block head to file")
-        return false
-    end
+    local blk_tail = [[        </gx:Track>
+      </Placemark>
+]]
 
     local min_shift = {}
     geom_wgs84_coords_shift_xyz(min_shift, file_settings.lookat, file_settings.min_dist_shift/2, file_settings.min_dist_shift/2, file_settings.min_dist_shift/2)
@@ -1011,6 +1032,9 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
     local pkt_num_add = 0
     local curr_rot_pkt = { pitch=0, roll=0, yaw=0 } -- current (not necessarily added) rotation packet
     local prev_rot_pkt = curr_rot_pkt -- previous added rotation packet
+    local curr_mot_pkt = { motor_status=0 }
+    local visible_switch = false -- set to true when visibility of the model is to be changed
+    local block_is_open = false -- set to true if a block is open in the file
     local prev_pkt = {lat=0, lon=0, rel_alt=-999999, tmstamp=1.0} -- previous added pos packet
     local curr_pkt = prev_pkt -- current (not necessarily added) pos packet
     for pos,pkt in pairs(packets) do
@@ -1022,46 +1046,72 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
                (math.abs(curr_rot_pkt.yaw - prev_rot_pkt.yaw) > min_shift.rot) or
                (math.abs(curr_rot_pkt.pitch - prev_rot_pkt.pitch) > min_shift.rot) or
                (math.abs(curr_rot_pkt.roll - prev_rot_pkt.roll) > min_shift.rot) or
-               (math.abs(pkt.tmstamp - prev_pkt.tmstamp) > min_shift.tmstamp) then
+               (math.abs(pkt.tmstamp - prev_pkt.tmstamp) > min_shift.tmstamp) or
+               (visible_switch) then
 
-                local tmstamp
-                if (pkt_num_add == 0) then
-                    local fpkt = packets[1]
-                    tmstamp = fpkt.tmstamp
-                else
-                    tmstamp = pkt.tmstamp
+                if (is_model_condition_met(model_info, pkt, curr_rot_pkt, curr_mot_pkt, visible_switch)) then
+
+                    local tmstamp
+                    if (pkt_num_add == 0) then
+                        local fpkt = packets[1]
+                        tmstamp = fpkt.tmstamp
+                    else
+                        tmstamp = pkt.tmstamp
+                    end
+
+                    if not block_is_open then
+                        if not fh:write(blk_head) then
+                            info("write: error writing path block head to file")
+                            return false
+                        end
+                        block_is_open = true
+                    end
+
+                    write_dynamic_path_element(fh, model_info, tmstamp, pkt, curr_rot_pkt)
+
+                    if is_model_condition_last_met(model_info, pkt, curr_rot_pkt, curr_mot_pkt, visible_switch) and (block_is_open) then
+                        if not fh:write(blk_tail) then
+                            info("write: error writing path block tail to file")
+                            return false
+                        end
+                        block_is_open = false
+                    end
+
                 end
-
-                write_dynamic_path_element(fh, model_info, tmstamp, pkt, curr_rot_pkt)
 
                 prev_pkt = pkt
                 prev_rot_pkt = curr_rot_pkt
+                visible_switch = false
                 pkt_num_add = pkt_num_add + 1
             end
             curr_pkt = pkt
             pkt_num_pos = pkt_num_pos + 1
         elseif (pkt.typ == TYP_AIR_ROTAT) then
             curr_rot_pkt = pkt
+        elseif (pkt.typ == TYP_MOTOR_STAT) then
+            if (curr_mot_pkt.motor_status ~= 0) ~= (pkt.motor_status ~= 0) then
+                visible_switch = true
+            end
+            curr_mot_pkt = pkt
         end
         pkt_num_total = pkt_num_total + 1
     end
     -- Make sure the track does not end before timestamp of last packet
     if (prev_pkt.tmstamp > 1.0) then
         local lpkt = packets[#packets]
-        if (lpkt.tmstamp > prev_pkt.tmstamp) then
+        if (lpkt.tmstamp > prev_pkt.tmstamp) and (block_is_open) then
             -- write previous match packet one more time, but with timestamp from very last packet
             write_dynamic_path_element(fh, model_info, lpkt.tmstamp, curr_pkt, curr_rot_pkt)
+
+            if not fh:write(blk_tail) then
+                info("write: error writing path block tail to file")
+                return false
+            end
+            block_is_open = false
         end
     end
-    debug(string.format("processed %d packets, %d stored path data, added to track %d of them",pkt_num_total,pkt_num_pos,pkt_num_add))
 
-    local blk = [[        </gx:Track>
-      </Placemark>
-]]
-    if not fh:write(blk) then
-        info("write: error writing path block tail to file")
-        return false
-    end
+    debug(string.format("processed %d packets, %d stored path data, added to track %d of them",pkt_num_total,pkt_num_pos,pkt_num_add))
     return true
 end
 
@@ -1084,34 +1134,54 @@ local function write_dynamic_paths_folder(fh, file_settings)
     end
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "yellowLineGreenPoly",
-        part_name="Body", fname="phantom_3_pro_body", altfname="",
+        part_name="Body", fname="phantom_3_pro_body",  condtn=CONDTN_NONE,
         shift_up=0.1, shift_x=0.0, shift_y=0.0, shift_z=0.0 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop1", fname="phantom_3_pro_prop_spin", altfname="phantom_3_pro_prop_stat",
+        part_name="Prop1Stat", fname="phantom_3_pro_prop_stat", condtn=CONDTN_MOTOR_OFF,
         shift_up=0.1, shift_x=0.624, shift_y=0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop2", fname="phantom_3_pro_prop_spin", altfname="phantom_3_pro_prop_stat",
+        part_name="Prop1Spin", fname="phantom_3_pro_prop_spin", condtn=CONDTN_MOTOR_ON,
+        shift_up=0.1, shift_x=0.624, shift_y=0.624, shift_z=0.05 }
+    write_dynamic_paths_placemark(fh, file_settings, model_info)
+
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="Prop2Stat", fname="phantom_3_pro_prop_stat", condtn=CONDTN_MOTOR_OFF,
         shift_up=0.1, shift_x=0.624, shift_y=-0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop3", fname="phantom_3_pro_prop_spin", altfname="phantom_3_pro_prop_stat",
+        part_name="Prop2Spin", fname="phantom_3_pro_prop_spin", condtn=CONDTN_MOTOR_ON,
+        shift_up=0.1, shift_x=0.624, shift_y=-0.624, shift_z=0.05 }
+    write_dynamic_paths_placemark(fh, file_settings, model_info)
+
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="Prop3Stat", fname="phantom_3_pro_prop_stat", condtn=CONDTN_MOTOR_OFF,
         shift_up=0.1, shift_x=-0.624, shift_y=-0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="Prop4", fname="phantom_3_pro_prop_spin", altfname="",
+        part_name="Prop3Spin", fname="phantom_3_pro_prop_spin", condtn=CONDTN_MOTOR_ON,
+        shift_up=0.1, shift_x=-0.624, shift_y=-0.624, shift_z=0.05 }
+    write_dynamic_paths_placemark(fh, file_settings, model_info)
+
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="Prop4Stat", fname="phantom_3_pro_prop_stat", condtn=CONDTN_MOTOR_OFF,
+        shift_up=0.1, shift_x=-0.624, shift_y=0.624, shift_z=0.05 }
+    write_dynamic_paths_placemark(fh, file_settings, model_info)
+
+    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+        part_name="Prop4Spin", fname="phantom_3_pro_prop_spin", condtn=CONDTN_MOTOR_ON,
         shift_up=0.1, shift_x=-0.624, shift_y=0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     -- TODO make support of independent gimbal arm movement
     -- while there's no support, we can keep all gimbal arms as one
     local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
-        part_name="GimbalYaw", fname="phantom_3_pro_gimbal_arms",
+        part_name="GimbalYaw", fname="phantom_3_pro_gimbal_arms", condtn=CONDTN_NONE,
         shift_up=0.1, shift_x=-0.109, shift_y=0.0, shift_z=-0.442 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
