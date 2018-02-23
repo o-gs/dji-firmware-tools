@@ -1171,54 +1171,54 @@ local function write_dynamic_paths_folder(fh, file_settings)
         return false
     end
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "yellowLineGreenPoly",
+    local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "yellowLineGreenPoly",
         part_name="Body", fname="phantom_3_pro_body",  condtn=CONDTN_NONE,
         shift_up=0.1, shift_x=0.0, shift_y=0.0, shift_z=0.0 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+    local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop1Stat", fname="phantom_3_pro_prop_stat", condtn=CONDTN_MOTOR_OFF,
         shift_up=0.1, shift_x=0.624, shift_y=0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+    local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop1Spin", fname="phantom_3_pro_prop_spin", condtn=CONDTN_MOTOR_ON,
         shift_up=0.1, shift_x=0.624, shift_y=0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+    local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop2Stat", fname="phantom_3_pro_prop_stat", condtn=CONDTN_MOTOR_OFF,
         shift_up=0.1, shift_x=0.624, shift_y=-0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+    local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop2Spin", fname="phantom_3_pro_prop_spin", condtn=CONDTN_MOTOR_ON,
         shift_up=0.1, shift_x=0.624, shift_y=-0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+    local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop3Stat", fname="phantom_3_pro_prop_stat", condtn=CONDTN_MOTOR_OFF,
         shift_up=0.1, shift_x=-0.624, shift_y=-0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+    local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop3Spin", fname="phantom_3_pro_prop_spin", condtn=CONDTN_MOTOR_ON,
         shift_up=0.1, shift_x=-0.624, shift_y=-0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+    local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop4Stat", fname="phantom_3_pro_prop_stat", condtn=CONDTN_MOTOR_OFF,
         shift_up=0.1, shift_x=-0.624, shift_y=0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+    local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop4Spin", fname="phantom_3_pro_prop_spin", condtn=CONDTN_MOTOR_ON,
         shift_up=0.1, shift_x=-0.624, shift_y=0.624, shift_z=0.05 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     -- TODO make support of independent gimbal arm movement
     -- while there's no support, we can keep all gimbal arms as one
-    local model_info = { head=0.0, tilt=-90.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
+    local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="GimbalYaw", fname="phantom_3_pro_gimbal_arms", condtn=CONDTN_NONE,
         shift_up=0.1, shift_x=-0.109, shift_y=0.0, shift_z=-0.442 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)

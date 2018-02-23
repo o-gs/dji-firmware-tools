@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.79.0 commit date:2017-09-11, commit time:10:43, hash:5bd8ac9</authoring_tool>
     </contributor>
-    <created>2018-02-18T15:25:44</created>
-    <modified>2018-02-18T15:25:44</modified>
+    <created>2018-02-23T20:53:06</created>
+    <modified>2018-02-23T20:53:06</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -114,7 +114,7 @@
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
       <node id="node3" name="node3" type="NODE">
-        <matrix sid="transform">1 0 0 48.20113 0 1 0 -120 0 0 1 153.2212 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 48.20112 0 -4.37114e-8 -1 -153.2212 0 1 -4.37114e-8 -120 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature011-mesh" name="node3">
           <bind_material>
             <technique_common>
@@ -124,7 +124,7 @@
         </instance_geometry>
       </node>
       <node id="node4" name="node4" type="NODE">
-        <matrix sid="transform">1 0 0 48.20113 0 1 0 -120 0 0 1 153.2212 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 48.20112 0 -4.37114e-8 -1 -153.2212 0 1 -4.37114e-8 -120 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature012-mesh" name="node4">
           <bind_material>
             <technique_common>

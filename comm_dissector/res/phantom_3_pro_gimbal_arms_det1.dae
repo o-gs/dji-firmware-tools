@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.79.0 commit date:2017-09-11, commit time:10:43, hash:5bd8ac9</authoring_tool>
     </contributor>
-    <created>2018-02-18T16:42:41</created>
-    <modified>2018-02-18T16:42:41</modified>
+    <created>2018-02-23T20:48:29</created>
+    <modified>2018-02-23T20:48:29</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -210,7 +210,7 @@
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
       <node id="node0" name="node0" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89285 0 1 0 -7.64604 0 0 1 5.931831 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89284 0 -4.37114e-8 -1 -5.93183 0 1 -4.37114e-8 -7.64604 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature017-mesh" name="node0">
           <bind_material>
             <technique_common>
@@ -220,7 +220,7 @@
         </instance_geometry>
       </node>
       <node id="node1" name="node1" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89285 0 1 0 -7.64604 0 0 1 5.931831 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89284 0 -4.37114e-8 -1 -5.93183 0 1 -4.37114e-8 -7.64604 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature018-mesh" name="node1">
           <bind_material>
             <technique_common>
@@ -230,7 +230,7 @@
         </instance_geometry>
       </node>
       <node id="node2" name="node2" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89285 0 1 0 -7.64604 0 0 1 5.931831 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89284 0 -4.37114e-8 -1 -5.93183 0 1 -4.37114e-8 -7.64604 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature019-mesh" name="node2">
           <bind_material>
             <technique_common>
@@ -240,7 +240,7 @@
         </instance_geometry>
       </node>
       <node id="node9" name="node9" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89285 0 1 0 -7.64604 0 0 1 5.931831 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89284 0 -4.37114e-8 -1 -5.93183 0 1 -4.37114e-8 -7.64604 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature026-mesh" name="node9">
           <bind_material>
             <technique_common>

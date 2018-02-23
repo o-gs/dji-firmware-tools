@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.79.0 commit date:2017-09-11, commit time:10:43, hash:5bd8ac9</authoring_tool>
     </contributor>
-    <created>2018-02-18T15:19:22</created>
-    <modified>2018-02-18T15:19:22</modified>
+    <created>2018-02-23T20:46:49</created>
+    <modified>2018-02-23T20:46:49</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -654,7 +654,7 @@
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
       <node id="body" name="body" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature-mesh" name="body">
           <bind_material>
             <technique_common>
@@ -664,7 +664,7 @@
         </instance_geometry>
       </node>
       <node id="motor1_base" name="motor1_base" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature004-mesh" name="motor1_base">
           <bind_material>
             <technique_common>
@@ -674,7 +674,7 @@
         </instance_geometry>
       </node>
       <node id="motor1_body" name="motor1_body" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature003-mesh" name="motor1_body">
           <bind_material>
             <technique_common>
@@ -684,7 +684,7 @@
         </instance_geometry>
       </node>
       <node id="motor2_body" name="motor2_body" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature001-mesh" name="motor2_body">
           <bind_material>
             <technique_common>
@@ -694,7 +694,7 @@
         </instance_geometry>
       </node>
       <node id="motor2_base" name="motor2_base" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature002-mesh" name="motor2_base">
           <bind_material>
             <technique_common>
@@ -704,7 +704,7 @@
         </instance_geometry>
       </node>
       <node id="motor3_body" name="motor3_body" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature005-mesh" name="motor3_body">
           <bind_material>
             <technique_common>
@@ -714,7 +714,7 @@
         </instance_geometry>
       </node>
       <node id="motor3_base" name="motor3_base" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature006-mesh" name="motor3_base">
           <bind_material>
             <technique_common>
@@ -724,7 +724,7 @@
         </instance_geometry>
       </node>
       <node id="motor4_body" name="motor4_body" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature007-mesh" name="motor4_body">
           <bind_material>
             <technique_common>
@@ -734,7 +734,7 @@
         </instance_geometry>
       </node>
       <node id="motor4_base" name="motor4_base" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature008-mesh" name="motor4_base">
           <bind_material>
             <technique_common>
@@ -744,7 +744,7 @@
         </instance_geometry>
       </node>
       <node id="gimbal_top2" name="gimbal_top2" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature020-mesh" name="gimbal_top2">
           <bind_material>
             <technique_common>
@@ -754,7 +754,7 @@
         </instance_geometry>
       </node>
       <node id="gimbal_hold" name="gimbal_hold" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature021-mesh" name="gimbal_hold">
           <bind_material>
             <technique_common>
@@ -764,7 +764,7 @@
         </instance_geometry>
       </node>
       <node id="gimbal_rub1" name="gimbal_rub1" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature022-mesh" name="gimbal_rub1">
           <bind_material>
             <technique_common>
@@ -774,7 +774,7 @@
         </instance_geometry>
       </node>
       <node id="gimbal_rub2" name="gimbal_rub2" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature023-mesh" name="gimbal_rub2">
           <bind_material>
             <technique_common>
@@ -784,7 +784,7 @@
         </instance_geometry>
       </node>
       <node id="gimbal_rub3" name="gimbal_rub3" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature024-mesh" name="gimbal_rub3">
           <bind_material>
             <technique_common>
@@ -794,7 +794,7 @@
         </instance_geometry>
       </node>
       <node id="gimbal_rub4" name="gimbal_rub4" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature025-mesh" name="gimbal_rub4">
           <bind_material>
             <technique_common>
@@ -804,7 +804,7 @@
         </instance_geometry>
       </node>
       <node id="leg1" name="leg1" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature027-mesh" name="leg1">
           <bind_material>
             <technique_common>
@@ -814,7 +814,7 @@
         </instance_geometry>
       </node>
       <node id="leg2" name="leg2" type="NODE">
-        <matrix sid="transform">1 0 0 -76.89288 0 1 0 -96.41435 0 0 1 28.17337 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -76.89288 0 -4.37114e-8 -1 -28.17336 0 1 -4.37114e-8 -96.41435 0 0 0 1</matrix>
         <instance_geometry url="#Part__Feature028-mesh" name="leg2">
           <bind_material>
             <technique_common>
