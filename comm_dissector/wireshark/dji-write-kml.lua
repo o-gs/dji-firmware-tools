@@ -179,23 +179,222 @@ local function geom_make_transform_matrix_from_yaw_pitch_roll(rot_vec)
     return {Row1, Row2, Row3}
 end
 
--- Creates Euler angles with order: yaw,pitch,roll from a rotation matrix
-local function geom_make_yaw_pitch_roll_from_transform_matrix(mx)
-    -- There are several ways to do that, this one generates smallest error
-    local y = math.atan2(mx[2][1],mx[1][1])
-    local p = math.asin(-mx[3][1])
-    local r = math.atan2(-mx[3][2],mx[3][3])
-    return {yaw=y, pitch=p, roll=r}
+-- Creates Euler angles with given order from a rotation matrix
+local function geom_make_euler_from_transform_matrix(mx, rorder)
+    local thetaX, thetaY, thetaZ = nil, nil, nil
+    local thetaX0, thetaY0, thetaZ0 = nil, nil, nil
+    local thetaX1, thetaY1, thetaZ1 = nil, nil, nil
+
+    if (rorder == "XYZ") then
+
+        thetaY = math.asin(mx[1][3])
+        if (0.99999 > math.abs(mx[1][3])) then
+            thetaX = math.atan2(-mx[2][3], mx[3][3])
+            thetaZ = math.atan2(-mx[1][2], mx[1][1])
+        else
+            thetaX = math.atan2(mx[3][2], mx[2][2])
+            thetaZ = 0
+        end
+
+    elseif (rorder == "YXZ") then
+
+        thetaX = math.asin(-mx[2][3])
+        if (0.99999 > math.abs(mx[2][3])) then
+            thetaY = math.atan2(mx[1][3], mx[3][3])
+            thetaZ = math.atan2(mx[2][1], mx[2][2])
+        else
+            thetaY = math.atan2(-mx[3][1], mx[1][1])
+            thetaZ = 0
+        end
+
+    elseif (rorder == "ZXY") then
+
+        thetaX = math.asin(mx[3][2])
+        if (0.99999 > math.abs(mx[3][2])) then
+            thetaY = math.atan2(-mx[3][1], mx[3][3])
+            thetaZ = math.atan2(-mx[1][2], mx[2][2])
+        else
+            thetaY = 0
+            thetaZ = math.atan2(mx[2][1], mx[1][1])
+        end
+
+    elseif (rorder == "ZYX") then
+
+        thetaY = math.asin(-mx[3][1])
+        if (0.99999 > math.abs(mx[3][1])) then
+            thetaX = math.atan2(mx[3][2], mx[3][3])
+            thetaZ = math.atan2(mx[2][1], mx[1][1])
+        else
+            thetaX = 0
+            thetaZ = math.atan2(-mx[1][2], mx[2][2])
+        end
+
+    elseif (rorder == "YZX") then
+
+        thetaZ = math.asin(mx[2][1])
+        if (0.99999 > math.abs(mx[2][1])) then
+            thetaX = math.atan2(-mx[2][3], mx[2][2])
+            thetaY = math.atan2(-mx[3][1], mx[1][1])
+        else
+            thetaX = 0
+            thetaY = math.atan2(mx[1][3], mx[3][3])
+        end
+
+    elseif (rorder == "XZY") then
+
+        thetaZ = math.asin(-mx[1][2])
+        if (0.99999 > math.abs(mx[1][2])) then
+            thetaX = math.atan2(mx[3][2], mx[2][2])
+            thetaY = math.atan2(mx[1][3], mx[1][1])
+        else
+            thetaX = math.atan2(-mx[2][3], mx[3][3])
+            thetaY = 0
+        end
+
+    elseif (rorder == "XYX") then
+
+        if (0.99999 < mx[1][1]) then
+            -- Not a unique solution: thetaX1 + thetaX0 = atan2(-mx[2][3] , mx[2][2] )
+            thetaY = 0
+            thetaX0 = math.atan2(-mx[2][3], mx[2][2])
+            thetaX1 = 0
+        elseif (-0.99999 > mx[1][1]) then
+            -- Not a unique solution: thetaX1 - thetaX0 = atan2(-mx[2][3] , mx[2][2] )
+            thetaY = math.pi
+            thetaX0 = -math.atan2(-mx[2][3], mx[2][2])
+            thetaX1 = 0
+        else
+            thetaY = math.acos(mx[1][1])
+            thetaX0 = math.atan2(mx[2][1], -mx[3][1])
+            thetaX1 = math.atan2(mx[1][2], mx[1][3])
+        end
+
+    elseif (rorder == "XZX") then
+
+        if (0.99999 < mx[1][1]) then
+            -- Not a unique solution: thetaX1 + thetaX0 = math.atan2(mx[3][2], mx[3][3])
+            thetaZ = 0
+            thetaX0 = math.atan2(mx[3][2], mx[3][3])
+            thetaX1 = 0
+        elseif (-0.99999 > mx[1][1]) then
+            -- Not a unique solution: thetaX1 - thetaX0 = math.atan2(mx[3][2], mx[3][3])
+            thetaZ = math.pi
+            thetaX0 = -math.atan2(mx[3][2], mx[3][3])
+            thetaX1 = 0
+        else
+            thetaZ = math.acos(mx[1][1])
+            thetaX0 = math.atan2(mx[3][1], mx[2][1])
+            thetaX1 = math.atan2(mx[1][3], -mx[1][2])
+        end
+
+    elseif (rorder == "YXY") then
+
+        if (0.99999 < mx[2][2]) then
+            -- Not a unique solution: thetaY1 + thetaY0 = math.atan2(mx[1][3], mx[1][1])
+            thetaX = 0
+            thetaY0 = math.atan2(mx[1][3], mx[1][1])
+            thetaY1 = 0
+        elseif (-0.99999 > mx[2][2]) then
+            -- Not a unique solution: thetaY1 - thetaY0 = math.atan2(mx[1][3], mx[1][1])
+            thetaX = math.pi
+            thetaY0 = -math.atan2(mx[1][3], mx[1][1])
+            thetaY1 = 0
+        else
+            thetaX = math.acos(mx[2][2])
+            thetaY0 = math.atan2(mx[1][2], mx[3][2])
+            thetaY1 = math.atan2(mx[2][1], -mx[2][3])
+        end
+
+    elseif (rorder == "YZY") then
+
+        if (0.99999 < mx[2][2]) then
+            -- Not a unique solution: thetaY1 + thetaY0 = atan2(-mx[3][1], mx[3][3])
+            thetaZ = 0
+            thetaY0 = math.atan2(-mx[3][1], mx[3][3])
+            thetaY1 = 0
+        elseif (-0.99999 > mx[2][2]) then
+            -- Not a unique solution: thetaY1 - thetaY0 = atan2(-mx[3][1], mx[3][3])
+            thetaZ = math.pi
+            thetaY0 = -math.atan2(-mx[3][1], mx[3][3])
+            thetaY1 = 0
+        else
+            thetaZ = math.acos(mx[2][2])
+            thetaY0 = math.atan2(mx[3][2], -mx[1][2])
+            thetaY1 = math.atan2(mx[2][3], mx[2][1])
+        end
+
+    elseif (rorder == "ZXZ") then
+
+        if (0.99999 < mx[3][3]) then
+            -- Not a unique solution: thetaZ1 + thetaZ0 = atan2(-mx[1][2], mx[1][1])
+            thetaX = 0
+            thetaZ0 = atan2(-mx[1][2], mx[1][1])
+            thetaZ1 = 0
+        elseif (-0.99999 > mx[3][3]) then
+            -- Not a unique solution: thetaZ1 - thetaZ0 = atan2(-mx[1][2], mx[1][1])
+            thetaX = math.pi
+            thetaZ0 = -atan2(-mx[1][2], mx[1][1])
+            thetaZ1 = 0
+        else
+            thetaX = math.acos(mx[3][3] )
+            thetaZ0 = math.atan2(mx[1][3], -mx[2][3])
+            thetaZ1 = math.atan2(mx[3][1], mx[3][2])
+        end
+
+    elseif (rorder == "ZYZ") then
+
+        if (0.99999 < mx[3][3]) then
+            -- Not a unique solution: thetaZ1 + thetaZ0 = math.atan2(mx[2][1], mx[2][2])
+            thetaY = 0
+            thetaZ0 = math.atan2(mx[2][1], mx[2][2])
+            thetaZ1 = 0
+        elseif (-0.99999 > mx[3][3]) then
+            -- Not a unique solution: thetaZ1 - thetaZ0 = math.atan2(mx[2][1], mx[2][2])
+            thetaY = math.pi
+            thetaZ0 = -math.atan2(mx[2][1], mx[2][2])
+            thetaZ1 = 0
+        else
+            thetaY = math.acos(mx[3][3] )
+            thetaZ0 = math.atan2(mx[2][3], mx[1][3])
+            thetaZ1 = math.atan2(mx[3][2], -mx[3][1])
+        end
+
+    else
+        thetaZ = 0
+        thetaY = 0
+        thetaX = 0
+    end
+
+    return {x=thetaX, y=thetaY, z=thetaZ, x0=thetaX0, y0=thetaY0, z0=thetaZ0, x1=thetaX1, y1=thetaY1, z1=thetaZ1}
 end
 
--- Creates Euler angles with order: roll,pitch,yaw from a rotation matrix
-local function geom_make_roll_pitch_yaw_from_transform_matrix(mx)
-    -- TODO fix the roll component of rotation
-    -- (this really requires changing all components, as roll should be applied first)
-    local y = math.atan2(mx[2][1],mx[1][1])
-    local p = math.asin(-mx[3][1])
-    local r = 0 -- math.atan2(-mx[3][2],mx[3][3])
-    return {yaw=y, pitch=p, roll=r}
+-- Creates Euler angles with order: yaw,pitch,roll from a rotation matrix
+local function geom_make_yaw_pitch_roll_from_transform_matrix(mx)
+    rot = geom_make_euler_from_transform_matrix(mx, "ZYX")
+    rot.yaw = rot.z
+    rot.pitch = rot.y
+    rot.roll = rot.x
+    return rot
+end
+
+-- Adjusts rotation angles so that crappy Google Earth rotation implementation won't glitch
+local function geom_google_earth_incompetent_rotation_fix(model_info, rot)
+    -- Google Earth does crazy things if angle is around 90/-90, and even crazier at exact value
+    if (math.abs(model_info.roll + rot.roll - math.rad(90)) < math.rad(3.7)) then
+          if (model_info.roll + rot.roll - math.rad(90)) > 0 then
+              rot.roll = math.rad(90.0001) - model_info.roll
+          else
+              rot.roll = math.rad(89.9999) - model_info.roll
+          end
+    end
+    if (math.abs(model_info.roll + rot.roll + math.rad(90)) < math.rad(3.7)) then
+          if (model_info.roll + rot.roll + math.rad(90)) < 0 then
+              rot.roll = -math.rad(90.0001) - model_info.roll
+          else
+              rot.roll = -math.rad(89.9999) - model_info.roll
+          end
+    end
+    return rot
 end
 
 -- Go though packets and interpolate missing values
@@ -987,7 +1186,8 @@ local function write_dynamic_path_element(fh, model_info, tmstamp, pkt, curr_rot
     -- To shift world coordinates, we will use the standard yaw-pitch-roll angles
     local rot_qt1 = geom_make_yaw_pitch_roll_from_transform_matrix(rot_mx1)
     -- Rotation angles for inserting into KML have different apply order
-    local rot_qt2 = geom_make_roll_pitch_yaw_from_transform_matrix(rot_mx2)
+    local rot_qt2 = geom_make_yaw_pitch_roll_from_transform_matrix(rot_mx2)
+    rot_qt2 = geom_google_earth_incompetent_rotation_fix(model_info, rot_qt2)
     -- Prepare shifted world coordinates
     local rot_shift_x = rot_len * math.sin(rot_qt1.yaw) * math.cos(rot_qt1.pitch)
     local rot_shift_y = rot_len * math.cos(rot_qt1.yaw) * math.cos(rot_qt1.pitch)
@@ -1178,42 +1378,42 @@ local function write_dynamic_paths_folder(fh, file_settings)
 
     local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop1Stat", fname="phantom_3_pro_prop_stat", condtn=CONDTN_MOTOR_OFF,
-        shift_up=0.1, shift_x=0.624, shift_y=0.624, shift_z=0.05 }
+        shift_up=0.1, shift_x=0.624, shift_y=0.624, shift_z=0.1 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop1Spin", fname="phantom_3_pro_prop_spin", condtn=CONDTN_MOTOR_ON,
-        shift_up=0.1, shift_x=0.624, shift_y=0.624, shift_z=0.05 }
+        shift_up=0.1, shift_x=0.624, shift_y=0.624, shift_z=0.1 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop2Stat", fname="phantom_3_pro_prop_stat", condtn=CONDTN_MOTOR_OFF,
-        shift_up=0.1, shift_x=0.624, shift_y=-0.624, shift_z=0.05 }
+        shift_up=0.1, shift_x=0.624, shift_y=-0.624, shift_z=0.1 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop2Spin", fname="phantom_3_pro_prop_spin", condtn=CONDTN_MOTOR_ON,
-        shift_up=0.1, shift_x=0.624, shift_y=-0.624, shift_z=0.05 }
+        shift_up=0.1, shift_x=0.624, shift_y=-0.624, shift_z=0.1 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop3Stat", fname="phantom_3_pro_prop_stat", condtn=CONDTN_MOTOR_OFF,
-        shift_up=0.1, shift_x=-0.624, shift_y=-0.624, shift_z=0.05 }
+        shift_up=0.1, shift_x=-0.624, shift_y=-0.624, shift_z=0.1 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop3Spin", fname="phantom_3_pro_prop_spin", condtn=CONDTN_MOTOR_ON,
-        shift_up=0.1, shift_x=-0.624, shift_y=-0.624, shift_z=0.05 }
+        shift_up=0.1, shift_x=-0.624, shift_y=-0.624, shift_z=0.1 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop4Stat", fname="phantom_3_pro_prop_stat", condtn=CONDTN_MOTOR_OFF,
-        shift_up=0.1, shift_x=-0.624, shift_y=0.624, shift_z=0.05 }
+        shift_up=0.1, shift_x=-0.624, shift_y=0.624, shift_z=0.1 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     local model_info = { head=0.0, tilt=0.0, roll=0.0, scale=0.005, line_style = "noLineNoPoly",
         part_name="Prop4Spin", fname="phantom_3_pro_prop_spin", condtn=CONDTN_MOTOR_ON,
-        shift_up=0.1, shift_x=-0.624, shift_y=0.624, shift_z=0.05 }
+        shift_up=0.1, shift_x=-0.624, shift_y=0.624, shift_z=0.1 }
     write_dynamic_paths_placemark(fh, file_settings, model_info)
 
     -- TODO make support of independent gimbal arm movement
