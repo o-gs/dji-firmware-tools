@@ -536,7 +536,8 @@ local function process_packets(file_settings, packets, til_end)
         end
         average_gnd_alt = 0
         if (gnd_alt_num > 0) then
-            file_settings.ground_altitude = gnd_alt_sum / gnd_alt_num
+            -- Automatically compute altitude as 105% of average ground level
+            file_settings.ground_altitude = (gnd_alt_sum / gnd_alt_num) * 1.05
         else
             file_settings.ground_altitude = 0.0
         end
@@ -1340,13 +1341,15 @@ local function write_dynamic_paths_placemark(fh, file_settings, model_info)
         if (lpkt.tmstamp > prev_pkt.tmstamp) and (block_is_open) then
             -- write previous match packet one more time, but with timestamp from very last packet
             write_dynamic_path_element(fh, model_info, lpkt.tmstamp, curr_pkt, curr_rot_pkt)
-
-            if not fh:write(blk_tail) then
-                info("write: error writing path block tail to file")
-                return false
-            end
-            block_is_open = false
         end
+    end
+
+    if (block_is_open) then
+        if not fh:write(blk_tail) then
+            info("write: error writing path block tail to file")
+            return false
+        end
+        block_is_open = false
     end
 
     debug(string.format("processed %d packets, %d stored path data, added to track %d of them",pkt_num_total,pkt_num_pos,pkt_num_add))
