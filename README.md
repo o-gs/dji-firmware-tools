@@ -1,12 +1,15 @@
-# phantom-firmware-tools
+# dji-firmware-tools
 
-Tools for extracting, modding and re-packaging [DJI Phantom 3](http://www.dji.com/product/phantom-3/download) firmware.
+Tools for extracting, modding and re-packaging firmwares of [DJI](http://www.dji.com) multirotor drones.
 
 # Motivation
 
-This is an alternative implementation to parser from [phantom-licensecheck](https://github.com/probonopd/phantom-licensecheck), more focused on hacking.
-It allows to merge the previously extracted modules back into single file,
-and includes tools for handling some of the modules after they're extracted.
+The project started as an alternative implementation of the parser from [phantom-licensecheck](https://github.com/probonopd/phantom-licensecheck).
+Over time it has grown to support many generations of DJI products.
+It consists of tools which allow not only extraction, but also re-packing of
+the previously extracted modules back into single file. There are also tools
+which are supposed to be used on specific modules to extract and allow modification
+of their content.
 
 # Step by step instruction
 
@@ -23,8 +26,9 @@ will not be damaged. You are using the tools on your own risk.
 
 # Firmware structure
 
-Documentation of the firmware format is held within [phantom-licensecheck](https://github.com/probonopd/phantom-licensecheck) project.
-Some details can be checked by looking inside the scripts in this repository.
+Since all the tools are available in source code form, it is easy to check details
+on the structure and protocols processed by these tools by looking at their source.
+The source code is intended to also act as a format documentation.
 
 # Tools
 
@@ -33,9 +37,10 @@ will give you details on supported commands in each of them.
 
 ### dji_fwcon.py
 
-DJI Firmware Container tool; allows extracting modules from package file, or
-creating container by merging firmware modules. Use this tool first, to extract
-the BIN file downloaded from DJI.
+DJI Firmware xV4 Container tool; allows extracting modules from package file which
+starts with "xV4", or creating container by merging firmware modules. Use this tool
+first, to extract the BIN file downloaded from DJI, as long as the file starts with
+"xV4".
 
 Example: ```./dji_fwcon.py -vv -x -p P3X_FW_V01.08.0080.bin```
 
@@ -43,7 +48,7 @@ Example: ```./dji_fwcon.py -vv -x -p P3X_FW_V01.08.0080.bin```
 
 Ambarella A7/A9 firmware pack tool; allows extracting partitions from the
 firmware, or merging them back. Use this to extract Ambarella firmware from
-files created after DJI firmware is extracted. You can recognize the Ambarella
+files created after DJI Container is extracted. You can recognize the Ambarella
 firmware by a lot of "Amba" strings within, or by a 32-char zero-padded string
 at the beginning of the file.
 

@@ -1,12 +1,13 @@
-# phantom-firmware-tools communication dissector
+# dji-firmware-tools communication dissector
 
 Utility for analyzing communication in DJI drone interfaces via [Wireshark](https://www.wireshark.org/).
 
 ## Rationale
 
 This is a [packet dissector](https://www.wireshark.org/docs/wsdg_html_chunked/ChapterDissection.html) which allows you
-to view and analyze serial communication on interfaces within the DJI drones. It also acts like documentation on
-what is known about the DJI protocols, in form of simple LUA code.
+to view and analyze serial communication on interfaces within the DJI drones. It can also understand packets used
+within binary Flight Record DAT files. There is also a KML export plugin for visualizing the flight.
+The dissectors act as documentation on what is known about the DJI protocols, in form of simple LUA code.
 
 ## Setup
 
