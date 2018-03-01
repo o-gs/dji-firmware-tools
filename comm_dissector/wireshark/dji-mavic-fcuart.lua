@@ -78,6 +78,7 @@ local CAMERA_CMDS = {
 }
 
 local FLIGHT_CTRL_CMDS = {
+    [0xf9] = 'Write Old Flyc Param By Hash',
 }
 
 local GIMBAL_CMDS = {
