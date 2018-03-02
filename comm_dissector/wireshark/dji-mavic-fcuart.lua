@@ -1,4 +1,5 @@
 local f = DJI_MAVIC_PROTO.fields
+local enums = {}
 
 DJI_MAVIC_FLIGHT_CONTROL_UART_SRC_DEST = {
     [0] = 'Invalid',
@@ -214,7 +215,33 @@ local SPECIAL_DISSECT = {
 local CAMERA_DISSECT = {
 }
 
+-- Flight Controller - Write Flyc Param By Hash - 0xf9
+
+enums.FLYC_PARAMETER_BY_HASH_ENUM = {
+    [0x4d5c7a3d] = 'cfg_var_table_size_0',
+}
+
+f.flyc_write_flyc_param_by_hash_name_hash = ProtoField.uint32 ("dji_mavic.flyc_write_flyc_param_by_hash_name_hash", "Param Name Hash", base.HEX, enums.FLYC_PARAMETER_BY_HASH_ENUM, nil, "Hash of a flight controller parameter name string")
+f.flyc_write_flyc_param_by_hash_value = ProtoField.bytes ("dji_mavic.flyc_write_flyc_param_by_hash_value", "Param Value", base.SPACE, nil, nil, "Flight controller parameter value to set; size and type depends on parameter")
+
+local function flyc_write_flyc_param_by_hash_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_write_flyc_param_by_hash_name_hash, payload(offset, 4))
+    offset = offset + 4
+
+    local varsize_val = payload(offset, payload:len() - offset)
+    subtree:add (f.flyc_write_flyc_param_by_hash_value, varsize_val)
+    offset = payload:len()
+
+    --if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Write Flyc Param By Hash: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Write Flyc Param By Hash: Payload size different than expected") end
+end
+
 local FLIGHT_CTRL_DISSECT = {
+    [0xf9] = flyc_write_flyc_param_by_hash_dissector,
 }
 
 local GIMBAL_DISSECT = {

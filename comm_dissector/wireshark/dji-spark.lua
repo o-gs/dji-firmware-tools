@@ -1,5 +1,6 @@
 -- Create a new dissector
 DJI_SPARK_PROTO = Proto ("dji_spark", "DJI_SPARK","Dji Spark DUPC / UART protocol")
+local enums = {}
 
 -- Add Packets dissectors
 

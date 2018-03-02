@@ -4580,7 +4580,7 @@ enums.FLYC_PARAMETER_BY_HASH_ENUM = {
     [0xE22D1DE2] = 'g_config.control.torsion_gyro_gain_0',
 }
 
-f.flyc_write_flyc_param_by_hash_index_hash = ProtoField.uint32 ("dji_p3.flyc_write_flyc_param_by_hash_index_hash", "Param Index Hash", base.HEX, enums.FLYC_PARAMETER_BY_HASH_ENUM, nil, "Hash of a flight controller parameter name string")
+f.flyc_write_flyc_param_by_hash_name_hash = ProtoField.uint32 ("dji_p3.flyc_write_flyc_param_by_hash_name_hash", "Param Name Hash", base.HEX, enums.FLYC_PARAMETER_BY_HASH_ENUM, nil, "Hash of a flight controller parameter name string")
 f.flyc_write_flyc_param_by_hash_value = ProtoField.bytes ("dji_p3.flyc_write_flyc_param_by_hash_value", "Param Value", base.SPACE, nil, nil, "Flight controller parameter value to set; size and type depends on parameter")
 
 local function flyc_write_flyc_param_by_hash_dissector(pkt_length, buffer, pinfo, subtree)
@@ -4588,7 +4588,7 @@ local function flyc_write_flyc_param_by_hash_dissector(pkt_length, buffer, pinfo
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.flyc_write_flyc_param_by_hash_index_hash, payload(offset, 4))
+    subtree:add_le (f.flyc_write_flyc_param_by_hash_name_hash, payload(offset, 4))
     offset = offset + 4
 
     local varsize_val = payload(offset, payload:len() - offset)
@@ -4602,7 +4602,7 @@ end
 -- Flight Controller - Flyc Params By Hash - 0xfb
 
 f.flyc_flyc_params_by_hash_unknown00 = ProtoField.uint8 ("dji_p3.flyc_flyc_params_by_hash_unknown00", "Unknown00", base.HEX)
-f.flyc_flyc_params_by_hash_first_index_hash = ProtoField.uint32 ("dji_p3.flyc_flyc_params_by_hash_first_index_hash", "First Index Hash", base.HEX, enums.FLYC_PARAMETER_BY_HASH_ENUM, nil, "Hash of a flight controller parameter name string")
+f.flyc_flyc_params_by_hash_first_name_hash = ProtoField.uint32 ("dji_p3.flyc_flyc_params_by_hash_first_name_hash", "Param Name Hash", base.HEX, enums.FLYC_PARAMETER_BY_HASH_ENUM, nil, "Hash of a flight controller parameter name string")
 
 local function flyc_flyc_params_by_hash_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -4612,7 +4612,7 @@ local function flyc_flyc_params_by_hash_dissector(pkt_length, buffer, pinfo, sub
     subtree:add_le (f.flyc_flyc_params_by_hash_unknown00, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_flyc_params_by_hash_first_index_hash, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_params_by_hash_first_name_hash, payload(offset, 4))
     offset = offset + 4
 
     if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Params By Hash: Offset does not match - internal inconsistency") end
