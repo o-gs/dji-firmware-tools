@@ -138,6 +138,8 @@ More examples, for other products:
 
 ```./dji_flyc_param_ed.py -vv -x -b 0x420000 -m wm220_0306_v03.02.35.05_20170525.pro.bin```
 
+```./dji_flyc_param_ed.py -vv -x -b 0x0000 -m wm230_0306_v01.00.02.255_20170213.bin```
+
 ### comm_dat2pcap.py
 
 DJI Universal Packet Container stream pareser with pcap output format.
