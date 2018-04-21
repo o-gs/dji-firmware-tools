@@ -430,7 +430,7 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
   ver = export_param_instance_to_ver(eexpar)
 
   if (False): # DEBUG code, to be enabled when searching for missing parameters
-      if (ver == 2018) and (pos == 0x10F8DC): po.verbose = 4
+      if (ver == 2018) and (entry_pos == 0x10F8DC): po.verbose = 4
       else: po.verbose = 2
 
   # Address to const string
@@ -545,8 +545,12 @@ def flyc_check_parameter_array_at(po, fwmdlfile, fwmdlfile_len, start_pos, func_
       fwmdlfile.seek(eexpar.nameptr - po.address_base, os.SEEK_SET)
       eexpar_name_btarr = fwmdlfile.read(256).split(b'\0',1)[0]
       if (len(eexpar_name_btarr) < 2):
+          if (po.verbose > 3):
+              print("{}: At 0x{:08x}, rejected type {:d} on name len check ({:d})".format(po.mdlfile,entry_pos,eexpar.type_id,len(eexpar_name_btarr)))
           break
       if not re.match(b'^[0-9a-zA-z\[\]\(\)\{\} .,:*#_-]+$', eexpar_name_btarr):
+          if (po.verbose > 3):
+              print("{}: At 0x{:08x}, rejected type {:d} on name regex check".format(po.mdlfile,entry_pos,eexpar.type_id))
           break
       if (po.verbose > 2):
           print("{}: Found entry '{:s}'".format(po.mdlfile,eexpar_name_btarr.decode('UTF-8')))
