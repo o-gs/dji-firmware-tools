@@ -15,6 +15,9 @@
 
 """
 
+# Copyright (C) 2017 Mefistotelis <mefistotelis@gmail.com>
+# Copyright (C) 2018 Original Gangsters <https://dji-rev.slack.com/>
+#
 # Derived from:
 #
 # AVR / Arduino dynamic memory log analyis script.
