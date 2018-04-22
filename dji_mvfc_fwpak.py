@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+""" DJI Mavic Flight Controller Firmware Decryptor tool
+"""
 
 # Copyright (C) 2018  Jan Dumon <jan@crossbar.net>
 # Copyright (C) 2018  Freek van Tienen <freek.v.tienen@gmail.com>
@@ -246,6 +250,7 @@ def pack(args):
     print("Encrypted file to " + file_out)
 
 if __name__ == "__main__":
+    # Parse command line options
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='cmd')
     parser_dec = subparsers.add_parser('dec', help='Decrypt')
