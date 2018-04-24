@@ -31,8 +31,8 @@ from Crypto.Cipher import AES
 from ctypes import *
 from os.path import basename
 
-encrypt_key = # TODO add key
-encrypt_iv = # TODO add init vector
+encrypt_key = bytes([0x96, 0x70, 0x9a, 0xD3, 0x26, 0x67, 0x4A, 0xC3, 0x82, 0xB6, 0x69, 0x27, 0xE6, 0xd8, 0x84, 0x21])
+encrypt_iv = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
