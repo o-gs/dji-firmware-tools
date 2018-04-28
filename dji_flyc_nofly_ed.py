@@ -357,12 +357,86 @@ def flyc_nofly_update(po, fwmdlfile):
   (po.nfcord_pos, po.nfcord_count) = flyc_nofly_cord_pos_search(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align, po.min_match_accepted)
   if po.nfcord_pos < 0:
     raise ValueError("Flight controller no fly coords array signature not detected in input file.")
-  pvnfzones = flyc_nofly_merged_zones_array(po, fwmdlfile)
+  #pvnfzones = flyc_nofly_merged_zones_array(po, fwmdlfile) # No need for merging, we will use separate lists
   if (po.verbose > 0):
      print("{}: Loading JSON file...".format(po.mdlfile))
   with open(po.inffile) as inffile:
     nxnfzones = json.load(inffile)
-  raise NotImplementedError('Not implemented.')
+  nxnfzones = nxnfzones['release_limits']
+  update_zone_count = 0
+  update_cord_count = 0
+  if (True):
+      # Update the zones first
+      if (po.verbose > 1):
+          print("{}: Updating no fly zones array at 0x{:08x}: {:d} entries".format(po.mdlfile,po.nfzone_pos,po.nfzone_count))
+      for i in range(0, po.nfzone_count):
+          pvparprop = flyc_nofly_zone_get(po, fwmdlfile, i)
+          # Match the current entry to user provided data
+          nxparprop = None
+          if (nxparprop is None):
+              for parprop in nxnfzones:
+                  if parprop['area_id'] == pvparprop['area_id']:
+                      nxparprop = parprop
+                      break
+          if (nxparprop is None):
+              eprint("{}: Warning: no fly zone not found in fw: area_id={:s}".format(po.mdlfile,pvparprop['area_id']))
+              continue
+          update_pos=False
+          update_radius=False
+          update_country=False
+          update_limits=False
+          update_type=False
+          # compare properties to check what we want to update
+          if not isclose(nxparprop['lat'], pvparprop['lat']) or not isclose(nxparprop['lng'], pvparprop['lng']):
+              update_pos=True
+          if nxparprop['radius'] != pvparprop['radius']:
+              update_radius=True
+          if nxparprop['country'] != pvparprop['country']:
+              update_country=True
+          if nxparprop['begin_at'] != pvparprop['begin_at'] or nxparprop['end_at'] != pvparprop['end_at']:
+              update_limits=True
+          if nxparprop['type'] != pvparprop['type']:
+              update_type=True
+          if (update_pos):
+              eprint("{}: pos update not implemented.".format(po.mdlfile)) # TODO
+          if (update_radius):
+              eprint("{}: radius update not implemented.".format(po.mdlfile)) # TODO
+          if (update_country):
+              eprint("{}: country update not implemented.".format(po.mdlfile)) # TODO
+          if (update_limits):
+              eprint("{}: limits update not implemented.".format(po.mdlfile)) # TODO
+          if (update_type):
+              eprint("{}: type update not implemented.".format(po.mdlfile)) # TODO
+      # Now do the same to coords
+      if (po.verbose > 1):
+          print("{}: Updating no fly coords array at 0x{:08x}: {:d} entries".format(po.mdlfile,po.nfcord_pos,po.nfcord_count))
+      for i in range(0, po.nfcord_count):
+          pvparprop = flyc_nofly_cord_get(po, fwmdlfile, i)
+          # Match the current entry to user provided data
+          nxparprop = None
+          if (nxparprop is None):
+                  if isclose(parprop['lat'], pvparprop['lat']) and isclose(parprop['lng'], pvparprop['lng']):
+                      nxparprop = parprop
+                      break
+          # If not found, try accepting some variation
+          if (nxparprop is None):
+              for parprop in nxnfzones:
+                  if (isclose(parprop['lat'], pvparprop['lat'], rel_tol=1e-3, abs_tol=1e-2) and isclose(parprop['lng'], pvparprop['lng'], rel_tol=1e-3, abs_tol=1e-2)):
+                      nxparprop = parprop
+                      break
+          if (nxparprop is None):
+              eprint("{}: Warning: no fly coords not found in fw: area_id={:s}".format(po.mdlfile,pvparprop['area_id']))
+              continue
+          update_pos=False
+          # compare properties to check what we want to update
+          # TODO does it really make sense for coord list to first search based on coords, then allow update it? Maybe remove/add from the list instead?
+          if not isclose(nxparprop['lat'], pvparprop['lat']) or not isclose(nxparprop['lng'], pvparprop['lng']):
+              update_pos=True
+          if (update_pos):
+              eprint("{}: Coords update not implemented.".format(po.mdlfile)) # TODO
+  raise NotImplementedError('Not implemented - no data was updated.')
+  if (po.verbose > 0):
+      print("{}: Updated {:d} no fly zone entries and {:d} no fly coord entries".format(po.mdlfile,update_zone_count,update_cord_count))
 
 def main(argv):
   # Parse command line options
