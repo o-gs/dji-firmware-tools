@@ -379,7 +379,7 @@ def flyc_nofly_update(po, fwmdlfile):
                       nxparprop = parprop
                       break
           if (nxparprop is None):
-              eprint("{}: Warning: no fly zone not found in fw: area_id={:s}".format(po.mdlfile,pvparprop['area_id']))
+              eprint("{}: Warning: no fly zone not found in fw: area_id={:d}".format(po.mdlfile,pvparprop['area_id']))
               continue
           update_pos=False
           update_radius=False
@@ -425,7 +425,7 @@ def flyc_nofly_update(po, fwmdlfile):
                       nxparprop = parprop
                       break
           if (nxparprop is None):
-              eprint("{}: Warning: no fly coords not found in fw: area_id={:s}".format(po.mdlfile,pvparprop['area_id']))
+              eprint("{}: Warning: no fly coords not found in fw: area_id={:d}".format(po.mdlfile,pvparprop['area_id']))
               continue
           update_pos=False
           # compare properties to check what we want to update
