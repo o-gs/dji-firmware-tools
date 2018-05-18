@@ -44,6 +44,15 @@ first, to extract the BIN file downloaded from DJI, as long as the file starts w
 
 Example: ```./dji_xv4_fwcon.py -vv -x -p P3X_FW_V01.08.0080.bin```
 
+### dji_mvfc_fwpak.py
+
+DJI Mavic Flight Controller Firmware Decryptor tool; removes second layer encryption
+in Flight Controller firmware modules from several DJI products released around the
+same period: Mavic Pro, Spark, Inspire 2 and Phantom 4. Does not accept `IM*H`
+format - requires input files with first level encryption already removed.
+
+Example: ```./dji_mvfc_fwpak.py dec -i wm220_0306_v03.02.40.11_20170918.pro.fw```
+
 ### amba_fwpak.py
 
 Ambarella A7/A9 firmware pack tool; allows extracting partitions from the
