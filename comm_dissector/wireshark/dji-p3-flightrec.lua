@@ -2793,6 +2793,8 @@ f.rec_osd_home_fld1c = ProtoField.int16 ("dji_p3.rec_osd_home_fld1c", "field1C",
 f.rec_osd_home_fld1e = ProtoField.int16 ("dji_p3.rec_osd_home_fld1e", "field1E", base.DEC)
 f.rec_osd_home_fld20 = ProtoField.int8 ("dji_p3.rec_osd_home_fld20", "field20", base.DEC)
 f.rec_osd_home_fld21 = ProtoField.int8 ("dji_p3.rec_osd_home_fld21", "field21", base.DEC) -- seem to not be filled
+f.rec_osd_home_fld22 = ProtoField.bytes ("dji_p3.rec_osd_home_fld22", "field22", base.SPACE)
+f.rec_osd_home_fld33 = ProtoField.bytes ("dji_p3.rec_osd_home_fld33", "field33", base.SPACE)
 
 local function flightrec_osd_home_dissector(payload, pinfo, subtree)
     local offset = 0
@@ -2839,7 +2841,14 @@ local function flightrec_osd_home_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_osd_home_fld21, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
+    if (payload:len() >= 68) then
+        subtree:add_le (f.rec_osd_home_fld22, payload(offset, 18))
+        offset = offset + 18
+        subtree:add_le (f.rec_osd_home_fld33, payload(offset, 16))
+        offset = offset + 16
+    end
+
+    if (offset ~= 34) and (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Home: Payload size different than expected") end
 end
 
@@ -4103,8 +4112,9 @@ local function flightrec_app_temp_bias_data_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_app_temp_bias_data_flag, payload(offset, 1))
     offset = offset + 1
 
+    -- The size might be padded to multiplication of 4 bytes
     if (offset ~= 29) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"App Temp Bias Data: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"App Temp Bias Data: Payload size different than expected") end
+    if (payload:len() ~= offset) and (payload:len() ~= offset+4-(offset%4)) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"App Temp Bias Data: Payload size different than expected") end
 end
 
 -- Flight log - App Temp Cali Data - 0x0019
