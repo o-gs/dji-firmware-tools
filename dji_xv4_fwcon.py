@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" DJI "xV4" Firmware Container tool
+""" DJI 'xV4' Firmware Container tool
 """
 
 # Copyright (C) 2016,2017 Mefistotelis <mefistotelis@gmail.com>
@@ -629,12 +629,12 @@ def main(argv):
   try:
      opts, args = getopt.getopt(argv,"hcfxavp:m:",["help","version","no-crypto","force-continue","extract","add","fwpkg=","mdprefix="])
   except getopt.GetoptError:
-     print("Unrecognized options; check dji_fwcon.py --help")
+     print("Unrecognized options; check dji_xv4_fwcon.py --help")
      sys.exit(2)
   for opt, arg in opts:
      if opt in ("-h", "--help"):
-        print("DJI Firmware Container tool")
-        print("dji_fwcon.py <-x|-a> [-v] [-f] [-c] -p <fwpkgfile> [-d <dcprefix>]")
+        print("DJI 'xV4' Firmware Container tool")
+        print("dji_xv4_fwcon.py <-x|-a> [-v] [-f] [-c] -p <fwpkgfile> [-d <dcprefix>]")
         print("  -p <fwpkgfile> - name of the firmware package file")
         print("  -m <mdprefix> - file name prefix for the single decomposed firmware modules")
         print("                  defaults to base name of firmware package file")
@@ -645,7 +645,7 @@ def main(argv):
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
-        print("dji_fwcon.py version 0.3.0")
+        print("dji_xv4_fwcon.py version 0.3.0")
         sys.exit()
      elif opt == '-v':
         po.verbose += 1

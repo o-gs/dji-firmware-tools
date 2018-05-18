@@ -38,9 +38,9 @@ will give you details on supported commands in each of them.
 ### dji_xv4_fwcon.py
 
 DJI Firmware xV4 Container tool; allows extracting modules from package file which
-starts with "xV4", or creating container by merging firmware modules. Use this tool
+starts with `xV4`, or creating container by merging firmware modules. Use this tool
 first, to extract the BIN file downloaded from DJI, as long as the file starts with
-"xV4".
+`xV4`.
 
 Example: ```./dji_xv4_fwcon.py -vv -x -p P3X_FW_V01.08.0080.bin```
 
