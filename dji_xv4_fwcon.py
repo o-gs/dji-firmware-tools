@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" DJI Firmware Container tool
+""" DJI "xV4" Firmware Container tool
 """
 
 # Copyright (C) 2016,2017 Mefistotelis <mefistotelis@gmail.com>

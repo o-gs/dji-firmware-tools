@@ -21,7 +21,7 @@
 
 set +x
 
-if [ ! -f "tests/test_dji_fwcon_rebin1.sh" ]; then
+if [ ! -f "tests/test_dji_xv4_fwcon_rebin1.sh" ]; then
   echo '### SUITE sub-script not found; executed from wrong directory? ###'
   exit 4
 fi
@@ -120,7 +120,7 @@ for itm in "${all_firmwares[@]}"; do
 
   if [ ! -z "${FWPKG}" ]; then
     # Execute test - DJI firmware extractor
-    tests/test_dji_fwcon_rebin1.sh -sn "fw/${FWPKG}"
+    tests/test_dji_xv4_fwcon_rebin1.sh -sn "fw/${FWPKG}"
     if [ $? -ne 0 ]; then
       ((NUMFAILS++))
     fi
@@ -194,7 +194,7 @@ for itm in "${all_firmwares[@]}"; do
   fi
 
   if [ ! -z "${FWPKG}" ]; then
-    tests/test_dji_fwcon_rebin1.sh -on "fw/${FWPKG}"
+    tests/test_dji_xv4_fwcon_rebin1.sh -on "fw/${FWPKG}"
   fi
 
 done

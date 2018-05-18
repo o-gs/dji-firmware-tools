@@ -35,14 +35,14 @@ The source code is intended to also act as a format documentation.
 Below the specific tools are described in short. Running them without parameters
 will give you details on supported commands in each of them.
 
-### dji_fwcon.py
+### dji_xv4_fwcon.py
 
 DJI Firmware xV4 Container tool; allows extracting modules from package file which
 starts with "xV4", or creating container by merging firmware modules. Use this tool
 first, to extract the BIN file downloaded from DJI, as long as the file starts with
 "xV4".
 
-Example: ```./dji_fwcon.py -vv -x -p P3X_FW_V01.08.0080.bin```
+Example: ```./dji_xv4_fwcon.py -vv -x -p P3X_FW_V01.08.0080.bin```
 
 ### amba_fwpak.py
 
