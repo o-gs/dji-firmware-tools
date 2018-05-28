@@ -194,16 +194,16 @@ def pack(args):
 
     # Timestamp
     if args.time == None:
-        header.time = int(time.time())
+        header.time = int(time.time(), 10)
     else:
         if args.time.isdigit():
-            t = int(args.time)
+            t = int(args.time, 10)
         else:
             t = time.strptime(args.time, '%Y-%m-%d %H:%M:%S')
             if t == None:
                 print('ERROR: Wrong format for time: ' + args.time)
                 return -1
-            t = int(time.mktime(t))
+            t = int(time.mktime(t), 10)
 
         header.time = t
 
@@ -213,10 +213,10 @@ def pack(args):
         return -1
 
     # Version
-    header.version[3] = int(ver.group(1))
-    header.version[2] = int(ver.group(2))
-    header.version[1] = int(ver.group(3))
-    header.version[0] = int(ver.group(4))
+    header.version[3] = int(ver.group(1), 10)
+    header.version[2] = int(ver.group(2), 10)
+    header.version[1] = int(ver.group(3), 10)
+    header.version[0] = int(ver.group(4), 10)
 
     # Calculate the header crc
     header.crc16 = calc_checksum(bytes(header), 39)
@@ -225,7 +225,7 @@ def pack(args):
 
     # Encrypt the file
     enc_buffer = bytes()
-    for i in range((int(len(data) + 255) // 256)):
+    for i in range(((len(data) + 255) // 256)):
         dec_buffer = data[(i * 256):((i + 1) * 256)]
         cipher = AES.new(encrypt_key, AES.MODE_CBC, encrypt_iv)
         enc_buffer += cipher.encrypt(dec_buffer)
