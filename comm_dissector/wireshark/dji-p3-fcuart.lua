@@ -79,7 +79,7 @@ local GENERAL_UART_CMD_TEXT = {
     [0x27] = 'Camera File',
     [0x30] = 'Encrypt',
     [0x32] = 'TBD',
-    [0x33] = 'MFI Cert',
+    [0x33] = 'MFi Cert',
     [0x42] = 'Common Upgrade Status',
     [0x47] = 'Notify Disconnect',
     [0x52] = 'Common App Gps Config',
@@ -496,12 +496,25 @@ end
 -- General - Encrypt - 0x30
 
 enums.COMMON_ENCRYPT_CMD_TYPE_ENUM = {
-    [1]="GetChipState",
-    [2]="GetModuleState",
-    [3]="Config",
+    [1]="GetChipState", -- Returns At88 chip state flags and factory info
+    [2]="GetModuleState", -- Returns At88 module state flags
+    [3]="Config", -- Configures the decryption, storing new key.txt and factory info
+}
+
+enums.COMMON_ENCRYPT_OPER_TYPE_ENUM = {
+    [0]="Write_Key_File+Write_Factory_Info_File",
+    [1]="Write_Key+Write_Factory_Info",
+    [2]="Write_Key_All+Write_Factory_Info_All",
 }
 
 f.general_encrypt_cmd_type = ProtoField.uint8 ("dji_p3.general_encrypt_cmd_type", "Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CMD_TYPE_ENUM, nil, nil)
+f.general_encrypt_oper_type = ProtoField.uint8 ("dji_p3.general_encrypt_oper_type", "Oper Type", base.DEC, enums.COMMON_ENCRYPT_OPER_TYPE_ENUM, nil, nil)
+f.general_encrypt_magic = ProtoField.bytes ("dji_p3.general_encrypt_magic", "Magic value", base.SPACE, nil, nil, "Should be `F0 BD E3 06 81 3E 85 CB`")
+f.general_encrypt_dev_id = ProtoField.uint8 ("dji_p3.general_encrypt_dev_id", "Device ID", base.DEC, nil, nil, "Only 13 is accepted")
+f.general_encrypt_factory_info_bn = ProtoField.bytes ("dji_p3.general_encrypt_factory_info_bn", "Factory Info Bn", base.SPACE, nil, nil, "FactoryInfo.aucBn")
+f.general_encrypt_key = ProtoField.bytes ("dji_p3.general_encrypt_key", "Encrypt Key", base.SPACE, nil, nil, "AES encryption key")
+f.general_encrypt_factory_info_sn = ProtoField.bytes ("dji_p3.general_encrypt_factory_info_sn", "Factory Info Sn", base.SPACE, nil, nil, "FactoryInfo.aucSn")
+
 --f.general_encrypt_unknown0 = ProtoField.none ("dji_p3.general_encrypt_unknown0", "Unknown0", base.NONE)
 
 local function general_encrypt_dissector(pkt_length, buffer, pinfo, subtree)
@@ -514,28 +527,47 @@ local function general_encrypt_dissector(pkt_length, buffer, pinfo, subtree)
     offset = offset + 1
 
     if cmd_type == 1 then
-        -- TODO see Dec_Serial_Encrypt_GetChipState in usbclient binary
-
+        -- Answer could be decoded using func Dec_Serial_Encrypt_GetChipState from `usbclient` binary
+        if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 1: Offset does not match - internal inconsistency") end
     elseif cmd_type == 2 then
-        -- TODO see Dec_Serial_Encrypt_GetModuleState in usbclient binary
-
+        -- Answer could be decoded using func Dec_Serial_Encrypt_GetModuleState from `usbclient` binary
+        if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 2: Offset does not match - internal inconsistency") end
     elseif cmd_type == 3 then
-        -- TODO see Dec_Serial_Encrypt_Config in usbclient binary
+        -- Decoded using func Dec_Serial_Encrypt_Config from `usbclient` binary
+        subtree:add_le (f.general_encrypt_oper_type, payload(offset, 1))
+        offset = offset + 1
 
+        subtree:add_le (f.general_encrypt_magic, payload(offset, 8))
+        offset = offset + 8
+
+        subtree:add_le (f.general_encrypt_dev_id, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.general_encrypt_factory_info_bn, payload(offset, 10))
+        offset = offset + 10
+
+        subtree:add_le (f.general_encrypt_key, payload(offset, 32))
+        offset = offset + 32
+
+        subtree:add_le (f.general_encrypt_factory_info_sn, payload(offset, 16))
+        offset = offset + 16
+
+        if (offset ~= 69) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 3: Offset does not match - internal inconsistency") end
     end
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Encrypt: Payload size different than expected") end
 end
 
--- General - MFI Cert - 0x33
+-- General - MFi Cert - 0x33
+-- In case of DM36x, the certificate is handled by IOCTL operations on "/dev/applecp".
 
 enums.COMMON_MFI_CERT_CMD_TYPE_ENUM = {
     [1]="Get_Cert",
     [2]="Challenge_Response",
 }
 
-f.general_mfi_cert_cmd_type = ProtoField.uint8 ("dji_p3.general_mfi_cert_cmd_type", "Cmd Type", base.DEC, enums.COMMON_MFI_CERT_CMD_TYPE_ENUM, nil, nil)
+f.general_mfi_cert_cmd_type = ProtoField.uint8 ("dji_p3.general_mfi_cert_cmd_type", "Cmd Type", base.DEC, enums.COMMON_MFI_CERT_CMD_TYPE_ENUM, nil, nil, "Made For iPod concerns Apple devices only.")
+f.general_mfi_cert_part_sn = ProtoField.uint8 ("dji_p3.general_mfi_cert_part_sn", "Part SN", base.DEC, nil, nil, "Selects which 128-byte part of certificate to return")
 --f.general_mfi_cert_unknown0 = ProtoField.none ("dji_p3.general_mfi_cert_unknown0", "Unknown0", base.NONE)
 
 local function general_mfi_cert_dissector(pkt_length, buffer, pinfo, subtree)
@@ -548,14 +580,16 @@ local function general_mfi_cert_dissector(pkt_length, buffer, pinfo, subtree)
     offset = offset + 1
 
     if cmd_type == 1 then
-        -- TODO see Dec_Serial_MFI_Cert_Get_Cert in usbclient binary
+        -- Decoded using func Dec_Serial_MFI_Cert_Get_Cert from `usbclient` binary
+        subtree:add_le (f.general_mfi_cert_part_sn, payload(offset, 1))
+        offset = offset + 1
 
+        if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"MFI Cert Get: Offset does not match - internal inconsistency") end
     elseif cmd_type == 2 then
-        -- TODO see Dec_Serial_MFI_Cert_Challenge_Response in usbclient binary
-
+        -- Decoded using func Dec_Serial_MFI_Cert_Challenge_Response from `usbclient` binary
+        if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"MFI Cert Challenge: Offset does not match - internal inconsistency") end
     end
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"MFI Cert: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"MFI Cert: Payload size different than expected") end
 end
 
