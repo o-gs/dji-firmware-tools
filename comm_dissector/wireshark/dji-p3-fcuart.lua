@@ -3,7 +3,7 @@ local enums = {}
 
 DJI_P3_FLIGHT_CONTROL_UART_SRC_DEST = {
     [0] = 'Invalid',
-    [1] = 'Camera',
+    [1] = 'Camera (Ambarella)',
     [2] = 'App',
     [3] = 'Flight Controller',
     [4] = 'Gimbal',
@@ -68,19 +68,23 @@ DJI_P3_FLIGHT_CONTROL_UART_CMD_SET = {
 -- CMD name decode tables
 
 local GENERAL_UART_CMD_TEXT = {
-    [0x01] = 'Inquiry',
-    [0x07] = 'TBD',
-    [0x0b] = 'REBOOT',
-    [0x0c] = 'TBD',
+    [0x01] = 'Version Inquiry',
+    [0x07] = 'Enter Loader',
+    [0x0b] = 'Reboot Chip',
+    [0x0c] = 'Get Device State',
+    [0x0d] = 'Set Device Version',
     [0x0e] = 'Message', -- It looks like it was supposed to transmit text messages, but is always empty
     [0x0f] = 'Upgrade Self Request',
     [0x24] = 'Camera Files',
     [0x27] = 'Camera File',
+    [0x30] = 'Encrypt',
     [0x32] = 'TBD',
+    [0x33] = 'MFI Cert',
     [0x42] = 'Common Upgrade Status',
     [0x47] = 'Notify Disconnect',
     [0x52] = 'Common App Gps Config',
     [0xf1] = 'Component State', -- The component is identified by sender field
+    [0xff] = 'Get Prod Code', -- Asks a component for identification string
 }
 
 local SPECIAL_UART_CMD_TEXT = {
@@ -218,6 +222,7 @@ local CENTER_BRD_UART_CMD_TEXT = {
 local RC_UART_CMD_TEXT = {
     [0x05] = 'Rc Params',
     [0x1c] = 'TBD',
+    [0x37] = 'GS Req App Launch',
     [0xf0] = 'Set Transciever Pwr Mode',
 }
 
@@ -231,7 +236,11 @@ local WIFI_UART_CMD_TEXT = {
 }
 
 local DM36X_UART_CMD_TEXT = {
+    [0x01] = 'Set GS Ctrl',
+    [0x02] = 'Get GS Ctrl',
     [0x06] = 'Dm368 Status',
+    [0x07] = 'Get GS Config',
+    [0x0e] = 'Get Phone Conn',
 }
 
 local HD_LINK_UART_CMD_TEXT = {
@@ -327,6 +336,96 @@ DJI_P3_FLIGHT_CONTROL_UART_CMD_TEXT = {
     [0x10] = AUTO_UART_CMD_TEXT,
 }
 
+
+-- General - Version Inquiry - 0x01
+
+--f.general_version_inquiry_unknown0 = ProtoField.none ("dji_p3.general_version_inquiry_unknown0", "Unknown0", base.NONE)
+
+local function general_version_inquiry_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    -- Answer from DM36x could be decoded using func Dec_Serial_Get_Version from `usbclient` binary
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Version Inquiry: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Version Inquiry: Payload size different than expected") end
+end
+
+-- General - Enter Loader - 0x07
+
+--f.general_enter_loader_unknown0 = ProtoField.none ("dji_p3.general_enter_loader_unknown0", "Unknown0", base.NONE)
+
+local function general_enter_loader_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    -- Details from DM36x could be decoded using func Dec_Serial_Enter_Loader from `usbclient` binary
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Enter Loader: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Enter Loader: Payload size different than expected") end
+end
+
+-- General - Reboot Chip - 0x0b
+
+f.general_reboot_chip_unknown0 = ProtoField.uint16 ("dji_p3.general_reboot_chip_unknown0", "Unknown0", base.HEX)
+f.general_reboot_chip_sleep_time = ProtoField.uint32 ("dji_p3.general_reboot_chip_sleep_time", "Reboot Sleep Time", base.DEC)
+
+local function general_reboot_chip_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    -- Details from DM36x could be decoded using func Dec_Serial_Reboot from `usbclient` binary
+
+    subtree:add_le (f.general_reboot_chip_unknown0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.general_reboot_chip_sleep_time, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Reboot Chip: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Reboot Chip: Payload size different than expected") end
+end
+
+-- General - Get Device State - 0x0c
+
+--f.general_get_device_state_unknown0 = ProtoField.none ("dji_p3.general_get_device_state_unknown0", "Unknown0", base.NONE)
+
+local function general_get_device_state_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    -- Details from DM36x could be decoded using func Dec_Serial_Get_Device_State from `usbclient` binary
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Get Device State: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Get Device State: Payload size different than expected") end
+end
+
+-- General - Set Device Version - 0x0d
+
+f.general_set_device_version_unknown0 = ProtoField.uint8 ("dji_p3.general_set_device_version_unknown0", "Unknown0", base.HEX)
+f.general_set_device_version_version = ProtoField.bytes ("dji_p3.general_set_device_version_version", "Version", base.SPACE)
+
+local function general_set_device_version_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    -- Details from DM36x could be decoded using func Dec_Serial_Set_Device_Version from `usbclient` binary
+
+    subtree:add_le (f.general_set_device_version_unknown0, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.general_set_device_version_version, payload(offset, 4))
+    offset = offset + 4
+
+    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set Device Version: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set Device Version: Payload size different than expected") end
+end
+
 -- General - Message - 0x0e
 
 --f.general_message_unknown0 = ProtoField.none ("dji_p3.general_message_unknown0", "Unknown0", base.NONE)
@@ -394,6 +493,72 @@ local function general_camera_file_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera File: Payload size different than expected") end
 end
 
+-- General - Encrypt - 0x30
+
+enums.COMMON_ENCRYPT_CMD_TYPE_ENUM = {
+    [1]="GetChipState",
+    [2]="GetModuleState",
+    [3]="Config",
+}
+
+f.general_encrypt_cmd_type = ProtoField.uint8 ("dji_p3.general_encrypt_cmd_type", "Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CMD_TYPE_ENUM, nil, nil)
+--f.general_encrypt_unknown0 = ProtoField.none ("dji_p3.general_encrypt_unknown0", "Unknown0", base.NONE)
+
+local function general_encrypt_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    local cmd_type = payload(offset,1):le_uint()
+    subtree:add_le (f.general_encrypt_cmd_type, payload(offset, 1))
+    offset = offset + 1
+
+    if cmd_type == 1 then
+        -- TODO see Dec_Serial_Encrypt_GetChipState in usbclient binary
+
+    elseif cmd_type == 2 then
+        -- TODO see Dec_Serial_Encrypt_GetModuleState in usbclient binary
+
+    elseif cmd_type == 3 then
+        -- TODO see Dec_Serial_Encrypt_Config in usbclient binary
+
+    end
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Encrypt: Payload size different than expected") end
+end
+
+-- General - MFI Cert - 0x33
+
+enums.COMMON_MFI_CERT_CMD_TYPE_ENUM = {
+    [1]="Get_Cert",
+    [2]="Challenge_Response",
+}
+
+f.general_mfi_cert_cmd_type = ProtoField.uint8 ("dji_p3.general_mfi_cert_cmd_type", "Cmd Type", base.DEC, enums.COMMON_MFI_CERT_CMD_TYPE_ENUM, nil, nil)
+--f.general_mfi_cert_unknown0 = ProtoField.none ("dji_p3.general_mfi_cert_unknown0", "Unknown0", base.NONE)
+
+local function general_mfi_cert_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    local cmd_type = payload(offset,1):le_uint()
+    subtree:add_le (f.general_mfi_cert_cmd_type, payload(offset, 1))
+    offset = offset + 1
+
+    if cmd_type == 1 then
+        -- TODO see Dec_Serial_MFI_Cert_Get_Cert in usbclient binary
+
+    elseif cmd_type == 2 then
+        -- TODO see Dec_Serial_MFI_Cert_Challenge_Response in usbclient binary
+
+    end
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"MFI Cert: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"MFI Cert: Payload size different than expected") end
+end
+
 -- General - Common Upgrade Status - 0x42
 
 enums.COMMON_UPGRADE_STATUS_UPGRADE_STATE_ENUM = {
@@ -430,7 +595,7 @@ local function general_common_upgrade_status_dissector(pkt_length, buffer, pinfo
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    local upgrade_state = buffer(offset,1):le_uint()
+    local upgrade_state = payload(offset,1):le_uint()
     subtree:add_le (f.general_common_upgrade_status_upgrade_state, payload(offset, 1))
     offset = offset + 1
 
@@ -546,15 +711,36 @@ local function general_compn_state_dissector(pkt_length, buffer, pinfo, subtree)
 
 end
 
+-- General - Get Prod Code - 0xff
+
+--f.general_get_prod_code_unknown0 = ProtoField.none ("dji_p3.general_get_prod_code_unknown0", "Unknown0", base.NONE)
+
+local function general_get_prod_code_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Get Prod Code: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Get Prod Code: Payload size different than expected") end
+end
+
 local GENERAL_UART_CMD_DISSECT = {
+    [0x01] = general_version_inquiry_dissector,
+    [0x07] = general_enter_loader_dissector,
+    [0x0b] = general_reboot_chip_dissector,
+    [0x0c] = general_get_device_state_dissector,
+    [0x0d] = general_set_device_version_dissector,
     [0x0e] = general_message_dissector,
     [0x0f] = general_upgrade_self_request_dissector,
     [0x24] = general_camera_files_dissector,
     [0x27] = general_camera_file_dissector,
+    [0x30] = general_encrypt_dissector,
+    [0x33] = general_mfi_cert_dissector,
     [0x42] = general_common_upgrade_status_dissector,
     [0x47] = general_notify_disconnect_dissector,
     [0x52] = general_common_app_gps_config_dissector,
     [0xf1] = general_compn_state_dissector,
+    [0xff] = general_get_prod_code_dissector,
 }
 
 -- Special - Old Special Control - 0x01
@@ -1639,7 +1825,7 @@ local function camera_camera_timelapse_parms_dissector(pkt_length, buffer, pinfo
 
     subtree:add_le (f.camera_camera_timelapse_parms_masked00, payload(offset, 1))
     subtree:add_le (f.camera_camera_timelapse_parms_control_mode, payload(offset, 1))
-    local point_count = bit.band(buffer(offset,1):le_uint(), 0xfc)
+    local point_count = bit.band(payload(offset,1):le_uint(), 0xfc)
     subtree:add_le (f.camera_camera_timelapse_parms_gimbal_point_count, payload(offset, 1))
     offset = offset + 1
 
@@ -3412,7 +3598,7 @@ local function flyc_flyc_way_point_mission_info_dissector(pkt_length, buffer, pi
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    local mission_type = buffer(offset,1):le_uint()
+    local mission_type = payload(offset,1):le_uint()
     subtree:add_le (f.flyc_flyc_way_point_mission_info_mission_type, payload(offset, 1))
     offset = offset + 1
 
@@ -3511,7 +3697,7 @@ local function flyc_flyc_way_point_mission_current_event_dissector(pkt_length, b
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    local event_type = buffer(offset,1):le_uint()
+    local event_type = payload(offset,1):le_uint()
     subtree:add_le (f.flyc_flyc_way_point_mission_current_event_event_type, payload(offset, 1))
     offset = offset + 1
 
@@ -5397,6 +5583,58 @@ local WIFI_UART_CMD_DISSECT = {
     [0x2a] = wifi_wifi_sweep_frequency_dissector,
 }
 
+-- DM36x proc. - Set GS Ctrl - 0x01
+
+f.dm36x_gs_ctrl_param_id = ProtoField.uint8 ("dji_p3.dm36x_gs_ctrl_param_id", "Param ID", base.DEC)
+f.dm36x_gs_ctrl_param_len = ProtoField.uint8 ("dji_p3.dm36x_gs_ctrl_param_len", "Param Len", base.DEC)
+f.dm36x_gs_ctrl_param_val8 = ProtoField.uint8 ("dji_p3.dm36x_gs_ctrl_param_val8", "Param 8-bit Val", base.DEC)
+
+local function general_set_gs_ctrl_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    -- Decoded using func Dec_Serial_Set_GS_Ctrl from `usbclient` binary
+    local nparam = 0
+    while payload:len() >= offset+3 do
+        nparam = nparam + 1
+
+        subtree:add_le (f.dm36x_gs_ctrl_param_id, payload(offset, 1))
+        offset = offset + 1
+
+        local param_len = payload(offset,1):le_uint()
+        subtree:add_le (f.dm36x_gs_ctrl_param_len, payload(offset, 1))
+        offset = offset + 1
+
+        --if (param_len == 1) then -- only support one param_len
+        subtree:add_le (f.dm36x_gs_ctrl_param_val8, payload(offset, 1))
+        offset = offset + param_len
+   end
+
+    if (offset ~= 3*nparam) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set GS Ctrl: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set GS Ctrl: Payload size different than expected") end
+end
+
+-- DM36x proc. - Get GS Ctrl - 0x02
+
+local function general_get_gs_ctrl_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    -- Decoded using func Dec_Serial_Get_GS_Ctrl from `usbclient` binary
+    local nparam = 0
+    while payload:len() >= offset+1 do
+        nparam = nparam + 1
+
+        subtree:add_le (f.dm36x_gs_ctrl_param_id, payload(offset, 1))
+        offset = offset + 1
+   end
+
+    if (offset ~= 1*nparam) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Get GS Ctrl: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Get GS Ctrl: Payload size different than expected") end
+end
+
 -- DM36x proc. - Dm368 Status - 0x06
 
 f.dm36x_dm368_status_unknown00 = ProtoField.bytes ("dji_p3.dm36x_dm368_status_unknown00", "Unknown00", base.SPACE)
@@ -5425,8 +5663,40 @@ local function dm36x_dm368_status_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Dm368 Status: Payload size different than expected") end
 end
 
+-- DM36x proc. - Get GS Config - 0x07
+
+--f.dm36x_get_gs_config_unknown0 = ProtoField.none ("dji_p3.dm36x_get_gs_config_unknown0", "Unknown0", base.NONE)
+
+local function general_get_gs_config_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    -- Answer could be decoded using func Dec_Serial_Get_GS_Config from `usbclient` binary
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Get GS Config: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Get GS Config: Payload size different than expected") end
+end
+
+-- DM36x proc. - Get Phone Conn - 0x0e
+
+--f.dm36x_get_phone_conn_unknown0 = ProtoField.none ("dji_p3.dm36x_get_phone_conn_unknown0", "Unknown0", base.NONE)
+
+local function dm36x_get_phone_conn_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Get Phone Conn: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Get Phone Conn: Payload size different than expected") end
+end
+
 local DM36X_UART_CMD_DISSECT = {
+    [0x01] = dm36x_set_gs_ctrl_dissector,
+    [0x02] = dm36x_get_gs_ctrl_dissector,
     [0x06] = dm36x_dm368_status_dissector,
+    [0x07] = dm36x_get_gs_config_dissector,
+    [0x0e] = dm36x_get_phone_conn_dissector,
 }
 
 -- HD Link - Set transciever register packet - 0x06
