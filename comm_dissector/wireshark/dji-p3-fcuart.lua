@@ -499,6 +499,7 @@ enums.COMMON_ENCRYPT_CMD_TYPE_ENUM = {
     [1]="GetChipState", -- Returns At88 chip state flags and factory info
     [2]="GetModuleState", -- Returns At88 module state flags
     [3]="Config", -- Configures the decryption, storing new key.txt and factory info
+    [4]="DoEncrypt", -- Encrypts and returns data buffer given in the packet
 }
 
 enums.COMMON_ENCRYPT_OPER_TYPE_ENUM = {
@@ -508,6 +509,7 @@ enums.COMMON_ENCRYPT_OPER_TYPE_ENUM = {
 }
 
 f.general_encrypt_cmd_type = ProtoField.uint8 ("dji_p3.general_encrypt_cmd_type", "Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CMD_TYPE_ENUM, nil, nil)
+
 f.general_encrypt_oper_type = ProtoField.uint8 ("dji_p3.general_encrypt_oper_type", "Oper Type", base.DEC, enums.COMMON_ENCRYPT_OPER_TYPE_ENUM, nil, nil)
 f.general_encrypt_magic = ProtoField.bytes ("dji_p3.general_encrypt_magic", "Magic value", base.SPACE, nil, nil, "Should be `F0 BD E3 06 81 3E 85 CB`")
 f.general_encrypt_dev_id = ProtoField.uint8 ("dji_p3.general_encrypt_dev_id", "Device ID", base.DEC, nil, nil, "Only 13 is accepted")
@@ -515,7 +517,8 @@ f.general_encrypt_factory_info_bn = ProtoField.bytes ("dji_p3.general_encrypt_fa
 f.general_encrypt_key = ProtoField.bytes ("dji_p3.general_encrypt_key", "Encrypt Key", base.SPACE, nil, nil, "AES encryption key")
 f.general_encrypt_factory_info_sn = ProtoField.bytes ("dji_p3.general_encrypt_factory_info_sn", "Factory Info Sn", base.SPACE, nil, nil, "FactoryInfo.aucSn")
 
---f.general_encrypt_unknown0 = ProtoField.none ("dji_p3.general_encrypt_unknown0", "Unknown0", base.NONE)
+f.general_encrypt_buf_len = ProtoField.uint8 ("dji_p3.general_encrypt_buf_len", "Buffer Length", base.DEC, nil, nil, "Length in DWords")
+f.general_encrypt_buf_data = ProtoField.bytes ("dji_p3.general_encrypt_buf_data", "Buffer data", base.SPACE, nil, nil)
 
 local function general_encrypt_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -553,6 +556,16 @@ local function general_encrypt_dissector(pkt_length, buffer, pinfo, subtree)
         offset = offset + 16
 
         if (offset ~= 69) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 3: Offset does not match - internal inconsistency") end
+    elseif cmd_type == 4 then
+        -- Answer could be decoded using func Encrypt_Request from `encode_usb` binary
+        local buf_len = payload(offset,1):le_uint()
+        subtree:add_le (f.general_encrypt_buf_len, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.general_encrypt_buf_data, payload(offset, 4*buf_len))
+        offset = offset + 4*buf_len
+
+        if (offset ~= 1+4*buf_len) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 4: Offset does not match - internal inconsistency") end
     end
 
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Encrypt: Payload size different than expected") end
@@ -566,7 +579,7 @@ enums.COMMON_MFI_CERT_CMD_TYPE_ENUM = {
     [2]="Challenge_Response",
 }
 
-f.general_mfi_cert_cmd_type = ProtoField.uint8 ("dji_p3.general_mfi_cert_cmd_type", "Cmd Type", base.DEC, enums.COMMON_MFI_CERT_CMD_TYPE_ENUM, nil, nil, "Made For iPod concerns Apple devices only.")
+f.general_mfi_cert_cmd_type = ProtoField.uint8 ("dji_p3.general_mfi_cert_cmd_type", "Cmd Type", base.DEC, enums.COMMON_MFI_CERT_CMD_TYPE_ENUM, nil, "'Made For iPod' concerns Apple devices only.")
 f.general_mfi_cert_part_sn = ProtoField.uint8 ("dji_p3.general_mfi_cert_part_sn", "Part SN", base.DEC, nil, nil, "Selects which 128-byte part of certificate to return")
 --f.general_mfi_cert_unknown0 = ProtoField.none ("dji_p3.general_mfi_cert_unknown0", "Unknown0", base.NONE)
 
@@ -5385,18 +5398,20 @@ enums.CENTER_BRD_CENTER_BATTERY_COMMON_CONN_STATUS_ENUM = {
     [0x64] = 'OTHER',
 }
 
-f.center_brd_center_battery_common_relative_capacity = ProtoField.uint8 ("dji_p3.center_brd_center_battery_common_relative_capacity", "Relative Capacity", base.DEC)
-f.center_brd_center_battery_common_current_pv = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_current_pv", "Current Pv", base.DEC)
-f.center_brd_center_battery_common_current_capacity = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_current_capacity", "Current Capacity", base.DEC)
-f.center_brd_center_battery_common_full_capacity = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_full_capacity", "Full Capacity", base.DEC)
-f.center_brd_center_battery_common_life = ProtoField.uint8 ("dji_p3.center_brd_center_battery_common_life", "Life", base.DEC)
-f.center_brd_center_battery_common_loop_num = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_loop_num", "Loop Num", base.DEC)
+f.center_brd_center_battery_common_relative_capacity = ProtoField.uint8 ("dji_p3.center_brd_center_battery_common_relative_capacity", "Relative Capacity", base.DEC, nil, nil, "Remaining Capacity percentage")
+f.center_brd_center_battery_common_current_pv = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_current_pv", "Current Pv", base.DEC, nil, nil, "Current Pack Voltage")
+f.center_brd_center_battery_common_current_capacity = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_current_capacity", "Current Capacity", base.DEC, nil, nil, "Current Remaining Capacity")
+f.center_brd_center_battery_common_full_capacity = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_full_capacity", "Full Capacity", base.DEC, nil, nil, "Full Charge Capacity")
+f.center_brd_center_battery_common_life = ProtoField.uint8 ("dji_p3.center_brd_center_battery_common_life", "Life", base.DEC, nil, nil, "Life Percentage")
+f.center_brd_center_battery_common_loop_num = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_loop_num", "Loop Num", base.DEC, nil, nil, "Cycle Count")
 f.center_brd_center_battery_common_error_type = ProtoField.uint32 ("dji_p3.center_brd_center_battery_common_error_type", "Error Type", base.HEX)
 f.center_brd_center_battery_common_current = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_current", "Current", base.DEC)
-f.center_brd_center_battery_common_unknown10 = ProtoField.bytes ("dji_p3.center_brd_center_battery_common_unknown10", "Unknown10", base.SPACE)
-f.center_brd_center_battery_common_serial_no = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_serial_no", "Serial No", base.HEX)
+f.center_brd_center_battery_common_cell_voltage_0 = ProtoField.uint32 ("dji_p3.center_brd_center_battery_common_cell_voltage_0", "Cell Voltage 0", base.DEC)
+f.center_brd_center_battery_common_cell_voltage_1 = ProtoField.uint32 ("dji_p3.center_brd_center_battery_common_cell_voltage_1", "Cell Voltage 1", base.DEC)
+f.center_brd_center_battery_common_cell_voltage_2 = ProtoField.uint32 ("dji_p3.center_brd_center_battery_common_cell_voltage_2", "Cell Voltage 2", base.DEC)
+f.center_brd_center_battery_common_serial_no = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_serial_no", "Serial No", base.HEX, nil, nil, "Battery Serial Number")
 f.center_brd_center_battery_common_unknown1e = ProtoField.bytes ("dji_p3.center_brd_center_battery_common_unknown1e", "Unknown1E", base.SPACE)
-f.center_brd_center_battery_common_temperature = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_temperature", "Temperature", base.DEC)
+f.center_brd_center_battery_common_temperature = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_temperature", "Temperature", base.DEC, nil, nil, "In Degrees Celcius x100?")
 f.center_brd_center_battery_common_conn_status = ProtoField.uint8 ("dji_p3.center_brd_center_battery_common_conn_status", "Conn Status", base.HEX, enums.CENTER_BRD_CENTER_BATTERY_COMMON_CONN_STATUS_ENUM, nil, nil)
 f.center_brd_center_battery_common_total_study_cycle = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_total_study_cycle", "Total Study Cycle", base.HEX)
 f.center_brd_center_battery_common_last_study_cycle = ProtoField.uint16 ("dji_p3.center_brd_center_battery_common_last_study_cycle", "Last Study Cycle", base.HEX)
@@ -5431,8 +5446,14 @@ local function center_brd_center_battery_common_dissector(pkt_length, buffer, pi
     subtree:add_le (f.center_brd_center_battery_common_current, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.center_brd_center_battery_common_unknown10, payload(offset, 12))
-    offset = offset + 12
+    subtree:add_le (f.center_brd_center_battery_common_cell_voltage_0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.center_brd_center_battery_common_cell_voltage_1, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.center_brd_center_battery_common_cell_voltage_2, payload(offset, 4))
+    offset = offset + 4
 
     subtree:add_le (f.center_brd_center_battery_common_serial_no, payload(offset, 2))
     offset = offset + 2
@@ -5446,16 +5467,19 @@ local function center_brd_center_battery_common_dissector(pkt_length, buffer, pi
     subtree:add_le (f.center_brd_center_battery_common_conn_status, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.center_brd_center_battery_common_total_study_cycle, payload(offset, 2))
-    offset = offset + 2
+    -- This is where packets from FW v1.07.0060 end; newer battery packets are longer
+    if (payload:len() >= offset+6) then
+        subtree:add_le (f.center_brd_center_battery_common_total_study_cycle, payload(offset, 2))
+        offset = offset + 2
 
-    subtree:add_le (f.center_brd_center_battery_common_last_study_cycle, payload(offset, 2))
-    offset = offset + 2
+        subtree:add_le (f.center_brd_center_battery_common_last_study_cycle, payload(offset, 2))
+        offset = offset + 2
 
-    subtree:add_le (f.center_brd_center_battery_common_battery_on_charge, payload(offset, 2))
-    offset = offset + 2
+        subtree:add_le (f.center_brd_center_battery_common_battery_on_charge, payload(offset, 2))
+        offset = offset + 2
+    end
 
-    if (offset ~= 41) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Center Battery Common: Offset does not match - internal inconsistency") end
+    if (offset ~= 35) and (offset ~= 41) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Center Battery Common: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Center Battery Common: Payload size different than expected") end
 end
 
