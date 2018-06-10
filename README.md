@@ -180,8 +180,13 @@ Example of starting the capture from two UART-to-TTL (aka FTDI) converters:
 
 DUPC Packet Builder with hex string output.
 
-This tool can build a proper DUPC packet containing given header fields and data.
-The packet will be outputed in hexadecimal form.
+This tool can build a proper DUPC packet containing given header fields and payload.
+The packet will be outputed in hexadecimal form. List of known commands and the look
+of expected payloads can be found in Wireshark dissectors described below.
+
+Example of generating a packet to ask camera module for its Sensor ID:
+
+```./comm_mkdupc.py --receiver_type=Camera --receiver_index=0 --seq_num=65280 --cmd_set=Camera --cmd_id=181```
 
 ### comm_dissector
 
