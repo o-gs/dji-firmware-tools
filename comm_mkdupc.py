@@ -389,16 +389,16 @@ def main():
                         help='Sequence number of the packet (default is %(default)s)')
 
     parser.add_argument('-u', '--pack_type', default="REQUEST", type=parse_packet_type,
-                        help='Pack Type (default is %(default)s)')
+                        help='Packet Type, either name or number (default is %(default)s)')
 
     parser.add_argument('-a', '--ack_type', default="No_ACK_Needed", type=parse_ack_type,
                         help='Acknowledgement type, either name or number (default is %(default)s)')
 
     parser.add_argument('-e', '--encrypt_type', default="NO_ENC", type=parse_encrypt_type,
-                        help='Encryption type (default is %(default)s)')
+                        help='Encryption type, either name or number (default is %(default)s)')
 
     parser.add_argument('-s', '--cmd_set', default="GENERAL", type=parse_cmd_set,
-                        help='Command Set (default is %(default)s)')
+                        help='Command Set, either name or number (default is %(default)s)')
 
     parser.add_argument('-i', '--cmd_id', default=0, type=int,
                         help='Command ID (default is %(default)s)')

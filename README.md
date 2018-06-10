@@ -186,7 +186,7 @@ of expected payloads can be found in Wireshark dissectors described below.
 
 Example of generating a packet to ask camera module for its Sensor ID:
 
-```./comm_mkdupc.py --receiver_type=Camera --receiver_index=0 --seq_num=65280 --cmd_set=Camera --cmd_id=181```
+```./comm_mkdupc.py --receiver_type=Camera --receiver_index=0 --seq_num=65280 --ack_type=ACK_After_Exec --cmd_set=Camera --cmd_id=181```
 
 ### comm_dissector
 
