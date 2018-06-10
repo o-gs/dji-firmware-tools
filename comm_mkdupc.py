@@ -92,6 +92,79 @@ class COMM_DEV_TYPE(enum.Enum):
                 return itm
         raise ValueError('{} is not a valid module type'.format(name))
 
+
+class ENCRYPT_TYPE(enum.Enum):
+    NO_ENC = 0
+    AES_128 = 1
+    SELF_DEF = 2
+    XOR = 3
+    DES_56 = 4
+    DES_112 = 5
+    AES_192 = 6
+    AES_256 = 7
+
+    @classmethod
+    def from_name(cls, name):
+        for itm in cls:
+            if itm.name == name:
+                return itm
+        raise ValueError('{} is not a valid encryption type'.format(name))
+
+
+class PACKET_TYPE(enum.Enum):
+    REQUEST = 0
+    RESPONSE = 1
+
+    @classmethod
+    def from_name(cls, name):
+        for itm in cls:
+            if itm.name == name:
+                return itm
+        raise ValueError('{} is not a valid packet type'.format(name))
+
+
+class CMD_SET_TYPE(enum.Enum):
+    GENERAL = 0
+    SPECIAL = 1
+    CAMERA = 2
+    CONTROLLER = 3
+    ZENMUSE = 4
+    CENTER_BOARD = 5
+    RADIO = 6
+    WIFI = 7
+    DM368 = 8
+    OFDM = 9
+    VO = 10
+    SIM = 11
+    ESC = 12
+    BATTERY = 13
+    DATA_RECORDER = 14
+    RTK = 15
+    AUTOTEST = 16
+    UNKNOWN17 = 17
+    UNKNOWN18 = 18
+    UNKNOWN19 = 19
+    UNKNOWN20 = 20
+    UNKNOWN21 = 21
+    UNKNOWN22 = 22
+    UNKNOWN23 = 23
+    UNKNOWN24 = 24
+    UNKNOWN25 = 25
+    UNKNOWN26 = 26
+    UNKNOWN27 = 27
+    UNKNOWN28 = 28
+    UNKNOWN29 = 29
+    UNKNOWN30 = 30
+    UNKNOWN31 = 31
+
+    @classmethod
+    def from_name(cls, name):
+        for itm in cls:
+            if itm.name == name:
+                return itm
+        raise ValueError('{} is not a valid command set'.format(name))
+
+
 class DJICmdV1Header(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('sof', c_ubyte), # Start Of Field
@@ -234,12 +307,12 @@ def encode_command_packet(sender_type, sender_index, receiver_type, receiver_ind
 
 def do_build_packet(options):
     pkt = encode_command_packet(options.sender_type.value, options.sender_index, options.receiver_type.value, options.receiver_index,
-      options.seq_num, options.pack_type, options.ack_type.value, options.encrypt_type, options.cmd_set, options.cmd_id,
+      options.seq_num, options.pack_type.value, options.ack_type.value, options.encrypt_type.value, options.cmd_set.value, options.cmd_id,
       options.payload)
     print(' '.join('{:02x}'.format(x) for x in pkt))
 
 def parse_module_ident(s):
-    pat = re.compile(r"^([0-9]{1,2})([0-9]{2})$")
+    pat = re.compile(r"^m?([0-9]{1,2})([0-9]{2})$")
     out = re.match(pat, s)
     if out is None:
         raise argparse.ArgumentTypeError("No 4-byte module ident")
@@ -247,21 +320,63 @@ def parse_module_ident(s):
 
 def parse_module_type(s):
     pat = re.compile(r"^[0-9]{1,2}$")
-    if re.search(pat, s):
-        return COMM_DEV_TYPE(int(s, 10))
+    try:
+        if re.search(pat, s):
+            return COMM_DEV_TYPE(int(s, 10))
+    except:
+        raise argparse.ArgumentTypeError("Numeric value out of range")
     try:
         return COMM_DEV_TYPE.from_name(s.upper())
-    except KeyError:
-        raise argparse.ArgumentError("Unrecognized value")
+    except:
+        raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
 def parse_ack_type(s):
     pat = re.compile(r"^[0-9]{1}$")
-    if re.search(pat, s):
-        return ACK_TYPE(int(s, 10))
+    try:
+        if re.search(pat, s):
+            return ACK_TYPE(int(s, 10))
+    except:
+        raise argparse.ArgumentTypeError("Numeric value out of range")
     try:
         return ACK_TYPE.from_name(s.upper())
-    except KeyError:
-        raise argparse.ArgumentError("Unrecognized value")
+    except:
+        raise argparse.ArgumentTypeError("Unrecognized name of enum item")
+
+def parse_encrypt_type(s):
+    pat = re.compile(r"^[0-9]{1}$")
+    try:
+        if re.search(pat, s):
+            return ENCRYPT_TYPE(int(s, 10))
+    except:
+        raise argparse.ArgumentTypeError("Numeric value out of range")
+    try:
+        return ENCRYPT_TYPE.from_name(s.upper())
+    except:
+        raise argparse.ArgumentTypeError("Unrecognized name of enum item")
+
+def parse_packet_type(s):
+    pat = re.compile(r"^[0-9]{1}$")
+    try:
+        if re.search(pat, s):
+            return PACKET_TYPE(int(s, 10))
+    except:
+        raise argparse.ArgumentTypeError("Numeric value out of range")
+    try:
+        return PACKET_TYPE.from_name(s.upper())
+    except:
+        raise argparse.ArgumentTypeError("Unrecognized name of enum item")
+
+def parse_cmd_set(s):
+    pat = re.compile(r"^[0-9]{1}$")
+    try:
+        if re.search(pat, s):
+            return CMD_SET_TYPE(int(s, 10))
+    except:
+        raise argparse.ArgumentTypeError("Numeric value out of range")
+    try:
+        return CMD_SET_TYPE.from_name(s.upper())
+    except:
+        raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
 def main():
     """ Main executable function.
@@ -273,16 +388,16 @@ def main():
     parser.add_argument('-n', '--seq_num', default=0, type=int,
                         help='Sequence number of the packet (default is %(default)s)')
 
-    parser.add_argument('-u', '--pack_type', default=0, type=int,
+    parser.add_argument('-u', '--pack_type', default="REQUEST", type=parse_packet_type,
                         help='Pack Type (default is %(default)s)')
 
     parser.add_argument('-a', '--ack_type', default="No_ACK_Needed", type=parse_ack_type,
                         help='Acknowledgement type, either name or number (default is %(default)s)')
 
-    parser.add_argument('-e', '--encrypt_type', default=0, type=int,
+    parser.add_argument('-e', '--encrypt_type', default="NO_ENC", type=parse_encrypt_type,
                         help='Encryption type (default is %(default)s)')
 
-    parser.add_argument('-s', '--cmd_set', default=0, type=int,
+    parser.add_argument('-s', '--cmd_set', default="GENERAL", type=parse_cmd_set,
                         help='Command Set (default is %(default)s)')
 
     parser.add_argument('-i', '--cmd_id', default=0, type=int,
