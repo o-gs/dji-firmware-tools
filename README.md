@@ -176,6 +176,13 @@ Example of starting the capture from two UART-to-TTL (aka FTDI) converters:
 
 ```./comm_serial2pcap.py -b 115200 -F /tmp/wsf /dev/ttyUSB0 /dev/ttyUSB1```
 
+### comm_mkdupc.py
+
+DUPC Packet Builder with hex string output.
+
+This tool can build a proper DUPC packet containing given header fields and data.
+The packet will be outputed in hexadecimal form.
+
 ### comm_dissector
 
 The folder contains [Wireshark](https://www.wireshark.org/) dissector for for analyzing communication in DJI drone interfaces.
