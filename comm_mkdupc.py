@@ -283,6 +283,10 @@ class DJICmdV1Footer(LittleEndianStructure):
     return pformat(d, indent=4, width=1)
 
 def encode_command_packet(sender_type, sender_index, receiver_type, receiver_index, seq_num, pack_type, ack_type, encrypt_type, cmd_set, cmd_id, payload):
+    """ Encodes command packet with given header fields and payload into c_ubyte array.
+
+      Accepts integer values of all the fields.
+    """
     djiCmd = DJICmdV1Header()
     djiCmd.whole_length = sizeof(djiCmd) + len(payload) + 2
     djiCmd.header_crc8 = calc_pkt55_hdr_checksum(0x77, (c_ubyte * 3).from_buffer_copy(djiCmd), 3)
@@ -305,13 +309,22 @@ def encode_command_packet(sender_type, sender_index, receiver_type, receiver_ind
     memmove(addressof(enc_data) + sizeof(djiCmd) + sizeof(djiPayload), byref(djiFoot), sizeof(djiFoot))
     return enc_data
 
+def encode_command_packet_en(sender_type, sender_index, receiver_type, receiver_index, seq_num, pack_type, ack_type, encrypt_type, cmd_set, cmd_id, payload):
+    """ Encodes command packet with given header fields and payload into c_ubyte array.
+
+      A wrapper which accepts enums instead of integer fields for most values.
+    """
+    return encode_command_packet(sender_type.value, sender_index, receiver_type.value, receiver_index,
+      seq_num, pack_type.value, ack_type.value, encrypt_type.value, cmd_set.value, cmd_id, payload)
+
 def do_build_packet(options):
-    pkt = encode_command_packet(options.sender_type.value, options.sender_index, options.receiver_type.value, options.receiver_index,
-      options.seq_num, options.pack_type.value, options.ack_type.value, options.encrypt_type.value, options.cmd_set.value, options.cmd_id,
-      options.payload)
+    pkt = encode_command_packet_en(options.sender_type, options.sender_index, options.receiver_type, options.receiver_index,
+      options.seq_num, options.pack_type, options.ack_type, options.encrypt_type, options.cmd_set, options.cmd_id, options.payload)
     print(' '.join('{:02x}'.format(x) for x in pkt))
 
 def parse_module_ident(s):
+    """ Parses module identification string in known formats.
+    """
     pat = re.compile(r"^m?([0-9]{1,2})([0-9]{2})$")
     out = re.match(pat, s)
     if out is None:
@@ -319,6 +332,8 @@ def parse_module_ident(s):
     return out
 
 def parse_module_type(s):
+    """ Parses module type string in known formats.
+    """
     pat = re.compile(r"^[0-9]{1,2}$")
     try:
         if re.search(pat, s):
@@ -331,6 +346,8 @@ def parse_module_type(s):
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
 def parse_ack_type(s):
+    """ Parses ack type string in known formats.
+    """
     pat = re.compile(r"^[0-9]{1}$")
     try:
         if re.search(pat, s):
@@ -343,6 +360,8 @@ def parse_ack_type(s):
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
 def parse_encrypt_type(s):
+    """ Parses encrypt type string in known formats.
+    """
     pat = re.compile(r"^[0-9]{1}$")
     try:
         if re.search(pat, s):
@@ -355,6 +374,8 @@ def parse_encrypt_type(s):
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
 def parse_packet_type(s):
+    """ Parses packet type string in known formats.
+    """
     pat = re.compile(r"^[0-9]{1}$")
     try:
         if re.search(pat, s):
@@ -367,6 +388,8 @@ def parse_packet_type(s):
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
 def parse_cmd_set(s):
+    """ Parses command set string in known formats.
+    """
     pat = re.compile(r"^[0-9]{1}$")
     try:
         if re.search(pat, s):
