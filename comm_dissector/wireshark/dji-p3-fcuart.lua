@@ -36,13 +36,26 @@ DJI_P3_FLIGHT_CONTROL_UART_SRC_DEST = {
     [31] = 'Last',
 }
 
-DJI_P3_FLIGHT_CONTROL_UART_ENCRYPT_TYPE = {
-    [0]='None',
-    [2]='SeqHash2',
+DJI_P3_FLIGHT_CONTROL_UART_ACK_TYPE = {
+    [0] = 'No ACK Needed',
+    [1] = 'ACK Before Exec',
+    [2] = 'ACK After Exec',
 }
 
-DJI_P3_FLIGHT_CONTROL_UART_ACK_POLL = {
-    [0]="RSP",[1]="CMD",[2]="CMD",[3]="????"
+DJI_P3_FLIGHT_CONTROL_UART_ENCRYPT_TYPE = {
+    [0] = 'None',
+    [1] = 'AES 128',
+    [2] = 'Self Def',
+    [3] = 'Xor',
+    [4] = 'DES 56',
+    [5] = 'DES 112',
+    [6] = 'AES 192',
+    [7] = 'AES 256',
+}
+
+DJI_P3_FLIGHT_CONTROL_UART_PACKET_TYPE = {
+    [0] = 'Request',
+    [1] = 'Response',
 }
 
 DJI_P3_FLIGHT_CONTROL_UART_CMD_SET = {
