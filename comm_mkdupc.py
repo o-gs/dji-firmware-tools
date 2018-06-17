@@ -440,7 +440,7 @@ def main():
     parser.add_argument('-n', '--seq_num', default=0, type=int,
                         help='Sequence number of the packet (default is %(default)s)')
 
-    parser.add_argument('-u', '--pack_type', default="REQUEST", type=parse_packet_type,
+    parser.add_argument('-u', '--pack_type', default="Request", type=parse_packet_type,
                         help='Packet Type, either name or number (default is %(default)s)')
 
     parser.add_argument('-a', '--ack_type', default="No_ACK_Needed", type=parse_ack_type,
@@ -466,13 +466,13 @@ def main():
     subparser.add_argument('-tt', '--sender_type', default="PC", type=parse_module_type,
                         help='Sender(transmitter) Type, either name or number (default is %(default)s)')
 
-    parser.add_argument('-ti', '--sender_index', default=1, type=int,
+    parser.add_argument('-ti', '--sender_index', default=0, type=int,
                         help='Sender(transmitter) Index (default is %(default)s)')
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-r', '--receiver', type=parse_module_ident,
-                        help='Receiver Type and Index, in TTII form (ie. 0306)')
+                        help='Receiver Type and Index, in TTII form (ie. 0300)')
 
     subparser.add_argument('-rt', '--receiver_type', default="ANY", type=parse_module_type,
                         help='Receiver Type, either name or number (default is %(default)s)')
