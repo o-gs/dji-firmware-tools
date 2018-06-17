@@ -198,7 +198,7 @@ returning packet upon receiving it.
 
 Example of asking Flight Controller for hardware and firmware version data (tested on Ph3):
 
-```./comm_serialtalk.py /dev/ttyUSB0 -vvv --timeout=5000 --receiver_type=FlyController --seq_num=65280  --ack_type=ACK_After_Exec --cmd_set=General --cmd_id=1```
+```./comm_serialtalk.py /dev/ttyUSB0 -vv --timeout=5000 --receiver_type=FlyController --seq_num=65280 --ack_type=No_ACK_Needed --cmd_set=General --cmd_id=1```
 
 ### comm_dissector
 
