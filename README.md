@@ -184,9 +184,21 @@ This tool can build a proper DUPC packet containing given header fields and payl
 The packet will be outputed in hexadecimal form. List of known commands and the look
 of expected payloads can be found in Wireshark dissectors described below.
 
-Example of generating a packet to ask camera module for its Sensor ID:
+Example of generating a packet to ask Spark camera module for its Sensor ID:
 
-```./comm_mkdupc.py --receiver_type=Camera --receiver_index=0 --seq_num=65280 --ack_type=ACK_After_Exec --cmd_set=Camera --cmd_id=181```
+```./comm_mkdupc.py --receiver_type=Camera --seq_num=65280 --ack_type=ACK_After_Exec --cmd_set=Camera --cmd_id=181```
+
+### comm_serialtalk.py
+
+DUPC Builder which sends packet to DJI product and receives a response.
+
+This tool builds a proper DUPC packet containing given header fields and payload.
+Then it sends it via given serial port and waits for response. It shows the
+returning packet upon receiving it.
+
+Example of asking Flight Controller for hardware and firmware version data (tested on Ph3):
+
+```./comm_serialtalk.py /dev/ttyUSB0 -vvv --timeout=5000 --receiver_type=FlyController --seq_num=65280  --ack_type=ACK_After_Exec --cmd_set=General --cmd_id=1```
 
 ### comm_dissector
 
