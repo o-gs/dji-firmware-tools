@@ -479,16 +479,46 @@ DJI_P3_FLIGHT_CONTROL_UART_CMD_TEXT = {
 
 -- General - Version Inquiry - 0x01
 
---f.general_version_inquiry_unknown0 = ProtoField.none ("dji_p3.general_version_inquiry_unknown0", "Unknown0", base.NONE)
+f.general_version_inquiry_unknown0 = ProtoField.uint8 ("dji_p3.general_version_inquiry_unknown0", "Unknown0", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 0")
+f.general_version_inquiry_unknown1 = ProtoField.uint8 ("dji_p3.general_version_inquiry_unknown1", "Unknown1", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 0")
+f.general_version_inquiry_hw_version = ProtoField.string ("dji_p3.general_version_inquiry_hw_version", "Hardware Version", base.NONE, nil, nil)
+f.general_version_inquiry_unknown12 = ProtoField.uint32 ("dji_p3.general_version_inquiry_unknown12", "Unknown12", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 0x2000000")
+f.general_version_inquiry_app_version = ProtoField.uint32 ("dji_p3.general_version_inquiry_app_version", "Firmware App Version", base.HEX, nil, nil, "Standard 4-byte version number")
+f.general_version_inquiry_unknown1A = ProtoField.uint32 ("dji_p3.general_version_inquiry_unknown1A", "Unknown1A", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 0x3FF")
+f.general_version_inquiry_unknown1E = ProtoField.uint8 ("dji_p3.general_version_inquiry_unknown1E", "Unknown1E", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 1")
 
 local function general_version_inquiry_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    -- Answer from DM36x could be decoded using func Dec_Serial_Get_Version from `usbclient` binary
+    if (payload:len() >= 31) then
+        -- Written based on DM36x module and its Update_Fill_Version() function used by `usbclient` binary
 
-    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Version Inquiry: Offset does not match - internal inconsistency") end
+        subtree:add_le (f.general_version_inquiry_unknown0, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.general_version_inquiry_unknown1, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.general_version_inquiry_hw_version, payload(offset, 16))
+        offset = offset + 16
+
+        subtree:add_le (f.general_version_inquiry_unknown12, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.general_version_inquiry_app_version, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.general_version_inquiry_unknown1A, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.general_version_inquiry_unknown1E, payload(offset, 1))
+        offset = offset + 1
+
+    end
+
+    if (offset ~= 0) and (offset ~= 31) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Version Inquiry: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Version Inquiry: Payload size different than expected") end
 end
 
