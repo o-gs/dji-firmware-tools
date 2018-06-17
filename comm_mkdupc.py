@@ -267,6 +267,7 @@ class DJICmdV1Header(LittleEndianStructure):
 
   encrypt_type = property(__get_encrypt_type, __set_encrypt_type)
 
+
 class DJICmdV1Footer(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('crc16', c_ushort), # Whole packet checksum
@@ -283,7 +284,8 @@ class DJICmdV1Footer(LittleEndianStructure):
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
-class DJIPayloadGeneralVersionInquiry(LittleEndianStructure):
+
+class DJIPayload_General_VersionInquiry(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('unknown0', c_ubyte),
               ('unknown1', c_ubyte),
@@ -302,8 +304,12 @@ class DJIPayloadGeneralVersionInquiry(LittleEndianStructure):
 
   def __repr__(self):
     d = self.dict_export()
-    from pprint import pformat
-    return pformat(d, indent=0, width=160)
+    if d.keys():
+        report = []
+        for k, v in d.items():
+            report.append(k.rjust(16) + ': ' + repr(v))
+    return "\n".join(report)
+
 
 def encode_command_packet(sender_type, sender_index, receiver_type, receiver_index, seq_num, pack_type, ack_type, encrypt_type, cmd_set, cmd_id, payload):
     """ Encodes command packet with given header fields and payload into c_ubyte array.
@@ -342,8 +348,8 @@ def encode_command_packet_en(sender_type, sender_index, receiver_type, receiver_
 
 def get_known_payload(pkthead, payload):
     if pkthead.cmd_set == CMD_SET_TYPE.GENERAL.value:
-        if (pkthead.cmd_id == 0x01) and len(payload) >= sizeof(DJIPayloadGeneralVersionInquiry):
-            return DJIPayloadGeneralVersionInquiry.from_buffer_copy(payload)
+        if (pkthead.cmd_id == 0x01) and len(payload) >= sizeof(DJIPayload_General_VersionInquiry):
+            return DJIPayload_General_VersionInquiry.from_buffer_copy(payload)
     return None
 
 def do_build_packet(options):

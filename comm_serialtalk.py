@@ -178,7 +178,7 @@ def do_send_request_receive_reply(po):
         rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
         rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
         if (rplpayload is not None):
-            print("Parsed response payload:")
+            print("Parsed response  - {:s}:".format(type(rplpayload).__name__))
             print(rplpayload)
 
     ser.close()
