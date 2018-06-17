@@ -32,6 +32,7 @@ import argparse
 import enum
 import re
 from ctypes import *
+from collections import OrderedDict
 
 sys.path.insert(0, './')
 from comm_dat2pcap import (
@@ -55,7 +56,7 @@ class COMM_DEV_TYPE(enum.Enum):
     ANY = 0
     CAMERA = 1
     MOBILE_APP = 2
-    CONTROLLER = 3
+    FLYCONTROLLER = 3
     GIMBAL = 4
     CENTER_BOARD = 5
     REMOTE_RADIO = 6
@@ -127,7 +128,7 @@ class CMD_SET_TYPE(enum.Enum):
     GENERAL = 0
     SPECIAL = 1
     CAMERA = 2
-    CONTROLLER = 3
+    FLYCONTROLLER = 3
     ZENMUSE = 4
     CENTER_BOARD = 5
     RADIO = 6
@@ -184,7 +185,7 @@ class DJICmdV1Header(LittleEndianStructure):
     self.whole_length = sizeof(self) + 2
 
   def dict_export(self):
-    d = dict()
+    d = OrderedDict()
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
     return d
@@ -192,7 +193,7 @@ class DJICmdV1Header(LittleEndianStructure):
   def __repr__(self):
     d = self.dict_export()
     from pprint import pformat
-    return pformat(d, indent=4, width=1)
+    return pformat(d, indent=0, width=160)
 
   def __get_whole_length(self):
         return self.ver_length_tag & 1023
@@ -282,31 +283,53 @@ class DJICmdV1Footer(LittleEndianStructure):
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
+class DJIPayloadGeneralVersionInquiry(LittleEndianStructure):
+  _pack_ = 1
+  _fields_ = [('unknown0', c_ubyte),
+              ('unknown1', c_ubyte),
+              ('hw_version', c_char * 16),
+              ('unknown12', c_uint),
+              ('app_version', c_uint),
+              ('unknown1A', c_uint),
+              ('unknown1E', c_ubyte),
+             ]
+
+  def dict_export(self):
+    d = OrderedDict()
+    for (varkey, vartype) in self._fields_:
+        d[varkey] = getattr(self, varkey)
+    return d
+
+  def __repr__(self):
+    d = self.dict_export()
+    from pprint import pformat
+    return pformat(d, indent=0, width=160)
+
 def encode_command_packet(sender_type, sender_index, receiver_type, receiver_index, seq_num, pack_type, ack_type, encrypt_type, cmd_set, cmd_id, payload):
     """ Encodes command packet with given header fields and payload into c_ubyte array.
 
       Accepts integer values of all the fields.
     """
-    djiCmd = DJICmdV1Header()
-    djiCmd.whole_length = sizeof(djiCmd) + len(payload) + 2
-    djiCmd.header_crc8 = calc_pkt55_hdr_checksum(0x77, (c_ubyte * 3).from_buffer_copy(djiCmd), 3)
-    djiCmd.sender_type = sender_type
-    djiCmd.sender_index = sender_index
-    djiCmd.receiver_type = receiver_type
-    djiCmd.receiver_index = receiver_index
-    djiCmd.seq_num = seq_num
-    djiCmd.packet_type = pack_type
-    djiCmd.ack_type = ack_type
-    djiCmd.encrypt_type = encrypt_type
-    djiCmd.cmd_set = cmd_set
-    djiCmd.cmd_id = cmd_id
-    enc_data = (c_ubyte * djiCmd.whole_length)()
-    memmove(addressof(enc_data), byref(djiCmd), sizeof(djiCmd))
-    djiPayload = (c_char * len(payload)).from_buffer_copy(payload)
-    memmove(addressof(enc_data) + sizeof(djiCmd), byref(djiPayload), sizeof(djiPayload))
-    djiFoot = DJICmdV1Footer()
-    djiFoot.crc16 = calc_pkt55_checksum(enc_data, sizeof(enc_data) - 2)
-    memmove(addressof(enc_data) + sizeof(djiCmd) + sizeof(djiPayload), byref(djiFoot), sizeof(djiFoot))
+    pkthead = DJICmdV1Header()
+    pkthead.whole_length = sizeof(pkthead) + len(payload) + 2
+    pkthead.header_crc8 = calc_pkt55_hdr_checksum(0x77, (c_ubyte * 3).from_buffer_copy(pkthead), 3)
+    pkthead.sender_type = sender_type
+    pkthead.sender_index = sender_index
+    pkthead.receiver_type = receiver_type
+    pkthead.receiver_index = receiver_index
+    pkthead.seq_num = seq_num
+    pkthead.packet_type = pack_type
+    pkthead.ack_type = ack_type
+    pkthead.encrypt_type = encrypt_type
+    pkthead.cmd_set = cmd_set
+    pkthead.cmd_id = cmd_id
+    enc_data = (c_ubyte * pkthead.whole_length)()
+    memmove(addressof(enc_data), byref(pkthead), sizeof(pkthead))
+    pktpayload = (c_char * len(payload)).from_buffer_copy(payload)
+    memmove(addressof(enc_data) + sizeof(pkthead), byref(pktpayload), sizeof(pktpayload))
+    pktfoot = DJICmdV1Footer()
+    pktfoot.crc16 = calc_pkt55_checksum(enc_data, sizeof(enc_data) - 2)
+    memmove(addressof(enc_data) + sizeof(pkthead) + sizeof(pktpayload), byref(pktfoot), sizeof(pktfoot))
     return enc_data
 
 def encode_command_packet_en(sender_type, sender_index, receiver_type, receiver_index, seq_num, pack_type, ack_type, encrypt_type, cmd_set, cmd_id, payload):
@@ -316,6 +339,12 @@ def encode_command_packet_en(sender_type, sender_index, receiver_type, receiver_
     """
     return encode_command_packet(sender_type.value, sender_index, receiver_type.value, receiver_index,
       seq_num, pack_type.value, ack_type.value, encrypt_type.value, cmd_set.value, cmd_id, payload)
+
+def get_known_payload(pkthead, payload):
+    if pkthead.cmd_set == CMD_SET_TYPE.GENERAL.value:
+        if (pkthead.cmd_id == 0x01) and len(payload) >= sizeof(DJIPayloadGeneralVersionInquiry):
+            return DJIPayloadGeneralVersionInquiry.from_buffer_copy(payload)
+    return None
 
 def do_build_packet(options):
     pkt = encode_command_packet_en(options.sender_type, options.sender_index, options.receiver_type, options.receiver_index,
