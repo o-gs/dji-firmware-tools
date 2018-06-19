@@ -33,7 +33,7 @@ f.sender = ProtoField.uint8 ("dji_p3.sender", "Sender Type", base.DEC, DJI_P3_FL
 f.receiver_idx = ProtoField.uint8 ("dji_p3.receiver_idx", "Receiver Index", base.DEC, nil, 0xE0)
 f.receiver = ProtoField.uint8 ("dji_p3.receiver", "Receiver Type", base.DEC, DJI_P3_FLIGHT_CONTROL_UART_SRC_DEST, 0x1F)
 -- [6-7]  Sequence Ctr
-f.seqctr = ProtoField.uint16 ("dji_p3.seqctr", "Seq Counter", base.DEC)
+f.seqctr = ProtoField.uint16 ("dji_p3.seqctr", "Seq Counter", base.DEC, nil, nil, "Used for re-transmission - if known seqctr is detected, cached answer may be re-transmitted")
 -- [8] Encryption
 f.encrypt = ProtoField.uint8 ("dji_p3.encrypt", "Encryption Type", base.DEC, DJI_P3_FLIGHT_CONTROL_UART_ENCRYPT_TYPE, 0x07)
 -- [8] Ack

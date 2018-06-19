@@ -482,9 +482,9 @@ DJI_P3_FLIGHT_CONTROL_UART_CMD_TEXT = {
 f.general_version_inquiry_unknown0 = ProtoField.uint8 ("dji_p3.general_version_inquiry_unknown0", "Unknown0", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 0")
 f.general_version_inquiry_unknown1 = ProtoField.uint8 ("dji_p3.general_version_inquiry_unknown1", "Unknown1", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 0")
 f.general_version_inquiry_hw_version = ProtoField.string ("dji_p3.general_version_inquiry_hw_version", "Hardware Version", base.NONE, nil, nil)
-f.general_version_inquiry_unknown12 = ProtoField.uint32 ("dji_p3.general_version_inquiry_unknown12", "Unknown12", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 0x2000000")
-f.general_version_inquiry_app_version = ProtoField.uint32 ("dji_p3.general_version_inquiry_app_version", "Firmware App Version", base.HEX, nil, nil, "Standard 4-byte version number")
-f.general_version_inquiry_unknown1A = ProtoField.uint32 ("dji_p3.general_version_inquiry_unknown1A", "Unknown1A", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 0x3FF")
+f.general_version_inquiry_ldr_version = ProtoField.string ("dji_p3.general_version_inquiry_ldr_version", "Firmware Loader Version", base.NONE, nil, nil, "On Ph3 DM36x, hard coded to 0x2000000")
+f.general_version_inquiry_app_version = ProtoField.string ("dji_p3.general_version_inquiry_app_version", "Firmware App Version", base.NONE, nil, nil, "Standard 4-byte version number")
+f.general_version_inquiry_unknown1A = ProtoField.uint32 ("dji_p3.general_version_inquiry_unknown1A", "Unknown1A", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 0x3FF; bit 31=isProduction, 30=isSupportSafeUpgrade")
 f.general_version_inquiry_unknown1E = ProtoField.uint8 ("dji_p3.general_version_inquiry_unknown1E", "Unknown1E", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 1")
 
 local function general_version_inquiry_dissector(pkt_length, buffer, pinfo, subtree)
@@ -504,10 +504,20 @@ local function general_version_inquiry_dissector(pkt_length, buffer, pinfo, subt
         subtree:add_le (f.general_version_inquiry_hw_version, payload(offset, 16))
         offset = offset + 16
 
-        subtree:add_le (f.general_version_inquiry_unknown12, payload(offset, 4))
+        -- using string ProtoField instead of uint32 to allow easier formatting of the value
+        local ldr_ver_1 = payload(offset+0, 1):le_uint()
+        local ldr_ver_2 = payload(offset+1, 1):le_uint()
+        local ldr_ver_3 = payload(offset+2, 1):le_uint()
+        local ldr_ver_4 = payload(offset+3, 1):le_uint()
+        subtree:add_le (f.general_version_inquiry_ldr_version, payload(offset, 4), string.format("%02d.%02d.%02d.%02d",ldr_ver_4,ldr_ver_3,ldr_ver_2,ldr_ver_1))
         offset = offset + 4
 
-        subtree:add_le (f.general_version_inquiry_app_version, payload(offset, 4))
+        -- using string ProtoField instead of uint32 to allow easier formatting of the value
+        local app_ver_1 = payload(offset+0, 1):le_uint()
+        local app_ver_2 = payload(offset+1, 1):le_uint()
+        local app_ver_3 = payload(offset+2, 1):le_uint()
+        local app_ver_4 = payload(offset+3, 1):le_uint()
+        subtree:add_le (f.general_version_inquiry_app_version, payload(offset, 4), string.format("%02d.%02d.%02d.%02d",app_ver_4,app_ver_3,app_ver_2,app_ver_1))
         offset = offset + 4
 
         subtree:add_le (f.general_version_inquiry_unknown1A, payload(offset, 4))
@@ -690,52 +700,117 @@ f.general_encrypt_factory_info_sn = ProtoField.bytes ("dji_p3.general_encrypt_fa
 f.general_encrypt_buf_len = ProtoField.uint8 ("dji_p3.general_encrypt_buf_len", "Buffer Length", base.DEC, nil, nil, "Length in DWords")
 f.general_encrypt_buf_data = ProtoField.bytes ("dji_p3.general_encrypt_buf_data", "Buffer data", base.SPACE, nil, nil)
 
+f.general_encrypt_resp_type = ProtoField.uint8 ("dji_p3.general_encrypt_resp_type", "Response To Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CMD_TYPE_ENUM, nil, nil)
+
+f.general_encrypt_resp_unknown0 = ProtoField.uint8 ("dji_p3.general_encrypt_resp_unknown0", "Unknown0", base.HEX, nil, nil)
+f.general_encrypt_resp_state_flags = ProtoField.uint8 ("dji_p3.general_encrypt_resp_state_flags", "State Flags", base.HEX, nil, nil)
+f.general_encrypt_resp_chip_state_conf_zone_unlock = ProtoField.uint8 ("dji_p3.general_encrypt_resp_chip_state_conf_zone_unlock", "Config Zone Unlocked", base.DEC, nil, 0x01)
+f.general_encrypt_resp_chip_state_data_zone_unlock = ProtoField.uint8 ("dji_p3.general_encrypt_resp_chip_state_data_zone_unlock", "Data Zone Unlocked", base.DEC, nil, 0x06)
+f.general_encrypt_resp_modl_state_module_ready = ProtoField.uint8 ("dji_p3.general_encrypt_resp_modl_state_module_ready", "Module reports ready", base.DEC, nil, 0x01)
+f.general_encrypt_resp_modl_state_verify_pass = ProtoField.uint8 ("dji_p3.general_encrypt_resp_modl_state_verify_pass", "Module verification passed", base.DEC, nil, 0x02)
+f.general_encrypt_resp_unknown2 = ProtoField.bytes ("dji_p3.general_encrypt_resp_unknown2", "Unknown2", base.SPACE, nil, nil)
+f.general_encrypt_resp_unknown12 = ProtoField.bytes ("dji_p3.general_encrypt_resp_unknown12", "Unknown12", base.SPACE, nil, nil)
+f.general_encrypt_resp_unknown22 = ProtoField.bytes ("dji_p3.general_encrypt_resp_unknown22", "Unknown22", base.SPACE, nil, nil)
+
 local function general_encrypt_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    local cmd_type = payload(offset,1):le_uint()
-    subtree:add_le (f.general_encrypt_cmd_type, payload(offset, 1))
-    offset = offset + 1
-
-    if cmd_type == 1 then
-        -- Answer could be decoded using func Dec_Serial_Encrypt_GetChipState from `usbclient` binary
-        if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 1: Offset does not match - internal inconsistency") end
-    elseif cmd_type == 2 then
-        -- Answer could be decoded using func Dec_Serial_Encrypt_GetModuleState from `usbclient` binary
-        if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 2: Offset does not match - internal inconsistency") end
-    elseif cmd_type == 3 then
-        -- Decoded using func Dec_Serial_Encrypt_Config from `usbclient` binary
-        subtree:add_le (f.general_encrypt_oper_type, payload(offset, 1))
+    if pack_type == 0 then -- Request
+        local cmd_type = payload(offset,1):le_uint()
+        subtree:add_le (f.general_encrypt_cmd_type, payload(offset, 1))
         offset = offset + 1
 
-        subtree:add_le (f.general_encrypt_magic, payload(offset, 8))
-        offset = offset + 8
+        if cmd_type == 1 then
+            -- Answer could be decoded using func Dec_Serial_Encrypt_GetChipState from `usbclient` binary
+            if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 1: Offset does not match - internal inconsistency") end
+        elseif cmd_type == 2 then
+            -- Answer could be decoded using func Dec_Serial_Encrypt_GetModuleState from `usbclient` binary
+            if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 2: Offset does not match - internal inconsistency") end
+        elseif cmd_type == 3 then
+            -- Decoded using func Dec_Serial_Encrypt_Config from `usbclient` binary
+            subtree:add_le (f.general_encrypt_oper_type, payload(offset, 1))
+            offset = offset + 1
 
-        subtree:add_le (f.general_encrypt_dev_id, payload(offset, 1))
-        offset = offset + 1
+            subtree:add_le (f.general_encrypt_magic, payload(offset, 8))
+            offset = offset + 8
 
-        subtree:add_le (f.general_encrypt_factory_info_bn, payload(offset, 10))
-        offset = offset + 10
+            subtree:add_le (f.general_encrypt_dev_id, payload(offset, 1))
+            offset = offset + 1
 
-        subtree:add_le (f.general_encrypt_key, payload(offset, 32))
-        offset = offset + 32
+            subtree:add_le (f.general_encrypt_factory_info_bn, payload(offset, 10))
+            offset = offset + 10
 
-        subtree:add_le (f.general_encrypt_factory_info_sn, payload(offset, 16))
-        offset = offset + 16
+            subtree:add_le (f.general_encrypt_key, payload(offset, 32))
+            offset = offset + 32
 
-        if (offset ~= 69) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 3: Offset does not match - internal inconsistency") end
-    elseif cmd_type == 4 then
-        -- Answer could be decoded using func Encrypt_Request from `encode_usb` binary
-        local buf_len = payload(offset,1):le_uint()
-        subtree:add_le (f.general_encrypt_buf_len, payload(offset, 1))
-        offset = offset + 1
+            subtree:add_le (f.general_encrypt_factory_info_sn, payload(offset, 16))
+            offset = offset + 16
 
-        subtree:add_le (f.general_encrypt_buf_data, payload(offset, 4*buf_len))
-        offset = offset + 4*buf_len
+            if (offset ~= 69) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 3: Offset does not match - internal inconsistency") end
+        elseif cmd_type == 4 then
+            -- Answer could be decoded using func Encrypt_Request from `encode_usb` binary
+            local buf_len = payload(offset,1):le_uint()
+            subtree:add_le (f.general_encrypt_buf_len, payload(offset, 1))
+            offset = offset + 1
 
-        if (offset ~= 1+4*buf_len) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 4: Offset does not match - internal inconsistency") end
+            subtree:add_le (f.general_encrypt_buf_data, payload(offset, 4*buf_len))
+            offset = offset + 4*buf_len
+
+            if (offset ~= 1+4*buf_len) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 4: Offset does not match - internal inconsistency") end
+        end
+    else -- Response
+        if (payload:len() >= 59) then
+            subtree:add_le (f.general_encrypt_resp_type, 4) -- Add response type without related byte within packet (type is recognized by size, not by field)
+
+            subtree:add_le (f.general_encrypt_resp_unknown0, payload(offset, 1)) -- Is that supposed to be response type?
+            offset = offset + 1
+
+            if (offset ~= 59) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt reply: Offset does not match - internal inconsistency") end
+        elseif (payload:len() >= 32) then
+            subtree:add_le (f.general_encrypt_resp_type, 1)
+
+            subtree:add_le (f.general_encrypt_resp_unknown0, payload(offset, 1))
+            offset = offset + 1
+
+            subtree:add_le (f.general_encrypt_resp_state_flags, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_resp_chip_state_conf_zone_unlock, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_resp_chip_state_data_zone_unlock, payload(offset, 1))
+            offset = offset + 1
+
+            subtree:add_le (f.general_encrypt_resp_unknown2, payload(offset, 10))
+            offset = offset + 10
+
+            subtree:add_le (f.general_encrypt_resp_unknown12, payload(offset, 10))
+            offset = offset + 10
+
+            subtree:add_le (f.general_encrypt_resp_unknown22, payload(offset, 10))
+            offset = offset + 10
+
+            if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt reply: Offset does not match - internal inconsistency") end
+        elseif (payload:len() >= 2) then
+            subtree:add_le (f.general_encrypt_resp_type, 2)
+
+            subtree:add_le (f.general_encrypt_resp_unknown0, payload(offset, 1))
+            offset = offset + 1
+
+            subtree:add_le (f.general_encrypt_resp_state_flags, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_resp_modl_state_module_ready, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_resp_modl_state_verify_pass, payload(offset, 1))
+            offset = offset + 1
+
+            if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt reply: Offset does not match - internal inconsistency") end
+        elseif (payload:len() >= 1) then
+            subtree:add_le (f.general_encrypt_resp_type, 3)
+
+            subtree:add_le (f.general_encrypt_resp_unknown0, payload(offset, 1))
+            offset = offset + 1
+
+            if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt reply: Offset does not match - internal inconsistency") end
+        end
     end
 
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Encrypt: Payload size different than expected") end
