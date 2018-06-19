@@ -290,7 +290,7 @@ class DJIPayload_General_VersionInquiry(LittleEndianStructure):
   _fields_ = [('unknown0', c_ubyte),
               ('unknown1', c_ubyte),
               ('hw_version', c_char * 16),
-              ('unknown12', c_uint),
+              ('ldr_version', c_uint),
               ('app_version', c_uint),
               ('unknown1A', c_uint),
               ('unknown1E', c_ubyte),
