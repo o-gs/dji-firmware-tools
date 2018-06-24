@@ -443,6 +443,23 @@ def flyc_parameter_limits_check_minmax_relations(po, ver, eexpar):
   #    return False
   return True
 
+def flyc_parameter_limits_check_int_bitwise_identical(po, ver, eexpar):
+  """ limit_u and limit_i are bitwise identical; cast them to compare
+  """
+  if (c_uint(eexpar.limit_i.min).value != eexpar.limit_u.min):
+      if (po.verbose > 3):
+         print("{}: Rejection on bitwise identical min I-U ({:d} {:d})".format(po.mdlfile,eexpar.limit_i.min,eexpar.limit_u.min))
+      return False
+  if (c_uint(eexpar.limit_i.max).value != eexpar.limit_u.max):
+      if (po.verbose > 3):
+         print("{}: Rejection on bitwise identical max I-U ({:d} {:d})".format(po.mdlfile,eexpar.limit_i.max,eexpar.limit_u.max))
+      return False
+  if (c_uint(eexpar.limit_i.deflt).value != eexpar.limit_u.deflt):
+      if (po.verbose > 3):
+         print("{}: Rejection on bitwise identical deflt I-U ({:d} {:d})".format(po.mdlfile,eexpar.limit_i.deflt,eexpar.limit_u.deflt))
+      return False
+  return True
+
 def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_align, data_align, pos, entry_pos):
   """ Checks whether given FlycExportParam object stores a proper entry of
       flight controller parameters array.
@@ -505,13 +522,10 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
           print("{}: At 0x{:08x}, rejected type {:d} on integer-vs-float similarity check".format(po.mdlfile,entry_pos,eexpar.type_id))
       return False
 
-  if (True): # limit_u and limit_i are bitwise identical; cast them to compare
-      if (c_uint(eexpar.limit_i.min).value != eexpar.limit_u.min):
-          return False
-      if (c_uint(eexpar.limit_i.max).value != eexpar.limit_u.max):
-          return False
-      if (c_uint(eexpar.limit_i.deflt).value != eexpar.limit_u.deflt):
-          return False
+  if not flyc_parameter_limits_check_int_bitwise_identical(po, ver, eexpar):
+      if (po.verbose > 2):
+          print("{}: At 0x{:08x}, rejected type {:d} on signed-unsigned bitwise same check".format(po.mdlfile,entry_pos,eexpar.type_id))
+      return False
   return True
 
 def flyc_is_proper_parameter_block(po, fwmdlfile, fwmdlfile_len, eparblk, func_align, data_align, pos):
