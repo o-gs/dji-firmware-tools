@@ -712,6 +712,10 @@ f.general_encrypt_resp_unknown2 = ProtoField.bytes ("dji_p3.general_encrypt_resp
 f.general_encrypt_resp_unknown12 = ProtoField.bytes ("dji_p3.general_encrypt_resp_unknown12", "Unknown12", base.SPACE, nil, nil)
 f.general_encrypt_resp_unknown22 = ProtoField.bytes ("dji_p3.general_encrypt_resp_unknown22", "Unknown22", base.SPACE, nil, nil)
 
+f.general_encrypt_resp_mac = ProtoField.bytes ("dji_p3.general_encrypt_resp_mac", "MAC", base.SPACE, nil, nil)
+f.general_encrypt_resp_brdnum = ProtoField.bytes ("dji_p3.general_encrypt_resp_brdnum", "Board Num", base.SPACE, nil, nil)
+f.general_encrypt_resp_sn = ProtoField.bytes ("dji_p3.general_encrypt_resp_sn", "SN", base.SPACE, nil, nil)
+
 local function general_encrypt_dissector(pkt_length, buffer, pinfo, subtree)
     local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
 
@@ -768,6 +772,15 @@ local function general_encrypt_dissector(pkt_length, buffer, pinfo, subtree)
 
             subtree:add_le (f.general_encrypt_resp_unknown0, payload(offset, 1)) -- Is that supposed to be response type?
             offset = offset + 1
+
+            subtree:add_le (f.general_encrypt_resp_mac, payload(offset, 32))
+            offset = offset + 32
+
+            subtree:add_le (f.general_encrypt_resp_brdnum, payload(offset, 10))
+            offset = offset + 10
+
+            subtree:add_le (f.general_encrypt_resp_sn, payload(offset, 16))
+            offset = offset + 16
 
             if (offset ~= 59) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt reply: Offset does not match - internal inconsistency") end
         elseif (payload:len() >= 32) then
