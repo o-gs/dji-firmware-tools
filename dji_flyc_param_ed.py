@@ -875,12 +875,17 @@ def flyc_update(po, fwmdlfile):
       nxparprops = json.load(inffile)
   update_count = 0
   full_index = 0
+  param_pos_start_index = 0
   for param_pos, param_count in po.param_poslist.items():
       if (po.verbose > 1):
           print("{}: Updating parameters array at 0x{:08x}: {:d} entries".format(po.mdlfile,param_pos,param_count))
+      # Remember full index which corresponds to param_pos
+      param_pos_start_index = full_index
       for i in range(0, param_count):
+          # get the param from binary file
           pvparprop = flyc_param_get(po, fwmdlfile, param_pos, i, po.param_ver)
           pvparprop['index'] = full_index
+          # find it in our update list
           nxparprop = None
           for parprop in nxparprops:
               if (parprop['name'] == pvparprop['name']):
@@ -889,37 +894,39 @@ def flyc_update(po, fwmdlfile):
           if (nxparprop is None):
               eprint("{}: Warning: parameter not found in fw: \"{:s}\"".format(po.mdlfile,pvparprop['name']))
               continue
-          update_type=False
-          update_attrib=False
-          update_limits=False
           # compare properties to check what we want to update
+          update_type = False
+          update_attrib = False
+          update_limits = False # limits are: min, default, max value
           for ppname in ('typeID', 'size'):
               if (pvparprop[ppname] != nxparprop[ppname]):
-                  update_type=True
-                  update_limits=True
+                  update_type = True
+                  update_limits = True
           for ppname in ('attribute',):
               if (pvparprop[ppname] != nxparprop[ppname]):
-                  update_attrib=True
+                  update_attrib = True
           for ppname in ('minValue', 'maxValue', 'defaultValue'):
               if (isinstance(pvparprop[ppname], float)):
                   if (not isclose(pvparprop[ppname], nxparprop[ppname], rel_tol=1e-5, abs_tol=1e-5)):
                       #print("{}: Prop \"{:s}\" {:s} test: {:s} vs {:s}".format(po.mdlfile,pvparprop['name'],ppname,str(pvparprop[ppname]),str(nxparprop[ppname])))
-                      update_limits=True
+                      update_limits = True
               else:
                   if (pvparprop[ppname] != nxparprop[ppname]):
                       #print("{}: Prop \"{:s}\" {:s} test: {:s} vs {:s}".format(po.mdlfile,pvparprop['name'],ppname,str(pvparprop[ppname]),str(nxparprop[ppname])))
-                      update_limits=True
+                      update_limits = True
           if (update_type or update_attrib or update_limits):
               if (po.verbose > 1):
                   print("{}: Updating \"{:s}\" {:s}{:s}{:s}".format(po.mdlfile,pvparprop['name']," type," if update_type else ""," attribs," if update_attrib else ""," limits," if update_limits else ""))
               update_count += 1
+          # use index local to block, not the global index stored within property
+          pvparprop_i = pvparprop['index'] - param_pos_start_index
           # do the update
           if (update_type):
-              flyc_param_set_type(po, fwmdlfile, param_pos, pvparprop['index'], nxparprop, po.param_ver)
+              flyc_param_set_type(po, fwmdlfile, param_pos, pvparprop_i, nxparprop, po.param_ver)
           if (update_attrib):
-              flyc_param_set_attribs(po, fwmdlfile, param_pos, pvparprop['index'], nxparprop, po.param_ver)
+              flyc_param_set_attribs(po, fwmdlfile, param_pos, pvparprop_i, nxparprop, po.param_ver)
           if (update_limits):
-              flyc_param_set_limits(po, fwmdlfile, param_pos, pvparprop['index'], nxparprop, po.param_ver)
+              flyc_param_set_limits(po, fwmdlfile, param_pos, pvparprop_i, nxparprop, po.param_ver)
           full_index += 1
   if (po.verbose > 0):
       print("{}: Updated {:d} parameter entries".format(po.mdlfile,update_count))
