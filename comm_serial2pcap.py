@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" DJI serial bus -> pcap utility.
+""" DJI serial bus sniffer with PCap output.
 
  This script captures data from two UARTs and attempts to packetise the
- streams. CRC is checked before the packet is passed to the pcap file/fifo.
+ streams. CRC is checked before the packet is passed to the PCap file/fifo.
 
  If the packets you are trying to capture are not compatible, you may capture
  the plain binary data instead (though you won't be able to interleave two streams):
@@ -15,6 +15,7 @@
 
 """
 
+# Copyright (C) 2017 GlovePuppet <https://github.com/glovepuppet>
 # Copyright (C) 2017 Mefistotelis <mefistotelis@gmail.com>
 # Copyright (C) 2018 Original Gangsters <https://dji-rev.slack.com/>
 #
@@ -46,6 +47,10 @@
 # This script is intended to read raw packets (currently only 802.15.4
 # packets prefixed by a length byte) from a serial port and output them
 # in pcap format.
+
+__version__ = "0.5.0"
+__author__ = "GlovePuppet, Mefistotelis @ Original Gangsters"
+__license__ = "GPL"
 
 import os
 import sys
@@ -167,38 +172,42 @@ def main():
 
       Its task is to parse command line options and call a function which performs sniffing.
     """
-    parser = argparse.ArgumentParser(description='Convert DJI P3 packets sniffed from a serial link into pcap format')
+    parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument('port1',
-                        help='The serial port to read from')
+            help='The first serial port to read from')
 
     parser.add_argument('port2',
-                        help='The serial port to read from')
+            help='The second serial port to read from')
 
     parser.add_argument('-b', '--baudrate', default=115200, type=int,
-                        help='The baudrate to use for the serial port (defaults to %(default)s)')
+            help='The baudrate to use for both serial ports (defaults to %(default)s)')
 
     parser.add_argument('-u', '--userdlt', default=0, type=int,
-                        help='The data link type of the PCap DLT_USER protocol (defaults to %(default)s)')
+            help='The data link type of the PCap DLT_USER protocol (defaults to %(default)s)')
 
     parser.add_argument('-e', '--storebad', action='store_true',
-                        help='Enables storing bad packets (ie. with bad checksums)')
+            help='Enables storing bad packets (ie. with bad checksums)')
 
-    output = parser.add_mutually_exclusive_group()
+    subparser = parser.add_mutually_exclusive_group()
 
-    output.add_argument('-q', '--quiet', action='store_true',
-                        help='Do not output any informational messages')
+    subparser.add_argument('-q', '--quiet', action='store_true',
+            help='Do not output any informational messages')
 
-    output.add_argument('-v', '--verbose', action='count', default=0,
-                        help='Increases verbosity level; max level is set by -vvv')
+    subparser.add_argument('-v', '--verbose', action='count', default=0,
+            help='Increases verbosity level; max level is set by -vvv')
 
-    output = parser.add_mutually_exclusive_group()
+    subparser = parser.add_mutually_exclusive_group()
 
-    output.add_argument('-F', '--fifo',
-                        help='Write output to a fifo instead of stdout. The fifo is created if needed and capturing does not start until the other side of the fifo is opened.')
+    subparser.add_argument('-F', '--fifo',
+            help='Write output to a fifo instead of stdout. The fifo is created if needed and capturing does not start until the other side of the fifo is opened.')
 
-    output.add_argument('-w', '--write-file',
-                        help='Write output to a file instead of stdout')
+    subparser.add_argument('-w', '--write-file',
+            help='Write output to a file instead of stdout')
+
+    subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+              .format(version=__version__,author=__author__),
+            help="Display version information and exit")
 
     options = parser.parse_args();
 
