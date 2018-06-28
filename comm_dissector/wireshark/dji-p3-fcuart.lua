@@ -81,33 +81,40 @@ DJI_P3_FLIGHT_CONTROL_UART_CMD_SET = {
 -- CMD name decode tables
 
 local GENERAL_UART_CMD_TEXT = {
+    [0x00] = 'Ping',
     [0x01] = 'Version Inquiry',
     [0x02] = 'Push Param Set',
     [0x03] = 'Push Param Get',
     [0x05] = 'Multi Param Set',
     [0x06] = 'Multi Param Get',
-    [0x07] = 'Enter Loader',
-    [0x08] = 'Update Confirm',
-    [0x09] = 'Update Transmit',
-    [0x0a] = 'Update Finish',
+    [0x07] = 'Enter Loader', -- Enter Upgrade Mode
+    [0x08] = 'Update Confirm', -- Upgrade Prepare
+    [0x09] = 'Update Transmit', -- Upgrade Data Transmission
+    [0x0a] = 'Update Finish', -- Upgrade Verify
     [0x0b] = 'Reboot Chip',
     [0x0c] = 'Get Device State',
-    [0x0d] = 'Set Device Version',
-    [0x0e] = 'Message', -- It looks like it was supposed to transmit text messages, but is always empty
-    [0x0f] = 'Upgrade Self Request',
-    [0x22] = 'File Send Request',
-    [0x23] = 'Unknown but handled by camera', -- See m0101 sys partiton for payload info
-    [0x24] = 'Camera Files',
-    [0x25] = 'File Segment Err',
-    [0x26] = 'Unknown but handled by camera', -- See m0101 sys partiton for payload info
-    [0x27] = 'Camera File',
+    [0x0d] = 'Set Device Version', -- HardwareId
+    [0x0e] = 'Heartbeat', -- It looks like it was supposed to transmit text messages, but is always empty
+    [0x0f] = 'Upgrade Self Request', -- Upgrade Consistency
+    [0x20] = 'File List',
+    [0x21] = 'File Info',
+    [0x22] = 'File Send',
+    [0x23] = 'File Receive', -- See m0101 sys partiton for payload info
+    [0x24] = 'Camera Files', -- Send File
+    [0x25] = 'File Segment Err', -- File Receive Fail
+    [0x26] = 'FileTrans App Camera', -- See m0101 sys partiton for payload info
+    [0x27] = 'FileTrans Camera App',
     [0x28] = 'Trans Del',
+    [0x2a] = 'General File Transfer',
     [0x30] = 'Encrypt',
     [0x32] = 'Activate Config',
     [0x33] = 'MFi Cert',
-    [0x41] = 'Fw Update Control',
-    [0x42] = 'Common Upgrade Status',
-    [0x47] = 'Notify Disconnect',
+    [0x34] = 'Safe Communication',
+    [0x41] = 'Fw Update Push Control',
+    [0x42] = 'Fw Upgrade Push Status',
+    [0x47] = 'Notify Disconnect', -- Upgrade Reboot Status
+    [0x4f] = 'Get Cfg File',
+    [0x51] = 'Get SN For Vision',
     [0x52] = 'Common App Gps Config',
     [0xf1] = 'Component Self Test State', -- The component is identified by sender field
     [0xff] = 'Get Prod Code', -- Asks a component for identification string
@@ -247,16 +254,22 @@ local CAMERA_UART_CMD_TEXT = {
 }
 
 local FLYC_UART_CMD_TEXT = {
-    [0x09] = 'Flyc Forbid Status',
+    [0x02] = 'Get Parameters',
+    [0x06] = 'Set Fly Limit',
+    [0x07] = 'Get Fly Limit',
+    [0x08] = 'Set Nofly Zone',
+    [0x09] = 'Get Nofly Status', -- Flyc Forbid Status
+    [0x0a] = 'Get Battery',
     [0x10] = 'A2 Commom',
     [0x1c] = 'TBD',
-    [0x2a] = 'App Cmd',
+    [0x2a] = 'Control Cmd',
     [0x2f] = 'Set Alarm',
     [0x30] = 'Get Alarm',
     [0x31] = 'Set Home Point',   --AC/RC/APP
     [0x32] = 'Flyc Deform Status',
     [0x33] = 'Set User String',
     [0x34] = 'Get User String',
+    [0x36] = 'Get SN',
     [0x39] = 'Enter Flight Data Mode', -- Switches the mode; response contains 1-byte payload - error code, 0 on success
     [0x3a] = 'TBD',
     [0x3b] = 'Set RC Lost Action',
@@ -272,34 +285,39 @@ local FLYC_UART_CMD_TEXT = {
     [0x46] = 'TBD',
     [0x47] = 'Toggle Whitelist',
     [0x50] = 'Imu Data Status',
-    [0x51] = 'Flyc Smart Battery',
+    [0x51] = 'Flyc Smart Battery', -- Smart Battery Status
     [0x52] = 'TBD',
     [0x53] = 'Flyc Avoid Param',
     [0x55] = 'Flyc Limit State',
     [0x56] = 'Flyc Led Status',
     [0x57] = 'Gps Glns',
     [0x60] = 'SVO API Transfer',
-    [0x61] = 'Flyc Active Request',
-    [0x62] = 'TBD',
+    [0x61] = 'Flyc Activation Info', -- Sdk Activation Info
+    [0x62] = 'Flyc Activation Exec', -- Sdk Activation
     [0x63] = 'Flyc Board Recv',
     [0x64] = 'TBD',
     [0x67] = 'Flyc Power Param',
     [0x6a] = 'Flyc Avoid',
+    [0x6b] = 'Recorder Data Cfg',
     [0x6c] = 'Flyc Rtk Location Data',
-    [0x70] = 'TBD',     --Some licensing string check
-    [0x71] = 'TBD',     --Some licensing string check
-    [0x74] = 'Get Serial Number',
+    [0x6d] = 'Upload Hotpoint',
+    [0x6e] = 'Download Hotpoint',
+    [0x70] = 'Set Product SN',     --Some licensing string check
+    [0x71] = 'Get Product SN',     --Some licensing string check
+    [0x72] = 'Reset Product SN',
+    [0x73] = 'Set Product Id',
+    [0x74] = 'Get Product Id',
     [0x75] = 'Write EEPROM FC0',
     [0x76] = 'Read EEPROM FC0',
-    [0x80] = 'TBD',
-    [0x82] = 'Set Mission Length',
-    [0x83] = 'TBD',
-    [0x84] = 'TBD',
-    [0x85] = 'TBD',
-    [0x86] = 'WP Mission go/stop',
-    [0x87] = 'WP Mission pasue/resume',
-    [0x88] = 'Flyc Way Point Mission Info',
-    [0x89] = 'Flyc Way Point Mission Current Event',
+    [0x80] = 'Set Navigation Mode',
+    [0x82] = 'Upload WP Mission Info', -- Set WayLine Mission Length
+    [0x83] = 'Download WP Mission Info', -- Download WayLine Mission Info
+    [0x84] = 'Upload Waypoint Info',
+    [0x85] = 'Download Waypoint Info',
+    [0x86] = 'WP Mission go/stop', -- Start Or Cancel WayLine Mission
+    [0x87] = 'WP Mission pasue/resume', -- Pause Or Continu WayLine Mission
+    [0x88] = 'Push Navigation Status Info', -- Flyc WayPoint Mission Info
+    [0x89] = 'Push Navigation Event Info', -- Flyc WayPoint Mission Current Event
     [0x8a] = 'TBD',
     [0x8b] = 'TBD',
     [0x8c] = 'HP Mission pasue/resume',
@@ -315,27 +333,39 @@ local FLYC_UART_CMD_TEXT = {
     [0x99] = 'TBD',
     [0x9a] = 'TBD',
     [0x9b] = 'TBD',
-    [0x9c] = 'Set WP Mission Idle V',
-    [0x9d] = 'Get WP Mission Idle V',
+    [0x9c] = 'Set WP Mission Idle Val', -- Set WayLine Flight Idle Value
+    [0x9d] = 'Get WP Mission Idle Val', -- Get WayLine Flight Idle Value
     [0xa1] = 'Flyc Agps Status',
+    [0xa3] = 'Get BreakPoint Info',
     [0xaa] = 'TBD',
     [0xab] = 'Set Attitude',
     [0xac] = 'Set Tail Lock',
     [0xad] = 'Flyc Flyc Install Error',
     [0xb6] = 'Flyc Fault Inject',
     [0xb9] = 'Flyc Redundancy Status',
+    [0xbf] = 'Flight Push',
+    [0xc6] = 'Shell Test',
+    [0xe0] = 'Get Config Table Attribute',
+    [0xe1] = 'Get Config Table Item Attribute',
+    [0xe2] = 'Get Config Table Item Value',
+    [0xe3] = 'Set Config Table Item Value',
+    [0xe4] = 'Do Reset Config Table Item Value',
+    [0xe5] = 'Get Push Config Table Attribute',
+    [0xe6] = 'Get Push Config Table Item Attribute',
+    [0xe7] = 'Set Push Config Table Item Param',
+    [0xe9] = 'Get Config Command Table Attribute',
     [0xf0] = 'TBD',
     [0xf1] = 'TBD',
     [0xf2] = 'TBD',
-    [0xf3] = 'TBD',
+    [0xf3] = 'Do Reset All Param',
     [0xf4] = 'TBD',
     [0xf7] = 'TBD',
-    [0xf8] = 'TBD',
-    [0xf9] = 'Write Flyc Param By Hash',
+    [0xf8] = 'Read Flyc Param By Hash', -- Get Value By Hash
+    [0xf9] = 'Write Flyc Param By Hash', -- Set Value By Hash
     [0xfa] = 'Reset Flyc Params',
     [0xfb] = 'Read Flyc Params By Hash',
     [0xfc] = 'TBD',
-    [0xfd] = 'TBD',
+    [0xfd] = 'Get Flight Type',
 }
 
 local GIMBAL_UART_CMD_TEXT = {
@@ -3740,7 +3770,7 @@ local function flyc_gps_glns_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gps Glns: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Active Request - 0x61
+-- Flight Controller - Flyc Activation Info - 0x61
 
 f.flyc_flyc_active_request_app_id = ProtoField.uint32 ("dji_p3.flyc_flyc_active_request_app_id", "App Id", base.HEX)
 f.flyc_flyc_active_request_app_level = ProtoField.uint32 ("dji_p3.flyc_flyc_active_request_app_level", "App Level", base.HEX)
@@ -3760,8 +3790,8 @@ local function flyc_flyc_active_request_dissector(pkt_length, buffer, pinfo, sub
     subtree:add_le (f.flyc_flyc_active_request_app_version, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Active Request: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Active Request: Payload size different than expected") end
+    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Activation Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Activation Info: Payload size different than expected") end
 end
 
 -- Flight Controller - Flyc Board Recv - 0x63
@@ -3977,7 +4007,7 @@ local function flyc_flyc_way_point_mission_info_dissector(pkt_length, buffer, pi
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Way Point Mission Info: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Way Point Mission Current Event - 0x89
+-- Flight Controller - Push Navigation Event Info - 0x89
 
 enums.FLYC_WAY_POINT_MISSION_CURRENT_EVENT_EVENT_TYPE_ENUM = {
     [0x01] = 'Finish Incident',
@@ -4039,8 +4069,8 @@ local function flyc_flyc_way_point_mission_current_event_dissector(pkt_length, b
 
     end
 
-    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Way Point Mission Current Event: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Way Point Mission Current Event: Payload size different than expected") end
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Push Navigation Event Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Push Navigation Event Info: Payload size different than expected") end
 end
 
 -- Flight Controller - Flyc Agps Status - 0xa1
