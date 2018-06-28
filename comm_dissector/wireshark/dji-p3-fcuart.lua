@@ -257,7 +257,7 @@ local FLYC_UART_CMD_TEXT = {
     [0x32] = 'Flyc Deform Status',
     [0x33] = 'Set User String',
     [0x34] = 'Get User String',
-    [0x39] = 'TBD',
+    [0x39] = 'Enter Flight Data Mode', -- Switches the mode; response contains 1-byte payload - error code, 0 on success
     [0x3a] = 'TBD',
     [0x3b] = 'Set RC Lost Action',
     [0x3c] = 'Get RC Lost Action',
@@ -340,6 +340,7 @@ local FLYC_UART_CMD_TEXT = {
 
 local GIMBAL_UART_CMD_TEXT = {
     [0x05] = 'Gimbal Params',
+    [0x08] = 'Gimbal Calibration',
     [0x0a] = 'Gimbal Rotate',
     [0x0b] = 'Gimbal Get State',
     [0x15] = 'Gimbal Movement',
