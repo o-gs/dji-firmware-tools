@@ -1693,6 +1693,7 @@ end
 local function init_payload_dump(filename, ground_alt_val, pos_typ_val, min_dist_shift_val, model_detail_val, path_style_val)
 
     local packet_count = 0
+    os.setlocale("C") -- this is to avoid country-specific number conventions
     -- Osd General
     local filter = "dji_p3.rec_etype == 0x0000 or dji_p3.rec_etype == 0x0005 or dji_p3.rec_etype == 0x000c"
     local tap = Listener.new(nil,filter)
