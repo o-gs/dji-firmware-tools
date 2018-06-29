@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" DJI Mavic Flight Controller Firmware Decryptor tool
+""" DJI Mavic Flight Controller Firmware Crypto tool.
+
+Handles the second level encryption used for Flight Controller modules
+in Mavic and newer drones.
 """
 
 # Copyright (C) 2018  Jan Dumon <jan@crossbar.net>
@@ -19,6 +22,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+__version__ = "0.5.0"
+__author__ = "Jan Dumon, Freek van Tienen @ Original Gangsters"
+__license__ = "GPL"
 
 import sys
 import re
@@ -249,13 +256,20 @@ def pack(args):
 
     print("Encrypted file to " + file_out)
 
-if __name__ == "__main__":
+def main():
+    """ Main executable function.
+
+    Its task is to parse command line options and call a function which performs requested command.
+    """
     # Parse command line options
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=__doc__)
+
     subparsers = parser.add_subparsers(dest='cmd')
+
     parser_dec = subparsers.add_parser('dec', help='Decrypt')
     parser_dec.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'), help='input file')
     parser_dec.add_argument('-o', '--output', type=argparse.FileType('wb'), help='output file')
+
     parser_enc = subparsers.add_parser('enc', help='Encrypt')
     parser_enc.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'), help='input file')
     parser_enc.add_argument('-o', '--output', type=argparse.FileType('wb'), help='output file')
@@ -264,6 +278,7 @@ if __name__ == "__main__":
             '"year-month-day hour:min:sec"' )
     parser_enc.add_argument('-v', '--version', required=True, help='Version string in the form "vAA.BB.CC.DD"')
     parser_enc.add_argument('-t', '--target', required=True, help='Either 0305 or 0306')
+
     parser_inf = subparsers.add_parser('info', help='Info')
     parser_inf.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'), help='input file')
     args = parser.parse_args()
@@ -274,3 +289,6 @@ if __name__ == "__main__":
         pack(args)
     else:
         print("Unknown command: %s" % args.cmd)
+
+if __name__ == "__main__":
+     main()
