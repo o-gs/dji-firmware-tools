@@ -24,6 +24,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+__version__ = "0.5.0"
+__author__ = "Mefistotelis @ Original Gangsters"
+__license__ = "GPL"
+
 import os
 import sys
 import serial
@@ -441,58 +445,62 @@ def main():
 
       Its task is to parse command line options and call a function which performs a task.
     """
-    parser = argparse.ArgumentParser(description='DUPC Packet Builder')
+    parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument('-n', '--seq_num', default=0, type=int,
-                        help='Sequence number of the packet (default is %(default)s)')
+            help='Sequence number of the packet (default is %(default)s)')
 
     parser.add_argument('-u', '--pack_type', default="Request", type=parse_packet_type,
-                        help='Packet Type, either name or number (default is %(default)s)')
+            help='Packet Type, either name or number (default is %(default)s)')
 
     parser.add_argument('-a', '--ack_type', default="No_ACK_Needed", type=parse_ack_type,
-                        help='Acknowledgement type, either name or number (default is %(default)s)')
+            help='Acknowledgement type, either name or number (default is %(default)s)')
 
     parser.add_argument('-e', '--encrypt_type', default="NO_ENC", type=parse_encrypt_type,
-                        help='Encryption type, either name or number (default is %(default)s)')
+            help='Encryption type, either name or number (default is %(default)s)')
 
     parser.add_argument('-s', '--cmd_set', default="GENERAL", type=parse_cmd_set,
-                        help='Command Set, either name or number (default is %(default)s)')
+            help='Command Set, either name or number (default is %(default)s)')
 
     parser.add_argument('-i', '--cmd_id', default=0, type=int,
-                        help='Command ID (default is %(default)s)')
+            help='Command ID (default is %(default)s)')
 
     parser.add_argument('-v', '--verbose', action='count', default=0,
-                        help='Increases verbosity level; max level is set by -vvv')
+            help='Increases verbosity level; max level is set by -vvv')
+
+    parser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+              .format(version=__version__,author=__author__),
+            help="Display version information and exit")
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-t', '--sender', type=parse_module_ident,
-                        help='Sender Type and Index, in TTII form')
+            help='Sender Type and Index, in TTII form')
 
     subparser.add_argument('-tt', '--sender_type', default="PC", type=parse_module_type,
-                        help='Sender(transmitter) Type, either name or number (default is %(default)s)')
+            help='Sender(transmitter) Type, either name or number (default is %(default)s)')
 
     parser.add_argument('-ti', '--sender_index', default=0, type=int,
-                        help='Sender(transmitter) Index (default is %(default)s)')
+            help='Sender(transmitter) Index (default is %(default)s)')
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-r', '--receiver', type=parse_module_ident,
-                        help='Receiver Type and Index, in TTII form (ie. 0300)')
+            help='Receiver Type and Index, in TTII form (ie. 0300)')
 
     subparser.add_argument('-rt', '--receiver_type', default="ANY", type=parse_module_type,
-                        help='Receiver Type, either name or number (default is %(default)s)')
+            help='Receiver Type, either name or number (default is %(default)s)')
 
     parser.add_argument('-ri', '--receiver_index', default=0, type=int,
-                        help='Receiver index (default is %(default)s)')
+            help='Receiver index (default is %(default)s)')
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-x', '--payload_hex', type=str,
-                        help='Provide payload as hex string')
+            help='Provide payload as hex string')
 
     subparser.add_argument('-p', '--payload_bin', default="", type=str,
-                        help='Provide binary payload directly (default payload is empty)')
+            help='Provide binary payload directly (default payload is empty)')
 
     options = parser.parse_args();
 
