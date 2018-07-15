@@ -416,7 +416,7 @@ local FLYC_UART_CMD_TEXT = {
     [0xe6] = 'Push Config Table: Get Item Attribute',
     [0xe7] = 'Push Config Table: Set Item Param',
     [0xe4] = 'Push Config Table: Clear',
-    [0xe9] = 'Config Command Table: Get Attribute', -- Cmd Handler/Set Flyforbid Data?
+    [0xe9] = 'Config Command Table: Get or Exec', -- Cmd Handler/Get Attribute/Set Flyforbid Data?
     [0xea] = 'Register Open Motor Error Action',
     [0xeb] = 'Logout Open Motor Error Action',
     [0xec] = 'Set Open Motor Error Action Status',
@@ -4333,6 +4333,32 @@ local function flyc_flyc_redundancy_status_dissector(pkt_length, buffer, pinfo, 
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Redundancy Status: Payload size different than expected") end
 end
 
+
+-- Flight Controller - Config Command Table: Get or Exec - 0xe9
+
+f.flyc_config_command_table_get_or_exec_cmd_type = ProtoField.int16 ("dji_p3.flyc_flyc_redundancy_status_cmd_type", "Command Type", base.DEC, nil, nil, "Positive values - exec, negative - get name, -1 - get count")
+
+local function flyc_config_command_table_get_or_exec_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    local cmd = buffer(offset,2):int()
+    local valuestring
+    if cmd == -1 then
+        valuestring = "Get command count"
+    elseif cmd < 0 then
+        valuestring = string.format("Get command %d name", 1 - cmd)
+    else -- cmd > 0
+        valuestring = string.format("Exec command %d", cmd)
+    end
+    subtree:add_le (f.flyc_config_command_table_get_or_exec_cmd_type, payload(offset, 2), cmd, string.format("%s: %s (0x%02X)", "Command Type", valuestring, cmd))
+    offset = offset + 2
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Command Table Get or Exec: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Command Table Get or Exec: Payload size different than expected") end
+end
+
 -- Flight Controller - Write Flyc Param By Hash - 0xf9
 
 enums.FLYC_PARAMETER_BY_HASH_ENUM = {
@@ -5258,6 +5284,7 @@ local FLYC_UART_CMD_DISSECT = {
     [0xad] = flyc_flyc_flyc_install_error_dissector,
     [0xb6] = flyc_flyc_fault_inject_dissector,
     [0xb9] = flyc_flyc_redundancy_status_dissector,
+    [0xe9] = flyc_config_command_table_get_or_exec_dissector,
     [0xf9] = flyc_write_flyc_param_by_hash_dissector,
     [0xfb] = flyc_flyc_params_by_hash_dissector,
 }
