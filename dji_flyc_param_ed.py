@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" DJI Flight Controller Firmware Parameters Array Editor
+""" DJI Flight Controller Firmware Parameters Array Editor.
 """
 
 # Copyright (C) 2016,2017 Mefistotelis <mefistotelis@gmail.com>
@@ -21,8 +21,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+__version__ = "0.0.2"
+__author__ = "Mefistotelis @ Original Gangsters"
+__license__ = "GPL"
+
 import sys
-import getopt
+import argparse
 import os
 import math
 from ctypes import *
@@ -31,19 +35,6 @@ import json
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
-
-class ProgOptions:
-  mdlfile = ''
-  inffile="flyc_param_infos"
-  address_base=0x8020000
-  address_bss=0x20000000
-  sizeof_bss=0x4400000
-  expect_func_align = 4
-  expect_data_align = 2
-  verbose = 0
-  command = ''
-  param_poslist = {}
-  param_ver = 2015
 
 class Limits:
   byte_min  = - (2 ** 7)
@@ -307,7 +298,7 @@ def flyc_parameter_compute_hash(po, parname):
 def address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, ptraddr):
   """ Checks whether given value can be treated as a valid pointer to either code or initialized data.
   """
-  if (ptraddr < po.address_base) or (ptraddr >= po.address_base+fwmdlfile_len):
+  if (ptraddr < po.baseaddr) or (ptraddr >= po.baseaddr+fwmdlfile_len):
      return False
   # Values near zero should be treated as invalid even if within segment - interrupt table cannot be referenced
   if (ptraddr < 128):
@@ -317,7 +308,7 @@ def address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, ptraddr):
 def address_is_pointer_to_bss(po, fwmdlfile, fwmdlfile_len, ptraddr):
   """ Checks whether given value can be treated as a valid pointer to uninitialized data.
   """
-  if (ptraddr < po.address_bss) or (ptraddr >= po.address_bss+po.sizeof_bss):
+  if (ptraddr < po.bssaddr) or (ptraddr >= po.bssaddr+po.bsslen):
       return False
   # Values near zero should be treated as invalid even if within segment - interrupt table cannot be referenced
   if (ptraddr < 128):
@@ -576,7 +567,7 @@ def flyc_check_parameter_array_at(po, fwmdlfile, fwmdlfile_len, start_pos, func_
       if not flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_align, data_align, start_pos, entry_pos):
           break
       # If struct seem correct, check for its name string
-      fwmdlfile.seek(eexpar.nameptr - po.address_base, os.SEEK_SET)
+      fwmdlfile.seek(eexpar.nameptr - po.baseaddr, os.SEEK_SET)
       eexpar_name_btarr = fwmdlfile.read(256).split(b'\0',1)[0]
       if (len(eexpar_name_btarr) < 2):
           if (po.verbose > 3):
@@ -642,7 +633,7 @@ def flyc_check_parameter_block_at(po, fwmdlfile, fwmdlfile_len, start_pos, func_
       eparblk.param_count = 0
       return eparblk
   # If struct seem correct, check for its name string
-  fwmdlfile.seek(eparblk.nameptr - po.address_base, os.SEEK_SET)
+  fwmdlfile.seek(eparblk.nameptr - po.baseaddr, os.SEEK_SET)
   eparblk_name_btarr = fwmdlfile.read(256).split(b'\0',1)[0]
   if (len(eparblk_name_btarr) < 2):
       eparblk.param_count = 0
@@ -668,7 +659,7 @@ def flyc_parameter_blocks_pos_search(po, fwmdlfile, start_pos, func_align, data_
       eparblk = flyc_check_parameter_block_at(po, fwmdlfile, fwmdlfile_len, pos, func_align, data_align, ver)
       if (eparblk.param_count > 0):
           # Check how many correct parameter entries we have
-          match_pos = eparblk.params - po.address_base
+          match_pos = eparblk.params - po.baseaddr
           entry_count = flyc_check_parameter_array_at(po, fwmdlfile, fwmdlfile_len, match_pos, func_align, data_align, ver)
           # If entry is ok, add it to the list
           if entry_count >= eparblk.param_count:
@@ -735,11 +726,11 @@ def flyc_param_get(po, fwmdlfile, param_pos, index, ver):
       parprop['maxValue'] = eexpar.limit_f.max
       parprop['defaultValue'] = eexpar.limit_f.deflt
   # Read property name
-  fwmdlfile.seek(eexpar.nameptr - po.address_base, os.SEEK_SET)
+  fwmdlfile.seek(eexpar.nameptr - po.baseaddr, os.SEEK_SET)
   parprop['name'] = fwmdlfile.read(256).split(b'\0',1)[0].decode('UTF-8')
   # Read property alias name
   if hasattr(eexpar, 'aliasptr') and (eexpar.aliasptr > 0):
-      fwmdlfile.seek(eexpar.aliasptr - po.address_base, os.SEEK_SET)
+      fwmdlfile.seek(eexpar.aliasptr - po.baseaddr, os.SEEK_SET)
       parprop['alias'] = fwmdlfile.read(256).split(b'\0',1)[0].decode('UTF-8')
   if ((eexpar.attribute & 0x0B) == 0x0B): # Just a guess
       parprop['modify'] = True
@@ -945,42 +936,56 @@ def flyc_update(po, fwmdlfile):
   if (po.verbose > 0):
       print("{}: Updated {:d} parameter entries".format(po.mdlfile,update_count))
 
-def main(argv):
-  # Parse command line options
-  po = ProgOptions()
-  try:
-     opts, args = getopt.getopt(argv,"hvm:b:lux",["help","version","mdlfile=","baseaddr="])
-  except getopt.GetoptError:
-     print("Unrecognized options; check dji_flyc_param_ed.sh --help")
-     sys.exit(2)
-  for opt, arg in opts:
-     if opt in ("-h", "--help"):
-        print("DJI Flight Controller Firmware Parameters Array Editor")
-        print("dji_flyc_param_ed.sh <-l|-x|-u> [-v] -m <mdlfile>")
-        print("  -m <mdlfile> - Flight controller firmware binary module file")
-        print("  -l - list parameters stored in the firmware")
-        print("  -x - extract parameters array to infos json text file")
-        print("  -u - update parameters array in binary fw from infos text file")
-        print("  -b <baseaddr> - set base address; crucial for finding the array")
-        print("  -v - increases verbosity level; max level is set by -vvv")
-        sys.exit()
-     elif opt == "--version":
-        print("dji_flyc_param_ed.sh version 0.0.1")
-        sys.exit()
-     elif opt == '-v':
-        po.verbose += 1
-     elif opt in ("-b", "--baseaddr"):
-        po.address_base = int(arg,0)
-     elif opt in ("-m", "--mdlfile"):
-        po.mdlfile = arg
-     elif opt in ("-l", "--list"):
-        po.command = 'l'
-     elif opt in ("-u", "--update"):
-        po.command = 'u'
-     elif opt in ("-x", "--extract"):
-        po.command = 'x'
+def main():
+  """ Main executable function.
 
-  if (po.command == 'l'):
+  Its task is to parse command line options and call a function which performs requested command.
+  """
+  # Parse command line options
+
+  parser = argparse.ArgumentParser(description=__doc__)
+
+  parser.add_argument("-m", "--mdlfile", type=str, required=True,
+          help="Flight controller firmware binary module file")
+
+  parser.add_argument("-i", "--inffile", type=str, default="flyc_param_infos",
+          help="Flight Parameter Info JSON file name (default is \"%(default)s\")")
+
+  parser.add_argument("-b", "--baseaddr", default=0x8020000, type=lambda x: int(x,0),
+          help="Set base address; crucial for finding the array (default is 0x%(default)X)")
+
+  parser.add_argument("--bssaddr", default=0x20000000, type=lambda x: int(x,0),
+          help="Set .bss start address; set to address where RAM starts (default is 0x%(default)X)")
+
+  parser.add_argument("--bsslen", default=0x4400000, type=lambda x: int(x,0),
+          help="Set .bss length; set to size of RAM (default is 0x%(default)X)")
+
+  parser.add_argument("-v", "--verbose", action="count", default=0,
+          help="Increases verbosity level; max level is set by -vvv")
+
+  subparser = parser.add_mutually_exclusive_group()
+
+  subparser.add_argument("-l", "--list", action="store_true",
+          help="list parameters stored in the firmware")
+
+  subparser.add_argument("-x", "--extract", action="store_true",
+          help="Extract parameters array to infos json text file")
+
+  subparser.add_argument("-u", "--update", action="store_true",
+          help="Update parameters array in binary fw from infos text file")
+
+  subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+            .format(version=__version__,author=__author__),
+          help="Display version information and exit")
+
+  po = parser.parse_args()
+
+  po.expect_func_align = 4
+  po.expect_data_align = 2
+  po.param_poslist = {}
+  po.param_ver = 2015
+
+  if po.list:
 
     if (po.verbose > 0):
       print("{}: Opening for list display".format(po.mdlfile))
@@ -990,7 +995,7 @@ def main(argv):
 
     fwmdlfile.close();
 
-  elif (po.command == 'x'):
+  elif po.extract:
 
     if (po.verbose > 0):
       print("{}: Opening for extraction".format(po.mdlfile))
@@ -1000,7 +1005,7 @@ def main(argv):
 
     fwmdlfile.close();
 
-  elif (po.command == 'u'):
+  elif po.update:
 
     if (po.verbose > 0):
       print("{}: Opening for update".format(po.mdlfile))
@@ -1015,4 +1020,4 @@ def main(argv):
     raise NotImplementedError('Unsupported command.')
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+   main()
