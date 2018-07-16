@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" Raw DUPC packets to PCap converter
+""" Raw DUPC packets to PCap converter.
 
 This tool parses Dji Unified Packet Container packets from input file,
 and puts the results into PCap file. Checksums within the packets are checked
@@ -29,8 +29,12 @@ PCap files can be used with WireShark and other tools for packets analysis.
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+__version__ = "0.2.1"
+__author__ = "Mefistotelis @ Original Gangsters"
+__license__ = "GPL"
+
 import sys
-import getopt
+import argparse
 import os
 import enum
 import struct
@@ -40,15 +44,6 @@ import binascii
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
-
-class ProgOptions:
-    datfile = ''
-    pcapfile = ''
-    basename = ''
-    storebad = False
-    userdlt = 0
-    verbose = 0
-    command = ''
 
 class StateId(enum.Enum):
     NO_PACKET = 0
@@ -391,66 +386,64 @@ def do_dat2pcap(po, datfile, pcapfile):
       print("{}: Captured {:d} packets ({:d}b), dropped {:d} fragments ({:d}b)".format(
           state.pname, info.count_ok, info.bytes_ok, info.count_bad, info.bytes_bad))
 
-def main(argv):
+def main():
   """ Main executable function.
 
-      Its task is to parse command line options and call a function which performs selected command.
+  Its task is to parse command line options and call a function which performs requested command.
   """
-  po = ProgOptions()
   # Parse command line options
-  try:
-     opts, args = getopt.getopt(argv,"hved:p:u:",["help","version","storebad","datfile=","pcapfile=","userdlt="])
-  except getopt.GetoptError:
-     print("Unrecognized options; check comm_dat2pcap.py --help")
-     sys.exit(2)
-  for opt, arg in opts:
-     if opt in ("-h", "--help"):
-        print("Dji Unified Packet Container parser: Raw DUPC packets to PCap converter")
-        print("comm_dat2pcap.py [-v] -d <datfile> [-p <pcapfile>]")
-        print("  -d <datfile> - input from dat file (Raw DUPC) of given name")
-        print("  -p <pcapfile> - output to pcap file of given name")
-        print("  -u <userdlt> - set specific data link type of the DLT_USER protocol;")
-        print("                  default is 0; change it for complex wireshark configs")
-        print("  -e - enables storing bad packets (ie. with bad checksums)")
-        print("  -v - increases verbosity level; max level is set by -vvv")
-        sys.exit()
-     elif opt == "--version":
-        print("comm_dat2pcap.py version 0.2.0")
-        sys.exit()
-     elif opt == "-v":
-        po.verbose += 1
-     elif opt in ("-d", "--datfile"):
-        po.datfile = arg
-        po.command = 'd'
-     elif opt in ("-p", "--pcapfile"):
-        po.pcapfile = arg
-     elif opt in ("-u", "--userdlt"):
-        po.userdlt = int(arg)
-     elif opt in ("-e", "--storebad"):
-        po.storebad = True
+
+  parser = argparse.ArgumentParser(description=__doc__)
+
+  parser.add_argument("-p", "--pcapfile", default="", type=str,
+          help="Output to pcap file of given name")
+
+  parser.add_argument("-u", "--userdlt", default=0, type=int,
+          help="Sets specific data link type of the DLT_USER protocol (default is %(default)d; change it for complex wireshark configs)")
+
+  parser.add_argument("-e", "--storebad", action="store_true",
+          help="Enables storing bad packets (ie. with bad checksums)")
+
+  parser.add_argument("-v", "--verbose", action="count", default=0,
+          help="Increases verbosity level; max level is set by -vvv")
+
+  subparser = parser.add_mutually_exclusive_group()
+
+  parser.add_argument("-d", "--datfile", default="", type=str, required=True,
+          help="Input from dat file (Raw DUPC) of given name")
+
+  subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+            .format(version=__version__,author=__author__),
+          help="Display version information and exit")
+
+  po = parser.parse_args();
 
   if po.userdlt > 15:
-     raise ValueError("There are only 15 DLT_USER slots.")
+      raise ValueError("There are only 15 DLT_USER slots.")
+
+  po.command = ''
+  if len(po.datfile) > 0:
+      po.command = 'd'
 
   po.basename = os.path.splitext(os.path.basename(po.datfile))[0]
   if len(po.datfile) > 0 and len(po.pcapfile) == 0:
-     po.pcapfile = po.basename + ".pcap"
+      po.pcapfile = po.basename + ".pcap"
 
   if (po.command == 'd'):
 
-     if (po.verbose > 0):
-        print("{}: Opening Raw DUPC for conversion to PCap".format(po.datfile))
-     datfile = open(po.datfile, "rb")
-     pcapfile = open(po.pcapfile, "wb")
+      if (po.verbose > 0):
+         print("{}: Opening Raw DUPC for conversion to PCap".format(po.datfile))
+      datfile = open(po.datfile, "rb")
+      pcapfile = open(po.pcapfile, "wb")
 
-     do_dat2pcap(po,datfile,pcapfile)
+      do_dat2pcap(po,datfile,pcapfile)
 
-     datfile.close();
-     pcapfile.close();
+      datfile.close();
+      pcapfile.close();
 
   else:
 
-     raise NotImplementedError('Unsupported command.')
+      raise NotImplementedError('Unsupported command.')
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
