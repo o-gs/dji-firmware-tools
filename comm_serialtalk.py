@@ -107,9 +107,11 @@ def find_reply_for_request(po, pktlist, pktreq):
             print(' '.join('{:02x}'.format(x) for x in pktrpl))
     return None
 
-def do_send_request(po, ser):
-    pktreq = encode_command_packet_en(po.sender_type, po.sender_index, po.receiver_type, po.receiver_index,
-      po.seq_num, po.pack_type, po.ack_type, po.encrypt_type, po.cmd_set, po.cmd_id, po.payload)
+def do_send_request(po, ser, pktprop):
+    pktreq = encode_command_packet_en(pktprop.sender_type, pktprop.sender_index,
+      pktprop.receiver_type, pktprop.receiver_index, pktprop.seq_num,
+      pktprop.pack_type, pktprop.ack_type, pktprop.encrypt_type, pktprop.cmd_set,
+      pktprop.cmd_id, pktprop.payload)
     if (po.verbose > 1):
         print("Prepared binary packet:")
         print(' '.join('{:02x}'.format(x) for x in pktreq))
@@ -122,6 +124,8 @@ def do_send_request(po, ser):
     return pktreq
 
 def do_receive_reply(po, ser, pktreq):
+    """ Receive reply after sending packet pktreq to interface ser.
+    """
     ser.reset_input_buffer()
     if (po.verbose > 1):
         print("Waiting for reply...")
@@ -130,7 +134,7 @@ def do_receive_reply(po, ser, pktreq):
 
     state = PktState();
     state.verbose = po.verbose
-    state.pname = po.port
+    state.pname = ser.port
     pktrpl = None
     show_stats = False
     loop_end = False
@@ -164,9 +168,9 @@ def do_send_request_receive_reply(po):
     # Open serial port
     ser = serial.Serial(po.port, baudrate=po.baudrate, timeout=0)
     if (po.verbose > 0):
-        print("Opened {} at {}".format(po.port, po.baudrate))
+        print("Opened {} at {}".format(ser.port, ser.baudrate))
 
-    pktreq = do_send_request(po, ser)
+    pktreq = do_send_request(po, ser, po)
 
     pktrpl = do_receive_reply(po, ser, pktreq)
 
@@ -194,7 +198,7 @@ def main():
     """
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument('port',
+    parser.add_argument('port', type=str,
             help='The serial port to write to and read from')
 
     parser.add_argument('-b', '--baudrate', default=9600, type=int,
