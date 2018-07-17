@@ -170,6 +170,20 @@ class CMD_SET_TYPE(enum.Enum):
         raise ValueError('{} is not a valid command set'.format(name))
 
 
+class PacketProperties:
+    sender_type = COMM_DEV_TYPE.ANY
+    sender_index = 0
+    receiver_type = COMM_DEV_TYPE.ANY
+    receiver_index = 0
+    seq_num = 0
+    pack_type = PACKET_TYPE.REQUEST
+    ack_type = ACK_TYPE.NO_ACK_NEEDED
+    encrypt_type = ENCRYPT_TYPE.NO_ENC
+    cmd_set = CMD_SET_TYPE.GENERAL
+    cmd_id = 0
+    payload = bytes()
+
+
 class DJICmdV1Header(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('sof', c_ubyte), # Start Of Field
