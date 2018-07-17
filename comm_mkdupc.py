@@ -225,7 +225,7 @@ class DJICmdV1Header(LittleEndianStructure):
         return (self.ver_length_tag & 64512) >> 10
 
   def __set_version(self, value):
-        self.ver_length_tag = (self.ver_length_tag & 1023) | ((value << 10) & 64512)
+        self.ver_length_tag = (self.ver_length_tag & 1023) | ((value & 63)  << 10)
 
   version = property(__get_version, __set_version)
 
@@ -265,7 +265,7 @@ class DJICmdV1Header(LittleEndianStructure):
         return (self.cmd_type_data)  >> 7
 
   def __set_packet_type(self, value):
-        self.cmd_type_data = (self.cmd_type_data & 239) | ((value & 1) << 7)
+        self.cmd_type_data = (self.cmd_type_data & 127) | ((value & 1) << 7)
 
   packet_type = property(__get_packet_type, __set_packet_type)
 
@@ -303,16 +303,8 @@ class DJICmdV1Footer(LittleEndianStructure):
     return pformat(d, indent=4, width=1)
 
 
-class DJIPayload_General_VersionInquiry(LittleEndianStructure):
+class DJIPayload_Base(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('unknown0', c_ubyte),
-              ('unknown1', c_ubyte),
-              ('hw_version', c_char * 16),
-              ('ldr_version', c_uint),
-              ('app_version', c_uint),
-              ('unknown1A', c_uint),
-              ('unknown1E', c_ubyte),
-             ]
 
   def dict_export(self):
     d = OrderedDict()
@@ -327,6 +319,22 @@ class DJIPayload_General_VersionInquiry(LittleEndianStructure):
         for k, v in d.items():
             report.append(k.rjust(16) + ': ' + repr(v))
     return "\n".join(report)
+
+
+class DJIPayload_General_VersionInquiry(DJIPayload_Base):
+  _fields_ = [('unknown0', c_ubyte),
+              ('unknown1', c_ubyte),
+              ('hw_version', c_char * 16),
+              ('ldr_version', c_uint),
+              ('app_version', c_uint),
+              ('unknown1A', c_uint),
+              ('unknown1E', c_ubyte),
+             ]
+
+
+class DJIPayload_General_ByteResponse(DJIPayload_Base):
+  _fields_ = [('Response', c_ubyte),
+             ]
 
 
 def encode_command_packet(sender_type, sender_index, receiver_type, receiver_index, seq_num, pack_type, ack_type, encrypt_type, cmd_set, cmd_id, payload):
@@ -368,6 +376,9 @@ def get_known_payload(pkthead, payload):
     if pkthead.cmd_set == CMD_SET_TYPE.GENERAL.value:
         if (pkthead.cmd_id == 0x01) and len(payload) >= sizeof(DJIPayload_General_VersionInquiry):
             return DJIPayload_General_VersionInquiry.from_buffer_copy(payload)
+        if (pkthead.cmd_id == 0x0b) and len(payload) >= sizeof(DJIPayload_General_ByteResponse):
+            return DJIPayload_General_ByteResponse.from_buffer_copy(payload)
+
     return None
 
 def do_build_packet(options):
