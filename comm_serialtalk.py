@@ -90,8 +90,8 @@ def packet_header_is_reply_for_request(rplhdr, reqhdr):
     # Many responses don't have the RESPONSE bit set
     #if (rplhdr.packet_type != PACKET_TYPE.RESPONSE):
     #    return False
-    if (rplhdr.ack_type != reqhdr.ack_type):
-        return False
+    #if (rplhdr.ack_type != reqhdr.ack_type):
+    #    return False
     return True
 
 def find_reply_for_request(po, pktlist, pktreq):
@@ -182,12 +182,12 @@ def do_send_request_receive_reply(po):
     if pktrpl is not None:
         print(' '.join('{:02x}'.format(x) for x in pktrpl))
 
-    if (po.verbose > 0):
-        rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
-        rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
-        if (rplpayload is not None):
-            print("Parsed response  - {:s}:".format(type(rplpayload).__name__))
-            print(rplpayload)
+        if (po.verbose > 0):
+            rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+            rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+            if (rplpayload is not None):
+                print("Parsed response  - {:s}:".format(type(rplpayload).__name__))
+                print(rplpayload)
 
     ser.close()
 
