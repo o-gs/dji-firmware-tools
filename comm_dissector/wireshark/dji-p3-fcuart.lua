@@ -422,9 +422,9 @@ local FLYC_UART_CMD_TEXT = {
     [0xec] = 'Set Open Motor Error Action Status',
     [0xed] = 'Set Esc Echo',
     [0xee] = 'GoHome CountDown', -- Ost Sats Go Home Port
-    [0xf0] = 'TBD',
-    [0xf1] = 'Get Params By Index',
-    [0xf2] = 'Set Params By Index',
+    [0xf0] = 'Config Table: Get Param Definition', -- returns parameter name and properties
+    [0xf1] = 'Config Table: Get Params By Index',
+    [0xf2] = 'Config Table: Set Params By Index',
     [0xf3] = 'Config Table: Reset All Param', -- Reset Params By Index/Reset Old Config Table Item Value?
     [0xf4] = 'Config Table: Set Item By Index',
     [0xf5] = 'Set Ver Phone', -- Set/Get Real Name Info
@@ -653,6 +653,8 @@ end
 
 -- General - Reboot Chip - 0x0b
 
+f.general_reboot_chip_response = ProtoField.uint8 ("dji_p3.general_reboot_chip_response", "Response", base.HEX, nil, nil, "Non-zero if request was rejected")
+
 f.general_reboot_chip_unknown0 = ProtoField.uint16 ("dji_p3.general_reboot_chip_unknown0", "Unknown0", base.HEX)
 f.general_reboot_chip_sleep_time = ProtoField.uint32 ("dji_p3.general_reboot_chip_sleep_time", "Reboot Sleep Time", base.DEC)
 
@@ -661,15 +663,23 @@ local function general_reboot_chip_dissector(pkt_length, buffer, pinfo, subtree)
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    -- Details from DM36x could be decoded using func Dec_Serial_Reboot from `usbclient` binary
+    if (payload:len() >= 6) then
+        -- Details from DM36x could be decoded using func Dec_Serial_Reboot from `usbclient` binary
+        subtree:add_le (f.general_reboot_chip_unknown0, payload(offset, 2))
+        offset = offset + 2
 
-    subtree:add_le (f.general_reboot_chip_unknown0, payload(offset, 2))
-    offset = offset + 2
+        subtree:add_le (f.general_reboot_chip_sleep_time, payload(offset, 4))
+        offset = offset + 4
 
-    subtree:add_le (f.general_reboot_chip_sleep_time, payload(offset, 4))
-    offset = offset + 4
+        if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Reboot Chip: Offset does not match - internal inconsistency") end
+    elseif (payload:len() >= 1) then
+        -- Details from P3 Flight controller firmware binary
+        subtree:add_le (f.general_reboot_chip_response, payload(offset, 1))
+        offset = offset + 1
 
-    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Reboot Chip: Offset does not match - internal inconsistency") end
+        if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Reboot Chip: Offset does not match - internal inconsistency") end
+    end
+
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Reboot Chip: Payload size different than expected") end
 end
 
@@ -4359,6 +4369,39 @@ local function flyc_config_command_table_get_or_exec_dissector(pkt_length, buffe
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Command Table Get or Exec: Payload size different than expected") end
 end
 
+-- Flight Controller - Config Table: Get Param Definition - 0xf0
+-- returns parameter name and properties
+
+f.flyc_config_config_table_get_param_definition_index = ProtoField.int16 ("dji_p3.flyc_config_config_table_get_param_definition_index", "Param Index", base.DEC, nil, nil)
+
+local function flyc_config_config_table_get_param_definition_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_config_config_table_get_param_definition_index, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Param Definition: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table Get Param Definition: Payload size different than expected") end
+end
+
+-- Flight Controller - Config Table: Get Params By Index - 0xf1
+
+f.flyc_config_config_table_get_param_by_index_index = ProtoField.int16 ("dji_p3.flyc_config_config_table_get_param_by_index_index", "Param Index", base.DEC, nil, nil)
+
+local function flyc_config_config_table_get_param_by_index_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.flyc_config_config_table_get_param_by_index_index, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Params By Index: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table Get Params By Index: Payload size different than expected") end
+end
+
 -- Flight Controller - Write Flyc Param By Hash - 0xf9
 
 enums.FLYC_PARAMETER_BY_HASH_ENUM = {
@@ -5285,6 +5328,8 @@ local FLYC_UART_CMD_DISSECT = {
     [0xb6] = flyc_flyc_fault_inject_dissector,
     [0xb9] = flyc_flyc_redundancy_status_dissector,
     [0xe9] = flyc_config_command_table_get_or_exec_dissector,
+    [0xf0] = flyc_config_config_table_get_param_definition_dissector,
+    [0xf1] = flyc_config_config_table_get_param_by_index_dissector,
     [0xf9] = flyc_write_flyc_param_by_hash_dissector,
     [0xfb] = flyc_flyc_params_by_hash_dissector,
 }
