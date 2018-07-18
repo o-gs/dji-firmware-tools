@@ -43,20 +43,22 @@ from comm_dat2pcap import (
   calc_pkt55_hdr_checksum, calc_pkt55_checksum,
 )
 
-class ACK_TYPE(enum.Enum):
-    NO_ACK_NEEDED = 0
-    ACK_BEFORE_EXEC = 1
-    ACK_AFTER_EXEC = 2
-
+class DecoratedEnum(enum.Enum):
     @classmethod
     def from_name(cls, name):
         for itm in cls:
             if itm.name == name:
                 return itm
-        raise ValueError('{} is not a valid ack type'.format(name))
+        raise ValueError('{} is not a known value'.format(name))
 
 
-class COMM_DEV_TYPE(enum.Enum):
+class ACK_TYPE(DecoratedEnum):
+    NO_ACK_NEEDED = 0
+    ACK_BEFORE_EXEC = 1
+    ACK_AFTER_EXEC = 2
+
+
+class COMM_DEV_TYPE(DecoratedEnum):
     ANY = 0
     CAMERA = 1
     MOBILE_APP = 2
@@ -90,15 +92,8 @@ class COMM_DEV_TYPE(enum.Enum):
     UNKNOWN30 = 30
     WM330_OR_WM220 = 31
 
-    @classmethod
-    def from_name(cls, name):
-        for itm in cls:
-            if itm.name == name:
-                return itm
-        raise ValueError('{} is not a valid module type'.format(name))
 
-
-class ENCRYPT_TYPE(enum.Enum):
+class ENCRYPT_TYPE(DecoratedEnum):
     NO_ENC = 0
     AES_128 = 1
     SELF_DEF = 2
@@ -108,27 +103,13 @@ class ENCRYPT_TYPE(enum.Enum):
     AES_192 = 6
     AES_256 = 7
 
-    @classmethod
-    def from_name(cls, name):
-        for itm in cls:
-            if itm.name == name:
-                return itm
-        raise ValueError('{} is not a valid encryption type'.format(name))
 
-
-class PACKET_TYPE(enum.Enum):
+class PACKET_TYPE(DecoratedEnum):
     REQUEST = 0
     RESPONSE = 1
 
-    @classmethod
-    def from_name(cls, name):
-        for itm in cls:
-            if itm.name == name:
-                return itm
-        raise ValueError('{} is not a valid packet type'.format(name))
 
-
-class CMD_SET_TYPE(enum.Enum):
+class CMD_SET_TYPE(DecoratedEnum):
     GENERAL = 0
     SPECIAL = 1
     CAMERA = 2
@@ -161,13 +142,6 @@ class CMD_SET_TYPE(enum.Enum):
     UNKNOWN29 = 29
     UNKNOWN30 = 30
     UNKNOWN31 = 31
-
-    @classmethod
-    def from_name(cls, name):
-        for itm in cls:
-            if itm.name == name:
-                return itm
-        raise ValueError('{} is not a valid command set'.format(name))
 
 
 class PacketProperties:
@@ -321,7 +295,7 @@ class DJIPayload_Base(LittleEndianStructure):
     return "\n".join(report)
 
 
-class DJIPayload_General_VersionInquiry(DJIPayload_Base):
+class DJIPayload_General_VersionInquiryRe(DJIPayload_Base):
   _fields_ = [('unknown0', c_ubyte),
               ('unknown1', c_ubyte),
               ('hw_version', c_char * 16),
@@ -332,8 +306,27 @@ class DJIPayload_General_VersionInquiry(DJIPayload_Base):
              ]
 
 
-class DJIPayload_General_ByteResponse(DJIPayload_Base):
-  _fields_ = [('Response', c_ubyte),
+class DJIPayload_General_ChipRebootRe(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
+             ]
+
+
+class DJIPayload_FlyController_GetParamDefinition2015Rq(DJIPayload_Base):
+  _fields_ = [('param_index', c_ushort),
+             ]
+
+# We cannot define property name with variable size, so let's make const size one
+DJIPayload_FlyController_ParamMaxLen = 160
+
+class DJIPayload_FlyController_GetParamDefinition2015Re(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
+              ('type_id', c_ushort),
+              ('size', c_ushort),
+              ('attribute', c_ushort),
+              ('limit_u_min', c_uint),
+              ('limit_u_max', c_uint),
+              ('limit_u_def', c_uint),
+              ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
              ]
 
 
@@ -373,11 +366,20 @@ def encode_command_packet_en(sender_type, sender_index, receiver_type, receiver_
       seq_num, pack_type.value, ack_type.value, encrypt_type.value, cmd_set.value, cmd_id, payload)
 
 def get_known_payload(pkthead, payload):
-    if pkthead.cmd_set == CMD_SET_TYPE.GENERAL.value:
-        if (pkthead.cmd_id == 0x01) and len(payload) >= sizeof(DJIPayload_General_VersionInquiry):
-            return DJIPayload_General_VersionInquiry.from_buffer_copy(payload)
-        if (pkthead.cmd_id == 0x0b) and len(payload) >= sizeof(DJIPayload_General_ByteResponse):
-            return DJIPayload_General_ByteResponse.from_buffer_copy(payload)
+    if pkthead.cmd_set == CMD_SET_TYPE.GENERAL.value and pkthead.packet_type == 1:
+        if (pkthead.cmd_id == 0x01) and len(payload) >= sizeof(DJIPayload_General_VersionInquiryRe):
+            return DJIPayload_General_VersionInquiryRe.from_buffer_copy(payload)
+        if (pkthead.cmd_id == 0x0b) and len(payload) >= sizeof(DJIPayload_General_ChipRebootRe):
+            return DJIPayload_General_ChipRebootRe.from_buffer_copy(payload)
+
+    if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 0:
+        if (pkthead.cmd_id == 0xf0) and len(payload) >= sizeof(DJIPayload_FlyController_GetParamDefinition2015Rq):
+            return DJIPayload_FlyController_GetParamDefinition2015Rq.from_buffer_copy(payload)
+
+    if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 1:
+        if (pkthead.cmd_id == 0xf0) and len(payload) >= sizeof(DJIPayload_FlyController_GetParamDefinition2015Re)-DJIPayload_FlyController_ParamMaxLen+1:
+            return DJIPayload_FlyController_GetParamDefinition2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamDefinition2015Re), b'\0'))
+
 
     return None
 
