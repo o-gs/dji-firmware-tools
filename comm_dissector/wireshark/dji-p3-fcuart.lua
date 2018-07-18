@@ -1108,9 +1108,9 @@ f.general_compn_state_current_state = ProtoField.uint32 ("dji_p3.general_compn_s
   f.general_compn_state_ofdm_curr_state_rx_bad_seq = ProtoField.uint32 ("dji_p3.general_compn_state_ofdm_curr_state_rx_bad_seq", "E Received data sequence fail", base.HEX, nil, 0x800, "Meaning uncertain")
 
 local function general_compn_state_dissector(pkt_length, buffer, pinfo, subtree)
-    local offset = 4
-    local sender = buffer(offset,1):uint()
-    offset = 11
+    local sender = buffer(4,1):uint()
+
+    local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
@@ -4353,7 +4353,7 @@ local function flyc_config_command_table_get_or_exec_dissector(pkt_length, buffe
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    local cmd = buffer(offset,2):int()
+    local cmd = payload(offset,2):le_int()
     local valuestring
     if cmd == -1 then
         valuestring = "Get command count"
@@ -4374,15 +4374,87 @@ end
 
 f.flyc_config_config_table_get_param_definition_index = ProtoField.int16 ("dji_p3.flyc_config_config_table_get_param_definition_index", "Param Index", base.DEC, nil, nil)
 
+f.flyc_config_config_table_get_param_definition_status = ProtoField.uint8 ("dji_p3.flyc_config_config_table_get_param_definition_status", "Status", base.DEC, nil, nil)
+f.flyc_config_config_table_get_param_definition_type_id = ProtoField.uint16 ("dji_p3.flyc_config_config_table_get_param_definition_type_id", "TypeID", base.DEC, nil, nil)
+f.flyc_config_config_table_get_param_definition_size = ProtoField.int16 ("dji_p3.flyc_config_config_table_get_param_definition_size", "Size", base.DEC, nil, nil)
+f.flyc_config_config_table_get_param_definition_attribute = ProtoField.uint16 ("dji_p3.flyc_config_config_table_get_param_definition_attribute", "Attribute", base.HEX, nil, nil)
+f.flyc_config_config_table_get_param_definition_limit_i_min = ProtoField.int32 ("dji_p3.flyc_config_config_table_get_param_definition_limit_i_min", "LimitI minValue", base.DEC, nil, nil)
+f.flyc_config_config_table_get_param_definition_limit_i_max = ProtoField.int32 ("dji_p3.flyc_config_config_table_get_param_definition_limit_i_max", "LimitI maxValue", base.DEC, nil, nil)
+f.flyc_config_config_table_get_param_definition_limit_i_def = ProtoField.int32 ("dji_p3.flyc_config_config_table_get_param_definition_limit_i_def", "LimitI defaultValue", base.DEC, nil, nil)
+f.flyc_config_config_table_get_param_definition_limit_u_min = ProtoField.uint32 ("dji_p3.flyc_config_config_table_get_param_definition_limit_u_min", "LimitU minValue", base.DEC, nil, nil)
+f.flyc_config_config_table_get_param_definition_limit_u_max = ProtoField.uint32 ("dji_p3.flyc_config_config_table_get_param_definition_limit_u_max", "LimitU maxValue", base.DEC, nil, nil)
+f.flyc_config_config_table_get_param_definition_limit_u_def = ProtoField.uint32 ("dji_p3.flyc_config_config_table_get_param_definition_limit_u_def", "LimitU defaultValue", base.DEC, nil, nil)
+f.flyc_config_config_table_get_param_definition_limit_f_min = ProtoField.float ("dji_p3.flyc_config_config_table_get_param_definition_limit_f_min", "LimitF minValue", nil, nil)
+f.flyc_config_config_table_get_param_definition_limit_f_max = ProtoField.float ("dji_p3.flyc_config_config_table_get_param_definition_limit_f_max", "LimitF maxValue", nil, nil)
+f.flyc_config_config_table_get_param_definition_limit_f_def = ProtoField.float ("dji_p3.flyc_config_config_table_get_param_definition_limit_f_def", "LimitF defaultValue", nil, nil)
+f.flyc_config_config_table_get_param_definition_name = ProtoField.stringz ("dji_p3.flyc_config_config_table_get_param_definition_name", "Name", base.ASCII, nil, nil)
+
 local function flyc_config_config_table_get_param_definition_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.flyc_config_config_table_get_param_definition_index, payload(offset, 2))
-    offset = offset + 2
+    if pack_type == 0 then -- Request
+        subtree:add_le (f.flyc_config_config_table_get_param_definition_index, payload(offset, 2))
+        offset = offset + 2
 
-    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Param Definition: Offset does not match - internal inconsistency") end
+        if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Param Definition: Offset does not match - internal inconsistency") end
+    else -- Response
+        -- Payload has 19 bytes + null-terminated name on P3X_FW_V01.07.0060
+        subtree:add_le (f.flyc_config_config_table_get_param_definition_status, payload(offset, 1))
+        offset = offset + 1
+
+        -- It is possible that the packet ends here, if there was an issue retrieving the item
+        if (payload:len() >= 8) then
+            local type_id = payload(offset,2):le_uint()
+            subtree:add_le (f.flyc_config_config_table_get_param_definition_type_id, payload(offset, 2))
+            offset = offset + 2
+
+            subtree:add_le (f.flyc_config_config_table_get_param_definition_size, payload(offset, 2))
+            offset = offset + 2
+
+            subtree:add_le (f.flyc_config_config_table_get_param_definition_attribute, payload(offset, 2))
+            offset = offset + 2
+
+            if (type_id <= 3) or (type_id == 10) then
+                subtree:add_le (f.flyc_config_config_table_get_param_definition_limit_u_min, payload(offset, 4))
+                offset = offset + 4
+
+                subtree:add_le (f.flyc_config_config_table_get_param_definition_limit_u_max, payload(offset, 4))
+                offset = offset + 4
+
+                subtree:add_le (f.flyc_config_config_table_get_param_definition_limit_u_def, payload(offset, 4))
+                offset = offset + 4
+            elseif (type_id >= 4) and (type_id <= 7) then
+                subtree:add_le (f.flyc_config_config_table_get_param_definition_limit_i_min, payload(offset, 4))
+                offset = offset + 4
+
+                subtree:add_le (f.flyc_config_config_table_get_param_definition_limit_i_max, payload(offset, 4))
+                offset = offset + 4
+
+                subtree:add_le (f.flyc_config_config_table_get_param_definition_limit_i_def, payload(offset, 4))
+                offset = offset + 4
+            elseif (type_id == 8) or (type_id == 9) then
+                subtree:add_le (f.flyc_config_config_table_get_param_definition_limit_f_min, payload(offset, 4))
+                offset = offset + 4
+
+                subtree:add_le (f.flyc_config_config_table_get_param_definition_limit_f_max, payload(offset, 4))
+                offset = offset + 4
+
+                subtree:add_le (f.flyc_config_config_table_get_param_definition_limit_f_def, payload(offset, 4))
+                offset = offset + 4
+            end
+
+            local name_text = payload(offset, payload:len() - offset)
+            subtree:add_le (f.flyc_config_config_table_get_param_definition_name, name_text)
+            offset = payload:len()
+        end
+
+        --if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Param Definition: Offset does not match - internal inconsistency") end
+    end
+
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table Get Param Definition: Payload size different than expected") end
 end
 
@@ -4391,14 +4463,25 @@ end
 f.flyc_config_config_table_get_param_by_index_index = ProtoField.int16 ("dji_p3.flyc_config_config_table_get_param_by_index_index", "Param Index", base.DEC, nil, nil)
 
 local function flyc_config_config_table_get_param_by_index_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.flyc_config_config_table_get_param_by_index_index, payload(offset, 2))
-    offset = offset + 2
+    if pack_type == 0 then -- Request
+        subtree:add_le (f.flyc_config_config_table_get_param_by_index_index, payload(offset, 2))
+        offset = offset + 2
 
-    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Params By Index: Offset does not match - internal inconsistency") end
+        if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Params By Index: Offset does not match - internal inconsistency") end
+    else -- Response
+        -- Payload has 19 bytes on P3X_FW_V01.07.0060
+        subtree:add_le (f.flyc_config_config_table_get_param_by_index_index, payload(offset, 2))
+        offset = offset + 2
+
+        if (offset ~= 19) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Params By Index: Offset does not match - internal inconsistency") end
+    end
+
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table Get Params By Index: Payload size different than expected") end
 end
 
