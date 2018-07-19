@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" DJI Flight Controller Firmware No Fly Zones Editor
+""" DJI Flight Controller Firmware No Fly Zones Editor.
+
+    Note that the update function of this tool is unfinished; there was
+    no need to finish it as there are ways to disable all the NFZs.
 """
 
 # Copyright (C) 2016,2017 Mefistotelis <mefistotelis@gmail.com>
@@ -21,8 +24,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+__version__ = "0.0.2"
+__author__ = "Mefistotelis @ Original Gangsters"
+__license__ = "GPL"
+
 import sys
-import getopt
+import argparse
 import os
 import math
 from ctypes import *
@@ -30,22 +37,6 @@ import json
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
-
-class ProgOptions:
-  mdlfile = ''
-  inffile="flyc_forbid_areas.json"
-  address_base=0x8020000
-  address_bss=0x20000000
-  sizeof_bss=0x4400000
-  expect_func_align = 4
-  expect_data_align = 2
-  min_match_accepted = 60
-  verbose = 0
-  command = ''
-  nfzone_pos = -1
-  nfzone_count = 0
-  nfcord_pos = -1
-  nfcord_count = 0
 
 class NoFlyStorage:
   none = 0x0
@@ -438,39 +429,59 @@ def flyc_nofly_update(po, fwmdlfile):
   if (po.verbose > 0):
       print("{}: Updated {:d} no fly zone entries and {:d} no fly coord entries".format(po.mdlfile,update_zone_count,update_cord_count))
 
-def main(argv):
-  # Parse command line options
-  po = ProgOptions()
-  try:
-     opts, args = getopt.getopt(argv,"hvm:lux",["help","version","mdlfile="])
-  except getopt.GetoptError:
-     print("Unrecognized options; check dji_flyc_nofly_ed.sh --help")
-     sys.exit(2)
-  for opt, arg in opts:
-     if opt in ("-h", "--help"):
-        print("DJI Flight Controller Firmware No Fly Zones Editor")
-        print("dji_flyc_nofly_ed.sh <-l|-x|-u> [-v] -m <mdlfile>")
-        print("  -m <mdlfile> - Flight controller firmware binary module file")
-        print("  -l - list no fly zones stored in the firmware")
-        print("  -x - extract no fly zones array to infos json text file")
-        print("  -u - update no fly zones array in binary fw from infos text file")
-        print("  -v - increases verbosity level; max level is set by -vvv")
-        sys.exit()
-     elif opt == "--version":
-        print("dji_flyc_nofly_ed.sh version 0.0.1")
-        sys.exit()
-     elif opt == '-v':
-        po.verbose += 1
-     elif opt in ("-m", "--mdlfile"):
-        po.mdlfile = arg
-     elif opt in ("-l", "--list"):
-        po.command = 'l'
-     elif opt in ("-u", "--update"):
-        po.command = 'u'
-     elif opt in ("-x", "--extract"):
-        po.command = 'x'
+def main():
+  """ Main executable function.
 
-  if (po.command == 'l'):
+  Its task is to parse command line options and call a function which performs requested command.
+  """
+  # Parse command line options
+
+  parser = argparse.ArgumentParser(description=__doc__)
+
+  parser.add_argument("-m", "--mdlfile", type=str, required=True,
+          help="Flight controller firmware binary module file")
+
+  parser.add_argument("-i", "--inffile", type=str, default="flyc_forbid_areas.json",
+          help="No Fly Zone Areas JSON file name (default is \"%(default)s\")")
+
+  #parser.add_argument("-b", "--baseaddr", default=0x8020000, type=lambda x: int(x,0),
+  #        help="Set base address; crucial for finding the array (default is 0x%(default)X)")
+
+  #parser.add_argument("--bssaddr", default=0x20000000, type=lambda x: int(x,0),
+  #        help="Set .bss start address; set to address where RAM starts (default is 0x%(default)X)")
+
+  #parser.add_argument("--bsslen", default=0x4400000, type=lambda x: int(x,0),
+  #        help="Set .bss length; set to size of RAM (default is 0x%(default)X)")
+
+  parser.add_argument("-v", "--verbose", action="count", default=0,
+          help="Increases verbosity level; max level is set by -vvv")
+
+  subparser = parser.add_mutually_exclusive_group()
+
+  subparser.add_argument("-l", "--list", action="store_true",
+          help="list no fly zones stored in the firmware")
+
+  subparser.add_argument("-x", "--extract", action="store_true",
+          help="Extract no fly zones array to json text file")
+
+  subparser.add_argument("-u", "--update", action="store_true",
+          help="Update no fly zones array in binary fw from areas json text file")
+
+  subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+            .format(version=__version__,author=__author__),
+          help="Display version information and exit")
+
+  po = parser.parse_args()
+
+  po.expect_func_align = 4
+  po.expect_data_align = 2
+  po.min_match_accepted = 60
+  po.nfzone_pos = -1
+  po.nfzone_count = 0
+  po.nfcord_pos = -1
+  po.nfcord_count = 0
+
+  if po.list:
 
     if (po.verbose > 0):
       print("{}: Opening for list display".format(po.mdlfile))
@@ -480,7 +491,7 @@ def main(argv):
 
     fwmdlfile.close();
 
-  elif (po.command == 'x'):
+  elif po.extract:
 
     if (po.verbose > 0):
       print("{}: Opening for extraction".format(po.mdlfile))
@@ -490,7 +501,7 @@ def main(argv):
 
     fwmdlfile.close();
 
-  elif (po.command == 'u'):
+  elif po.update:
 
     if (po.verbose > 0):
       print("{}: Opening for update".format(po.mdlfile))
@@ -505,4 +516,4 @@ def main(argv):
     raise NotImplementedError('Unsupported command.')
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+   main()
