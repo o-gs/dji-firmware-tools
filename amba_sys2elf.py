@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" Ambarella Firmware SYS partiton to ELF converter
+""" Ambarella Firmware SYS partiton to ELF converter.
 
  Converts "System Software" partition from Ambarella a7/a9 firmware
  from a binary image form into ELF format. The ELF format can be then
@@ -76,20 +76,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+__version__ = "0.2.1"
+__author__ = "Mefistotelis @ Original Gangsters"
+__license__ = "GPL"
+
 import sys
-import getopt
+import argparse
 import os
 import re
 import configparser
 import itertools
 
 sys.path.insert(0, './')
-from arm_bin2elf import eprint, ProgOptions, armfw_bin2elf
+from arm_bin2elf import eprint, armfw_bin2elf, parse_section_param
 
-def syssw_read_base_address(po):
+def syssw_read_base_address(po, fname):
   mem_addr = 0
   # Do not use basename - a9h file is in the same folder where a9s was
-  fname = "{:s}.a9h".format(os.path.splitext(po.fwpartfile)[0])
   if (po.verbose > 1):
     print("{}: Opening {:s}".format(po.fwpartfile,fname))
   parser = configparser.ConfigParser()
@@ -100,74 +103,87 @@ def syssw_read_base_address(po):
   del parser
   return mem_addr
 
-def main(argv):
+def main():
   """ Main executable function.
 
-      Its task is to parse command line options and call a function which performs selected command.
+  Its task is to parse command line options and call a function which performs requested command.
   """
-  po = ProgOptions()
+  # Parse command line options
   # Set optimal options for Ambarella A9 ARM firmware
-  po.elftemplate='amba_sys2elf_template.elf'
-  po.inifile = '' # What differs Ambarella BIN from other BINs is INI file with base address inside
-  po.address_base=0x1000000
-  po.address_space_len=0x2000000 # 32MB
+
+  parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
+
+  parser.add_argument("-p", "--fwpartfile", type=str, required=True,
+          help="Executable ARM firmware binary module file")
+
+  parser.add_argument("-o", "--elffile", type=str,
+          help="Output ELF file name (default is fwpartfile with elf extension appended)")
+
+  parser.add_argument("-t", "--tmpltfile", type=str, default="amba_sys2elf_template.elf",
+          help="Template ELF file to use header fields from (default is \"%(default)s\")")
+
+  parser.add_argument('-l', '--addrspacelen', default=0x2000000, type=lambda x: int(x,0),
+          help='Set address space length; influences size of last section (defaults to 0x%(default)X)')
+
+  parser.add_argument("-s", "--section", action='append', metavar='SECT@POS:LEN', type=parse_section_param,
+          help="Set section position and/or length; can be used to override " \
+           "detection of sections; setting section .ARM.exidx will influence " \
+           ".text and .data, moving them and sizing to fit one before and one " \
+           "after the .ARM.exidx. Parameters are: " \
+           "SECT - a text name of the section, as defined in elf template; multiple sections " \
+           "can be cloned from the same template section by adding index at end (ie. .bss2); " \
+           "POS - is a position of the section within input file (not a memory address!); " \
+           "LEN - is the length of the section (in both input file and memory, unless its " \
+           "uninitialized section, in which case it is memory size as file size is 0)")
+
+  parser.add_argument("--dry-run", action="store_true",
+          help="Do not write any files or do permanent changes")
+
+  parser.add_argument("-v", "--verbose", action="count", default=0,
+          help="Increases verbosity level; max level is set by -vvv")
+
+  subparser = parser.add_mutually_exclusive_group()
+
+  subparser.add_argument( "--inifile", type=str,
+          help="INI file name with base address (default is fwpartfile with a9h extension appended)")
+
+  subparser.add_argument('-b', '--baseaddr', type=lambda x: int(x,0),
+          help='Set base address; first section will start at this memory location (default is to get address from INI file)')
+
+  subparser = parser.add_mutually_exclusive_group()
+
+  subparser.add_argument("-e", "--mkelf", action="store_true",
+          help="make ELF file from a binary image")
+
+  subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+            .format(version=__version__,author=__author__),
+          help="Display version information and exit")
+
+  po = parser.parse_args()
+
   po.expect_func_align = 4 # Full length instructions are used in Cortex A9 binary
   po.expect_sect_align = 0x20 # This is how sections are aligned in Ambarella SDK
-  # Parse command line options
-  try:
-     opts, args = getopt.getopt(argv,"hevt:p:l:b:s:o:",["help","version","mkelf","dry-run","fwpart=","template","addrsplen=","baseaddr=","section=","output="])
-  except getopt.GetoptError:
-     print("Unrecognized options; check amba_sys2elf.py --help")
-     sys.exit(2)
-  for opt, arg in opts:
-     if opt in ("-h", "--help"):
-        print("Ambarella Firmware SYS partiton to ELF converter")
-        print("amba_sys2elf.py <-e> [-v] -p <fwmdfile> [-o <elffile>] [-t <tmpltfile>]")
-        print("  -p <fwpartfile> - name of the firmware binary file")
-        print("  -o <elffile> - output file name")
-        print("  -t <tmpltfile> - template file name")
-        print("  -e - make ELF file from a binary image")
-        print("  -l <spacelen> - set address space length; influences size of last section")
-        print("  -b <baseaddr> - set base address; first section will start at this memory location")
-        print("  -v - increases verbosity level; max level is set by -vvv")
-        sys.exit()
-     elif opt == "--version":
-        print("amba_sys2elf.py version 0.2.0")
-        sys.exit()
-     elif opt == "-v":
-        po.verbose += 1
-     elif opt == "--dry-run":
-        po.dry_run = True
-     elif opt in ("-p", "--fwpart"):
-        po.fwpartfile = arg
-     elif opt in ("-o", "--output"):
-        po.outfile = arg
-     elif opt in ("-t", "--template"):
-        po.elftemplate = arg
-     elif opt in ("-l", "--addrsplen"):
-        po.address_space_len = int(arg,0)
-     elif opt in ("-b", "--baseaddr"):
-        po.address_base = int(arg,0)
-     elif opt in ("-s", "--section"):
-        arg_m = re.search('(?P<name>[0-9A-Za-z._-]+)(@(?P<pos>[Xx0-9A-Fa-f]+))?(:(?P<len>[Xx0-9A-Fa-f]+))?', arg)
-        # Convert to integer, detect base from prefix
-        if arg_m.group("pos") is not None:
-           po.section_pos[arg_m.group("name")] = int(arg_m.group("pos"),0)
-        if arg_m.group("len") is not None:
-           po.section_size[arg_m.group("name")] = int(arg_m.group("len"),0)
-     elif opt in ("-e", "--mkelf"):
-        po.command = 'e'
+  # Flatten the sections we got in arguments
+  po.section_pos = {}
+  po.section_size = {}
+  for sect in po.section:
+      po.section_pos.update(sect["pos"])
+      po.section_size.update(sect["len"])
+
   po.basename = os.path.splitext(os.path.basename(po.fwpartfile))[0]
-  if len(po.fwpartfile) > 0 and len(po.inifile) == 0:
+  # What differs Ambarella BIN from other BINs is INI file with base address inside
+  if len(po.fwpartfile) > 0 and (po.inifile is None or len(po.inifile) == 0):
      po.inifile = po.basename + ".a9h"
-  if len(po.fwpartfile) > 0 and len(po.outfile) == 0:
-     po.outfile = po.basename + ".elf"
-  if (po.command == 'e'):
+  if len(po.fwpartfile) > 0 and (po.elffile is None or len(po.elffile) == 0):
+      po.elffile = po.basename + ".elf"
+
+  if po.mkelf:
 
      if (po.verbose > 0):
         print("{}: Opening for conversion to ELF".format(po.fwpartfile))
      # read base address from INI file which should be there after AMBA extraction
-     po.address_base = syssw_read_base_address(po)
+     if po.baseaddr is None:
+         po.baseaddr = syssw_read_base_address(po, po.inifile)
      fwpartfile = open(po.fwpartfile, "rb")
 
      armfw_bin2elf(po,fwpartfile)
@@ -179,4 +195,4 @@ def main(argv):
      raise NotImplementedError('Unsupported command.')
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+   main()
