@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" Binary firmware with ARM code to ELF converter
+""" Binary firmware with ARM code to ELF converter.
 
  Converts BIN firmware with ARM code from a binary image form into
  ELF format. The ELF format can be then easily disassembled, as most
@@ -52,8 +52,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+__version__ = "0.2.2"
+__author__ = "Mefistotelis @ Original Gangsters"
+__license__ = "GPL"
+
 import sys
-import getopt
+import argparse
 import os
 import hashlib
 import mmap
@@ -77,22 +81,6 @@ except ImportError:
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
-
-class ProgOptions:
-  fwpartfile = ''
-  basename = ''
-  outfile = ''
-  section_pos = {}
-  section_size = {}
-  elftemplate='arm_bin2elf_template.elf'
-  address_base=0x1000000
-  address_space_len=0x2000000 # 32MB
-  expect_func_align = 2
-  expect_sect_align = 0x10
-  verbose = 0
-  dry_run = False
-  command = ''
-
 
 class ExIdxEntry(LittleEndianStructure):
   _pack_ = 1
@@ -252,7 +240,7 @@ def armfw_detect_empty_sect_ARMexidx(po, fwpartfile, memaddr_base, start_pos, fu
 
 def armfw_bin2elf(po, fwpartfile):
   if (po.verbose > 0):
-     print("{}: Memory base address set to 0x{:08x}".format(po.fwpartfile,po.address_base))
+     print("{}: Memory base address set to 0x{:08x}".format(po.fwpartfile,po.baseaddr))
   # detect position of each section in the binary file
   if (po.verbose > 1):
      print("{}: Searching for sections".format(po.fwpartfile))
@@ -260,13 +248,13 @@ def armfw_bin2elf(po, fwpartfile):
   sectname = ".ARM.exidx"
   sect_align = po.expect_sect_align
   if (not sectname in po.section_pos):
-     sect_pos, sect_len = armfw_detect_sect_ARMexidx(po, fwpartfile,  po.address_base, 0, po.expect_func_align, sect_align)
+     sect_pos, sect_len = armfw_detect_sect_ARMexidx(po, fwpartfile,  po.baseaddr, 0, po.expect_func_align, sect_align)
      if (sect_pos < 0):
         sect_align = (po.expect_sect_align >> 1)
-        sect_pos, sect_len = armfw_detect_sect_ARMexidx(po, fwpartfile,  po.address_base, 0, po.expect_func_align, sect_align)
+        sect_pos, sect_len = armfw_detect_sect_ARMexidx(po, fwpartfile,  po.baseaddr, 0, po.expect_func_align, sect_align)
      if (sect_pos < 0):
         sect_align = po.expect_sect_align
-        sect_pos, sect_len = armfw_detect_empty_sect_ARMexidx(po, fwpartfile,  po.address_base, 0, po.expect_func_align, sect_align)
+        sect_pos, sect_len = armfw_detect_empty_sect_ARMexidx(po, fwpartfile,  po.baseaddr, 0, po.expect_func_align, sect_align)
      if (sect_pos < 0):
         raise EOFError("No matches found for section '{:s}' in binary file.".format(sectname))
      po.section_pos[sectname] = sect_pos
@@ -322,7 +310,7 @@ def armfw_bin2elf(po, fwpartfile):
      else:
         sect_pos = po.section_pos[sectname]
      if (not sectname in po.section_size):
-        sect_len = po.address_space_len - sect_pos
+        sect_len = po.addrspacelen - sect_pos
         if (sect_len < 0): sect_len = 0
         po.section_size[sectname] = sect_len
      else:
@@ -360,7 +348,7 @@ def armfw_bin2elf(po, fwpartfile):
            if sectname not in sections_order:
               sections_order.append(sectname)
   # Prepare list of section sizes
-  sectpos_next = po.address_space_len # max size is larger than bin file size due to uninitialized sections (bss)
+  sectpos_next = po.addrspacelen # max size is larger than bin file size due to uninitialized sections (bss)
   for sectname in reversed(sections_order):
      sectpos_delta = sectpos_next - po.section_pos[sectname]
      if (sectpos_delta < 0): sectpos_delta = 0xffffffff - po.section_pos[sectname]
@@ -373,9 +361,9 @@ def armfw_bin2elf(po, fwpartfile):
      sectpos_next = po.section_pos[sectname]
 
   # Copy an ELF template to destination file name
-  elf_templt = open(po.elftemplate, "rb")
+  elf_templt = open(po.tmpltfile, "rb")
   if not po.dry_run:
-     elf_fh = open(po.outfile, "wb")
+     elf_fh = open(po.elffile, "wb")
   n = 0
   while (1):
      copy_buffer = elf_templt.read(1024 * 1024)
@@ -388,14 +376,14 @@ def armfw_bin2elf(po, fwpartfile):
   if not po.dry_run:
      elf_fh.close()
   if (po.verbose > 1):
-     print("{}: ELF template '{:s}' copied to '{:s}', {:d} bytes".format(po.fwpartfile,po.elftemplate,po.outfile,n))
+     print("{}: ELF template '{:s}' copied to '{:s}', {:d} bytes".format(po.fwpartfile,po.tmpltfile,po.elffile,n))
 
   # Prepare array of addresses
   sections_address = {}
   sections_align = {}
   for sectname in sections_order:
      # add section address to array; since BIN is a linear mem dump, addresses are the same as file offsets
-     sections_address[sectname] = po.address_base + po.section_pos[sectname]
+     sections_address[sectname] = po.baseaddr + po.section_pos[sectname]
      sect_align = (po.expect_sect_align << 1)
      while (sections_address[sectname] % sect_align) != 0: sect_align = (sect_align >> 1)
      sections_align[sectname] = sect_align
@@ -405,11 +393,11 @@ def armfw_bin2elf(po, fwpartfile):
   if (po.verbose > 0):
      print("{}: Updating entry point and section headers".format(po.fwpartfile))
   if not po.dry_run:
-     elf_fh = open(po.outfile, "r+b")
+     elf_fh = open(po.elffile, "r+b")
   else:
-     elf_fh = open(po.elftemplate, "rb")
+     elf_fh = open(po.tmpltfile, "rb")
   elfobj = elftools.elf.elffile.ELFFile(elf_fh)
-  elfobj.header['e_entry'] = po.address_base
+  elfobj.header['e_entry'] = po.baseaddr
   # Update section sizes, including the uninitialized (.bss*) sections
   for sectname in sections_order:
      sect = elfobj.get_section_by_name(sectname)
@@ -436,73 +424,91 @@ def armfw_bin2elf(po, fwpartfile):
         print("{}: Updating section '{:s}' and shifting subsequent sections".format(po.fwpartfile,sectname))
      elfobj.set_section_by_name(sectname, sect)
   if (po.verbose > 1):
-     print("{}: Writing changes to '{:s}'".format(po.fwpartfile,po.outfile))
+     print("{}: Writing changes to '{:s}'".format(po.fwpartfile,po.elffile))
   if not po.dry_run:
      elfobj.write_changes()
   elf_fh.close()
 
-def main(argv):
+
+def parse_section_param(s):
+    """ Parses the section parameter argument.
+    """
+    sect={ "pos": {}, "len": {}, }
+    arg_m = re.search('(?P<name>[0-9A-Za-z._-]+)(@(?P<pos>[Xx0-9A-Fa-f]+))?(:(?P<len>[Xx0-9A-Fa-f]+))?', s)
+    # Convert to integer, detect base from prefix
+    if arg_m.group("pos") is not None:
+        sect["pos"][arg_m.group("name")] = int(arg_m.group("pos"),0)
+    if arg_m.group("len") is not None:
+        sect["len"][arg_m.group("name")] = int(arg_m.group("len"),0)
+    return sect
+
+
+def main():
   """ Main executable function.
 
-      Its task is to parse command line options and call a function which performs selected command.
+  Its task is to parse command line options and call a function which performs requested command.
   """
-  po = ProgOptions()
   # Parse command line options
-  try:
-     opts, args = getopt.getopt(argv,"hevt:p:l:b:s:o:",["help","version","mkelf","dry-run","fwpart=","template","addrsplen=","baseaddr=","section=","output="])
-  except getopt.GetoptError:
-     print("Unrecognized options; check arm_bin2elf.py --help")
-     sys.exit(2)
-  for opt, arg in opts:
-     if opt in ("-h", "--help"):
-        print("Binary firmware with ARM code to ELF converter")
-        print("arm_bin2elf.py <-e> [-v] -p <fwmdfile> [-o <elffile>] [-t <tmpltfile>] [-b <baseaddr>] [-l <spacelen>] [-s <sect@pos:len>]")
-        print("  -p <fwpartfile> - name of the firmware binary file")
-        print("  -o <elffile> - output file name")
-        print("  -t <tmpltfile> - template file name")
-        print("  -e - make ELF file from a binary image")
-        print("  -l <spacelen> - set address space length; influences size of last section")
-        print("  -b <baseaddr> - set base address; first section will start at this memory location")
-        print("  -s <sect@pos:len> - set section position and/or length; can be used to override")
-        print("      detection of sections; setting section .ARM.exidx will influence .text")
-        print("      and .data, moving them and sizing to fit one before and one after the .ARM.exidx;")
-        print("      sect - a text name of the section, as defined in elf template; multiple sections")
-        print("          can be cloned from the same template section by adding index at end (ie. .bss2)")
-        print("      pos - is a position of the section within input file (not a memory address!)")
-        print("      len - is the length of the section (in both input file and memory, unless its")
-        print("          uninitialized section, in which case it is memory size as file size is 0)")
-        print("  -v - increases verbosity level; max level is set by -vvv")
-        sys.exit()
-     elif opt == "--version":
-        print("arm_bin2elf.py version 0.2.1")
-        sys.exit()
-     elif opt == "-v":
-        po.verbose += 1
-     elif opt == "--dry-run":
-        po.dry_run = True
-     elif opt in ("-p", "--fwpart"):
-        po.fwpartfile = arg
-     elif opt in ("-o", "--output"):
-        po.outfile = arg
-     elif opt in ("-t", "--template"):
-        po.elftemplate = arg
-     elif opt in ("-l", "--addrsplen"):
-        po.address_space_len = int(arg,0)
-     elif opt in ("-b", "--baseaddr"):
-        po.address_base = int(arg,0)
-     elif opt in ("-s", "--section"):
-        arg_m = re.search('(?P<name>[0-9A-Za-z._-]+)(@(?P<pos>[Xx0-9A-Fa-f]+))?(:(?P<len>[Xx0-9A-Fa-f]+))?', arg)
-        # Convert to integer, detect base from prefix
-        if arg_m.group("pos") is not None:
-           po.section_pos[arg_m.group("name")] = int(arg_m.group("pos"),0)
-        if arg_m.group("len") is not None:
-           po.section_size[arg_m.group("name")] = int(arg_m.group("len"),0)
-     elif opt in ("-e", "--mkelf"):
-        po.command = 'e'
+
+  parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
+
+  parser.add_argument("-p", "--fwpartfile", type=str, required=True,
+          help="Executable ARM firmware binary module file")
+
+  parser.add_argument("-o", "--elffile", type=str,
+          help="Output ELF file name (default is fwpartfile with elf extension appended)")
+
+  parser.add_argument("-t", "--tmpltfile", type=str, default="arm_bin2elf_template.elf",
+          help="Template ELF file to use header fields from (default is \"%(default)s\")")
+
+  parser.add_argument('-l', '--addrspacelen', default=0x2000000, type=lambda x: int(x,0),
+          help='Set address space length; influences size of last section (defaults to 0x%(default)X)')
+
+  parser.add_argument('-b', '--baseaddr', default=0x1000000, type=lambda x: int(x,0),
+          help='Set base address; first section will start at this memory location (defaults to 0x%(default)X)')
+
+  parser.add_argument("-s", "--section", action='append', metavar='SECT@POS:LEN', type=parse_section_param,
+          help="Set section position and/or length; can be used to override " \
+           "detection of sections; setting section .ARM.exidx will influence " \
+           ".text and .data, moving them and sizing to fit one before and one " \
+           "after the .ARM.exidx. Parameters are: " \
+           "SECT - a text name of the section, as defined in elf template; multiple sections " \
+           "can be cloned from the same template section by adding index at end (ie. .bss2); " \
+           "POS - is a position of the section within input file (not a memory address!); " \
+           "LEN - is the length of the section (in both input file and memory, unless its " \
+           "uninitialized section, in which case it is memory size as file size is 0)")
+
+  parser.add_argument("--dry-run", action="store_true",
+          help="Do not write any files or do permanent changes")
+
+  parser.add_argument("-v", "--verbose", action="count", default=0,
+          help="Increases verbosity level; max level is set by -vvv")
+
+  subparser = parser.add_mutually_exclusive_group()
+
+  subparser.add_argument("-e", "--mkelf", action="store_true",
+          help="make ELF file from a binary image")
+
+  subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+            .format(version=__version__,author=__author__),
+          help="Display version information and exit")
+
+  po = parser.parse_args()
+
+  po.expect_func_align = 2
+  po.expect_sect_align = 0x10
+  # Flatten the sections we got in arguments
+  po.section_pos = {}
+  po.section_size = {}
+  for sect in po.section:
+      po.section_pos.update(sect["pos"])
+      po.section_size.update(sect["len"])
+
   po.basename = os.path.splitext(os.path.basename(po.fwpartfile))[0]
-  if len(po.fwpartfile) > 0 and len(po.outfile) == 0:
-      po.outfile = po.basename + ".elf"
-  if (po.command == 'e'):
+  if len(po.fwpartfile) > 0 and (po.elffile is None or len(po.elffile) == 0):
+      po.elffile = po.basename + ".elf"
+
+  if po.mkelf:
 
      if (po.verbose > 0):
         print("{}: Opening for conversion to ELF".format(po.fwpartfile))
@@ -517,4 +523,4 @@ def main(argv):
     raise NotImplementedError('Unsupported command.')
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+   main()
