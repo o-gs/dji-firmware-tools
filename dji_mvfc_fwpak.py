@@ -267,20 +267,29 @@ def main():
     subparsers = parser.add_subparsers(dest='cmd')
 
     parser_dec = subparsers.add_parser('dec', help='Decrypt')
-    parser_dec.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'), help='input file')
-    parser_dec.add_argument('-o', '--output', type=argparse.FileType('wb'), help='output file')
+    parser_dec.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'),
+            help='input file')
+    parser_dec.add_argument('-o', '--output', type=argparse.FileType('wb'),
+            help='output file')
 
     parser_enc = subparsers.add_parser('enc', help='Encrypt')
-    parser_enc.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'), help='input file')
-    parser_enc.add_argument('-o', '--output', type=argparse.FileType('wb'), help='output file')
-    parser_enc.add_argument('-T', '--time', help='Timestamp. If omitted the current time will be used. The ' + \
-            'timestamp is either a number (seconds since epoch) or in the following format: ' + \
-            '"year-month-day hour:min:sec"' )
-    parser_enc.add_argument('-v', '--version', required=True, help='Version string in the form "vAA.BB.CC.DD"')
-    parser_enc.add_argument('-t', '--target', required=True, help='Either 0305 or 0306')
+    parser_enc.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'),
+            help='input file')
+    parser_enc.add_argument('-o', '--output', type=argparse.FileType('wb'),
+            help='output file')
+    parser_enc.add_argument('-T', '--time',
+            help='Timestamp. If omitted the current time will be used. The timestamp ' + \
+             'is either a number (seconds since epoch) or in the following format: ' + \
+             '"year-month-day hour:min:sec"' )
+    parser_enc.add_argument('-v', '--version', required=True,
+            help='version string in the form "vAA.BB.CC.DD"')
+    parser_enc.add_argument('-t', '--target', required=True,
+            help='either 0305 or 0306')
 
-    parser_inf = subparsers.add_parser('info', help='Info')
-    parser_inf.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'), help='input file')
+    parser_inf = subparsers.add_parser('info',
+            help='show header information')
+    parser_inf.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'),
+            help='input file')
     args = parser.parse_args()
 
     if (args.cmd == 'info') or (args.cmd == 'dec'):
