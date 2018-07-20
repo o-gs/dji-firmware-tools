@@ -199,10 +199,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument('port', type=str,
-            help='The serial port to write to and read from')
+            help='the serial port to write to and read from')
 
     parser.add_argument('-b', '--baudrate', default=9600, type=int,
-            help='The baudrate to use for the serial port (default is %(default)s)')
+            help='the baudrate to use for the serial port (default is %(default)s)')
 
     parser.add_argument('-n', '--seq_num', default=0, type=int,
             help='Sequence number of the packet (default is %(default)s)')
@@ -223,14 +223,14 @@ def main():
             help='Command ID (default is %(default)s)')
 
     parser.add_argument('-w', '--timeout', default=2000, type=int,
-            help='Timeout - how long to wait for answer, in miliseconds (default is %(default)s)')
+            help='how long to wait for answer, in miliseconds (default is %(default)s)')
 
     parser.add_argument('-v', '--verbose', action='count', default=0,
-            help='Increases verbosity level; max level is set by -vvv')
+            help='increases verbosity level; max level is set by -vvv')
 
     parser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
               .format(version=__version__,author=__author__),
-            help="Display version information and exit")
+            help="display version information and exit")
 
     subparser = parser.add_mutually_exclusive_group()
 
@@ -257,10 +257,10 @@ def main():
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-x', '--payload_hex', type=str,
-            help='Provide payload as hex string')
+            help='provide payload as hex string')
 
     subparser.add_argument('-p', '--payload_bin', default="", type=str,
-            help='Provide binary payload directly (default payload is empty)')
+            help='provide binary payload directly (default payload is empty)')
 
     po = parser.parse_args();
 
