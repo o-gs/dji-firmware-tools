@@ -28,7 +28,6 @@ __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
 import sys
-import getopt
 import re
 import os
 import hashlib
@@ -632,31 +631,32 @@ def main():
   parser = argparse.ArgumentParser(description=__doc__)
 
   parser.add_argument("-p", "--fwpkg", default="", type=str, required=True,
-          help="Name of the firmware package file")
+          help="name of the firmware package file")
 
   parser.add_argument("-m", "--mdprefix", default="", type=str,
-          help="File name prefix for the single decomposed firmware modules (defaults to base name of firmware package file)")
+          help="file name prefix for the single decomposed firmware modules " \
+           "(defaults to base name of firmware package file)")
 
   parser.add_argument("-f", "--force-continue", action="store_true",
-          help="Force continuing execution despite warning signs of issues")
+          help="force continuing execution despite warning signs of issues")
 
   parser.add_argument("-c", "--no-crypto", action="store_true",
-          help="Disable cryptography - do not encrypt/decrypt modules")
+          help="disable cryptography - do not encrypt/decrypt modules")
 
   parser.add_argument("-v", "--verbose", action="count", default=0,
-          help="Increases verbosity level; max level is set by -vvv")
+          help="increases verbosity level; max level is set by -vvv")
 
   subparser = parser.add_mutually_exclusive_group()
 
   subparser.add_argument("-x", "--extract", action="store_true",
-          help="Extract firmware package into modules")
+          help="extract firmware package into modules")
 
   subparser.add_argument("-a", "--add", action="store_true",
-          help="Add module files to firmware package")
+          help="add module files to firmware package")
 
   subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
             .format(version=__version__,author=__author__),
-          help="Display version information and exit")
+          help="display version information and exit")
 
   po = parser.parse_args();
 
