@@ -318,17 +318,47 @@ class DJIPayload_FlyController_GetParamDefinition2015Rq(DJIPayload_Base):
 # We cannot define property name with variable size, so let's make const size one
 DJIPayload_FlyController_ParamMaxLen = 160
 
-class DJIPayload_FlyController_GetParamDefinition2015Re(DJIPayload_Base):
+class DJIPayload_FlyController_GetParamDefinitionEOL2015Re(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
+             ]
+
+class DJIPayload_FlyController_GetParamDefinitionU2015Re(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
               ('type_id', c_ushort),
               ('size', c_ushort),
               ('attribute', c_ushort),
-              ('limit_u_min', c_uint),
-              ('limit_u_max', c_uint),
-              ('limit_u_def', c_uint),
+              ('limit_min', c_uint),
+              ('limit_max', c_uint),
+              ('limit_def', c_uint),
               ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
              ]
 
+class DJIPayload_FlyController_GetParamDefinitionI2015Re(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
+              ('type_id', c_ushort),
+              ('size', c_ushort),
+              ('attribute', c_ushort),
+              ('limit_min', c_int),
+              ('limit_max', c_int),
+              ('limit_def', c_int),
+              ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
+             ]
+
+class DJIPayload_FlyController_GetParamDefinitionF2015Re(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
+              ('type_id', c_ushort),
+              ('size', c_ushort),
+              ('attribute', c_ushort),
+              ('limit_min', c_float),
+              ('limit_max', c_float),
+              ('limit_def', c_float),
+              ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
+             ]
+
+
+class DJIPayload_FlyController_GetParamValByHash2015Rq(DJIPayload_Base):
+  _fields_ = [('param_index', c_ushort),
+             ]
 
 def encode_command_packet(sender_type, sender_index, receiver_type, receiver_index, seq_num, pack_type, ack_type, encrypt_type, cmd_set, cmd_id, payload):
     """ Encodes command packet with given header fields and payload into c_ubyte array.
@@ -377,8 +407,17 @@ def get_known_payload(pkthead, payload):
             return DJIPayload_FlyController_GetParamDefinition2015Rq.from_buffer_copy(payload)
 
     if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 1:
-        if (pkthead.cmd_id == 0xf0) and len(payload) >= sizeof(DJIPayload_FlyController_GetParamDefinition2015Re)-DJIPayload_FlyController_ParamMaxLen+1:
-            return DJIPayload_FlyController_GetParamDefinition2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamDefinition2015Re), b'\0'))
+        if (pkthead.cmd_id == 0xf0):
+            if len(payload) >= sizeof(DJIPayload_FlyController_GetParamDefinitionU2015Re)-DJIPayload_FlyController_ParamMaxLen+1:
+                out_payload = DJIPayload_FlyController_GetParamDefinitionU2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamDefinitionU2015Re), b'\0'))
+                if (out_payload.type_id >= 4) and (out_payload.type_id <= 7):
+                    return DJIPayload_FlyController_GetParamDefinitionI2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamDefinitionI2015Re), b'\0'))
+                elif (out_payload.type_id == 8) or (out_payload.type_id == 9):
+                    return DJIPayload_FlyController_GetParamDefinitionF2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamDefinitionF2015Re), b'\0'))
+                else:
+                    return out_payload
+            elif len(payload) >= sizeof(DJIPayload_FlyController_GetParamDefinitionEOL2015Re):
+                return DJIPayload_FlyController_GetParamDefinitionEOL2015Re.from_buffer_copy(payload)
 
 
     return None
