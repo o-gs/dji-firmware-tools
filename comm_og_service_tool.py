@@ -140,6 +140,50 @@ def send_assistant_unlock(po, ser, val):
     #TODO we might want to check status in the reply
     return True
 
+def flyc_param_info_limits_to_str(po, paraminfo):
+    if isinstance(paraminfo, DJIPayload_FlyController_GetParamInfoU2015Re):
+        limit_min = '{:d}'.format(paraminfo.limit_min)
+        limit_max = '{:d}'.format(paraminfo.limit_max)
+        limit_def = '{:d}'.format(paraminfo.limit_def)
+    elif isinstance(paraminfo, DJIPayload_FlyController_GetParamInfoI2015Re):
+        limit_min = '{:d}'.format(paraminfo.limit_min)
+        limit_max = '{:d}'.format(paraminfo.limit_max)
+        limit_def = '{:d}'.format(paraminfo.limit_def)
+    elif isinstance(paraminfo, DJIPayload_FlyController_GetParamInfoF2015Re):
+        limit_min = '{:f}'.format(paraminfo.limit_min)
+        limit_max = '{:f}'.format(paraminfo.limit_max)
+        limit_def = '{:f}'.format(paraminfo.limit_def)
+    else:
+        limit_min = "n/a"
+        limit_max = "n/a"
+        limit_def = "n/a"
+    return (limit_min, limit_max, limit_def)
+
+def flyc_param_value_to_str(po, paraminfo, param_value):
+    if (paraminfo.type_id == DJIPayload_FlyController_ParamType.ubyte.value):
+        param_val = "{:d}".format(struct.unpack("<B", param_value)[0])
+    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.ushort.value):
+        param_val = "{:d}".format(struct.unpack("<H", param_value)[0])
+    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.ulong.value):
+        param_val = "{:d}".format(struct.unpack("<L", param_value)[0])
+    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.ulonglong.value):
+        param_val = "{:d}".format(struct.unpack("<Q", param_value)[0])
+    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.byte.value):
+        param_val = "{:d}".format(struct.unpack("<b", param_value)[0])
+    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.short.value):
+        param_val = "{:d}".format(struct.unpack("<h", param_value)[0])
+    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.long.value):
+        param_val = "{:d}".format(struct.unpack("<l", param_value)[0])
+    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.longlong.value):
+        param_val = "{:d}".format(struct.unpack("<q", param_value)[0])
+    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.float.value):
+        param_val = "{:f}".format(struct.unpack("<f", param_value)[0])
+    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.double.value):
+        param_val = "{:f}".format(struct.unpack("<d", param_value)[0])
+    else: # array or future type
+        param_val = str(param_value)
+    return param_val
+
 def do_flyc_param_request_list(po, ser):
 
     if ((po.product == PRODUCT_CODE.P3X) or
@@ -149,9 +193,9 @@ def do_flyc_param_request_list(po, ser):
     else:
         unlock_status = send_assistant_unlock(po, ser, 1)
     if not unlock_status:
-        print("Assistant Unlock command failed; further commands may not work because of this.")
+        eprint("Assistant Unlock command failed; further commands may not work because of this.")
 
-    payload = DJIPayload_FlyController_GetParamDefinition2015Rq()
+    payload = DJIPayload_FlyController_GetParamInfoByIndex2015Rq()
 
     if po.fmt == '2line':
         print("{:4s} {:60s}".format("idx", "name"))
@@ -169,6 +213,11 @@ def do_flyc_param_request_list(po, ser):
 
     for idx in range(po.start, po.start+po.count):
         payload.param_index = idx
+
+        if (po.verbose > 2):
+            print("Prepared request - {:s}:".format(type(payload).__name__))
+            print(payload)
+
         pktrpl = send_request_and_receive_reply(po, ser,
           COMM_DEV_TYPE.FLYCONTROLLER, 0,
           ACK_TYPE.ACK_AFTER_EXEC,
@@ -179,15 +228,13 @@ def do_flyc_param_request_list(po, ser):
         #pktrpl = bytes.fromhex("55 2e 04 a7 03 0a 77 45 80 03 f0 00 0a 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 67 6c 6f 62 61 6c 2e 73 74 61 74 75 73 00 79 ac")
 
         if pktrpl is None:
-            eprint("No response on parameter {:d} definition request.".format(idx))
-            break
+            raise ConnectionError("No response on parameter {:d} info request.".format(idx))
 
         rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
         rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
 
         if (rplpayload is None):
-            eprint("Unrecognized response to parameter {:d} definition request.".format(idx))
-            break
+            raise ConnectionError("Unrecognized response to parameter {:d} info request.".format(idx))
 
         if sizeof(rplpayload) <= 4:
             if (po.verbose > 0):
@@ -199,22 +246,7 @@ def do_flyc_param_request_list(po, ser):
             print(rplpayload)
 
         # Convert limits to string before, so we can handle all types in the same way
-        limit_min = ""
-        limit_max = ""
-        limit_def = ""
-        if isinstance(rplpayload, DJIPayload_FlyController_GetParamDefinitionU2015Re):
-            limit_min = '{:d}'.format(rplpayload.limit_min)
-            limit_max = '{:d}'.format(rplpayload.limit_max)
-            limit_def = '{:d}'.format(rplpayload.limit_def)
-        elif isinstance(rplpayload, DJIPayload_FlyController_GetParamDefinitionI2015Re):
-            limit_min = '{:d}'.format(rplpayload.limit_min)
-            limit_max = '{:d}'.format(rplpayload.limit_max)
-            limit_def = '{:d}'.format(rplpayload.limit_def)
-        elif isinstance(rplpayload, DJIPayload_FlyController_GetParamDefinitionF2015Re):
-            limit_min = '{:f}'.format(rplpayload.limit_min)
-            limit_max = '{:f}'.format(rplpayload.limit_max)
-            limit_def = '{:f}'.format(rplpayload.limit_def)
-
+        (limit_min, limit_max, limit_def) = flyc_param_info_limits_to_str(po, rplpayload)
 
         if po.fmt == '2line':
             print("{:4d} {:60s}".format(idx, rplpayload.name.decode("utf-8")))
@@ -238,20 +270,109 @@ def do_flyc_param_request_list(po, ser):
               rplpayload.type_id, rplpayload.size, rplpayload.attribute,
               limit_min, limit_max, limit_def))
 
+def do_flyc_param_request_get(po, ser):
+    # Get param info first, so we know type and size
+    payload = DJIPayload_FlyController_GetParamInfoByHash2015Rq()
+    payload.param_hash = flyc_parameter_compute_hash(po,po.param_name)
+
+    if (po.verbose > 2):
+        print("Prepared request - {:s}:".format(type(payload).__name__))
+        print(payload)
+
+    pktrpl = send_request_and_receive_reply(po, ser,
+      COMM_DEV_TYPE.FLYCONTROLLER, 0,
+      ACK_TYPE.ACK_AFTER_EXEC,
+      CMD_SET_TYPE.FLYCONTROLLER, 0xf7,
+      payload)
+
+    if pktrpl is None:
+        raise ConnectionError("No response on parameter info by hash request.")
+
+    rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+    paraminfo = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+
+    if (paraminfo is None):
+        raise LookupError("Unrecognized response to parameter info by hash request.")
+
+    # Now get the parameter value
+    payload = DJIPayload_FlyController_ReadParamValByHash2015Rq()
+    payload.param_hash = flyc_parameter_compute_hash(po,po.param_name)
+
+    if (po.verbose > 2):
+        print("Prepared request - {:s}:".format(type(payload).__name__))
+        print(payload)
+
+    pktrpl = send_request_and_receive_reply(po, ser,
+      COMM_DEV_TYPE.FLYCONTROLLER, 0,
+      ACK_TYPE.ACK_AFTER_EXEC,
+      CMD_SET_TYPE.FLYCONTROLLER, 0xf8,
+      payload)
+
+    #DEBUG - use to test the code without a drone
+    #pktrpl = bytes.fromhex("55 2e 04 a7 03 0a 77 45 80 03 f0 00 0a 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 67 6c 6f 62 61 6c 2e 73 74 61 74 75 73 00 79 ac")
+
+    if pktrpl is None:
+        raise ConnectionError("No response on parameter value by hash request.")
+
+    rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+    rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+
+    if (rplpayload is None):
+        raise LookupError("Unrecognized response to parameter value by hash request.")
+
+    if sizeof(rplpayload) <= 4:
+        raise ValueError("Response indicates parameter does not exist or has no retrievable value.")
+
+    if (po.verbose > 2):
+        print("Parsed response  - {:s}:".format(type(rplpayload).__name__))
+        print(rplpayload)
+
+    param_val = flyc_param_value_to_str(po, paraminfo, rplpayload.param_value)
+    (limit_min, limit_max, limit_def) = flyc_param_info_limits_to_str(po, paraminfo)
+
+    if po.fmt == '2line':
+        print("0x{:4x} {:s}".format(rplpayload.param_hash, paraminfo.name.decode("utf-8")))
+        print("typeId={:d} size={:d} attrib=0x{:04x} min={:s} max={:s} deflt={:s} value={:s}".format(
+          paraminfo.type_id, paraminfo.size, paraminfo.attribute,
+          limit_min, limit_max, limit_def, param_val))
+    elif po.fmt == 'tab':
+        print("{:s}\t{:s}\t{:s}\t{:s}\t{:s}\t{:s}\t{:s}\t{:s}\t{:s}".format(
+          "hash", "name", "typeId", "size", "attr", "min", "max", "deflt", "value"))
+        print("0x{:4x}\t{:s}\t{:d}\t{:d}\t0x{:04x}\t{:s}\t{:s}\t{:s}\t{:s}".format(
+          rplpayload.param_hash, paraminfo.name.decode("utf-8"),
+          paraminfo.type_id, paraminfo.size, paraminfo.attribute,
+          limit_min, limit_max, limit_def, param_val))
+    elif po.fmt == 'csv':
+        print("{:s};{:s};{:s};{:s};{:s};{:s};{:s};{:s};{:s}".format(
+          "hash", "name", "typeId", "size", "attr", "min", "max", "deflt", "value"))
+        print("0x{:4x};{:s};{:d};{:d};0x{:04x};{:s};{:s};{:s};{:s}".format(
+          rplpayload.param_hash, paraminfo.name.decode("utf-8"),
+          paraminfo.type_id, paraminfo.size, paraminfo.attribute,
+          limit_min, limit_max, limit_def, param_val))
+    else: # po.fmt == '1line':
+        print("0x{:4x} {:s} = {:s}".format(rplpayload.param_hash, paraminfo.name.decode("utf-8"), param_val))
+
+def do_flyc_param_request_set(po, ser):
+    eprint("Unimplemented {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
+
 def do_flyc_param_request(po):
     # Open serial port
     ser = serial.Serial(po.port, baudrate=po.baudrate, timeout=0)
     if (po.verbose > 0):
         print("Opened {} at {}".format(ser.port, ser.baudrate))
 
-    if po.subcmd == FLYC_PARAM_CMD.LIST:
-        do_flyc_param_request_list(po, ser)
-    elif po.subcmd == FLYC_PARAM_CMD.GET:
-        eprint("Unimplemented {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
-    elif po.subcmd == FLYC_PARAM_CMD.SET:
-        eprint("Unimplemented {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
-    else:
-        eprint("Unrecognized {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
+    try:
+        if po.subcmd == FLYC_PARAM_CMD.LIST:
+            do_flyc_param_request_list(po, ser)
+        elif po.subcmd == FLYC_PARAM_CMD.GET:
+            do_flyc_param_request_get(po, ser)
+        elif po.subcmd == FLYC_PARAM_CMD.SET:
+            do_flyc_param_request_set(po, ser)
+        else:
+            raise ValueError("Unrecognized {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
+    except Exception as ex:
+        print(ex)
+        raise
 
     ser.close()
 
@@ -314,19 +435,22 @@ def main():
 
     subpar_flycpar_list = subpar_flycpar_subcmd.add_parser('list',
             help="list FlyC Parameters")
-
     subpar_flycpar_list.add_argument('-s', '--start', default=0, type=int,
             help="starting index")
-
     subpar_flycpar_list.add_argument('-c', '--count', default=100, type=int,
             help="amount of entries to show")
-
     subpar_flycpar_list.add_argument('-f', '--fmt', default='2line', type=str,
             choices=['2line', '1line', 'tab', 'csv'],
             help="output format")
 
     subpar_flycpar_get = subpar_flycpar_subcmd.add_parser('get',
             help="get value of FlyC Param")
+    subpar_flycpar_get.add_argument('param_name', type=str,
+            help="name string of the requested parameter")
+    subpar_flycpar_get.add_argument('-f', '--fmt', default='1line', type=str,
+            choices=['2line', '1line', 'tab', 'csv'],
+            help="output format")
+
 
     subpar_flycpar_set = subpar_flycpar_subcmd.add_parser('set',
             help="update value of FlyC Param")
