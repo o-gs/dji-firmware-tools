@@ -284,17 +284,6 @@ def flyc_param_get_proper_limit_deflt(po, eexpar):
      return eexpar.limit_i.deflt
   return eexpar.limit_f.deflt
 
-def flyc_parameter_compute_hash(po, parname):
-  """ Computes hash from given flyc parameter name. Parameters are recognized by the FC by the hash.
-  """
-  parhash = 0
-  parbt = parname.encode('gbk') # seriously, they should already know the world uses UTF now
-  for i in range(0, len(parname)):
-      ncode = parbt[i]
-      tmpval = (parhash & 0xffffffff) << 8
-      parhash = (tmpval + ncode) % 0xfffffffb
-  return parhash
-
 def address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, ptraddr):
   """ Checks whether given value can be treated as a valid pointer to either code or initialized data.
   """
