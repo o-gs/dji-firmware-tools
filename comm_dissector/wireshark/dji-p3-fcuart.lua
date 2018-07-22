@@ -5467,7 +5467,7 @@ local function flyc_config_table_read_param_by_hash_dissector(pkt_length, buffer
         offset = offset + 1
 
         -- There can be multiple values in the packet; but without knowing size for each hash, we have no way of knowing where first value ends
-        -- Yhis is why everything beyond the firsh hash is thrown to one value
+        -- This is why everything beyond the firsh hash is thrown to one value
         if (payload:len() - offset >= 5) then
             subtree:add_le (f.flyc_config_table_read_param_by_hash_name_hash, payload(offset, 4))
             offset = offset + 4
@@ -5485,10 +5485,11 @@ end
 
 -- Flight Controller - Config Table: Write Param By Hash - 0xf9
 
-f.flyc_write_flyc_param_by_hash_name_hash = ProtoField.uint32 ("dji_p3.flyc_write_flyc_param_by_hash_name_hash", "Param Name Hash", base.HEX, enums.FLYC_PARAMETER_BY_HASH_ENUM, nil, "Hash of a flight controller parameter name string")
-f.flyc_write_flyc_param_by_hash_value = ProtoField.bytes ("dji_p3.flyc_write_flyc_param_by_hash_value", "Param Value", base.SPACE, nil, nil, "Flight controller parameter value to set; size and type depends on parameter")
+f.flyc_config_table_write_param_by_hash_status = ProtoField.uint8 ("dji_p3.flyc_config_table_write_param_by_hash_status", "Status", base.DEC, nil, nil)
+f.flyc_config_table_write_param_by_hash_name_hash = ProtoField.uint32 ("dji_p3.flyc_config_table_write_param_by_hash_name_hash", "Param Name Hash", base.HEX, enums.FLYC_PARAMETER_BY_HASH_ENUM, nil, "Hash of a flight controller parameter name string")
+f.flyc_config_table_write_param_by_hash_value = ProtoField.bytes ("dji_p3.flyc_config_table_write_param_by_hash_value", "Param Value", base.SPACE, nil, nil, "Flight controller parameter value; size and type depends on parameter")
 
-local function flyc_write_flyc_param_by_hash_dissector(pkt_length, buffer, pinfo, subtree)
+local function flyc_config_table_write_param_by_hash_dissector(pkt_length, buffer, pinfo, subtree)
     local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
 
     local offset = 11
@@ -5496,16 +5497,28 @@ local function flyc_write_flyc_param_by_hash_dissector(pkt_length, buffer, pinfo
     offset = 0
 
     if pack_type == 0 then -- Request
-        subtree:add_le (f.flyc_write_flyc_param_by_hash_name_hash, payload(offset, 4))
+        subtree:add_le (f.flyc_config_table_write_param_by_hash_name_hash, payload(offset, 4))
         offset = offset + 4
 
         local varsize_val = payload(offset, payload:len() - offset)
-        subtree:add (f.flyc_write_flyc_param_by_hash_value, varsize_val)
+        subtree:add (f.flyc_config_table_write_param_by_hash_value, varsize_val)
         offset = payload:len()
 
         --if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Write Param By Hash: Offset does not match - internal inconsistency") end
     else -- Response
-        --TODO
+        subtree:add_le (f.flyc_config_table_write_param_by_hash_status, payload(offset, 1))
+        offset = offset + 1
+
+        if (payload:len() - offset >= 5) then
+            subtree:add_le (f.flyc_config_table_write_param_by_hash_name_hash, payload(offset, 4))
+            offset = offset + 4
+
+            local varsize_val = payload(offset, payload:len() - offset)
+            subtree:add (f.flyc_config_table_write_param_by_hash_value, varsize_val)
+            offset = payload:len()
+        end
+
+        --if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Write Param By Hash: Offset does not match - internal inconsistency") end
     end
 
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table Write Param By Hash: Payload size different than expected") end
@@ -5562,7 +5575,7 @@ local FLYC_UART_CMD_DISSECT = {
     [0xf1] = flyc_config_table_read_param_by_index_dissector,
     [0xf7] = flyc_config_table_get_param_info_by_hash_dissector,
     [0xf8] = flyc_config_table_read_param_by_hash_dissector,
-    [0xf9] = flyc_write_flyc_param_by_hash_dissector,
+    [0xf9] = flyc_config_table_write_param_by_hash_dissector,
     [0xfb] = flyc_flyc_params_by_hash_dissector,
 }
 
