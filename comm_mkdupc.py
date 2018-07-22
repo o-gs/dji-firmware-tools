@@ -385,6 +385,43 @@ class DJIPayload_FlyController_ReadParamValByHash2015Re(DJIPayload_Base):
              ]
 
 
+class DJIPayload_FlyController_WriteParamVal1ByHash2015Rq(DJIPayload_Base):
+  _fields_ = [('param_hash', c_uint),
+              ('param_value', c_char),
+             ]
+
+class DJIPayload_FlyController_WriteParamVal2ByHash2015Rq(DJIPayload_Base):
+  _fields_ = [('param_hash', c_uint),
+              ('param_value', c_char * 2),
+             ]
+
+class DJIPayload_FlyController_WriteParamVal4ByHash2015Rq(DJIPayload_Base):
+  _fields_ = [('param_hash', c_uint),
+              ('param_value', c_char * 4),
+             ]
+
+class DJIPayload_FlyController_WriteParamVal8ByHash2015Rq(DJIPayload_Base):
+  _fields_ = [('param_hash', c_uint),
+              ('param_value', c_char * 8),
+             ]
+
+class DJIPayload_FlyController_WriteParamVal16ByHash2015Rq(DJIPayload_Base):
+  _fields_ = [('param_hash', c_uint),
+              ('param_value', c_char * 16),
+             ]
+
+class DJIPayload_FlyController_WriteParamValAnyByHash2015Rq(DJIPayload_Base):
+  _fields_ = [('param_hash', c_uint),
+              ('param_value', c_char * DJIPayload_FlyController_ParamMaxLen),
+             ]
+
+class DJIPayload_FlyController_WriteParamValByHash2015Re(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
+              ('param_hash', c_uint),
+              ('param_value', c_char * DJIPayload_FlyController_ParamMaxLen),
+             ]
+
+
 def flyc_parameter_compute_hash(po, parname):
   """ Computes hash from given flyc parameter name. Parameters are recognized by the FC by the hash.
   """
@@ -447,6 +484,19 @@ def get_known_payload(pkthead, payload):
         if (pkthead.cmd_id == 0xf8):
             if len(payload) >= sizeof(DJIPayload_FlyController_ReadParamValByHash2015Rq):
                 return DJIPayload_FlyController_ReadParamValByHash2015Rq.from_buffer_copy(payload)
+        if (pkthead.cmd_id == 0xf9):
+            if len(payload) > sizeof(DJIPayload_FlyController_WriteParamVal16ByHash2015Rq):
+                return DJIPayload_FlyController_WriteParamValAnyByHash2015Rq.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_WriteParamValAnyByHash2015Rq), b'\0'))
+            if len(payload) > sizeof(DJIPayload_FlyController_WriteParamVal8ByHash2015Rq):
+                return DJIPayload_FlyController_WriteParamVal16ByHash2015Rq.from_buffer_copy(payload)
+            if len(payload) > sizeof(DJIPayload_FlyController_WriteParamVal4ByHash2015Rq):
+                return DJIPayload_FlyController_WriteParamVal8ByHash2015Rq.from_buffer_copy(payload)
+            if len(payload) > sizeof(DJIPayload_FlyController_WriteParamVal2ByHash2015Rq):
+                return DJIPayload_FlyController_WriteParamVal4ByHash2015Rq.from_buffer_copy(payload)
+            if len(payload) > sizeof(DJIPayload_FlyController_WriteParamVal1ByHash2015Rq):
+                return DJIPayload_FlyController_WriteParamVal2ByHash2015Rq.from_buffer_copy(payload)
+            if len(payload) >= sizeof(DJIPayload_FlyController_WriteParamVal1ByHash2015Rq):
+                return DJIPayload_FlyController_WriteParamVal1ByHash2015Rq.from_buffer_copy(payload)
 
     if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 1:
         if (pkthead.cmd_id == 0xf0) or (pkthead.cmd_id == 0xf7):
@@ -463,6 +513,9 @@ def get_known_payload(pkthead, payload):
         if (pkthead.cmd_id == 0xf8):
             if len(payload) >= sizeof(DJIPayload_FlyController_ReadParamValByHash2015Re)-DJIPayload_FlyController_ParamMaxLen+1:
                 return DJIPayload_FlyController_ReadParamValByHash2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_ReadParamValByHash2015Re), b'\0'))
+        if (pkthead.cmd_id == 0xf9):
+            if len(payload) >= sizeof(DJIPayload_FlyController_WriteParamValByHash2015Re)-DJIPayload_FlyController_ParamMaxLen+1:
+                return DJIPayload_FlyController_WriteParamValByHash2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_WriteParamValByHash2015Re), b'\0'))
 
     return None
 
