@@ -422,6 +422,17 @@ class DJIPayload_FlyController_WriteParamValByHash2015Re(DJIPayload_Base):
              ]
 
 
+class DJIPayload_FlyController_GetTblAttribute2017Rq(DJIPayload_Base):
+  _fields_ = [('table_no', c_ushort),
+             ]
+
+class DJIPayload_FlyController_GetTblAttribute2017Re(DJIPayload_Base):
+  _fields_ = [('status', c_ushort),
+              ('table_no', c_ushort),
+              ('entries_crc', c_uint),
+              ('entries_num', c_uint),
+             ]
+
 def flyc_parameter_compute_hash(po, parname):
   """ Computes hash from given flyc parameter name. Parameters are recognized by the FC by the hash.
   """
@@ -478,6 +489,9 @@ def get_known_payload(pkthead, payload):
                 return DJIPayload_General_ChipRebootRe.from_buffer_copy(payload)
 
     if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 0:
+        if (pkthead.cmd_id == 0xe0):
+            if len(payload) >= sizeof(DJIPayload_FlyController_GetTblAttribute2017Rq):
+                return DJIPayload_FlyController_GetTblAttribute2017Rq.from_buffer_copy(payload)
         if (pkthead.cmd_id == 0xf0):
             if len(payload) >= sizeof(DJIPayload_FlyController_GetParamInfoByIndex2015Rq):
                 return DJIPayload_FlyController_GetParamInfoByIndex2015Rq.from_buffer_copy(payload)
@@ -499,6 +513,9 @@ def get_known_payload(pkthead, payload):
                 return DJIPayload_FlyController_WriteParamVal1ByHash2015Rq.from_buffer_copy(payload)
 
     if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 1:
+        if (pkthead.cmd_id == 0xe0):
+            if len(payload) >= sizeof(DJIPayload_FlyController_GetTblAttribute2017Re):
+                return DJIPayload_FlyController_GetTblAttribute2017Re.from_buffer_copy(payload)
         if (pkthead.cmd_id == 0xf0) or (pkthead.cmd_id == 0xf7):
             if len(payload) >= sizeof(DJIPayload_FlyController_GetParamInfoU2015Re)-DJIPayload_FlyController_ParamMaxLen+1:
                 out_payload = DJIPayload_FlyController_GetParamInfoU2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamInfoU2015Re), b'\0'))
