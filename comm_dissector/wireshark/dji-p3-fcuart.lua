@@ -4355,6 +4355,44 @@ local function flyc_flyc_redundancy_status_dissector(pkt_length, buffer, pinfo, 
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Redundancy Status: Payload size different than expected") end
 end
 
+-- Flight Controller - Config Table: Get Tbl Attribute - 0xe0
+
+f.flyc_config_table_get_tbl_attribute_status = ProtoField.uint16 ("dji_p3.flyc_config_table_get_tbl_attribute_status", "Status", base.DEC, nil, nil)
+f.flyc_config_table_get_tbl_attribute_table_no = ProtoField.int16 ("dji_p3.flyc_config_table_get_tbl_attribute_table_no", "Table No", base.DEC, nil, nil)
+f.flyc_config_table_get_tbl_attribute_entries_crc = ProtoField.uint32 ("dji_p3.flyc_config_table_get_tbl_attribute_entries_crc", "Table Entries Checksum", base.DEC, nil, nil)
+f.flyc_config_table_get_tbl_attribute_entries_num = ProtoField.uint32 ("dji_p3.flyc_config_table_get_tbl_attribute_entries_num", "Table Entries Number", base.DEC, nil, nil)
+
+local function flyc_config_command_table_get_or_exec_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if pack_type == 0 then -- Request
+        subtree:add_le (f.flyc_config_table_get_tbl_attribute_table_no, payload(offset, 2))
+        offset = offset + 2
+
+        if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Tbl Attribute: Offset does not match - internal inconsistency") end
+    else -- Response
+        subtree:add_le (f.flyc_config_table_get_tbl_attribute_status, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.flyc_config_table_get_tbl_attribute_table_no, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.flyc_config_table_get_tbl_attribute_entries_crc, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.flyc_config_table_get_tbl_attribute_entries_num, payload(offset, 4))
+        offset = offset + 4
+
+        if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Tbl Attribute: Offset does not match - internal inconsistency") end
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table Get Tbl Attribute: Payload size different than expected") end
+end
+
 
 -- Flight Controller - Config Command Table: Get or Exec - 0xe9
 
