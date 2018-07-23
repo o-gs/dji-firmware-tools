@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -48,16 +48,38 @@ def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
 
 class PRODUCT_CODE(DecoratedEnum):
-    P3X = 0
-    P3S = 1
-    P3C = 2
-    WM100 = 3
-    WM220 = 4
+    A2     =  0 # Released 2013-09-04 A2 Flight Controller
+    P330   =  1 # Released 2013-01-07 Phantom 1
+    P330V  =  2 # Released 2013-10-28 Phantom 2 Vision
+    P330Z  =  3 # Released 2013-12-15 Phantom 2 w/ Zenmuse H3-2D
+    P330VP =  4 # Released 2014-04-07 Phantom 2 Vision+
+    WM610  =  5 # Released 2014-11-13 Inspire 1
+    P3X    =  6 # Released 2015-03-09 Phantom 3 Professional
+    P3S    =  7 # Released 2015-03-09 Phantom 3 Advanced
+    MAT100 =  8 # Released 2015-06-08 Matrice 100
+    P3C    =  9 # Released 2015-08-04 Phantom 3 Standard
+    MG1    = 10 # Released 2015-11-27 Agras MG-1
+    P3XW   = 11 # Released 2016-01-05 Phantom 3 4K
+    WM330  = 12 # Released 2016-03-02 Phantom 4 (now referenced as Phantom 4 Standard)
+    MAT600 = 13 # Released 2016-04-17 Matrice 600
+    WM220  = 14 # Released 2016-09-28 Mavic Pro (also includes Released 2017-08-24 Mavic Pro Platinum)
+    #WMxxx  = 15 # Released 2016-11-16 Inspire 2
+    #WMxxx  = 16 # Released 2016-11-16 Phantom 4 Pro
+    #WMxxx  = 17 # Released 2017-02-26 Matrice 200
+    #WMxxx  = 18 # Released 2017-03-28 Agras MG-1S
+    #WMxxx  = 19 # Released 2017-04-13 Phantom 4 Advanced
+    #WMxxx  = 20 # Released 2017-05-24 Spark
+    WM230  = 21 # Released 2018-01-23 Mavic Air
 
 ALT_PRODUCT_CODE = {
+    'S800': 'A2', # Released 2012-07-25 Hexacopter frame, often sold with Dji A2 Flight Controller
+    'S1000': 'A2', # Released 2014-02-24 Octocopter frame, often sold with Dji A2 Flight Controller
+    'S900': 'A2', # Released 2014-08-04 Hexacopter frame, often sold with Dji A2 Flight Controller
     'PH3PRO': 'P3X',
     'PH3ADV': 'P3S',
     'PH3STD': 'P3C',
+    'P4': 'WM330',
+    'PH4': 'WM330',
     'SPARK': 'WM100',
     'MAVIC': 'WM220',
 }
@@ -160,7 +182,77 @@ def send_assistant_unlock(po, ser, val):
     #TODO we might want to check status in the reply
     return True
 
-def flyc_param_request_get_param_info_by_index(po, ser, param_idx):
+def flyc_param_request_2017_get_table_attribs(po, ser, table_no):
+    payload = DJIPayload_FlyController_GetTblAttribute2017Rq()
+    payload.table_no = table_no
+
+    if (po.verbose > 2):
+        print("Prepared request - {:s}:".format(type(payload).__name__))
+        print(payload)
+
+    pktrpl = send_request_and_receive_reply(po, ser,
+      COMM_DEV_TYPE.FLYCONTROLLER, 0,
+      ACK_TYPE.ACK_AFTER_EXEC,
+      CMD_SET_TYPE.FLYCONTROLLER, 0xe0,
+      payload)
+
+    if po.dry_test:
+        # use to test the code without a drone
+        pktrpl = bytes.fromhex("")#TODO
+
+    if pktrpl is None:
+        raise ConnectionError("No response on get table attribs request.")
+
+    rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+    rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+
+    if (rplpayload is None):
+        raise LookupError("Unrecognized response to get table attribs request.")
+
+    if sizeof(rplpayload) <= 2:
+        raise ValueError("Response indicates table no does not exist.")
+
+    if (po.verbose > 2):
+        print("Parsed response  - {:s}:".format(type(rplpayload).__name__))
+        print(rplpayload)
+
+    return rplpayload
+
+def flyc_param_request_2017_get_param_info_by_index(po, ser, param_idx):
+    #TODO
+    payload = DJIPayload_FlyController_GetParamInfoByIndex2015Rq()
+    payload.param_index = param_idx
+
+    if (po.verbose > 2):
+        print("Prepared request - {:s}:".format(type(payload).__name__))
+        print(payload)
+
+    pktrpl = send_request_and_receive_reply(po, ser,
+      COMM_DEV_TYPE.FLYCONTROLLER, 0,
+      ACK_TYPE.ACK_AFTER_EXEC,
+      CMD_SET_TYPE.FLYCONTROLLER, 0xf0,
+      payload)
+
+    if po.dry_test:
+        # use to test the code without a drone
+        pktrpl = bytes.fromhex("") #TODO
+
+    if pktrpl is None:
+        raise ConnectionError("No response on parameter {:d} info by index request.".format(param_idx))
+
+    rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+    paraminfo = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+
+    if (paraminfo is None):
+        raise ConnectionError("Unrecognized response to parameter {:d} info by index request.".format(param_idx))
+
+    if (po.verbose > 2):
+        print("Parsed response  - {:s}:".format(type(paraminfo).__name__))
+        print(paraminfo)
+
+    return paraminfo
+
+def flyc_param_request_2015_get_param_info_by_index(po, ser, param_idx):
     payload = DJIPayload_FlyController_GetParamInfoByIndex2015Rq()
     payload.param_index = param_idx
 
@@ -193,7 +285,7 @@ def flyc_param_request_get_param_info_by_index(po, ser, param_idx):
 
     return paraminfo
 
-def flyc_param_request_get_param_info_by_hash(po, ser, param_name):
+def flyc_param_request_2015_get_param_info_by_hash(po, ser, param_name):
     payload = DJIPayload_FlyController_GetParamInfoByHash2015Rq()
     payload.param_hash = flyc_parameter_compute_hash(po,param_name)
 
@@ -226,7 +318,7 @@ def flyc_param_request_get_param_info_by_hash(po, ser, param_name):
 
     return paraminfo
 
-def flyc_param_request_read_param_value_by_hash(po, ser, param_name):
+def flyc_param_request_2015_read_param_value_by_hash(po, ser, param_name):
     payload = DJIPayload_FlyController_ReadParamValByHash2015Rq()
     payload.param_hash = flyc_parameter_compute_hash(po,param_name)
 
@@ -262,7 +354,7 @@ def flyc_param_request_read_param_value_by_hash(po, ser, param_name):
 
     return rplpayload
 
-def flyc_param_request_write_param_value_by_hash(po, ser, param_name, param_val):
+def flyc_param_request_2015_write_param_value_by_hash(po, ser, param_name, param_val):
     if len(param_val) > 16:
         payload = DJIPayload_FlyController_WriteParamValAnyByHash2015Rq()
     elif len(param_val) > 8:
@@ -448,21 +540,17 @@ def flyc_param_request_print_response(po, idx, paraminfo, rplpayload):
             else:
                 print("{:s} = {:s} range = < {:s} .. {:s} >".format(paraminfo.name.decode("utf-8"), param_val, limit_min, limit_max))
 
-def do_flyc_param_request_list(po, ser):
+def do_flyc_param_request_2015_list(po, ser):
+    """ List flyc parameters on platforms with single, linear parameters table.
 
-    if ((po.product == PRODUCT_CODE.P3X) or
-      (po.product == PRODUCT_CODE.P3S) or
-      (po.product == PRODUCT_CODE.P3C)):
-        unlock_status = True # No Assistant Unlock needed on pre-2017 platforms
-    else:
-        unlock_status = send_assistant_unlock(po, ser, 1)
-    if not unlock_status:
-        eprint("Assistant Unlock command failed; further commands may not work because of this.")
+        Tested on the following platforms and FW versions:
+        P3X_FW_V01.07.0060 (2018-07-22)
+    """
     # Print result data header
     flyc_param_request_print_response(po, True, None, None)
 
     for idx in range(po.start, po.start+po.count):
-        rplpayload = flyc_param_request_get_param_info_by_index(po, ser, idx)
+        rplpayload = flyc_param_request_2015_get_param_info_by_index(po, ser, idx)
 
         if sizeof(rplpayload) <= 4:
             if (po.verbose > 0):
@@ -471,21 +559,86 @@ def do_flyc_param_request_list(po, ser):
         # Print the result data
         flyc_param_request_print_response(po, idx, rplpayload, None)
 
-def do_flyc_param_request_get(po, ser):
+def do_flyc_param_request_2015_get(po, ser):
+    """ Get flyc parameter value on platforms with single, linear parameters table.
+
+        Tested on the following platforms and FW versions:
+        P3X_FW_V01.07.0060 (2018-07-22)
+    """
     # Get param info first, so we know type and size
-    paraminfo = flyc_param_request_get_param_info_by_hash(po, ser, po.param_name)
+    paraminfo = flyc_param_request_2015_get_param_info_by_hash(po, ser, po.param_name)
     # Now get the parameter value
-    rplpayload = flyc_param_request_read_param_value_by_hash(po, ser, po.param_name)
+    rplpayload = flyc_param_request_2015_read_param_value_by_hash(po, ser, po.param_name)
     # Print the result data
     flyc_param_request_print_response(po, None, None, True)
     flyc_param_request_print_response(po, None, paraminfo, rplpayload)
 
-def do_flyc_param_request_set(po, ser):
+def do_flyc_param_request_2015_set(po, ser):
+    """ Set new value of flyc parameter on platforms with single, linear parameters table.
+
+        Tested on the following platforms and FW versions:
+        P3X_FW_V01.07.0060 (2018-07-22)
+    """
     # Get param info first, so we know type and size
-    paraminfo = flyc_param_request_get_param_info_by_hash(po, ser, po.param_name)
+    paraminfo = flyc_param_request_2015_get_param_info_by_hash(po, ser, po.param_name)
     # Now set the parameter value
     param_val = flyc_param_str_to_value(po, paraminfo, po.param_value)
-    rplpayload = flyc_param_request_write_param_value_by_hash(po, ser, po.param_name, param_val)
+    rplpayload = flyc_param_request_2015_write_param_value_by_hash(po, ser, po.param_name, param_val)
+    # Print the result data
+    flyc_param_request_print_response(po, None, None, True)
+    flyc_param_request_print_response(po, None, paraminfo, rplpayload)
+
+def do_flyc_param_request_2017_list(po, ser):
+    """ List flyc parameters on platforms multiple parameter tables.
+
+        Tested on the following platforms and FW versions:
+        NONE
+    """
+    unlock_status = send_assistant_unlock(po, ser, 1)
+    if not unlock_status:
+        eprint("Assistant Unlock command failed; further commands may not work because of this.")
+    # Get info on tables first, so we cab flatten them
+    #TODO - for
+    table_no = 0
+    table_attribs = flyc_param_request_2017_get_table_attribs(po, ser, table_no)
+    # Print result data header
+    flyc_param_request_print_response(po, True, None, None)
+
+    for idx in range(po.start, po.start+po.count):
+        rplpayload = flyc_param_request_2017_get_param_info_by_index(po, ser, idx)
+
+        if sizeof(rplpayload) <= 4:
+            if (po.verbose > 0):
+                print("Response on parameter {:d} indicates end of list.".format(idx))
+            break
+        # Print the result data
+        flyc_param_request_print_response(po, idx, rplpayload, None)
+
+def do_flyc_param_request_2017_get(po, ser):
+    """ Get flyc parameter value on platforms multiple parameter tables.
+
+        Tested on the following platforms and FW versions:
+        NONE
+    """
+    # Get param info first, so we know type and size
+    paraminfo = flyc_param_request_2015_get_param_info_by_hash(po, ser, po.param_name)
+    # Now get the parameter value
+    rplpayload = flyc_param_request_2015_read_param_value_by_hash(po, ser, po.param_name)
+    # Print the result data
+    flyc_param_request_print_response(po, None, None, True)
+    flyc_param_request_print_response(po, None, paraminfo, rplpayload)
+
+def do_flyc_param_request_2017_set(po, ser):
+    """ Set new value of flyc parameter on platforms multiple parameter tables.
+
+        Tested on the following platforms and FW versions:
+        NONE
+    """
+    # Get param info first, so we know type and size
+    paraminfo = flyc_param_request_2015_get_param_info_by_hash(po, ser, po.param_name)
+    # Now set the parameter value
+    param_val = flyc_param_str_to_value(po, paraminfo, po.param_value)
+    rplpayload = flyc_param_request_2015_write_param_value_by_hash(po, ser, po.param_name, param_val)
     # Print the result data
     flyc_param_request_print_response(po, None, None, True)
     flyc_param_request_print_response(po, None, paraminfo, rplpayload)
@@ -493,14 +646,24 @@ def do_flyc_param_request_set(po, ser):
 def do_flyc_param_request(po):
     ser = open_serial_port(po)
 
-    if po.subcmd == FLYC_PARAM_CMD.LIST:
-        do_flyc_param_request_list(po, ser)
-    elif po.subcmd == FLYC_PARAM_CMD.GET:
-        do_flyc_param_request_get(po, ser)
-    elif po.subcmd == FLYC_PARAM_CMD.SET:
-        do_flyc_param_request_set(po, ser)
+    if po.product.value >= PRODUCT_CODE.WM330.value:
+        if po.subcmd == FLYC_PARAM_CMD.LIST:
+            do_flyc_param_request_2017_list(po, ser)
+        elif po.subcmd == FLYC_PARAM_CMD.GET:
+            do_flyc_param_request_2017_get(po, ser)
+        elif po.subcmd == FLYC_PARAM_CMD.SET:
+            do_flyc_param_request_2017_set(po, ser)
+        else:
+            raise ValueError("Unrecognized {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
     else:
-        raise ValueError("Unrecognized {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
+        if po.subcmd == FLYC_PARAM_CMD.LIST:
+            do_flyc_param_request_2015_list(po, ser)
+        elif po.subcmd == FLYC_PARAM_CMD.GET:
+            do_flyc_param_request_2015_get(po, ser)
+        elif po.subcmd == FLYC_PARAM_CMD.SET:
+            do_flyc_param_request_2015_set(po, ser)
+        else:
+            raise ValueError("Unrecognized {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
 
     ser.close()
 
@@ -530,8 +693,8 @@ def main():
     parser.add_argument('port', type=str,
             help="the serial port to write to and read from")
 
-    parser.add_argument('product', choices=[i.name for i in PRODUCT_CODE], type=parse_product_code,
-            help="target product code name")
+    parser.add_argument('product', metavar='product', choices=[i.name for i in PRODUCT_CODE], type=parse_product_code,
+            help="target product code name; one of: {:s}".format(','.join(i.name for i in PRODUCT_CODE)))
 
     parser.add_argument('-b', '--baudrate', default=9600, type=int,
             help="the baudrate to use for the serial port (default is %(default)s)")
@@ -540,7 +703,7 @@ def main():
             help="how long to wait for answer, in miliseconds (default is %(default)s)")
 
     parser.add_argument('--dry-test', action='store_true',
-            help='Internal testing mode; do not use real serial interface and use template answers from the drone.')
+            help="internal testing mode; do not use real serial interface and use template answers from the drone.")
 
     parser.add_argument('-v', '--verbose', action='count', default=0,
             help="increases verbosity level; max level is set by -vvv")
@@ -549,7 +712,7 @@ def main():
               .format(version=__version__,author=__author__),
             help="display version information and exit")
 
-    subparsers = parser.add_subparsers(dest='svcmd',
+    subparsers = parser.add_subparsers(dest='svcmd', metavar='command',
             help="service command")
 
     subpar_flycpar = subparsers.add_parser('FlycParam',
@@ -605,4 +768,4 @@ if __name__ == '__main__':
         main()
     except Exception as ex:
         print("Error: "+str(ex))
-        raise
+        #raise
