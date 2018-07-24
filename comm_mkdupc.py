@@ -311,6 +311,15 @@ class DJIPayload_General_ChipRebootRe(DJIPayload_Base):
              ]
 
 
+class DJIPayload_FlyController_AssistantUnlockRq(DJIPayload_Base):
+  _fields_ = [('lock_state', c_uint),
+             ]
+
+class DJIPayload_FlyController_AssistantUnlockRe(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
+             ]
+
+
 class DJIPayload_FlyController_GetParamInfoByIndex2015Rq(DJIPayload_Base):
   _fields_ = [('param_index', c_ushort),
              ]
@@ -433,6 +442,57 @@ class DJIPayload_FlyController_GetTblAttribute2017Re(DJIPayload_Base):
               ('entries_num', c_uint),
              ]
 
+class DJIPayload_FlyController_GetTblAttributeEOL2017Re(DJIPayload_Base):
+  _fields_ = [('status', c_ushort),
+             ]
+
+
+class DJIPayload_FlyController_GetParamInfoByIndex2017Rq(DJIPayload_Base):
+  _fields_ = [('table_no', c_ushort),
+              ('param_index', c_ushort),
+             ]
+
+class DJIPayload_FlyController_GetParamInfoEOL2017Re(DJIPayload_Base):
+  _fields_ = [('status', c_ushort),
+             ]
+
+class DJIPayload_FlyController_GetParamInfoU2017Re(DJIPayload_Base):
+  _fields_ = [('status', c_ushort),
+              ('table_no', c_ushort),
+              ('param_index', c_ushort),
+              ('type_id', c_ushort),
+              ('size', c_ushort),
+              ('limit_min', c_uint),
+              ('limit_max', c_uint),
+              ('limit_def', c_uint),
+              ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
+             ]
+
+class DJIPayload_FlyController_GetParamInfoI2017Re(DJIPayload_Base):
+  _fields_ = [('status', c_ushort),
+              ('table_no', c_ushort),
+              ('param_index', c_ushort),
+              ('type_id', c_ushort),
+              ('size', c_ushort),
+              ('limit_min', c_int),
+              ('limit_max', c_int),
+              ('limit_def', c_int),
+              ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
+             ]
+
+class DJIPayload_FlyController_GetParamInfoF2017Re(DJIPayload_Base):
+  _fields_ = [('status', c_ushort),
+              ('table_no', c_ushort),
+              ('param_index', c_ushort),
+              ('type_id', c_ushort),
+              ('size', c_ushort),
+              ('limit_min', c_float),
+              ('limit_max', c_float),
+              ('limit_def', c_float),
+              ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
+             ]
+
+
 def flyc_parameter_compute_hash(po, parname):
   """ Computes hash from given flyc parameter name. Parameters are recognized by the FC by the hash.
   """
@@ -489,6 +549,9 @@ def get_known_payload(pkthead, payload):
                 return DJIPayload_General_ChipRebootRe.from_buffer_copy(payload)
 
     if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 0:
+        if (pkthead.cmd_id == 0xdf):
+            if len(payload) >= sizeof(DJIPayload_FlyController_AssistantUnlockRq):
+                return DJIPayload_FlyController_AssistantUnlockRq.from_buffer_copy(payload)
         if (pkthead.cmd_id == 0xe0):
             if len(payload) >= sizeof(DJIPayload_FlyController_GetTblAttribute2017Rq):
                 return DJIPayload_FlyController_GetTblAttribute2017Rq.from_buffer_copy(payload)
@@ -513,9 +576,26 @@ def get_known_payload(pkthead, payload):
                 return DJIPayload_FlyController_WriteParamVal1ByHash2015Rq.from_buffer_copy(payload)
 
     if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 1:
+        if (pkthead.cmd_id == 0xdf):
+            if len(payload) >= sizeof(DJIPayload_FlyController_AssistantUnlockRe):
+                return DJIPayload_FlyController_AssistantUnlockRe.from_buffer_copy(payload)
         if (pkthead.cmd_id == 0xe0):
             if len(payload) >= sizeof(DJIPayload_FlyController_GetTblAttribute2017Re):
                 return DJIPayload_FlyController_GetTblAttribute2017Re.from_buffer_copy(payload)
+            if len(payload) >= sizeof(DJIPayload_FlyController_GetTblAttributeEOL2017Re):
+                return DJIPayload_FlyController_GetTblAttributeEOL2017Re.from_buffer_copy(payload)
+        if (pkthead.cmd_id == 0xe1):
+            if len(payload) >= sizeof(DJIPayload_FlyController_GetParamInfoU2017Re)-DJIPayload_FlyController_ParamMaxLen+1:
+                out_payload = DJIPayload_FlyController_GetParamInfoU2017Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamInfoU2017Re), b'\0'))
+                if (out_payload.type_id >= DJIPayload_FlyController_ParamType.byte.value) and (out_payload.type_id <= DJIPayload_FlyController_ParamType.longlong.value):
+                    return DJIPayload_FlyController_GetParamInfoI2017Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamInfoI2017Re), b'\0'))
+                elif (out_payload.type_id == DJIPayload_FlyController_ParamType.float.value) or (out_payload.type_id == DJIPayload_FlyController_ParamType.double.value):
+                    return DJIPayload_FlyController_GetParamInfoF2017Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamInfoF2017Re), b'\0'))
+                else:
+                    return out_payload
+            elif len(payload) >= sizeof(DJIPayload_FlyController_GetParamInfoEOL2017Re):
+                return DJIPayload_FlyController_GetParamInfoEOL2017Re.from_buffer_copy(payload)
+
         if (pkthead.cmd_id == 0xf0) or (pkthead.cmd_id == 0xf7):
             if len(payload) >= sizeof(DJIPayload_FlyController_GetParamInfoU2015Re)-DJIPayload_FlyController_ParamMaxLen+1:
                 out_payload = DJIPayload_FlyController_GetParamInfoU2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamInfoU2015Re), b'\0'))
