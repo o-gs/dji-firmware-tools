@@ -4355,14 +4355,41 @@ local function flyc_flyc_redundancy_status_dissector(pkt_length, buffer, pinfo, 
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Redundancy Status: Payload size different than expected") end
 end
 
+-- Flight Controller - Assistant Unlock Handler - 0xdf
+
+f.flyc_assistant_unlock_lock_state = ProtoField.uint32 ("dji_p3.flyc_assistant_unlock_lock_state", "Lock State", base.DEC, nil, nil)
+f.flyc_assistant_unlock_status = ProtoField.uint8 ("dji_p3.flyc_assistant_unlock_status", "Status", base.DEC, nil, nil)
+
+local function flyc_assistant_unlock_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if pack_type == 0 then -- Request
+        subtree:add_le (f.flyc_assistant_unlock_lock_state, payload(offset, 4))
+        offset = offset + 4
+
+        if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Assistant Unlock: Offset does not match - internal inconsistency") end
+    else -- Response
+        subtree:add_le (f.flyc_assistant_unlock_status, payload(offset, 1))
+        offset = offset + 1
+
+        if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Assistant Unlock: Offset does not match - internal inconsistency") end
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Assistant Unlock: Payload size different than expected") end
+end
+
 -- Flight Controller - Config Table: Get Tbl Attribute - 0xe0
 
 f.flyc_config_table_get_tbl_attribute_status = ProtoField.uint16 ("dji_p3.flyc_config_table_get_tbl_attribute_status", "Status", base.DEC, nil, nil)
 f.flyc_config_table_get_tbl_attribute_table_no = ProtoField.int16 ("dji_p3.flyc_config_table_get_tbl_attribute_table_no", "Table No", base.DEC, nil, nil)
-f.flyc_config_table_get_tbl_attribute_entries_crc = ProtoField.uint32 ("dji_p3.flyc_config_table_get_tbl_attribute_entries_crc", "Table Entries Checksum", base.DEC, nil, nil)
+f.flyc_config_table_get_tbl_attribute_entries_crc = ProtoField.uint32 ("dji_p3.flyc_config_table_get_tbl_attribute_entries_crc", "Table Entries Checksum", base.HEX, nil, nil)
 f.flyc_config_table_get_tbl_attribute_entries_num = ProtoField.uint32 ("dji_p3.flyc_config_table_get_tbl_attribute_entries_num", "Table Entries Number", base.DEC, nil, nil)
 
-local function flyc_config_command_table_get_or_exec_dissector(pkt_length, buffer, pinfo, subtree)
+local function flyc_config_table_get_tbl_attribute_dissector(pkt_length, buffer, pinfo, subtree)
     local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
 
     local offset = 11
@@ -4378,21 +4405,118 @@ local function flyc_config_command_table_get_or_exec_dissector(pkt_length, buffe
         subtree:add_le (f.flyc_config_table_get_tbl_attribute_status, payload(offset, 2))
         offset = offset + 2
 
-        subtree:add_le (f.flyc_config_table_get_tbl_attribute_table_no, payload(offset, 2))
-        offset = offset + 2
+        if (payload:len() - offset >= 6) then
+            subtree:add_le (f.flyc_config_table_get_tbl_attribute_table_no, payload(offset, 2))
+            offset = offset + 2
 
-        subtree:add_le (f.flyc_config_table_get_tbl_attribute_entries_crc, payload(offset, 4))
-        offset = offset + 4
+            subtree:add_le (f.flyc_config_table_get_tbl_attribute_entries_crc, payload(offset, 4))
+            offset = offset + 4
 
-        subtree:add_le (f.flyc_config_table_get_tbl_attribute_entries_num, payload(offset, 4))
-        offset = offset + 4
+            subtree:add_le (f.flyc_config_table_get_tbl_attribute_entries_num, payload(offset, 4))
+            offset = offset + 4
+        end
 
-        if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Tbl Attribute: Offset does not match - internal inconsistency") end
+        if (offset ~= 2) and (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Tbl Attribute: Offset does not match - internal inconsistency") end
     end
 
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table Get Tbl Attribute: Payload size different than expected") end
 end
 
+-- Flight Controller - Config Table: Get Item Attribute - 0xe1
+
+f.flyc_config_table_get_item_attribute_status = ProtoField.uint16 ("dji_p3.flyc_config_table_get_item_attribute_status", "Status", base.DEC, nil, nil)
+f.flyc_config_table_get_item_attribute_table_no = ProtoField.int16 ("dji_p3.flyc_config_table_get_item_attribute_table_no", "Table No", base.DEC, nil, nil)
+f.flyc_config_table_get_item_attribute_index = ProtoField.int16 ("dji_p3.flyc_config_table_get_item_attribute_index", "Param Index", base.DEC, nil, nil)
+f.flyc_config_table_get_item_attribute_type_id = ProtoField.uint16 ("dji_p3.flyc_config_table_get_item_attribute_type_id", "TypeID", base.DEC, nil, nil)
+f.flyc_config_table_get_item_attribute_size = ProtoField.int16 ("dji_p3.flyc_config_table_get_item_attribute_size", "Size", base.DEC, nil, nil)
+--f.flyc_config_table_get_item_attribute_attribute = ProtoField.uint16 ("dji_p3.flyc_config_table_get_item_attribute_attribute", "Attribute", base.HEX, nil, nil)
+f.flyc_config_table_get_item_attribute_limit_i_def = ProtoField.int32 ("dji_p3.flyc_config_table_get_item_attribute_limit_i_def", "LimitI defaultValue", base.DEC, nil, nil)
+f.flyc_config_table_get_item_attribute_limit_i_min = ProtoField.int32 ("dji_p3.flyc_config_table_get_item_attribute_limit_i_min", "LimitI minValue", base.DEC, nil, nil)
+f.flyc_config_table_get_item_attribute_limit_i_max = ProtoField.int32 ("dji_p3.flyc_config_table_get_item_attribute_limit_i_max", "LimitI maxValue", base.DEC, nil, nil)
+f.flyc_config_table_get_item_attribute_limit_u_def = ProtoField.uint32 ("dji_p3.flyc_config_table_get_item_attribute_limit_u_def", "LimitU defaultValue", base.DEC, nil, nil)
+f.flyc_config_table_get_item_attribute_limit_u_min = ProtoField.uint32 ("dji_p3.flyc_config_table_get_item_attribute_limit_u_min", "LimitU minValue", base.DEC, nil, nil)
+f.flyc_config_table_get_item_attribute_limit_u_max = ProtoField.uint32 ("dji_p3.flyc_config_table_get_item_attribute_limit_u_max", "LimitU maxValue", base.DEC, nil, nil)
+f.flyc_config_table_get_item_attribute_limit_f_def = ProtoField.float ("dji_p3.flyc_config_table_get_item_attribute_limit_f_def", "LimitF defaultValue", nil, nil)
+f.flyc_config_table_get_item_attribute_limit_f_min = ProtoField.float ("dji_p3.flyc_config_table_get_item_attribute_limit_f_min", "LimitF minValue", nil, nil)
+f.flyc_config_table_get_item_attribute_limit_f_max = ProtoField.float ("dji_p3.flyc_config_table_get_item_attribute_limit_f_max", "LimitF maxValue", nil, nil)
+f.flyc_config_table_get_item_attribute_name = ProtoField.stringz ("dji_p3.flyc_config_table_get_item_attribute_name", "Name", base.ASCII, nil, nil)
+
+local function flyc_config_table_get_item_attribute_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if pack_type == 0 then -- Request
+        subtree:add_le (f.flyc_config_table_get_item_attribute_table_no, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.flyc_config_table_get_item_attribute_index, payload(offset, 2))
+        offset = offset + 2
+
+        if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Item Attribute: Offset does not match - internal inconsistency") end
+    else -- Response
+        subtree:add_le (f.flyc_config_table_get_item_attribute_status, payload(offset, 2))
+        offset = offset + 2
+
+        -- It is possible that the packet ends here, if there was an issue retrieving the item
+        if (payload:len() >= 10) then
+            subtree:add_le (f.flyc_config_table_get_item_attribute_table_no, payload(offset, 2))
+            offset = offset + 2
+
+            subtree:add_le (f.flyc_config_table_get_item_attribute_index, payload(offset, 2))
+            offset = offset + 2
+
+            local type_id = payload(offset,2):le_uint()
+            subtree:add_le (f.flyc_config_table_get_item_attribute_type_id, payload(offset, 2))
+            offset = offset + 2
+
+            subtree:add_le (f.flyc_config_table_get_item_attribute_size, payload(offset, 2))
+            offset = offset + 2
+
+            --subtree:add_le (f.flyc_config_table_get_item_attribute_attribute, payload(offset, 2))
+            --offset = offset + 2
+
+            if (type_id <= 3) or (type_id == 10) then
+                subtree:add_le (f.flyc_config_table_get_item_attribute_limit_u_def, payload(offset, 4))
+                offset = offset + 4
+
+                subtree:add_le (f.flyc_config_table_get_item_attribute_limit_u_min, payload(offset, 4))
+                offset = offset + 4
+
+                subtree:add_le (f.flyc_config_table_get_item_attribute_limit_u_max, payload(offset, 4))
+                offset = offset + 4
+            elseif (type_id >= 4) and (type_id <= 7) then
+                subtree:add_le (f.flyc_config_table_get_item_attribute_limit_i_def, payload(offset, 4))
+                offset = offset + 4
+
+                subtree:add_le (f.flyc_config_table_get_item_attribute_limit_i_min, payload(offset, 4))
+                offset = offset + 4
+
+                subtree:add_le (f.flyc_config_table_get_item_attribute_limit_i_max, payload(offset, 4))
+                offset = offset + 4
+            elseif (type_id == 8) or (type_id == 9) then
+                subtree:add_le (f.flyc_config_table_get_item_attribute_limit_f_def, payload(offset, 4))
+                offset = offset + 4
+
+                subtree:add_le (f.flyc_config_table_get_item_attribute_limit_f_min, payload(offset, 4))
+                offset = offset + 4
+
+                subtree:add_le (f.flyc_config_table_get_item_attribute_limit_f_max, payload(offset, 4))
+                offset = offset + 4
+            end
+
+            local name_text = payload(offset, payload:len() - offset)
+            subtree:add_le (f.flyc_config_table_get_item_attribute_name, name_text)
+            offset = payload:len()
+        end
+
+        if (offset ~= 2) and (offset < 22) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Item Attribute: Offset does not match - internal inconsistency") end
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table Get Item Attribute: Payload size different than expected") end
+end
 
 -- Flight Controller - Config Command Table: Get or Exec - 0xe9
 
@@ -5608,6 +5732,9 @@ local FLYC_UART_CMD_DISSECT = {
     [0xad] = flyc_flyc_flyc_install_error_dissector,
     [0xb6] = flyc_flyc_fault_inject_dissector,
     [0xb9] = flyc_flyc_redundancy_status_dissector,
+    [0xdf] = flyc_assistant_unlock_dissector,
+    [0xe0] = flyc_config_table_get_tbl_attribute_dissector,
+    [0xe1] = flyc_config_table_get_item_attribute_dissector,
     [0xe9] = flyc_config_command_table_get_or_exec_dissector,
     [0xf0] = flyc_config_table_get_param_info_by_index_dissector,
     [0xf1] = flyc_config_table_read_param_by_index_dissector,
