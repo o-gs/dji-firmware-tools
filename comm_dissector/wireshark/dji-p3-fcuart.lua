@@ -408,7 +408,7 @@ local FLYC_UART_CMD_TEXT = {
     [0xda] = 'Flyc Detection', -- Handler Monitor Cmd Set
     [0xdf] = 'Assistant Unlock Handler',
     [0xe0] = 'Config Table: Get Tbl Attribute',
-    [0xe1] = 'Config Table: Get Item Attribute',
+    [0xe1] = 'Config Table: Get Item Attribute', -- returns parameter name and properties post-mavic
     [0xe2] = 'Config Table: Get Item Value',
     [0xe3] = 'Config Table: Set Item Value',
     [0xe4] = 'Config Table: Reset Def. Item Value',
@@ -422,7 +422,7 @@ local FLYC_UART_CMD_TEXT = {
     [0xec] = 'Set Open Motor Error Action Status',
     [0xed] = 'Set Esc Echo',
     [0xee] = 'GoHome CountDown', -- Ost Sats Go Home Port
-    [0xf0] = 'Config Table: Get Param Info by Index', -- returns parameter name and properties
+    [0xf0] = 'Config Table: Get Param Info by Index', -- returns parameter name and properties pre-mavic
     [0xf1] = 'Config Table: Read Params By Index',
     [0xf2] = 'Config Table: Write Params By Index',
     [0xf3] = 'Config Table: Reset All Param', -- Reset Params By Index/Reset Old Config Table Item Value?
@@ -4518,6 +4518,75 @@ local function flyc_config_table_get_item_attribute_dissector(pkt_length, buffer
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table Get Item Attribute: Payload size different than expected") end
 end
 
+-- Flight Controller - Config Table: Get Item Value - 0xe2
+
+f.flyc_config_table_get_item_value_status = ProtoField.uint16 ("dji_p3.flyc_config_table_get_item_value_status", "Status", base.DEC, nil, nil)
+f.flyc_config_table_get_item_value_table_no = ProtoField.int16 ("dji_p3.flyc_config_table_get_item_value_table_no", "Table No", base.DEC, nil, nil)
+f.flyc_config_table_get_item_value_index = ProtoField.int16 ("dji_p3.flyc_config_table_get_item_value_index", "Param Index", base.DEC, nil, nil)
+f.flyc_config_table_get_item_value_value = ProtoField.bytes ("dji_p3.flyc_config_table_get_item_value_value", "Param Value", base.SPACE, nil, nil, "Flight controller parameter value; size and type depends on parameter")
+
+local function flyc_config_table_get_item_value_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if pack_type == 0 then -- Request
+        subtree:add_le (f.flyc_config_table_get_item_value_table_no, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.flyc_config_table_get_item_value_index, payload(offset, 2))
+        offset = offset + 2
+
+        if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Item Value: Offset does not match - internal inconsistency") end
+    else -- Response
+        subtree:add_le (f.flyc_config_table_get_item_value_status, payload(offset, 2))
+        offset = offset + 2
+
+        if (payload:len() - offset >= 1) then
+            local varsize_val = payload(offset, payload:len() - offset)
+            subtree:add (f.flyc_config_table_get_item_value_value, varsize_val)
+            offset = payload:len()
+        end
+
+        --if (offset ~= 2) and (offset < 18) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Item Value: Offset does not match - internal inconsistency") end
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table Get Item Value: Payload size different than expected") end
+end
+
+-- Flight Controller - Config Table: Set Item Value - 0xe3
+
+f.flyc_config_table_set_item_value_status = ProtoField.uint16 ("dji_p3.flyc_config_table_set_item_value_status", "Status", base.DEC, nil, nil)
+f.flyc_config_table_set_item_value_table_no = ProtoField.int16 ("dji_p3.flyc_config_table_set_item_value_table_no", "Table No", base.DEC, nil, nil)
+f.flyc_config_table_set_item_value_index = ProtoField.int16 ("dji_p3.flyc_config_table_set_item_value_index", "Param Index", base.DEC, nil, nil)
+
+local function flyc_config_table_set_item_value_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if pack_type == 0 then -- Request
+        subtree:add_le (f.flyc_config_table_set_item_value_table_no, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.flyc_config_table_set_item_value_index, payload(offset, 2))
+        offset = offset + 2
+        --TODO
+        if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Set Item Value: Offset does not match - internal inconsistency") end
+    else -- Response
+        subtree:add_le (f.flyc_config_table_set_item_value_status, payload(offset, 2))
+        offset = offset + 2
+        --TODO
+        if (offset ~= 2) and (offset < 22) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Set Item Value: Offset does not match - internal inconsistency") end
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table Set Item Value: Payload size different than expected") end
+end
+
 -- Flight Controller - Config Command Table: Get or Exec - 0xe9
 
 f.flyc_config_command_table_get_or_exec_cmd_type = ProtoField.int16 ("dji_p3.flyc_flyc_redundancy_status_cmd_type", "Command Type", base.DEC, nil, nil, "Positive values - exec, negative - get name, -1 - get count")
@@ -5735,6 +5804,8 @@ local FLYC_UART_CMD_DISSECT = {
     [0xdf] = flyc_assistant_unlock_dissector,
     [0xe0] = flyc_config_table_get_tbl_attribute_dissector,
     [0xe1] = flyc_config_table_get_item_attribute_dissector,
+    [0xe2] = flyc_config_table_get_item_value_dissector,
+    [0xe3] = flyc_config_table_set_item_value_dissector,
     [0xe9] = flyc_config_command_table_get_or_exec_dissector,
     [0xf0] = flyc_config_table_get_param_info_by_index_dissector,
     [0xf1] = flyc_config_table_read_param_by_index_dissector,
