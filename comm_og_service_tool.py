@@ -63,13 +63,14 @@ class PRODUCT_CODE(DecoratedEnum):
     WM330  = 12 # Released 2016-03-02 Phantom 4 (now referenced as Phantom 4 Standard)
     MAT600 = 13 # Released 2016-04-17 Matrice 600
     WM220  = 14 # Released 2016-09-28 Mavic Pro (also includes Released 2017-08-24 Mavic Pro Platinum)
-    #WMxxx  = 15 # Released 2016-11-16 Inspire 2
-    #WMxxx  = 16 # Released 2016-11-16 Phantom 4 Pro
-    #WMxxx  = 17 # Released 2017-02-26 Matrice 200
-    #WMxxx  = 18 # Released 2017-03-28 Agras MG-1S
-    #WMxxx  = 19 # Released 2017-04-13 Phantom 4 Advanced
+    WM620  = 15 # Released 2016-11-16 Inspire 2
+    WM331  = 16 # Released 2016-11-16 Phantom 4 Pro
+    MAT200 = 17 # Released 2017-02-26 Matrice 200
+    MG1S   = 18 # Released 2017-03-28 Agras MG-1S
+    WM332  = 19 # Released 2017-04-13 Phantom 4 Advanced
     WM100  = 20 # Released 2017-05-24 Spark
     WM230  = 21 # Released 2018-01-23 Mavic Air
+    WM335  = 22 # Released 2018-05-08 Phantom 4 Pro V2
 
 ALT_PRODUCT_CODE = {
     'S800': 'A2', # Released 2012-07-25 Hexacopter frame, often sold with Dji A2 Flight Controller
@@ -169,7 +170,7 @@ def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_t
 
     return pktrpl
 
-def flyc_param_request_assistant_unlock(po, ser, val):
+def flyc_request_assistant_unlock(po, ser, val):
     if (po.verbose > 0):
         print("Sending Assistant Unlock request.")
     payload = DJIPayload_FlyController_AssistantUnlockRq()
@@ -376,9 +377,44 @@ def flyc_param_request_2015_read_param_value_by_hash(po, ser, param_name):
 
     return rplpayload
 
+def flyc_param_request_2017_read_param_value_by_index(po, ser, table_no, param_idx):
+    #TODO something isnt right
+    payload = DJIPayload_FlyController_ReadParamValByIndex2017Rq()
+    payload.table_no = table_no
+    payload.param_index = param_idx
+
+    if (po.verbose > 2):
+        print("Prepared request - {:s}:".format(type(payload).__name__))
+        print(payload)
+
+    pktrpl = send_request_and_receive_reply(po, ser,
+      COMM_DEV_TYPE.FLYCONTROLLER, 0,
+      ACK_TYPE.ACK_AFTER_EXEC,
+      CMD_SET_TYPE.FLYCONTROLLER, 0xe2,
+      payload)
+
+    if po.dry_test:
+        # use to test the code without a drone
+        pktrpl = bytes.fromhex("55 11 04 92 03 0a d1 12 80 03 e2 00 00 00 00 3f 96") #TODO bad example
+
+    if pktrpl is None:
+        raise ConnectionError("No response on parameter {:d} info by index request.".format(param_idx))
+
+    rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+    rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+
+    if (rplpayload is None):
+        raise ConnectionError("Unrecognized response to parameter {:d} info by index request.".format(param_idx))
+
+    if (po.verbose > 2):
+        print("Parsed response - {:s}:".format(type(rplpayload).__name__))
+        print(rplpayload)
+
+    return rplpayload
+
 def do_assistant_unlock(po, ser):
     try:
-        rplpayload = flyc_param_request_assistant_unlock(po, ser, 1)
+        rplpayload = flyc_request_assistant_unlock(po, ser, 1)
 
         if rplpayload.status != 0:
             raise ValueError("Denial status {:d} returned from Assistant Unlock request.".format(rplpayload.status))
@@ -405,7 +441,7 @@ def flyc_param_request_2015_write_param_value_by_hash(po, ser, param_name, param
     else:
         payload = DJIPayload_FlyController_WriteParamVal1ByHash2015Rq()
     payload.param_hash = flyc_parameter_compute_hash(po,param_name)
-    payload.param_value = param_val
+    payload.param_value = (c_ubyte * sizeof(payload.param_value)).from_buffer_copy(param_val)
 
     if (po.verbose > 2):
         print("Prepared request - {:s}:".format(type(payload).__name__))
@@ -463,27 +499,37 @@ def flyc_param_info_limits_to_str(po, paraminfo):
 
 def flyc_param_value_to_str(po, paraminfo, param_value):
     if (paraminfo.type_id == DJIPayload_FlyController_ParamType.ubyte.value):
-        value_str = "{:d}".format(struct.unpack("<B", param_value)[0])
+        param_bs = bytes(param_value[:1])
+        value_str = "{:d}".format(struct.unpack("<B", param_bs)[0])
     elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.ushort.value):
-        value_str = "{:d}".format(struct.unpack("<H", param_value)[0])
+        param_bs = bytes(param_value[:2])
+        value_str = "{:d}".format(struct.unpack("<H", param_bs)[0])
     elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.ulong.value):
-        value_str = "{:d}".format(struct.unpack("<L", param_value)[0])
+        param_bs = bytes(param_value[:4])
+        value_str = "{:d}".format(struct.unpack("<L", param_bs)[0])
     elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.ulonglong.value):
-        value_str = "{:d}".format(struct.unpack("<Q", param_value)[0])
+        param_bs = bytes(param_value[:8])
+        value_str = "{:d}".format(struct.unpack("<Q", param_bs)[0])
     elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.byte.value):
-        value_str = "{:d}".format(struct.unpack("<b", param_value)[0])
+        param_bs = bytes(param_value[:1])
+        value_str = "{:d}".format(struct.unpack("<b", param_bs)[0])
     elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.short.value):
-        value_str = "{:d}".format(struct.unpack("<h", param_value)[0])
+        param_bs = bytes(param_value[:2])
+        value_str = "{:d}".format(struct.unpack("<h", param_bs)[0])
     elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.long.value):
-        value_str = "{:d}".format(struct.unpack("<l", param_value)[0])
+        param_bs = bytes(param_value[:4])
+        value_str = "{:d}".format(struct.unpack("<l", param_bs)[0])
     elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.longlong.value):
-        value_str = "{:d}".format(struct.unpack("<q", param_value)[0])
+        param_bs = bytes(param_value[:8])
+        value_str = "{:d}".format(struct.unpack("<q", param_bs)[0])
     elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.float.value):
-        value_str = "{:f}".format(struct.unpack("<f", param_value)[0])
+        param_bs = bytes(param_value[:4])
+        value_str = "{:f}".format(struct.unpack("<f", param_bs)[0])
     elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.double.value):
-        value_str = "{:f}".format(struct.unpack("<d", param_value)[0])
+        param_bs = bytes(param_value[:8])
+        value_str = "{:f}".format(struct.unpack("<d", param_bs)[0])
     else: # array or future type
-        value_str = ' '.join('{:02x}'.format(x) for x in param_value)
+        value_str = ' '.join('{:02x}'.format(x) for x in param_bs)
     return value_str
 
 def flyc_param_str_to_value(po, paraminfo, value_str):
@@ -613,10 +659,12 @@ def flyc_param_request_2017_print_response(po, idx, paraminfo, rplpayload):
         else:
             param_val = flyc_param_value_to_str(po, paraminfo, rplpayload.param_value)
         if idx is None:
-            if rplpayload is not None:
+            if rplpayload is None:
+                ident_str = "n/a"
+            elif hasattr(rplpayload, 'param_hash'):
                 ident_str = "0x{:08x}".format(rplpayload.param_hash)
             else:
-                ident_str = "n/a"
+                ident_str = "0x{:08x}".format(flyc_parameter_compute_hash(po,paraminfo.name.decode("utf-8")))
         else:
             ident_str = "{:d}".format(idx)
         tbl_str = "{:d}:{:d}".format(paraminfo.table_no, paraminfo.param_index)
@@ -725,8 +773,7 @@ def do_flyc_param_request_2017_list(po, ser):
             if idx >= po.start:
                 rplpayload = flyc_param_request_2017_get_param_info_by_index(po, ser, tab_attr.table_no, tbl_idx)
                 if sizeof(rplpayload) <= 4:
-                    if (po.verbose > 0):
-                        print("Response on parameter {:d} indicates end of list.".format(idx))
+                    eprint("Response on parameter {:d} indicates end of list despite larger size reported.".format(idx))
                     break
                 # Print the result data
                 flyc_param_request_2017_print_response(po, idx, rplpayload, None)
@@ -734,22 +781,6 @@ def do_flyc_param_request_2017_list(po, ser):
 
 def do_flyc_param_request_2017_get(po, ser):
     """ Get flyc parameter value on platforms multiple parameter tables.
-
-        Tested on the following platforms and FW versions:
-        NONE
-    """
-    do_assistant_unlock(po, ser)
-    #TODO - unfinished
-    # Get param info first, so we know type and size
-    paraminfo = flyc_param_request_2017_get_param_info_by_hash(po, ser, po.param_name)
-    # Now get the parameter value
-    rplpayload = flyc_param_request_2017_read_param_value_by_hash(po, ser, po.param_name)
-    # Print the result data
-    flyc_param_request_2017_print_response(po, None, None, True)
-    flyc_param_request_2017_print_response(po, None, paraminfo, rplpayload)
-
-def do_flyc_param_request_2017_get_alt(po, ser):
-    """ Get flyc parameter value on platforms multiple parameter tables, alternative way.
 
         Tested on the following platforms and FW versions:
         WM100_FW_V01.00.0900 (2018-07-23)
@@ -763,8 +794,66 @@ def do_flyc_param_request_2017_get_alt(po, ser):
     flyc_param_request_2015_print_response(po, None, None, True)
     flyc_param_request_2015_print_response(po, None, paraminfo, rplpayload)
 
+def flyc_param_request_2017_get_param_info_by_name_search(po, ser, param_name):
+    # Get info on tables first, so we can flatten them
+    table_attribs = []
+    for table_no in range(0, 255):
+        tab_attr = flyc_param_request_2017_get_table_attribs(po, ser, table_no)
+        if sizeof(tab_attr) <= 2:
+            if (po.verbose > 0):
+                print("Response on table no {:d} indicates end of list.".format(table_no))
+            break
+        table_attribs.append(tab_attr)
+    # Now find table location of our param
+    idx = 0
+    paraminfo = None
+    for tab_attr in table_attribs:
+        for tbl_idx in range(0, tab_attr.entries_num):
+            rplpayload = flyc_param_request_2017_get_param_info_by_index(po, ser, tab_attr.table_no, tbl_idx)
+            if sizeof(rplpayload) <= 4:
+                eprint("Response on parameter {:d} indicates end of list despite larger size reported.".format(idx))
+                break
+            if rplpayload.name.decode("utf-8") == param_name:
+                paraminfo = rplpayload
+                break
+            idx += 1
+    if (paraminfo is None):
+        raise LookupError("Parameter not found during parameter info by name search request.")
+    return paraminfo
+
+def do_flyc_param_request_2017_get_alt(po, ser):
+    """ Get flyc parameter value on platforms multiple parameter tables, alternative way.
+
+        Tested on the following platforms and FW versions:
+        NONE
+    """
+    do_assistant_unlock(po, ser)
+    # Get param info first, so we know type and size
+    paraminfo = flyc_param_request_2017_get_param_info_by_name_search(po, ser, po.param_name)
+    # Now get the parameter value
+    rplpayload = flyc_param_request_2017_read_param_value_by_index(po, ser, paraminfo.table_no, paraminfo.param_index)
+    # Print the result data
+    flyc_param_request_2017_print_response(po, None, None, True)
+    flyc_param_request_2017_print_response(po, None, paraminfo, rplpayload)
+
 def do_flyc_param_request_2017_set(po, ser):
     """ Set new value of flyc parameter on platforms multiple parameter tables.
+
+        Tested on the following platforms and FW versions:
+        WM100_FW_V01.00.0900 (2018-07-23)
+    """
+    do_assistant_unlock(po, ser)
+    # Get param info first, so we know type and size
+    paraminfo = flyc_param_request_2015_get_param_info_by_hash(po, ser, po.param_name)
+    # Now set the parameter value
+    param_val = flyc_param_str_to_value(po, paraminfo, po.param_value)
+    rplpayload = flyc_param_request_2015_write_param_value_by_hash(po, ser, po.param_name, param_val)
+    # Print the result data
+    flyc_param_request_2015_print_response(po, None, None, True)
+    flyc_param_request_2015_print_response(po, None, paraminfo, rplpayload)
+
+def do_flyc_param_request_2017_set_alt(po, ser):
+    """ Set new value of flyc parameter on platforms multiple parameter tables, alternative way.
 
         Tested on the following platforms and FW versions:
         NONE
@@ -779,22 +868,6 @@ def do_flyc_param_request_2017_set(po, ser):
     # Print the result data
     flyc_param_request_2017_print_response(po, None, None, True)
     flyc_param_request_2017_print_response(po, None, paraminfo, rplpayload)
-
-def do_flyc_param_request_2017_set_alt(po, ser):
-    """ Set new value of flyc parameter on platforms multiple parameter tables, alternative way.
-
-        Tested on the following platforms and FW versions:
-        WM100_FW_V01.00.0900 (2018-07-23)
-    """
-    do_assistant_unlock(po, ser)
-    # Get param info first, so we know type and size
-    paraminfo = flyc_param_request_2015_get_param_info_by_hash(po, ser, po.param_name)
-    # Now set the parameter value
-    param_val = flyc_param_str_to_value(po, paraminfo, po.param_value)
-    rplpayload = flyc_param_request_2015_write_param_value_by_hash(po, ser, po.param_name, param_val)
-    # Print the result data
-    flyc_param_request_2015_print_response(po, None, None, True)
-    flyc_param_request_2015_print_response(po, None, paraminfo, rplpayload)
 
 def do_flyc_param_request(po):
     ser = open_serial_port(po)
