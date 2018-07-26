@@ -411,6 +411,56 @@ class DJIPayload_FlyController_ReadParamValByIndex2017Re(DJIPayload_Base):
              ]
 
 
+class DJIPayload_FlyController_WriteParamVal1ByIndex2017Rq(DJIPayload_Base):
+  _fields_ = [('table_no', c_ushort),
+              ('unknown1', c_ushort),
+              ('param_index', c_ushort),
+              ('param_value', c_ubyte),
+             ]
+
+class DJIPayload_FlyController_WriteParamVal2ByIndex2017Rq(DJIPayload_Base):
+  _fields_ = [('table_no', c_ushort),
+              ('unknown1', c_ushort),
+              ('param_index', c_ushort),
+              ('param_value', c_ubyte * 2),
+             ]
+
+class DJIPayload_FlyController_WriteParamVal4ByIndex2017Rq(DJIPayload_Base):
+  _fields_ = [('table_no', c_ushort),
+              ('unknown1', c_ushort),
+              ('param_index', c_ushort),
+              ('param_value', c_ubyte * 4),
+             ]
+
+class DJIPayload_FlyController_WriteParamVal8ByIndex2017Rq(DJIPayload_Base):
+  _fields_ = [('table_no', c_ushort),
+              ('unknown1', c_ushort),
+              ('param_index', c_ushort),
+              ('param_value', c_ubyte * 8),
+             ]
+
+class DJIPayload_FlyController_WriteParamVal16ByIndex2017Rq(DJIPayload_Base):
+  _fields_ = [('table_no', c_ushort),
+              ('unknown1', c_ushort),
+              ('param_index', c_ushort),
+              ('param_value', c_ubyte * 16),
+             ]
+
+class DJIPayload_FlyController_WriteParamValAnyByIndex2017Rq(DJIPayload_Base):
+  _fields_ = [('table_no', c_ushort),
+              ('unknown1', c_ushort),
+              ('param_index', c_ushort),
+              ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
+             ]
+
+class DJIPayload_FlyController_WriteParamValByIndex2017Re(DJIPayload_Base):
+  _fields_ = [('status', c_ushort),
+              ('table_no', c_ushort),
+              ('param_index', c_ushort),
+              ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
+             ]
+
+
 class DJIPayload_FlyController_WriteParamVal1ByHash2015Rq(DJIPayload_Base):
   _fields_ = [('param_hash', c_uint),
               ('param_value', c_char),
@@ -588,6 +638,19 @@ def get_known_payload(pkthead, payload):
         if (pkthead.cmd_id == 0xe2):
             if len(payload) >= sizeof(DJIPayload_FlyController_ReadParamValByIndex2017Rq):
                 return DJIPayload_FlyController_ReadParamValByIndex2017Rq.from_buffer_copy(payload)
+        if (pkthead.cmd_id == 0xe3):
+            if len(payload) > sizeof(DJIPayload_FlyController_WriteParamVal16ByIndex2017Rq):
+                return DJIPayload_FlyController_WriteParamValAnyByIndex2017Rq.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_WriteParamValAnyByIndex2017Rq), b'\0'))
+            if len(payload) > sizeof(DJIPayload_FlyController_WriteParamVal8ByIndex2017Rq):
+                return DJIPayload_FlyController_WriteParamVal16ByIndex2017Rq.from_buffer_copy(payload)
+            if len(payload) > sizeof(DJIPayload_FlyController_WriteParamVal4ByIndex2017Rq):
+                return DJIPayload_FlyController_WriteParamVal8ByIndex2017Rq.from_buffer_copy(payload)
+            if len(payload) > sizeof(DJIPayload_FlyController_WriteParamVal2ByIndex2017Rq):
+                return DJIPayload_FlyController_WriteParamVal4ByIndex2017Rq.from_buffer_copy(payload)
+            if len(payload) > sizeof(DJIPayload_FlyController_WriteParamVal1ByIndex2017Rq):
+                return DJIPayload_FlyController_WriteParamVal2ByIndex2017Rq.from_buffer_copy(payload)
+            if len(payload) >= sizeof(DJIPayload_FlyController_WriteParamVal1ByIndex2017Rq):
+                return DJIPayload_FlyController_WriteParamVal1ByIndex2017Rq.from_buffer_copy(payload)
         if (pkthead.cmd_id == 0xf0):
             if len(payload) >= sizeof(DJIPayload_FlyController_GetParamInfoByIndex2015Rq):
                 return DJIPayload_FlyController_GetParamInfoByIndex2015Rq.from_buffer_copy(payload)
@@ -631,6 +694,9 @@ def get_known_payload(pkthead, payload):
         if (pkthead.cmd_id == 0xe2):
             if len(payload) >= sizeof(DJIPayload_FlyController_ReadParamValByIndex2017Re)-DJIPayload_FlyController_ParamMaxLen+1:
                 return DJIPayload_FlyController_ReadParamValByIndex2017Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_ReadParamValByIndex2017Re), b'\0'))
+        if (pkthead.cmd_id == 0xe3):
+            if len(payload) >= sizeof(DJIPayload_FlyController_WriteParamValByIndex2017Re)-DJIPayload_FlyController_ParamMaxLen+1:
+                return DJIPayload_FlyController_WriteParamValByIndex2017Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_WriteParamValByIndex2017Re), b'\0'))
         if (pkthead.cmd_id == 0xf0) or (pkthead.cmd_id == 0xf7):
             if len(payload) >= sizeof(DJIPayload_FlyController_GetParamInfoU2015Re)-DJIPayload_FlyController_ParamMaxLen+1:
                 out_payload = DJIPayload_FlyController_GetParamInfoU2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamInfoU2015Re), b'\0'))
