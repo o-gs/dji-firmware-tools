@@ -4522,6 +4522,7 @@ end
 
 f.flyc_config_table_get_item_value_status = ProtoField.uint16 ("dji_p3.flyc_config_table_get_item_value_status", "Status", base.DEC, nil, nil)
 f.flyc_config_table_get_item_value_table_no = ProtoField.int16 ("dji_p3.flyc_config_table_get_item_value_table_no", "Table No", base.DEC, nil, nil)
+f.flyc_config_table_get_item_value_unknown1 = ProtoField.int16 ("dji_p3.flyc_config_table_get_item_value_unknown1", "Unknown1", base.DEC, nil, nil)
 f.flyc_config_table_get_item_value_index = ProtoField.int16 ("dji_p3.flyc_config_table_get_item_value_index", "Param Index", base.DEC, nil, nil)
 f.flyc_config_table_get_item_value_value = ProtoField.bytes ("dji_p3.flyc_config_table_get_item_value_value", "Param Value", base.SPACE, nil, nil, "Flight controller parameter value; size and type depends on parameter")
 
@@ -4536,18 +4537,30 @@ local function flyc_config_table_get_item_value_dissector(pkt_length, buffer, pi
         subtree:add_le (f.flyc_config_table_get_item_value_table_no, payload(offset, 2))
         offset = offset + 2
 
+        subtree:add_le (f.flyc_config_table_get_item_value_unknown1, payload(offset, 2))
+        offset = offset + 2
+
         subtree:add_le (f.flyc_config_table_get_item_value_index, payload(offset, 2))
         offset = offset + 2
 
-        if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Item Value: Offset does not match - internal inconsistency") end
+        if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Item Value: Offset does not match - internal inconsistency") end
     else -- Response
         subtree:add_le (f.flyc_config_table_get_item_value_status, payload(offset, 2))
         offset = offset + 2
 
-        if (payload:len() - offset >= 1) then
-            local varsize_val = payload(offset, payload:len() - offset)
-            subtree:add (f.flyc_config_table_get_item_value_value, varsize_val)
-            offset = payload:len()
+        subtree:add_le (f.flyc_config_table_get_item_value_unknown1, payload(offset, 2))
+        offset = offset + 2
+
+        -- It is possible that the packet ends here, if there was an issue retrieving the item
+        if (payload:len() >= 7) then
+            subtree:add_le (f.flyc_config_table_get_item_value_index, payload(offset, 2))
+            offset = offset + 2
+
+            if (payload:len() - offset >= 1) then
+                local varsize_val = payload(offset, payload:len() - offset)
+                subtree:add (f.flyc_config_table_get_item_value_value, varsize_val)
+                offset = payload:len()
+            end
         end
 
         --if (offset ~= 2) and (offset < 18) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Get Item Value: Offset does not match - internal inconsistency") end
