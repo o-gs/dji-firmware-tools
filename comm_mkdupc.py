@@ -399,11 +399,14 @@ class DJIPayload_FlyController_ReadParamValByHash2015Re(DJIPayload_Base):
 
 class DJIPayload_FlyController_ReadParamValByIndex2017Rq(DJIPayload_Base):
   _fields_ = [('table_no', c_ushort),
+              ('unknown1', c_ushort),
               ('param_index', c_ushort),
              ]
 
 class DJIPayload_FlyController_ReadParamValByIndex2017Re(DJIPayload_Base):
   _fields_ = [('status', c_ushort),
+              ('unknown1', c_ushort),
+              ('param_index', c_ushort),
               ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
              ]
 
@@ -476,9 +479,9 @@ class DJIPayload_FlyController_GetParamInfoU2017Re(DJIPayload_Base):
               ('param_index', c_ushort),
               ('type_id', c_ushort),
               ('size', c_ushort),
+              ('limit_def', c_uint),
               ('limit_min', c_uint),
               ('limit_max', c_uint),
-              ('limit_def', c_uint),
               ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
              ]
 
@@ -488,9 +491,9 @@ class DJIPayload_FlyController_GetParamInfoI2017Re(DJIPayload_Base):
               ('param_index', c_ushort),
               ('type_id', c_ushort),
               ('size', c_ushort),
+              ('limit_def', c_int),
               ('limit_min', c_int),
               ('limit_max', c_int),
-              ('limit_def', c_int),
               ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
              ]
 
@@ -500,9 +503,9 @@ class DJIPayload_FlyController_GetParamInfoF2017Re(DJIPayload_Base):
               ('param_index', c_ushort),
               ('type_id', c_ushort),
               ('size', c_ushort),
+              ('limit_def', c_float),
               ('limit_min', c_float),
               ('limit_max', c_float),
-              ('limit_def', c_float),
               ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
              ]
 
@@ -517,6 +520,16 @@ def flyc_parameter_compute_hash(po, parname):
       tmpval = (parhash & 0xffffffff) << 8
       parhash = (tmpval + ncode) % 0xfffffffb
   return parhash
+
+def flyc_parameter_is_signed(type_id):
+  """ Returns whether flight param of given type is signed - should use "I" versions of packets.
+  """
+  return (type_id >= DJIPayload_FlyController_ParamType.byte.value) and (type_id <= DJIPayload_FlyController_ParamType.longlong.value)
+
+def flyc_parameter_is_float(type_id):
+  """ Returns whether flight param of given type is float - should use "F" versions of packets.
+  """
+  return (type_id == DJIPayload_FlyController_ParamType.float.value) or (type_id == DJIPayload_FlyController_ParamType.double.value)
 
 def encode_command_packet(sender_type, sender_index, receiver_type, receiver_index, seq_num, pack_type, ack_type, encrypt_type, cmd_set, cmd_id, payload):
     """ Encodes command packet with given header fields and payload into c_ubyte array.
@@ -607,9 +620,9 @@ def get_known_payload(pkthead, payload):
         if (pkthead.cmd_id == 0xe1):
             if len(payload) >= sizeof(DJIPayload_FlyController_GetParamInfoU2017Re)-DJIPayload_FlyController_ParamMaxLen+1:
                 out_payload = DJIPayload_FlyController_GetParamInfoU2017Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamInfoU2017Re), b'\0'))
-                if (out_payload.type_id >= DJIPayload_FlyController_ParamType.byte.value) and (out_payload.type_id <= DJIPayload_FlyController_ParamType.longlong.value):
+                if flyc_parameter_is_signed(out_payload.type_id):
                     return DJIPayload_FlyController_GetParamInfoI2017Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamInfoI2017Re), b'\0'))
-                elif (out_payload.type_id == DJIPayload_FlyController_ParamType.float.value) or (out_payload.type_id == DJIPayload_FlyController_ParamType.double.value):
+                elif flyc_parameter_is_float(out_payload.type_id):
                     return DJIPayload_FlyController_GetParamInfoF2017Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamInfoF2017Re), b'\0'))
                 else:
                     return out_payload
@@ -621,9 +634,9 @@ def get_known_payload(pkthead, payload):
         if (pkthead.cmd_id == 0xf0) or (pkthead.cmd_id == 0xf7):
             if len(payload) >= sizeof(DJIPayload_FlyController_GetParamInfoU2015Re)-DJIPayload_FlyController_ParamMaxLen+1:
                 out_payload = DJIPayload_FlyController_GetParamInfoU2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamInfoU2015Re), b'\0'))
-                if (out_payload.type_id >= DJIPayload_FlyController_ParamType.byte.value) and (out_payload.type_id <= DJIPayload_FlyController_ParamType.longlong.value):
+                if flyc_parameter_is_signed(out_payload.type_id):
                     return DJIPayload_FlyController_GetParamInfoI2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamInfoI2015Re), b'\0'))
-                elif (out_payload.type_id == DJIPayload_FlyController_ParamType.float.value) or (out_payload.type_id == DJIPayload_FlyController_ParamType.double.value):
+                elif flyc_parameter_is_float(out_payload.type_id):
                     return DJIPayload_FlyController_GetParamInfoF2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_GetParamInfoF2015Re), b'\0'))
                 else:
                     return out_payload
