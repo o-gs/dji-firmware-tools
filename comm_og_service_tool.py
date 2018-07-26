@@ -427,6 +427,56 @@ def do_assistant_unlock(po, ser):
 
     return True
 
+def flyc_param_request_2017_write_param_value_by_index(po, ser, table_no, param_idx, param_val):
+    if len(param_val) > 16:
+        payload = DJIPayload_FlyController_WriteParamValAnyByIndex2017Rq()
+    elif len(param_val) > 8:
+        payload = DJIPayload_FlyController_WriteParamVal16ByIndex2017Rq()
+    elif len(param_val) > 4:
+        payload = DJIPayload_FlyController_WriteParamVal8ByIndex2017Rq()
+    elif len(param_val) > 2:
+        payload = DJIPayload_FlyController_WriteParamVal4ByIndex2017Rq()
+    elif len(param_val) > 1:
+        payload = DJIPayload_FlyController_WriteParamVal2ByIndex2017Rq()
+    else:
+        payload = DJIPayload_FlyController_WriteParamVal1ByIndex2017Rq()
+    payload.table_no = table_no
+    payload.unknown1 = 1
+    payload.param_index = param_idx
+    payload.param_value = (c_ubyte * sizeof(payload.param_value)).from_buffer_copy(param_val)
+
+    if (po.verbose > 2):
+        print("Prepared request - {:s}:".format(type(payload).__name__))
+        print(payload)
+
+    pktrpl = send_request_and_receive_reply(po, ser,
+      COMM_DEV_TYPE.FLYCONTROLLER, 0,
+      ACK_TYPE.ACK_AFTER_EXEC,
+      CMD_SET_TYPE.FLYCONTROLLER, 0xe3,
+      payload)
+
+    if po.dry_test:
+        # use to test the code without a drone
+        pktrpl = bytes.fromhex("55 15 04 a9 03 0a 1a de 80 03 e3 00 00 00 00 9e 00 f3 01 a7 40")
+
+    if pktrpl is None:
+        raise ConnectionError("No response on write parameter value by index request.")
+
+    rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+    rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+
+    if (rplpayload is None):
+        raise LookupError("Unrecognized response to write parameter value by index request.")
+
+    if sizeof(rplpayload) <= 4:
+        raise ValueError("Response indicates parameter does not exist or is not writeable.")
+
+    if (po.verbose > 2):
+        print("Parsed response - {:s}:".format(type(rplpayload).__name__))
+        print(rplpayload)
+
+    return rplpayload
+
 def flyc_param_request_2015_write_param_value_by_hash(po, ser, param_name, param_val):
     if len(param_val) > 16:
         payload = DJIPayload_FlyController_WriteParamValAnyByHash2015Rq()
@@ -823,7 +873,7 @@ def do_flyc_param_request_2017_get_alt(po, ser):
     """ Get flyc parameter value on platforms multiple parameter tables, alternative way.
 
         Tested on the following platforms and FW versions:
-        NONE
+        WM100_FW_V01.00.0900 (2018-07-26)
     """
     do_assistant_unlock(po, ser)
     # Get param info first, so we know type and size
@@ -857,12 +907,11 @@ def do_flyc_param_request_2017_set_alt(po, ser):
         NONE
     """
     do_assistant_unlock(po, ser)
-    #TODO - unfinished
     # Get param info first, so we know type and size
-    paraminfo = flyc_param_request_2017_get_param_info_by_hash(po, ser, po.param_name)
+    paraminfo = flyc_param_request_2017_get_param_info_by_name_search(po, ser, po.param_name)
     # Now set the parameter value
     param_val = flyc_param_str_to_value(po, paraminfo, po.param_value)
-    rplpayload = flyc_param_request_2017_write_param_value_by_hash(po, ser, po.param_name, param_val)
+    rplpayload = flyc_param_request_2017_write_param_value_by_index(po, ser, paraminfo.table_no, paraminfo.param_index, param_val)
     # Print the result data
     flyc_param_request_2017_print_response(po, None, None, True)
     flyc_param_request_2017_print_response(po, None, paraminfo, rplpayload)
