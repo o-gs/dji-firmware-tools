@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -378,9 +378,9 @@ def flyc_param_request_2015_read_param_value_by_hash(po, ser, param_name):
     return rplpayload
 
 def flyc_param_request_2017_read_param_value_by_index(po, ser, table_no, param_idx):
-    #TODO something isnt right
     payload = DJIPayload_FlyController_ReadParamValByIndex2017Rq()
     payload.table_no = table_no
+    payload.unknown1 = 1
     payload.param_index = param_idx
 
     if (po.verbose > 2):
@@ -395,7 +395,7 @@ def flyc_param_request_2017_read_param_value_by_index(po, ser, table_no, param_i
 
     if po.dry_test:
         # use to test the code without a drone
-        pktrpl = bytes.fromhex("55 11 04 92 03 0a d1 12 80 03 e2 00 00 00 00 3f 96") #TODO bad example
+        pktrpl = bytes.fromhex("55 15 04 a9 03 0a 5a 6c 80 03 e2 00 00 00 00 9e 00 f4 01 10 b1")
 
     if pktrpl is None:
         raise ConnectionError("No response on parameter {:d} info by index request.".format(param_idx))
@@ -774,9 +774,10 @@ def do_flyc_param_request_2017_list(po, ser):
                 rplpayload = flyc_param_request_2017_get_param_info_by_index(po, ser, tab_attr.table_no, tbl_idx)
                 if sizeof(rplpayload) <= 4:
                     eprint("Response on parameter {:d} indicates end of list despite larger size reported.".format(idx))
-                    break
-                # Print the result data
-                flyc_param_request_2017_print_response(po, idx, rplpayload, None)
+                    # do not break - this may be error with one specific parameter
+                else:
+                    # Print the result data
+                    flyc_param_request_2017_print_response(po, idx, rplpayload, None)
             idx += 1
 
 def do_flyc_param_request_2017_get(po, ser):
@@ -806,20 +807,17 @@ def flyc_param_request_2017_get_param_info_by_name_search(po, ser, param_name):
         table_attribs.append(tab_attr)
     # Now find table location of our param
     idx = 0
-    paraminfo = None
     for tab_attr in table_attribs:
         for tbl_idx in range(0, tab_attr.entries_num):
             rplpayload = flyc_param_request_2017_get_param_info_by_index(po, ser, tab_attr.table_no, tbl_idx)
             if sizeof(rplpayload) <= 4:
                 eprint("Response on parameter {:d} indicates end of list despite larger size reported.".format(idx))
-                break
-            if rplpayload.name.decode("utf-8") == param_name:
-                paraminfo = rplpayload
-                break
+                # do not break - this may be error with one specific parameter
+            elif rplpayload.name.decode("utf-8") == param_name:
+                return rplpayload
             idx += 1
-    if (paraminfo is None):
-        raise LookupError("Parameter not found during parameter info by name search request.")
-    return paraminfo
+    raise LookupError("Parameter not found during parameter info by name search request.")
+    return None # unreachble
 
 def do_flyc_param_request_2017_get_alt(po, ser):
     """ Get flyc parameter value on platforms multiple parameter tables, alternative way.
