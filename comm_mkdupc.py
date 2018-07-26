@@ -560,6 +560,19 @@ class DJIPayload_FlyController_GetParamInfoF2017Re(DJIPayload_Base):
              ]
 
 
+class DJIPayload_Gimbal_CalibCmd(DecoratedEnum):
+    JointCoarse = 1
+    LinearHall = 2
+
+class DJIPayload_Gimbal_CalibRq(DJIPayload_Base):
+  _fields_ = [('command', c_ubyte),
+             ]
+
+class DJIPayload_Gimbal_CalibRe(DJIPayload_Base):
+  _fields_ = [('status', c_ushort),
+              ('command', c_ubyte),#TODO - unfinished
+             ]
+
 def flyc_parameter_compute_hash(po, parname):
   """ Computes hash from given flyc parameter name. Parameters are recognized by the FC by the hash.
   """
@@ -714,6 +727,16 @@ def get_known_payload(pkthead, payload):
         if (pkthead.cmd_id == 0xf9):
             if len(payload) >= sizeof(DJIPayload_FlyController_WriteParamValByHash2015Re)-DJIPayload_FlyController_ParamMaxLen+1:
                 return DJIPayload_FlyController_WriteParamValByHash2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_WriteParamValByHash2015Re), b'\0'))
+
+    if pkthead.cmd_set == CMD_SET_TYPE.GIMBAL.value and pkthead.packet_type == 0:
+        if (pkthead.cmd_id == 0x08):
+            if len(payload) >= sizeof(DJIPayload_Gimbal_CalibRq):
+                return DJIPayload_Gimbal_CalibRq.from_buffer_copy(payload)
+
+    if pkthead.cmd_set == CMD_SET_TYPE.GIMBAL.value and pkthead.packet_type == 1:
+        if (pkthead.cmd_id == 0x08):
+            if len(payload) >= sizeof(DJIPayload_Gimbal_CalibRe):
+                return DJIPayload_Gimbal_CalibRe.from_buffer_copy(payload)
 
     return None
 
