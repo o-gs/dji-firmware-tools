@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -93,6 +93,11 @@ class FLYC_PARAM_CMD(DecoratedEnum):
     LIST = 0
     GET = 1
     SET = 2
+
+class GIMBAL_CALIB_CMD(DecoratedEnum):
+    JOINTCOARSE = 0
+    LINEARHALL = 1
+
 
 def detect_serial_port(po):
     """ Detects the serial port device name of a Dji product.
@@ -946,10 +951,72 @@ def do_flyc_param_request(po):
 
     ser.close()
 
+def gimbal_calib_request_spark(po, ser, cmd):
+    payload = DJIPayload_Gimbal_CalibRq()
+    payload.command = cmd.value
+
+    if (po.verbose > 2):
+        print("Prepared request - {:s}:".format(type(payload).__name__))
+        print(payload)
+
+    #comm_serialtalk.py COM5 -vv --sender_type=PC --sender_index=1 --receiver_type=Gimbal --ack_type=ACK_Before_Exec --cmd_set=Zenmuse --cmd_id=8 --payload_hex="01" --seq_num=65280
+    pktrpl = send_request_and_receive_reply(po, ser,
+      COMM_DEV_TYPE.GIMBAL, 0,
+      ACK_TYPE.ACK_BEFORE_EXEC,
+      CMD_SET_TYPE.ZENMUSE, 0x08,
+      payload)
+
+    if po.dry_test:
+        # use to test the code without a drone
+        pktrpl = bytes.fromhex("")#TODO
+
+    if pktrpl is None:
+        raise ConnectionError("No response on calibration command {:s} info by index request.".format(cmd.name))
+
+    rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+    rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+
+    if (rplpayload is None):
+        raise ConnectionError("Unrecognized response to calibration command {:s} info by index request.".format(cmd.name))
+
+    if (po.verbose > 2):
+        print("Parsed response - {:s}:".format(type(rplpayload).__name__))
+        print(rplpayload)
+
+    return rplpayload
+
+def do_gimbal_calib_request_spark_joint_coarse(po, ser):
+    """ Initiates Spark Gimbal Joint Coarse calibration.
+
+        Tested on the following platforms and FW versions:
+        NONE
+    """
+    rplpayload = gimbal_calib_request_spark(po, ser, DJIPayload_Gimbal_CalibCmd.JointCoarse)
+    #TODO - unfnushed - resulting packet unknown
+    print("Packet sent; further implementation is not finished.")
+
+def do_gimbal_calib_request_spark_linear_hall(po, ser):
+    """ Initiates Spark Gimbal Linear Hall calibration.
+
+        Tested on the following platforms and FW versions:
+        NONE
+    """
+    rplpayload = gimbal_calib_request_spark(po, ser, DJIPayload_Gimbal_CalibCmd.LinearHall)
+    #TODO - unfnushed - resulting packet unknown
+    print("Packet sent; further implementation is not finished.")
+
 def do_gimbal_calib_request(po):
     ser = open_serial_port(po)
 
-    eprint("Unimplemented command: {:s}.".format(po.svcmd.name))
+    if po.product.value >= PRODUCT_CODE.WM220.value:
+        if po.subcmd == GIMBAL_CALIB_CMD.JOINTCOARSE:
+            do_gimbal_calib_request_spark_joint_coarse(po, ser)
+        elif po.subcmd == GIMBAL_CALIB_CMD.LINEARHALL:
+            do_gimbal_calib_request_spark_linear_hall(po, ser)
+        else:
+            raise ValueError("Unrecognized {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
+    else:
+        raise ValueError("Calibration for selected platform is not supported.")
 
     ser.close()
 
@@ -997,9 +1064,6 @@ def main():
     subpar_flycpar = subparsers.add_parser('FlycParam',
             help="Flight Controller Parameters handling")
 
-    subpar_gimbcal = subparsers.add_parser('GimbalCalib',
-            help="Gimbal Calibration options")
-
     subpar_flycpar_subcmd = subpar_flycpar.add_subparsers(dest='subcmd',
             help="Flyc Param Command")
 
@@ -1035,6 +1099,18 @@ def main():
             choices=['simple', '1line', '2line', 'tab', 'csv'],
             help="output format")
 
+    subpar_gimbcal = subparsers.add_parser('GimbalCalib',
+            help="Gimbal Calibration options")
+
+    subpar_gimbcal_subcmd = subpar_gimbcal.add_subparsers(dest='subcmd',
+            help="Gimbal Calibration Command")
+
+    subpar_gimbcal_list = subpar_gimbcal_subcmd.add_parser('JointCoarse',
+            help="gimbal Joint Coarse calibration")
+
+    subpar_gimbcal_list = subpar_gimbcal_subcmd.add_parser('LinearHall',
+            help="gimbal Linear Hall calibration")
+
     po = parser.parse_args()
 
     po.product = PRODUCT_CODE.from_name(po.product)
@@ -1044,6 +1120,7 @@ def main():
         po.subcmd = FLYC_PARAM_CMD.from_name(po.subcmd.upper())
         do_flyc_param_request(po)
     elif po.svcmd == SERVICE_CMD.GimbalCalib:
+        po.subcmd = GIMBAL_CALIB_CMD.from_name(po.subcmd.upper())
         do_gimbal_calib_request(po)
 
 if __name__ == '__main__':
