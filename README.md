@@ -200,6 +200,25 @@ Example of asking Flight Controller for hardware and firmware version data (test
 
 ```./comm_serialtalk.py /dev/ttyUSB0 -vv --timeout=5000 --receiver_type=FlyController --seq_num=65280 --ack_type=No_ACK_Needed --cmd_set=General --cmd_id=1```
 
+### comm_og_service_tool.py
+
+OGs Service Tool for Dji products.
+
+The script allows to trigger a few service functions of Dji drones. It talks to the drone
+like `comm_serialtalk.py`, but provides easier interface for some important functions.
+
+Example of listing Flight Controller Parameters 200-300 on Ph3 Pro to CSV format:
+
+```./comm_og_service_tool.py /dev/ttyUSB0 P3X FlycParam list --start=200 --count=100 --fmt=csv```
+
+Example of getting value of Flight Controller Parameters on Spark:
+
+```./comm_og_service_tool.py /dev/ttyUSB0 -vv SPARK FlycParam get g_config.flying_limit.max_height_0 --fmt=2line```
+
+Example of setting value of Flight Controller Parameters on Spark:
+
+```./comm_og_service_tool.py /dev/ttyUSB0 -vv SPARK FlycParam set g_config.flying_limit.max_height_0 500```
+
 ### comm_dissector
 
 The folder contains [Wireshark](https://www.wireshark.org/) dissector for for analyzing communication in DJI drone interfaces.
