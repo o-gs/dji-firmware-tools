@@ -174,10 +174,10 @@ def main():
     """
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument('port1',
+    parser.add_argument('port1', type=str,
             help='The first serial port to read from')
 
-    parser.add_argument('port2',
+    parser.add_argument('port2', type=str,
             help='The second serial port to read from')
 
     parser.add_argument('-b', '--baudrate', default=115200, type=int,
