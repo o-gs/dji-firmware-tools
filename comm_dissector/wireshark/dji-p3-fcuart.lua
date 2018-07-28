@@ -69,13 +69,22 @@ DJI_P3_FLIGHT_CONTROL_UART_CMD_SET = {
     [7] = 'Wi-Fi',
     [8] = 'DM36x',
     [9] = 'HD Link',
-    [10] = 'Mono/Binocular',
+    [10] = 'Mono/Binocular', -- aka Vision
     [11] = 'Simulator',
     [12] = 'ESC',
     [13] = 'Battery',
-    [14] = 'Data Logger',
-    [15] = 'RTK',
-    [16] = 'Automation',
+    [14] = 'Data Logger', -- aka HD Link Ground 1765
+    [15] = 'RTK', -- S-to-P Air
+    [16] = 'Automation', -- S-to-P Ground
+    [17] = 'ADSB',
+    [18] = 'BVision',
+    [19] = 'FPGA Air',
+    [20] = 'FPGA Ground',
+    [21] = 'Glass',
+    [22] = 'MavLink',
+    [23] = 'Watch',
+    [28] = 'RM',
+    [33] = 'MAX',
 }
 
 -- CMD name decode tables
@@ -85,46 +94,78 @@ local GENERAL_UART_CMD_TEXT = {
     [0x01] = 'Version Inquiry',
     [0x02] = 'Push Param Set',
     [0x03] = 'Push Param Get',
-    [0x05] = 'Multi Param Set',
-    [0x06] = 'Multi Param Get',
-    [0x07] = 'Enter Loader', -- Enter Upgrade Mode
-    [0x08] = 'Update Confirm', -- Upgrade Prepare
-    [0x09] = 'Update Transmit', -- Upgrade Data Transmission
-    [0x0a] = 'Update Finish', -- Upgrade Verify
+    [0x04] = 'Push Param Start',
+    [0x05] = 'Multi Param Set', -- Multiple prarams set at once
+    [0x06] = 'Multi Param Get', -- Multiple prarams get at once
+    [0x07] = 'Enter Loader', -- Enter Upgrade Mode / Firmware Upgrade Entry
+    [0x08] = 'Update Confirm', -- Upgrade Prepare / Firmware Upgrade Procedure Start
+    [0x09] = 'Update Transmit', -- Firmware Upgrade Data Transmission
+    [0x0a] = 'Update Finish', -- Firmware Upgrade Verify
     [0x0b] = 'Reboot Chip',
     [0x0c] = 'Get Device State', -- get run status(loader, app)
     [0x0d] = 'Set Device Version', -- HardwareId
     [0x0e] = 'Heartbeat/Log Message', -- It can transmit text messages from FC, but is usually empty
-    [0x0f] = 'Upgrade Self Request', -- Upgrade Consistency
+    [0x0f] = 'Upgrade Self Request', -- Upgrade Consistency / Check Upgrade Compatibile
     [0x10] = 'Set SDK Std Msgs Frequency',
     [0x20] = 'File List',
     [0x21] = 'File Info',
     [0x22] = 'File Send',
     [0x23] = 'File Receive', -- See m0101 sys partiton for payload info
-    [0x24] = 'Camera Files', -- Send File
-    [0x25] = 'File Segment Err', -- File Receive Fail
-    [0x26] = 'FileTrans App Camera', -- See m0101 sys partiton for payload info
-    [0x27] = 'FileTrans Camera App',
-    [0x28] = 'Trans Del',
-    [0x2a] = 'General File Transfer',
-    [0x30] = 'Encrypt',
+    [0x24] = 'File Sending',
+    [0x25] = 'File Segment Err', -- File Receive Segment Fail
+    [0x26] = 'FileTrans App 2 Camera', -- See m0101 sys partiton for payload info
+    [0x27] = 'FileTrans Camera 2 App',
+    [0x28] = 'FileTrans Delete',
+    [0x2a] = 'FileTrans General Trans',
+    [0x30] = 'Encrypt Config',
     [0x32] = 'Activate Config',
     [0x33] = 'MFi Cert',
     [0x34] = 'Safe Communication',
+    [0x40] = 'Fw Update Desc Push',
     [0x41] = 'Fw Update Push Control',
     [0x42] = 'Fw Upgrade Push Status',
-    [0x47] = 'Notify Disconnect', -- Upgrade Reboot Status
-    [0x4c] = 'Get Aging Test Status',
+    [0x43] = 'Fw Upgrade Finish',
+    [0x45] = 'Sleep Control',
+    [0x46] = 'Shutdown Notification', -- aka Disconnect Notifiation
+    [0x47] = 'Power State', -- aka Reboot Status
+    [0x48] = 'LED Control',
+    [0x4a] = 'Set Date',
+    [0x4b] = 'Get Date',
+    [0x4c] = 'Get Module Sys Status', -- Get Aging Test Status
+    [0x4d] = 'Set RT',
+    [0x4e] = 'Get RT',
     [0x4f] = 'Get Cfg File',
-    [0x51] = 'Get SN For Vision',
-    [0x52] = 'Common App Gps Config',
-    [0x55] = 'Fmu API Get Alive Time',
-    [0x56] = 'Fmu API Over Temperature',
-    [0x58] = '1860 Get The Ack Of Timestamp',
+    [0x50] = 'Set Serial Number',
+    [0x51] = 'Get Serial Number',
+    [0x52] = 'Set Gps Push Config',
+    [0x53] = 'Push Gps Info',
+    [0x54] = 'Get Temperature Info',
+    [0x55] = 'Get Alive Time',
+    [0x56] = 'Over Temperature', -- Push Temperature Warning
+    [0x57] = 'Send Network Info',
+    [0x58] = 'Time Sync', -- Get Ack Of Timestamp
+    [0x59] = 'Test Mode',
+    [0x5a] = 'Play Sound',
+    [0x5c] = 'UAV Fly Info',
+    [0x60] = 'Auto Test Info',
+    [0x61] = 'Set Product Newest Ver',
+    [0x62] = 'Get Product Newest Ver',
+    [0xef] = 'Send Reserved Key',
+    [0xf0] = 'Log Push',
     [0xf1] = 'Component Self Test State', -- The component is identified by sender field
-    [0xfd] = 'SDK Autotest Error Inject',
-    [0xfe] = 'SDK Pure Transfer From Mc To App',
-    [0xff] = 'Get Prod Code', -- Asks a component for identification string / Build Info(Date, Time, Type)
+    [0xf2] = 'Log Control Global',
+    [0xf3] = 'Log Control Module',
+    [0xf4] = 'Test Start',
+    [0xf5] = 'Test Stop',
+    [0xf6] = 'Test Query Result',
+    [0xf7] = 'Push Test Result',
+    [0xf8] = 'Get Metadata',
+    [0xfa] = 'Log Control',
+    [0xfb] = 'Selftest State',
+    [0xfc] = 'Selftest State Count',
+    [0xfd] = 'Dump Frame Buffer', -- or Autotest Error Inject?
+    [0xfe] = 'Self Define', -- Pure Transfer From Mc To App
+    [0xff] = 'Query Device Info', -- Asks a component for identification string / Build Info(Date, Time, Type)
 }
 
 local SPECIAL_UART_CMD_TEXT = {
@@ -138,19 +179,20 @@ local SPECIAL_UART_CMD_TEXT = {
     [0x20] = 'SDK Ctrl Camera Shot Ctrl',
     [0x21] = 'SDK Ctrl Camera Start Video Ctrl',
     [0x22] = 'SDK Ctrl Camera Stop Video Ctrl',
+    [0xff] = 'UAV Loopback',
 }
 
 local CAMERA_UART_CMD_TEXT = {
     [0x01] = 'Do Capture',
     [0x02] = 'Do Record',
-    [0x03] = 'Heart Beat',
-    [0x04] = 'Set Usb Switch',
+    [0x03] = 'HeartBeat',
+    [0x04] = 'Set Usb Switch', -- Usb Connect
     [0x05] = 'Virtual Key Send',
     [0x06] = 'Get Usb Switch',
     [0x10] = 'Camera Work Mode Set',
     [0x11] = 'Camera Work Mode Get',
-    [0x12] = 'Photo Size Set',
-    [0x13] = 'Photo Size Get',
+    [0x12] = 'Photo Format Set',
+    [0x13] = 'Photo Format Get',
     [0x14] = 'Photo Quality Set',
     [0x15] = 'Photo Quality Get',
     [0x16] = 'Photo Storage Fmt Set',
@@ -163,22 +205,30 @@ local CAMERA_UART_CMD_TEXT = {
     [0x1D] = 'Video Storage Fmt Get',
     [0x1E] = 'Expo Mode Set',
     [0x1F] = 'Expo Mode Get',
+    [0x20] = 'Scene Mode Set',
+    [0x21] = 'Scene Mode Get',
     [0x22] = 'AE Meter Set',
     [0x23] = 'AE Meter Get',
-    [0x26] = 'Camera TBD 26',
+    [0x24] = 'Focus Mode Set',
+    [0x25] = 'Focus Mode Get',
+    [0x26] = 'Aperture Size Set',
     [0x27] = 'Aperture Size Get',
     [0x28] = 'Shutter Speed Set',
     [0x29] = 'Shutter Speed Get',
-    [0x2A] = 'Iso Set',
-    [0x2B] = 'Iso Get',
-    [0x2C] = 'Wb Env Set',
-    [0x2D] = 'Wb Env Get',
-    [0x2E] = 'Expo Bias Set',
+    [0x2A] = 'ISO Set',
+    [0x2B] = 'ISO Get',
+    [0x2C] = 'WB Env Set', -- White Balance Set
+    [0x2D] = 'WB Env Get', -- White Balance Get
+    [0x2E] = 'Expo Bias Set', -- Exposition (Ev) Bias Set
     [0x2F] = 'Expo Bias Get',
-    [0x32] = 'Ae Meter Region Set',
-    [0x33] = 'Ae Meter Region Get',
-    [0x34] = 'Zoom Set',
-    [0x35] = 'Zoom Get',
+    [0x30] = 'Focus Region Set',
+    [0x31] = 'Focus Region Get',
+    [0x32] = 'AE Meter Region Set', -- Auto Exposition (Ev) Meter Region Set
+    [0x33] = 'AE Meter Region Get',
+    [0x34] = 'Zoom Param Set',
+    [0x35] = 'Zoom Param Get',
+    [0x36] = 'Flash Mode Set',
+    [0x37] = 'Flash Mode Get',
     [0x38] = 'Sharpeness Set',
     [0x39] = 'Sharpeness Get',
     [0x3A] = 'Contrast Set',
@@ -187,8 +237,12 @@ local CAMERA_UART_CMD_TEXT = {
     [0x3D] = 'Saturation Get',
     [0x3E] = 'Hue Set',
     [0x3F] = 'Hue Get',
+    [0x40] = 'Face Detect Set',
+    [0x41] = 'Face Detect Get',
     [0x42] = 'Digital Effect Set',
     [0x43] = 'Digital Effect Get',
+    [0x44] = 'Digital Denoise Set',
+    [0x45] = 'Digital Denoise Get',
     [0x46] = 'Anti Fliker Set',
     [0x47] = 'Anti Fliker Get',
     [0x48] = 'Multi Cap Param Set',
@@ -765,25 +819,25 @@ local function general_upgrade_self_request_dissector(pkt_length, buffer, pinfo,
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Upgrade Self Request: Payload size different than expected") end
 end
 
--- General - Camera Files - 0x24
+-- General - File Sending - 0x24
 
-f.general_camera_files_index = ProtoField.int32 ("dji_p3.general_camera_files_index", "Index", base.DEC)
-f.general_camera_files_data = ProtoField.bytes ("dji_p3.general_camera_files_data", "Data", base.SPACE)
+f.general_file_sending_index = ProtoField.int32 ("dji_p3.general_file_sending_index", "Index", base.DEC)
+f.general_file_sending_data = ProtoField.bytes ("dji_p3.general_file_sending_data", "Data", base.SPACE)
 
-local function general_camera_files_dissector(pkt_length, buffer, pinfo, subtree)
+local function general_file_sending_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.general_camera_files_index, payload(offset, 4))
+    subtree:add_le (f.general_file_sending_index, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.general_camera_files_data, payload(offset, 495))
+    subtree:add_le (f.general_file_sending_data, payload(offset, 495))
     offset = offset + 495
 
 
-    if (offset ~= 499) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Files: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Files: Payload size different than expected") end
+    if (offset ~= 499) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"File Sending: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"File Sending: Payload size different than expected") end
 end
 
 -- General - Camera File - 0x27
@@ -799,50 +853,50 @@ local function general_camera_file_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera File: Payload size different than expected") end
 end
 
--- General - Encrypt - 0x30
+-- General - Encrypt Config - 0x30
 
-enums.COMMON_ENCRYPT_CMD_TYPE_ENUM = {
+enums.COMMON_ENCRYPT_CONFIG_CMD_TYPE_ENUM = {
     [1]="GetChipState", -- Returns At88 chip state flags and factory info
     [2]="GetModuleState", -- Returns At88 module state flags
     [3]="Config", -- Configures the decryption, storing new key.txt and factory info
     [4]="DoEncrypt", -- Encrypts and returns data buffer given in the packet
 }
 
-enums.COMMON_ENCRYPT_OPER_TYPE_ENUM = {
+enums.COMMON_ENCRYPT_CONFIG_OPER_TYPE_ENUM = {
     [0]="Write_Key_File+Write_Factory_Info_File",
     [1]="Write_Key+Write_Factory_Info",
     [2]="Write_Key_All+Write_Factory_Info_All",
 }
 
-f.general_encrypt_cmd_type = ProtoField.uint8 ("dji_p3.general_encrypt_cmd_type", "Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CMD_TYPE_ENUM, nil, nil)
+f.general_encrypt_config_cmd_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_cmd_type", "Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CONFIG_CMD_TYPE_ENUM, nil, nil)
 
-f.general_encrypt_oper_type = ProtoField.uint8 ("dji_p3.general_encrypt_oper_type", "Oper Type", base.DEC, enums.COMMON_ENCRYPT_OPER_TYPE_ENUM, nil, nil)
-f.general_encrypt_magic = ProtoField.bytes ("dji_p3.general_encrypt_magic", "Magic value", base.SPACE, nil, nil, "Should be `F0 BD E3 06 81 3E 85 CB`")
-f.general_encrypt_dev_id = ProtoField.uint8 ("dji_p3.general_encrypt_dev_id", "Device ID", base.DEC, nil, nil, "Only 13 is accepted")
-f.general_encrypt_factory_info_bn = ProtoField.bytes ("dji_p3.general_encrypt_factory_info_bn", "Factory Info Bn", base.SPACE, nil, nil, "FactoryInfo.aucBn")
-f.general_encrypt_key = ProtoField.bytes ("dji_p3.general_encrypt_key", "Encrypt Key", base.SPACE, nil, nil, "AES encryption key")
-f.general_encrypt_factory_info_sn = ProtoField.bytes ("dji_p3.general_encrypt_factory_info_sn", "Factory Info Sn", base.SPACE, nil, nil, "FactoryInfo.aucSn")
+f.general_encrypt_config_oper_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_oper_type", "Oper Type", base.DEC, enums.COMMON_ENCRYPT_CONFIG_OPER_TYPE_ENUM, nil, nil)
+f.general_encrypt_config_magic = ProtoField.bytes ("dji_p3.general_encrypt_config_magic", "Magic value", base.SPACE, nil, nil, "Should be `F0 BD E3 06 81 3E 85 CB`")
+f.general_encrypt_config_dev_id = ProtoField.uint8 ("dji_p3.general_encrypt_config_dev_id", "Device ID", base.DEC, nil, nil, "Only 13 is accepted")
+f.general_encrypt_config_factory_info_bn = ProtoField.bytes ("dji_p3.general_encrypt_config_factory_info_bn", "Factory Info Bn", base.SPACE, nil, nil, "FactoryInfo.aucBn")
+f.general_encrypt_config_key = ProtoField.bytes ("dji_p3.general_encrypt_config_key", "Encrypt Key", base.SPACE, nil, nil, "AES encryption key")
+f.general_encrypt_config_factory_info_sn = ProtoField.bytes ("dji_p3.general_encrypt_config_factory_info_sn", "Factory Info Sn", base.SPACE, nil, nil, "FactoryInfo.aucSn")
 
-f.general_encrypt_buf_len = ProtoField.uint8 ("dji_p3.general_encrypt_buf_len", "Buffer Length", base.DEC, nil, nil, "Length in DWords")
-f.general_encrypt_buf_data = ProtoField.bytes ("dji_p3.general_encrypt_buf_data", "Buffer data", base.SPACE, nil, nil)
+f.general_encrypt_config_buf_len = ProtoField.uint8 ("dji_p3.general_encrypt_config_buf_len", "Buffer Length", base.DEC, nil, nil, "Length in DWords")
+f.general_encrypt_config_buf_data = ProtoField.bytes ("dji_p3.general_encrypt_config_buf_data", "Buffer data", base.SPACE, nil, nil)
 
-f.general_encrypt_resp_type = ProtoField.uint8 ("dji_p3.general_encrypt_resp_type", "Response To Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CMD_TYPE_ENUM, nil, nil)
+f.general_encrypt_config_resp_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_type", "Response To Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CONFIG_CMD_TYPE_ENUM, nil, nil)
 
-f.general_encrypt_resp_unknown0 = ProtoField.uint8 ("dji_p3.general_encrypt_resp_unknown0", "Unknown0", base.HEX, nil, nil)
-f.general_encrypt_resp_state_flags = ProtoField.uint8 ("dji_p3.general_encrypt_resp_state_flags", "State Flags", base.HEX, nil, nil)
-f.general_encrypt_resp_chip_state_conf_zone_unlock = ProtoField.uint8 ("dji_p3.general_encrypt_resp_chip_state_conf_zone_unlock", "Config Zone Unlocked", base.DEC, nil, 0x01)
-f.general_encrypt_resp_chip_state_data_zone_unlock = ProtoField.uint8 ("dji_p3.general_encrypt_resp_chip_state_data_zone_unlock", "Data Zone Unlocked", base.DEC, nil, 0x06)
-f.general_encrypt_resp_modl_state_module_ready = ProtoField.uint8 ("dji_p3.general_encrypt_resp_modl_state_module_ready", "Module reports ready", base.DEC, nil, 0x01)
-f.general_encrypt_resp_modl_state_verify_pass = ProtoField.uint8 ("dji_p3.general_encrypt_resp_modl_state_verify_pass", "Module verification passed", base.DEC, nil, 0x02)
-f.general_encrypt_resp_unknown2 = ProtoField.bytes ("dji_p3.general_encrypt_resp_unknown2", "Unknown2", base.SPACE, nil, nil)
-f.general_encrypt_resp_unknown12 = ProtoField.bytes ("dji_p3.general_encrypt_resp_unknown12", "Unknown12", base.SPACE, nil, nil)
-f.general_encrypt_resp_unknown22 = ProtoField.bytes ("dji_p3.general_encrypt_resp_unknown22", "Unknown22", base.SPACE, nil, nil)
+f.general_encrypt_config_resp_unknown0 = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_unknown0", "Unknown0", base.HEX, nil, nil)
+f.general_encrypt_config_resp_state_flags = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_state_flags", "State Flags", base.HEX, nil, nil)
+f.general_encrypt_config_resp_chip_state_conf_zone_unlock = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_chip_state_conf_zone_unlock", "Config Zone Unlocked", base.DEC, nil, 0x01)
+f.general_encrypt_config_resp_chip_state_data_zone_unlock = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_chip_state_data_zone_unlock", "Data Zone Unlocked", base.DEC, nil, 0x06)
+f.general_encrypt_config_resp_modl_state_module_ready = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_modl_state_module_ready", "Module reports ready", base.DEC, nil, 0x01)
+f.general_encrypt_config_resp_modl_state_verify_pass = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_modl_state_verify_pass", "Module verification passed", base.DEC, nil, 0x02)
+f.general_encrypt_config_resp_unknown2 = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_unknown2", "Unknown2", base.SPACE, nil, nil)
+f.general_encrypt_config_resp_unknown12 = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_unknown12", "Unknown12", base.SPACE, nil, nil)
+f.general_encrypt_config_resp_unknown22 = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_unknown22", "Unknown22", base.SPACE, nil, nil)
 
-f.general_encrypt_resp_mac = ProtoField.bytes ("dji_p3.general_encrypt_resp_mac", "MAC", base.SPACE, nil, nil)
-f.general_encrypt_resp_brdnum = ProtoField.bytes ("dji_p3.general_encrypt_resp_brdnum", "Board Num", base.SPACE, nil, nil)
-f.general_encrypt_resp_sn = ProtoField.bytes ("dji_p3.general_encrypt_resp_sn", "SN", base.SPACE, nil, nil)
+f.general_encrypt_config_resp_mac = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_mac", "MAC", base.SPACE, nil, nil)
+f.general_encrypt_config_resp_brdnum = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_brdnum", "Board Num", base.SPACE, nil, nil)
+f.general_encrypt_config_resp_sn = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_sn", "SN", base.SPACE, nil, nil)
 
-local function general_encrypt_dissector(pkt_length, buffer, pinfo, subtree)
+local function general_encrypt_config_dissector(pkt_length, buffer, pinfo, subtree)
     local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
 
     local offset = 11
@@ -851,7 +905,7 @@ local function general_encrypt_dissector(pkt_length, buffer, pinfo, subtree)
 
     if pack_type == 0 then -- Request
         local cmd_type = payload(offset,1):le_uint()
-        subtree:add_le (f.general_encrypt_cmd_type, payload(offset, 1))
+        subtree:add_le (f.general_encrypt_config_cmd_type, payload(offset, 1))
         offset = offset + 1
 
         if cmd_type == 1 then
@@ -862,90 +916,90 @@ local function general_encrypt_dissector(pkt_length, buffer, pinfo, subtree)
             if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 2: Offset does not match - internal inconsistency") end
         elseif cmd_type == 3 then
             -- Decoded using func Dec_Serial_Encrypt_Config from `usbclient` binary
-            subtree:add_le (f.general_encrypt_oper_type, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_oper_type, payload(offset, 1))
             offset = offset + 1
 
-            subtree:add_le (f.general_encrypt_magic, payload(offset, 8))
+            subtree:add_le (f.general_encrypt_config_magic, payload(offset, 8))
             offset = offset + 8
 
-            subtree:add_le (f.general_encrypt_dev_id, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_dev_id, payload(offset, 1))
             offset = offset + 1
 
-            subtree:add_le (f.general_encrypt_factory_info_bn, payload(offset, 10))
+            subtree:add_le (f.general_encrypt_config_factory_info_bn, payload(offset, 10))
             offset = offset + 10
 
-            subtree:add_le (f.general_encrypt_key, payload(offset, 32))
+            subtree:add_le (f.general_encrypt_config_key, payload(offset, 32))
             offset = offset + 32
 
-            subtree:add_le (f.general_encrypt_factory_info_sn, payload(offset, 16))
+            subtree:add_le (f.general_encrypt_config_factory_info_sn, payload(offset, 16))
             offset = offset + 16
 
             if (offset ~= 69) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 3: Offset does not match - internal inconsistency") end
         elseif cmd_type == 4 then
             -- Answer could be decoded using func Encrypt_Request from `encode_usb` binary
             local buf_len = payload(offset,1):le_uint()
-            subtree:add_le (f.general_encrypt_buf_len, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_buf_len, payload(offset, 1))
             offset = offset + 1
 
-            subtree:add_le (f.general_encrypt_buf_data, payload(offset, 4*buf_len))
+            subtree:add_le (f.general_encrypt_config_buf_data, payload(offset, 4*buf_len))
             offset = offset + 4*buf_len
 
             if (offset ~= 1+4*buf_len) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 4: Offset does not match - internal inconsistency") end
         end
     else -- Response
         if (payload:len() >= 59) then
-            subtree:add_le (f.general_encrypt_resp_type, 4) -- Add response type without related byte within packet (type is recognized by size, not by field)
+            subtree:add_le (f.general_encrypt_config_resp_type, 4) -- Add response type without related byte within packet (type is recognized by size, not by field)
 
-            subtree:add_le (f.general_encrypt_resp_unknown0, payload(offset, 1)) -- Is that supposed to be response type?
+            subtree:add_le (f.general_encrypt_config_resp_unknown0, payload(offset, 1)) -- Is that supposed to be response type?
             offset = offset + 1
 
-            subtree:add_le (f.general_encrypt_resp_mac, payload(offset, 32))
+            subtree:add_le (f.general_encrypt_config_resp_mac, payload(offset, 32))
             offset = offset + 32
 
-            subtree:add_le (f.general_encrypt_resp_brdnum, payload(offset, 10))
+            subtree:add_le (f.general_encrypt_config_resp_brdnum, payload(offset, 10))
             offset = offset + 10
 
-            subtree:add_le (f.general_encrypt_resp_sn, payload(offset, 16))
+            subtree:add_le (f.general_encrypt_config_resp_sn, payload(offset, 16))
             offset = offset + 16
 
             if (offset ~= 59) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt reply: Offset does not match - internal inconsistency") end
         elseif (payload:len() >= 32) then
-            subtree:add_le (f.general_encrypt_resp_type, 1)
+            subtree:add_le (f.general_encrypt_config_resp_type, 1)
 
-            subtree:add_le (f.general_encrypt_resp_unknown0, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_resp_unknown0, payload(offset, 1))
             offset = offset + 1
 
-            subtree:add_le (f.general_encrypt_resp_state_flags, payload(offset, 1))
-            subtree:add_le (f.general_encrypt_resp_chip_state_conf_zone_unlock, payload(offset, 1))
-            subtree:add_le (f.general_encrypt_resp_chip_state_data_zone_unlock, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_resp_state_flags, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_resp_chip_state_conf_zone_unlock, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_resp_chip_state_data_zone_unlock, payload(offset, 1))
             offset = offset + 1
 
-            subtree:add_le (f.general_encrypt_resp_unknown2, payload(offset, 10))
+            subtree:add_le (f.general_encrypt_config_resp_unknown2, payload(offset, 10))
             offset = offset + 10
 
-            subtree:add_le (f.general_encrypt_resp_unknown12, payload(offset, 10))
+            subtree:add_le (f.general_encrypt_config_resp_unknown12, payload(offset, 10))
             offset = offset + 10
 
-            subtree:add_le (f.general_encrypt_resp_unknown22, payload(offset, 10))
+            subtree:add_le (f.general_encrypt_config_resp_unknown22, payload(offset, 10))
             offset = offset + 10
 
             if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt reply: Offset does not match - internal inconsistency") end
         elseif (payload:len() >= 2) then
-            subtree:add_le (f.general_encrypt_resp_type, 2)
+            subtree:add_le (f.general_encrypt_config_resp_type, 2)
 
-            subtree:add_le (f.general_encrypt_resp_unknown0, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_resp_unknown0, payload(offset, 1))
             offset = offset + 1
 
-            subtree:add_le (f.general_encrypt_resp_state_flags, payload(offset, 1))
-            subtree:add_le (f.general_encrypt_resp_modl_state_module_ready, payload(offset, 1))
-            subtree:add_le (f.general_encrypt_resp_modl_state_verify_pass, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_resp_state_flags, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_resp_modl_state_module_ready, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_resp_modl_state_verify_pass, payload(offset, 1))
             offset = offset + 1
 
             if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt reply: Offset does not match - internal inconsistency") end
         elseif (payload:len() >= 1) then
-            subtree:add_le (f.general_encrypt_resp_type, 3)
+            subtree:add_le (f.general_encrypt_config_resp_type, 3)
 
-            subtree:add_le (f.general_encrypt_resp_unknown0, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_resp_unknown0, payload(offset, 1))
             offset = offset + 1
 
             if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt reply: Offset does not match - internal inconsistency") end
@@ -1066,44 +1120,44 @@ local function general_common_upgrade_status_dissector(pkt_length, buffer, pinfo
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Common Upgrade Status: Payload size different than expected") end
 end
 
--- General - Notify Disconnect - 0x47
+-- General - Power State - 0x47
 
-f.general_notify_disconnect_a = ProtoField.uint8 ("dji_p3.general_notify_disconnect_a", "A", base.DEC, nil, nil, "TODO values from enum P3.DataNotifyDisconnect")
-f.general_notify_disconnect_b = ProtoField.uint16 ("dji_p3.general_notify_disconnect_b", "B", base.DEC)
+f.general_power_state_a = ProtoField.uint8 ("dji_p3.general_power_state_a", "A", base.DEC, nil, nil, "TODO values from enum P3.DataNotifyDisconnect")
+f.general_power_state_b = ProtoField.uint16 ("dji_p3.general_power_state_b", "B", base.DEC)
 
-local function general_notify_disconnect_dissector(pkt_length, buffer, pinfo, subtree)
+local function general_power_state_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.general_notify_disconnect_a, payload(offset, 1))
+    subtree:add_le (f.general_power_state_a, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.general_notify_disconnect_b, payload(offset, 2))
+    subtree:add_le (f.general_power_state_b, payload(offset, 2))
     offset = offset + 2
 
-    if (offset ~= 3) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Notify Disconnect: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Notify Disconnect: Payload size different than expected") end
+    if (offset ~= 3) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Power State: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Power State: Payload size different than expected") end
 end
 
--- General - Common App Gps Config - 0x52
+-- General - Set Gps Push Config - 0x52
 
-f.general_common_app_gps_config_is_start = ProtoField.uint8 ("dji_p3.general_common_app_gps_config_is_start", "Is Start", base.DEC)
-f.general_common_app_gps_config_get_push_interval = ProtoField.uint32 ("dji_p3.general_common_app_gps_config_get_push_interval", "Get Push Interval", base.DEC)
+f.general_set_gps_push_config_is_start = ProtoField.uint8 ("dji_p3.general_set_gps_push_config_is_start", "Is Start", base.DEC)
+f.general_set_gps_push_config_get_push_interval = ProtoField.uint32 ("dji_p3.general_set_gps_push_config_get_push_interval", "Get Push Interval", base.DEC)
 
-local function general_common_app_gps_config_dissector(pkt_length, buffer, pinfo, subtree)
+local function general_set_gps_push_config_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.general_common_app_gps_config_is_start, payload(offset, 1))
+    subtree:add_le (f.general_set_gps_push_config_is_start, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.general_common_app_gps_config_get_push_interval, payload(offset, 4))
+    subtree:add_le (f.general_set_gps_push_config_get_push_interval, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Common App Gps Config: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Common App Gps Config: Payload size different than expected") end
+    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set Gps Push Config: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set Gps Push Config: Payload size different than expected") end
 end
 
 -- General - Component Self Test State - 0xf1
@@ -1142,17 +1196,17 @@ local function general_compn_state_dissector(pkt_length, buffer, pinfo, subtree)
 
 end
 
--- General - Get Prod Code - 0xff
+-- General - Query Device Info - 0xff
 
---f.general_get_prod_code_unknown0 = ProtoField.none ("dji_p3.general_get_prod_code_unknown0", "Unknown0", base.NONE)
+--f.general_query_device_info_unknown0 = ProtoField.none ("dji_p3.general_query_device_info_unknown0", "Unknown0", base.NONE)
 
-local function general_get_prod_code_dissector(pkt_length, buffer, pinfo, subtree)
+local function general_query_device_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Get Prod Code: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Get Prod Code: Payload size different than expected") end
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Query Device Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Query Device Info: Payload size different than expected") end
 end
 
 local GENERAL_UART_CMD_DISSECT = {
@@ -1163,15 +1217,15 @@ local GENERAL_UART_CMD_DISSECT = {
     [0x0d] = general_set_device_version_dissector,
     [0x0e] = general_heartbeat_log_message_dissector,
     [0x0f] = general_upgrade_self_request_dissector,
-    [0x24] = general_camera_files_dissector,
+    [0x24] = general_file_sending_dissector,
     [0x27] = general_camera_file_dissector,
-    [0x30] = general_encrypt_dissector,
+    [0x30] = general_encrypt_config_dissector,
     [0x33] = general_mfi_cert_dissector,
     [0x42] = general_common_upgrade_status_dissector,
-    [0x47] = general_notify_disconnect_dissector,
-    [0x52] = general_common_app_gps_config_dissector,
+    [0x47] = general_power_state_dissector,
+    [0x52] = general_set_gps_push_config_dissector,
     [0xf1] = general_compn_state_dissector,
-    [0xff] = general_get_prod_code_dissector,
+    [0xff] = general_query_device_info_dissector,
 }
 
 -- Special - Old Special Control - 0x01
@@ -5931,6 +5985,40 @@ local function gimbal_gimbal_params_dissector(pkt_length, buffer, pinfo, subtree
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Params: Payload size different than expected") end
 end
 
+-- Gimbal - Gimbal Calibration - 0x08
+
+enums.GIMBAL_CALIBRATE_CMD_ENUM = {
+    [0x00] = 'JointCoarse',
+    [0x01] = 'LinearHall',
+}
+
+f.gimbal_gimbal_calibrate_cmd = ProtoField.uint8 ("dji_p3.gimbal_gimbal_calibrate_cmd", "Calib. Command", base.DEC, enums.GIMBAL_CALIBRATE_CMD_ENUM, nil)
+f.gimbal_gimbal_calibrate_status = ProtoField.uint8 ("dji_p3.gimbal_gimbal_calibrate_status", "Calib. Status", base.DEC, nil, nil)
+
+local function gimbal_gimbal_calibrate_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    -- Usually we use pack_type to differentiate between request and respone; on WM100_FW_V01.00.0900 it does not work
+    if (payload:len() <= 1) then -- Request
+        subtree:add_le (f.gimbal_gimbal_calibrate_status, payload(offset, 1))
+        offset = offset + 1
+
+        if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Calibration: Offset does not match - internal inconsistency") end
+    else -- Response (but response bit not set)
+        subtree:add_le (f.gimbal_gimbal_calibrate_cmd, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.gimbal_gimbal_calibrate_status, payload(offset, 1))
+        offset = offset + 1
+
+        if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Calibration: Offset does not match - internal inconsistency") end
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Calibration: Payload size different than expected") end
+end
+
 -- Gimbal - Gimbal Movement - 0x15
 
 f.gimbal_gimbal_move_unknown0 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown0", "Unknown0", base.DEC, nil, nil, "0.04 degree")
@@ -5941,7 +6029,7 @@ f.gimbal_gimbal_move_unknown4 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unkn
 f.gimbal_gimbal_move_unknown5 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown5", "Unknown5", base.DEC, nil, nil, "0.1 degree")
 f.gimbal_gimbal_move_unknown6 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_move_unknown6", "Unknown6", base.DEC, nil, nil, "percent")
 f.gimbal_gimbal_move_unknown7 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_move_unknown7", "Unknown7", base.DEC, nil, nil, "percent")
-f.gimbal_gimbal_move_roll_adjust = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_roll_adjust", "Roll Adjust", base.DEC)
+f.gimbal_gimbal_move_roll_adjust = ProtoField.uint8 ("dji_p3.gimbal_gimbal_move_roll_adjust", "Roll Adjust", base.DEC)
 f.gimbal_gimbal_move_reserved = ProtoField.bytes ("dji_p3.gimbal_gimbal_move_reserved", "Reserved", base.SPACE, nil, nil, "should be zero-filled")
 
 local function gimbal_gimbal_move_dissector(pkt_length, buffer, pinfo, subtree)
@@ -5973,7 +6061,7 @@ local function gimbal_gimbal_move_dissector(pkt_length, buffer, pinfo, subtree)
     subtree:add_le (f.gimbal_gimbal_move_unknown7, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_params_roll_adjust, payload(offset, 1))
+    subtree:add_le (f.gimbal_gimbal_move_roll_adjust, payload(offset, 1))
     offset = offset + 1
 
     subtree:add_le (f.gimbal_gimbal_move_reserved, payload(offset, 11))
@@ -6348,6 +6436,7 @@ end
 
 local GIMBAL_UART_CMD_DISSECT = {
     [0x05] = gimbal_gimbal_params_dissector,
+    [0x08] = gimbal_gimbal_calibrate_dissector,
     [0x15] = gimbal_gimbal_move_dissector,
     [0x1c] = gimbal_gimbal_type_dissector,
     [0x24] = gimbal_gimbal_user_params_dissector,
