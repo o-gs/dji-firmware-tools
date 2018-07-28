@@ -569,8 +569,8 @@ class DJIPayload_Gimbal_CalibRq(DJIPayload_Base):
              ]
 
 class DJIPayload_Gimbal_CalibRe(DJIPayload_Base):
-  _fields_ = [('status', c_ushort),
-              ('command', c_ubyte),#TODO - unfinished
+  _fields_ = [('status1', c_ubyte),
+              ('status2', c_ubyte),
              ]
 
 def flyc_parameter_compute_hash(po, parname):
@@ -730,7 +730,10 @@ def get_known_payload(pkthead, payload):
 
     if pkthead.cmd_set == CMD_SET_TYPE.ZENMUSE.value and pkthead.packet_type == 0:
         if (pkthead.cmd_id == 0x08):
-            if len(payload) >= sizeof(DJIPayload_Gimbal_CalibRq):
+            # Response for this packet often lacks type flag
+            if len(payload) >= sizeof(DJIPayload_Gimbal_CalibRe):
+                return DJIPayload_Gimbal_CalibRe.from_buffer_copy(payload)
+            elif len(payload) >= sizeof(DJIPayload_Gimbal_CalibRq):
                 return DJIPayload_Gimbal_CalibRq.from_buffer_copy(payload)
 
     if pkthead.cmd_set == CMD_SET_TYPE.ZENMUSE.value and pkthead.packet_type == 1:
