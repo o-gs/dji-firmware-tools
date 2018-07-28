@@ -728,12 +728,12 @@ def get_known_payload(pkthead, payload):
             if len(payload) >= sizeof(DJIPayload_FlyController_WriteParamValByHash2015Re)-DJIPayload_FlyController_ParamMaxLen+1:
                 return DJIPayload_FlyController_WriteParamValByHash2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_WriteParamValByHash2015Re), b'\0'))
 
-    if pkthead.cmd_set == CMD_SET_TYPE.GIMBAL.value and pkthead.packet_type == 0:
+    if pkthead.cmd_set == CMD_SET_TYPE.ZENMUSE.value and pkthead.packet_type == 0:
         if (pkthead.cmd_id == 0x08):
             if len(payload) >= sizeof(DJIPayload_Gimbal_CalibRq):
                 return DJIPayload_Gimbal_CalibRq.from_buffer_copy(payload)
 
-    if pkthead.cmd_set == CMD_SET_TYPE.GIMBAL.value and pkthead.packet_type == 1:
+    if pkthead.cmd_set == CMD_SET_TYPE.ZENMUSE.value and pkthead.packet_type == 1:
         if (pkthead.cmd_id == 0x08):
             if len(payload) >= sizeof(DJIPayload_Gimbal_CalibRe):
                 return DJIPayload_Gimbal_CalibRe.from_buffer_copy(payload)
