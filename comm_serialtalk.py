@@ -74,7 +74,7 @@ def do_read_packets(ser, state, info):
         num_bytes = ser.in_waiting
     return state, out.pktlist, info
 
-def packet_header_is_reply_for_request(rplhdr, reqhdr):
+def packet_header_is_reply_for_request(rplhdr, reqhdr, responsebit_check=False, seqnum_check=True):
     if (rplhdr.version != 1):
         return False
     if (rplhdr.cmd_set != reqhdr.cmd_set):
@@ -85,22 +85,23 @@ def packet_header_is_reply_for_request(rplhdr, reqhdr):
         return False
     if (rplhdr.receiver_info != reqhdr.sender_info):
         return False
-    if (rplhdr.seq_num != reqhdr.seq_num):
+    if (rplhdr.seq_num != reqhdr.seq_num) and seqnum_check:
         return False
     # Many responses don't have the RESPONSE bit set
-    #if (rplhdr.packet_type != PACKET_TYPE.RESPONSE):
-    #    return False
+    if (rplhdr.packet_type != PACKET_TYPE.RESPONSE) and responsebit_check:
+        return False
+    # Ack types should be different - respone should have NO_ACK; but in practice this varies
     #if (rplhdr.ack_type != reqhdr.ack_type):
     #    return False
     return True
 
-def find_reply_for_request(po, pktlist, pktreq):
+def find_reply_for_request(po, pktlist, pktreq, seqnum_check=True):
     if len(pktlist) == 0:
         return None
     reqhdr = DJICmdV1Header.from_buffer_copy(pktreq)
     for pktrpl in pktlist:
         rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
-        if packet_header_is_reply_for_request(rplhdr, reqhdr):
+        if packet_header_is_reply_for_request(rplhdr, reqhdr, seqnum_check=seqnum_check):
             return pktrpl
         if (po.verbose > 2):
             print("Received unrelated packet:")
@@ -123,7 +124,7 @@ def do_send_request(po, ser, pktprop):
 
     return pktreq
 
-def do_receive_reply(po, ser, pktreq):
+def do_receive_reply(po, ser, pktreq, seqnum_check=True):
     """ Receive reply after sending packet pktreq to interface ser.
     """
     ser.reset_input_buffer()
@@ -150,7 +151,7 @@ def do_receive_reply(po, ser, pktreq):
 
         if True:
             state, pktlist, info = do_read_packets(ser, state, info)
-            pktrpl = find_reply_for_request(po, pktlist, pktreq)
+            pktrpl = find_reply_for_request(po, pktlist, pktreq, seqnum_check=seqnum_check)
 
         if pktrpl is not None:
             show_stats = True
@@ -172,7 +173,7 @@ def do_send_request_receive_reply(po):
 
     pktreq = do_send_request(po, ser, po)
 
-    pktrpl = do_receive_reply(po, ser, pktreq)
+    pktrpl = do_receive_reply(po, ser, pktreq, seqnum_check=(not po.loose_response))
 
     if (po.verbose > 0):
         if pktrpl is not None:
@@ -224,6 +225,9 @@ def main():
 
     parser.add_argument('-w', '--timeout', default=2000, type=int,
             help='how long to wait for answer, in miliseconds (default is %(default)s)')
+
+    parser.add_argument('--loose-response', action="store_true",
+            help='use loosen criteria when searching for response to the packet')
 
     parser.add_argument('-v', '--verbose', action='count', default=0,
             help='increases verbosity level; max level is set by -vvv')
