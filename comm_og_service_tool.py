@@ -132,7 +132,7 @@ def get_unique_sequence_number(po):
     # This will be unique as long as we do 10ms delay between packets
     return int(time.time()*100) & 0xffff
 
-def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_type, cmd_set, cmd_id, payload):
+def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_type, cmd_set, cmd_id, payload, seqnum_check=True):
     global last_seq_num
     if not 'last_seq_num' in globals():
         last_seq_num = get_unique_sequence_number(po)
@@ -156,12 +156,32 @@ def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_t
     for nretry in range(0, 3):
         pktreq = do_send_request(po, ser, pktprop)
 
-        pktrpl = do_receive_reply(po, ser, pktreq)
+        pktrpl = do_receive_reply(po, ser, pktreq, seqnum_check=seqnum_check)
 
         if pktrpl is not None:
             break
 
     last_seq_num += 1
+
+    if (po.verbose > 1):
+        if pktrpl is not None:
+            print("Received response packet:")
+        else:
+            print("No response received.")
+
+    if (po.verbose > 0):
+        if pktrpl is not None:
+            print(' '.join('{:02x}'.format(x) for x in pktrpl))
+
+    return pktrpl, pktreq
+
+def receive_reply_for_request(po, ser, pktreq, seqnum_check=True):
+    """ Receives and returns response for given request packet.
+
+        Does not send the request, just waits for response.
+        To be used in cases when a packet triggers multiple responses.
+    """
+    pktrpl = do_receive_reply(po, ser, pktreq, seqnum_check=seqnum_check)
 
     if (po.verbose > 1):
         if pktrpl is not None:
@@ -185,7 +205,7 @@ def flyc_request_assistant_unlock(po, ser, val):
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
-    pktrpl = send_request_and_receive_reply(po, ser,
+    pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xdf,
@@ -218,7 +238,7 @@ def flyc_param_request_2017_get_table_attribs(po, ser, table_no):
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
-    pktrpl = send_request_and_receive_reply(po, ser,
+    pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xe0,
@@ -255,7 +275,7 @@ def flyc_param_request_2017_get_param_info_by_index(po, ser, table_no, param_idx
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
-    pktrpl = send_request_and_receive_reply(po, ser,
+    pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xe1,
@@ -288,7 +308,7 @@ def flyc_param_request_2015_get_param_info_by_index(po, ser, param_idx):
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
-    pktrpl = send_request_and_receive_reply(po, ser,
+    pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xf0,
@@ -321,7 +341,7 @@ def flyc_param_request_2015_get_param_info_by_hash(po, ser, param_name):
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
-    pktrpl = send_request_and_receive_reply(po, ser,
+    pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xf7,
@@ -354,7 +374,7 @@ def flyc_param_request_2015_read_param_value_by_hash(po, ser, param_name):
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
-    pktrpl = send_request_and_receive_reply(po, ser,
+    pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xf8,
@@ -392,7 +412,7 @@ def flyc_param_request_2017_read_param_value_by_index(po, ser, table_no, param_i
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
-    pktrpl = send_request_and_receive_reply(po, ser,
+    pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xe2,
@@ -454,7 +474,7 @@ def flyc_param_request_2017_write_param_value_by_index(po, ser, table_no, param_
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
-    pktrpl = send_request_and_receive_reply(po, ser,
+    pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xe3,
@@ -502,7 +522,7 @@ def flyc_param_request_2015_write_param_value_by_hash(po, ser, param_name, param
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
-    pktrpl = send_request_and_receive_reply(po, ser,
+    pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xf9,
@@ -909,7 +929,7 @@ def do_flyc_param_request_2017_set_alt(po, ser):
     """ Set new value of flyc parameter on platforms multiple parameter tables, alternative way.
 
         Tested on the following platforms and FW versions:
-        NONE
+        WM100_FW_V01.00.0900 (2018-07-27)
     """
     do_assistant_unlock(po, ser)
     # Get param info first, so we know type and size
@@ -959,41 +979,108 @@ def gimbal_calib_request_spark(po, ser, cmd):
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
-    #comm_serialtalk.py COM5 -vv --sender_type=PC --sender_index=1 --receiver_type=Gimbal --ack_type=ACK_Before_Exec --cmd_set=Zenmuse --cmd_id=8 --payload_hex="01" --seq_num=65280
-    pktrpl = send_request_and_receive_reply(po, ser,
+    pktrpl, pktreq = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.GIMBAL, 0,
       ACK_TYPE.ACK_BEFORE_EXEC,
       CMD_SET_TYPE.ZENMUSE, 0x08,
-      payload)
+      payload, seqnum_check=False)
 
     if po.dry_test:
         # use to test the code without a drone
-        pktrpl = bytes.fromhex("")#TODO
+        pktrpl = bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70")
 
     if pktrpl is None:
-        raise ConnectionError("No response on calibration command {:s} info by index request.".format(cmd.name))
+        raise ConnectionError("No response on calibration command {:s} request.".format(cmd.name))
 
     rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
     rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
 
     if (rplpayload is None):
-        raise ConnectionError("Unrecognized response to calibration command {:s} info by index request.".format(cmd.name))
+        raise ConnectionError("Unrecognized response to calibration command {:s} request.".format(cmd.name))
 
     if (po.verbose > 2):
         print("Parsed response - {:s}:".format(type(rplpayload).__name__))
         print(rplpayload)
 
+    return rplpayload, pktreq
+
+def gimbal_calib_request_spark_receive_progress(po, ser, pktreq):
+
+    pktrpl = receive_reply_for_request(po, ser, pktreq, seqnum_check=False)
+
+    if po.dry_test:
+        # use to test the code without a drone
+        pktrpl = bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70")
+
+    if pktrpl is None:
+        raise ConnectionError("No progress tick on calibration command {:s} request.".format(cmd.name))
+
+    rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+    rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+
+    if (rplpayload is None):
+        raise ConnectionError("Unrecognized progress tick to calibration command {:s} request.".format(cmd.name))
+
+    if (po.verbose > 2):
+        print("Parsed progress tick - {:s}:".format(type(rplpayload).__name__))
+        print(rplpayload)
+
     return rplpayload
+
+def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload, pktreq, expect_duration, pass_values):
+    rplpayload = first_rplpayload
+    curr_time = time.time()
+    # As timeout, use expected time + 50%
+    start_time = curr_time
+    timeout_time = curr_time + expect_duration * 1.5 / 1000
+    report_time = curr_time + expect_duration / 10000 # Aim at 10 reports in the run
+    ticks_received = 0
+    last_tick_time = curr_time
+    result = "UNSURE"
+    while True:
+
+        if rplpayload is not None:
+            ticks_received = ticks_received + 1
+            last_tick_time = curr_time
+            if rplpayload.status1 == pass_values[0] and rplpayload.status2 == pass_values[1]:
+                print("Concluding report received; celibration finished.")
+                result = "PASS"
+                break
+
+        if curr_time > timeout_time:
+            print("Calibration time exceeded; calibration must have ended.")
+            break
+
+        if curr_time > last_tick_time + expect_duration / 4000:
+            print("Progress reports stopped; calibration must have ended.")
+            break
+
+        if curr_time > report_time + expect_duration / 10000:
+            print("Progress: received {:d} reports.".format(ticks_received))
+            report_time = report_time + expect_duration / 10000
+
+        rplpayload = gimbal_calib_request_spark_receive_progress(po, ser, pktreq)
+
+        curr_time = time.time()
+
+    print("Summary: took {:0.1f} sec; received {:d} reports; result: {:s}.".format(curr_time-start_time,ticks_received,result))
+
 
 def do_gimbal_calib_request_spark_joint_coarse(po, ser):
     """ Initiates Spark Gimbal Joint Coarse calibration.
 
         Tested on the following platforms and FW versions:
-        NONE
+        WM100_FW_V01.00.0900 (2018-07-27)
     """
-    rplpayload = gimbal_calib_request_spark(po, ser, DJIPayload_Gimbal_CalibCmd.JointCoarse)
-    #TODO - unfnushed - resulting packet unknown
-    print("Packet sent; further implementation is not finished.")
+
+    print("\nInfo: The Gimbal will move through its boundary positions, then it will fine-tune its central position. It will take around 15 seconds.\n")
+
+    rplpayload, pktreq = gimbal_calib_request_spark(po, ser, DJIPayload_Gimbal_CalibCmd.JointCoarse)
+
+    print("Calibration process started; monitoring progress.")
+
+    gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq, 15000, [16, 1])
+
 
 def do_gimbal_calib_request_spark_linear_hall(po, ser):
     """ Initiates Spark Gimbal Linear Hall calibration.
@@ -1001,9 +1088,14 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
         Tested on the following platforms and FW versions:
         NONE
     """
-    rplpayload = gimbal_calib_request_spark(po, ser, DJIPayload_Gimbal_CalibCmd.LinearHall)
-    #TODO - unfnushed - resulting packet unknown
-    print("Packet sent; further implementation is not finished.")
+
+    print("\nInfo: The Gimbal will slowly move through all positions in all axes, several times. It will take around 30 seconds.\n")
+
+    rplpayload, pktreq = gimbal_calib_request_spark(po, ser, DJIPayload_Gimbal_CalibCmd.LinearHall)
+
+    print("Calibration process started; monitoring progress.")
+
+    gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq, 30000, [40, 1])
 
 def do_gimbal_calib_request(po):
     ser = open_serial_port(po)
@@ -1106,10 +1198,12 @@ def main():
             help="Gimbal Calibration Command")
 
     subpar_gimbcal_list = subpar_gimbcal_subcmd.add_parser('JointCoarse',
-            help="gimbal Joint Coarse calibration")
+            help="gimbal Joint Coarse calibration; to be performed after " \
+             "gimbal has been fixed or replaced, or is not straight")
 
     subpar_gimbcal_list = subpar_gimbcal_subcmd.add_parser('LinearHall',
-            help="gimbal Linear Hall calibration")
+            help="gimbal Linear Hall calibration; to be performed always "\
+             "after JointCoarse calibration")
 
     po = parser.parse_args()
 
