@@ -5993,7 +5993,8 @@ enums.GIMBAL_CALIBRATE_CMD_ENUM = {
 }
 
 f.gimbal_gimbal_calibrate_cmd = ProtoField.uint8 ("dji_p3.gimbal_gimbal_calibrate_cmd", "Calib. Command", base.DEC, enums.GIMBAL_CALIBRATE_CMD_ENUM, nil)
-f.gimbal_gimbal_calibrate_status = ProtoField.uint8 ("dji_p3.gimbal_gimbal_calibrate_status", "Calib. Status", base.DEC, nil, nil)
+f.gimbal_gimbal_calibrate_status1 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_calibrate_status1", "Calib. Status1", base.DEC, nil, nil)
+f.gimbal_gimbal_calibrate_status2 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_calibrate_status2", "Calib. Status2", base.DEC, nil, nil)
 
 local function gimbal_gimbal_calibrate_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -6007,10 +6008,10 @@ local function gimbal_gimbal_calibrate_dissector(pkt_length, buffer, pinfo, subt
 
         if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Calibration: Offset does not match - internal inconsistency") end
     else -- Response (but response bit not set)
-        subtree:add_le (f.gimbal_gimbal_calibrate_cmd, payload(offset, 1))
+        subtree:add_le (f.gimbal_gimbal_calibrate_status1, payload(offset, 1))
         offset = offset + 1
 
-        subtree:add_le (f.gimbal_gimbal_calibrate_status, payload(offset, 1))
+        subtree:add_le (f.gimbal_gimbal_calibrate_status2, payload(offset, 1))
         offset = offset + 1
 
         if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Calibration: Offset does not match - internal inconsistency") end
