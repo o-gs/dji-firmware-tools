@@ -40,7 +40,7 @@ from ctypes import *
 
 sys.path.insert(0, './')
 from comm_serialtalk import (
-  do_send_request, do_receive_reply,
+  do_send_request, do_receive_reply, SerialMock
 )
 from comm_mkdupc import *
 
@@ -98,7 +98,6 @@ class GIMBAL_CALIB_CMD(DecoratedEnum):
     JOINTCOARSE = 0
     LINEARHALL = 1
 
-
 def detect_serial_port(po):
     """ Detects the serial port device name of a Dji product.
     """
@@ -117,11 +116,7 @@ def open_serial_port(po):
     if not po.dry_test:
         ser = serial.Serial(port_name, baudrate=po.baudrate, timeout=0)
     else:
-        ser = open(os.devnull,"rb+")
-        ser.port = port_name
-        ser.baudrate=po.baudrate
-        ser.reset_input_buffer = types.MethodType(lambda x: None, ser)
-        ser.in_waiting = 0
+        ser = SerialMock(port_name, baudrate=po.baudrate, timeout=0)
     if (po.verbose > 0):
         print("Opened {} at {}".format(ser.port, ser.baudrate))
     return ser
@@ -156,7 +151,8 @@ def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_t
     for nretry in range(0, 3):
         pktreq = do_send_request(po, ser, pktprop)
 
-        pktrpl = do_receive_reply(po, ser, pktreq, seqnum_check=seqnum_check)
+        pktrpl = do_receive_reply(po, ser, pktreq,
+          seqnum_check=(seqnum_check and not po.dry_test))
 
         if pktrpl is not None:
             break
@@ -205,15 +201,15 @@ def flyc_request_assistant_unlock(po, ser, val):
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("55 0e 04 66 03 0a 9d a5 80 03 df 00 a7 92"))
+
     pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xdf,
       payload)
-
-    if po.dry_test:
-        # use to test the code without a drone
-        pktrpl = bytes.fromhex("55 0e 04 66 03 0a 9d a5 80 03 df 00 a7 92")
 
     if pktrpl is None:
         raise ConnectionError("No response on Assistant Unlock request.")
@@ -238,18 +234,16 @@ def flyc_param_request_2017_get_table_attribs(po, ser, table_no):
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("55 19 04 e4 03 0a 9e a5 80 03 e0 00 00 00 00 2f 87 ca 7a 86 01 00 00 55 e7"))
+        ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 03 0a a0 a5 80 03 e0 09 00 17 f4"))
+
     pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xe0,
       payload)
-
-    if po.dry_test:
-        # use to test the code without a drone
-        if table_no < 2:
-            pktrpl = bytes.fromhex("55 19 04 e4 03 0a 9e a5 80 03 e0 00 00 00 00 2f 87 ca 7a 86 01 00 00 55 e7")
-        else:
-            pktrpl = bytes.fromhex("55 0f 04 a2 03 0a a0 a5 80 03 e0 09 00 17 f4")
 
     if pktrpl is None:
         raise ConnectionError("No response on get table attribs request.")
@@ -275,15 +269,15 @@ def flyc_param_request_2017_get_param_info_by_index(po, ser, table_no, param_idx
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("55 48 04 57 03 0a 1b 70 80 03 e1 00 00 00 00 82 00 08 00 04 00 5c 8f da 40 0a d7 23 3c 00 00 c8 42 67 5f 63 6f 6e 66 69 67 2e 6d 72 5f 63 72 61 66 74 2e 72 6f 74 6f 72 5f 36 5f 63 66 67 2e 74 68 72 75 73 74 00 8f a6"))
+
     pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xe1,
       payload)
-
-    if po.dry_test:
-        # use to test the code without a drone
-        pktrpl = bytes.fromhex("55 48 04 57 03 0a 1b 70 80 03 e1 00 00 00 00 82 00 08 00 04 00 5c 8f da 40 0a d7 23 3c 00 00 c8 42 67 5f 63 6f 6e 66 69 67 2e 6d 72 5f 63 72 61 66 74 2e 72 6f 74 6f 72 5f 36 5f 63 66 67 2e 74 68 72 75 73 74 00 8f a6")
 
     if pktrpl is None:
         raise ConnectionError("No response on parameter {:d} info by index request.".format(param_idx))
@@ -308,15 +302,15 @@ def flyc_param_request_2015_get_param_info_by_index(po, ser, param_idx):
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("55 2e 04 a7 03 0a 77 45 80 03 f0 00 0a 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 67 6c 6f 62 61 6c 2e 73 74 61 74 75 73 00 79 ac"))
+
     pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xf0,
       payload)
-
-    if po.dry_test:
-        # use to test the code without a drone
-        pktrpl = bytes.fromhex("55 2e 04 a7 03 0a 77 45 80 03 f0 00 0a 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 67 6c 6f 62 61 6c 2e 73 74 61 74 75 73 00 79 ac")
 
     if pktrpl is None:
         raise ConnectionError("No response on parameter {:d} info by index request.".format(param_idx))
@@ -341,15 +335,15 @@ def flyc_param_request_2015_get_param_info_by_hash(po, ser, param_name):
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("55 43 04 74 03 0a ff 7c 80 03 f7 00 01 00 02 00 0b 00 14 00 00 00 f4 01 00 00 78 00 00 00 67 5f 63 6f 6e 66 69 67 2e 66 6c 79 69 6e 67 5f 6c 69 6d 69 74 2e 6d 61 78 5f 68 65 69 67 68 74 5f 30 00 5d 71"))
+
     pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xf7,
       payload)
-
-    if po.dry_test:
-        # use to test the code without a drone
-        pktrpl = bytes.fromhex("55 43 04 74 03 0a ff 7c 80 03 f7 00 01 00 02 00 0b 00 14 00 00 00 f4 01 00 00 78 00 00 00 67 5f 63 6f 6e 66 69 67 2e 66 6c 79 69 6e 67 5f 6c 69 6d 69 74 2e 6d 61 78 5f 68 65 69 67 68 74 5f 30 00 5d 71")
 
     if pktrpl is None:
         raise ConnectionError("No response on parameter info by hash request.")
@@ -374,15 +368,15 @@ def flyc_param_request_2015_read_param_value_by_hash(po, ser, param_name):
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("55 14 04 6d 03 0a 00 7d 80 03 f8 00 8a 23 71 03 f4 01 57 ee"))
+
     pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xf8,
       payload)
-
-    if po.dry_test:
-        # use to test the code without a drone
-        pktrpl = bytes.fromhex("55 14 04 6d 03 0a 00 7d 80 03 f8 00 8a 23 71 03 f4 01 57 ee")
 
     if pktrpl is None:
         raise ConnectionError("No response on read parameter value by hash request.")
@@ -412,15 +406,15 @@ def flyc_param_request_2017_read_param_value_by_index(po, ser, table_no, param_i
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("55 15 04 a9 03 0a 5a 6c 80 03 e2 00 00 00 00 9e 00 f4 01 10 b1"))
+
     pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xe2,
       payload)
-
-    if po.dry_test:
-        # use to test the code without a drone
-        pktrpl = bytes.fromhex("55 15 04 a9 03 0a 5a 6c 80 03 e2 00 00 00 00 9e 00 f4 01 10 b1")
 
     if pktrpl is None:
         raise ConnectionError("No response on parameter {:d} info by index request.".format(param_idx))
@@ -474,15 +468,15 @@ def flyc_param_request_2017_write_param_value_by_index(po, ser, table_no, param_
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("55 15 04 a9 03 0a 1a de 80 03 e3 00 00 00 00 9e 00 f3 01 a7 40"))
+
     pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xe3,
       payload)
-
-    if po.dry_test:
-        # use to test the code without a drone
-        pktrpl = bytes.fromhex("55 15 04 a9 03 0a 1a de 80 03 e3 00 00 00 00 9e 00 f3 01 a7 40")
 
     if pktrpl is None:
         raise ConnectionError("No response on write parameter value by index request.")
@@ -522,15 +516,15 @@ def flyc_param_request_2015_write_param_value_by_hash(po, ser, param_name, param
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("55 14 04 6d 03 0a 37 c6 80 03 f9 00 8a 23 71 03 f3 01 dd dd"))
+
     pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.FLYCONTROLLER, 0xf9,
       payload)
-
-    if po.dry_test:
-        # use to test the code without a drone
-        pktrpl = bytes.fromhex("55 14 04 6d 03 0a 37 c6 80 03 f9 00 8a 23 71 03 f3 01 dd dd")
 
     if pktrpl is None:
         raise ConnectionError("No response on write parameter value by hash request.")
@@ -979,15 +973,15 @@ def gimbal_calib_request_spark(po, ser, cmd):
         print("Prepared request - {:s}:".format(type(payload).__name__))
         print(payload)
 
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"))
+
     pktrpl, pktreq = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.GIMBAL, 0,
       ACK_TYPE.ACK_BEFORE_EXEC,
       CMD_SET_TYPE.ZENMUSE, 0x08,
       payload, seqnum_check=False)
-
-    if po.dry_test:
-        # use to test the code without a drone
-        pktrpl = bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70")
 
     if pktrpl is None:
         raise ConnectionError("No response on calibration command {:s} request.".format(cmd.name))
@@ -1008,18 +1002,14 @@ def gimbal_calib_request_spark_receive_progress(po, ser, pktreq):
 
     pktrpl = receive_reply_for_request(po, ser, pktreq, seqnum_check=False)
 
-    if po.dry_test:
-        # use to test the code without a drone
-        pktrpl = bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70")
-
     if pktrpl is None:
-        raise ConnectionError("No progress tick on calibration command {:s} request.".format(cmd.name))
+        raise ConnectionError("No progress tick on calibration request.")
 
     rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
     rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
 
     if (rplpayload is None):
-        raise ConnectionError("Unrecognized progress tick to calibration command {:s} request.".format(cmd.name))
+        raise ConnectionError("Unrecognized progress tick to calibration request.")
 
     if (po.verbose > 2):
         print("Parsed progress tick - {:s}:".format(type(rplpayload).__name__))
@@ -1028,6 +1018,12 @@ def gimbal_calib_request_spark_receive_progress(po, ser, pktreq):
     return rplpayload
 
 def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload, pktreq, expect_duration, pass_values):
+    if po.dry_test:
+        # use to test the code without a drone
+        for x in range(10):
+            ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"))
+        ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a f9 e0 00 04 08 10 01 42 79"))
+
     rplpayload = first_rplpayload
     curr_time = time.time()
     # As timeout, use expected time + 50%
@@ -1223,3 +1219,4 @@ if __name__ == '__main__':
     except Exception as ex:
         print("Error: "+str(ex))
         #raise
+        sys.exit(10)
