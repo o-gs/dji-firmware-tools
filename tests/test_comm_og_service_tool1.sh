@@ -68,7 +68,7 @@ else
 fi
 
 ./comm_og_service_tool.py --dry-test -vvv /dev/ttyUSB1 SPARK GimbalCalib LinearHall
-TEST_RESULT=0 # cannot test yet - no mock values
+TEST_RESULT=$?
 
 if [ ${TEST_RESULT} == 0 ]; then
     echo '### SUCCESS: GimbalCalib LinearHall 1 - No error returned. ###'
