@@ -1019,10 +1019,29 @@ def gimbal_calib_request_spark_receive_progress(po, ser, pktreq):
 
 def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload, pktreq, expect_duration, pass_values):
     if po.dry_test:
-        # use to test the code without a drone
-        for x in range(10):
-            ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"))
-        ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a f9 e0 00 04 08 10 01 42 79"))
+        # use to test the code without a drone; packets are different for each calibration
+        if pass_values[0] == 16:
+            for x in range(4):
+                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"))
+            for x in range(4):
+                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 01 a3 00 04 08 10 07 65 5b"))
+            for x in range(4):
+                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 19 6d 00 04 08 01 11 6f f7"))
+            for x in range(4):
+                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 01 a3 00 04 08 10 07 65 5b"))
+            # Final packet marking end of calibration
+            ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a f9 e0 00 04 08 10 01 42 79"))
+        else: # pass_values[0] == 40
+            for x in range(4):
+                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a f1 df 00 04 08 14 0a 44 84"))
+            for x in range(4):
+                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a f9 ff 00 04 08 19 0c 86 0a"))
+            for x in range(4):
+                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a a9 1d 00 04 08 1b 0f 27 f3"))
+            for x in range(4):
+                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a e1 80 00 04 08 28 0d d8 27"))
+            # Final packet marking end of calibration
+            ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 89 b0 00 04 08 28 01 0d 50"))
 
     rplpayload = first_rplpayload
     curr_time = time.time()
