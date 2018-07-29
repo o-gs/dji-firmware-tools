@@ -28,6 +28,7 @@ __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
 import os
+import io
 import sys
 import time
 import serial
@@ -49,12 +50,58 @@ from comm_mkdupc import (
 )
 
 class ListFormatter():
-    pktlist = []
+    def __init__(self):
+        self.pktlist = []
+
     def write_header(self):
         pass
 
     def write_packet(self, data, dtime=None):
         self.pktlist.append(data)
+
+class SerialMock(io.RawIOBase):
+    def __init__( self, port='COM1', baudrate = 19200, timeout=1,
+                  bytesize = 8, parity = 'N', stopbits = 1, xonxoff=0,
+                  rtscts = 0):
+        self.name     = port
+        self.port     = port
+        self.timeout  = timeout
+        self.parity   = parity
+        self.baudrate = baudrate
+        self.bytesize = bytesize
+        self.stopbits = stopbits
+        self.xonxoff  = xonxoff
+        self.rtscts   = rtscts
+        self.is_open  = True
+        self._rxData = []
+        self._txData = []
+        self._wait_time = time.time()
+
+    def write( self, btarr ):
+        self._txData.append(btarr)
+
+    def read( self, n=1 ):
+        if time.time() < self._wait_time: return  b""
+        self._wait_time = time.time() + 0.05
+        if len(self._rxData) < 1: return b""
+        btarr = self._rxData[0][0:n]
+        if len(btarr) >= len(self._rxData[0]):
+            del self._rxData[0]
+        else:
+            self._rxData[0] = self._rxData[0][n:]
+        return btarr
+
+    def mock_data_for_read( self, btarr ):
+        self._rxData.append(btarr)
+
+    def reset_input_buffer(self):
+        pass
+
+    @property
+    def in_waiting(self):
+        if time.time() < self._wait_time: return 0
+        if len(self._rxData) < 1: return 0
+        return len(self._rxData[0])
 
 def do_read_packets(ser, state, info):
     out = ListFormatter()
