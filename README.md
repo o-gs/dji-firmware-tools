@@ -219,6 +219,14 @@ Example of setting value of Flight Controller Parameters on Spark:
 
 ```./comm_og_service_tool.py /dev/ttyUSB0 -vv SPARK FlycParam set g_config.flying_limit.max_height_0 500```
 
+Example of performing service "joint coarse" calibration of Spark gimbal:
+
+```./comm_og_service_tool.py /dev/ttyUSB0 -vv SPARK GimbalCalib JointCoarse```
+
+Example of performing service "linear hall" calibration of Spark gimbal, using Windows host:
+
+```python3 comm_og_service_tool.py COM23 -vv SPARK GimbalCalib LinearHall```
+
 ### comm_dissector
 
 The folder contains [Wireshark](https://www.wireshark.org/) dissector for for analyzing communication in DJI drone interfaces.
