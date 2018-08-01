@@ -372,6 +372,7 @@ static Bytes_0(void) {
 	create_insn	(0X8008B0E);
 	create_insn	(0X8008B12);
 	create_insn	(0X8008B24);
+	set_name	(0X8008B24,	"strcmp");
 	create_insn	(0X8008B2A);
 	create_insn	(0X8008B40);
 	create_insn	(x=0X8008B4E);
@@ -6050,9 +6051,6 @@ static Bytes_0(void) {
 	create_insn	(x=0X800E3BE);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
-	create_insn	(x=0X800E3C0);
-	op_plain_offset	(x,	1,	0X40020000);
-	op_plain_offset	(x,	129,	0X40020000);
 }
 
 //------------------------------------------------------------------------
@@ -6062,6 +6060,9 @@ static Bytes_1(void) {
         auto x;
 #define id x
 
+	create_insn	(x=0X800E3C0);
+	op_plain_offset	(x,	1,	0X40020000);
+	op_plain_offset	(x,	129,	0X40020000);
 	create_insn	(0X800E3CA);
 	create_insn	(x=0X800E3CC);
 	op_plain_offset	(x,	1,	0);
@@ -11852,9 +11853,6 @@ static Bytes_1(void) {
 	create_insn	(x=0X801501E);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
-	create_insn	(x=0X8015020);
-	op_plain_offset	(x,	1,	0X20004B74);
-	op_plain_offset	(x,	129,	0X20004B74);
 }
 
 //------------------------------------------------------------------------
@@ -11864,6 +11862,9 @@ static Bytes_2(void) {
         auto x;
 #define id x
 
+	create_insn	(x=0X8015020);
+	op_plain_offset	(x,	1,	0X20004B74);
+	op_plain_offset	(x,	129,	0X20004B74);
 	create_insn	(0X801502C);
 	create_insn	(x=0X801502E);
 	op_plain_offset	(x,	1,	0);
@@ -13716,6 +13717,10 @@ static Bytes_2(void) {
 	op_hex		(x,	1);
 	create_insn	(x=0X80169D4);
 	op_stkvar	(x,	1);
+	create_insn	(x=0X80169D8);
+	op_stkvar	(x,	1);
+	create_insn	(x=0X80169E2);
+	op_stkvar	(x,	1);
 	create_insn	(x=0X80169E6);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X80169EA);
@@ -13771,6 +13776,8 @@ static Bytes_2(void) {
 	create_insn	(x=0X8016A5A);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8016A60);
+	op_stkvar	(x,	1);
+	create_insn	(x=0X8016A64);
 	op_stkvar	(x,	1);
 	set_cmt	(0X8016A6C,	"channel",	0);
 	set_cmt	(0X8016A6E,	"pkt",	0);
@@ -13867,6 +13874,7 @@ static Bytes_2(void) {
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X8016BF8);
 	set_name	(0X8016BF8,	"packet_exec_univ_cmd0D");
+	set_cmt	(0X8016C0E,	"str",	0);
 	create_insn	(0X8016C1C);
 	set_cmt	(0X8016C34,	"pkt",	0);
 	create_insn	(x=0X8016C4C);
@@ -17428,6 +17436,15 @@ static Bytes_2(void) {
 	op_stkvar	(x,	1);
 	create_insn	(x=0X80190F2);
 	op_stkvar	(x,	1);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_3(void) {
+        auto x;
+#define id x
+
 	create_insn	(x=0X80190F4);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X80190F8);
@@ -17438,15 +17455,6 @@ static Bytes_2(void) {
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8019106);
 	op_stkvar	(x,	1);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_3(void) {
-        auto x;
-#define id x
-
 	create_insn	(x=0X8019108);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -20594,6 +20602,7 @@ static Bytes_3(void) {
 	create_dword	(0X20004BBC);
 	create_dword	(0X20004BC8);
 	create_dword	(0X20004BFC);
+	set_name	(0X20004BFC,	"gimbal_params_mode_prev");
 	create_dword	(0X20004C04);
 	set_name	(0X20004C04,	"auto_calibration_result");
 	create_dword	(0X20004C08);
@@ -20824,8 +20833,11 @@ static Functions_0(void) {
 	set_func_flags(0X8008B00,0x400);
 	add_func    (0X8008B0E,0X8008B12);
 	set_func_flags(0X8008B0E,0x400);
+	add_func    (0X8008B12,0X8008B24);
+	set_func_flags(0X8008B12,0x400);
+	set_frame_size(0X8008B12, 0X8, 0, 0);
 	add_func    (0X8008B24,0X8008B40);
-	set_func_flags(0X8008B24,0x400);
+	set_func_flags(0X8008B24,0x404);
 	set_frame_size(0X8008B24, 0X8, 0, 0);
 	add_func    (0X8008B40,0X8008C82);
 	set_func_flags(0X8008B40,0x400);
@@ -21534,43 +21546,43 @@ static Functions_0(void) {
 	set_func_flags(0X8015A44,0x400);
 	add_func    (0X8015A50,0X8015C6A);
 	set_func_flags(0X8015A50,0x400);
-	SetType(0X8015A50, "void __fastcall packet_exec_gimb_cmd0A(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8015A50, "void __fastcall packet_exec_gimb_cmd0A(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8015A50, 0X28, 0, 0);
 	add_func    (0X8015C88,0X8015EA0);
 	set_func_flags(0X8015C88,0x400);
-	SetType(0X8015C88, "void __fastcall packet_exec_gimb_cmd0C(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8015C88, "void __fastcall packet_exec_gimb_cmd0C(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8015C88, 0X28, 0, 0);
 	add_func    (0X8015EB4,0X8015FD2);
 	set_func_flags(0X8015EB4,0x400);
-	SetType(0X8015EB4, "void __fastcall packet_exec_gimb_cmd0B(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8015EB4, "void __fastcall packet_exec_gimb_cmd0B(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8015EB4, 0X28, 0, 0);
 	add_func    (0X8015FE0,0X8016170);
 	set_func_flags(0X8015FE0,0x400);
-	SetType(0X8015FE0, "void __fastcall packet_exec_gimb_cmd14(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8015FE0, "void __fastcall packet_exec_gimb_cmd14(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8015FE0, 0X28, 0, 0);
 	add_func    (0X8016188,0X80161E6);
 	set_func_flags(0X8016188,0x400);
-	SetType(0X8016188, "void __fastcall packet_exec_univ_cmd09(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016188, "void __fastcall packet_exec_univ_cmd09(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016188, 0X28, 0, 0);
 	add_func    (0X80161E8,0X8016246);
 	set_func_flags(0X80161E8,0x400);
-	SetType(0X80161E8, "void __fastcall packet_exec_gimb_cmd13(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X80161E8, "void __fastcall packet_exec_gimb_cmd13(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X80161E8, 0X18, 0, 0);
 	add_func    (0X8016254,0X80162E0);
 	set_func_flags(0X8016254,0x400);
-	SetType(0X8016254, "void __fastcall packet_exec_univ_cmd01(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016254, "void __fastcall packet_exec_univ_cmd01(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016254, 0X28, 0, 0);
 	add_func    (0X80162E4,0X8016336);
 	set_func_flags(0X80162E4,0x400);
-	SetType(0X80162E4, "void __fastcall packet_exec_univ_cmd0A(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X80162E4, "void __fastcall packet_exec_univ_cmd0A(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X80162E4, 0X28, 0, 0);
 	add_func    (0X8016338,0X80163BE);
 	set_func_flags(0X8016338,0x400);
-	SetType(0X8016338, "void __fastcall packet_exec_univ_cmd07(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016338, "void __fastcall packet_exec_univ_cmd07(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016338, 0X30, 0, 0);
 	add_func    (0X80163C4,0X8016510);
 	set_func_flags(0X80163C4,0x400);
-	SetType(0X80163C4, "void __fastcall packet_exec_gimb_cmd10(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X80163C4, "void __fastcall packet_exec_gimb_cmd10(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X80163C4, 0X78, 0, 0);
 	define_local_var(0X80163C4, 0X8016510, "[bp-0X28]", "channel");
 	add_func    (0X8016518,0X8016562);
@@ -21579,56 +21591,57 @@ static Functions_0(void) {
 	set_frame_size(0X8016518, 0X10, 0, 0);
 	add_func    (0X8016564,0X801662C);
 	set_func_flags(0X8016564,0x400);
-	SetType(0X8016564, "void __fastcall packet_exec_gimb_cmd01(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016564, "void __fastcall packet_exec_gimb_cmd01(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016564, 0X18, 0, 0);
 	add_func    (0X8016634,0X801673C);
 	set_func_flags(0X8016634,0x400);
-	SetType(0X8016634, "void __fastcall packet_exec_flyc_cmd42(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016634, "void __fastcall packet_exec_flyc_cmd42(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016634, 0X38, 0, 0);
 	add_func    (0X801675C,0X80167D8);
 	set_func_flags(0X801675C,0x400);
-	SetType(0X801675C, "void __fastcall packet_exec_gimb_cmd06(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X801675C, "void __fastcall packet_exec_gimb_cmd06(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X801675C, 0X20, 0, 0);
 	add_func    (0X80167E0,0X801683A);
 	set_func_flags(0X80167E0,0x400);
-	SetType(0X80167E0, "void __fastcall packet_exec_gimb_cmd0E(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X80167E0, "void __fastcall packet_exec_gimb_cmd0E(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X80167E0, 0X18, 0, 0);
 	add_func    (0X8016840,0X80168A8);
 	set_func_flags(0X8016840,0x401);
-	SetType(0X8016840, "void __fastcall packet_exec_univ_cmd0B(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016840, "void __fastcall packet_exec_univ_cmd0B(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016840, 0, 0, 0);
 	add_func    (0X80168AC,0X8016920);
 	set_func_flags(0X80168AC,0x400);
-	SetType(0X80168AC, "void __fastcall packet_exec_gimb_cmd07(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X80168AC, "void __fastcall packet_exec_gimb_cmd07(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X80168AC, 0X18, 0, 0);
 	add_func    (0X8016930,0X8016988);
 	set_func_flags(0X8016930,0x400);
-	SetType(0X8016930, "void __fastcall packet_exec_gimb_cmd11(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016930, "void __fastcall packet_exec_gimb_cmd11(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016930, 0X18, 0, 0);
 	add_func    (0X8016990,0X8016A86);
 	set_func_flags(0X8016990,0x400);
-	SetType(0X8016990, "void __fastcall packet_exec_gimb_cmd08(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016990, "void __fastcall packet_exec_gimb_cmd08(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016990, 0X28, 0, 0);
+	define_local_var(0X8016990, 0X8016A86, "[bp-0X28]", "outpkt");
 	add_func    (0X8016A98,0X8016BEC);
 	set_func_flags(0X8016A98,0x400);
-	SetType(0X8016A98, "void __fastcall packet_exec_gimb_cmd0F(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016A98, "void __fastcall packet_exec_gimb_cmd0F(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016A98, 0X38, 0, 0);
 	define_local_var(0X8016A98, 0X8016BEC, "[bp-0X28]", "channel");
 	add_func    (0X8016BF8,0X8016C76);
 	set_func_flags(0X8016BF8,0x400);
-	SetType(0X8016BF8, "void __fastcall packet_exec_univ_cmd0D(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016BF8, "void __fastcall packet_exec_univ_cmd0D(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016BF8, 0X20, 0, 0);
 	add_func    (0X8016C78,0X8016CD0);
 	set_func_flags(0X8016C78,0x400);
-	SetType(0X8016C78, "void __fastcall packet_exec_spec_cmd01(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016C78, "void __fastcall packet_exec_spec_cmd01(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016C78, 0XC, 0, 0);
 	add_func    (0X8016CDC,0X8016D2E);
 	set_func_flags(0X8016CDC,0x400);
-	SetType(0X8016CDC, "void __fastcall packet_exec_univ_cmd08(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016CDC, "void __fastcall packet_exec_univ_cmd08(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016CDC, 0X20, 0, 0);
 	add_func    (0X8016D30,0X8016D8E);
 	set_func_flags(0X8016D30,0x400);
-	SetType(0X8016D30, "void __fastcall packet_exec_univ_cmd0C(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016D30, "void __fastcall packet_exec_univ_cmd0C(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016D30, 0X20, 0, 0);
 	add_func    (0X8016D94,0X8016E12);
 	set_func_flags(0X8016D94,0x400);
@@ -21636,15 +21649,15 @@ static Functions_0(void) {
 	set_frame_size(0X8016D94, 0X18, 0, 0);
 	add_func    (0X8016E14,0X8016E2C);
 	set_func_flags(0X8016E14,0x400);
-	SetType(0X8016E14, "void __fastcall packet_exec_gimb_cmd20(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016E14, "void __fastcall packet_exec_gimb_cmd20(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016E14, 0XC, 0, 0);
 	add_func    (0X8016E30,0X8016EA6);
 	set_func_flags(0X8016E30,0x400);
-	SetType(0X8016E30, "void __fastcall packet_exec_gimb_cmd21(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016E30, "void __fastcall packet_exec_gimb_cmd21(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016E30, 0X10, 0, 0);
 	add_func    (0X8016EAC,0X8016EEA);
 	set_func_flags(0X8016EAC,0x400);
-	SetType(0X8016EAC, "void __fastcall packet_exec_gimb_cmd0D(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016EAC, "void __fastcall packet_exec_gimb_cmd0D(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016EAC, 0XC, 0, 0);
 	add_func    (0X8016EF0,0X8016FA8);
 	set_func_flags(0X8016EF0,0x400);
@@ -21655,7 +21668,7 @@ static Functions_0(void) {
 	set_frame_size(0X8016FAC, 0X18, 0, 0);
 	add_func    (0X8016FF4,0X80170A6);
 	set_func_flags(0X8016FF4,0x400);
-	SetType(0X8016FF4, "void __fastcall packet_exec_receive_cb(struct DjiPacket *pkt, unsigned int a2, int a3);");
+	SetType(0X8016FF4, "void __fastcall packet_exec_receive_cb(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016FF4, 0X20, 0, 0);
 	add_func    (0X80170AC,0X801715C);
 	set_func_flags(0X80170AC,0x400);
@@ -21705,6 +21718,7 @@ static Functions_0(void) {
 	set_frame_size(0X80195B8, 0X18, 0, 0);
 	add_func    (0X8019B3C,0X8019BF6);
 	set_func_flags(0X8019B3C,0x400);
+	SetType(0X8019B3C, "int __cdecl sub_8019B3C(char *str);");
 	set_frame_size(0X8019B3C, 0X88, 0, 0);
 	add_func    (0X8019C2C,0X8019C4E);
 	set_func_flags(0X8019C2C,0x400);

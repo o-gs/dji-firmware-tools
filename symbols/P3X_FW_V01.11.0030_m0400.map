@@ -12,6 +12,7 @@
 
   Address         Publics by Value
 
+ 0003:08008B24       strcmp
  0003:080093E4       recompute_packet_crc16
  0003:08009410       recompute_packet_crc8
  0003:0800CA4C       jpt_800CA48
@@ -97,6 +98,7 @@
  0005:20004B20       yaw_angle_2
  0005:20004B58       yaw_angle_limit_1
  0005:20004B5C       yaw_angle_limit_2
+ 0005:20004BFC       gimbal_params_mode_prev
  0005:20004C04       auto_calibration_result
  0005:20005041       roll_adjust
 
