@@ -46,9 +46,11 @@ Example: ```./dji_xv4_fwcon.py -vv -x -p P3X_FW_V01.08.0080.bin```
 
 ### dji_imah_fwsig.py
 
-DJI Firmware IMaH Decryptor tool; allows to decrypt and un-sign module from `.sig`
-file which starts with `IM*H`. Use this tool after untarring single modules from a
-firmware package, to decrypt its content.
+DJI Firmware IMaH Un-signer and Decryptor tool; allows to decrypt and un-sign module
+from `.sig` file which starts with `IM*H`. Use this tool after untarring single
+modules from a firmware package, to decrypt its content.
+
+Example: ```./dji_imah_fwsig.py wm335_0306_v03.03.04.10_20180429.pro.fw.sig```
 
 ### dji_mvfc_fwpak.py
 
