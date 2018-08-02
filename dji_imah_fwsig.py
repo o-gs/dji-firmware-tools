@@ -167,6 +167,41 @@ class ImgPkgHeader(LittleEndianStructure):
         d[varkey] = d[varkey].decode("utf-8")
         return d
 
+    def ini_export(self, fp):
+        d = self.dict_export()
+        fp.write("# DJI Firmware Signer main header file.\n")
+        fp.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
+        varkey = 'name'
+        fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+        varkey = 'pkg_format'
+        fp.write("{:s}={:d}\n".format(varkey,self.get_format_version()))
+        varkey = 'version'
+        fp.write("{:s}={:02d}.{:02d}.{:02d}.{:02d}\n".format(varkey, (d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey]>>8)&255, (d[varkey])&255))
+        varkey = 'anti_version'
+        fp.write("{:s}={:02d}.{:02d}.{:02d}.{:02d}\n".format(varkey, (d[varkey]>>24)&255, (d[varkey]>>16)&255, (d[varkey]>>8)&255, (d[varkey])&255))
+        varkey = 'date'
+        fp.write("{:s}={:s}\n".format(varkey,strftime("%Y-%m-%d",strptime("{:x}".format(d[varkey]), '%Y%m%d'))))
+        varkey = 'enc_key'
+        fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+        varkey = 'auth_alg'
+        fp.write("{:s}={:d}\n".format(varkey,d[varkey]))
+        varkey = 'auth_key'
+        fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+        varkey = 'os'
+        fp.write("{:s}={:d}\n".format(varkey,d[varkey]))
+        varkey = 'arch'
+        fp.write("{:s}={:d}\n".format(varkey,d[varkey]))
+        varkey = 'compression'
+        fp.write("{:s}={:d}\n".format(varkey,d[varkey]))
+        varkey = 'type'
+        fp.write("{:s}={:d}\n".format(varkey,d[varkey]))
+        varkey = 'userdata'
+        fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8"))) # not sure if string or binary
+        varkey = 'entry'
+        fp.write("{:s}={:s}\n".format(varkey,"".join("{:02X}".format(x) for x in d[varkey])))
+        #varkey = 'scram_key'
+        #fp.write("{:s}={:s}\n".format(varkey,"".join("{:02X}".format(x) for x in d[varkey])))
+
     def __repr__(self):
         d = self.dict_export()
         from pprint import pformat
@@ -195,11 +230,36 @@ class ImgChunkHeader(LittleEndianStructure):
         d[varkey] = d[varkey].decode("utf-8")
         return d
 
+    def ini_export(self, fp):
+        d = self.dict_export()
+        fp.write("# DJI Firmware Signer chunk header file.\n")
+        fp.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
+        varkey = 'id'
+        fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
+        varkey = 'attrib'
+        fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
+        varkey = 'offset'
+        fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
+        varkey = 'address'
+        fp.write("{:s}={:08X}\n".format(varkey,d[varkey]))
+
     def __repr__(self):
         d = self.dict_export()
         from pprint import pformat
         return pformat(d, indent=4, width=1)
 
+def imah_write_fwsig_head(po, pkghead, minames):
+  fname = "{:s}_head.ini".format(po.mdprefix)
+  fwheadfile = open(fname, "w")
+  pkghead.ini_export(fwheadfile)
+  fwheadfile.write("{:s}={:s}\n".format("modules",' '.join(minames)))
+  fwheadfile.close()
+
+def imah_write_fwentry_head(po, i, e, miname):
+  fname = "{:s}_{:s}.ini".format(po.mdprefix,miname)
+  fwheadfile = open(fname, "w")
+  e.ini_export(fwheadfile)
+  fwheadfile.close()
 
 def imah_unsign(po, fwsigfile):
 
@@ -251,6 +311,8 @@ def imah_unsign(po, fwsigfile):
         minames_seen.add(minames[i])
     minames_seen = None
 
+    imah_write_fwsig_head(po, header, minames)
+
     # Get the encryption keys
     enc_k_str = header.enc_key.decode("utf-8")
     enc_key = None
@@ -261,6 +323,8 @@ def imah_unsign(po, fwsigfile):
 
     # Output the chunks
     for i, chunk in enumerate(chunks):
+
+        imah_write_fwentry_head(po, i, chunk, minames[i])
 
         chunk_fname = po.mdprefix + '_' + minames[i] + '.bin'
 
@@ -306,6 +370,9 @@ def imah_unsign(po, fwsigfile):
 
     print("{}: Un-signed {:d} chunks.".format(fwsigfile.name,len(chunks)))
 
+def imah_sign(po, fwsigfile):
+    raise NotImplementedError('Signing not implemented.')
+
 def main():
     """ Main executable function.
 
@@ -332,6 +399,9 @@ def main():
     subparser.add_argument("-u", "--unsign", action="store_true",
           help="un-sign and decrypt the firmware module")
 
+    subparser.add_argument("-s", "--sign", action="store_true",
+          help="sign and encrypt the firmware module")
+
     subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
             .format(version=__version__,author=__author__),
           help="display version information and exit")
@@ -348,6 +418,16 @@ def main():
         fwsigfile = open(po.sigfile, "rb")
 
         imah_unsign(po, fwsigfile)
+
+        fwsigfile.close();
+
+    elif po.sign:
+
+        if (po.verbose > 0):
+            print("{}: Opening for creation and signing".format(po.sigfile))
+        fwsigfile = open(po.sigfile, "wb")
+
+        imah_sign(po, fwsigfile)
 
         fwsigfile.close();
 
