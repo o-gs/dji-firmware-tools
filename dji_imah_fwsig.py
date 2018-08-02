@@ -1,25 +1,38 @@
 #!/usr/bin/env python3
-#
+# -*- coding: utf-8 -*-
+
+""" DJI Firmware IMaH Un-signer and Decryptor tool.
+
+Allows to decrypt and un-sign module from `.sig` file which starts with
+`IM*H`. Use this tool after untarring single modules from a firmware package,
+to decrypt its content.
+
+"""
+
 # Copyright (C) 2017  Freek van Tienen <freek.v.tienen@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+__version__ = "0.1.0"
+__author__ = "Freek van Tienen @ Original Gangsters"
+__license__ = "GPL"
+
 import sys
-import getopt
 import re
 import os
+import argparse
 import hashlib
 import binascii
 import configparser
@@ -83,7 +96,11 @@ class ImgPkgHeader(LittleEndianStructure):
         d = dict()
         for (varkey, vartype) in self._fields_:
             if not varkey.startswith('unk'):
-                d[varkey] = getattr(self, varkey)
+                v = getattr(self, varkey)
+                if isinstance(v, Array) and v._type_ == c_ubyte:
+                    d[varkey] = bytes(v)
+                else:
+                    d[varkey] = v
         return d
 
     def __repr__(self):
@@ -113,22 +130,21 @@ class ImgChunkHeader(LittleEndianStructure):
         return pformat(d, indent=4, width=1)
 
 
-def main(argv):
-    filname_wo_ext = os.path.splitext(basename(argv[0]))[0]
-    image_file = open(argv[0], "rb")
+def imah_unsign(po, fwsigfile):
 
     # Decode the image header
     header = ImgPkgHeader()
-    if image_file.readinto(header) != sizeof(header):
+    if fwsigfile.readinto(header) != sizeof(header):
         raise EOFError("Couldn't read image file header.")
 
     # Check the magic
     if header.magic != bytes("IM*H", "utf-8"):
-        print("Magic isn't correct in the header")
-        return
+        raise ValueError("Magic is not correct in the header.")
 
-    print("Unpacking image...")
-    print(header)
+    if (po.verbose > 0):
+        print("{}: Unpacking image...".format(fwsigfile.name))
+    if (po.verbose > 1):
+        print(header)
 
     # Get the encryption keys
     enc_k_str = header.enc_key.decode("utf-8")
@@ -136,29 +152,32 @@ def main(argv):
     if enc_k_str in keys:
         enc_key = keys[enc_k_str]
     else:
-        print("Can't find enc_key " + enc_k_str)
+        eprint("{}: Cannot find enc_key '{:s}'".format(fwsigfile.name,enc_k_str))
 
 
     # Decode the chunks of the image
     chunks = []
     for i in range(0, header.chunk_num):
         chunk = ImgChunkHeader()
-        if image_file.readinto(chunk) != sizeof(chunk):
-            raise EOFError("Couldn't read image chunk " + i + " header.")
+        if fwsigfile.readinto(chunk) != sizeof(chunk):
+            raise EOFError("Could not read image chunk {:d} header.".format(i))
         chunks.append(chunk)
 
     # Output the chunks
     for chunk in chunks:
 
+        chunk_fname = po.mdprefix + '_' + chunk.id.decode("utf-8") + '.bin'
         # Not encrypted chunk
         if (chunk.attrib & 0x01):
-            image_file.seek(header.header_size + header.signature_size + chunk.offset, 0)
-            file_buffer = image_file.read(chunk.size)
-            output_file = open(filname_wo_ext + '_' + chunk.id.decode("utf-8") + '.bin', "wb")
+            fwsigfile.seek(header.header_size + header.signature_size + chunk.offset, 0)
+            file_buffer = fwsigfile.read(chunk.size)
+            output_file = open(chunk_fname, "wb")
             output_file.write(file_buffer)
             output_file.close()
-            print("\nUnpacking chunk...")
-            print(str(chunk))
+            if (po.verbose > 0):
+                print("{}: Unpacking chunk '{:s}'...".format(fwsigfile.name,chunk.id.decode("utf-8")))
+            if (po.verbose > 1):
+                print(str(chunk))
 
         # Encrypted chunk (have key as well)
         elif enc_key != None:
@@ -171,21 +190,68 @@ def main(argv):
                 cipher_scrmb = AES.new(enc_key, AES.MODE_CBC, header.scram_key)
 
             # Decrypt the data
-            image_file.seek(header.header_size + header.signature_size + chunk.offset, 0)
+            fwsigfile.seek(header.header_size + header.signature_size + chunk.offset, 0)
             pad_cnt = (AES.block_size - chunk.size % AES.block_size) % AES.block_size
-            enc_buffer = image_file.read(chunk.size + pad_cnt)
+            enc_buffer = fwsigfile.read(chunk.size + pad_cnt)
             dec_buffer = cipher_scrmb.decrypt(enc_buffer)
-            output_file = open(filname_wo_ext + '_' + chunk.id.decode("utf-8") + '.bin', "wb")
+            output_file = open(chunk_fname, "wb")
             output_file.write(dec_buffer[:chunk.size])
             output_file.close()
-            print("\nUnpacking encrypted chunk...")
-            print(str(chunk))
+            if (po.verbose > 0):
+                print("{}: Unpacking encrypted chunk '{:s}'...".format(fwsigfile.name,chunk.id.decode("utf-8")))
+            if (po.verbose > 1):
+                print(str(chunk))
         # Missing encryption key
         else:
-            print("\nCan't unpack encrypted chunk! Missing key: " + enc_k_str)
-            print(str(chunk))
+            eprint("{}: Cannot unpack encrypted chunk! Missing key: '{:s}'".format(fwsigfile.name,enc_k_str))
+            if (po.verbose > 1):
+                print(str(chunk))
 
-    image_file.close()
+def main():
+    """ Main executable function.
+
+    Its task is to parse command line options and call a function which performs requested command.
+    """
+
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument("-s", "--sigfile", default="", type=str,
+          help="signed and encrypted IM*H firmware module file")
+
+    parser.add_argument("-m", "--mdprefix", default="", type=str,
+          help="file name prefix for the single un-signed and unencrypted " \
+           "firmware module (defaults to base name of signed firmware file)")
+
+    parser.add_argument("-v", "--verbose", action="count", default=0,
+          help="increases verbosity level; max level is set by -vvv")
+
+    subparser = parser.add_mutually_exclusive_group()
+
+    subparser.add_argument("-u", "--unsign", action="store_true",
+          help="un-sign and decrypt the firmware module")
+
+    subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+            .format(version=__version__,author=__author__),
+          help="display version information and exit")
+
+    po = parser.parse_args()
+
+    if len(po.sigfile) > 0 and len(po.mdprefix) == 0:
+        po.mdprefix = os.path.splitext(os.path.basename(po.sigfile))[0]
+
+    if po.unsign:
+
+        if (po.verbose > 0):
+            print("{}: Opening for un-signing".format(po.sigfile))
+        fwsigfile = open(po.sigfile, "rb")
+
+        imah_unsign(po, fwsigfile)
+
+        fwsigfile.close();
+
+    else:
+
+        raise NotImplementedError('Unsupported command.')
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+     main()
