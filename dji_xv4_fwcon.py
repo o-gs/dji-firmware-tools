@@ -114,6 +114,10 @@ dji_targets = [
     DjiModuleTarget(31,-1, "TESTB",   "test B")
 ]
 
+encrypt_aes128_key = bytes([0x96, 0x70, 0x9a, 0xD3, 0x26, 0x67, 0x4A, 0xC3, 0x82, 0xB6, 0x69, 0x27, 0xE6, 0xd8, 0x84, 0x21])
+encrypt_aes128_iv = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+
 class FwPkgHeader(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('magic', c_uint),
@@ -441,8 +445,8 @@ def dji_extract(po, fwpkgfile):
           if (po.no_crypto):
               hde.preencrypted = 1
           elif (chksum_enctype == 1):
-              encrypt_key = bytes.fromhex("96709aD326674AC382B66927E6d88421")
-              encrypt_iv  = bytes.fromhex("00000000000000000000000000000000")
+              encrypt_key = encrypt_aes128_key
+              encrypt_iv  = encrypt_aes128_iv
           else:
               # Since we cannot decode the encryption, mark the entry as pre-encrypted to extract in encrypted form
               eprint("{}: Warning: Unknown encryption {:d} in module {:d}, extracting encrypted.".format(po.fwpkg,chksum_enctype,i))
@@ -567,8 +571,8 @@ def dji_create(po, fwpkgfile):
               hde.set_encrypt_type(0)
               chksum_enctype = hde.get_encrypt_type()
           elif (chksum_enctype == 1):
-              encrypt_key = bytes.fromhex("96709aD326674AC382B66927E6d88421")
-              encrypt_iv  = bytes.fromhex("00000000000000000000000000000000")
+              encrypt_key = encrypt_aes128_key
+              encrypt_iv  = encrypt_aes128_iv
           else:
               if (not po.force_continue):
                   eprint("{}: Error: Unknown encryption {:d} in module {:d}; cannot encrypt.".format(po.fwpkg,chksum_enctype,i))
