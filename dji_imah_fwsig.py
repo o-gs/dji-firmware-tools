@@ -248,8 +248,8 @@ class ImgChunkHeader(LittleEndianStructure):
         fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
         varkey = 'attrib'
         fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
-        varkey = 'offset'
-        fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
+        #varkey = 'offset'
+        #fp.write("{:s}={:04X}\n".format(varkey,d[varkey]))
         varkey = 'address'
         fp.write("{:s}={:08X}\n".format(varkey,d[varkey]))
 
@@ -329,8 +329,8 @@ def imah_read_fwentry_head(po, i, miname):
     chunk.id = bytes(id_s, "utf-8")
     attrib_s = parser.get("asection", "attrib")
     chunk.attrib = int(attrib_s, 16)
-    offset_s = parser.get("asection", "offset")
-    chunk.offset = int(offset_s, 16)
+    #offset_s = parser.get("asection", "offset")
+    #chunk.offset = int(offset_s, 16)
     address_s = parser.get("asection", "address")
     chunk.address = int(address_s, 16)
     del parser
@@ -339,25 +339,37 @@ def imah_read_fwentry_head(po, i, miname):
 def imah_unsign(po, fwsigfile):
 
     # Decode the image header
-    header = ImgPkgHeader()
-    if fwsigfile.readinto(header) != sizeof(header):
+    pkghead = ImgPkgHeader()
+    if fwsigfile.readinto(pkghead) != sizeof(pkghead):
         raise EOFError("Could not read signed image file header.")
 
     # Check the magic
-    pkgformat = header.get_format_version()
+    pkgformat = pkghead.get_format_version()
     if pkgformat == 0:
         if (not po.force_continue):
             raise ValueError("Unexpected magic value in main header; input file is not a signed image.")
         eprint("{}: Warning: Unexpected magic value in main header; will try to extract anyway.".format(fwsigfile.name))
 
+    if pkghead.size != pkghead.target_size:
+        eprint("{}: Warning: Header field 'size' is different that 'target_size'; the tool is not designed to handle this.".format(fwsigfile.name))
+
+    if not all(v == 0 for v in pkghead.reserved):
+        eprint("{}: Warning: Header field 'reserved' is non-zero; the tool is not designed to handle this.".format(fwsigfile.name))
+
+    if not all(v == 0 for v in pkghead.reserved2):
+        eprint("{}: Warning: Header field 'reserved2' is non-zero; the tool is not designed to handle this.".format(fwsigfile.name))
+
+    if not all(v == 0 for v in pkghead.reserved3):
+        eprint("{}: Warning: Header field 'reserved3' is non-zero; the tool is not designed to handle this.".format(fwsigfile.name))
+
     if (po.verbose > 0):
         print("{}: Unpacking image...".format(fwsigfile.name))
     if (po.verbose > 1):
-        print(header)
+        print(pkghead)
 
     # Decode the chunks of the image
     chunks = []
-    for i in range(0, header.chunk_num):
+    for i in range(0, pkghead.chunk_num):
         chunk = ImgChunkHeader()
         if fwsigfile.readinto(chunk) != sizeof(chunk):
             raise EOFError("Could not read signed image chunk {:d} header.".format(i))
@@ -386,10 +398,10 @@ def imah_unsign(po, fwsigfile):
         minames_seen.add(minames[i])
     minames_seen = None
 
-    imah_write_fwsig_head(po, header, minames)
+    imah_write_fwsig_head(po, pkghead, minames)
 
     # Get the encryption keys
-    enc_k_str = header.enc_key.decode("utf-8")
+    enc_k_str = pkghead.enc_key.decode("utf-8")
     enc_key = None
     if enc_k_str in keys:
         enc_key = keys[enc_k_str]
@@ -405,7 +417,7 @@ def imah_unsign(po, fwsigfile):
 
         # Not encrypted chunk
         if (chunk.attrib & 0x01):
-            fwsigfile.seek(header.header_size + header.signature_size + chunk.offset, 0)
+            fwsigfile.seek(pkghead.header_size + pkghead.signature_size + chunk.offset, 0)
             file_buffer = fwsigfile.read(chunk.size)
             output_file = open(chunk_fname, "wb")
             output_file.write(file_buffer)
@@ -418,15 +430,15 @@ def imah_unsign(po, fwsigfile):
         # Encrypted chunk (have key as well)
         elif enc_key != None:
             # Set the key
-            if header.header_version == 1:
+            if pkghead.header_version == 1:
                 cipher = AES.new(enc_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
-                scram_key = cipher.decrypt(header.scram_key)
+                scram_key = cipher.decrypt(pkghead.scram_key)
                 cipher_scrmb = AES.new(scram_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
             else:
-                cipher_scrmb = AES.new(enc_key, AES.MODE_CBC, header.scram_key)
+                cipher_scrmb = AES.new(enc_key, AES.MODE_CBC, pkghead.scram_key)
 
             # Decrypt the data
-            fwsigfile.seek(header.header_size + header.signature_size + chunk.offset, 0)
+            fwsigfile.seek(pkghead.header_size + pkghead.signature_size + chunk.offset, 0)
             pad_cnt = (AES.block_size - chunk.size % AES.block_size) % AES.block_size
             enc_buffer = fwsigfile.read(chunk.size + pad_cnt)
             dec_buffer = cipher_scrmb.decrypt(enc_buffer)
@@ -460,9 +472,11 @@ def imah_sign(po, fwsigfile):
     fwsigfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
     for chunk in chunks:
         fwsigfile.write((c_ubyte * sizeof(chunk)).from_buffer_copy(chunk))
+    fwsigfile.write((c_ubyte * pkghead.signature_size)())
     # Write module data
     for i, miname in enumerate(minames):
         chunk = chunks[i]
+        chunk.offset = fwsigfile.tell() - pkghead.header_size - pkghead.signature_size
         if miname == "0":
             if (po.verbose > 0):
                 print("{}: Empty module index {:d}".format(fwsigfile.name,i))
@@ -472,9 +486,18 @@ def imah_sign(po, fwsigfile):
         fname = "{:s}_{:s}.bin".format(po.mdprefix,miname)
         # Copy chunk data and compute checksum
         fwitmfile = open(fname, "rb")
-        #TODO - encrypt and copy
+        decrypted_n = 0
+        while True:
+            # read block limit must be a multiplication of encryption block size
+            copy_buffer = fwitmfile.read(1024 * 1024)
+            if not copy_buffer:
+                break
+            decrypted_n += len(copy_buffer)
+            #TODO - encrypt
+            fwsigfile.write(copy_buffer)
         fwitmfile.close()
         #TODO - update header fields
+        chunk.size = decrypted_n
         chunks[i] = chunk
     # Write all headers again
     fwsigfile.seek(0,os.SEEK_SET)
