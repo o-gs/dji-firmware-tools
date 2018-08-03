@@ -292,10 +292,23 @@ def imah_read_fwsig_head(po):
     anti_version_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<build>[0-9]+)[.](?P<rev>[0-9]+)', anti_version_s)
     pkghead.anti_version = ((int(anti_version_m.group("major"),10)&0xff)<<24) + ((int(anti_version_m.group("minor"),10)&0xff)<<16) + \
             ((int(anti_version_m.group("build"),10)&0xff)<<8) + ((int(anti_version_m.group("rev"),10)&0xff))
+    pkghead.enc_key = bytes(parser.get("asection", "enc_key"), "utf-8")
+    pkghead.auth_key = bytes(parser.get("asection", "auth_key"), "utf-8")
+    pkghead.auth_alg = int(parser.get("asection", "auth_alg"))
+    pkghead.os = int(parser.get("asection", "os"))
+    pkghead.arch = int(parser.get("asection", "arch"))
+    pkghead.compression = int(parser.get("asection", "compression"))
+    pkghead.type = int(parser.get("asection", "type"))
+    entry_bt = bytes.fromhex(parser.get("asection", "entry"))
+    pkghead.entry = (c_ubyte * len(entry_bt)).from_buffer_copy(entry_bt)
     minames_s = parser.get("asection", "modules")
     minames = minames_s.split(' ')
     pkghead.chunk_num = len(minames)
-    pkghead.target_size = sizeof(pkghead) + sizeof(ImgChunkHeader)*pkghead.chunk_num + sizeof(c_ushort)
+    pkghead.header_size = sizeof(pkghead) + sizeof(ImgChunkHeader)*pkghead.chunk_num
+    pkghead.signature_size = 256
+    pkghead.payload_size = 0
+    pkghead.target_size = pkghead.header_size + pkghead.signature_size + pkghead.payload_size
+    pkghead.size = pkghead.target_size
     del parser
     return (pkghead, minames)
 
@@ -443,7 +456,28 @@ def imah_sign(po, fwsigfile):
         else:
             chunk = imah_read_fwentry_head(po, i, miname)
         chunks.append(chunk)
-
+    # Write the unfinished headers
+    fwsigfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+    for chunk in chunks:
+        fwsigfile.write((c_ubyte * sizeof(chunk)).from_buffer_copy(chunk))
+    # Write module data
+    for i, miname in enumerate(minames):
+        chunk = chunks[i]
+        if miname == "0":
+            if (po.verbose > 0):
+                print("{}: Empty module index {:d}".format(fwsigfile.name,i))
+            continue
+        if (po.verbose > 0):
+            print("{}: Copying module index {:d}".format(fwsigfile.name,i))
+        fname = "{:s}_{:s}.bin".format(po.mdprefix,miname)
+        # Copy chunk data and compute checksum
+        fwitmfile = open(fname, "rb")
+        #TODO - encrypt and copy
+        fwitmfile.close()
+        #TODO - update header fields
+        chunks[i] = chunk
+    # Write all headers again
+    fwsigfile.seek(0,os.SEEK_SET)
     fwsigfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
     if (po.verbose > 1):
         print(str(pkghead))
@@ -521,5 +555,5 @@ if __name__ == "__main__":
         main()
     except Exception as ex:
         print("Error: "+str(ex))
-        raise
+        #raise
         sys.exit(10)
