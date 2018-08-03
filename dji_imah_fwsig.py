@@ -149,6 +149,16 @@ class ImgPkgHeader(LittleEndianStructure):
         else:
             return 0
 
+    def set_format_version(self, ver):
+        if ver == 2016:
+            self.magic = bytes("IM*H", "utf-8")
+            self.header_version = 0x0000
+        elif ver == 2017:
+            self.magic = bytes("IM*H", "utf-8")
+            self.header_version = 0x0001
+        else:
+            raise ValueError("Unsupported image format version.")
+
     def dict_export(self):
         d = dict()
         for (varkey, vartype) in self._fields_:
@@ -249,17 +259,69 @@ class ImgChunkHeader(LittleEndianStructure):
         return pformat(d, indent=4, width=1)
 
 def imah_write_fwsig_head(po, pkghead, minames):
-  fname = "{:s}_head.ini".format(po.mdprefix)
-  fwheadfile = open(fname, "w")
-  pkghead.ini_export(fwheadfile)
-  fwheadfile.write("{:s}={:s}\n".format("modules",' '.join(minames)))
-  fwheadfile.close()
+    fname = "{:s}_head.ini".format(po.mdprefix)
+    fwheadfile = open(fname, "w")
+    pkghead.ini_export(fwheadfile)
+    fwheadfile.write("{:s}={:s}\n".format("modules",' '.join(minames)))
+    fwheadfile.close()
+
+def imah_read_fwsig_head(po):
+    pkghead = ImgPkgHeader()
+    fname = "{:s}_head.ini".format(po.mdprefix)
+    parser = configparser.ConfigParser()
+    with open(fname, "r") as lines:
+        lines = itertools.chain(("[asection]",), lines)  # This line adds section header to ini
+        parser.read_file(lines)
+    # Set magic fields properly
+    pkgformat = parser.get("asection", "pkg_format")
+    pkghead.set_format_version(int(pkgformat))
+    # Set the rest of the fields
+    pkghead.name = bytes(parser.get("asection", "name"), "utf-8")
+    pkghead.userdata = bytes(parser.get("asection", "userdata"), "utf-8")
+    # The only person at Dji who knew how to store dates must have been fired
+    date_val = strptime(parser.get("asection", "date"),"%Y-%m-%d")
+    pkghead.date = ((date_val.tm_year // 1000) << 28) | (((date_val.tm_year % 1000) // 100) << 24) | \
+            (((date_val.tm_year % 100) // 10) << 20) | ((date_val.tm_year % 10) << 16) | \
+            ((date_val.tm_mon // 10) << 12) | ((date_val.tm_mon % 10) << 8) | \
+            ((date_val.tm_mday // 10) << 4) | (date_val.tm_mday % 10)
+    version_s = parser.get("asection", "version")
+    version_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<build>[0-9]+)[.](?P<rev>[0-9]+)', version_s)
+    pkghead.version = ((int(version_m.group("major"),10)&0xff)<<24) + ((int(version_m.group("minor"),10)&0xff)<<16) + \
+            ((int(version_m.group("build"),10)&0xff)<<8) + ((int(version_m.group("rev"),10)&0xff))
+    anti_version_s = parser.get("asection", "anti_version")
+    anti_version_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[.](?P<build>[0-9]+)[.](?P<rev>[0-9]+)', anti_version_s)
+    pkghead.anti_version = ((int(anti_version_m.group("major"),10)&0xff)<<24) + ((int(anti_version_m.group("minor"),10)&0xff)<<16) + \
+            ((int(anti_version_m.group("build"),10)&0xff)<<8) + ((int(anti_version_m.group("rev"),10)&0xff))
+    minames_s = parser.get("asection", "modules")
+    minames = minames_s.split(' ')
+    pkghead.chunk_num = len(minames)
+    pkghead.target_size = sizeof(pkghead) + sizeof(ImgChunkHeader)*pkghead.chunk_num + sizeof(c_ushort)
+    del parser
+    return (pkghead, minames)
 
 def imah_write_fwentry_head(po, i, e, miname):
-  fname = "{:s}_{:s}.ini".format(po.mdprefix,miname)
-  fwheadfile = open(fname, "w")
-  e.ini_export(fwheadfile)
-  fwheadfile.close()
+    fname = "{:s}_{:s}.ini".format(po.mdprefix,miname)
+    fwheadfile = open(fname, "w")
+    e.ini_export(fwheadfile)
+    fwheadfile.close()
+
+def imah_read_fwentry_head(po, i, miname):
+    chunk = ImgChunkHeader()
+    fname = "{:s}_{:s}.ini".format(po.mdprefix,miname)
+    parser = configparser.ConfigParser()
+    with open(fname, "r") as lines:
+        lines = itertools.chain(("[asection]",), lines)  # This line adds section header to ini
+        parser.read_file(lines)
+    id_s = parser.get("asection", "id")
+    chunk.id = bytes(id_s, "utf-8")
+    attrib_s = parser.get("asection", "attrib")
+    chunk.attrib = int(attrib_s, 16)
+    offset_s = parser.get("asection", "offset")
+    chunk.offset = int(offset_s, 16)
+    address_s = parser.get("asection", "address")
+    chunk.address = int(address_s, 16)
+    del parser
+    return (chunk)
 
 def imah_unsign(po, fwsigfile):
 
@@ -371,6 +433,25 @@ def imah_unsign(po, fwsigfile):
     print("{}: Un-signed {:d} chunks.".format(fwsigfile.name,len(chunks)))
 
 def imah_sign(po, fwsigfile):
+    # Read headers from INI files
+    (pkghead, minames) = imah_read_fwsig_head(po)
+    chunks = []
+    # Create module entry for each partition
+    for i, miname in enumerate(minames):
+        if miname == "0":
+            chunk = ImgChunkHeader()
+        else:
+            chunk = imah_read_fwentry_head(po, i, miname)
+        chunks.append(chunk)
+
+    fwsigfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+    if (po.verbose > 1):
+        print(str(pkghead))
+    for chunk in chunks:
+        fwsigfile.write((c_ubyte * sizeof(chunk)).from_buffer_copy(chunk))
+        if (po.verbose > 1):
+            print(str(chunk))
+
     raise NotImplementedError('Signing not implemented.')
 
 def main():
@@ -440,5 +521,5 @@ if __name__ == "__main__":
         main()
     except Exception as ex:
         print("Error: "+str(ex))
-        #raise
+        raise
         sys.exit(10)
