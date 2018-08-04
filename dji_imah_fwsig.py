@@ -108,7 +108,13 @@ keys = {
 }
 
 def eprint(*args, **kwargs):
-  print(*args, file=sys.stderr, **kwargs)
+    print(*args, file=sys.stderr, **kwargs)
+
+class PlainCopyCipher:
+    def encrypt(self, plaintext):
+        return plaintext
+    def decrypt(self, ciphertext):
+        return ciphertext
 
 class ImgPkgHeader(LittleEndianStructure):
     _pack_ = 1
@@ -159,6 +165,11 @@ class ImgPkgHeader(LittleEndianStructure):
         else:
             raise ValueError("Unsupported image format version.")
 
+    def update_payload_size(self, payload_size):
+        self.payload_size = payload_size
+        self.target_size = self.header_size + self.signature_size + self.payload_size
+        self.size = self.target_size
+
     def dict_export(self):
         d = dict()
         for (varkey, vartype) in self._fields_:
@@ -208,8 +219,8 @@ class ImgPkgHeader(LittleEndianStructure):
         varkey = 'userdata'
         fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8"))) # not sure if string or binary
         varkey = 'entry'
-        fp.write("{:s}={:s}\n".format(varkey,"".join("{:02X}".format(x) for x in d[varkey])))
-        #varkey = 'scram_key'
+        fp.write("{:s}={:s}\n".format(varkey,''.join("{:02X}".format(x) for x in d[varkey])))
+        #varkey = 'scram_key' # we will add the key later, as this one is encrypted
         #fp.write("{:s}={:s}\n".format(varkey,"".join("{:02X}".format(x) for x in d[varkey])))
 
     def __repr__(self):
@@ -258,17 +269,50 @@ class ImgChunkHeader(LittleEndianStructure):
         from pprint import pformat
         return pformat(d, indent=4, width=1)
 
+
+def imah_get_crypto_params(po, pkghead):
+    # Get the encryption key
+    enc_k_str = pkghead.enc_key.decode("utf-8")
+    enc_key = None
+    if enc_k_str in keys:
+        enc_key = keys[enc_k_str]
+    else:
+        eprint("{}: Warning: Cannot find enc_key '{:s}'".format(po.sigfile,enc_k_str))
+        return (None, None, None)
+    # Prepare initial values for AES
+    crypt_mode = AES.MODE_CBC
+    if pkghead.header_version == 1:
+        cipher = AES.new(enc_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+        crypt_key = cipher.decrypt(pkghead.scram_key)
+        crypt_iv = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    else:
+        crypt_key = enc_key
+        crypt_iv = bytes(pkghead.scram_key)
+    return (crypt_key, crypt_mode, crypt_iv)
+
 def imah_write_fwsig_head(po, pkghead, minames):
     fname = "{:s}_head.ini".format(po.mdprefix)
     fwheadfile = open(fname, "w")
     pkghead.ini_export(fwheadfile)
-    fwheadfile.write("{:s}={:s}\n".format("modules",' '.join(minames)))
+    # Prepare initial values for AES
+    if pkghead.header_version == 0: # Scramble key is used as initial vector
+        fwheadfile.write("{:s}={:s}\n".format('scramble_iv',' '.join("{:02X}".format(x) for x in pkghead.scram_key)))
+    else:
+        crypt_key, _, _ = imah_get_crypto_params(po, pkghead)
+        if crypt_key is None: # Scramble key is used, but we cannot decrypt it
+            eprint("{}: Warning: Storing encrypted scramble key due to missing crypto config.".format(po.sigfile))
+            fwheadfile.write("{:s}={:s}\n".format('scramble_key_encrypted',' '.join("{:02X}".format(x) for x in pkghead.scram_key)))
+        else: # Store the decrypted scrable key
+            fwheadfile.write("{:s}={:s}\n".format('scramble_key',' '.join("{:02X}".format(x) for x in crypt_key)))
+    # Store list of modules/chunks to include
+    fwheadfile.write("{:s}={:s}\n".format('modules',' '.join(minames)))
     fwheadfile.close()
 
 def imah_read_fwsig_head(po):
     pkghead = ImgPkgHeader()
     fname = "{:s}_head.ini".format(po.mdprefix)
     parser = configparser.ConfigParser()
+
     with open(fname, "r") as lines:
         lines = itertools.chain(("[asection]",), lines)  # This line adds section header to ini
         parser.read_file(lines)
@@ -301,15 +345,48 @@ def imah_read_fwsig_head(po):
     pkghead.type = int(parser.get("asection", "type"))
     entry_bt = bytes.fromhex(parser.get("asection", "entry"))
     pkghead.entry = (c_ubyte * len(entry_bt)).from_buffer_copy(entry_bt)
+
+    if po.random_scramble:
+        scramble_needs_encrypt = (pkghead.header_version != 0)
+        scramble_key = os.urandom(16)
+        pkghead.scram_key = (c_ubyte * len(scramble_key)).from_buffer_copy(scramble_key)
+    if pkghead.header_version == 0: # Scramble key is used as initial vector
+        scramble_needs_encrypt = False
+        scramble_iv = bytes.fromhex(parser.get("asection", "scramble_iv"))
+        pkghead.scram_key = (c_ubyte * len(scramble_iv)).from_buffer_copy(scramble_iv)
+    else: # Scrable key should be encrypted
+        scramble_needs_encrypt = True
+        scramble_key = bytes.fromhex(parser.get("asection", "scramble_key"))
+        if scramble_key is None: # Maybe we have pre-encrypted version?
+            scramble_needs_encrypt = False
+            scramble_key = bytes.fromhex(parser.get("asection", "scramble_key_encrypted"))
+        if scramble_key is not None:
+            pkghead.scram_key = (c_ubyte * len(scramble_key)).from_buffer_copy(scramble_key)
+        else:
+            eprint("{}: Warning: Scramble key not found in header and not set to ramdom; zeros will be used.".format(po.sigfile))
+
     minames_s = parser.get("asection", "modules")
     minames = minames_s.split(' ')
     pkghead.chunk_num = len(minames)
     pkghead.header_size = sizeof(pkghead) + sizeof(ImgChunkHeader)*pkghead.chunk_num
     pkghead.signature_size = 256
-    pkghead.payload_size = 0
-    pkghead.target_size = pkghead.header_size + pkghead.signature_size + pkghead.payload_size
-    pkghead.size = pkghead.target_size
+    pkghead.update_payload_size(0)
+
     del parser
+
+    if scramble_needs_encrypt:
+        # Get the encryption key
+        enc_k_str = pkghead.enc_key.decode("utf-8")
+        enc_key = None
+        if enc_k_str in keys:
+            enc_key = keys[enc_k_str]
+        if enc_key is None:
+            eprint("{}: Warning: Cannot find enc_key '{:s}'; scramble key left unencrypted.".format(fwsigfile.name,enc_k_str))
+        else:
+            cipher = AES.new(enc_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+            crypt_key_enc = cipher.encrypt(pkghead.scram_key)
+            pkghead.scram_key = (c_ubyte * 16)(*list(cipher.encrypt(crypt_key_enc)))
+
     return (pkghead, minames)
 
 def imah_write_fwentry_head(po, i, e, miname):
@@ -367,7 +444,7 @@ def imah_unsign(po, fwsigfile):
     if (po.verbose > 1):
         print(pkghead)
 
-    # Decode the chunks of the image
+    # Read chunk headers of the image
     chunks = []
     for i in range(0, pkghead.chunk_num):
         chunk = ImgChunkHeader()
@@ -400,60 +477,62 @@ def imah_unsign(po, fwsigfile):
 
     imah_write_fwsig_head(po, pkghead, minames)
 
-    # Get the encryption keys
-    enc_k_str = pkghead.enc_key.decode("utf-8")
-    enc_key = None
-    if enc_k_str in keys:
-        enc_key = keys[enc_k_str]
-    else:
-        eprint("{}: Warning: Cannot find enc_key '{:s}'".format(fwsigfile.name,enc_k_str))
+    crypt_key, crypt_mode, crypt_iv = imah_get_crypto_params(po, pkghead)
 
     # Output the chunks
     for i, chunk in enumerate(chunks):
 
         imah_write_fwentry_head(po, i, chunk, minames[i])
 
-        chunk_fname = po.mdprefix + '_' + minames[i] + '.bin'
+        chunk_fname= "{:s}_{:s}.bin".format(po.mdprefix,minames[i])
 
-        # Not encrypted chunk
-        if (chunk.attrib & 0x01):
-            fwsigfile.seek(pkghead.header_size + pkghead.signature_size + chunk.offset, 0)
-            file_buffer = fwsigfile.read(chunk.size)
-            output_file = open(chunk_fname, "wb")
-            output_file.write(file_buffer)
-            output_file.close()
+        if (chunk.attrib & 0x01): # Not encrypted chunk
+            cipher = PlainCopyCipher()
+            pad_cnt = 0
             if (po.verbose > 0):
                 print("{}: Unpacking plaintext chunk '{:s}'...".format(fwsigfile.name,minames[i]))
-            if (po.verbose > 1):
-                print(str(chunk))
 
-        # Encrypted chunk (have key as well)
-        elif enc_key != None:
-            # Set the key
-            if pkghead.header_version == 1:
-                cipher = AES.new(enc_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
-                scram_key = cipher.decrypt(pkghead.scram_key)
-                cipher_scrmb = AES.new(scram_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
-            else:
-                cipher_scrmb = AES.new(enc_key, AES.MODE_CBC, pkghead.scram_key)
-
-            # Decrypt the data
-            fwsigfile.seek(pkghead.header_size + pkghead.signature_size + chunk.offset, 0)
+        elif crypt_key != None: # Encrypted chunk (have key as well)
+            cipher = AES.new(crypt_key, crypt_mode, crypt_iv)
             pad_cnt = (AES.block_size - chunk.size % AES.block_size) % AES.block_size
-            enc_buffer = fwsigfile.read(chunk.size + pad_cnt)
-            dec_buffer = cipher_scrmb.decrypt(enc_buffer)
-            output_file = open(chunk_fname, "wb")
-            output_file.write(dec_buffer[:chunk.size])
-            output_file.close()
             if (po.verbose > 0):
                 print("{}: Unpacking encrypted chunk '{:s}'...".format(fwsigfile.name,minames[i]))
-            if (po.verbose > 1):
-                print(str(chunk))
-        # Missing encryption key
-        else:
-            eprint("{}: Cannot decrypt chunk '{:s}'! Missing key: '{:s}'".format(fwsigfile.name,minames[i],enc_k_str))
-            if (po.verbose > 1):
-                print(str(chunk))
+
+        else: # Missing encryption key
+            eprint("{}: Warning: Cannot decrypt chunk '{:s}'; crypto config missing.".format(fwsigfile.name,minames[i]))
+            if (not po.force_continue):
+                continue
+            if (po.verbose > 0):
+                print("{}: Copying still encrypted chunk '{:s}'...".format(fwsigfile.name,minames[i]))
+            cipher = PlainCopyCipher()
+            pad_cnt = (AES.block_size - chunk.size % AES.block_size) % AES.block_size
+
+        if (po.verbose > 1):
+            print(str(chunk))
+
+        # Decrypt and write the data
+        fwsigfile.seek(pkghead.header_size + pkghead.signature_size + chunk.offset, 0)
+        fwitmfile = open(chunk_fname, "wb")
+        remain_enc_n = chunk.size + pad_cnt
+        remain_dec_n = chunk.size
+        while remain_enc_n > 0:
+            # read block limit must be a multiplication of encryption block size
+            # ie AES.block_size is fixed at 16 bytes
+            copy_buffer = fwsigfile.read(min(1024 * 1024, remain_enc_n))
+            if not copy_buffer:
+                eprint("{}: Warning: Chunk '{:s}' truncated.".format(fwsigfile.name,minames[i]))
+                break
+            remain_enc_n -= len(copy_buffer)
+            copy_buffer = cipher.decrypt(copy_buffer)
+            if remain_dec_n >= len(copy_buffer):
+                fwitmfile.write(copy_buffer)
+                remain_dec_n -= len(copy_buffer)
+            else:
+                if (po.verbose > 2):
+                    print("Chunk padding: {:s}".format(str(copy_buffer[-len(copy_buffer)+remain_dec_n:])))
+                fwitmfile.write(copy_buffer[:remain_dec_n])
+                remain_dec_n = 0
+        fwitmfile.close()
 
     print("{}: Un-signed {:d} chunks.".format(fwsigfile.name,len(chunks)))
 
@@ -461,7 +540,7 @@ def imah_sign(po, fwsigfile):
     # Read headers from INI files
     (pkghead, minames) = imah_read_fwsig_head(po)
     chunks = []
-    # Create module entry for each partition
+    # Create header entry for each chunk
     for i, miname in enumerate(minames):
         if miname == "0":
             chunk = ImgChunkHeader()
@@ -473,32 +552,62 @@ def imah_sign(po, fwsigfile):
     for chunk in chunks:
         fwsigfile.write((c_ubyte * sizeof(chunk)).from_buffer_copy(chunk))
     fwsigfile.write((c_ubyte * pkghead.signature_size)())
+    # prepare encryption
+    crypt_key, crypt_mode, crypt_iv = imah_get_crypto_params(po, pkghead)
     # Write module data
     for i, miname in enumerate(minames):
         chunk = chunks[i]
         chunk.offset = fwsigfile.tell() - pkghead.header_size - pkghead.signature_size
         if miname == "0":
             if (po.verbose > 0):
-                print("{}: Empty module index {:d}".format(fwsigfile.name,i))
+                print("{}: Empty chunk index {:d}".format(fwsigfile.name,i))
             continue
-        if (po.verbose > 0):
-            print("{}: Copying module index {:d}".format(fwsigfile.name,i))
-        fname = "{:s}_{:s}.bin".format(po.mdprefix,miname)
+
+        if (chunk.attrib & 0x01): # Not encrypted chunk
+            cipher = PlainCopyCipher()
+            if (po.verbose > 0):
+                print("{}: Packing plaintext chunk '{:s}'...".format(fwsigfile.name,minames[i]))
+
+        elif crypt_key != None: # Encrypted chunk (have key as well)
+            cipher = AES.new(crypt_key, crypt_mode, crypt_iv)
+            if (po.verbose > 0):
+                print("{}: Packing and encrypting chunk '{:s}'...".format(fwsigfile.name,minames[i]))
+
+        else: # Missing encryption key
+            eprint("{}: Warning: Cannot encrypt chunk '{:s}'; crypto config missing.".format(fwsigfile.name,minames[i]))
+            if (not po.force_continue):
+                raise ValueError("Unsupported encryption configuration.")
+            if (po.verbose > 0):
+                print("{}: Copying still encrypted chunk '{:s}'...".format(fwsigfile.name,minames[i]))
+            cipher = PlainCopyCipher()
+
+        if (po.verbose > 1):
+            print(str(chunk))
+
+        chunk_fname= "{:s}_{:s}.bin".format(po.mdprefix,miname)
         # Copy chunk data and compute checksum
-        fwitmfile = open(fname, "rb")
+        fwitmfile = open(chunk_fname, "rb")
         decrypted_n = 0
         while True:
             # read block limit must be a multiplication of encryption block size
+            # ie AES.block_size is fixed at 16 bytes
             copy_buffer = fwitmfile.read(1024 * 1024)
             if not copy_buffer:
                 break
             decrypted_n += len(copy_buffer)
-            #TODO - encrypt
+            # Dji pads the payload to 32 bytes, even though AES.block_size is 16
+            # Because they can. Or because they don't care.
+            dji_block_size = 32
+            if (len(copy_buffer) % dji_block_size) != 0:
+                pad_cnt = dji_block_size - (len(copy_buffer) % dji_block_size)
+                pad_buffer = (c_ubyte * pad_cnt)()
+                copy_buffer += pad_buffer
+            copy_buffer = cipher.encrypt(copy_buffer)
             fwsigfile.write(copy_buffer)
         fwitmfile.close()
-        #TODO - update header fields
         chunk.size = decrypted_n
         chunks[i] = chunk
+    pkghead.update_payload_size(fwsigfile.tell() - pkghead.header_size - pkghead.signature_size)
     # Write all headers again
     fwsigfile.seek(0,os.SEEK_SET)
     fwsigfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
@@ -528,6 +637,9 @@ def main():
 
     parser.add_argument("-f", "--force-continue", action="store_true",
           help="force continuing execution despite warning signs of issues")
+
+    parser.add_argument("-r", "--random-scramble", action="store_true",
+          help="while signing, use random scramble vector instead of from INI")
 
     parser.add_argument("-v", "--verbose", action="count", default=0,
           help="increases verbosity level; max level is set by -vvv")
