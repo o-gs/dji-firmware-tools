@@ -350,16 +350,20 @@ def imah_read_fwsig_head(po):
         scramble_needs_encrypt = (pkghead.header_version != 0)
         scramble_key = os.urandom(16)
         pkghead.scram_key = (c_ubyte * len(scramble_key)).from_buffer_copy(scramble_key)
-    if pkghead.header_version == 0: # Scramble key is used as initial vector
+
+    elif pkghead.header_version == 0: # Scramble key is used as initial vector
         scramble_needs_encrypt = False
         scramble_iv = bytes.fromhex(parser.get("asection", "scramble_iv"))
         pkghead.scram_key = (c_ubyte * len(scramble_iv)).from_buffer_copy(scramble_iv)
+
     else: # Scrable key should be encrypted
-        scramble_needs_encrypt = True
-        scramble_key = bytes.fromhex(parser.get("asection", "scramble_key"))
-        if scramble_key is None: # Maybe we have pre-encrypted version?
+        if parser.has_option("asection", "scramble_key"):
+            scramble_needs_encrypt = True
+            scramble_key = bytes.fromhex(parser.get("asection", "scramble_key"))
+        else: # Maybe we have pre-encrypted version?
             scramble_needs_encrypt = False
             scramble_key = bytes.fromhex(parser.get("asection", "scramble_key_encrypted"))
+
         if scramble_key is not None:
             pkghead.scram_key = (c_ubyte * len(scramble_key)).from_buffer_copy(scramble_key)
         else:
@@ -385,7 +389,7 @@ def imah_read_fwsig_head(po):
         else:
             cipher = AES.new(enc_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
             crypt_key_enc = cipher.encrypt(pkghead.scram_key)
-            pkghead.scram_key = (c_ubyte * 16)(*list(cipher.encrypt(crypt_key_enc)))
+            pkghead.scram_key = (c_ubyte * 16)(*list(crypt_key_enc))
 
     return (pkghead, minames)
 
