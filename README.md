@@ -50,7 +50,7 @@ DJI Firmware IMaH Un-signer and Decryptor tool; allows to decrypt and un-sign mo
 from `.sig` file which starts with `IM*H`. Use this tool after untarring single
 modules from a firmware package, to decrypt its content.
 
-Example: ```./dji_imah_fwsig.py -vv -u -s wm335_0306_v03.03.04.10_20180429.pro.fw.sig```
+Example: ```./dji_imah_fwsig.py -vv -u -i wm335_0306_v03.03.04.10_20180429.pro.fw.sig```
 
 ### dji_mvfc_fwpak.py
 
