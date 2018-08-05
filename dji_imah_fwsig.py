@@ -38,6 +38,7 @@ import binascii
 import configparser
 import itertools
 from Crypto.Cipher import AES
+from Crypto.Hash import SHA256
 from ctypes import *
 from time import gmtime, strftime, strptime
 from calendar import timegm
@@ -559,6 +560,7 @@ def imah_sign(po, fwsigfile):
     # prepare encryption
     crypt_key, crypt_mode, crypt_iv = imah_get_crypto_params(po, pkghead)
     # Write module data
+    digest = SHA256.new()
     for i, miname in enumerate(minames):
         chunk = chunks[i]
         chunk.offset = fwsigfile.tell() - pkghead.header_size - pkghead.signature_size
@@ -599,19 +601,23 @@ def imah_sign(po, fwsigfile):
             if not copy_buffer:
                 break
             decrypted_n += len(copy_buffer)
-            # Dji pads the payload to 32 bytes, even though AES.block_size is 16
-            # Because they can. Or because they don't care.
-            dji_block_size = 32
-            if (len(copy_buffer) % dji_block_size) != 0:
-                pad_cnt = dji_block_size - (len(copy_buffer) % dji_block_size)
+            # Pad the payload to AES.block_size = 16
+            if (len(copy_buffer) % AES.block_size) != 0:
+                pad_cnt = AES.block_size - (len(copy_buffer) % AES.block_size)
                 pad_buffer = (c_ubyte * pad_cnt)()
                 copy_buffer += pad_buffer
             copy_buffer = cipher.encrypt(copy_buffer)
+            digest.update(copy_buffer)
             fwsigfile.write(copy_buffer)
         fwitmfile.close()
+        # Pad with 16 zeros at end
+        pad_buffer = (c_ubyte * 16)()
+        fwsigfile.write(pad_buffer)
         chunk.size = decrypted_n
         chunks[i] = chunk
+
     pkghead.update_payload_size(fwsigfile.tell() - pkghead.header_size - pkghead.signature_size)
+    pkghead.payload_digest = (c_ubyte * 32)(*list(digest.digest()))
     # Write all headers again
     fwsigfile.seek(0,os.SEEK_SET)
     fwsigfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
