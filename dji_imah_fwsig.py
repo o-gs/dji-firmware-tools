@@ -610,14 +610,20 @@ def imah_sign(po, fwsigfile):
             digest.update(copy_buffer)
             fwsigfile.write(copy_buffer)
         fwitmfile.close()
-        # Pad with 16 zeros at end
-        pad_buffer = (c_ubyte * 16)()
-        fwsigfile.write(pad_buffer)
+        # Pad with zeros at end, for no real reason
+        dji_block_size = 32
+        if (fwsigfile.tell() - chunk.offset) % dji_block_size != 0:
+            pad_cnt = dji_block_size - ((fwsigfile.tell() - chunk.offset) % dji_block_size)
+            pad_buffer = (c_ubyte * pad_cnt)()
+            digest.update(pad_buffer) # why Dji includes padding in digest?
+            fwsigfile.write(pad_buffer)
         chunk.size = decrypted_n
         chunks[i] = chunk
 
     pkghead.update_payload_size(fwsigfile.tell() - pkghead.header_size - pkghead.signature_size)
     pkghead.payload_digest = (c_ubyte * 32)(*list(digest.digest()))
+    if (po.verbose > 2):
+        print("Computed payload digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in pkghead.payload_digest)))
     # Write all headers again
     fwsigfile.seek(0,os.SEEK_SET)
     fwsigfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
@@ -670,6 +676,8 @@ def main():
 
     if len(po.sigfile) > 0 and len(po.mdprefix) == 0:
         po.mdprefix = os.path.splitext(os.path.basename(po.sigfile))[0]
+    elif len(po.mdprefix) > 0 and len(po.sigfile) == 0:
+        po.sigfile = po.mdprefix + ".sig"
 
     if po.unsign:
 
