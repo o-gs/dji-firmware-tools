@@ -201,7 +201,7 @@ def pack(args):
 
     # Timestamp
     if args.time == None:
-        header.time = int(time.time(), 10)
+        header.time = int(time.time())
     else:
         if args.time.isdigit():
             t = int(args.time, 10)
@@ -210,7 +210,7 @@ def pack(args):
             if t == None:
                 print('ERROR: Wrong format for time: ' + args.time)
                 return -1
-            t = int(time.mktime(t), 10)
+            t = int(time.mktime(t))
 
         header.time = t
 
