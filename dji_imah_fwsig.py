@@ -39,6 +39,8 @@ import configparser
 import itertools
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
 from ctypes import *
 from time import gmtime, strftime, strptime
 from calendar import timegm
@@ -271,6 +273,21 @@ class ImgChunkHeader(LittleEndianStructure):
         return pformat(d, indent=4, width=1)
 
 
+class ImgRSAPublicKey(LittleEndianStructure):
+    _pack_ = 1
+    _fields_ = [('len', c_int),      # 0: Length of n[] in number of uint32_t
+                ('n0inv', c_uint),   # 4: -1 / n[0] mod 2^32
+                ('n', c_uint * 64),  # 8: modulus as little endian array
+                ('rr', c_uint * 64), # 264: R^2 as little endian array
+                ('exponent', c_int)] # 520: 3 or 65537
+
+
+def combine_int_array(int_arr, bits_per_entry):
+    ans = 0
+    for i, val in enumerate(int_arr):
+        ans += (val << i*bits_per_entry)
+    return ans
+
 def imah_get_crypto_params(po, pkghead):
     # Get the encryption key
     enc_k_str = pkghead.enc_key.decode("utf-8")
@@ -283,13 +300,30 @@ def imah_get_crypto_params(po, pkghead):
     # Prepare initial values for AES
     crypt_mode = AES.MODE_CBC
     if pkghead.header_version == 1:
+        if (po.verbose > 3):
+            print("Key encryption key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in enc_key)))
         cipher = AES.new(enc_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+        if (po.verbose > 3):
+            print("Encrypted Scramble key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in pkghead.scram_key)))
         crypt_key = cipher.decrypt(pkghead.scram_key)
         crypt_iv = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     else:
         crypt_key = enc_key
         crypt_iv = bytes(pkghead.scram_key)
     return (crypt_key, crypt_mode, crypt_iv)
+
+def imah_get_auth_params(po, pkghead):
+    # Get the key
+    auth_k_str = pkghead.auth_key.decode("utf-8")
+    auth_key = None
+    if auth_k_str in keys:
+        auth_key = keys[auth_k_str]
+    else:
+        eprint("{}: Warning: Cannot find auth_key '{:s}'".format(po.sigfile,auth_k_str))
+        return (None)
+    auth_key_struct = ImgRSAPublicKey()
+    memmove(addressof(auth_key_struct), auth_key, sizeof(auth_key_struct))
+    return (auth_key_struct)
 
 def imah_write_fwsig_head(po, pkghead, minames):
     fname = "{:s}_head.ini".format(po.mdprefix)
@@ -457,6 +491,59 @@ def imah_unsign(po, fwsigfile):
             raise EOFError("Could not read signed image chunk {:d} header.".format(i))
         chunks.append(chunk)
 
+    # Compute header hash
+    header_digest = SHA256.new()
+    header_digest.update((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+    for i, chunk in enumerate(chunks):
+        header_digest.update((c_ubyte * sizeof(chunk)).from_buffer_copy(chunk))
+    if (po.verbose > 2):
+        print("Header digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in header_digest.digest())))
+
+    head_signature_len = 256 # 2048 bit key length
+    head_signature = fwsigfile.read(head_signature_len)
+    if len(head_signature) != head_signature_len:
+        raise EOFError("Could not read signature of signed image file head.")
+
+    auth_key = imah_get_auth_params(po, pkghead)
+
+    if hasattr(auth_key, 'n'):
+        auth_key_n = combine_int_array(auth_key.n, 32)
+    else:
+        auth_key_n = None
+
+    if hasattr(auth_key, 'd'):
+        auth_key_d = combine_int_array(auth_key.d, 32)
+    else:
+        auth_key_d = None
+
+    # Parts of the key can be verified directly, as they're just precomputed values for performance
+    # But we should not be concerned with verifying the key consistency here, it is hard coded into
+    # the script so checking it once is enough
+    if False:
+        if auth_key.len != head_signature_len/4:
+            raise ValueError("Signature of signed image file head reports invalid length.")
+
+        auth_key_R = 2 ** (auth_key.len*32)
+        auth_key_RR = (auth_key_R * auth_key_R) % auth_key_n
+        if auth_key_RR != combine_int_array(auth_key.rr, 32):
+            raise ValueError("Signature of signed image file head contains invalid R_squared.")
+
+        # We can only verify n0inv if we have "p" aka "n0", first factor of "n"
+        if hasattr(auth_key, 'p'):
+            auth_key_n0inv = ( (-1) // auth_key.p ) % (2 ** 32)
+            if auth_key_n0inv != auth_key.n0inv:
+                raise ValueError("Signature of signed image file head contains invalid n0inv.")
+
+    rsa_key = RSA.construct( (auth_key_n, auth_key.exponent, auth_key_d, None, None, None, ) )
+    header_signer = PKCS1_v1_5.new(rsa_key)
+    if header_signer.verify(header_digest, head_signature):
+        if (po.verbose > 1):
+            print("{}: Image file head signature verification passed.".format(fwsigfile.name))
+    else:
+        if (not po.force_continue):
+            raise ValueError("Image file head signature verification failed.")
+        eprint("{}: Warning: Image file head signature verification failed; continuing anyway.".format(fwsigfile.name))
+
     # Prepare array of names; "0" will mean empty index
     minames = ["0"]*len(chunks)
     # Name the modules after target component
@@ -483,6 +570,8 @@ def imah_unsign(po, fwsigfile):
     imah_write_fwsig_head(po, pkghead, minames)
 
     crypt_key, crypt_mode, crypt_iv = imah_get_crypto_params(po, pkghead)
+    if (po.verbose > 2):
+        print("Scramble key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in crypt_key)))
 
     # Output the chunks
     for i, chunk in enumerate(chunks):
@@ -560,7 +649,7 @@ def imah_sign(po, fwsigfile):
     # prepare encryption
     crypt_key, crypt_mode, crypt_iv = imah_get_crypto_params(po, pkghead)
     # Write module data
-    digest = SHA256.new()
+    payload_digest = SHA256.new()
     for i, miname in enumerate(minames):
         chunk = chunks[i]
         chunk.offset = fwsigfile.tell() - pkghead.header_size - pkghead.signature_size
@@ -607,7 +696,7 @@ def imah_sign(po, fwsigfile):
                 pad_buffer = (c_ubyte * pad_cnt)()
                 copy_buffer += pad_buffer
             copy_buffer = cipher.encrypt(copy_buffer)
-            digest.update(copy_buffer)
+            payload_digest.update(copy_buffer)
             fwsigfile.write(copy_buffer)
         fwitmfile.close()
         # Pad with zeros at end, for no real reason
@@ -615,13 +704,13 @@ def imah_sign(po, fwsigfile):
         if (fwsigfile.tell() - chunk.offset) % dji_block_size != 0:
             pad_cnt = dji_block_size - ((fwsigfile.tell() - chunk.offset) % dji_block_size)
             pad_buffer = (c_ubyte * pad_cnt)()
-            digest.update(pad_buffer) # why Dji includes padding in digest?
+            payload_digest.update(pad_buffer) # why Dji includes padding in digest?
             fwsigfile.write(pad_buffer)
         chunk.size = decrypted_n
         chunks[i] = chunk
 
     pkghead.update_payload_size(fwsigfile.tell() - pkghead.header_size - pkghead.signature_size)
-    pkghead.payload_digest = (c_ubyte * 32)(*list(digest.digest()))
+    pkghead.payload_digest = (c_ubyte * 32)(*list(payload_digest.digest()))
     if (po.verbose > 2):
         print("Computed payload digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in pkghead.payload_digest)))
     # Write all headers again
