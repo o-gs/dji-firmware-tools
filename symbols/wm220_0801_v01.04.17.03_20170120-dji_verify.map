@@ -1,0 +1,257 @@
+﻿
+ Start         Length     Name                   Class
+ 0001:00000000 000000870H LOAD                   CODE
+ 0004:00000000 000000134H .plt                   CODE
+ 0001:00000000 000000004H LOAD                   CODE
+ 0005:00000000 000002234H .text                  CODE
+ 0006:00000000 000000018H .note.android.ident    CONST
+ 0007:00000000 0000000F8H .ARM.exidx             CONST
+ 0008:00000000 0000035BCH .rodata                CONST
+ 0009:00000000 00000003CH .ARM.extab             CONST
+ 000A:00000000 000000050H .data.rel.ro.local     DATA
+ 000B:00000000 000000008H .preinit_array         DATA
+ 000C:00000000 000000008H .init_array            DATA
+ 000D:00000000 000000008H .fini_array            DATA
+ 000E:00000000 000000028H .data.rel.ro           DATA
+ 0002:00000000 0000000F8H LOAD                   DATA
+ 000F:00000000 00000008CH .got                   DATA
+ 0010:00000000 000000020H .data                  DATA
+ 0011:00000000 00000143CH .bss                   BSS
+ 0012:00000000 000000000H .prgend                
+
+
+  Address         Publics by Value
+
+ 0001:00000000       dword_0
+ 0001:00000134       aSystemBinLinke
+ 0001:00000419       aLibcInit
+ 0001:00000425       aCxaAtexit
+ 0001:00000432       aGetoptLong
+ 0001:0000043E       aPrintf
+ 0001:00000445       aFprintf
+ 0001:0000044D       aExit
+ 0001:00000452       aFputs
+ 0001:00000458       aOptarg
+ 0001:0000045F       aSf
+ 0001:00000464       aOptind
+ 0001:0000046B       aAeabiUnwindCpp
+ 0001:00000482       aFopen
+ 0001:00000488       aFseek
+ 0001:0000048E       aFtell
+ 0001:00000494       aFclose
+ 0001:0000049B       aFwrite
+ 0001:000004A2       aFread
+ 0001:000004A8       aPuts
+ 0001:000004AD       aMalloc
+ 0001:000004B4       aTime
+ 0001:000004B9       aLocaltime
+ 0001:000004C3       aSprintfChk
+ 0001:000004D1       aSscanf
+ 0001:000004D8       aStackChkFail
+ 0001:000004E9       aStackChkGuard
+ 0001:000004FB       aStrtoll
+ 0001:00000503       aAeabiUnwindCpp_0
+ 0001:0000051A       aSprintf
+ 0001:00000522       aPutchar
+ 0001:0000052A       aStrlen
+ 0001:00000531       aStrcmp
+ 0001:00000538       aMemset
+ 0001:0000053F       aStrncpy
+ 0001:00000547       aMemcpy
+ 0001:0000054E       aMemcmp
+ 0001:00000555       aFree
+ 0001:0000055A       aSystem
+ 0001:00000561       aMemcpyChk
+ 0001:0000056E       aStrstr
+ 0001:00000575       aStrchr
+ 0001:0000057C       aAeabiLlsr
+ 0001:00000589       aEdata
+ 0001:00000590       aBssStart
+ 0001:0000059C       aEnd
+ 0001:000005A1       aLibcSo
+ 0001:000005A9       aLibstdcSo
+ 0001:000005B6       aLibmSo
+ 0001:000005C0       elf_hash_nbucket
+ 0001:000005C4       elf_hash_nchain
+ 0001:000005C8       elf_hash_bucket
+ 0001:0000065C       elf_hash_chain
+ 0004:00000884       __libc_init
+ 0004:00000890       __cxa_atexit
+ 0004:0000089C       getopt_long
+ 0004:000008A8       printf
+ 0004:000008B4       fprintf
+ 0004:000008C0       exit
+ 0004:000008CC       fputs
+ 0004:000008D8       fopen
+ 0004:000008E4       fread
+ 0004:000008F0       fclose
+ 0004:000008FC       strcmp
+ 0004:00000908       __stack_chk_fail
+ 0004:00000914       memset
+ 0004:00000920       strncpy
+ 0004:0000092C       memcpy
+ 0004:00000938       memcmp
+ 0004:00000944       malloc
+ 0004:00000950       fwrite
+ 0004:0000095C       free
+ 0004:00000968       system
+ 0004:00000974       __memcpy_chk
+ 0004:00000980       strstr
+ 0004:0000098C       strchr
+ 0004:00000998       __aeabi_llsr
+ 0005:000009A8       start
+ 0005:00000A5C       main
+ 0005:00000A9C       jpt_A98
+ 0005:00000AD0       def_A98
+ 0005:00000BE0       read_file_to_buf
+ 0005:00000C24       chunk_id_select
+ 0005:00000C44       hexatoi_char
+ 0005:00000C70       str_to_bytes
+ 0005:00000CBC       dji_image_verify_header
+ 0005:00000DA8       dji_image_decrypt_scram_key
+ 0005:00000E7C       dji_image_verify_init
+ 0005:00000EC4       dji_image_verify_update
+ 0005:0000111C       dji_image_verify_final
+ 0005:0000119C       dji_image_verify_file
+ 0005:000012EC       dji_image_verify_auth_key
+ 0005:00001368       aRiek
+ 0005:0000136C       aPrak
+ 0005:00001370       aPuek
+ 0005:0000138C       dji_derive_sym_key
+ 0005:0000144C       derive_puek
+ 0005:00001584       SHA1_Transform
+ 0005:000016A0       SHA_init
+ 0005:000016D8       SHA_update
+ 0005:00001710       SHA_final
+ 0005:000017C0       SHA_hash
+ 0005:0000181C       SHA256_init
+ 0005:00001870       SHA256_update
+ 0005:00001A18       SHA256_final
+ 0005:00001AC8       SHA256_hash
+ 0005:00001B24       signalg_sub_1B24
+ 0005:00001B58       signalg_sub_1B58
+ 0005:00001C70       dji_image_auth
+ 0005:00001E80       AES_setkey_enc
+ 0005:00002158       AES_key_set
+ 0005:000022FC       AES_sub_22FC
+ 0005:00002680       AES_dec_block
+ 0005:00002A0C       AES_crypto
+ 0008:00002CEC       aONCH
+ 0008:00002CF4       aVerifyImageSOp
+ 0008:00002E1B       aUnknowOptionC
+ 0008:00002E30       aMustInputSourc
+ 0008:00002E49       aMustInputImage
+ 0008:00002E60       aFailedToInitia
+ 0008:00002E85       aFailedToVerify
+ 0008:00002EAA       aPassedToVerify
+ 0008:00002EC5       aHelp
+ 0008:00002ECA       aName
+ 0008:00002ECF       aChunk
+ 0008:00002ED5       aOutput
+ 0008:00002EDC       aR
+ 0008:00002EDE       aFailToOpenFile
+ 0008:00002EF4       aInvalidFileSFi
+ 0008:00002F16       aW
+ 0008:00002F18       aSizeOrPathMust
+ 0008:00002F36       aFileSSizeIs0
+ 0008:00002F49       aFailToAllocate
+ 0008:00002F6C       aDevUrandom
+ 0008:00002F79       a04d02d02d
+ 0008:00002F86       aX
+ 0008:00002F89       aLldC
+ 0008:00002F90       aS
+ 0008:00002F97       a02x
+ 0008:00002F9D       aInvalidInput
+ 0008:00002FAB       aErrorHexlenD2B
+ 0008:00002FCF       aSDErrorTooShor
+ 0008:00002FF7       aSDErrorWrongIm
+ 0008:00003017       aSDErrorInvalid
+ 0008:0000303F       aSDErrorFailedT
+ 0008:0000306B       aSDErrorFailedT_2
+ 0008:00003098       aSDErrorFailedT_3
+ 0008:000030BD       aSDErrorFailedT_4
+ 0008:000030E7       aSDErrorMustSet
+ 0008:0000311B       aSDErrorInputMu
+ 0008:00003143       aSDErrorFailedT_0
+ 0008:00003170       aSDErrorTooShor_0
+ 0008:0000319E       aSDWholeImageIs
+ 0008:000031BE       aSDErrorTooShor_1
+ 0008:000031ED       aSDErrorFailedT_1
+ 0008:00003213       aSDErrorHavenTP
+ 0008:00003238       aSDErrorFailedI
+ 0008:00003268       aSDErrorFailedP
+ 0008:000032A0       aSDErrorFailedT_8
+ 0008:000032CE       aSDErrorFailedT_9
+ 0008:00003300       aRb
+ 0008:00003303       aSDErrorFailToO
+ 0008:00003327       aWb
+ 0008:0000332A       aSDErrorFailToA
+ 0008:0000335C       aSDErrorInvalid_0
+ 0008:0000339C       aSDErrorFailedT_10
+ 0008:000033C5       aCatProcCmdline
+ 0008:000033F5       aSaak
+ 0008:000033FB       aSDErrorFailedT_5
+ 0008:0000341D       aSDErrorFailedT_6
+ 0008:00003443       aDjiPuek
+ 0008:0000344C       aSDErrorFailedT_7
+ 0008:00003471       aProcCmdline
+ 0008:00003481       aDjiImageDecryp
+ 0008:0000349D       aDjiImageVerify_2
+ 0008:000034B5       aDjiImageVerify_1
+ 0008:000034CD       aDjiImageVerify_0
+ 0008:000034E3       aDjiImageVerify_3
+ 0008:000034FA       aDjiImageVerify
+ 0008:00003510       aDjiDeriveSymKe
+ 0008:0000372F       aDerivePuek
+ 0008:0000394C       K
+ 0008:00004680       rcon
+ 0008:000046A8       Td3
+ 0008:00005EA8       Te4
+ 000A:00007DEC       long_options
+ 000E:00007E54       SHA_VTAB
+ 000E:00007E68       SHA256_VTAB
+ 000F:00007F84       optarg_ptr
+ 000F:00007F88       __sF_ptr
+ 000F:00007F8C       optind_ptr
+ 000F:00007F90       __stack_chk_guard_ptr
+ 000F:00007F94       _GLOBAL_OFFSET_TABLE_
+ 000F:00007FA0       __libc_init_ptr
+ 000F:00007FA4       __cxa_atexit_ptr
+ 000F:00007FA8       getopt_long_ptr
+ 000F:00007FAC       printf_ptr
+ 000F:00007FB0       fprintf_ptr
+ 000F:00007FB4       exit_ptr
+ 000F:00007FB8       fputs_ptr
+ 000F:00007FBC       fopen_ptr
+ 000F:00007FC0       fread_ptr
+ 000F:00007FC4       fclose_ptr
+ 000F:00007FC8       strcmp_ptr
+ 000F:00007FCC       __stack_chk_fail_ptr
+ 000F:00007FD0       memset_ptr
+ 000F:00007FD4       strncpy_ptr
+ 000F:00007FD8       memcpy_ptr
+ 000F:00007FDC       memcmp_ptr
+ 000F:00007FE0       malloc_ptr
+ 000F:00007FE4       fwrite_ptr
+ 000F:00007FE8       free_ptr
+ 000F:00007FEC       system_ptr
+ 000F:00007FF0       __memcpy_chk_ptr
+ 000F:00007FF4       strstr_ptr
+ 000F:00007FF8       strchr_ptr
+ 000F:00007FFC       __aeabi_llsr_ptr
+ 0010:00008000       key_unkn1
+ 0010:00008010       key_riek
+ 0011:00008024       cmdarg_chunk_id
+ 0011:00008028       cmdarg_inp_name
+ 0011:0000802C       cmdarg_inp_fname
+ 0011:00008030       cmdarg_out_file
+ 0011:00008034       key_prak
+ 0011:00008240       key_puek
+ 0011:00008250       key_unkn2
+ 0011:0000845C       kernel_params
+ 0012:0000945C       _end_0
+ 0000:00008020 Abs   _edata
+ 0000:00008020 Abs   __bss_start
+ 0000:0000945C Abs   _end
+
+Program entry point at 0005:00000000
