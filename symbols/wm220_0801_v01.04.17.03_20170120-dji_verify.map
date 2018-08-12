@@ -128,9 +128,9 @@
  0005:00001870       SHA256_update
  0005:00001A18       SHA256_final
  0005:00001AC8       SHA256_hash
- 0005:00001B24       signalg_sub_1B24
- 0005:00001B58       signalg_sub_1B58
- 0005:00001C70       dji_image_auth
+ 0005:00001B24       RSA_subM
+ 0005:00001B58       RSA_montMul
+ 0005:00001C70       RSA_verify
  0005:00001E80       AES_setkey_enc
  0005:00002158       AES_key_set
  0005:000022FC       AES_sub_22FC
@@ -204,6 +204,8 @@
  0008:00003510       aDjiDeriveSymKe
  0008:0000372F       aDerivePuek
  0008:0000394C       K
+ 0008:00003A4C       kExpectedPadShaRsa2048
+ 0008:00003A60       kExpectedPadSha256Rsa2048
  0008:00004680       rcon
  0008:000046A8       Td3
  0008:00005EA8       Te4
