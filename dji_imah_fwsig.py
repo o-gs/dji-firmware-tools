@@ -108,6 +108,34 @@ keys = {
         0xD7, 0x77, 0xFE, 0xA8, 0x08, 0x24, 0x6D, 0x7E, 0x1A, 0x2A, 0x59, 0x87, 0x17, 0xDD, 0xDD, 0xC2, 0x51, 0x01, 0x3D, 0x68, 0x78, 0x5E, 0x30, 0x8E, 0x36, 0xD4, 0x62, 0x13, 0x9F, 0xD3, 0xA0, 0x6A, 0xD0, 0xC7, 0x49, 0x3B, 0x1A, 0x1A, 0x95, 0x82, 0xDE, 0xD7, 0x96, 0x55, 0x88, 0xFD, 0x39, 0x55, 0x56, 0xEA, 0x91, 0x13, 0xA8, 0x14, 0x7C, 0x47, 0xED, 0xAF, 0xE4, 0x5A, 0x30, 0xA8, 0xB7, 0xDA,
         0xCE, 0x0D, 0xED, 0x9E, 0x47, 0x32, 0x93, 0x80, 0x01, 0x00, 0x01, 0x00,
     ]),
+    "SLAK": """-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7AF5tZo4gtcUG
+n//Vmk8XnDn2LadzEjZhTbs9h0X674aBqsri+EXPU+oBvpNvoyeisfX0Sckcg2xI
+D6CUQJeUD4PijT9tyhis2PRU40xEK7snEecAK25PMo12eHtFYZN8eZVeySmnlNyU
+bytlUrXEfRXXKzYq+cHVlOS2IQo2OXptWB4Ovd05C4fgi4DFblIBVjE/HzW6WJCP
+IDf53bnzxXW0ZTH2QGdnQVe0uYT5Bvjp8IU3HRSy1pLZ35u9f+kVLnLpRRhlHOmt
+xipIl1kxSGGkBkJJB76HdtcoOJC/O95Fl/qxSKzHjlg7Ku/gcUxmMZfvBi6Qih78
+krJW0A+zAgMBAAECggEBALYZbtqj8qWBvGJuLkiIYprARGUpIhXZV2E7u6j38Lqi
+w13Dvpx1Xi2+LnMSbSpaO/+fwr3nmFMO28P0i8+ycqj4ztov5+N22L6A6rU7Popn
+93DdaxBsOpgex0jlnEz87w1YrI9H3ytUt9RHyX96ooy7rigA6VfCLPJacrm0xOf1
+OIoJeMnGTeMSQlAFR+JzU5qdHHTcWi1WFNekzBgmxIXp6zZUkep/9+mxD7V8kGT2
+MsJ/6IICe4euHA9lCpctYOPEs48yZBDljQfKD5FxVMUWBbXOhoCff99HeuW/4uVj
+AO2mFp293nnGIV0Ya5PyDtGd+w/n8kcehFcfbfTvzZkCgYEA4woDn+WBXCdAfxzP
+yUnMXEHB6189R9FTzoDwv7q3K48gH7ptJo9gq0+eycrMjlIGRiIkgyuukXD4FHvk
+kkYoQ51Xgvo6eTpADu1CffwvyTi/WBuaYqIBH/HMUvFOLZu/jmSEsusXMTDmZxb+
+Wpox17h1qMtNlyIqOBLyHcmTsy8CgYEA0trrk6kwmZC2IjMLswX9uSc5t3CYuN6V
+g8OsES/68jmJxPYZTj0UidXms5P+V1LauFZelBcLaQjUSSmh1S95qYwM5ooi5bjJ
+HnVH/aaIJlKH2MBqMAkBx6EtXqzo/yqyyfEZvt8naM8OnqrKrvxUCfdVx0yf7M7v
+wECxxcgOGr0CgYBo198En781BwtJp8xsb5/nmpYqUzjBSXEiE3kZkOe1Pcrf2/87
+p0pE0efJ19TOhCJRkMK7sBhVIY3uJ6hNxAgj8SzQVy1ZfgTG39msxCBtE7+IuHZ6
+xcUvM0Hfq38moJ286747wURcevBq+rtKq5oIvC3ZXMjf2e8VJeqYxtVmEQKBgAhf
+75lmz+pZiBJlqqJKq6AuAanajAZTuOaJ4AyytinmxSUQjULBRE6RM1+QkjqPrOZD
+b/A71hUu55ecUrQv9YoZaO3DMM2lAD/4coqNkbzL7F9cjRspUGvIaA/pmDuCS6Wf
+sOEW5e7QwojkybYXiZL3wu1uiq+SLI2bRDRR1NWVAoGANAp7zUGZXc1TppEAXhdx
+jlzAas7J21vSgjyyY0lM3wHLwXlQLjzl3PgIAcHEyFGH1Vo0w9d1dPRSz81VSlBJ
+vzP8A7eBQVSGj/N5GXvARxUswtD0vQrJ3Ys0bDSVoiG4uLoEFihIN0y5Ln+6LZJQ
+RwjPBAdCSsU/99luMlK77z0=
+-----END PRIVATE KEY-----""",
 }
 
 def eprint(*args, **kwargs):
@@ -315,37 +343,23 @@ def imah_get_crypto_params(po, pkghead):
 def imah_get_auth_params(po, pkghead):
     # Get the key
     auth_k_str = pkghead.auth_key.decode("utf-8")
-    auth_key = None
+    auth_key_data = None
     if auth_k_str in keys:
-        auth_key = keys[auth_k_str]
+        auth_key_data = keys[auth_k_str]
     else:
         eprint("{}: Warning: Cannot find auth_key '{:s}'".format(po.sigfile,auth_k_str))
         return (None)
-    if len(auth_key) == sizeof(ImgRSAPublicKey):
+    if isinstance(auth_key_data, str):
+        auth_key = RSA.importKey(auth_key_data)
+    elif len(auth_key_data) == sizeof(ImgRSAPublicKey):
         auth_key_struct = ImgRSAPublicKey()
-    else:
-        eprint("{}: Warning: Damaged auth_key '{:s}'".format(po.sigfile,auth_k_str))
-        return (None)
-    memmove(addressof(auth_key_struct), auth_key, sizeof(auth_key_struct))
-    # Parts of the key can be verified, as they're just precomputed values for performance
-    # But we should not be concerned with verifying the key consistency here, it is
-    # hard coded into the script so checking it once is enough
-    if False:
-        if auth_key_struct.len != 256/4:
-            raise ValueError("Invalid length within auth_key '{:s}'".format(auth_k_str))
-
+        memmove(addressof(auth_key_struct), auth_key_data, sizeof(auth_key_struct))
         auth_key_n = combine_int_array(auth_key_struct.n, 32)
-        auth_key_R = 2 ** (auth_key_struct.len*32)
-        auth_key_RR = (auth_key_R * auth_key_R) % auth_key_n
-        if auth_key_RR != combine_int_array(auth_key_struct.rr, 32):
-            raise ValueError("Invalid R_squared within auth_key '{:s}'".format(auth_k_str))
-
-        # We can only verify n0inv if we have "p" aka "n0", first factor of "n"
-        if hasattr(auth_key_struct, 'p'):
-            auth_key_n0inv = ( (-1) // auth_key_struct.p ) % (2 ** 32)
-            if auth_key_n0inv != auth_key_struct.n0inv:
-                raise ValueError("Invalid n0inv within auth_key '{:s}'".format(auth_k_str))
-    return (auth_key_struct)
+        auth_key = RSA.construct( (auth_key_n, auth_key_struct.exponent, None, None, None, None, ) )
+    else:
+        eprint("{}: Warning: Unrecognized format of auth_key '{:s}'".format(po.sigfile,auth_k_str))
+        return (None)
+    return (auth_key)
 
 def imah_write_fwsig_head(po, pkghead, minames):
     fname = "{:s}_head.ini".format(po.mdprefix)
@@ -527,9 +541,7 @@ def imah_unsign(po, fwsigfile):
         raise EOFError("Could not read signature of signed image file head.")
 
     auth_key = imah_get_auth_params(po, pkghead)
-    auth_key_n = combine_int_array(auth_key.n, 32)
-    rsa_key = RSA.construct( (auth_key_n, auth_key.exponent, None, None, None, None, ) )
-    header_signer = PKCS1_v1_5.new(rsa_key)
+    header_signer = PKCS1_v1_5.new(auth_key)
     if header_signer.verify(header_digest, head_signature):
         if (po.verbose > 1):
             print("{}: Image file head signature verification passed.".format(fwsigfile.name))
@@ -726,13 +738,9 @@ def imah_sign(po, fwsigfile):
         print("Computed header digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in header_digest.digest())))
 
     auth_key = imah_get_auth_params(po, pkghead)
-    auth_key_n = combine_int_array(auth_key.n, 32)
-    if hasattr(auth_key, 'd'):
-        auth_key_d = combine_int_array(auth_key.d, 32)
-    else:
+    if not hasattr(auth_key, 'd'):
         raise ValueError("Cannot compute image file head signature, auth key '{:s}' has no private part.".format(pkghead.auth_key.decode("utf-8")))
-    rsa_key = RSA.construct( (auth_key_n, auth_key.exponent, auth_key_d, None, None, None, ) )
-    header_signer = PKCS1_v1_5.new(rsa_key)
+    header_signer = PKCS1_v1_5.new(auth_key)
     head_signature = header_signer.sign(header_digest)
     fwsigfile.write(head_signature)
 
