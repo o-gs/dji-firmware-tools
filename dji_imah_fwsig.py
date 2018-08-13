@@ -25,15 +25,14 @@ to decrypt its content.
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-__version__ = "0.1.1"
-__author__ = "Freek van Tienen @ Original Gangsters"
+__version__ = "0.2.1"
+__author__ = "Freek van Tienen, Jan Dumon, Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
 import sys
 import re
 import os
 import argparse
-import hashlib
 import binascii
 import configparser
 import itertools
