@@ -321,8 +321,30 @@ def imah_get_auth_params(po, pkghead):
     else:
         eprint("{}: Warning: Cannot find auth_key '{:s}'".format(po.sigfile,auth_k_str))
         return (None)
-    auth_key_struct = ImgRSAPublicKey()
+    if len(auth_key) == sizeof(ImgRSAPublicKey):
+        auth_key_struct = ImgRSAPublicKey()
+    else:
+        eprint("{}: Warning: Damaged auth_key '{:s}'".format(po.sigfile,auth_k_str))
+        return (None)
     memmove(addressof(auth_key_struct), auth_key, sizeof(auth_key_struct))
+    # Parts of the key can be verified, as they're just precomputed values for performance
+    # But we should not be concerned with verifying the key consistency here, it is
+    # hard coded into the script so checking it once is enough
+    if False:
+        if auth_key_struct.len != 256/4:
+            raise ValueError("Invalid length within auth_key '{:s}'".format(auth_k_str))
+
+        auth_key_n = combine_int_array(auth_key_struct.n, 32)
+        auth_key_R = 2 ** (auth_key_struct.len*32)
+        auth_key_RR = (auth_key_R * auth_key_R) % auth_key_n
+        if auth_key_RR != combine_int_array(auth_key_struct.rr, 32):
+            raise ValueError("Invalid R_squared within auth_key '{:s}'".format(auth_k_str))
+
+        # We can only verify n0inv if we have "p" aka "n0", first factor of "n"
+        if hasattr(auth_key_struct, 'p'):
+            auth_key_n0inv = ( (-1) // auth_key_struct.p ) % (2 ** 32)
+            if auth_key_n0inv != auth_key_struct.n0inv:
+                raise ValueError("Invalid n0inv within auth_key '{:s}'".format(auth_k_str))
     return (auth_key_struct)
 
 def imah_write_fwsig_head(po, pkghead, minames):
@@ -497,7 +519,7 @@ def imah_unsign(po, fwsigfile):
     for i, chunk in enumerate(chunks):
         header_digest.update((c_ubyte * sizeof(chunk)).from_buffer_copy(chunk))
     if (po.verbose > 2):
-        print("Header digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in header_digest.digest())))
+        print("Computed header digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in header_digest.digest())))
 
     head_signature_len = 256 # 2048 bit key length
     head_signature = fwsigfile.read(head_signature_len)
@@ -505,36 +527,8 @@ def imah_unsign(po, fwsigfile):
         raise EOFError("Could not read signature of signed image file head.")
 
     auth_key = imah_get_auth_params(po, pkghead)
-
-    if hasattr(auth_key, 'n'):
-        auth_key_n = combine_int_array(auth_key.n, 32)
-    else:
-        auth_key_n = None
-
-    if hasattr(auth_key, 'd'):
-        auth_key_d = combine_int_array(auth_key.d, 32)
-    else:
-        auth_key_d = None
-
-    # Parts of the key can be verified directly, as they're just precomputed values for performance
-    # But we should not be concerned with verifying the key consistency here, it is hard coded into
-    # the script so checking it once is enough
-    if False:
-        if auth_key.len != head_signature_len/4:
-            raise ValueError("Signature of signed image file head reports invalid length.")
-
-        auth_key_R = 2 ** (auth_key.len*32)
-        auth_key_RR = (auth_key_R * auth_key_R) % auth_key_n
-        if auth_key_RR != combine_int_array(auth_key.rr, 32):
-            raise ValueError("Signature of signed image file head contains invalid R_squared.")
-
-        # We can only verify n0inv if we have "p" aka "n0", first factor of "n"
-        if hasattr(auth_key, 'p'):
-            auth_key_n0inv = ( (-1) // auth_key.p ) % (2 ** 32)
-            if auth_key_n0inv != auth_key.n0inv:
-                raise ValueError("Signature of signed image file head contains invalid n0inv.")
-
-    rsa_key = RSA.construct( (auth_key_n, auth_key.exponent, auth_key_d, None, None, None, ) )
+    auth_key_n = combine_int_array(auth_key.n, 32)
+    rsa_key = RSA.construct( (auth_key_n, auth_key.exponent, None, None, None, None, ) )
     header_signer = PKCS1_v1_5.new(rsa_key)
     if header_signer.verify(header_digest, head_signature):
         if (po.verbose > 1):
@@ -723,7 +717,24 @@ def imah_sign(po, fwsigfile):
         if (po.verbose > 1):
             print(str(chunk))
 
-    raise NotImplementedError('Signing not implemented.')
+    # Compute header hash
+    header_digest = SHA256.new()
+    header_digest.update((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+    for i, chunk in enumerate(chunks):
+        header_digest.update((c_ubyte * sizeof(chunk)).from_buffer_copy(chunk))
+    if (po.verbose > 2):
+        print("Computed header digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in header_digest.digest())))
+
+    auth_key = imah_get_auth_params(po, pkghead)
+    auth_key_n = combine_int_array(auth_key.n, 32)
+    if hasattr(auth_key, 'd'):
+        auth_key_d = combine_int_array(auth_key.d, 32)
+    else:
+        raise ValueError("Cannot compute image file head signature, auth key '{:s}' has no private part.".format(pkghead.auth_key.decode("utf-8")))
+    rsa_key = RSA.construct( (auth_key_n, auth_key.exponent, auth_key_d, None, None, None, ) )
+    header_signer = PKCS1_v1_5.new(rsa_key)
+    head_signature = header_signer.sign(header_digest)
+    fwsigfile.write(head_signature)
 
 def main():
     """ Main executable function.
