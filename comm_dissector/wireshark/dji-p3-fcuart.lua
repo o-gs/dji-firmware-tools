@@ -170,9 +170,10 @@ local GENERAL_UART_CMD_TEXT = {
 
 local SPECIAL_UART_CMD_TEXT = {
     [0x00] = 'Sdk Ctrl Mode Open/Close Nav',
-    [0x01] = 'Old Special Control', -- Try To Exec V1 Special Function
-    [0x03] = 'New Special Control', -- Try To Exec V2 Special Function
-    [0x04] = 'SDK Ctrl Mode Emergency Brake',
+    [0x01] = 'Old Special App Control', -- Try To Exec V1 Special Function
+    [0x02] = 'Old Special Remote Control',
+    [0x03] = 'New Special App Control', -- Try To Exec V2 Special Function
+    [0x04] = 'New Special Remote Control', -- ie. Ctrl Mode Emergency Brake
     [0x05] = 'SDK Ctrl Mode Arm/Disarm',
     [0x1a] = 'SDK Ctrl Gimbal Speed Ctrl',
     [0x1b] = 'SDK Ctrl Gimbal Angle Ctrl',
@@ -249,65 +250,77 @@ local CAMERA_UART_CMD_TEXT = {
     [0x49] = 'Multi Cap Param Get',
     [0x4A] = 'Conti Cap Param Set',
     [0x4B] = 'Conti Cap Param Get',
-    [0x4C] = 'Hdmi Output Param Set',
+    [0x4C] = 'Hdmi Output Param Set', -- LCD/HDMI vout format set
     [0x4D] = 'Hdmi Output Param Get',
     [0x4E] = 'Quickview Param Set',
     [0x4F] = 'Quickview Param Get',
-    [0x50] = 'Camera TBD 50',
-    [0x51] = 'Camera TBD 51',
-    [0x52] = 'Camera TBD 52',
-    [0x53] = 'Camera TBD 53',
+    [0x50] = 'OSD Param Set',
+    [0x51] = 'OSD Param Get',
+    [0x52] = 'Preview OSD Param Set',
+    [0x53] = 'Preview OSD Param Get',
     [0x54] = 'Camera Time Set',
     [0x55] = 'Camera Time Get',
-    [0x58] = 'Camera Gps Set',
-    [0x59] = 'Camera Gps Get',
+    [0x56] = 'Language Param Set',
+    [0x57] = 'Language Param Get',
+    [0x58] = 'Camera GPS Set',
+    [0x59] = 'Camera GPS Get',
     [0x5A] = 'Discon State Set',
     [0x5B] = 'Discon State Get',
     [0x5C] = 'File Index Mode Set',
     [0x5D] = 'File Index Mode Get',
-    [0x5E] = 'Ae bCap Param Set',
-    [0x5F] = 'Ae bCap Param Get',
+    [0x5E] = 'AE bCap Param Set',
+    [0x5F] = 'AE bCap Param Get',
     [0x60] = 'Histogram Set',
     [0x61] = 'Histogram Get',
     [0x62] = 'Video Subtitles Set',
     [0x63] = 'Video Subtitles Get',
     [0x64] = 'Video Subtitles Log Set',
-    [0x65] = 'Mgear Shuuter Speed Set',
+    [0x65] = 'Mgear Shutter Speed Set', -- Shutter Speed Limit Set
     [0x66] = 'Video Standard Set',
     [0x67] = 'Video Standard Get',
-    [0x68] = 'Ae Lock Status Set',
-    [0x69] = 'Ae Lock Status Get',
-    [0x6A] = 'Capture Type Set',
+    [0x68] = 'AE Lock Status Set',
+    [0x69] = 'AE Lock Status Get',
+    [0x6A] = 'Capture Type Set', -- Capture Mode Set
     [0x6B] = 'Capture Type Get',
+    [0x6C] = 'Record Mode Set',
+    [0x6D] = 'Record Mode Get',
     [0x6E] = 'Panorama Mode Set',
     [0x6F] = 'Panorama Mode Get',
     [0x70] = 'System State Get',
-    [0x70] = 'System State Get',
-    [0x71] = 'Sd Info Get',
-    [0x72] = 'Sd Do Format',
-    [0x77] = 'Settings Save',
+    [0x71] = 'SDcard Info Get',
+    [0x72] = 'SDcard Do Format',
+    [0x73] = 'SDcard Format Progress Get',
+    [0x74] = 'Fw Upgrade Progress Get',
+    [0x75] = 'Photo Sync Progress Get',
+    [0x76] = 'Camera Power Info Get',
+    [0x77] = 'Settings Save', -- Save Preferences
     [0x78] = 'Settings Load',
-    [0x79] = 'File Delete',
+    [0x79] = 'File Delete', -- Picture Delete
     [0x7A] = 'Video Play Control',
-    [0x7B] = 'Thumbnail 2 Single Ctrl',
-    [0x7c] = 'Camera Shutter Cmd',
+    [0x7B] = 'Thumbnail 2 Single Ctrl', -- Single Play Ctrl
+    [0x7c] = 'Camera Shutter Cmd', -- Telectrl Action
     [0x7D] = 'PB Zoom Ctrl',
     [0x7E] = 'PB Pic Drag Ctrl',
-    [0x80] = 'Camera State Info',
-    [0x81] = 'Camera Shot Params',
-    [0x82] = 'Camera Play Back Params',
-    [0x83] = 'Camera Chart Info',
-    [0x84] = 'Camera Recording Name',
-    [0x85] = 'Camera Raw Params',
-    [0x86] = 'Camera Cur Pano File Name',
-    [0x87] = 'Camera Shot Info',
-    [0x88] = 'Camera Timelapse Parms',
-    [0x89] = 'Camera Tracking Status',
-    [0x8a] = 'Camera Fov Param',
-    [0x90] = 'Check Sensor Test',
-    [0x91] = 'If Cali',
+    [0x80] = 'Camera State Info', -- Camera Status Push
+    [0x81] = 'Camera Shot Params', -- Cap Params Push
+    [0x82] = 'Camera PlayBack Params',
+    [0x83] = 'Camera Chart Info', -- Histogram Push
+    [0x84] = 'Camera Recording Name', -- Video Name Push
+    [0x85] = 'Camera Raw Params', -- Raw Camera Status Push
+    [0x86] = 'Camera Cur Pano Status', -- Panorama Status Push
+    [0x87] = 'Camera Shot Info', -- Lens Info Push
+    [0x88] = 'Camera Timelapse Parms', -- TimeLapse Info Push
+    [0x89] = 'Camera Tracking Status', -- Camera Tracking Params Push
+    [0x8A] = 'Camera FOV Param',
+    [0x8B] = 'Racing Liveview Format Set',
+    [0x8C] = 'Racing Liveview Format Get',
+    [0x90] = 'Sensor Calibrate Test', -- Check Sensor Test
+    [0x91] = 'Sensor Calibrate Complete', -- If Cali
     [0x92] = 'Video Clip Info Get',
     [0x93] = 'Xcode Ctrl',
+    [0x94] = 'VCM Range Get',
+    [0x95] = 'VCM Pos Set',
+    [0x96] = 'VCM Pos Get',
     [0x98] = 'Fs Info Get',
     [0x9B] = 'Video Adaptive Gamma Set',
     [0x9C] = 'Video Adaptive Gamma Get',
@@ -315,74 +328,113 @@ local CAMERA_UART_CMD_TEXT = {
     [0x9E] = 'Awb Meter Region Get',
     [0xA5] = 'Tracking Region Get',
     [0xA6] = 'Tracking Region Set',
-    [0xb4] = 'Camera Prepare Open Fan',
-    [0xb8] = 'Camera Optics Zoom Mode',
-    [0xc7] = 'Camera Tap Zoom State Info',
+    [0xB4] = 'Camera Prepare Open Fan',
+    [0xB6] = 'Forearm Lamp Config Set',
+    [0xB7] = 'Forearm Lamp Config Get',
+    [0xB8] = 'Camera Optics Zoom Mode',
+    [0xB9] = 'Image Rotation Set',
+    [0xBA] = 'Image Rotation Get',
+    [0xBB] = 'Gimbal Lock Config Set',
+    [0xBC] = 'Gimbal Lock Config Get',
+    [0xBD] = 'Old Cam LCD Format Set',
+    [0xBE] = 'Old Cam LCD Format Get',
+    [0xBF] = 'File Star Flag Set',
+    [0xC7] = 'Camera Tap Zoom State Info',
+    [0xD1] = 'Cam DCF Abstract Push',
+    [0xE0] = 'Capture Sound',
+    [0xE1] = 'Capture Config Set',
+    [0xE2] = 'Capture Config Get',
     [0xF0] = 'Camera TBD F0',
-    [0xf2] = 'Camera Tau Param',
+    [0xF2] = 'Camera Tau Param',
 }
 
 local FLYC_UART_CMD_TEXT = {
-    [0x00] = 'Sim Scan',
-    [0x01] = 'Sim Get Params',
-    [0x02] = 'Sim Params', -- Get Parameters
-    [0x05] = 'Sim Command',
-    [0x06] = 'Set Fly Limit',
-    [0x07] = 'Get Fly Limit',
-    [0x08] = 'Set Nofly Zone', -- Set Fly Forbid Area
-    [0x09] = 'Get Nofly Status', -- Flyc Forbid Status
-    [0x0a] = 'Get Battery',
-    [0x0c] = 'Get Motor Start Status By 1860',
+    [0x00] = 'FC Scan/Test',
+    [0x01] = 'FC Get Status',
+    [0x02] = 'FC Params Get',
+    [0x03] = 'Origin GPS Set',
+    [0x04] = 'Origin GPS Get',
+    [0x05] = 'GPS Coordinate Get', -- Sim Command
+    [0x06] = 'Fly Limit Param Set',
+    [0x07] = 'Fly Limit Param Get',
+    [0x08] = 'Nofly Zone Set', -- Set Fly Forbidden Area
+    [0x09] = 'Nofly Status Get', -- Flyc Forbidden Status
+    [0x0A] = 'Battery Status Get', -- Nvt Battary Status
+    [0x0B] = 'Motor Work Status Set',
+    [0x0C] = 'Motor Work Status Get',
     [0x0d] = 'Set Have Checked Struct', -- Cmd Handler Save Statistical Info
     [0x0e] = 'Emergency Stop',
     [0x10] = 'A2 Push Commom', -- or Set FC Config Group?
     [0x11] = 'Sim Rc', -- or Get FC Config Group?
+    --[0x10] = 'GPS Follow Mode Set', -- on newer platforms
+    --[0x11] = 'GPS Follow Mode Get', -- on newer platforms
+    --[0x12] = 'GPS Follow Coordinate Get', -- on newer platforms
     [0x16] = 'Sim Status',
-    [0x1c] = 'Set Date and Time',
-    [0x1d] = 'Initialize Onboard FChannel',
-    [0x1e] = 'Get Onboard FChannel Output', -- Get Onboard FChannel Output Value
-    [0x1f] = 'Set Onboard FChannel Output', -- Set Onboard FChannel Output Value
+    [0x1C] = 'Set Date and Time',
+    [0x1D] = 'Initialize Onboard FChannel',
+    [0x1E] = 'Get Onboard FChannel Output', -- Get Onboard FChannel Output Value
+    [0x1F] = 'Set Onboard FChannel Output', -- Set Onboard FChannel Output Value
     [0x20] = 'Send GPS To Flyc',
+    --[0x20] = 'Groundstation On Set', -- on newer platforms
+    [0x21] = 'UAV Status Get',
+    [0x22] = 'Upload Air Route',
+    [0x23] = 'Download Air Route',
+    [0x24] = 'Upload Waypoint',
+    [0x25] = 'Download Waypoint',
+    [0x26] = 'Enable Waypoint',
     [0x27] = 'Exec Fly',
-    [0x2a] = 'Control Cmd', -- sets g_real.wm610_app_command.function_command and function_command_state to 1
-    [0x2b] = 'Set IOC',
-    [0x2c] = 'Get IOC',
-    [0x2d] = 'Set Limits',
-    [0x2e] = 'Get Limits',
-    [0x2f] = 'Set Battery Alarm', -- Set Voltage Warnning
-    [0x30] = 'Get Battery Alarm', -- Get Voltage Warnning
-    [0x31] = 'Set Home Point',   --AC/RC/APP
-    [0x32] = 'Flyc Deform Status',
-    [0x33] = 'Set User String', -- Set Plane Name
-    [0x34] = 'Get User String', -- Get Plane Name
-    [0x36] = 'Get SN',
+    --[0x27] = 'Suspend Resume Waypoint', -- on newer platforms
+    [0x28] = 'One Key Back',
+    [0x29] = 'Joystick',
+    [0x2A] = 'Function Control', -- sets g_real.wm610_app_command.function_command and function_command_state to 1
+    [0x2B] = 'IOC Mode Type Set',
+    [0x2C] = 'IOC Mode Type Get',
+    [0x2D] = 'Limit Params Set',
+    [0x2E] = 'Limit Params Get',
+    [0x2F] = 'Battery Voltage Alarm Set', -- Set Voltage Warnning
+    [0x30] = 'Battery Voltage Alarm Get', -- Get Voltage Warnning
+    [0x31] = 'UAV Home Point Set',   --AC/RC/APP
+    [0x32] = 'Flyc Deform Status', -- Push Foot Stool Status
+    [0x33] = 'UAV User String Set', -- Set Plane Name
+    [0x34] = 'UAV User String Get', -- Get Plane Name
+    [0x35] = 'Change Param Ping',
+    [0x36] = 'Request SN',
+    [0x37] = 'Device Info Get',
+    [0x38] = 'Device Info Set',
     [0x39] = 'Enter Flight Data Mode', -- Switches the mode; response contains 1-byte payload - error code, 0 on success
     [0x3a] = 'Ctrl Fly Data Recorder', -- ie Format the recorder
-    [0x3b] = 'Set RC Lost Action', -- Set Fs Action
-    [0x3c] = 'Get RC Lost Action', -- Get Fs Action
-    [0x3d] = 'Set Time Zone', -- for Recorder
+    [0x3b] = 'RC Lost Action Set', -- Set Fs Action
+    [0x3c] = 'RC Lost Action Get', -- Get Fs Action
+    [0x3d] = 'Time Zone Set', -- for Recorder
     [0x3e] = 'Flyc Request Limit Update',
     [0x3f] = 'Set NoFly Zone Data', -- Set Fly Forbid Area Data
     [0x41] = 'Upload Unlimit Areas', -- Set Whitelist Cmd
-    [0x42] = 'Flyc Unlimit State', -- Push Unlimit Areas
+    [0x42] = 'Flyc Unlimit State', -- Push Unlimit Areas / Push UAV Posture
     [0x43] = 'Osd General',
     [0x44] = 'Osd Home',
-    [0x45] = 'Get Flyc GPS SNR',
-    [0x46] = 'Set Flyc GPS SNR',
+    [0x45] = 'Flyc GPS SNR Get',
+    [0x46] = 'Flyc GPS SNR Set', -- Enable GPS SNR
     [0x47] = 'Enable Unlimit Areas', -- Toggle Whitelist
+    [0x49] = 'Push Encrypted Package',
+    [0x4A] = 'Push Att IMU Info',
+    [0x4B] = 'Push RC Stick Value',
+    [0x4C] = 'Push Fussed Pos Speed Data',
     [0x50] = 'Imu Data Status',
-    [0x51] = 'Flyc Smart Battery', -- Smart Battery Status
-    [0x52] = 'Smart Low Battery Actn', -- Set Battery Alarm Action
-    [0x53] = 'Flyc Avoid Param',
+    [0x51] = 'Flyc Battery Status', -- Smart Battery Status
+    [0x52] = 'Smart Low Battery Actn', -- Set Battery Alarm Action / Low Bat Departure Cnf Cancel
+    [0x53] = 'Flyc Vis Avoidance Param', -- Push Visual Avoidance Info
     [0x55] = 'Flyc Limit State',
     [0x56] = 'Flyc Led Status',
-    [0x57] = 'Gps Glns',
+    [0x57] = 'GPS GLNS Info',
+    [0x58] = 'Push Att Stick Speed Pos Data',
+    [0x59] = 'Push Sdk Data',
+    [0x5A] = 'Push FC Data',
     [0x60] = 'SVO API Transfer',
     [0x61] = 'Flyc Activation Info', -- Sdk Activation Info or Request
     [0x62] = 'Flyc Activation Exec', -- Sdk Activation or Activation Result
     [0x63] = 'Flyc On Board Recv',
     [0x64] = 'Set Send On Board', -- SDK Pure Transfer From App To MC
-    [0x67] = 'Flyc Power Param',
+    [0x67] = 'Flyc Power Param', -- Motive Power Info
     [0x69] = 'RTK Switch', -- Handle App To Rtk Pack
     [0x6a] = 'Flyc Avoid', -- or Battery Valid Stste?
     [0x6b] = 'Recorder Data Cfg',
@@ -396,7 +448,7 @@ local FLYC_UART_CMD_TEXT = {
     [0x74] = 'Get Product Id',
     [0x75] = 'Write EEPROM FC0',
     [0x76] = 'Read EEPROM FC0',
-    [0x80] = 'Set Navigation Mode', -- Mission On/Off
+    [0x80] = 'Navigation Mode Set', -- Mission On/Off
     [0x81] = 'Mission IOC: Set Lock Yaw',
     [0x82] = 'Miss. WP: Upload Mission Info', -- Set WayLine Mission Length, Upload WayPoint Mission Msg
     [0x83] = 'Miss. WP: Download Mission Info', -- Download WayLine Mission Info, Download WayPoint Mission Msg
@@ -406,14 +458,14 @@ local FLYC_UART_CMD_TEXT = {
     [0x87] = 'Mission WP: Pasue/Resume', -- Pause Or Continue WayLine Mission
     [0x88] = 'Push Navigation Status Info', -- Flyc WayPoint Mission Info
     [0x89] = 'Push Navigation Event Info', -- Flyc WayPoint Mission Current Event
-    [0x8a] = 'Miss. HotPoint: Start With Info', -- Start HotPoint Mission With Info
-    [0x8b] = 'Miss. HotPoint: Cancel', -- Stop HotPoint Mission
-    [0x8c] = 'Miss. HotPoint: Pasue/Resume', -- HotPoint Mission Switch
-    [0x8d] = 'App Set API Sub Mode',
-    [0x8e] = 'App Joystick Data',
-    [0x8f] = 'Noe Mission pasue/resume', -- Noe Mission Pause Or Resume
+    [0x8A] = 'Miss. HotPoint: Start With Info', -- Start HotPoint Mission With Info
+    [0x8B] = 'Miss. HotPoint: Cancel', -- Stop HotPoint Mission
+    [0x8C] = 'Miss. HotPoint: Pasue/Resume', -- HotPoint Mission Switch
+    [0x8D] = 'App Set API Sub Mode',
+    [0x8E] = 'App Joystick Data',
+    [0x8F] = 'Noe Mission pasue/resume', -- Noe Mission Pause Or Resume
     [0x90] = 'Miss. Follow: Start With Info', -- Start Follow Me With Info
-    [0x91] = 'Miss. Follow: Stop', -- or Cancel Follow Me Mission
+    [0x91] = 'Miss. Follow: Cancel', -- or Stop Follow Me Mission
     [0x92] = 'Miss. Follow: Pasue/Resume', -- Follow Me Mission Switch
     [0x93] = 'Miss. Follow: Get Target Info', -- Send GPS Info on Target
     [0x94] = 'Mission Noe: Start',
@@ -421,28 +473,29 @@ local FLYC_UART_CMD_TEXT = {
     [0x96] = 'Mission HotPoint: Download',
     [0x97] = 'Mission IOC: Start',
     [0x98] = 'Mission IOC: Stop',
-    [0x99] = 'Miss. HotPoint: Set Params', -- Set Default Vel
+    [0x99] = 'Miss. HotPoint: Set Params', -- Set Default Velocity / Speed and Direction
     [0x9a] = 'Miss. HotPoint: Set Radius',
-    [0x9b] = 'Miss. HotPoint: Set Head',
+    [0x9b] = 'Miss. HotPoint: Set Head', -- Resume Header
     [0x9c] = 'Miss. WP: Set Idle Veloc', -- Set WayLine Flight Idle Value / Idle Speed
     [0x9d] = 'Miss. WP: Get Idle Veloc', -- Get WayLine Flight Idle Value / Idle Speed
     [0x9e] = 'App Ctrl Mission Yaw Rate',
     [0x9f] = 'Miss. HotPoint: Auto Radius Ctrl',
     [0xa0] = 'Send AGPS Data',
     [0xa1] = 'Flyc AGPS Status',
+    [0xa2] = 'Race Drone OSD Push',
     [0xa3] = 'Miss. WP: Get BreakPoint Info',
     [0xa4] = 'Miss. WP: Return To Cur Line',
     [0xa5] = 'App Ctrl Fly Sweep Ctrl',
     [0xa6] = 'Set RKT Homepoint',
-    [0xaa] = 'TBD',
+    [0xaa] = 'Sbus Packet',
     [0xab] = 'Ctrl Attitude Data Send', -- Set Attitude
     [0xac] = 'Ctrl Taillock Data Send', -- Set Tail Lock
     [0xad] = 'Flyc Install Error',
     [0xae] = 'Cmd Handler RC App Chl Handler',
     [0xaf] = 'Product Config',
     [0xb0] = 'Get Battery Groups Single Info',
-    [0xb5] = 'Fault Inject', -- FIT Set Parameter
-    [0xb6] = 'Flyc Fault Inject',
+    [0xb5] = 'Fault Inject', -- FIT Set Parameter / Fdi Input
+    [0xb6] = 'Flyc Fault Inject', -- Change Dev Colour
     [0xb7] = 'Set And Get Redundancy IMU Index', -- RNS Set Parameter
     [0xb8] = 'Redundancy Status', -- RNS Get State
     [0xb9] = 'Push Redundancy Status',
@@ -456,8 +509,8 @@ local FLYC_UART_CMD_TEXT = {
     [0xcd] = 'Update Nofly Area', -- Update Flyforbid Area
     [0xce] = 'Push Forbid Data Infos', -- FMU Api Get Db Info
     [0xcf] = 'Get New Nofly Area', -- Get New Flyforbid Area
-    [0xd4] = 'Get Additional Info',
-    [0xd7] = 'Flyc Flight Record',
+    [0xd4] = 'Get Additional Info', -- Get Moto Speed
+    [0xd7] = 'Flyc Flight Record', -- Record Log
     [0xd9] = 'Process Sensor Api Data',
     [0xda] = 'Flyc Detection', -- Handler Monitor Cmd Set
     [0xdf] = 'Assistant Unlock Handler',
@@ -474,14 +527,15 @@ local FLYC_UART_CMD_TEXT = {
     [0xea] = 'Register Open Motor Error Action',
     [0xeb] = 'Logout Open Motor Error Action',
     [0xec] = 'Set Open Motor Error Action Status',
-    [0xed] = 'Set Esc Echo',
+    [0xed] = 'Set ESC Echo',
     [0xee] = 'GoHome CountDown', -- Ost Sats Go Home Port
-    [0xf0] = 'Config Table: Get Param Info by Index', -- returns parameter name and properties pre-mavic
-    [0xf1] = 'Config Table: Read Params By Index',
+    [0xf0] = 'Config Table: Get Param Info by Index', -- aka Update Param; returns parameter name and properties pre-mavic
+    [0xf1] = 'Config Table: Read Params By Index', -- aka Query Param
     [0xf2] = 'Config Table: Write Params By Index',
-    [0xf3] = 'Config Table: Reset All Param', -- Reset Params By Index/Reset Old Config Table Item Value?
+    [0xf3] = 'Config Table: Reset Default Param Val', -- Reset Params By Index/Reset Old Config Table Item Value?
     [0xf4] = 'Config Table: Set Item By Index',
     [0xf5] = 'Set Ver Phone', -- Set/Get Real Name Info
+    [0xf6] = 'Push Param PC Log',
     [0xf7] = 'Config Table: Get Param Info By Hash', -- Get Old Config Table Item Info By Hash Value
     [0xf8] = 'Config Table: Read Param By Hash', -- Get Single Param Value By Hash
     [0xf9] = 'Config Table: Write Param By Hash', -- Set Single Param Value By Hash
@@ -494,49 +548,215 @@ local FLYC_UART_CMD_TEXT = {
 }
 
 local GIMBAL_UART_CMD_TEXT = {
-    [0x05] = 'Gimbal Params',
+    [0x00] = 'Gimbal Reserved',
+    [0x01] = 'Gimbal Control',
+    [0x02] = 'Gimbal Get Position',
+    [0x03] = 'Gimbal Set Param',
+    [0x04] = 'Gimbal Get Param',
+    [0x05] = 'Gimbal Params', -- Push Position
+    [0x06] = 'Gimbal Push Aetr',
+    [0x07] = 'Gimbal Adjust Roll',
     [0x08] = 'Gimbal Calibration',
-    [0x0a] = 'Gimbal Rotate',
-    [0x0b] = 'Gimbal Get State',
+    [0x09] = 'Gimbal Reserved2',
+    [0x0A] = 'Gimbal Ext Ctrl Degree', -- Rotate
+    [0x0B] = 'Gimbal Get Ext Ctrl Status', -- Get State
+    [0x0C] = 'Gimbal Ext Ctrl Accel',
+    [0x0D] = 'Gimbal Suspend Resume',
+    [0x0E] = 'Gimbal Thirdp Magn',
+    [0x0F] = 'Gimbal Set User Param',
+    [0x10] = 'Gimbal Get User Param',
+    [0x11] = 'Gimbal Save User Param',
+    [0x13] = 'Gimbal Resume Default Param',
     [0x15] = 'Gimbal Movement',
-    [0x1c] = 'Gimbal Type',
+    [0x1C] = 'Gimbal Type',
+    [0x1E] = 'Gimbal Degree Info Subscription',
     [0x24] = 'Gimbal User Params',
     [0x27] = 'Gimbal Abnormal Status',
     [0x2b] = 'Gimbal Tutorial Status',
     [0x30] = 'Gimbal Auto Calibration Status',
     [0x33] = 'Gimbal Battery Info',
     [0x38] = 'Gimbal Timelapse Status',
+    [0x39] = 'Gimbal Lock',
+    [0x3A] = 'Gimbal Rotate Camera X Axis',
+    [0x45] = 'Gimbal Get Temp',
+    [0x4C] = 'Gimbal Set Mode',
 }
 
 local CENTER_BRD_UART_CMD_TEXT = {
     [0x00] = 'Open/Close Virtual RC',
     [0x01] = 'Virtual RC Data',
-    [0x06] = 'Center Battery Common',
+    --[0x01] = 'Req Batt Info Confirm', -- on newer platforms
+    [0x02] = 'Center Push Batt Dynamic Info',
+    [0x03] = 'Center Control Uav Status Led',
+    [0x04] = 'Center Transform Control',
+    [0x05] = 'Center Req Push Bat Normal Data',
+    [0x06] = 'Center Battery Common', -- Center Push Bat Normal Data
+    [0x07] = 'Center Query Bat Status',
+    [0x08] = 'Center Query Bat Hisoty Status',
+    [0x09] = 'Center Bat SelfDischarge Days',
+    [0x0a] = 'Center Bat Storage Info',
+    [0x21] = 'Center Req Bat Static Data',
+    [0x22] = 'Center Req Bat Dynamic Data',
+    [0x23] = 'Center Req Bat Auth Data',
+    [0x24] = 'Center Req Bat Auth Result',
+    [0x31] = 'Center Req Bat SelfDischarge Time',
+    [0x32] = 'Center Set Bat SelfDischarge Time',
+    [0x33] = 'Center Req Bat Barcode',
 }
 
 local RC_UART_CMD_TEXT = {
-    [0x05] = 'Rc Params',
-    [0x1c] = 'Rc Rtc Sync',
-    [0x32] = 'Unknown but handled by camera', -- See m0101 sys partiton for payload info
-    [0x37] = 'GS Req App Launch',
-    [0xf0] = 'Set Transciever Pwr Mode',
+    [0x01] = 'RC Get Logic Channel Parameter',
+    [0x02] = 'RC Set Logic Channel Mapping',
+    [0x03] = 'RC Set Calibiration',
+    [0x04] = 'RC Get Physical Channel Parameter',
+    [0x05] = 'RC Push Parameter',
+    [0x06] = 'RC Set Master Slave Mode',
+    [0x07] = 'RC Get Master Slave Mode',
+    [0x08] = 'RC Set Name',
+    [0x09] = 'RC Get Name',
+    [0x0a] = 'RC Set Password',
+    [0x0b] = 'RC Get Password',
+    [0x0c] = 'RC Set Connected Master Id',
+    [0x0d] = 'RC Get Connected Master Id',
+    [0x0e] = 'RC Get Available Master Id',
+    [0x0f] = 'RC Set Search Mode',
+    [0x10] = 'RC Get Search Mode',
+    [0x11] = 'RC Set Master Slave Switch',
+    [0x12] = 'RC Get Master Slave Switch Conf',
+    [0x13] = 'RC Request Join By Slave',
+    [0x14] = 'RC List Request Join Slave',
+    [0x15] = 'RC Delete Slave',
+    [0x16] = 'RC Delete Master',
+    [0x17] = 'RC Set Slave Control Right',
+    [0x18] = 'RC Get Slave Control Right',
+    [0x19] = 'RC Set Control Mode',
+    [0x1a] = 'RC Get Control Mode',
+    [0x1b] = 'RC Push GPS Info',
+    [0x1c] = 'RC Push RTC Info',
+    [0x1d] = 'RC Push Temperature Info',
+    [0x1e] = 'RC Push Battery Info',
+    [0x1f] = 'RC Push Master Slave Conn Info',
+    [0x20] = 'RC Set CE FCC Mode',
+    [0x21] = 'RC Get CE FCC Mode',
+    [0x22] = 'RC Get Gimbal Control',
+    [0x23] = 'RC Request Gimbal Control',
+    [0x24] = 'RC Set Simulate Flight Mode',
+    [0x25] = 'RC Get Simulate Flight Mode',
+    [0x26] = 'RC Push Aetr Value',
+    [0x27] = 'RC Get Detection Info',
+    [0x28] = 'RC Get Gimbal Control Access Right',
+    [0x29] = 'RC Set Slave Control Mode',
+    [0x2a] = 'RC Get Slave Control Mode',
+    [0x2b] = 'RC Set Gimbal Control Speed',
+    [0x2c] = 'RC Get Gimbal Control Speed',
+    [0x2d] = 'RC Set Self Defined Key Func',
+    [0x2e] = 'RC Get Self Defined Key Func',
+    [0x2f] = 'RC Pairing',
+    [0x30] = 'RC Test GPS',
+    [0x31] = 'RC Set RTC Clock',
+    [0x32] = 'RC Get RTC Clock', -- See m0101 sys partiton for payload info
+    [0x33] = 'RC Set Gimbal Control Sensitivity',
+    [0x34] = 'RC Get Gimbal Control Sensitivity',
+    [0x35] = 'RC Set Gimbal Control Mode',
+    [0x36] = 'RC Get Gimbal Control Mode',
+    [0x37] = 'RC Request Enter App Mode',
+    [0x38] = 'RC Get Calibration Value',
+    [0x39] = 'RC Push Master Slave Connect Status',
+    [0x3a] = 'RC Set 2014 Usb Mode',
+    [0x3b] = 'RC Set RC Id',
+    [0x50] = 'RC Push Rmc Key Info',
+    [0x51] = 'RC Push To Glass',
+    [0x52] = 'RC Push Lcd To Mcu',
+    [0x53] = 'RC Get Unit Language',
+    [0x54] = 'RC Set Unit Language',
+    [0x55] = 'RC Set Test Mode',
+    [0x56] = 'RC Quiry Role',
+    [0x57] = 'RC Quiry Ms Link Status',
+    [0x58] = 'RC Set Work Function',
+    [0x59] = 'RC Get Work Function',
+    [0xf0] = 'RC Set RF Cert Config', -- Set Transciever Pwr Mode
+    [0xf5] = 'RC Test Stick Value',
+    [0xf6] = 'RC Factory Get Board Id',
+    [0xf7] = 'RC Push Buzzer To MCU',
+    [0xf8] = 'RC Get Stick Verification Data',
+    [0xf9] = 'RC Set Post Calibiration',
+    [0xfa] = 'RC Get Stick Middle Value',
 }
 
 local WIFI_UART_CMD_TEXT = {
-    [0x09] = 'Wifi Signal',
-    [0x0e] = 'Get PSK',
-    [0x11] = 'Wifi First App Mac',
-    [0x12] = 'Wifi Elec Signal',
-    [0x1e] = 'Get SSID',
-    [0x2a] = 'Wifi Sweep Frequency',
+    [0x00] = 'WiFi Reserved',
+    [0x01] = 'WiFi Ap Push Scan Results',
+    [0x02] = 'WiFi Ap Get Chan Snr',
+    [0x03] = 'WiFi Ap Set Chan',
+    [0x04] = 'WiFi Ap Get Chan',
+    [0x05] = 'WiFi Ap Set Tx Pwr',
+    [0x06] = 'WiFi Ap Get Tx Pwr',
+    [0x07] = 'WiFi Ap Get SSID',
+    [0x08] = 'WiFi Ap Set SSID',
+    [0x09] = 'WiFi Ap Push RSSI',
+    [0x0a] = 'WiFi Ap Get Ant RSSI',
+    [0x0b] = 'WiFi Ap Set Mac Addr',
+    [0x0c] = 'WiFi Ap Get Mac Addr',
+    [0x0d] = 'WiFi Ap Set Passphrase',
+    [0x0e] = 'WiFi Ap Get Passphrase', -- Get PSK
+    [0x0f] = 'WiFi Ap Factory Reset',
+    [0x10] = 'WiFi Ap Set Band',
+    [0x11] = 'WiFi Ap Push Sta MAC',
+    [0x12] = 'WiFi Ap Get Phy Param',
+    [0x13] = 'WiFi Ap Set Pwr Mode',
+    [0x14] = 'WiFi Ap Calibrate',
+    [0x15] = 'WiFi Ap Restart',
+    [0x16] = 'WiFi Ap 16',
+    [0x17] = 'WiFi Ap 17',
+    [0x18] = 'WiFi Ap 18',
+    [0x19] = 'WiFi Ap 19',
+    [0x1a] = 'WiFi Ap 1A',
+    [0x1b] = 'WiFi Ap 1B',
+    [0x1c] = 'WiFi Ap 1C',
+    [0x1d] = 'WiFi Ap 1D',
+    [0x1e] = 'WiFi Get SSID', -- older variant?
+    [0x1f] = 'WiFi Ap 1F',
+    [0x20] = 'WiFi Ap Get Freq',
+    [0x21] = 'WiFi Ap Set Bw',
+    [0x22] = 'WiFi Ap 22',
+    [0x23] = 'WiFi Ap 23',
+    [0x24] = 'WiFi Ap 24',
+    [0x25] = 'WiFi Ap 25',
+    [0x26] = 'WiFi Ap Realtime Acs',
+    [0x27] = 'WiFi Ap Manual Switch Sdr',
+    [0x28] = 'WiFi Ap Push Chan List',
+    [0x29] = 'WiFi Ap Req Chan Noise',
+    [0x2a] = 'WiFi Ap Push Chan Noise', -- Wifi Sweep Frequency
+    [0x2b] = 'WiFi Ap Set Hw Mode',
+    [0x2e] = 'WiFi Ap Set Usr Pref',
+    [0x2f] = 'WiFi Ap Get Usr Pref',
+    [0x30] = 'WiFi Ap Set Country Code',
+    [0x31] = 'WiFi Ap Reset Freq',
+    [0x32] = 'WiFi Ap Del Country Code',
+    [0x33] = 'WiFi Ap Verify Cc',
+    [0x39] = 'WiFi Get Work Mode',
+    [0x3a] = 'WiFi Set Work Mode',
+    [0x3b] = 'WiFi Config By Qrcode',
+    [0x80] = 'WiFi Push Mac Stat',
+    [0x91] = 'WiFi Set Rc Info',
+    [0x92] = 'WiFi Update Sw State',
 }
 
 local DM36X_UART_CMD_TEXT = {
-    [0x01] = 'Set GS Ctrl',
-    [0x02] = 'Get GS Ctrl',
-    [0x06] = 'Dm368 Status',
-    [0x07] = 'Get GS Config',
-    [0x0e] = 'Get Phone Conn',
+    [0x00] = 'DM36x Reserved',
+    [0x01] = 'DM36x Send Gnd Ctrl Info',
+    [0x02] = 'DM36x Recv Gnd Ctrl Info',
+    [0x03] = 'DM36x Send UAV Ctrl Info',
+    [0x04] = 'DM36x Recv UAV Ctrl Info',
+    [0x05] = 'DM36x Send Gnd Stat Info',
+    [0x06] = 'DM36x Send UAV Stat Info',
+    [0x05] = 'DM36x Recv Gnd Stat Info',
+    [0x0e] = 'DM36x Get App Connect Stat',
+    [0x0f] = 'DM36x Recycle Vision Frame Info',
+    [0x20] = 'DM36x Set Bitrate',
+    [0x21] = 'DM36x Get Bitrate',
+    [0x30] = 'DM36x Push Status',
+    [0x31] = 'DM36x Send Vmem Fd To Vision',
 }
 
 local HD_LINK_UART_CMD_TEXT = {
@@ -1228,69 +1448,69 @@ local GENERAL_UART_CMD_DISSECT = {
     [0xff] = general_query_device_info_dissector,
 }
 
--- Special - Old Special Control - 0x01
+-- Special - Old Special App Control - 0x01
 
-f.special_old_special_control_unknown0 = ProtoField.uint8 ("dji_p3.special_old_special_control_unknown0", "Unknown0", base.HEX)
-f.special_old_special_control_unknown1 = ProtoField.uint8 ("dji_p3.special_old_special_control_unknown1", "Unknown1", base.HEX)
-f.special_old_special_control_unknown2 = ProtoField.uint8 ("dji_p3.special_old_special_control_unknown2", "Unknown2", base.HEX)
-f.special_old_special_control_unknown4 = ProtoField.uint8 ("dji_p3.special_old_special_control_unknown4", "Unknown4", base.HEX)
-f.special_old_special_control_unknown5 = ProtoField.uint8 ("dji_p3.special_old_special_control_unknown5", "Unknown5", base.HEX)
-f.special_old_special_control_unknown6 = ProtoField.uint8 ("dji_p3.special_old_special_control_unknown6", "Unknown6", base.HEX)
-f.special_old_special_control_unknown7 = ProtoField.uint8 ("dji_p3.special_old_special_control_unknown7", "Unknown7", base.HEX)
-f.special_old_special_control_checksum = ProtoField.uint8 ("dji_p3.special_old_special_control_checksum", "Checksum", base.HEX, nil, nil, "Previous payload bytes xor'ed together with initial seed 0.")
+f.special_old_special_app_control_unknown0 = ProtoField.uint8 ("dji_p3.special_old_special_app_control_unknown0", "Unknown0", base.HEX)
+f.special_old_special_app_control_unknown1 = ProtoField.uint8 ("dji_p3.special_old_special_app_control_unknown1", "Unknown1", base.HEX)
+f.special_old_special_app_control_unknown2 = ProtoField.uint8 ("dji_p3.special_old_special_app_control_unknown2", "Unknown2", base.HEX)
+f.special_old_special_app_control_unknown4 = ProtoField.uint8 ("dji_p3.special_old_special_app_control_unknown4", "Unknown4", base.HEX)
+f.special_old_special_app_control_unknown5 = ProtoField.uint8 ("dji_p3.special_old_special_app_control_unknown5", "Unknown5", base.HEX)
+f.special_old_special_app_control_unknown6 = ProtoField.uint8 ("dji_p3.special_old_special_app_control_unknown6", "Unknown6", base.HEX)
+f.special_old_special_app_control_unknown7 = ProtoField.uint8 ("dji_p3.special_old_special_app_control_unknown7", "Unknown7", base.HEX)
+f.special_old_special_app_control_checksum = ProtoField.uint8 ("dji_p3.special_old_special_app_control_checksum", "Checksum", base.HEX, nil, nil, "Previous payload bytes xor'ed together with initial seed 0.")
 
-local function special_old_special_control_dissector(pkt_length, buffer, pinfo, subtree)
+local function special_old_special_app_control_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.special_old_special_control_unknown0, payload(offset, 1))
+    subtree:add_le (f.special_old_special_app_control_unknown0, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.special_old_special_control_unknown1, payload(offset, 1))
+    subtree:add_le (f.special_old_special_app_control_unknown1, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.special_old_special_control_unknown2, payload(offset, 2))
+    subtree:add_le (f.special_old_special_app_control_unknown2, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.special_old_special_control_unknown4, payload(offset, 1))
+    subtree:add_le (f.special_old_special_app_control_unknown4, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.special_old_special_control_unknown5, payload(offset, 1))
+    subtree:add_le (f.special_old_special_app_control_unknown5, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.special_old_special_control_unknown6, payload(offset, 1))
+    subtree:add_le (f.special_old_special_app_control_unknown6, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.special_old_special_control_unknown7, payload(offset, 2))
+    subtree:add_le (f.special_old_special_app_control_unknown7, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.special_old_special_control_checksum, payload(offset, 1))
+    subtree:add_le (f.special_old_special_app_control_checksum, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Old Special Control: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Old Special Control: Payload size different than expected") end
+    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Old Special App Control: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Old Special App Control: Payload size different than expected") end
 end
 
--- Special - New Special Control - 0x03
+-- Special - New Special App Control - 0x03
 
-f.special_new_special_control_unknown0 = ProtoField.bytes ("dji_p3.special_new_special_control_unknown0", "Unknown0", base.SPACE)
+f.special_new_special_app_control_unknown0 = ProtoField.bytes ("dji_p3.special_new_special_app_control_unknown0", "Unknown0", base.SPACE)
 
-local function special_new_special_control_dissector(pkt_length, buffer, pinfo, subtree)
+local function special_new_special_app_control_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.special_new_special_control_unknown0, payload(offset, 24))
+    subtree:add_le (f.special_new_special_app_control_unknown0, payload(offset, 24))
     offset = offset + 24
 
-    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"New Special Control: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"New Special Control: Payload size different than expected") end
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"New Special App Control: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"New Special App Control: Payload size different than expected") end
 end
 
 local SPECIAL_UART_CMD_DISSECT = {
-    [0x01] = special_old_special_control_dissector,
-    [0x03] = special_new_special_control_dissector,
+    [0x01] = special_old_special_app_control_dissector,
+    [0x03] = special_new_special_app_control_dissector,
 }
 
 -- Camera - Camera Shutter Cmd - 0x7c
@@ -2896,22 +3116,22 @@ local function flyc_a2_commom_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"A2 Commom: Payload size different than expected") end
 end
 
--- Flight Controller - Control Cmd - 0x2a
+-- Flight Controller - Function Control - 0x2a
 -- sets g_real.wm610_app_command.function_command to value from payload, and function_command_state to 1; does nothing if function_command_state was already non-zero
 -- Checked in Ph3 FC firmware 1.08.0080
 
-f.flyc_control_cmd_function_command = ProtoField.uint8 ("dji_p3.flyc_control_cmd_function_command", "Function/Command", base.HEX, nil, nil, "New value of g_real.wm610_app_command.function_command")
+f.flyc_function_control_function_command = ProtoField.uint8 ("dji_p3.flyc_function_control_function_command", "Function/Command", base.HEX, nil, nil, "New value of g_real.wm610_app_command.function_command")
 
-local function flyc_control_cmd_dissector(pkt_length, buffer, pinfo, subtree)
+local function flyc_function_control_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.flyc_control_cmd_function_command, payload(offset, 1))
+    subtree:add_le (f.flyc_function_control_function_command, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Control Cmd: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Control Cmd: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Function Control: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Function Control: Payload size different than expected") end
 end
 
 -- Flight Controller - Flyc Deform Status - 0x32
@@ -3664,7 +3884,7 @@ local function flyc_imu_data_status_dissector(pkt_length, buffer, pinfo, subtree
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Data Status: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Smart Battery - 0x51
+-- Flight Controller - Flyc Battery Status - 0x51
 
 enums.FLYC_SMART_BATTERY_GO_HOME_STATUS_SMART_GO_HOME_STATUS_ENUM = {
     [0x00] = 'NON_GOHOME',
@@ -3672,122 +3892,122 @@ enums.FLYC_SMART_BATTERY_GO_HOME_STATUS_SMART_GO_HOME_STATUS_ENUM = {
     [0x02] = 'GOHOME_ALREADY',
 }
 
-f.flyc_flyc_smart_battery_useful_time = ProtoField.uint16 ("dji_p3.flyc_flyc_smart_battery_useful_time", "Useful Time", base.DEC)
-f.flyc_flyc_smart_battery_go_home_time = ProtoField.uint16 ("dji_p3.flyc_flyc_smart_battery_go_home_time", "Go Home Time", base.DEC)
-f.flyc_flyc_smart_battery_land_time = ProtoField.uint16 ("dji_p3.flyc_flyc_smart_battery_land_time", "Land Time", base.DEC)
-f.flyc_flyc_smart_battery_go_home_battery = ProtoField.uint16 ("dji_p3.flyc_flyc_smart_battery_go_home_battery", "Go Home Battery", base.DEC)
-f.flyc_flyc_smart_battery_land_battery = ProtoField.uint16 ("dji_p3.flyc_flyc_smart_battery_land_battery", "Land Battery", base.DEC)
-f.flyc_flyc_smart_battery_safe_fly_radius = ProtoField.float ("dji_p3.flyc_flyc_smart_battery_safe_fly_radius", "Safe Fly Radius", base.DEC)
-f.flyc_flyc_smart_battery_volume_comsume = ProtoField.float ("dji_p3.flyc_flyc_smart_battery_volume_comsume", "Volume Comsume", base.DEC)
-f.flyc_flyc_smart_battery_status = ProtoField.uint32 ("dji_p3.flyc_flyc_smart_battery_status", "Status", base.HEX)
-f.flyc_flyc_smart_battery_go_home_status = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_go_home_status", "Go Home Status", base.HEX, enums.FLYC_SMART_BATTERY_GO_HOME_STATUS_SMART_GO_HOME_STATUS_ENUM, nil, nil)
-f.flyc_flyc_smart_battery_go_home_count_down = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_go_home_count_down", "Go Home Count Down", base.HEX)
-f.flyc_flyc_smart_battery_voltage = ProtoField.uint16 ("dji_p3.flyc_flyc_smart_battery_voltage", "Voltage", base.DEC)
-f.flyc_flyc_smart_battery_battery_percent = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_battery_percent", "Battery Percent", base.DEC)
-f.flyc_flyc_smart_battery_masked1b = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_masked1b", "Masked1B", base.HEX)
-  f.flyc_flyc_smart_battery_low_warning = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_low_warning", "Low Warning", base.HEX, nil, 0x7f, nil)
-  f.flyc_flyc_smart_battery_low_warning_go_home = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_low_warning_go_home", "Low Warning Go Home", base.HEX, nil, 0x80, nil)
-f.flyc_flyc_smart_battery_masked1c = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_masked1c", "Masked1C", base.HEX)
-  f.flyc_flyc_smart_battery_serious_low_warning = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_serious_low_warning", "Serious Low Warning", base.HEX, nil, 0x7f, nil)
-  f.flyc_flyc_smart_battery_serious_low_warning_landing = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_serious_low_warning_landing", "Serious Low Warning Landing", base.HEX, nil, 0x80, nil)
-f.flyc_flyc_smart_battery_voltage_percent = ProtoField.uint8 ("dji_p3.flyc_flyc_smart_battery_voltage_percent", "Voltage Percent", base.DEC)
+f.flyc_flyc_battery_status_useful_time = ProtoField.uint16 ("dji_p3.flyc_flyc_battery_status_useful_time", "Useful Time", base.DEC)
+f.flyc_flyc_battery_status_go_home_time = ProtoField.uint16 ("dji_p3.flyc_flyc_battery_status_go_home_time", "Go Home Time", base.DEC)
+f.flyc_flyc_battery_status_land_time = ProtoField.uint16 ("dji_p3.flyc_flyc_battery_status_land_time", "Land Time", base.DEC)
+f.flyc_flyc_battery_status_go_home_battery = ProtoField.uint16 ("dji_p3.flyc_flyc_battery_status_go_home_battery", "Go Home Battery", base.DEC)
+f.flyc_flyc_battery_status_land_battery = ProtoField.uint16 ("dji_p3.flyc_flyc_battery_status_land_battery", "Land Battery", base.DEC)
+f.flyc_flyc_battery_status_safe_fly_radius = ProtoField.float ("dji_p3.flyc_flyc_battery_status_safe_fly_radius", "Safe Fly Radius", base.DEC)
+f.flyc_flyc_battery_status_volume_comsume = ProtoField.float ("dji_p3.flyc_flyc_battery_status_volume_comsume", "Volume Comsume", base.DEC)
+f.flyc_flyc_battery_status_status = ProtoField.uint32 ("dji_p3.flyc_flyc_battery_status_status", "Status", base.HEX)
+f.flyc_flyc_battery_status_go_home_status = ProtoField.uint8 ("dji_p3.flyc_flyc_battery_status_go_home_status", "Go Home Status", base.HEX, enums.FLYC_SMART_BATTERY_GO_HOME_STATUS_SMART_GO_HOME_STATUS_ENUM, nil, nil)
+f.flyc_flyc_battery_status_go_home_count_down = ProtoField.uint8 ("dji_p3.flyc_flyc_battery_status_go_home_count_down", "Go Home Count Down", base.HEX)
+f.flyc_flyc_battery_status_voltage = ProtoField.uint16 ("dji_p3.flyc_flyc_battery_status_voltage", "Voltage", base.DEC)
+f.flyc_flyc_battery_status_battery_percent = ProtoField.uint8 ("dji_p3.flyc_flyc_battery_status_battery_percent", "Battery Percent", base.DEC)
+f.flyc_flyc_battery_status_masked1b = ProtoField.uint8 ("dji_p3.flyc_flyc_battery_status_masked1b", "Masked1B", base.HEX)
+  f.flyc_flyc_battery_status_low_warning = ProtoField.uint8 ("dji_p3.flyc_flyc_battery_status_low_warning", "Low Warning", base.HEX, nil, 0x7f, nil)
+  f.flyc_flyc_battery_status_low_warning_go_home = ProtoField.uint8 ("dji_p3.flyc_flyc_battery_status_low_warning_go_home", "Low Warning Go Home", base.HEX, nil, 0x80, nil)
+f.flyc_flyc_battery_status_masked1c = ProtoField.uint8 ("dji_p3.flyc_flyc_battery_status_masked1c", "Masked1C", base.HEX)
+  f.flyc_flyc_battery_status_serious_low_warning = ProtoField.uint8 ("dji_p3.flyc_flyc_battery_status_serious_low_warning", "Serious Low Warning", base.HEX, nil, 0x7f, nil)
+  f.flyc_flyc_battery_status_serious_low_warning_landing = ProtoField.uint8 ("dji_p3.flyc_flyc_battery_status_serious_low_warning_landing", "Serious Low Warning Landing", base.HEX, nil, 0x80, nil)
+f.flyc_flyc_battery_status_voltage_percent = ProtoField.uint8 ("dji_p3.flyc_flyc_battery_status_voltage_percent", "Voltage Percent", base.DEC)
 
-local function flyc_flyc_smart_battery_dissector(pkt_length, buffer, pinfo, subtree)
+local function flyc_flyc_battery_status_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.flyc_flyc_smart_battery_useful_time, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_battery_status_useful_time, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_flyc_smart_battery_go_home_time, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_battery_status_go_home_time, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_flyc_smart_battery_land_time, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_battery_status_land_time, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_flyc_smart_battery_go_home_battery, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_battery_status_go_home_battery, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_flyc_smart_battery_land_battery, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_battery_status_land_battery, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_flyc_smart_battery_safe_fly_radius, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_battery_status_safe_fly_radius, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.flyc_flyc_smart_battery_volume_comsume, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_battery_status_volume_comsume, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.flyc_flyc_smart_battery_status, payload(offset, 4))
+    subtree:add_le (f.flyc_flyc_battery_status_status, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.flyc_flyc_smart_battery_go_home_status, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_battery_status_go_home_status, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_flyc_smart_battery_go_home_count_down, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_battery_status_go_home_count_down, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_flyc_smart_battery_voltage, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_battery_status_voltage, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_flyc_smart_battery_battery_percent, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_battery_status_battery_percent, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_flyc_smart_battery_masked1b, payload(offset, 1))
-    subtree:add_le (f.flyc_flyc_smart_battery_low_warning, payload(offset, 1))
-    subtree:add_le (f.flyc_flyc_smart_battery_low_warning_go_home, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_battery_status_masked1b, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_battery_status_low_warning, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_battery_status_low_warning_go_home, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_flyc_smart_battery_masked1c, payload(offset, 1))
-    subtree:add_le (f.flyc_flyc_smart_battery_serious_low_warning, payload(offset, 1))
-    subtree:add_le (f.flyc_flyc_smart_battery_serious_low_warning_landing, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_battery_status_masked1c, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_battery_status_serious_low_warning, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_battery_status_serious_low_warning_landing, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_flyc_smart_battery_voltage_percent, payload(offset, 1))
+    subtree:add_le (f.flyc_flyc_battery_status_voltage_percent, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Smart Battery: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Smart Battery: Payload size different than expected") end
+    if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Battery Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Battery Status: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Avoid Param - 0x53
+-- Flight Controller - Flyc Vis Avoidance Param - 0x53
 
-f.flyc_flyc_avoid_param_masked00 = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_masked00", "Masked00", base.HEX)
-  f.flyc_flyc_avoid_param_avoid_obstacle_enable = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_avoid_obstacle_enable", "Avoid Obstacle Enable", base.HEX, nil, 0x01, nil)
-  f.flyc_flyc_avoid_param_user_avoid_enable = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_user_avoid_enable", "User Avoid Enable", base.HEX, nil, 0x02, nil)
-  f.flyc_flyc_avoid_param_get_avoid_obstacle_work_flag = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_get_avoid_obstacle_work_flag", "Get Avoid Obstacle Work Flag", base.HEX, nil, 0x04, nil)
-  f.flyc_flyc_avoid_param_get_emergency_brake_work_flag = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_get_emergency_brake_work_flag", "Get Emergency Brake Work Flag", base.HEX, nil, 0x08, nil)
-  f.flyc_flyc_avoid_param_gohome_avoid_enable = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_gohome_avoid_enable", "Gohome Avoid Enable", base.HEX, nil, 0x10, nil)
-  f.flyc_flyc_avoid_param_avoid_ground_force_landing = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_avoid_ground_force_landing", "Avoid Ground Force Landing", base.HEX, nil, 0x20, nil)
-  f.flyc_flyc_avoid_param_radius_limit_working = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_radius_limit_working", "Radius Limit Working", base.HEX, nil, 0x40, nil)
-  f.flyc_flyc_avoid_param_airport_limit_working = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_airport_limit_working", "Airport Limit Working", base.HEX, nil, 0x80, nil)
-  f.flyc_flyc_avoid_param_avoid_obstacle_working = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_avoid_obstacle_working", "Avoid Obstacle Working", base.HEX, nil, 0x100, nil)
-  f.flyc_flyc_avoid_param_horiz_near_boundary = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_horiz_near_boundary", "Horiz Near Boundary", base.HEX, nil, 0x200, nil)
-  f.flyc_flyc_avoid_param_avoid_overshot_act = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_avoid_overshot_act", "Avoid Overshot Act", base.HEX, nil, 0x400, nil)
-  f.flyc_flyc_avoid_param_vert_low_limit_work_flag = ProtoField.uint16 ("dji_p3.flyc_flyc_avoid_param_vert_low_limit_work_flag", "Vert Low Limit Work Flag", base.HEX, nil, 0x800, nil)
+f.flyc_flyc_vis_avoid_param_masked00 = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_masked00", "Masked00", base.HEX)
+  f.flyc_flyc_vis_avoid_param_avoid_obstacle_enable = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_avoid_obstacle_enable", "Avoid Obstacle Enable", base.HEX, nil, 0x01, nil)
+  f.flyc_flyc_vis_avoid_param_user_avoid_enable = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_user_avoid_enable", "User Avoid Enable", base.HEX, nil, 0x02, nil)
+  f.flyc_flyc_vis_avoid_param_get_avoid_obstacle_work_flag = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_get_avoid_obstacle_work_flag", "Get Avoid Obstacle Work Flag", base.HEX, nil, 0x04, nil)
+  f.flyc_flyc_vis_avoid_param_get_emergency_brake_work_flag = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_get_emergency_brake_work_flag", "Get Emergency Brake Work Flag", base.HEX, nil, 0x08, nil)
+  f.flyc_flyc_vis_avoid_param_gohome_avoid_enable = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_gohome_avoid_enable", "Gohome Avoid Enable", base.HEX, nil, 0x10, nil)
+  f.flyc_flyc_vis_avoid_param_avoid_ground_force_landing = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_avoid_ground_force_landing", "Avoid Ground Force Landing", base.HEX, nil, 0x20, nil)
+  f.flyc_flyc_vis_avoid_param_radius_limit_working = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_radius_limit_working", "Radius Limit Working", base.HEX, nil, 0x40, nil)
+  f.flyc_flyc_vis_avoid_param_airport_limit_working = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_airport_limit_working", "Airport Limit Working", base.HEX, nil, 0x80, nil)
+  f.flyc_flyc_vis_avoid_param_avoid_obstacle_working = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_avoid_obstacle_working", "Avoid Obstacle Working", base.HEX, nil, 0x100, nil)
+  f.flyc_flyc_vis_avoid_param_horiz_near_boundary = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_horiz_near_boundary", "Horiz Near Boundary", base.HEX, nil, 0x200, nil)
+  f.flyc_flyc_vis_avoid_param_avoid_overshot_act = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_avoid_overshot_act", "Avoid Overshot Act", base.HEX, nil, 0x400, nil)
+  f.flyc_flyc_vis_avoid_param_vert_low_limit_work_flag = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_vert_low_limit_work_flag", "Vert Low Limit Work Flag", base.HEX, nil, 0x800, nil)
 
-local function flyc_flyc_avoid_param_dissector(pkt_length, buffer, pinfo, subtree)
+local function flyc_flyc_vis_avoid_param_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.flyc_flyc_avoid_param_masked00, payload(offset, 2))
-    subtree:add_le (f.flyc_flyc_avoid_param_avoid_obstacle_enable, payload(offset, 2))
-    subtree:add_le (f.flyc_flyc_avoid_param_user_avoid_enable, payload(offset, 2))
-    subtree:add_le (f.flyc_flyc_avoid_param_get_avoid_obstacle_work_flag, payload(offset, 2))
-    subtree:add_le (f.flyc_flyc_avoid_param_get_emergency_brake_work_flag, payload(offset, 2))
-    subtree:add_le (f.flyc_flyc_avoid_param_gohome_avoid_enable, payload(offset, 2))
-    subtree:add_le (f.flyc_flyc_avoid_param_avoid_ground_force_landing, payload(offset, 2))
-    subtree:add_le (f.flyc_flyc_avoid_param_radius_limit_working, payload(offset, 2))
-    subtree:add_le (f.flyc_flyc_avoid_param_airport_limit_working, payload(offset, 2))
-    subtree:add_le (f.flyc_flyc_avoid_param_avoid_obstacle_working, payload(offset, 2))
-    subtree:add_le (f.flyc_flyc_avoid_param_horiz_near_boundary, payload(offset, 2))
-    subtree:add_le (f.flyc_flyc_avoid_param_avoid_overshot_act, payload(offset, 2))
-    subtree:add_le (f.flyc_flyc_avoid_param_vert_low_limit_work_flag, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_masked00, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_avoid_obstacle_enable, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_user_avoid_enable, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_get_avoid_obstacle_work_flag, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_get_emergency_brake_work_flag, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_gohome_avoid_enable, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_avoid_ground_force_landing, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_radius_limit_working, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_airport_limit_working, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_avoid_obstacle_working, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_horiz_near_boundary, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_avoid_overshot_act, payload(offset, 2))
+    subtree:add_le (f.flyc_flyc_vis_avoid_param_vert_low_limit_work_flag, payload(offset, 2))
     offset = offset + 2
 
-    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Avoid Param: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Avoid Param: Payload size different than expected") end
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Vis Avoidance Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Vis Avoidance Param: Payload size different than expected") end
 end
 
 -- Flight Controller - Flyc Limit State - 0x55
@@ -5869,13 +6089,14 @@ local FLYC_UART_CMD_DISSECT = {
     [0x09] = flyc_flyc_forbid_status_dissector,
     [0x10] = flyc_a2_commom_dissector,
     [0x32] = flyc_flyc_deform_status_dissector,
+    [0x2a] = flyc_function_control_dissector,
     [0x3e] = flyc_flyc_request_limit_update_dissector,
     [0x42] = flyc_flyc_unlimit_state_dissector,
     [0x43] = flyc_osd_general_dissector,
     [0x44] = flyc_osd_home_dissector,
     [0x45] = flyc_flyc_gps_snr_dissector,
-    [0x51] = flyc_flyc_smart_battery_dissector,
-    [0x53] = flyc_flyc_avoid_param_dissector,
+    [0x51] = flyc_flyc_battery_status_dissector,
+    [0x53] = flyc_flyc_vis_avoid_param_dissector,
     [0x55] = flyc_flyc_limit_state_dissector,
     [0x56] = flyc_flyc_led_status_dissector,
     [0x50] = flyc_imu_data_status_dissector,
@@ -5915,70 +6136,70 @@ enums.GIMBAL_PARAMS_MODE_ENUM = {
     [0x64] = 'OTHER',
 }
 
-f.gimbal_gimbal_params_pitch = ProtoField.int16 ("dji_p3.gimbal_gimbal_params_pitch", "Gimbal Pitch", base.DEC, nil, nil, "0.1 degree, gimbal angular position, zero is forward, max down..up is about -900..470")
-f.gimbal_gimbal_params_roll = ProtoField.int16 ("dji_p3.gimbal_gimbal_params_roll", "Gimbal Roll", base.DEC, nil, nil, "0.1 degree, gimbal angular position, zero is parallel to earth, max right..left is about -410..410")
-f.gimbal_gimbal_params_yaw = ProtoField.int16 ("dji_p3.gimbal_gimbal_params_yaw", "Gimbal Yaw", base.DEC, nil, nil, "0.1 degree, gimbal angular position, -1000 is forward, max right..left is about -1460..-540") -- TODO verify
-f.gimbal_gimbal_params_masked06 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_masked06", "Masked06", base.HEX)
-  f.gimbal_gimbal_params_sub_mode = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_sub_mode", "Sub Mode", base.HEX, nil, 0x20, nil)
-  f.gimbal_gimbal_params_mode = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_mode", "Mode", base.HEX, enums.GIMBAL_PARAMS_MODE_ENUM, 0xc0, nil)
-f.gimbal_gimbal_params_roll_adjust = ProtoField.int8 ("dji_p3.gimbal_gimbal_params_roll_adjust", "Roll Adjust", base.DEC)
-f.gimbal_gimbal_params_yaw_angle = ProtoField.uint16 ("dji_p3.gimbal_gimbal_params_yaw_angle", "Yaw Angle", base.HEX, nil, nil, "Not sure whether Yaw angle or Joytick Direction")
-  f.gimbal_gimbal_params_joystick_ver_direction = ProtoField.uint16 ("dji_p3.gimbal_gimbal_params_joystick_ver_direction", "Joystick Ver Direction", base.HEX, nil, 0x03, nil)
-  f.gimbal_gimbal_params_joystick_hor_direction = ProtoField.uint16 ("dji_p3.gimbal_gimbal_params_joystick_hor_direction", "Joystick Hor Direction", base.HEX, nil, 0x0c, nil)
-f.gimbal_gimbal_params_masked0a = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_masked0a", "Masked0A", base.HEX)
-  f.gimbal_gimbal_params_pitch_in_limit = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_pitch_in_limit", "Pitch In Limit", base.HEX, nil, 0x01, nil)
-  f.gimbal_gimbal_params_roll_in_limit = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_roll_in_limit", "Roll In Limit", base.HEX, nil, 0x02, nil)
-  f.gimbal_gimbal_params_yaw_in_limit = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_yaw_in_limit", "Yaw In Limit", base.HEX, nil, 0x04, nil)
-  f.gimbal_gimbal_params_auto_calibration = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_auto_calibration", "Auto Calibration", base.HEX, nil, 0x08, nil)
-  f.gimbal_gimbal_params_auto_calibration_result = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_auto_calibration_result", "Auto Calibration Result", base.HEX, nil, 0x10, nil)
-  f.gimbal_gimbal_params_stuck = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_stuck", "Stuck", base.HEX, nil, 0x40, nil)
-f.gimbal_gimbal_params_masked0b = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_masked0b", "Masked0B", base.HEX)
-  f.gimbal_gimbal_params_version = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_version", "Version", base.HEX, nil, 0x0f, nil)
-  f.gimbal_gimbal_params_double_click = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_double_click", "Double Click", base.HEX, nil, 0x20, nil)
-  f.gimbal_gimbal_params_triple_click = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_triple_click", "Triple Click", base.HEX, nil, 0x40, nil)
-  f.gimbal_gimbal_params_single_click = ProtoField.uint8 ("dji_p3.gimbal_gimbal_params_single_click", "Single Click", base.HEX, nil, 0x80, nil)
+f.gimbal_params_pitch = ProtoField.int16 ("dji_p3.gimbal_params_pitch", "Gimbal Pitch", base.DEC, nil, nil, "0.1 degree, gimbal angular position, zero is forward, max down..up is about -900..470")
+f.gimbal_params_roll = ProtoField.int16 ("dji_p3.gimbal_params_roll", "Gimbal Roll", base.DEC, nil, nil, "0.1 degree, gimbal angular position, zero is parallel to earth, max right..left is about -410..410")
+f.gimbal_params_yaw = ProtoField.int16 ("dji_p3.gimbal_params_yaw", "Gimbal Yaw", base.DEC, nil, nil, "0.1 degree, gimbal angular position, -1000 is forward, max right..left is about -1460..-540") -- TODO verify
+f.gimbal_params_masked06 = ProtoField.uint8 ("dji_p3.gimbal_params_masked06", "Masked06", base.HEX)
+  f.gimbal_params_sub_mode = ProtoField.uint8 ("dji_p3.gimbal_params_sub_mode", "Sub Mode", base.HEX, nil, 0x20, nil)
+  f.gimbal_params_mode = ProtoField.uint8 ("dji_p3.gimbal_params_mode", "Mode", base.HEX, enums.GIMBAL_PARAMS_MODE_ENUM, 0xc0, nil)
+f.gimbal_params_roll_adjust = ProtoField.int8 ("dji_p3.gimbal_params_roll_adjust", "Roll Adjust", base.DEC)
+f.gimbal_params_yaw_angle = ProtoField.uint16 ("dji_p3.gimbal_params_yaw_angle", "Yaw Angle", base.HEX, nil, nil, "Not sure whether Yaw angle or Joytick Direction")
+  f.gimbal_params_joystick_ver_direction = ProtoField.uint16 ("dji_p3.gimbal_params_joystick_ver_direction", "Joystick Ver Direction", base.HEX, nil, 0x03, nil)
+  f.gimbal_params_joystick_hor_direction = ProtoField.uint16 ("dji_p3.gimbal_params_joystick_hor_direction", "Joystick Hor Direction", base.HEX, nil, 0x0c, nil)
+f.gimbal_params_masked0a = ProtoField.uint8 ("dji_p3.gimbal_params_masked0a", "Masked0A", base.HEX)
+  f.gimbal_params_pitch_in_limit = ProtoField.uint8 ("dji_p3.gimbal_params_pitch_in_limit", "Pitch In Limit", base.HEX, nil, 0x01, nil)
+  f.gimbal_params_roll_in_limit = ProtoField.uint8 ("dji_p3.gimbal_params_roll_in_limit", "Roll In Limit", base.HEX, nil, 0x02, nil)
+  f.gimbal_params_yaw_in_limit = ProtoField.uint8 ("dji_p3.gimbal_params_yaw_in_limit", "Yaw In Limit", base.HEX, nil, 0x04, nil)
+  f.gimbal_params_auto_calibration = ProtoField.uint8 ("dji_p3.gimbal_params_auto_calibration", "Auto Calibration", base.HEX, nil, 0x08, nil)
+  f.gimbal_params_auto_calibration_result = ProtoField.uint8 ("dji_p3.gimbal_params_auto_calibration_result", "Auto Calibration Result", base.HEX, nil, 0x10, nil)
+  f.gimbal_params_stuck = ProtoField.uint8 ("dji_p3.gimbal_params_stuck", "Stuck", base.HEX, nil, 0x40, nil)
+f.gimbal_params_masked0b = ProtoField.uint8 ("dji_p3.gimbal_params_masked0b", "Masked0B", base.HEX)
+  f.gimbal_params_version = ProtoField.uint8 ("dji_p3.gimbal_params_version", "Version", base.HEX, nil, 0x0f, nil)
+  f.gimbal_params_double_click = ProtoField.uint8 ("dji_p3.gimbal_params_double_click", "Double Click", base.HEX, nil, 0x20, nil)
+  f.gimbal_params_triple_click = ProtoField.uint8 ("dji_p3.gimbal_params_triple_click", "Triple Click", base.HEX, nil, 0x40, nil)
+  f.gimbal_params_single_click = ProtoField.uint8 ("dji_p3.gimbal_params_single_click", "Single Click", base.HEX, nil, 0x80, nil)
 
-local function gimbal_gimbal_params_dissector(pkt_length, buffer, pinfo, subtree)
+local function gimbal_params_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.gimbal_gimbal_params_pitch, payload(offset, 2))
+    subtree:add_le (f.gimbal_params_pitch, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_params_roll, payload(offset, 2))
+    subtree:add_le (f.gimbal_params_roll, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_params_yaw, payload(offset, 2))
+    subtree:add_le (f.gimbal_params_yaw, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_params_masked06, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_params_sub_mode, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_params_mode, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_masked06, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_sub_mode, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_mode, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_params_roll_adjust, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_roll_adjust, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_params_yaw_angle, payload(offset, 2))
-    subtree:add_le (f.gimbal_gimbal_params_joystick_ver_direction, payload(offset, 2))
-    subtree:add_le (f.gimbal_gimbal_params_joystick_hor_direction, payload(offset, 2))
+    subtree:add_le (f.gimbal_params_yaw_angle, payload(offset, 2))
+    subtree:add_le (f.gimbal_params_joystick_ver_direction, payload(offset, 2))
+    subtree:add_le (f.gimbal_params_joystick_hor_direction, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_params_masked0a, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_params_pitch_in_limit, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_params_roll_in_limit, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_params_yaw_in_limit, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_params_auto_calibration, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_params_auto_calibration_result, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_params_stuck, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_masked0a, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_pitch_in_limit, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_roll_in_limit, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_yaw_in_limit, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_auto_calibration, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_auto_calibration_result, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_stuck, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_params_masked0b, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_params_version, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_params_double_click, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_params_triple_click, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_params_single_click, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_masked0b, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_version, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_double_click, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_triple_click, payload(offset, 1))
+    subtree:add_le (f.gimbal_params_single_click, payload(offset, 1))
     offset = offset + 1
 
     if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Params: Offset does not match - internal inconsistency") end
@@ -5992,26 +6213,26 @@ enums.GIMBAL_CALIBRATE_CMD_ENUM = {
     [0x01] = 'LinearHall',
 }
 
-f.gimbal_gimbal_calibrate_cmd = ProtoField.uint8 ("dji_p3.gimbal_gimbal_calibrate_cmd", "Calib. Command", base.DEC, enums.GIMBAL_CALIBRATE_CMD_ENUM, nil)
-f.gimbal_gimbal_calibrate_status1 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_calibrate_status1", "Calib. Status1", base.DEC, nil, nil)
-f.gimbal_gimbal_calibrate_status2 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_calibrate_status2", "Calib. Status2", base.DEC, nil, nil)
+f.gimbal_calibrate_cmd = ProtoField.uint8 ("dji_p3.gimbal_calibrate_cmd", "Calib. Command", base.DEC, enums.GIMBAL_CALIBRATE_CMD_ENUM, nil)
+f.gimbal_calibrate_status1 = ProtoField.uint8 ("dji_p3.gimbal_calibrate_status1", "Calib. Status1", base.DEC, nil, nil)
+f.gimbal_calibrate_status2 = ProtoField.uint8 ("dji_p3.gimbal_calibrate_status2", "Calib. Status2", base.DEC, nil, nil)
 
-local function gimbal_gimbal_calibrate_dissector(pkt_length, buffer, pinfo, subtree)
+local function gimbal_calibrate_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
     -- Usually we use pack_type to differentiate between request and respone; on WM100_FW_V01.00.0900 it does not work
     if (payload:len() <= 1) then -- Request
-        subtree:add_le (f.gimbal_gimbal_calibrate_status, payload(offset, 1))
+        subtree:add_le (f.gimbal_calibrate_cmd, payload(offset, 1))
         offset = offset + 1
 
         if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Calibration: Offset does not match - internal inconsistency") end
     else -- Response (but response bit not set)
-        subtree:add_le (f.gimbal_gimbal_calibrate_status1, payload(offset, 1))
+        subtree:add_le (f.gimbal_calibrate_status1, payload(offset, 1))
         offset = offset + 1
 
-        subtree:add_le (f.gimbal_gimbal_calibrate_status2, payload(offset, 1))
+        subtree:add_le (f.gimbal_calibrate_status2, payload(offset, 1))
         offset = offset + 1
 
         if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Calibration: Offset does not match - internal inconsistency") end
@@ -6022,50 +6243,50 @@ end
 
 -- Gimbal - Gimbal Movement - 0x15
 
-f.gimbal_gimbal_move_unknown0 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown0", "Unknown0", base.DEC, nil, nil, "0.04 degree")
-f.gimbal_gimbal_move_unknown1 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown1", "Unknown1", base.DEC, nil, nil, "0.04 degree")
-f.gimbal_gimbal_move_unknown2 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown2", "Unknown2", base.DEC, nil, nil, "0.04 degree")
-f.gimbal_gimbal_move_unknown3 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown3", "Unknown3", base.DEC, nil, nil, "0.1 degree")
-f.gimbal_gimbal_move_unknown4 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown4", "Unknown4", base.DEC, nil, nil, "0.1 degree")
-f.gimbal_gimbal_move_unknown5 = ProtoField.int8 ("dji_p3.gimbal_gimbal_move_unknown5", "Unknown5", base.DEC, nil, nil, "0.1 degree")
-f.gimbal_gimbal_move_unknown6 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_move_unknown6", "Unknown6", base.DEC, nil, nil, "percent")
-f.gimbal_gimbal_move_unknown7 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_move_unknown7", "Unknown7", base.DEC, nil, nil, "percent")
-f.gimbal_gimbal_move_roll_adjust = ProtoField.uint8 ("dji_p3.gimbal_gimbal_move_roll_adjust", "Roll Adjust", base.DEC)
-f.gimbal_gimbal_move_reserved = ProtoField.bytes ("dji_p3.gimbal_gimbal_move_reserved", "Reserved", base.SPACE, nil, nil, "should be zero-filled")
+f.gimbal_move_unknown0 = ProtoField.int8 ("dji_p3.gimbal_move_unknown0", "Unknown0", base.DEC, nil, nil, "0.04 degree")
+f.gimbal_move_unknown1 = ProtoField.int8 ("dji_p3.gimbal_move_unknown1", "Unknown1", base.DEC, nil, nil, "0.04 degree")
+f.gimbal_move_unknown2 = ProtoField.int8 ("dji_p3.gimbal_move_unknown2", "Unknown2", base.DEC, nil, nil, "0.04 degree")
+f.gimbal_move_unknown3 = ProtoField.int8 ("dji_p3.gimbal_move_unknown3", "Unknown3", base.DEC, nil, nil, "0.1 degree")
+f.gimbal_move_unknown4 = ProtoField.int8 ("dji_p3.gimbal_move_unknown4", "Unknown4", base.DEC, nil, nil, "0.1 degree")
+f.gimbal_move_unknown5 = ProtoField.int8 ("dji_p3.gimbal_move_unknown5", "Unknown5", base.DEC, nil, nil, "0.1 degree")
+f.gimbal_move_unknown6 = ProtoField.uint8 ("dji_p3.gimbal_move_unknown6", "Unknown6", base.DEC, nil, nil, "percent")
+f.gimbal_move_unknown7 = ProtoField.uint8 ("dji_p3.gimbal_move_unknown7", "Unknown7", base.DEC, nil, nil, "percent")
+f.gimbal_move_roll_adjust = ProtoField.uint8 ("dji_p3.gimbal_move_roll_adjust", "Roll Adjust", base.DEC)
+f.gimbal_move_reserved = ProtoField.bytes ("dji_p3.gimbal_move_reserved", "Reserved", base.SPACE, nil, nil, "should be zero-filled")
 
-local function gimbal_gimbal_move_dissector(pkt_length, buffer, pinfo, subtree)
+local function gimbal_move_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.gimbal_gimbal_move_unknown0, payload(offset, 1))
+    subtree:add_le (f.gimbal_move_unknown0, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_move_unknown1, payload(offset, 1))
+    subtree:add_le (f.gimbal_move_unknown1, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_move_unknown2, payload(offset, 1))
+    subtree:add_le (f.gimbal_move_unknown2, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_move_unknown3, payload(offset, 1))
+    subtree:add_le (f.gimbal_move_unknown3, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_move_unknown4, payload(offset, 1))
+    subtree:add_le (f.gimbal_move_unknown4, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_move_unknown5, payload(offset, 1))
+    subtree:add_le (f.gimbal_move_unknown5, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_move_unknown6, payload(offset, 1))
+    subtree:add_le (f.gimbal_move_unknown6, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_move_unknown7, payload(offset, 1))
+    subtree:add_le (f.gimbal_move_unknown7, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_move_roll_adjust, payload(offset, 1))
+    subtree:add_le (f.gimbal_move_roll_adjust, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_move_reserved, payload(offset, 11))
+    subtree:add_le (f.gimbal_move_reserved, payload(offset, 11))
     offset = offset + 11
 
     if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Move: Offset does not match - internal inconsistency") end
@@ -6093,14 +6314,14 @@ enums.GIMBAL_TYPE_TYPE_DJI_GIMBAL_TYPE_ENUM = {
     [0x64] = 'OTHER',
 }
 
-f.gimbal_gimbal_type_type = ProtoField.uint8 ("dji_p3.gimbal_gimbal_type_type", "Type", base.HEX, enums.GIMBAL_TYPE_TYPE_DJI_GIMBAL_TYPE_ENUM, nil, nil)
+f.gimbal_type_type = ProtoField.uint8 ("dji_p3.gimbal_type_type", "Type", base.HEX, enums.GIMBAL_TYPE_TYPE_DJI_GIMBAL_TYPE_ENUM, nil, nil)
 
-local function gimbal_gimbal_type_dissector(pkt_length, buffer, pinfo, subtree)
+local function gimbal_type_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.gimbal_gimbal_type_type, payload(offset, 1))
+    subtree:add_le (f.gimbal_type_type, payload(offset, 1))
     offset = offset + 1
 
     if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Type: Offset does not match - internal inconsistency") end
@@ -6109,146 +6330,146 @@ end
 
 -- Gimbal - Gimbal User Params - 0x24
 
-f.gimbal_gimbal_user_params_unknown00 = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown00", "Unknown00", base.SPACE)
-f.gimbal_gimbal_user_params_preset_id = ProtoField.uint8 ("dji_p3.gimbal_gimbal_user_params_preset_id", "Preset Id", base.HEX)
-f.gimbal_gimbal_user_params_unknown03 = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown03", "Unknown03", base.SPACE)
-f.gimbal_gimbal_user_params_yaw_speed = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_yaw_speed", "Yaw Speed", base.HEX)
-f.gimbal_gimbal_user_params_unknown0b = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown0b", "Unknown0B", base.SPACE)
-f.gimbal_gimbal_user_params_pitch_speed = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_pitch_speed", "Pitch Speed", base.HEX)
-f.gimbal_gimbal_user_params_unknown0f = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown0f", "Unknown0F", base.SPACE)
-f.gimbal_gimbal_user_params_yaw_deadband = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_yaw_deadband", "Yaw Deadband", base.HEX)
-f.gimbal_gimbal_user_params_unknown13 = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown13", "Unknown13", base.SPACE)
-f.gimbal_gimbal_user_params_pitch_deadband = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_pitch_deadband", "Pitch Deadband", base.HEX)
-f.gimbal_gimbal_user_params_unknown17 = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown17", "Unknown17", base.SPACE)
-f.gimbal_gimbal_user_params_stick_yaw_speed = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_stick_yaw_speed", "Stick Yaw Speed", base.HEX)
-f.gimbal_gimbal_user_params_unknown1b = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown1b", "Unknown1B", base.SPACE)
-f.gimbal_gimbal_user_params_stick_pitch_speed = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_stick_pitch_speed", "Stick Pitch Speed", base.HEX)
-f.gimbal_gimbal_user_params_unknown1f = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown1f", "Unknown1F", base.SPACE)
-f.gimbal_gimbal_user_params_stick_yaw_smooth = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_stick_yaw_smooth", "Stick Yaw Smooth", base.HEX)
-f.gimbal_gimbal_user_params_unknown23 = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown23", "Unknown23", base.SPACE)
-f.gimbal_gimbal_user_params_stick_pitch_smooth = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_stick_pitch_smooth", "Stick Pitch Smooth", base.HEX)
-f.gimbal_gimbal_user_params_unknown27 = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown27", "Unknown27", base.SPACE)
-f.gimbal_gimbal_user_params_roll_speed = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_roll_speed", "Roll Speed", base.HEX)
-f.gimbal_gimbal_user_params_unknown31 = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown31", "Unknown31", base.SPACE)
-f.gimbal_gimbal_user_params_roll_deadband = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_roll_deadband", "Roll Deadband", base.HEX)
-f.gimbal_gimbal_user_params_unknown35 = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown35", "Unknown35", base.SPACE)
-f.gimbal_gimbal_user_params_yaw_accel = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_yaw_accel", "Yaw Accel", base.HEX)
-f.gimbal_gimbal_user_params_unknown39 = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown39", "Unknown39", base.SPACE)
-f.gimbal_gimbal_user_params_pitch_accel = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_pitch_accel", "Pitch Accel", base.HEX)
-f.gimbal_gimbal_user_params_unknown3d = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown3d", "Unknown3D", base.SPACE)
-f.gimbal_gimbal_user_params_roll_accel = ProtoField.uint16 ("dji_p3.gimbal_gimbal_user_params_roll_accel", "Roll Accel", base.HEX)
-f.gimbal_gimbal_user_params_unknown41 = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown41", "Unknown41", base.SPACE)
-f.gimbal_gimbal_user_params_yaw_smooth_track = ProtoField.uint8 ("dji_p3.gimbal_gimbal_user_params_yaw_smooth_track", "Yaw Smooth Track", base.HEX)
-f.gimbal_gimbal_user_params_unknown44 = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown44", "Unknown44", base.SPACE)
-f.gimbal_gimbal_user_params_pitch_smooth_track = ProtoField.uint8 ("dji_p3.gimbal_gimbal_user_params_pitch_smooth_track", "Pitch Smooth Track", base.HEX)
-f.gimbal_gimbal_user_params_unknown47 = ProtoField.bytes ("dji_p3.gimbal_gimbal_user_params_unknown47", "Unknown47", base.SPACE)
-f.gimbal_gimbal_user_params_roll_smooth_track = ProtoField.uint8 ("dji_p3.gimbal_gimbal_user_params_roll_smooth_track", "Roll Smooth Track", base.HEX)
+f.gimbal_user_params_unknown00 = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown00", "Unknown00", base.SPACE)
+f.gimbal_user_params_preset_id = ProtoField.uint8 ("dji_p3.gimbal_user_params_preset_id", "Preset Id", base.HEX)
+f.gimbal_user_params_unknown03 = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown03", "Unknown03", base.SPACE)
+f.gimbal_user_params_yaw_speed = ProtoField.uint16 ("dji_p3.gimbal_user_params_yaw_speed", "Yaw Speed", base.HEX)
+f.gimbal_user_params_unknown0b = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown0b", "Unknown0B", base.SPACE)
+f.gimbal_user_params_pitch_speed = ProtoField.uint16 ("dji_p3.gimbal_user_params_pitch_speed", "Pitch Speed", base.HEX)
+f.gimbal_user_params_unknown0f = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown0f", "Unknown0F", base.SPACE)
+f.gimbal_user_params_yaw_deadband = ProtoField.uint16 ("dji_p3.gimbal_user_params_yaw_deadband", "Yaw Deadband", base.HEX)
+f.gimbal_user_params_unknown13 = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown13", "Unknown13", base.SPACE)
+f.gimbal_user_params_pitch_deadband = ProtoField.uint16 ("dji_p3.gimbal_user_params_pitch_deadband", "Pitch Deadband", base.HEX)
+f.gimbal_user_params_unknown17 = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown17", "Unknown17", base.SPACE)
+f.gimbal_user_params_stick_yaw_speed = ProtoField.uint16 ("dji_p3.gimbal_user_params_stick_yaw_speed", "Stick Yaw Speed", base.HEX)
+f.gimbal_user_params_unknown1b = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown1b", "Unknown1B", base.SPACE)
+f.gimbal_user_params_stick_pitch_speed = ProtoField.uint16 ("dji_p3.gimbal_user_params_stick_pitch_speed", "Stick Pitch Speed", base.HEX)
+f.gimbal_user_params_unknown1f = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown1f", "Unknown1F", base.SPACE)
+f.gimbal_user_params_stick_yaw_smooth = ProtoField.uint16 ("dji_p3.gimbal_user_params_stick_yaw_smooth", "Stick Yaw Smooth", base.HEX)
+f.gimbal_user_params_unknown23 = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown23", "Unknown23", base.SPACE)
+f.gimbal_user_params_stick_pitch_smooth = ProtoField.uint16 ("dji_p3.gimbal_user_params_stick_pitch_smooth", "Stick Pitch Smooth", base.HEX)
+f.gimbal_user_params_unknown27 = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown27", "Unknown27", base.SPACE)
+f.gimbal_user_params_roll_speed = ProtoField.uint16 ("dji_p3.gimbal_user_params_roll_speed", "Roll Speed", base.HEX)
+f.gimbal_user_params_unknown31 = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown31", "Unknown31", base.SPACE)
+f.gimbal_user_params_roll_deadband = ProtoField.uint16 ("dji_p3.gimbal_user_params_roll_deadband", "Roll Deadband", base.HEX)
+f.gimbal_user_params_unknown35 = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown35", "Unknown35", base.SPACE)
+f.gimbal_user_params_yaw_accel = ProtoField.uint16 ("dji_p3.gimbal_user_params_yaw_accel", "Yaw Accel", base.HEX)
+f.gimbal_user_params_unknown39 = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown39", "Unknown39", base.SPACE)
+f.gimbal_user_params_pitch_accel = ProtoField.uint16 ("dji_p3.gimbal_user_params_pitch_accel", "Pitch Accel", base.HEX)
+f.gimbal_user_params_unknown3d = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown3d", "Unknown3D", base.SPACE)
+f.gimbal_user_params_roll_accel = ProtoField.uint16 ("dji_p3.gimbal_user_params_roll_accel", "Roll Accel", base.HEX)
+f.gimbal_user_params_unknown41 = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown41", "Unknown41", base.SPACE)
+f.gimbal_user_params_yaw_smooth_track = ProtoField.uint8 ("dji_p3.gimbal_user_params_yaw_smooth_track", "Yaw Smooth Track", base.HEX)
+f.gimbal_user_params_unknown44 = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown44", "Unknown44", base.SPACE)
+f.gimbal_user_params_pitch_smooth_track = ProtoField.uint8 ("dji_p3.gimbal_user_params_pitch_smooth_track", "Pitch Smooth Track", base.HEX)
+f.gimbal_user_params_unknown47 = ProtoField.bytes ("dji_p3.gimbal_user_params_unknown47", "Unknown47", base.SPACE)
+f.gimbal_user_params_roll_smooth_track = ProtoField.uint8 ("dji_p3.gimbal_user_params_roll_smooth_track", "Roll Smooth Track", base.HEX)
 
-local function gimbal_gimbal_user_params_dissector(pkt_length, buffer, pinfo, subtree)
+local function gimbal_user_params_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown00, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown00, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_preset_id, payload(offset, 1))
+    subtree:add_le (f.gimbal_user_params_preset_id, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown03, payload(offset, 6))
+    subtree:add_le (f.gimbal_user_params_unknown03, payload(offset, 6))
     offset = offset + 6
 
-    subtree:add_le (f.gimbal_gimbal_user_params_yaw_speed, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_yaw_speed, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown0b, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown0b, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_pitch_speed, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_pitch_speed, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown0f, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown0f, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_yaw_deadband, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_yaw_deadband, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown13, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown13, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_pitch_deadband, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_pitch_deadband, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown17, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown17, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_stick_yaw_speed, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_stick_yaw_speed, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown1b, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown1b, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_stick_pitch_speed, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_stick_pitch_speed, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown1f, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown1f, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_stick_yaw_smooth, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_stick_yaw_smooth, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown23, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown23, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_stick_pitch_smooth, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_stick_pitch_smooth, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown27, payload(offset, 8))
+    subtree:add_le (f.gimbal_user_params_unknown27, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add_le (f.gimbal_gimbal_user_params_roll_speed, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_roll_speed, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown31, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown31, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_roll_deadband, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_roll_deadband, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown35, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown35, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_yaw_accel, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_yaw_accel, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown39, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown39, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_pitch_accel, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_pitch_accel, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown3d, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown3d, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_roll_accel, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_roll_accel, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown41, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown41, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_yaw_smooth_track, payload(offset, 1))
+    subtree:add_le (f.gimbal_user_params_yaw_smooth_track, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown44, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown44, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_pitch_smooth_track, payload(offset, 1))
+    subtree:add_le (f.gimbal_user_params_pitch_smooth_track, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_user_params_unknown47, payload(offset, 2))
+    subtree:add_le (f.gimbal_user_params_unknown47, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_gimbal_user_params_roll_smooth_track, payload(offset, 1))
+    subtree:add_le (f.gimbal_user_params_roll_smooth_track, payload(offset, 1))
     offset = offset + 1
 
     if (offset ~= 74) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal User Params: Offset does not match - internal inconsistency") end
@@ -6257,72 +6478,72 @@ end
 
 -- Gimbal - Gimbal Abnormal Status - 0x27
 
-f.gimbal_gimbal_abnormal_status_masked00 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_masked00", "Masked00", base.HEX)
-  f.gimbal_gimbal_abnormal_status_roll_locked = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_roll_locked", "Roll Locked", base.HEX, nil, 0x01, nil)
-  f.gimbal_gimbal_abnormal_status_pitch_locked = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_pitch_locked", "Pitch Locked", base.HEX, nil, 0x02, nil)
-  f.gimbal_gimbal_abnormal_status_yaw_locked = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_yaw_locked", "Yaw Locked", base.HEX, nil, 0x04, nil)
-f.gimbal_gimbal_abnormal_status_masked01 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_masked01", "Masked01", base.HEX)
-  f.gimbal_gimbal_abnormal_status_joint_lock_after_startup = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_joint_lock_after_startup", "Joint Lock After Startup", base.HEX, nil, 0x01, nil)
-  f.gimbal_gimbal_abnormal_status_joint_lock_when_startup = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_joint_lock_when_startup", "Joint Lock When Startup", base.HEX, nil, 0x02, nil)
-  f.gimbal_gimbal_abnormal_status_motor_protected = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_motor_protected", "Motor Protected", base.HEX, nil, 0x04, nil)
-  f.gimbal_gimbal_abnormal_status_error_recent_when_start_up = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_error_recent_when_start_up", "Error Recent When Start Up", base.HEX, nil, 0x08, nil)
-  f.gimbal_gimbal_abnormal_status_upgrading = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_upgrading", "Upgrading", base.HEX, nil, 0x10, nil)
-  f.gimbal_gimbal_abnormal_status_yaw_limit = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_yaw_limit", "Yaw Limit", base.HEX, nil, 0x20, nil)
-  f.gimbal_gimbal_abnormal_status_error_recent_or_selfie = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_error_recent_or_selfie", "Error Recent Or Selfie", base.HEX, nil, 0x40, nil)
-  f.gimbal_gimbal_abnormal_status_pano_ready = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_pano_ready", "Pano Ready", base.HEX, nil, 0x80, nil)
-f.gimbal_gimbal_abnormal_status_masked02 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_masked02", "Masked02", base.HEX)
-  f.gimbal_gimbal_abnormal_status_fan_direction = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_fan_direction", "Fan Direction", base.HEX, nil, 0x02, nil)
-  f.gimbal_gimbal_abnormal_status_vertical_direction = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_vertical_direction", "Vertical Direction", base.HEX, nil, 0x04, nil)
-  f.gimbal_gimbal_abnormal_status_in_flashlight = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_in_flashlight", "In Flashlight", base.HEX, nil, 0x08, nil)
-  f.gimbal_gimbal_abnormal_status_portrait = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_portrait", "Portrait", base.HEX, nil, 0x10, nil)
-  f.gimbal_gimbal_abnormal_status_gimbal_direction_when_vertical = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_gimbal_direction_when_vertical", "Gimbal Direction When Vertical", base.HEX, nil, 0x20, nil)
-f.gimbal_gimbal_abnormal_status_masked03 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_masked03", "Masked03", base.HEX)
-  f.gimbal_gimbal_abnormal_status_phone_out_gimbal = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_phone_out_gimbal", "Phone Out Gimbal", base.HEX, nil, 0x01, nil)
-  f.gimbal_gimbal_abnormal_status_gimbal_gravity = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_gimbal_gravity", "Gimbal Gravity", base.HEX, nil, 0x06, nil)
-  f.gimbal_gimbal_abnormal_status_yaw_limited_in_tracking = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_yaw_limited_in_tracking", "Yaw Limited In Tracking", base.HEX, nil, 0x20, nil)
-  f.gimbal_gimbal_abnormal_status_pitch_limited_in_tracking = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_pitch_limited_in_tracking", "Pitch Limited In Tracking", base.HEX, nil, 0x40, nil)
-f.gimbal_gimbal_abnormal_status_masked04 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_masked04", "Masked04", base.HEX)
-  f.gimbal_gimbal_abnormal_status_sleep_mode = ProtoField.uint8 ("dji_p3.gimbal_gimbal_abnormal_status_sleep_mode", "Sleep Mode", base.HEX, nil, 0x01, nil)
+f.gimbal_abnormal_status_masked00 = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_masked00", "Masked00", base.HEX)
+  f.gimbal_abnormal_status_roll_locked = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_roll_locked", "Roll Locked", base.HEX, nil, 0x01, nil)
+  f.gimbal_abnormal_status_pitch_locked = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_pitch_locked", "Pitch Locked", base.HEX, nil, 0x02, nil)
+  f.gimbal_abnormal_status_yaw_locked = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_yaw_locked", "Yaw Locked", base.HEX, nil, 0x04, nil)
+f.gimbal_abnormal_status_masked01 = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_masked01", "Masked01", base.HEX)
+  f.gimbal_abnormal_status_joint_lock_after_startup = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_joint_lock_after_startup", "Joint Lock After Startup", base.HEX, nil, 0x01, nil)
+  f.gimbal_abnormal_status_joint_lock_when_startup = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_joint_lock_when_startup", "Joint Lock When Startup", base.HEX, nil, 0x02, nil)
+  f.gimbal_abnormal_status_motor_protected = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_motor_protected", "Motor Protected", base.HEX, nil, 0x04, nil)
+  f.gimbal_abnormal_status_error_recent_when_start_up = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_error_recent_when_start_up", "Error Recent When Start Up", base.HEX, nil, 0x08, nil)
+  f.gimbal_abnormal_status_upgrading = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_upgrading", "Upgrading", base.HEX, nil, 0x10, nil)
+  f.gimbal_abnormal_status_yaw_limit = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_yaw_limit", "Yaw Limit", base.HEX, nil, 0x20, nil)
+  f.gimbal_abnormal_status_error_recent_or_selfie = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_error_recent_or_selfie", "Error Recent Or Selfie", base.HEX, nil, 0x40, nil)
+  f.gimbal_abnormal_status_pano_ready = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_pano_ready", "Pano Ready", base.HEX, nil, 0x80, nil)
+f.gimbal_abnormal_status_masked02 = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_masked02", "Masked02", base.HEX)
+  f.gimbal_abnormal_status_fan_direction = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_fan_direction", "Fan Direction", base.HEX, nil, 0x02, nil)
+  f.gimbal_abnormal_status_vertical_direction = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_vertical_direction", "Vertical Direction", base.HEX, nil, 0x04, nil)
+  f.gimbal_abnormal_status_in_flashlight = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_in_flashlight", "In Flashlight", base.HEX, nil, 0x08, nil)
+  f.gimbal_abnormal_status_portrait = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_portrait", "Portrait", base.HEX, nil, 0x10, nil)
+  f.gimbal_abnormal_status_gimbal_direction_when_vertical = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_gimbal_direction_when_vertical", "Gimbal Direction When Vertical", base.HEX, nil, 0x20, nil)
+f.gimbal_abnormal_status_masked03 = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_masked03", "Masked03", base.HEX)
+  f.gimbal_abnormal_status_phone_out_gimbal = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_phone_out_gimbal", "Phone Out Gimbal", base.HEX, nil, 0x01, nil)
+  f.gimbal_abnormal_status_gimbal_gravity = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_gimbal_gravity", "Gimbal Gravity", base.HEX, nil, 0x06, nil)
+  f.gimbal_abnormal_status_yaw_limited_in_tracking = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_yaw_limited_in_tracking", "Yaw Limited In Tracking", base.HEX, nil, 0x20, nil)
+  f.gimbal_abnormal_status_pitch_limited_in_tracking = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_pitch_limited_in_tracking", "Pitch Limited In Tracking", base.HEX, nil, 0x40, nil)
+f.gimbal_abnormal_status_masked04 = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_masked04", "Masked04", base.HEX)
+  f.gimbal_abnormal_status_sleep_mode = ProtoField.uint8 ("dji_p3.gimbal_abnormal_status_sleep_mode", "Sleep Mode", base.HEX, nil, 0x01, nil)
 
-local function gimbal_gimbal_abnormal_status_dissector(pkt_length, buffer, pinfo, subtree)
+local function gimbal_abnormal_status_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_masked00, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_roll_locked, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_pitch_locked, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_yaw_locked, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_masked00, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_roll_locked, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_pitch_locked, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_yaw_locked, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_masked01, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_joint_lock_after_startup, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_joint_lock_when_startup, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_motor_protected, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_error_recent_when_start_up, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_upgrading, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_yaw_limit, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_error_recent_or_selfie, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_pano_ready, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_masked01, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_joint_lock_after_startup, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_joint_lock_when_startup, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_motor_protected, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_error_recent_when_start_up, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_upgrading, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_yaw_limit, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_error_recent_or_selfie, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_pano_ready, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_masked02, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_fan_direction, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_vertical_direction, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_in_flashlight, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_portrait, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_gimbal_direction_when_vertical, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_masked02, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_fan_direction, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_vertical_direction, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_in_flashlight, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_portrait, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_gimbal_direction_when_vertical, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_masked03, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_phone_out_gimbal, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_gimbal_gravity, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_yaw_limited_in_tracking, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_pitch_limited_in_tracking, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_masked03, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_phone_out_gimbal, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_gimbal_gravity, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_yaw_limited_in_tracking, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_pitch_limited_in_tracking, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_masked04, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_abnormal_status_sleep_mode, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_masked04, payload(offset, 1))
+    subtree:add_le (f.gimbal_abnormal_status_sleep_mode, payload(offset, 1))
     offset = offset + 1
 
     if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Abnormal Status: Offset does not match - internal inconsistency") end
@@ -6345,36 +6566,36 @@ enums.GIMBAL_TUTORIAL_STATUS_CUR_STEP_TUTORIAL_STATUS_ENUM = {
     [0x0a] = 'STEP_APP_CONTROL',
 }
 
-f.gimbal_gimbal_tutorial_status_cur_step = ProtoField.uint8 ("dji_p3.gimbal_gimbal_tutorial_status_cur_step", "Cur Step", base.HEX, enums.GIMBAL_TUTORIAL_STATUS_CUR_STEP_TUTORIAL_STATUS_ENUM, nil, nil)
-f.gimbal_gimbal_tutorial_status_step_status = ProtoField.uint32 ("dji_p3.gimbal_gimbal_tutorial_status_step_status", "Step Status", base.HEX)
-  f.gimbal_gimbal_tutorial_status_is_unlock = ProtoField.uint32 ("dji_p3.gimbal_gimbal_tutorial_status_is_unlock", "Is Unlock", base.HEX, nil, 0x01, nil)
-  f.gimbal_gimbal_tutorial_status_is_upright = ProtoField.uint32 ("dji_p3.gimbal_gimbal_tutorial_status_is_upright", "Is Upright", base.HEX, nil, 0x02, nil)
-  f.gimbal_gimbal_tutorial_status_is_follow_finish = ProtoField.uint32 ("dji_p3.gimbal_gimbal_tutorial_status_is_follow_finish", "Is Follow Finish", base.HEX, nil, 0x04, nil)
-  f.gimbal_gimbal_tutorial_status_is_stick_finish = ProtoField.uint32 ("dji_p3.gimbal_gimbal_tutorial_status_is_stick_finish", "Is Stick Finish", base.HEX, nil, 0x08, nil)
-  f.gimbal_gimbal_tutorial_status_is_lock_direction_finish = ProtoField.uint32 ("dji_p3.gimbal_gimbal_tutorial_status_is_lock_direction_finish", "Is Lock Direction Finish", base.HEX, nil, 0x10, nil)
-  f.gimbal_gimbal_tutorial_status_is_recent_finish = ProtoField.uint32 ("dji_p3.gimbal_gimbal_tutorial_status_is_recent_finish", "Is Recent Finish", base.HEX, nil, 0x20, nil)
-  f.gimbal_gimbal_tutorial_status_is_selfie_finish = ProtoField.uint32 ("dji_p3.gimbal_gimbal_tutorial_status_is_selfie_finish", "Is Selfie Finish", base.HEX, nil, 0x40, nil)
-  f.gimbal_gimbal_tutorial_status_is_handle_push_finish = ProtoField.uint32 ("dji_p3.gimbal_gimbal_tutorial_status_is_handle_push_finish", "Is Handle Push Finish", base.HEX, nil, 0x80, nil)
-  f.gimbal_gimbal_tutorial_status_is_app_control_finish = ProtoField.uint32 ("dji_p3.gimbal_gimbal_tutorial_status_is_app_control_finish", "Is App Control Finish", base.HEX, nil, 0x100, nil)
+f.gimbal_tutorial_status_cur_step = ProtoField.uint8 ("dji_p3.gimbal_tutorial_status_cur_step", "Cur Step", base.HEX, enums.GIMBAL_TUTORIAL_STATUS_CUR_STEP_TUTORIAL_STATUS_ENUM, nil, nil)
+f.gimbal_tutorial_status_step_status = ProtoField.uint32 ("dji_p3.gimbal_tutorial_status_step_status", "Step Status", base.HEX)
+  f.gimbal_tutorial_status_is_unlock = ProtoField.uint32 ("dji_p3.gimbal_tutorial_status_is_unlock", "Is Unlock", base.HEX, nil, 0x01, nil)
+  f.gimbal_tutorial_status_is_upright = ProtoField.uint32 ("dji_p3.gimbal_tutorial_status_is_upright", "Is Upright", base.HEX, nil, 0x02, nil)
+  f.gimbal_tutorial_status_is_follow_finish = ProtoField.uint32 ("dji_p3.gimbal_tutorial_status_is_follow_finish", "Is Follow Finish", base.HEX, nil, 0x04, nil)
+  f.gimbal_tutorial_status_is_stick_finish = ProtoField.uint32 ("dji_p3.gimbal_tutorial_status_is_stick_finish", "Is Stick Finish", base.HEX, nil, 0x08, nil)
+  f.gimbal_tutorial_status_is_lock_direction_finish = ProtoField.uint32 ("dji_p3.gimbal_tutorial_status_is_lock_direction_finish", "Is Lock Direction Finish", base.HEX, nil, 0x10, nil)
+  f.gimbal_tutorial_status_is_recent_finish = ProtoField.uint32 ("dji_p3.gimbal_tutorial_status_is_recent_finish", "Is Recent Finish", base.HEX, nil, 0x20, nil)
+  f.gimbal_tutorial_status_is_selfie_finish = ProtoField.uint32 ("dji_p3.gimbal_tutorial_status_is_selfie_finish", "Is Selfie Finish", base.HEX, nil, 0x40, nil)
+  f.gimbal_tutorial_status_is_handle_push_finish = ProtoField.uint32 ("dji_p3.gimbal_tutorial_status_is_handle_push_finish", "Is Handle Push Finish", base.HEX, nil, 0x80, nil)
+  f.gimbal_tutorial_status_is_app_control_finish = ProtoField.uint32 ("dji_p3.gimbal_tutorial_status_is_app_control_finish", "Is App Control Finish", base.HEX, nil, 0x100, nil)
 
-local function gimbal_gimbal_tutorial_status_dissector(pkt_length, buffer, pinfo, subtree)
+local function gimbal_tutorial_status_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.gimbal_gimbal_tutorial_status_cur_step, payload(offset, 1))
+    subtree:add_le (f.gimbal_tutorial_status_cur_step, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_tutorial_status_step_status, payload(offset, 4))
-    subtree:add_le (f.gimbal_gimbal_tutorial_status_is_unlock, payload(offset, 4))
-    subtree:add_le (f.gimbal_gimbal_tutorial_status_is_upright, payload(offset, 4))
-    subtree:add_le (f.gimbal_gimbal_tutorial_status_is_follow_finish, payload(offset, 4))
-    subtree:add_le (f.gimbal_gimbal_tutorial_status_is_stick_finish, payload(offset, 4))
-    subtree:add_le (f.gimbal_gimbal_tutorial_status_is_lock_direction_finish, payload(offset, 4))
-    subtree:add_le (f.gimbal_gimbal_tutorial_status_is_recent_finish, payload(offset, 4))
-    subtree:add_le (f.gimbal_gimbal_tutorial_status_is_selfie_finish, payload(offset, 4))
-    subtree:add_le (f.gimbal_gimbal_tutorial_status_is_handle_push_finish, payload(offset, 4))
-    subtree:add_le (f.gimbal_gimbal_tutorial_status_is_app_control_finish, payload(offset, 4))
+    subtree:add_le (f.gimbal_tutorial_status_step_status, payload(offset, 4))
+    subtree:add_le (f.gimbal_tutorial_status_is_unlock, payload(offset, 4))
+    subtree:add_le (f.gimbal_tutorial_status_is_upright, payload(offset, 4))
+    subtree:add_le (f.gimbal_tutorial_status_is_follow_finish, payload(offset, 4))
+    subtree:add_le (f.gimbal_tutorial_status_is_stick_finish, payload(offset, 4))
+    subtree:add_le (f.gimbal_tutorial_status_is_lock_direction_finish, payload(offset, 4))
+    subtree:add_le (f.gimbal_tutorial_status_is_recent_finish, payload(offset, 4))
+    subtree:add_le (f.gimbal_tutorial_status_is_selfie_finish, payload(offset, 4))
+    subtree:add_le (f.gimbal_tutorial_status_is_handle_push_finish, payload(offset, 4))
+    subtree:add_le (f.gimbal_tutorial_status_is_app_control_finish, payload(offset, 4))
     offset = offset + 4
 
     if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Tutorial Status: Offset does not match - internal inconsistency") end
@@ -6383,18 +6604,18 @@ end
 
 -- Gimbal - Gimbal Auto Calibration Status - 0x30
 
-f.gimbal_gimbal_auto_calibration_status_progress = ProtoField.uint8 ("dji_p3.gimbal_gimbal_auto_calibration_status_progress", "Progress", base.HEX)
-f.gimbal_gimbal_auto_calibration_status_status = ProtoField.uint8 ("dji_p3.gimbal_gimbal_auto_calibration_status_status", "Status", base.HEX)
+f.gimbal_auto_calibration_status_progress = ProtoField.uint8 ("dji_p3.gimbal_auto_calibration_status_progress", "Progress", base.HEX)
+f.gimbal_auto_calibration_status_status = ProtoField.uint8 ("dji_p3.gimbal_auto_calibration_status_status", "Status", base.HEX)
 
-local function gimbal_gimbal_auto_calibration_status_dissector(pkt_length, buffer, pinfo, subtree)
+local function gimbal_auto_calibration_status_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.gimbal_gimbal_auto_calibration_status_progress, payload(offset, 1))
+    subtree:add_le (f.gimbal_auto_calibration_status_progress, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_gimbal_auto_calibration_status_status, payload(offset, 1))
+    subtree:add_le (f.gimbal_auto_calibration_status_status, payload(offset, 1))
     offset = offset + 1
 
     if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Auto Calibration Status: Offset does not match - internal inconsistency") end
@@ -6403,14 +6624,14 @@ end
 
 -- Gimbal - Gimbal Battery Info - 0x33
 
-f.gimbal_gimbal_battery_info_a = ProtoField.uint8 ("dji_p3.gimbal_gimbal_battery_info_a", "A", base.HEX)
+f.gimbal_battery_info_a = ProtoField.uint8 ("dji_p3.gimbal_battery_info_a", "A", base.HEX)
 
-local function gimbal_gimbal_battery_info_dissector(pkt_length, buffer, pinfo, subtree)
+local function gimbal_battery_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.gimbal_gimbal_battery_info_a, payload(offset, 1))
+    subtree:add_le (f.gimbal_battery_info_a, payload(offset, 1))
     offset = offset + 1
 
     if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Battery Info: Offset does not match - internal inconsistency") end
@@ -6419,16 +6640,16 @@ end
 
 -- Gimbal - Gimbal Timelapse Status - 0x38
 
-f.gimbal_gimbal_timelapse_status_masked00 = ProtoField.uint8 ("dji_p3.gimbal_gimbal_timelapse_status_masked00", "Masked00", base.HEX)
-  f.gimbal_gimbal_timelapse_status_timelapse_status = ProtoField.uint8 ("dji_p3.gimbal_gimbal_timelapse_status_timelapse_status", "Timelapse Status", base.HEX, nil, 0x03, nil)
+f.gimbal_timelapse_status_masked00 = ProtoField.uint8 ("dji_p3.gimbal_timelapse_status_masked00", "Masked00", base.HEX)
+  f.gimbal_timelapse_status_timelapse_status = ProtoField.uint8 ("dji_p3.gimbal_timelapse_status_timelapse_status", "Timelapse Status", base.HEX, nil, 0x03, nil)
 
-local function gimbal_gimbal_timelapse_status_dissector(pkt_length, buffer, pinfo, subtree)
+local function gimbal_timelapse_status_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.gimbal_gimbal_timelapse_status_masked00, payload(offset, 1))
-    subtree:add_le (f.gimbal_gimbal_timelapse_status_timelapse_status, payload(offset, 1))
+    subtree:add_le (f.gimbal_timelapse_status_masked00, payload(offset, 1))
+    subtree:add_le (f.gimbal_timelapse_status_timelapse_status, payload(offset, 1))
     offset = offset + 1
 
     if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Timelapse Status: Offset does not match - internal inconsistency") end
@@ -6436,16 +6657,16 @@ local function gimbal_gimbal_timelapse_status_dissector(pkt_length, buffer, pinf
 end
 
 local GIMBAL_UART_CMD_DISSECT = {
-    [0x05] = gimbal_gimbal_params_dissector,
-    [0x08] = gimbal_gimbal_calibrate_dissector,
-    [0x15] = gimbal_gimbal_move_dissector,
-    [0x1c] = gimbal_gimbal_type_dissector,
-    [0x24] = gimbal_gimbal_user_params_dissector,
-    [0x27] = gimbal_gimbal_abnormal_status_dissector,
-    [0x2b] = gimbal_gimbal_tutorial_status_dissector,
-    [0x30] = gimbal_gimbal_auto_calibration_status_dissector,
-    [0x33] = gimbal_gimbal_battery_info_dissector,
-    [0x38] = gimbal_gimbal_timelapse_status_dissector,
+    [0x05] = gimbal_params_dissector,
+    [0x08] = gimbal_calibrate_dissector,
+    [0x15] = gimbal_move_dissector,
+    [0x1c] = gimbal_type_dissector,
+    [0x24] = gimbal_user_params_dissector,
+    [0x27] = gimbal_abnormal_status_dissector,
+    [0x2b] = gimbal_tutorial_status_dissector,
+    [0x30] = gimbal_auto_calibration_status_dissector,
+    [0x33] = gimbal_battery_info_dissector,
+    [0x38] = gimbal_timelapse_status_dissector,
 }
 
 -- Center Board - Center Battery Common - 0x06
@@ -6546,115 +6767,115 @@ local CENTER_BRD_UART_CMD_DISSECT = {
     [0x06] = center_brd_center_battery_common_dissector,
 }
 
--- Remote Control - Rc Params - 0x05
+-- Remote Control - RC Push Parameter - 0x05
 
-f.rc_rc_params_aileron = ProtoField.uint16 ("dji_p3.rc_rc_params_aileron", "Aileron", base.HEX)
-f.rc_rc_params_elevator = ProtoField.uint16 ("dji_p3.rc_rc_params_elevator", "Elevator", base.HEX)
-f.rc_rc_params_throttle = ProtoField.uint16 ("dji_p3.rc_rc_params_throttle", "Throttle", base.HEX)
-f.rc_rc_params_rudder = ProtoField.uint16 ("dji_p3.rc_rc_params_rudder", "Rudder", base.HEX)
-f.rc_rc_params_gyro_value = ProtoField.uint16 ("dji_p3.rc_rc_params_gyro_value", "Gyro Value", base.HEX)
-f.rc_rc_params_wheel_info = ProtoField.uint8 ("dji_p3.rc_rc_params_wheel_info", "Wheel Info", base.HEX)
-  f.rc_rc_params_wheel_click_status = ProtoField.uint8 ("dji_p3.rc_rc_params_wheel_click_status", "Wheel Click Status", base.HEX, nil, 0x01, nil)
-  f.rc_rc_params_wheel_offset = ProtoField.uint8 ("dji_p3.rc_rc_params_wheel_offset", "Wheel Offset", base.HEX, nil, 0x3e, nil)
-  f.rc_rc_params_not_wheel_positive = ProtoField.uint8 ("dji_p3.rc_rc_params_not_wheel_positive", "Not Wheel Positive", base.HEX, nil, 0x40, nil)
-  f.rc_rc_params_wheel_changed = ProtoField.uint8 ("dji_p3.rc_rc_params_wheel_changed", "Wheel Changed", base.HEX, nil, 0x80, nil)
-f.rc_rc_params_masked0b = ProtoField.uint8 ("dji_p3.rc_rc_params_masked0b", "Masked0B", base.HEX)
-  f.rc_rc_params_go_home_button_pressed = ProtoField.uint8 ("dji_p3.rc_rc_params_go_home_button_pressed", "Go Home Button Pressed", base.HEX, nil, 0x08, nil)
-  f.rc_rc_params_mode = ProtoField.uint8 ("dji_p3.rc_rc_params_mode", "Mode", base.HEX, nil, 0x30, nil)
-  f.rc_rc_params_get_foot_stool = ProtoField.uint8 ("dji_p3.rc_rc_params_get_foot_stool", "Get Foot Stool", base.HEX, nil, 0xc0, nil)
-f.rc_rc_params_masked0c = ProtoField.uint8 ("dji_p3.rc_rc_params_masked0c", "Masked0C", base.HEX)
-  f.rc_rc_params_custom2 = ProtoField.uint8 ("dji_p3.rc_rc_params_custom2", "Custom2", base.HEX, nil, 0x08, nil)
-  f.rc_rc_params_custom1 = ProtoField.uint8 ("dji_p3.rc_rc_params_custom1", "Custom1", base.HEX, nil, 0x10, nil)
-  f.rc_rc_params_playback_status = ProtoField.uint8 ("dji_p3.rc_rc_params_playback_status", "PlayBack Status", base.HEX, nil, 0x20, nil)
-  f.rc_rc_params_shutter_status = ProtoField.uint8 ("dji_p3.rc_rc_params_shutter_status", "Shutter Status", base.HEX, nil, 0x40, nil)
-  f.rc_rc_params_record_status = ProtoField.uint8 ("dji_p3.rc_rc_params_record_status", "Record Status", base.HEX, nil, 0x80, nil)
-f.rc_rc_params_band_width = ProtoField.uint8 ("dji_p3.rc_rc_params_band_width", "Band Width", base.HEX)
+f.rc_push_param_aileron = ProtoField.uint16 ("dji_p3.rc_push_param_aileron", "Aileron", base.HEX)
+f.rc_push_param_elevator = ProtoField.uint16 ("dji_p3.rc_push_param_elevator", "Elevator", base.HEX)
+f.rc_push_param_throttle = ProtoField.uint16 ("dji_p3.rc_push_param_throttle", "Throttle", base.HEX)
+f.rc_push_param_rudder = ProtoField.uint16 ("dji_p3.rc_push_param_rudder", "Rudder", base.HEX)
+f.rc_push_param_gyro_value = ProtoField.uint16 ("dji_p3.rc_push_param_gyro_value", "Gyro Value", base.HEX)
+f.rc_push_param_wheel_info = ProtoField.uint8 ("dji_p3.rc_push_param_wheel_info", "Wheel Info", base.HEX)
+  f.rc_push_param_wheel_click_status = ProtoField.uint8 ("dji_p3.rc_push_param_wheel_click_status", "Wheel Click Status", base.HEX, nil, 0x01, nil)
+  f.rc_push_param_wheel_offset = ProtoField.uint8 ("dji_p3.rc_push_param_wheel_offset", "Wheel Offset", base.HEX, nil, 0x3e, nil)
+  f.rc_push_param_not_wheel_positive = ProtoField.uint8 ("dji_p3.rc_push_param_not_wheel_positive", "Not Wheel Positive", base.HEX, nil, 0x40, nil)
+  f.rc_push_param_wheel_changed = ProtoField.uint8 ("dji_p3.rc_push_param_wheel_changed", "Wheel Changed", base.HEX, nil, 0x80, nil)
+f.rc_push_param_masked0b = ProtoField.uint8 ("dji_p3.rc_push_param_masked0b", "Masked0B", base.HEX)
+  f.rc_push_param_go_home_button_pressed = ProtoField.uint8 ("dji_p3.rc_push_param_go_home_button_pressed", "Go Home Button Pressed", base.HEX, nil, 0x08, nil)
+  f.rc_push_param_mode = ProtoField.uint8 ("dji_p3.rc_push_param_mode", "Mode", base.HEX, nil, 0x30, nil)
+  f.rc_push_param_get_foot_stool = ProtoField.uint8 ("dji_p3.rc_push_param_get_foot_stool", "Get Foot Stool", base.HEX, nil, 0xc0, nil)
+f.rc_push_param_masked0c = ProtoField.uint8 ("dji_p3.rc_push_param_masked0c", "Masked0C", base.HEX)
+  f.rc_push_param_custom2 = ProtoField.uint8 ("dji_p3.rc_push_param_custom2", "Custom2", base.HEX, nil, 0x08, nil)
+  f.rc_push_param_custom1 = ProtoField.uint8 ("dji_p3.rc_push_param_custom1", "Custom1", base.HEX, nil, 0x10, nil)
+  f.rc_push_param_playback_status = ProtoField.uint8 ("dji_p3.rc_push_param_playback_status", "PlayBack Status", base.HEX, nil, 0x20, nil)
+  f.rc_push_param_shutter_status = ProtoField.uint8 ("dji_p3.rc_push_param_shutter_status", "Shutter Status", base.HEX, nil, 0x40, nil)
+  f.rc_push_param_record_status = ProtoField.uint8 ("dji_p3.rc_push_param_record_status", "Record Status", base.HEX, nil, 0x80, nil)
+f.rc_push_param_band_width = ProtoField.uint8 ("dji_p3.rc_push_param_band_width", "Band Width", base.HEX)
 
-local function rc_rc_params_dissector(pkt_length, buffer, pinfo, subtree)
+local function rc_push_param_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.rc_rc_params_aileron, payload(offset, 2))
+    subtree:add_le (f.rc_push_param_aileron, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rc_rc_params_elevator, payload(offset, 2))
+    subtree:add_le (f.rc_push_param_elevator, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rc_rc_params_throttle, payload(offset, 2))
+    subtree:add_le (f.rc_push_param_throttle, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rc_rc_params_rudder, payload(offset, 2))
+    subtree:add_le (f.rc_push_param_rudder, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rc_rc_params_gyro_value, payload(offset, 2))
+    subtree:add_le (f.rc_push_param_gyro_value, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.rc_rc_params_wheel_info, payload(offset, 1))
-    subtree:add_le (f.rc_rc_params_wheel_click_status, payload(offset, 1))
-    subtree:add_le (f.rc_rc_params_wheel_offset, payload(offset, 1))
-    subtree:add_le (f.rc_rc_params_not_wheel_positive, payload(offset, 1))
-    subtree:add_le (f.rc_rc_params_wheel_changed, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_wheel_info, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_wheel_click_status, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_wheel_offset, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_not_wheel_positive, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_wheel_changed, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rc_rc_params_masked0b, payload(offset, 1))
-    subtree:add_le (f.rc_rc_params_go_home_button_pressed, payload(offset, 1))
-    subtree:add_le (f.rc_rc_params_mode, payload(offset, 1))
-    subtree:add_le (f.rc_rc_params_get_foot_stool, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_masked0b, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_go_home_button_pressed, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_mode, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_get_foot_stool, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rc_rc_params_masked0c, payload(offset, 1))
-    subtree:add_le (f.rc_rc_params_custom2, payload(offset, 1))
-    subtree:add_le (f.rc_rc_params_custom1, payload(offset, 1))
-    subtree:add_le (f.rc_rc_params_playback_status, payload(offset, 1))
-    subtree:add_le (f.rc_rc_params_shutter_status, payload(offset, 1))
-    subtree:add_le (f.rc_rc_params_record_status, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_masked0c, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_custom2, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_custom1, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_playback_status, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_shutter_status, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_record_status, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rc_rc_params_band_width, payload(offset, 1))
+    subtree:add_le (f.rc_push_param_band_width, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 14) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Rc Params: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Rc Params: Payload size different than expected") end
+    if (offset ~= 14) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"RC Push Parameter: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"RC Push Parameter: Payload size different than expected") end
 end
 
 local RC_UART_CMD_DISSECT = {
-    [0x05] = rc_rc_params_dissector,
+    [0x05] = rc_push_param_dissector,
 }
 
--- Wi-Fi - Wifi Signal - 0x09
+-- Wi-Fi - WiFi Ap Push RSSI - 0x09
 
-f.wifi_wifi_signal_signal = ProtoField.uint8 ("dji_p3.wifi_wifi_signal_signal", "Signal", base.HEX)
+f.wifi_ap_push_rssi_signal = ProtoField.uint8 ("dji_p3.wifi_ap_push_rssi_signal", "Signal", base.HEX)
 
-local function wifi_wifi_signal_dissector(pkt_length, buffer, pinfo, subtree)
+local function wifi_ap_push_rssi_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.wifi_wifi_signal_signal, payload(offset, 1))
+    subtree:add_le (f.wifi_ap_push_rssi_signal, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Wifi Signal: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Wifi Signal: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"WiFi Ap Push RSSI: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"WiFi Ap Push RSSI: Payload size different than expected") end
 end
 
--- Wi-Fi - Wifi First App Mac - 0x11
+-- Wi-Fi - WiFi Ap Push Sta MAC - 0x11
 
-f.wifi_wifi_first_app_mac_mac = ProtoField.ether ("dji_p3.wifi_wifi_first_app_mac_mac", "Mac")
+f.wifi_ap_push_sta_mac_mac = ProtoField.ether ("dji_p3.wifi_ap_push_sta_mac_mac", "Mac")
 
-local function wifi_wifi_first_app_mac_dissector(pkt_length, buffer, pinfo, subtree)
+local function wifi_ap_push_sta_mac_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.wifi_wifi_first_app_mac_mac, payload(offset, 6))
+    subtree:add_le (f.wifi_ap_push_sta_mac_mac, payload(offset, 6))
     offset = offset + 6
 
-    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Wifi First App Mac: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Wifi First App Mac: Payload size different than expected") end
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"WiFi Ap Push Sta MAC: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"WiFi Ap Push Sta MAC: Payload size different than expected") end
 end
 
--- Wi-Fi - Wifi Elec Signal - 0x12
+-- Wi-Fi - WiFi Ap Get Phy Param - 0x12
 
 enums.WIFI_ELEC_SIGNAL_SIGNAL_STATUS_ENUM = {
     [0x00] = 'Good',
@@ -6663,50 +6884,50 @@ enums.WIFI_ELEC_SIGNAL_SIGNAL_STATUS_ENUM = {
     [0x64] = 'OTHER',
 }
 
-f.wifi_wifi_elec_signal_signal_status = ProtoField.uint8 ("dji_p3.wifi_wifi_elec_signal_signal_status", "Signal Status", base.HEX, enums.WIFI_ELEC_SIGNAL_SIGNAL_STATUS_ENUM, nil, nil)
+f.wifi_ap_get_phy_param_signal_status = ProtoField.uint8 ("dji_p3.wifi_ap_get_phy_param_signal_status", "Signal Status", base.HEX, enums.WIFI_ELEC_SIGNAL_SIGNAL_STATUS_ENUM, nil, nil)
 
-local function wifi_wifi_elec_signal_dissector(pkt_length, buffer, pinfo, subtree)
+local function wifi_ap_get_phy_param_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.wifi_wifi_elec_signal_signal_status, payload(offset, 1))
+    subtree:add_le (f.wifi_ap_get_phy_param_signal_status, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Wifi Elec Signal: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Wifi Elec Signal: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"WiFi Ap Get Phy Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"WiFi Ap Get Phy Param: Payload size different than expected") end
 end
 
--- Wi-Fi - Wifi Sweep Frequency - 0x2a
+-- Wi-Fi - WiFi Ap Push Chan Noise - 0x2a
 
-f.wifi_wifi_sweep_frequency_total = ProtoField.uint32 ("dji_p3.wifi_wifi_sweep_frequency_total", "Total", base.HEX)
+f.wifi_ap_push_chan_noise_total = ProtoField.uint32 ("dji_p3.wifi_ap_push_chan_noise_total", "Total", base.HEX)
 
-local function wifi_wifi_sweep_frequency_dissector(pkt_length, buffer, pinfo, subtree)
+local function wifi_ap_push_chan_noise_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.wifi_wifi_sweep_frequency_total, payload(offset, 4))
+    subtree:add_le (f.wifi_ap_push_chan_noise_total, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Wifi Sweep Frequency: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Wifi Sweep Frequency: Payload size different than expected") end
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"WiFi Ap Push Chan Noise: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"WiFi Ap Push Chan Noise: Payload size different than expected") end
 end
 
 local WIFI_UART_CMD_DISSECT = {
-    [0x09] = wifi_wifi_signal_dissector,
-    [0x11] = wifi_wifi_first_app_mac_dissector,
-    [0x12] = wifi_wifi_elec_signal_dissector,
-    [0x2a] = wifi_wifi_sweep_frequency_dissector,
+    [0x09] = wifi_ap_push_rssi_dissector,
+    [0x11] = wifi_ap_push_sta_mac_dissector,
+    [0x12] = wifi_ap_get_phy_param_dissector,
+    [0x2a] = wifi_ap_push_chan_noise_dissector,
 }
 
--- DM36x proc. - Set GS Ctrl - 0x01
+-- DM36x proc. - DM36x Send Gnd Ctrl Info - 0x01
 
-f.dm36x_gs_ctrl_param_id = ProtoField.uint8 ("dji_p3.dm36x_gs_ctrl_param_id", "Param ID", base.DEC)
-f.dm36x_gs_ctrl_param_len = ProtoField.uint8 ("dji_p3.dm36x_gs_ctrl_param_len", "Param Len", base.DEC)
-f.dm36x_gs_ctrl_param_val8 = ProtoField.uint8 ("dji_p3.dm36x_gs_ctrl_param_val8", "Param 8-bit Val", base.DEC)
+f.dm36x_gnd_ctrl_info_param_id = ProtoField.uint8 ("dji_p3.dm36x_gnd_ctrl_info_param_id", "Param ID", base.DEC)
+f.dm36x_gnd_ctrl_info_param_len = ProtoField.uint8 ("dji_p3.dm36x_gnd_ctrl_info_param_len", "Param Len", base.DEC)
+f.dm36x_gnd_ctrl_info_param_val8 = ProtoField.uint8 ("dji_p3.dm36x_gnd_ctrl_info_param_val8", "Param 8-bit Val", base.DEC)
 
-local function general_set_gs_ctrl_dissector(pkt_length, buffer, pinfo, subtree)
+local function dm36x_send_gnd_ctrl_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
@@ -6716,25 +6937,25 @@ local function general_set_gs_ctrl_dissector(pkt_length, buffer, pinfo, subtree)
     while payload:len() >= offset+3 do
         nparam = nparam + 1
 
-        subtree:add_le (f.dm36x_gs_ctrl_param_id, payload(offset, 1))
+        subtree:add_le (f.dm36x_gnd_ctrl_info_param_id, payload(offset, 1))
         offset = offset + 1
 
         local param_len = payload(offset,1):le_uint()
-        subtree:add_le (f.dm36x_gs_ctrl_param_len, payload(offset, 1))
+        subtree:add_le (f.dm36x_gnd_ctrl_info_param_len, payload(offset, 1))
         offset = offset + 1
 
         --if (param_len == 1) then -- only support one param_len
-        subtree:add_le (f.dm36x_gs_ctrl_param_val8, payload(offset, 1))
+        subtree:add_le (f.dm36x_gnd_ctrl_info_param_val8, payload(offset, 1))
         offset = offset + param_len
    end
 
-    if (offset ~= 3*nparam) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set GS Ctrl: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set GS Ctrl: Payload size different than expected") end
+    if (offset ~= 3*nparam) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"DM36x Send Gnd Ctrl Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"DM36x Send Gnd Ctrl Info: Payload size different than expected") end
 end
 
--- DM36x proc. - Get GS Ctrl - 0x02
+-- DM36x proc. - DM36x Recv Gnd Ctrl Info - 0x02
 
-local function general_get_gs_ctrl_dissector(pkt_length, buffer, pinfo, subtree)
+local function dm36x_recv_gnd_ctrl_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
@@ -6744,76 +6965,74 @@ local function general_get_gs_ctrl_dissector(pkt_length, buffer, pinfo, subtree)
     while payload:len() >= offset+1 do
         nparam = nparam + 1
 
-        subtree:add_le (f.dm36x_gs_ctrl_param_id, payload(offset, 1))
+        subtree:add_le (f.dm36x_gnd_ctrl_info_param_id, payload(offset, 1))
         offset = offset + 1
    end
 
-    if (offset ~= 1*nparam) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Get GS Ctrl: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Get GS Ctrl: Payload size different than expected") end
+    if (offset ~= 1*nparam) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"DM36x Recv Gnd Ctrl Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"DM36x Recv Gnd Ctrl Info: Payload size different than expected") end
 end
 
--- DM36x proc. - Dm368 Status - 0x06
+-- DM36x proc. - DM36x Send UAV Stat Info - 0x06
 
-f.dm36x_dm368_status_unknown00 = ProtoField.bytes ("dji_p3.dm36x_dm368_status_unknown00", "Unknown00", base.SPACE)
-f.dm36x_dm368_status_disable_liveview = ProtoField.uint8 ("dji_p3.dm36x_dm368_status_disable_liveview", "Disable Liveview", base.HEX)
-f.dm36x_dm368_status_encode_mode = ProtoField.uint8 ("dji_p3.dm36x_dm368_status_encode_mode", "Encode Mode", base.HEX)
-f.dm36x_dm368_status_dual_encode_mode_percentage = ProtoField.uint8 ("dji_p3.dm36x_dm368_status_dual_encode_mode_percentage", "Dual Encode Mode Percentage", base.HEX)
+f.dm36x_uav_stat_info_unknown00 = ProtoField.bytes ("dji_p3.dm36x_uav_stat_info_unknown00", "Unknown00", base.SPACE)
+f.dm36x_uav_stat_info_disable_liveview = ProtoField.uint8 ("dji_p3.dm36x_uav_stat_info_disable_liveview", "Disable Liveview", base.HEX)
+f.dm36x_uav_stat_info_encode_mode = ProtoField.uint8 ("dji_p3.dm36x_uav_stat_info_encode_mode", "Encode Mode", base.HEX)
+f.dm36x_uav_stat_info_dual_encode_mode_percentage = ProtoField.uint8 ("dji_p3.dm36x_uav_stat_info_dual_encode_mode_percentage", "Dual Encode Mode Percentage", base.HEX)
 
-local function dm36x_dm368_status_dissector(pkt_length, buffer, pinfo, subtree)
+local function dm36x_send_uav_stat_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.dm36x_dm368_status_unknown00, payload(offset, 3))
+    subtree:add_le (f.dm36x_uav_stat_info_unknown00, payload(offset, 3))
     offset = offset + 3
 
-    subtree:add_le (f.dm36x_dm368_status_disable_liveview, payload(offset, 1))
+    subtree:add_le (f.dm36x_uav_stat_info_disable_liveview, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.dm36x_dm368_status_encode_mode, payload(offset, 1))
+    subtree:add_le (f.dm36x_uav_stat_info_encode_mode, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.dm36x_dm368_status_dual_encode_mode_percentage, payload(offset, 1))
+    subtree:add_le (f.dm36x_uav_stat_info_dual_encode_mode_percentage, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Dm368 Status: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Dm368 Status: Payload size different than expected") end
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"DM36x Send UAV Stat Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"DM36x Send UAV Stat Info: Payload size different than expected") end
 end
 
--- DM36x proc. - Get GS Config - 0x07
+-- DM36x proc. - DM36x Recv Gnd Stat Info - 0x07
 
---f.dm36x_get_gs_config_unknown0 = ProtoField.none ("dji_p3.dm36x_get_gs_config_unknown0", "Unknown0", base.NONE)
-
-local function general_get_gs_config_dissector(pkt_length, buffer, pinfo, subtree)
+local function dm36x_recv_gnd_stat_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
     -- Answer could be decoded using func Dec_Serial_Get_GS_Config from `usbclient` binary
 
-    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Get GS Config: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Get GS Config: Payload size different than expected") end
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"DM36x Recv Gnd Stat Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"DM36x Recv Gnd Stat Info: Payload size different than expected") end
 end
 
--- DM36x proc. - Get Phone Conn - 0x0e
+-- DM36x proc. - DM36x Get App Connect Stat - 0x0e
 
---f.dm36x_get_phone_conn_unknown0 = ProtoField.none ("dji_p3.dm36x_get_phone_conn_unknown0", "Unknown0", base.NONE)
+--f.dm36x_get_app_conn_stat_unknown0 = ProtoField.none ("dji_p3.dm36x_get_app_conn_stat_unknown0", "Unknown0", base.NONE)
 
-local function dm36x_get_phone_conn_dissector(pkt_length, buffer, pinfo, subtree)
+local function dm36x_get_app_conn_stat_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Get Phone Conn: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Get Phone Conn: Payload size different than expected") end
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"DM36x Get App Connect Stat: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"DM36x Get App Connect Stat: Payload size different than expected") end
 end
 
 local DM36X_UART_CMD_DISSECT = {
-    [0x01] = dm36x_set_gs_ctrl_dissector,
-    [0x02] = dm36x_get_gs_ctrl_dissector,
-    [0x06] = dm36x_dm368_status_dissector,
-    [0x07] = dm36x_get_gs_config_dissector,
-    [0x0e] = dm36x_get_phone_conn_dissector,
+    [0x01] = dm36x_send_gnd_ctrl_info_dissector,
+    [0x02] = dm36x_recv_gnd_ctrl_info_dissector,
+    [0x06] = dm36x_send_uav_stat_info_dissector,
+    [0x07] = dm36x_recv_gnd_stat_info_dissector,
+    [0x0e] = dm36x_get_app_conn_stat_dissector,
 }
 
 -- HD Link - Set transciever register packet - 0x06
