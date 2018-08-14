@@ -410,8 +410,8 @@ local FLYC_UART_CMD_TEXT = {
     [0x3f] = 'Set NoFly Zone Data', -- Set Fly Forbid Area Data
     [0x41] = 'Upload Unlimit Areas', -- Set Whitelist Cmd
     [0x42] = 'Flyc Unlimit State', -- Push Unlimit Areas / Push UAV Posture
-    [0x43] = 'Osd General',
-    [0x44] = 'Osd Home',
+    [0x43] = 'OSD General Data',
+    [0x44] = 'OSD Home Point',
     [0x45] = 'Flyc GPS SNR Get',
     [0x46] = 'Flyc GPS SNR Set', -- Enable GPS SNR
     [0x47] = 'Enable Unlimit Areas', -- Toggle Whitelist
@@ -583,9 +583,9 @@ local GIMBAL_UART_CMD_TEXT = {
 }
 
 local CENTER_BRD_UART_CMD_TEXT = {
-    [0x00] = 'Open/Close Virtual RC',
-    [0x01] = 'Virtual RC Data',
-    --[0x01] = 'Req Batt Info Confirm', -- on newer platforms
+    [0x00] = 'Center Open/Close Virtual RC',
+    [0x01] = 'Center Virtual RC Data',
+    --[0x01] = 'Center Req Batt Info Confirm', -- on newer platforms
     [0x02] = 'Center Push Batt Dynamic Info',
     [0x03] = 'Center Control Uav Status Led',
     [0x04] = 'Center Transform Control',
@@ -760,34 +760,67 @@ local DM36X_UART_CMD_TEXT = {
 }
 
 local HD_LINK_UART_CMD_TEXT = {
-    [0x01] = 'Osd General',
-    [0x02] = 'Osd Home',
-    [0x06] = 'Set Transciever Reg',
-    [0x08] = 'Osd Signal Quality',
-    [0x0a] = 'Osd Sweep Frequency',
-    [0x0b] = 'Osd Devices State',
-    [0x0c] = 'Osd Config',
-    [0x0d] = 'Osd Alter',
-    [0x0e] = 'Unknown but handled by camera', -- See m0101 sys partiton for payload info
-    [0x0f] = 'Unknown but handled by camera', -- See m0101 sys partiton for payload info
-    [0x11] = 'Osd Channal Status',
-    [0x12] = 'Set Transciever Config',
-    [0x15] = 'Osd Max Mcs',
-    [0x16] = 'Osd Debug Info',
-    [0x20] = 'Osd Sdr Sweep Frequency',
-    [0x22] = 'Osd Sdr Config Info',
-    [0x24] = 'Osd Sdr Status Info',
-    [0x25] = 'Osd Sdr Status Ground Info',
-    [0x29] = 'Osd Sdr Upward Sweep Frequency',
-    [0x2a] = 'Osd Sdr Upward Select Channel',
-    [0x30] = 'Osd Wireless State',
-    [0x36] = 'Osd Sdr Push Custom Code Rate',
-    [0x37] = 'Osd Hdvt Push Exception',
-    [0x3a] = 'Osd Sdr Nf Params',
-    [0x3b] = 'Osd Sdr Bar Interference',
-    [0x52] = 'Osd Power Status',
-    [0x54] = 'Osd Osmo Calibration',
-    [0x59] = 'Osd Mic Info',
+    [0x01] = 'HDLnk Push OSD General Data',
+    [0x02] = 'HDLnk Push OSD Home Point',
+    [0x03] = 'HDLnk Push BB Status',
+    [0x04] = 'HDLnk Write FPGA',
+    [0x05] = 'HDLnk Read FPGA',
+    [0x06] = 'HDLnk Write Transciever Reg', -- Set register in AD9363
+    [0x07] = 'HDLnk Read Transciever Reg', -- Get register from AD9363
+    [0x08] = 'HDLnk Push VT Signal Quality', -- Video transmission signal strength
+    [0x09] = 'HDLnk Req Freq Energy',
+    [0x0a] = 'HDLnk Push Freq Energy', -- Sweep Frequency
+    [0x0b] = 'HDLnk Push Device Status',
+    [0x0c] = 'HDLnk Get VT Config Info', -- Video transmission config info
+    [0x0d] = 'HDLnk Set VT Config Info',
+    [0x0e] = 'HDLnk Change USB Iface', -- See m0101 sys partiton for payload info
+    [0x0f] = 'HDLnk Reset 68013', -- See m0101 sys partiton for payload info
+    [0x10] = 'HDLnk Upgrade',
+    [0x11] = 'HDLnk Push Wl Env Quality',
+    [0x12] = 'HDLnk Set Factory Test', -- Set Transciever Config to test
+    [0x13] = 'HDLnk Get Factory Test',
+    [0x14] = 'HDLnk Set Max Video Bandwidth',
+    [0x15] = 'HDLnk Push Max Video Bandwidth',
+    [0x16] = 'HDLnk Push Debug Info',
+    [0x20] = 'HDLnk Push SDR Dl Freq Energy', -- SDR Downward Sweep Frequency
+    [0x21] = 'HDLnk Get SDR Vt Config Info',
+    [0x22] = 'HDLnk Push SDR Dl Auto Vt Info',
+    [0x23] = 'HDLnk Req SDR Rt Status',
+    [0x24] = 'HDLnk Push SDR UAV Rt Status',
+    [0x25] = 'HDLnk Push SDR Gnd Rt Status',
+    [0x26] = 'HDLnk SDR Debug Read',
+    [0x27] = 'HDLnk SDR Debug Write',
+    [0x28] = 'HDLnk Req SDR Log',
+    [0x29] = 'HDLnk Push SDR Ul Freq Energy', -- SDR Upward Sweep Frequency
+    [0x2a] = 'HDLnk Push SDR Ul Auto Vt Info', -- SDR Upward Select Channel
+    [0x2b] = 'HDLnk SDR Revert Role',
+    [0x2c] = 'HDLnk SDR Amt Process',
+    [0x2d] = 'HDLnk SDR Get Lbt Status',
+    [0x2e] = 'HDLnk SDR Set Lbt Status',
+    [0x2f] = 'HDLnk SDR Link Test',
+    [0x30] = 'HDLnk SDR Wireless Env',
+    [0x31] = 'HDLnk SDR Scan Freq Cfg',
+    [0x32] = 'HDLnk SDR Factory Mode Set',
+    [0x33] = 'HDLnk Tracking State Ind',
+    [0x34] = 'HDLnk SDR Liveview Mode Set',
+    [0x35] = 'HDLnk SDR Liveview Mode Get',
+    [0x36] = 'HDLnk SDR Liveview Rate Ind', -- SDR Push Custom Code Rate
+    [0x37] = 'HDLnk Abnormal Event Ind', -- aka Exception
+    [0x38] = 'HDLnk SDR Set Rate',
+    [0x39] = 'HDLnk Set Liveview Config',
+    [0x3a] = 'HDLnk Push Dl Freq Energy', -- SDR Nf Params
+    [0x3b] = 'HDLnk SDR Tip Interference',
+    [0x3c] = 'HDLnk SDR Upgrade Rf Power',
+    [0x3e] = 'HDLnk Push Slave RT Status',
+    [0x3f] = 'HDLnk Push RC Conn Status',
+    [0x41] = 'HDLnk Racing Set Modem Info',
+    [0x42] = 'HDLnk Racing Get Modem Info',
+    [0x51] = 'HDLnk Set Robomaster Cnfg',
+    [0x52] = 'HDLnk Power Status Info',
+    --[0x52] = 'HDLnk Get Robomaster Info', -- on newer platforms
+    [0x53] = 'HDLnk Get SDR Cp Status',
+    [0x54] = 'HDLnk Osmo Calibration',
+    [0x59] = 'HDLnk Mic Info',
 }
 
 local MBINO_UART_CMD_TEXT = {
@@ -3213,8 +3246,8 @@ local function flyc_flyc_unlimit_state_dissector(pkt_length, buffer, pinfo, subt
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Unlimit State: Payload size different than expected") end
 end
 
--- Flight Controller - Osd General - 0x43, identical to flight recorder packet 0x000c
--- HD Link - Osd General - 0x01 is a second use of the same packet
+-- Flight Controller - OSD General Data - 0x43, identical to flight recorder packet 0x000c
+-- HD Link - OSD General Data - 0x01 is a second use of the same packet
 
 enums.FLYC_OSD_GENERAL_FLYC_STATE_ENUM = {
     [0x00] = 'Manual',
@@ -3696,12 +3729,12 @@ local function flyc_osd_general_dissector(pkt_length, buffer, pinfo, subtree)
     subtree:add_le (f.flyc_osd_general_imu_init_fail_reson, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 50) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd General: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd General: Payload size different than expected") end
+    if (offset ~= 50) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"OSD General Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"OSD General Data: Payload size different than expected") end
 end
 
--- Flight Controller - OSD Home - 0x44, identical to flight recorder packet 0x000d
--- HD Link - Osd Home - 0x02  is a second use of the same packet
+-- Flight Controller - OSD Home Point - 0x44, identical to flight recorder packet 0x000d
+-- HD Link - HDLnk Push OSD Home Point - 0x02  is a second use of the same packet
 
 enums.FLYC_OSD_HOME_IOC_MODE_ENUM = {
     [0x01] = 'CourseLock',
@@ -3719,136 +3752,136 @@ enums.FLYC_OSD_HOME_HEIGHT_LIMIT_STATUS_ENUM = {
     [0x05] = 'NORMAL_LIMIT',
 }
 
-f.flyc_osd_home_osd_lon = ProtoField.double ("dji_p3.flyc_osd_home_osd_lon", "OSD Longitude", base.DEC) -- home point coords?
-f.flyc_osd_home_osd_lat = ProtoField.double ("dji_p3.flyc_osd_home_osd_lat", "OSD Latitude", base.DEC) -- home point coords?
-f.flyc_osd_home_osd_alt = ProtoField.float ("dji_p3.flyc_osd_home_osd_alt", "OSD Altitude", base.DEC, nil, nil, "0.1m, altitude")
-f.flyc_osd_home_osd_home_state = ProtoField.uint16 ("dji_p3.flyc_osd_home_osd_home_state", "OSD Home State", base.HEX)
-  f.flyc_osd_home_e_homepoint_set = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_homepoint_set", "E Homepoint Set", base.HEX, nil, 0x01, "Is Home Point Recorded")
-  f.flyc_osd_home_e_go_home_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_go_home_mode", "E Go Home Mode", base.HEX, nil, 0x02, nil)
-  f.flyc_osd_home_e_heading = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_heading", "E Heading", base.HEX, nil, 0x04, "Aircraft Head Direction")
-  f.flyc_osd_home_e_is_dyn_homepoint = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_is_dyn_homepoint", "E Is Dyn Homepoint", base.HEX, nil, 0x08, "Dynamic Home Piont Enable")
-  f.flyc_osd_home_e_reach_limit_distance = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_reach_limit_distance", "E Reach Limit Distance", base.HEX, nil, 0x10, nil)
-  f.flyc_osd_home_e_reach_limit_height = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_reach_limit_height", "E Reach Limit Height", base.HEX, nil, 0x20, nil)
-  f.flyc_osd_home_e_multiple_mode_open = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_multiple_mode_open", "E Multiple Mode Open", base.HEX, nil, 0x40, nil)
-  f.flyc_osd_home_e_has_go_home = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_has_go_home", "E Has Go Home", base.HEX, nil, 0x80, nil)
-  f.flyc_osd_home_e_compass_cele_status = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_compass_cele_status", "E Compass Cele Status", base.HEX, nil, 0x300, nil)
-  f.flyc_osd_home_e_compass_celeing = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_compass_celeing", "E Compass Celeing", base.HEX, nil, 0x400, nil)
-  f.flyc_osd_home_e_beginner_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_beginner_mode", "E Beginner Mode", base.HEX, nil, 0x800, nil)
-  f.flyc_osd_home_e_ioc_enable = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_ioc_enable", "E Ioc Enable", base.HEX, nil, 0x1000, nil)
-  f.flyc_osd_home_e_ioc_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_e_ioc_mode", "E Ioc Mode", base.HEX, enums.FLYC_OSD_HOME_IOC_MODE_ENUM, 0xe000, nil)
-f.flyc_osd_home_go_home_height = ProtoField.uint16 ("dji_p3.flyc_osd_home_go_home_height", "Go Home Height", base.DEC, nil, nil, "aka Fixed Altitude")
-f.flyc_osd_home_course_lock_angle = ProtoField.uint16 ("dji_p3.flyc_osd_home_course_lock_angle", "Course Lock Angle", base.DEC, nil, nil, "Course Lock Torsion")
-f.flyc_osd_home_data_recorder_status = ProtoField.uint8 ("dji_p3.flyc_osd_home_data_recorder_status", "Data Recorder Status", base.HEX)
-f.flyc_osd_home_data_recorder_remain_capacity = ProtoField.uint8 ("dji_p3.flyc_osd_home_data_recorder_remain_capacity", "Data Recorder Remain Capacity", base.HEX)
-f.flyc_osd_home_data_recorder_remain_time = ProtoField.uint16 ("dji_p3.flyc_osd_home_data_recorder_remain_time", "Data Recorder Remain Time", base.HEX)
-f.flyc_osd_home_cur_data_recorder_file_index = ProtoField.uint16 ("dji_p3.flyc_osd_home_cur_data_recorder_file_index", "Cur Data Recorder File Index", base.HEX)
+f.flyc_osd_home_point_osd_lon = ProtoField.double ("dji_p3.flyc_osd_home_point_osd_lon", "OSD Longitude", base.DEC) -- home point coords?
+f.flyc_osd_home_point_osd_lat = ProtoField.double ("dji_p3.flyc_osd_home_point_osd_lat", "OSD Latitude", base.DEC) -- home point coords?
+f.flyc_osd_home_point_osd_alt = ProtoField.float ("dji_p3.flyc_osd_home_point_osd_alt", "OSD Altitude", base.DEC, nil, nil, "0.1m, altitude")
+f.flyc_osd_home_point_osd_home_state = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_osd_home_state", "OSD Home State", base.HEX)
+  f.flyc_osd_home_point_e_homepoint_set = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_homepoint_set", "E Homepoint Set", base.HEX, nil, 0x01, "Is Home Point Recorded")
+  f.flyc_osd_home_point_e_go_home_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_go_home_mode", "E Go Home Mode", base.HEX, nil, 0x02, nil)
+  f.flyc_osd_home_point_e_heading = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_heading", "E Heading", base.HEX, nil, 0x04, "Aircraft Head Direction")
+  f.flyc_osd_home_point_e_is_dyn_homepoint = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_is_dyn_homepoint", "E Is Dyn Homepoint", base.HEX, nil, 0x08, "Dynamic Home Piont Enable")
+  f.flyc_osd_home_point_e_reach_limit_distance = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_reach_limit_distance", "E Reach Limit Distance", base.HEX, nil, 0x10, nil)
+  f.flyc_osd_home_point_e_reach_limit_height = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_reach_limit_height", "E Reach Limit Height", base.HEX, nil, 0x20, nil)
+  f.flyc_osd_home_point_e_multiple_mode_open = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_multiple_mode_open", "E Multiple Mode Open", base.HEX, nil, 0x40, nil)
+  f.flyc_osd_home_point_e_has_go_home = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_has_go_home", "E Has Go Home", base.HEX, nil, 0x80, nil)
+  f.flyc_osd_home_point_e_compass_cele_status = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_compass_cele_status", "E Compass Cele Status", base.HEX, nil, 0x300, nil)
+  f.flyc_osd_home_point_e_compass_celeing = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_compass_celeing", "E Compass Celeing", base.HEX, nil, 0x400, nil)
+  f.flyc_osd_home_point_e_beginner_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_beginner_mode", "E Beginner Mode", base.HEX, nil, 0x800, nil)
+  f.flyc_osd_home_point_e_ioc_enable = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_ioc_enable", "E Ioc Enable", base.HEX, nil, 0x1000, nil)
+  f.flyc_osd_home_point_e_ioc_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_e_ioc_mode", "E Ioc Mode", base.HEX, enums.FLYC_OSD_HOME_IOC_MODE_ENUM, 0xe000, nil)
+f.flyc_osd_home_point_go_home_height = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_go_home_height", "Go Home Height", base.DEC, nil, nil, "aka Fixed Altitude")
+f.flyc_osd_home_point_course_lock_angle = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_course_lock_angle", "Course Lock Angle", base.DEC, nil, nil, "Course Lock Torsion")
+f.flyc_osd_home_point_data_recorder_status = ProtoField.uint8 ("dji_p3.flyc_osd_home_point_data_recorder_status", "Data Recorder Status", base.HEX)
+f.flyc_osd_home_point_data_recorder_remain_capacity = ProtoField.uint8 ("dji_p3.flyc_osd_home_point_data_recorder_remain_capacity", "Data Recorder Remain Capacity", base.HEX)
+f.flyc_osd_home_point_data_recorder_remain_time = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_data_recorder_remain_time", "Data Recorder Remain Time", base.HEX)
+f.flyc_osd_home_point_cur_data_recorder_file_index = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_cur_data_recorder_file_index", "Cur Data Recorder File Index", base.HEX)
 -- Version of the packet from newer firmwares, 34 bytes long
-f.flyc_osd_home_ver1_masked20 = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_masked20", "Masked20", base.HEX)
-  f.flyc_osd_home_ver1_flyc_in_simulation_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_flyc_in_simulation_mode", "Flyc In Simulation Mode", base.HEX, nil, 0x01, nil)
-  f.flyc_osd_home_ver1_flyc_in_navigation_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_ver1_flyc_in_navigation_mode", "Flyc In Navigation Mode", base.HEX, nil, 0x02, nil)
+f.flyc_osd_home_point_ver1_masked20 = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_ver1_masked20", "Masked20", base.HEX)
+  f.flyc_osd_home_point_ver1_flyc_in_simulation_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_ver1_flyc_in_simulation_mode", "Flyc In Simulation Mode", base.HEX, nil, 0x01, nil)
+  f.flyc_osd_home_point_ver1_flyc_in_navigation_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_ver1_flyc_in_navigation_mode", "Flyc In Navigation Mode", base.HEX, nil, 0x02, nil)
 -- Version of the packet from older firmwares, 68 bytes long
-f.flyc_osd_home_masked20 = ProtoField.uint32 ("dji_p3.flyc_osd_home_masked20", "Masked20", base.HEX)
-  f.flyc_osd_home_flyc_in_simulation_mode = ProtoField.uint32 ("dji_p3.flyc_osd_home_flyc_in_simulation_mode", "Flyc In Simulation Mode", base.HEX, nil, 0x01, nil)
-  f.flyc_osd_home_flyc_in_navigation_mode = ProtoField.uint32 ("dji_p3.flyc_osd_home_flyc_in_navigation_mode", "Flyc In Navigation Mode", base.HEX, nil, 0x02, nil)
-  f.flyc_osd_home_wing_broken = ProtoField.uint32 ("dji_p3.flyc_osd_home_wing_broken", "Wing Broken", base.HEX, nil, 0x1000, nil)
-  f.flyc_osd_home_big_gale = ProtoField.uint32 ("dji_p3.flyc_osd_home_big_gale", "Big Gale", base.HEX, nil, 0x4000, nil)
-  f.flyc_osd_home_big_gale_warning = ProtoField.uint32 ("dji_p3.flyc_osd_home_big_gale_warning", "Big Gale Warning", base.HEX, nil, 0x100000, nil)
-  f.flyc_osd_home_compass_install_err = ProtoField.uint32 ("dji_p3.flyc_osd_home_compass_install_err", "Compass Install Err", base.HEX, nil, 0x800000, nil)
-  f.flyc_osd_home_height_limit_status = ProtoField.uint32 ("dji_p3.flyc_osd_home_height_limit_status", "Height Limit Status", base.HEX, enums.FLYC_OSD_HOME_HEIGHT_LIMIT_STATUS_ENUM, 0x1f000000, nil)
-  f.flyc_osd_home_use_absolute_height = ProtoField.uint32 ("dji_p3.flyc_osd_home_use_absolute_height", "Use Absolute Height", base.HEX, nil, 0x20000000, nil)
-f.flyc_osd_home_height_limit_value = ProtoField.float ("dji_p3.flyc_osd_home_height_limit_value", "Height Limit Value", base.DEC)
-f.flyc_osd_home_unknown28 = ProtoField.bytes ("dji_p3.flyc_osd_home_unknown28", "Unknown28", base.SPACE)
-f.flyc_osd_home_force_landing_height = ProtoField.uint8 ("dji_p3.flyc_osd_home_force_landing_height", "Force Landing Height", base.DEC)
-f.flyc_osd_home_unknown2E = ProtoField.bytes ("dji_p3.flyc_osd_home_unknown2E", "Unknown2E", base.SPACE)
+f.flyc_osd_home_point_masked20 = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_masked20", "Masked20", base.HEX)
+  f.flyc_osd_home_point_flyc_in_simulation_mode = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_flyc_in_simulation_mode", "Flyc In Simulation Mode", base.HEX, nil, 0x01, nil)
+  f.flyc_osd_home_point_flyc_in_navigation_mode = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_flyc_in_navigation_mode", "Flyc In Navigation Mode", base.HEX, nil, 0x02, nil)
+  f.flyc_osd_home_point_wing_broken = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_wing_broken", "Wing Broken", base.HEX, nil, 0x1000, nil)
+  f.flyc_osd_home_point_big_gale = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_big_gale", "Big Gale", base.HEX, nil, 0x4000, nil)
+  f.flyc_osd_home_point_big_gale_warning = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_big_gale_warning", "Big Gale Warning", base.HEX, nil, 0x100000, nil)
+  f.flyc_osd_home_point_compass_install_err = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_compass_install_err", "Compass Install Err", base.HEX, nil, 0x800000, nil)
+  f.flyc_osd_home_point_height_limit_status = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_height_limit_status", "Height Limit Status", base.HEX, enums.FLYC_OSD_HOME_HEIGHT_LIMIT_STATUS_ENUM, 0x1f000000, nil)
+  f.flyc_osd_home_point_use_absolute_height = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_use_absolute_height", "Use Absolute Height", base.HEX, nil, 0x20000000, nil)
+f.flyc_osd_home_point_height_limit_value = ProtoField.float ("dji_p3.flyc_osd_home_point_height_limit_value", "Height Limit Value", base.DEC)
+f.flyc_osd_home_point_unknown28 = ProtoField.bytes ("dji_p3.flyc_osd_home_point_unknown28", "Unknown28", base.SPACE)
+f.flyc_osd_home_point_force_landing_height = ProtoField.uint8 ("dji_p3.flyc_osd_home_point_force_landing_height", "Force Landing Height", base.DEC)
+f.flyc_osd_home_point_unknown2E = ProtoField.bytes ("dji_p3.flyc_osd_home_point_unknown2E", "Unknown2E", base.SPACE)
 
-local function flyc_osd_home_dissector(pkt_length, buffer, pinfo, subtree)
+local function flyc_osd_home_point_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.flyc_osd_home_osd_lon, payload(offset, 8))
+    subtree:add_le (f.flyc_osd_home_point_osd_lon, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add_le (f.flyc_osd_home_osd_lat, payload(offset, 8))
+    subtree:add_le (f.flyc_osd_home_point_osd_lat, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add_le (f.flyc_osd_home_osd_alt, payload(offset, 4))
+    subtree:add_le (f.flyc_osd_home_point_osd_alt, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.flyc_osd_home_osd_home_state, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_homepoint_set, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_go_home_mode, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_heading, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_is_dyn_homepoint, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_reach_limit_distance, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_reach_limit_height, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_multiple_mode_open, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_has_go_home, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_compass_cele_status, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_compass_celeing, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_beginner_mode, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_ioc_enable, payload(offset, 2))
-    subtree:add_le (f.flyc_osd_home_e_ioc_mode, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_osd_home_state, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_homepoint_set, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_go_home_mode, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_heading, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_is_dyn_homepoint, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_reach_limit_distance, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_reach_limit_height, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_multiple_mode_open, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_has_go_home, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_compass_cele_status, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_compass_celeing, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_beginner_mode, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_ioc_enable, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_e_ioc_mode, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_osd_home_go_home_height, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_go_home_height, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_osd_home_course_lock_angle, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_course_lock_angle, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_osd_home_data_recorder_status, payload(offset, 1))
+    subtree:add_le (f.flyc_osd_home_point_data_recorder_status, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_osd_home_data_recorder_remain_capacity, payload(offset, 1))
+    subtree:add_le (f.flyc_osd_home_point_data_recorder_remain_capacity, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_osd_home_data_recorder_remain_time, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_data_recorder_remain_time, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.flyc_osd_home_cur_data_recorder_file_index, payload(offset, 2))
+    subtree:add_le (f.flyc_osd_home_point_cur_data_recorder_file_index, payload(offset, 2))
     offset = offset + 2
 
     -- Before firmware P3X_FW_V01.07.0060, the packet was 68 bytes long
     if (payload:len() < 68) then
 
-        subtree:add_le (f.flyc_osd_home_ver1_masked20, payload(offset, 2))
-        subtree:add_le (f.flyc_osd_home_ver1_flyc_in_simulation_mode, payload(offset, 2))
-        subtree:add_le (f.flyc_osd_home_ver1_flyc_in_navigation_mode, payload(offset, 2))
+        subtree:add_le (f.flyc_osd_home_point_ver1_masked20, payload(offset, 2))
+        subtree:add_le (f.flyc_osd_home_point_ver1_flyc_in_simulation_mode, payload(offset, 2))
+        subtree:add_le (f.flyc_osd_home_point_ver1_flyc_in_navigation_mode, payload(offset, 2))
         offset = offset + 2
 
-        if (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
+        if (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"OSD Home Point: Offset does not match - internal inconsistency") end
 
     else
 
-        subtree:add_le (f.flyc_osd_home_masked20, payload(offset, 4))
-        subtree:add_le (f.flyc_osd_home_flyc_in_simulation_mode, payload(offset, 4))
-        subtree:add_le (f.flyc_osd_home_flyc_in_navigation_mode, payload(offset, 4))
-        subtree:add_le (f.flyc_osd_home_wing_broken, payload(offset, 4))
-        subtree:add_le (f.flyc_osd_home_big_gale, payload(offset, 4))
-        subtree:add_le (f.flyc_osd_home_big_gale_warning, payload(offset, 4))
-        subtree:add_le (f.flyc_osd_home_compass_install_err, payload(offset, 4))
-        subtree:add_le (f.flyc_osd_home_height_limit_status, payload(offset, 4))
-        subtree:add_le (f.flyc_osd_home_use_absolute_height, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_point_masked20, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_point_flyc_in_simulation_mode, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_point_flyc_in_navigation_mode, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_point_wing_broken, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_point_big_gale, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_point_big_gale_warning, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_point_compass_install_err, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_point_height_limit_status, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_point_use_absolute_height, payload(offset, 4))
         offset = offset + 4
 
-        subtree:add_le (f.flyc_osd_home_height_limit_value, payload(offset, 4))
+        subtree:add_le (f.flyc_osd_home_point_height_limit_value, payload(offset, 4))
         offset = offset + 4
 
-        subtree:add_le (f.flyc_osd_home_unknown28, payload(offset, 5))
+        subtree:add_le (f.flyc_osd_home_point_unknown28, payload(offset, 5))
         offset = offset + 5
 
-        subtree:add_le (f.flyc_osd_home_force_landing_height, payload(offset, 1))
+        subtree:add_le (f.flyc_osd_home_point_force_landing_height, payload(offset, 1))
         offset = offset + 1
 
-        subtree:add_le (f.flyc_osd_home_unknown2E, payload(offset, 22))
+        subtree:add_le (f.flyc_osd_home_point_unknown2E, payload(offset, 22))
         offset = offset + 22
 
-        if (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Home: Offset does not match - internal inconsistency") end
+        if (offset ~= 68) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"OSD Home Point: Offset does not match - internal inconsistency") end
 
     end
 
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Home: Payload size different than expected") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"OSD Home Point: Payload size different than expected") end
 end
 
 -- Flight Controller - Flyc Gps Snr - 0x45
@@ -6093,7 +6126,7 @@ local FLYC_UART_CMD_DISSECT = {
     [0x3e] = flyc_flyc_request_limit_update_dissector,
     [0x42] = flyc_flyc_unlimit_state_dissector,
     [0x43] = flyc_osd_general_dissector,
-    [0x44] = flyc_osd_home_dissector,
+    [0x44] = flyc_osd_home_point_dissector,
     [0x45] = flyc_flyc_gps_snr_dissector,
     [0x51] = flyc_flyc_battery_status_dissector,
     [0x53] = flyc_flyc_vis_avoid_param_dissector,
@@ -7035,12 +7068,12 @@ local DM36X_UART_CMD_DISSECT = {
     [0x0e] = dm36x_get_app_conn_stat_dissector,
 }
 
--- HD Link - Set transciever register packet - 0x06
+-- HD Link - HDLnk Write Transciever Register packet - 0x06
 
 f.hd_link_transciever_reg_addr = ProtoField.uint16 ("dji_p3.hd_link_transciever_reg_set", "Register addr", base.HEX, nil, nil, "AD9363 register address")
 f.hd_link_transciever_reg_val = ProtoField.uint8 ("dji_p3.hd_link_transciever_reg_val", "Register value", base.HEX, nil, nil, "AD9363 register value")
 
-local function hd_link_set_transciever_reg_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_write_transciever_reg_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
@@ -7051,50 +7084,50 @@ local function hd_link_set_transciever_reg_dissector(pkt_length, buffer, pinfo, 
     subtree:add_le (f.hd_link_transciever_reg_val, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set Transciever Reg: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set Transciever Reg: Payload size different than expected") end
+    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Write Transciever Reg: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Write Transciever Reg: Payload size different than expected") end
 end
 
--- HD Link - Osd Signal Quality - 0x08
+-- HD Link - HDLnk Push VT Signal Quality - 0x08
 
-f.hd_link_osd_signal_quality_masked00 = ProtoField.uint8 ("dji_p3.hd_link_osd_signal_quality_masked00", "Masked00", base.HEX)
-  f.hd_link_osd_signal_quality_up_signal_quality = ProtoField.uint8 ("dji_p3.hd_link_osd_signal_quality_up_signal_quality", "Up Signal Quality", base.HEX, nil, 0x7f, nil)
+f.hd_link_push_vt_signal_quality_masked00 = ProtoField.uint8 ("dji_p3.hd_link_push_vt_signal_quality_masked00", "Masked00", base.HEX)
+  f.hd_link_push_vt_signal_quality_up_signal_quality = ProtoField.uint8 ("dji_p3.hd_link_push_vt_signal_quality_up_signal_quality", "Up Signal Quality", base.HEX, nil, 0x7f, nil)
 
-local function hd_link_osd_signal_quality_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_push_vt_signal_quality_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_signal_quality_masked00, payload(offset, 1))
-    subtree:add_le (f.hd_link_osd_signal_quality_up_signal_quality, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_vt_signal_quality_masked00, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_vt_signal_quality_up_signal_quality, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Signal Quality: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Signal Quality: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push VT Signal Quality: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push VT Signal Quality: Payload size different than expected") end
 end
 
--- HD Link - Osd Sweep Frequency - 0x0a
+-- HD Link - HDLnk Push Freq Energy - 0x0a
 
-f.hd_link_osd_sweep_frequency_unknown0 = ProtoField.bytes ("dji_p3.hd_link_osd_sweep_frequency_unknown0", "Unknown0", base.SPACE)
+f.hd_link_push_freq_energy_unknown0 = ProtoField.bytes ("dji_p3.hd_link_push_freq_energy_unknown0", "Unknown0", base.SPACE)
 
-local function hd_link_osd_sweep_frequency_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_push_freq_energy_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_sweep_frequency_unknown0, payload(offset, 32))
+    subtree:add_le (f.hd_link_push_freq_energy_unknown0, payload(offset, 32))
     offset = offset + 32
 
-    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Sweep Frequency: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Sweep Frequency: Payload size different than expected") end
+    if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push Freq Energy: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push Freq Energy: Payload size different than expected") end
 end
 
--- HD Link - Osd Devices State - 0x0b
+-- HD Link - HDLnk Push Device Status - 0x0b
 
-f.hd_link_osd_devices_state_unknown0 = ProtoField.uint8 ("dji_p3.hd_link_osd_devices_state_unknown0", "Unknown0", base.HEX)
-f.hd_link_osd_devices_state_unknown1 = ProtoField.uint32 ("dji_p3.hd_link_osd_devices_state_unknown1", "Unknown1", base.DEC)
+f.hd_link_push_device_status_unknown0 = ProtoField.uint8 ("dji_p3.hd_link_push_device_status_unknown0", "Unknown0", base.HEX)
+f.hd_link_push_device_status_unknown1 = ProtoField.uint32 ("dji_p3.hd_link_push_device_status_unknown1", "Unknown1", base.DEC)
 
-local function hd_link_osd_devices_state_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_push_device_status_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
@@ -7104,75 +7137,75 @@ local function hd_link_osd_devices_state_dissector(pkt_length, buffer, pinfo, su
     local i = 0
     repeat
 
-        subtree:add_le (f.hd_link_osd_devices_state_unknown0, payload(offset, 1))
+        subtree:add_le (f.hd_link_push_device_status_unknown0, payload(offset, 1))
         offset = offset + 1
 
-        subtree:add_le (f.hd_link_osd_devices_state_unknown1, payload(offset, 4))
+        subtree:add_le (f.hd_link_push_device_status_unknown1, payload(offset, 4))
         offset = offset + 4
 
         i = i + 1
 
     until i >= num_entries
 
-    if (offset ~= num_entries * 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Devices State: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Devices State: Payload size different than expected") end
+    if (offset ~= num_entries * 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push Device Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push Device Status: Payload size different than expected") end
 end
 
--- HD Link - Osd Config - 0x0c
+-- HD Link - HDLnk Get VT Config Info - 0x0c
 
-f.hd_link_osd_config_channel = ProtoField.uint8 ("dji_p3.hd_link_osd_config_channel", "Channel", base.HEX)
-f.hd_link_osd_config_unknown01 = ProtoField.uint8 ("dji_p3.hd_link_osd_config_unknown01", "Unknown01", base.HEX)
-f.hd_link_osd_config_get_is_auto = ProtoField.uint8 ("dji_p3.hd_link_osd_config_get_is_auto", "Get Is Auto", base.HEX)
-f.hd_link_osd_config_get_is_master = ProtoField.uint8 ("dji_p3.hd_link_osd_config_get_is_master", "Get Is Master", base.HEX)
-f.hd_link_osd_config_unknown04 = ProtoField.bytes ("dji_p3.hd_link_osd_config_unknown04", "Unknown04", base.SPACE)
-f.hd_link_osd_config_mcs = ProtoField.uint8 ("dji_p3.hd_link_osd_config_mcs", "Mcs", base.HEX)
-f.hd_link_osd_config_single_or_double = ProtoField.uint8 ("dji_p3.hd_link_osd_config_single_or_double", "Single Or Double", base.HEX, nil, nil)
-f.hd_link_osd_config_band_width_percent = ProtoField.uint8 ("dji_p3.hd_link_osd_config_band_width_percent", "Band Width Percent", base.DEC)
-f.hd_link_osd_config_unknown0c = ProtoField.bytes ("dji_p3.hd_link_osd_config_unknown0c", "Unknown0C", base.SPACE)
-f.hd_link_osd_config_working_freq = ProtoField.uint8 ("dji_p3.hd_link_osd_config_working_freq", "Working Freq", base.HEX)
+f.hd_link_get_vt_config_info_channel = ProtoField.uint8 ("dji_p3.hd_link_get_vt_config_info_channel", "Channel", base.HEX)
+f.hd_link_get_vt_config_info_unknown01 = ProtoField.uint8 ("dji_p3.hd_link_get_vt_config_info_unknown01", "Unknown01", base.HEX)
+f.hd_link_get_vt_config_info_get_is_auto = ProtoField.uint8 ("dji_p3.hd_link_get_vt_config_info_get_is_auto", "Get Is Auto", base.HEX)
+f.hd_link_get_vt_config_info_get_is_master = ProtoField.uint8 ("dji_p3.hd_link_get_vt_config_info_get_is_master", "Get Is Master", base.HEX)
+f.hd_link_get_vt_config_info_unknown04 = ProtoField.bytes ("dji_p3.hd_link_get_vt_config_info_unknown04", "Unknown04", base.SPACE)
+f.hd_link_get_vt_config_info_mcs = ProtoField.uint8 ("dji_p3.hd_link_get_vt_config_info_mcs", "Mcs", base.HEX)
+f.hd_link_get_vt_config_info_single_or_double = ProtoField.uint8 ("dji_p3.hd_link_get_vt_config_info_single_or_double", "Single Or Double", base.HEX, nil, nil)
+f.hd_link_get_vt_config_info_band_width_percent = ProtoField.uint8 ("dji_p3.hd_link_get_vt_config_info_band_width_percent", "Band Width Percent", base.DEC)
+f.hd_link_get_vt_config_info_unknown0c = ProtoField.bytes ("dji_p3.hd_link_get_vt_config_info_unknown0c", "Unknown0C", base.SPACE)
+f.hd_link_get_vt_config_info_working_freq = ProtoField.uint8 ("dji_p3.hd_link_get_vt_config_info_working_freq", "Working Freq", base.HEX)
 
-local function hd_link_osd_config_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_get_vt_config_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_config_channel, payload(offset, 1))
+    subtree:add_le (f.hd_link_get_vt_config_info_channel, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_config_unknown01, payload(offset, 1))
+    subtree:add_le (f.hd_link_get_vt_config_info_unknown01, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_config_get_is_auto, payload(offset, 1))
+    subtree:add_le (f.hd_link_get_vt_config_info_get_is_auto, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_config_get_is_master, payload(offset, 1))
+    subtree:add_le (f.hd_link_get_vt_config_info_get_is_master, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_config_unknown04, payload(offset, 5))
+    subtree:add_le (f.hd_link_get_vt_config_info_unknown04, payload(offset, 5))
     offset = offset + 5
 
-    subtree:add_le (f.hd_link_osd_config_mcs, payload(offset, 1))
+    subtree:add_le (f.hd_link_get_vt_config_info_mcs, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_config_single_or_double, payload(offset, 1))
+    subtree:add_le (f.hd_link_get_vt_config_info_single_or_double, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_config_band_width_percent, payload(offset, 1))
+    subtree:add_le (f.hd_link_get_vt_config_info_band_width_percent, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_config_unknown0c, payload(offset, 3))
+    subtree:add_le (f.hd_link_get_vt_config_info_unknown0c, payload(offset, 3))
     offset = offset + 3
 
-    subtree:add_le (f.hd_link_osd_config_working_freq, payload(offset, 1))
+    subtree:add_le (f.hd_link_get_vt_config_info_working_freq, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Config: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Config: Payload size different than expected") end
+    if (offset ~= 16) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Get VT Config Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Get VT Config Info: Payload size different than expected") end
 end
 
--- HD Link - Osd Channal Status - 0x11
+-- HD Link - HDLnk Push Wl Env Quality - 0x11
 
-enums.HD_LINK_OSD_CHANNAL_STATUS_CHANNEL_STATUS_ENUM = {
+enums.HD_LINK_WL_ENV_QUALITY_CHANNEL_STATUS_ENUM = {
     [0x00] = 'Excellent',
     [0x01] = 'Good',
     [0x02] = 'Medium',
@@ -7180,132 +7213,132 @@ enums.HD_LINK_OSD_CHANNAL_STATUS_CHANNEL_STATUS_ENUM = {
     [0x64] = 'OTHER',
 }
 
-f.hd_link_osd_channal_status_channel_status = ProtoField.uint8 ("dji_p3.hd_link_osd_channal_status_channel_status", "Channel Status", base.HEX, enums.HD_LINK_OSD_CHANNAL_STATUS_CHANNEL_STATUS_ENUM, nil, nil)
+f.hd_link_push_wl_env_quality_channel_status = ProtoField.uint8 ("dji_p3.hd_link_push_wl_env_quality_channel_status", "Channel Status", base.HEX, enums.HD_LINK_WL_ENV_QUALITY_CHANNEL_STATUS_ENUM, nil, nil)
 
-local function hd_link_osd_channal_status_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_push_wl_env_quality_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_channal_status_channel_status, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_wl_env_quality_channel_status, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Channal Status: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Channal Status: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push Wl Env Quality: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push Wl Env Quality: Payload size different than expected") end
 end
 
--- HD Link - Set Transciever Config - 0x12
+-- HD Link - HDLnk Set Factory Test - 0x12
 
-f.hd_link_set_transciever_config_flag_20001A28_D_E = ProtoField.uint8 ("dji_p3.hd_link_set_transciever_config_flag_20001A28_D_E", "flag 20001A28 D and E", base.HEX, nil, nil, nil)
-f.hd_link_set_transciever_config_flag_20001A28_A_B = ProtoField.uint8 ("dji_p3.hd_link_set_transciever_config_flag_20001A28_A_B", "flag 20001A28 A and B", base.HEX, nil, nil, nil)
-f.hd_link_set_transciever_config_attenuation = ProtoField.uint8 ("dji_p3.hd_link_set_transciever_config_attenuation", "Tcx Attenuation", base.HEX, nil, nil, "dB; attenuation set to REG_TXn_ATTEN_0 register of AD9363")
-f.hd_link_set_transciever_config_flag_20001A28_C = ProtoField.uint8 ("dji_p3.hd_link_set_transciever_config_flag_20001A28_C", "flag 20001A28 C", base.HEX, nil, nil, nil)
+f.hd_link_set_factory_test_flag_20001A28_D_E = ProtoField.uint8 ("dji_p3.hd_link_set_factory_test_flag_20001A28_D_E", "flag 20001A28 D and E", base.HEX, nil, nil, nil)
+f.hd_link_set_factory_test_flag_20001A28_A_B = ProtoField.uint8 ("dji_p3.hd_link_set_factory_test_flag_20001A28_A_B", "flag 20001A28 A and B", base.HEX, nil, nil, nil)
+f.hd_link_set_factory_test_attenuation = ProtoField.uint8 ("dji_p3.hd_link_set_factory_test_attenuation", "Tcx Attenuation", base.HEX, nil, nil, "dB; attenuation set to REG_TXn_ATTEN_0 register of AD9363")
+f.hd_link_set_factory_test_flag_20001A28_C = ProtoField.uint8 ("dji_p3.hd_link_set_factory_test_flag_20001A28_C", "flag 20001A28 C", base.HEX, nil, nil, nil)
 
-local function hd_link_set_transciever_config_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_set_factory_test_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_set_transciever_config_flag_20001A28_D_E, payload(offset, 1))
+    subtree:add_le (f.hd_link_set_factory_test_flag_20001A28_D_E, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_set_transciever_config_flag_20001A28_A_B, payload(offset, 1))
+    subtree:add_le (f.hd_link_set_factory_test_flag_20001A28_A_B, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_set_transciever_config_attenuation, payload(offset, 1))
+    subtree:add_le (f.hd_link_set_factory_test_attenuation, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_set_transciever_config_flag_20001A28_C, payload(offset, 1))
+    subtree:add_le (f.hd_link_set_factory_test_flag_20001A28_C, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set Transciever Config: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set Transciever Config: Payload size different than expected") end
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Set Factory Test: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Set Factory Test: Payload size different than expected") end
 end
 
--- HD Link - Osd Max Mcs - 0x15
+-- HD Link - HDLnk Push Max Video Bandwidth - 0x15
 
-f.hd_link_osd_max_mcs_max_mcs = ProtoField.uint8 ("dji_p3.hd_link_osd_max_mcs_max_mcs", "Max Mcs", base.HEX)
+f.hd_link_push_max_video_bandwidth_max_mcs = ProtoField.uint8 ("dji_p3.hd_link_push_max_video_bandwidth_max_mcs", "Max Mcs", base.HEX)
 
-local function hd_link_osd_max_mcs_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_push_max_video_bandwidth_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_max_mcs_max_mcs, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_max_video_bandwidth_max_mcs, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Max Mcs: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Max Mcs: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push Max Video Bandwidth: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push Max Video Bandwidth: Payload size different than expected") end
 end
 
--- HD Link - Osd Debug Info - 0x16
+-- HD Link - HDLnk Push Debug Info - 0x16
 
-f.hd_link_osd_debug_info_type = ProtoField.uint8 ("dji_p3.hd_link_osd_debug_info_type", "Type", base.HEX, nil, nil, "TODO values from enum P3.DataOsdGetPushDebugInfo")
+f.hd_link_push_debug_info_type = ProtoField.uint8 ("dji_p3.hd_link_push_debug_info_type", "Type", base.HEX, nil, nil, "TODO values from enum P3.DataOsdGetPushDebugInfo")
 
-local function hd_link_osd_debug_info_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_push_debug_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_debug_info_type, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_debug_info_type, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Debug Info: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Debug Info: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push Debug Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push Debug Info: Payload size different than expected") end
 end
 
--- HD Link - Osd Sdr Sweep Frequency - 0x20
+-- HD Link - HDLnk Push SDR Dl Freq Energy - 0x20
 
---f.hd_link_osd_sdr_sweep_frequency_unknown0 = ProtoField.none ("dji_p3.hd_link_osd_sdr_sweep_frequency_unknown0", "Unknown0", base.NONE)
+--f.hd_link_push_sdr_dl_freq_energy_unknown0 = ProtoField.none ("dji_p3.hd_link_push_sdr_dl_freq_energy_unknown0", "Unknown0", base.NONE)
 
-local function hd_link_osd_sdr_sweep_frequency_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_push_sdr_dl_freq_energy_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Sdr Sweep Frequency: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Sdr Sweep Frequency: Payload size different than expected") end
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push SDR Dl Freq Energy: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push SDR Dl Freq Energy: Payload size different than expected") end
 end
 
--- HD Link - Osd Sdr Config Info - 0x22
+-- HD Link - HDLnk Push SDR Dl Auto Vt Info - 0x22
 
-f.hd_link_osd_sdr_config_info_nf = ProtoField.uint16 ("dji_p3.hd_link_osd_sdr_config_info_nf", "NF", base.DEC)
-f.hd_link_osd_sdr_config_info_band = ProtoField.uint8 ("dji_p3.hd_link_osd_sdr_config_info_band", "Band", base.DEC)
-f.hd_link_osd_sdr_config_info_unknown3 = ProtoField.uint8 ("dji_p3.hd_link_osd_sdr_config_info_unknown3", "Unknown3", base.HEX)
-f.hd_link_osd_sdr_config_info_auto_mcs = ProtoField.float ("dji_p3.hd_link_osd_sdr_config_info_auto_mcs", "Auto Mcs", base.DEC)
-f.hd_link_osd_sdr_config_info_mcs_type = ProtoField.uint8 ("dji_p3.hd_link_osd_sdr_config_info_mcs_type", "Mcs Type", base.HEX)
+f.hd_link_push_sdr_dl_auto_vt_info_nf = ProtoField.uint16 ("dji_p3.hd_link_push_sdr_dl_auto_vt_info_nf", "NF", base.DEC)
+f.hd_link_push_sdr_dl_auto_vt_info_band = ProtoField.uint8 ("dji_p3.hd_link_push_sdr_dl_auto_vt_info_band", "Band", base.DEC)
+f.hd_link_push_sdr_dl_auto_vt_info_unknown3 = ProtoField.uint8 ("dji_p3.hd_link_push_sdr_dl_auto_vt_info_unknown3", "Unknown3", base.HEX)
+f.hd_link_push_sdr_dl_auto_vt_info_auto_mcs = ProtoField.float ("dji_p3.hd_link_push_sdr_dl_auto_vt_info_auto_mcs", "Auto Mcs", base.DEC)
+f.hd_link_push_sdr_dl_auto_vt_info_mcs_type = ProtoField.uint8 ("dji_p3.hd_link_push_sdr_dl_auto_vt_info_mcs_type", "Mcs Type", base.HEX)
 
-local function hd_link_osd_sdr_config_info_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_push_sdr_dl_auto_vt_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_sdr_config_info_nf, payload(offset, 2))
+    subtree:add_le (f.hd_link_push_sdr_dl_auto_vt_info_nf, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.hd_link_osd_sdr_config_info_band, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_sdr_dl_auto_vt_info_band, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_sdr_config_info_unknown3, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_sdr_dl_auto_vt_info_unknown3, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_sdr_config_info_auto_mcs, payload(offset, 4))
+    subtree:add_le (f.hd_link_push_sdr_dl_auto_vt_info_auto_mcs, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.hd_link_osd_sdr_config_info_mcs_type, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_sdr_dl_auto_vt_info_mcs_type, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 9) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Sdr Config Info: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Sdr Config Info: Payload size different than expected") end
+    if (offset ~= 9) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push SDR Dl Auto Vt Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push SDR Dl Auto Vt Info: Payload size different than expected") end
 end
 
--- HD Link - Osd Sdr Status Info - 0x24
--- HD Link - Osd Sdr Status Ground Info - 0x25
+-- HD Link - HDLnk Push SDR UAV Rt Status - 0x24
+-- HD Link - HDLnk Push SDR Gnd Rt Status - 0x25
 
-f.hd_link_osd_sdr_status_info_name = ProtoField.string ("dji_p3.hd_link_osd_sdr_status_info_name", "Name", base.NONE)
-f.hd_link_osd_sdr_status_info_value = ProtoField.float ("dji_p3.hd_link_osd_sdr_status_info_value", "Value", base.DEC)
+f.hd_link_push_sdr_rt_status_name = ProtoField.string ("dji_p3.hd_link_push_sdr_rt_status_name", "Name", base.NONE)
+f.hd_link_push_sdr_rt_status_value = ProtoField.float ("dji_p3.hd_link_push_sdr_rt_status_value", "Value", base.DEC)
 
-local function hd_link_osd_sdr_status_info_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_push_sdr_rt_status_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
@@ -7315,56 +7348,56 @@ local function hd_link_osd_sdr_status_info_dissector(pkt_length, buffer, pinfo, 
     local i = 0
     repeat
 
-        subtree:add_le (f.hd_link_osd_sdr_status_info_name, payload(offset, 8))
+        subtree:add_le (f.hd_link_push_sdr_rt_status_name, payload(offset, 8))
         offset = offset + 8
 
-        subtree:add_le (f.hd_link_osd_sdr_status_info_value, payload(offset, 4))
+        subtree:add_le (f.hd_link_push_sdr_rt_status_value, payload(offset, 4))
         offset = offset + 4
 
         i = i + 1
 
     until i >= num_entries
 
-    if (offset ~= num_entries * 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Sdr Status Info: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Sdr Status Info: Payload size different than expected") end
+    if (offset ~= num_entries * 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push SDR Rt Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push SDR Rt Status: Payload size different than expected") end
 end
 
--- HD Link - Osd Sdr Upward Sweep Frequency - 0x29
+-- HD Link - HDLnk Push SDR Ul Freq Energy - 0x29
 
---f.hd_link_osd_sdr_upward_sweep_frequency_unknown0 = ProtoField.none ("dji_p3.hd_link_osd_sdr_upward_sweep_frequency_unknown0", "Unknown0", base.NONE)
+--f.hd_link_push_sdr_ul_freq_energy_unknown0 = ProtoField.none ("dji_p3.hd_link_push_sdr_ul_freq_energy_unknown0", "Unknown0", base.NONE)
 
-local function hd_link_osd_sdr_upward_sweep_frequency_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_push_sdr_ul_freq_energy_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Sdr Upward Sweep Frequency: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Sdr Upward Sweep Frequency: Payload size different than expected") end
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push SDR Ul Freq Energy: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push SDR Ul Freq Energy: Payload size different than expected") end
 end
 
--- HD Link - Osd Sdr Upward Select Channel - 0x2a
+-- HD Link - HDLnk Push SDR Ul Auto Vt Info - 0x2a
 
-f.hd_link_osd_sdr_upward_select_channel_select_channel_type = ProtoField.float ("dji_p3.hd_link_osd_sdr_upward_select_channel_select_channel_type", "Select Channel Type", base.DEC)
-f.hd_link_osd_sdr_upward_select_channel_get_select_channel_count = ProtoField.uint32 ("dji_p3.hd_link_osd_sdr_upward_select_channel_get_select_channel_count", "Get Select Channel Count", base.HEX)
+f.hd_link_push_sdr_ul_auto_vt_info_channel_type = ProtoField.float ("dji_p3.hd_link_push_sdr_ul_auto_vt_info_channel_type", "Select Channel Type", base.DEC)
+f.hd_link_push_sdr_ul_auto_vt_info_get_select_channel_count = ProtoField.uint32 ("dji_p3.hd_link_push_sdr_ul_auto_vt_info_get_select_channel_count", "Get Select Channel Count", base.HEX)
 
-local function hd_link_osd_sdr_upward_select_channel_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_push_sdr_ul_auto_vt_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_sdr_upward_select_channel_select_channel_type, payload(offset, 4))
+    subtree:add_le (f.hd_link_push_sdr_ul_auto_vt_info_channel_type, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.hd_link_osd_sdr_upward_select_channel_get_select_channel_count, payload(offset, 4))
+    subtree:add_le (f.hd_link_push_sdr_ul_auto_vt_info_get_select_channel_count, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Sdr Upward Select Channel: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Sdr Upward Select Channel: Payload size different than expected") end
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push SDR Ul Auto Vt Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push SDR Ul Auto Vt Info: Payload size different than expected") end
 end
 
--- HD Link - Osd Wireless State - 0x30
+-- HD Link - HDLnk SDR Wireless Env - 0x30
 
-enums.HD_LINK_OSD_WIRELESS_STATE_EVENT_CODE_SDR_WIRELESS_STATE_ENUM = {
+enums.HD_LINK_SDR_WIRELESS_ENV_EVENT_CODE_SDR_WIRELESS_STATE_ENUM = {
     [0x00] = 'STRONG_DISTURBANCE',
     [0x01] = 'VIDEO_DISTURBANCE',
     [0x02] = 'RC_DISTURBANCE',
@@ -7380,174 +7413,174 @@ enums.HD_LINK_OSD_WIRELESS_STATE_EVENT_CODE_SDR_WIRELESS_STATE_ENUM = {
     [0x100] = 'NONE',
 }
 
-f.hd_link_osd_wireless_state_event_code = ProtoField.uint16 ("dji_p3.hd_link_osd_wireless_state_event_code", "Event Code", base.HEX, enums.HD_LINK_OSD_WIRELESS_STATE_EVENT_CODE_SDR_WIRELESS_STATE_ENUM, nil, nil)
+f.hd_link_sdr_wireless_env_event_code = ProtoField.uint16 ("dji_p3.hd_link_sdr_wireless_env_event_code", "Event Code", base.HEX, enums.HD_LINK_SDR_WIRELESS_ENV_EVENT_CODE_SDR_WIRELESS_STATE_ENUM, nil, nil)
 
-local function hd_link_osd_wireless_state_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_sdr_wireless_env_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_wireless_state_event_code, payload(offset, 2))
+    subtree:add_le (f.hd_link_sdr_wireless_env_event_code, payload(offset, 2))
     offset = offset + 2
 
-    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Wireless State: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Wireless State: Payload size different than expected") end
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk SDR Wireless Env: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk SDR Wireless Env: Payload size different than expected") end
 end
 
--- HD Link - Osd Sdr Push Custom Code Rate - 0x36
+-- HD Link - HDLnk SDR Liveview Rate Ind - 0x36
 
-f.hd_link_osd_sdr_push_custom_code_rate_code_rate = ProtoField.float ("dji_p3.hd_link_osd_sdr_push_custom_code_rate_code_rate", "Code Rate", base.DEC)
+f.hd_link_sdr_liveview_rate_ind_code_rate = ProtoField.float ("dji_p3.hd_link_sdr_liveview_rate_ind_code_rate", "Code Rate", base.DEC)
 
-local function hd_link_osd_sdr_push_custom_code_rate_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_sdr_liveview_rate_ind_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_sdr_push_custom_code_rate_code_rate, payload(offset, 4))
+    subtree:add_le (f.hd_link_sdr_liveview_rate_ind_code_rate, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Sdr Push Custom Code Rate: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Sdr Push Custom Code Rate: Payload size different than expected") end
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk SDR Liveview Rate Ind: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk SDR Liveview Rate Ind: Payload size different than expected") end
 end
 
--- HD Link - Osd Hdvt Push Exception - 0x37
+-- HD Link - HDLnk Abnormal Event Ind - 0x37
 
-f.hd_link_osd_hdvt_push_exception_masked00 = ProtoField.uint8 ("dji_p3.hd_link_osd_hdvt_push_exception_masked00", "Masked00", base.HEX)
-  f.hd_link_osd_hdvt_push_exception_post = ProtoField.uint8 ("dji_p3.hd_link_osd_hdvt_push_exception_post", "Post", base.HEX, nil, 0x01, nil)
+f.hd_link_abnormal_event_ind_masked00 = ProtoField.uint8 ("dji_p3.hd_link_abnormal_event_ind_masked00", "Masked00", base.HEX)
+  f.hd_link_abnormal_event_ind_post = ProtoField.uint8 ("dji_p3.hd_link_abnormal_event_ind_post", "Post", base.HEX, nil, 0x01, nil)
 
-local function hd_link_osd_hdvt_push_exception_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_abnormal_event_ind_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_hdvt_push_exception_masked00, payload(offset, 1))
-    subtree:add_le (f.hd_link_osd_hdvt_push_exception_post, payload(offset, 1))
+    subtree:add_le (f.hd_link_abnormal_event_ind_masked00, payload(offset, 1))
+    subtree:add_le (f.hd_link_abnormal_event_ind_post, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Hdvt Push Exception: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Hdvt Push Exception: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Abnormal Event Ind: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Abnormal Event Ind: Payload size different than expected") end
 end
 
--- HD Link - Osd Sdr Nf Params - 0x3a
+-- HD Link - HDLnk Push Dl Freq Energy - 0x3a
 
-enums.HD_LINK_OSD_SDR_NF_PARAMS_DIS_LOSS_IND_DIS_LOSS_EVENT_ENUM = {
+enums.HD_LINK_PUSH_DL_FREQ_ENERGY_DIS_LOSS_EVENT_ENUM = {
     [0x00] = 'NONE',
     [0x01] = 'GROUND_INTERFERED',
     [0x02] = 'UAV_INTERFERED',
     [0x03] = 'SIGNAL_BLOCK',
 }
 
-f.hd_link_osd_sdr_nf_params_1_km_offset = ProtoField.uint8 ("dji_p3.hd_link_osd_sdr_nf_params_1_km_offset", "1 Km Offset", base.HEX, nil, nil, "value bias  - 256")
-f.hd_link_osd_sdr_nf_params_path_loss_offset = ProtoField.uint8 ("dji_p3.hd_link_osd_sdr_nf_params_path_loss_offset", "Path Loss Offset", base.HEX)
-f.hd_link_osd_sdr_nf_params_rc_link_offset = ProtoField.uint8 ("dji_p3.hd_link_osd_sdr_nf_params_rc_link_offset", "Rc Link Offset", base.HEX)
-f.hd_link_osd_sdr_nf_params_tx_power_offset = ProtoField.uint8 ("dji_p3.hd_link_osd_sdr_nf_params_tx_power_offset", "Tx Power Offset", base.HEX)
-f.hd_link_osd_sdr_nf_params_dis_loss_ind = ProtoField.uint8 ("dji_p3.hd_link_osd_sdr_nf_params_dis_loss_ind", "Dis Loss Ind", base.HEX, enums.HD_LINK_OSD_SDR_NF_PARAMS_DIS_LOSS_IND_DIS_LOSS_EVENT_ENUM, nil, nil)
-f.hd_link_osd_sdr_nf_params_sig_bar_ind = ProtoField.uint8 ("dji_p3.hd_link_osd_sdr_nf_params_sig_bar_ind", "Sig Bar Ind", base.HEX)
-f.hd_link_osd_sdr_nf_params_dl_pwr_accu = ProtoField.uint8 ("dji_p3.hd_link_osd_sdr_nf_params_dl_pwr_accu", "Dl Pwr Accu", base.HEX)
-f.hd_link_osd_sdr_nf_params_max_nf20_m = ProtoField.uint16 ("dji_p3.hd_link_osd_sdr_nf_params_max_nf20_m", "Max Nf20 M", base.HEX)
-f.hd_link_osd_sdr_nf_params_min_nf20_m = ProtoField.uint16 ("dji_p3.hd_link_osd_sdr_nf_params_min_nf20_m", "Min Nf20 M", base.HEX)
-f.hd_link_osd_sdr_nf_params_max_nf10_m = ProtoField.uint16 ("dji_p3.hd_link_osd_sdr_nf_params_max_nf10_m", "Max Nf10 M", base.HEX)
-f.hd_link_osd_sdr_nf_params_min_nf10_m = ProtoField.uint16 ("dji_p3.hd_link_osd_sdr_nf_params_min_nf10_m", "Min Nf10 M", base.HEX)
+f.hd_link_push_dl_freq_energy_1_km_offset = ProtoField.uint8 ("dji_p3.hd_link_push_dl_freq_energy_1_km_offset", "1 Km Offset", base.HEX, nil, nil, "value bias  - 256")
+f.hd_link_push_dl_freq_energy_path_loss_offset = ProtoField.uint8 ("dji_p3.hd_link_push_dl_freq_energy_path_loss_offset", "Path Loss Offset", base.HEX)
+f.hd_link_push_dl_freq_energy_rc_link_offset = ProtoField.uint8 ("dji_p3.hd_link_push_dl_freq_energy_rc_link_offset", "Rc Link Offset", base.HEX)
+f.hd_link_push_dl_freq_energy_tx_power_offset = ProtoField.uint8 ("dji_p3.hd_link_push_dl_freq_energy_tx_power_offset", "Tx Power Offset", base.HEX)
+f.hd_link_push_dl_freq_energy_dis_loss_ind = ProtoField.uint8 ("dji_p3.hd_link_push_dl_freq_energy_dis_loss_ind", "Dis Loss Ind", base.HEX, enums.HD_LINK_PUSH_DL_FREQ_ENERGY_DIS_LOSS_EVENT_ENUM, nil, nil)
+f.hd_link_push_dl_freq_energy_sig_bar_ind = ProtoField.uint8 ("dji_p3.hd_link_push_dl_freq_energy_sig_bar_ind", "Sig Bar Ind", base.HEX)
+f.hd_link_push_dl_freq_energy_dl_pwr_accu = ProtoField.uint8 ("dji_p3.hd_link_push_dl_freq_energy_dl_pwr_accu", "Dl Pwr Accu", base.HEX)
+f.hd_link_push_dl_freq_energy_max_nf20_m = ProtoField.uint16 ("dji_p3.hd_link_push_dl_freq_energy_max_nf20_m", "Max Nf20 M", base.HEX)
+f.hd_link_push_dl_freq_energy_min_nf20_m = ProtoField.uint16 ("dji_p3.hd_link_push_dl_freq_energy_min_nf20_m", "Min Nf20 M", base.HEX)
+f.hd_link_push_dl_freq_energy_max_nf10_m = ProtoField.uint16 ("dji_p3.hd_link_push_dl_freq_energy_max_nf10_m", "Max Nf10 M", base.HEX)
+f.hd_link_push_dl_freq_energy_min_nf10_m = ProtoField.uint16 ("dji_p3.hd_link_push_dl_freq_energy_min_nf10_m", "Min Nf10 M", base.HEX)
 
-local function hd_link_osd_sdr_nf_params_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_push_dl_freq_energy_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_sdr_nf_params_1_km_offset, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_dl_freq_energy_1_km_offset, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_sdr_nf_params_path_loss_offset, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_dl_freq_energy_path_loss_offset, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_sdr_nf_params_rc_link_offset, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_dl_freq_energy_rc_link_offset, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_sdr_nf_params_tx_power_offset, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_dl_freq_energy_tx_power_offset, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_sdr_nf_params_dis_loss_ind, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_dl_freq_energy_dis_loss_ind, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_sdr_nf_params_sig_bar_ind, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_dl_freq_energy_sig_bar_ind, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_sdr_nf_params_dl_pwr_accu, payload(offset, 1))
+    subtree:add_le (f.hd_link_push_dl_freq_energy_dl_pwr_accu, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_sdr_nf_params_max_nf20_m, payload(offset, 2))
+    subtree:add_le (f.hd_link_push_dl_freq_energy_max_nf20_m, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.hd_link_osd_sdr_nf_params_min_nf20_m, payload(offset, 2))
+    subtree:add_le (f.hd_link_push_dl_freq_energy_min_nf20_m, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.hd_link_osd_sdr_nf_params_max_nf10_m, payload(offset, 2))
+    subtree:add_le (f.hd_link_push_dl_freq_energy_max_nf10_m, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.hd_link_osd_sdr_nf_params_min_nf10_m, payload(offset, 2))
+    subtree:add_le (f.hd_link_push_dl_freq_energy_min_nf10_m, payload(offset, 2))
     offset = offset + 2
 
-    if (offset ~= 15) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Sdr Nf Params: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Sdr Nf Params: Payload size different than expected") end
+    if (offset ~= 15) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push Dl Freq Energy: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push Dl Freq Energy: Payload size different than expected") end
 end
 
--- HD Link - Osd Sdr Bar Interference - 0x3b
+-- HD Link - HDLnk SDR Tip Interference - 0x3b
 
-f.hd_link_osd_sdr_bar_interference_be_interfered = ProtoField.uint8 ("dji_p3.hd_link_osd_sdr_bar_interference_be_interfered", "Be Interfered", base.HEX)
+f.hd_link_sdr_tip_interference_be_interfered = ProtoField.uint8 ("dji_p3.hd_link_sdr_tip_interference_be_interfered", "Be Interfered", base.HEX)
 
-local function hd_link_osd_sdr_bar_interference_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_sdr_tip_interference_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_sdr_bar_interference_be_interfered, payload(offset, 1))
+    subtree:add_le (f.hd_link_sdr_tip_interference_be_interfered, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Sdr Bar Interference: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Sdr Bar Interference: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk SDR Tip Interference: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk SDR Tip Interference: Payload size different than expected") end
 end
 
--- HD Link - Osd Power Status - 0x52
+-- HD Link - HDLnk Power Status - 0x52
 
-f.hd_link_osd_power_status_power_status = ProtoField.uint8 ("dji_p3.hd_link_osd_power_status_power_status", "Power Status", base.HEX)
-f.hd_link_osd_power_status_get_is_power_off = ProtoField.uint8 ("dji_p3.hd_link_osd_power_status_get_is_power_off", "Get Is Power Off", base.HEX)
+f.hd_link_power_status_info_power_status = ProtoField.uint8 ("dji_p3.hd_link_power_status_info_power_status", "Power Status", base.HEX)
+f.hd_link_power_status_info_get_is_power_off = ProtoField.uint8 ("dji_p3.hd_link_power_status_info_get_is_power_off", "Get Is Power Off", base.HEX)
 
-local function hd_link_osd_power_status_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_power_status_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_power_status_power_status, payload(offset, 1))
+    subtree:add_le (f.hd_link_power_status_info_power_status, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_power_status_get_is_power_off, payload(offset, 1))
+    subtree:add_le (f.hd_link_power_status_info_get_is_power_off, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Power Status: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Power Status: Payload size different than expected") end
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Power Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Power Status: Payload size different than expected") end
 end
 
--- HD Link - Osd Osmo Calibration - 0x54
+-- HD Link - HDLnk Osmo Calibration - 0x54
 
-f.hd_link_osd_osmo_calibration_a = ProtoField.uint8 ("dji_p3.hd_link_osd_osmo_calibration_a", "A", base.HEX)
-f.hd_link_osd_osmo_calibration_b = ProtoField.uint8 ("dji_p3.hd_link_osd_osmo_calibration_b", "B", base.HEX)
+f.hd_link_osmo_calibration_a = ProtoField.uint8 ("dji_p3.hd_link_osmo_calibration_a", "A", base.HEX)
+f.hd_link_osmo_calibration_b = ProtoField.uint8 ("dji_p3.hd_link_osmo_calibration_b", "B", base.HEX)
 
-local function hd_link_osd_osmo_calibration_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_osmo_calibration_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_osmo_calibration_a, payload(offset, 1))
+    subtree:add_le (f.hd_link_osmo_calibration_a, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.hd_link_osd_osmo_calibration_b, payload(offset, 1))
+    subtree:add_le (f.hd_link_osmo_calibration_b, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Osmo Calibration: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Osmo Calibration: Payload size different than expected") end
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Osmo Calibration: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Osmo Calibration: Payload size different than expected") end
 end
 
--- HD Link - Osd Mic Info - 0x59
+-- HD Link - HDLnk Mic Info - 0x59
 
 enums.HD_LINK_OSD_MIC_INFO_MIC_TYPE_ENUM = {
     [0x00] = 'IN',
@@ -7555,50 +7588,50 @@ enums.HD_LINK_OSD_MIC_INFO_MIC_TYPE_ENUM = {
     [0x02] = 'OTHER',
 }
 
-f.hd_link_osd_mic_info_masked00 = ProtoField.uint8 ("dji_p3.hd_link_osd_mic_info_masked00", "Masked00", base.HEX)
-  f.hd_link_osd_mic_info_mic_type = ProtoField.uint8 ("dji_p3.hd_link_osd_mic_info_mic_type", "Mic Type", base.HEX, enums.HD_LINK_OSD_MIC_INFO_MIC_TYPE_ENUM, 0x01, nil)
-  f.hd_link_osd_mic_info_mic_volume = ProtoField.uint8 ("dji_p3.hd_link_osd_mic_info_mic_volume", "Mic Volume", base.HEX, nil, 0xfe, nil)
+f.hd_link_mic_info_masked00 = ProtoField.uint8 ("dji_p3.hd_link_mic_info_masked00", "Masked00", base.HEX)
+  f.hd_link_mic_info_mic_type = ProtoField.uint8 ("dji_p3.hd_link_mic_info_mic_type", "Mic Type", base.HEX, enums.HD_LINK_OSD_MIC_INFO_MIC_TYPE_ENUM, 0x01, nil)
+  f.hd_link_mic_info_mic_volume = ProtoField.uint8 ("dji_p3.hd_link_mic_info_mic_volume", "Mic Volume", base.HEX, nil, 0xfe, nil)
 
-local function hd_link_osd_mic_info_dissector(pkt_length, buffer, pinfo, subtree)
+local function hd_link_mic_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_osd_mic_info_masked00, payload(offset, 1))
-    subtree:add_le (f.hd_link_osd_mic_info_mic_type, payload(offset, 1))
-    subtree:add_le (f.hd_link_osd_mic_info_mic_volume, payload(offset, 1))
+    subtree:add_le (f.hd_link_mic_info_masked00, payload(offset, 1))
+    subtree:add_le (f.hd_link_mic_info_mic_type, payload(offset, 1))
+    subtree:add_le (f.hd_link_mic_info_mic_volume, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Osd Mic Info: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Osd Mic Info: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Mic Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Mic Info: Payload size different than expected") end
 end
 
 local HD_LINK_UART_CMD_DISSECT = {
     [0x01] = flyc_osd_general_dissector,
-    [0x02] = flyc_osd_home_dissector,
-    [0x06] = hd_link_set_transciever_reg_dissector,
-    [0x08] = hd_link_osd_signal_quality_dissector,
-    [0x0a] = hd_link_osd_sweep_frequency_dissector,
-    [0x0b] = hd_link_osd_devices_state_dissector,
-    [0x0c] = hd_link_osd_config_dissector,
-    [0x11] = hd_link_osd_channal_status_dissector,
-    [0x12] = hd_link_set_transciever_config_dissector,
-    [0x15] = hd_link_osd_max_mcs_dissector,
-    [0x16] = hd_link_osd_debug_info_dissector,
-    [0x20] = hd_link_osd_sdr_sweep_frequency_dissector,
-    [0x22] = hd_link_osd_sdr_config_info_dissector,
-    [0x24] = hd_link_osd_sdr_status_info_dissector,
-    [0x25] = hd_link_osd_sdr_status_info_dissector, -- Ground version is the same as air version
-    [0x29] = hd_link_osd_sdr_upward_sweep_frequency_dissector,
-    [0x2a] = hd_link_osd_sdr_upward_select_channel_dissector,
-    [0x30] = hd_link_osd_wireless_state_dissector,
-    [0x36] = hd_link_osd_sdr_push_custom_code_rate_dissector,
-    [0x37] = hd_link_osd_hdvt_push_exception_dissector,
-    [0x3a] = hd_link_osd_sdr_nf_params_dissector,
-    [0x3b] = hd_link_osd_sdr_bar_interference_dissector,
-    [0x52] = hd_link_osd_power_status_dissector,
-    [0x54] = hd_link_osd_osmo_calibration_dissector,
-    [0x59] = hd_link_osd_mic_info_dissector,
+    [0x02] = flyc_osd_home_point_dissector,
+    [0x06] = hd_link_write_transciever_reg_dissector,
+    [0x08] = hd_link_push_vt_signal_quality_dissector,
+    [0x0a] = hd_link_push_freq_energy_dissector,
+    [0x0b] = hd_link_push_device_status_dissector,
+    [0x0c] = hd_link_get_vt_config_info_dissector,
+    [0x11] = hd_link_push_wl_env_quality_dissector,
+    [0x12] = hd_link_set_factory_test_dissector,
+    [0x15] = hd_link_push_max_video_bandwidth_dissector,
+    [0x16] = hd_link_push_debug_info_dissector,
+    [0x20] = hd_link_push_sdr_dl_freq_energy_dissector,
+    [0x22] = hd_link_push_sdr_dl_auto_vt_info_dissector,
+    [0x24] = hd_link_push_sdr_rt_status_dissector,
+    [0x25] = hd_link_push_sdr_rt_status_dissector, -- Ground version is the same as air version
+    [0x29] = hd_link_push_sdr_ul_freq_energy_dissector,
+    [0x2a] = hd_link_push_sdr_ul_auto_vt_info_dissector,
+    [0x30] = hd_link_sdr_wireless_env_dissector,
+    [0x36] = hd_link_sdr_liveview_rate_ind_dissector,
+    [0x37] = hd_link_abnormal_event_ind_dissector,
+    [0x3a] = hd_link_push_dl_freq_energy_dissector,
+    [0x3b] = hd_link_sdr_tip_interference_dissector,
+    [0x52] = hd_link_power_status_info_dissector,
+    [0x54] = hd_link_osmo_calibration_dissector,
+    [0x59] = hd_link_mic_info_dissector,
 }
 
 -- Mono/Binocular - Eye Log - 0x01
