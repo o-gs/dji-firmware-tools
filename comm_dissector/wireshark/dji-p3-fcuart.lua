@@ -349,16 +349,16 @@ local CAMERA_UART_CMD_TEXT = {
 }
 
 local FLYC_UART_CMD_TEXT = {
-    [0x00] = 'FC Scan/Test',
-    [0x01] = 'FC Get Status',
-    [0x02] = 'FC Params Get',
+    [0x00] = 'FlyC Scan/Test',
+    [0x01] = 'FlyC Status Get',
+    [0x02] = 'FlyC Params Get',
     [0x03] = 'Origin GPS Set',
     [0x04] = 'Origin GPS Get',
     [0x05] = 'GPS Coordinate Get', -- Sim Command
     [0x06] = 'Fly Limit Param Set',
     [0x07] = 'Fly Limit Param Get',
     [0x08] = 'Nofly Zone Set', -- Set Fly Forbidden Area
-    [0x09] = 'Nofly Status Get', -- Flyc Forbidden Status
+    [0x09] = 'Nofly Status Get', -- FlyC Forbidden Status
     [0x0A] = 'Battery Status Get', -- Nvt Battary Status
     [0x0B] = 'Motor Work Status Set',
     [0x0C] = 'Motor Work Status Get',
@@ -394,7 +394,7 @@ local FLYC_UART_CMD_TEXT = {
     [0x2F] = 'Battery Voltage Alarm Set', -- Set Voltage Warnning
     [0x30] = 'Battery Voltage Alarm Get', -- Get Voltage Warnning
     [0x31] = 'UAV Home Point Set',   --AC/RC/APP
-    [0x32] = 'Flyc Deform Status', -- Push Foot Stool Status
+    [0x32] = 'FlyC Deform Status', -- Push Foot Stool Status
     [0x33] = 'UAV User String Set', -- Set Plane Name
     [0x34] = 'UAV User String Get', -- Get Plane Name
     [0x35] = 'Change Param Ping',
@@ -406,39 +406,39 @@ local FLYC_UART_CMD_TEXT = {
     [0x3b] = 'RC Lost Action Set', -- Set Fs Action
     [0x3c] = 'RC Lost Action Get', -- Get Fs Action
     [0x3d] = 'Time Zone Set', -- for Recorder
-    [0x3e] = 'Flyc Request Limit Update',
+    [0x3e] = 'FlyC Request Limit Update',
     [0x3f] = 'Set NoFly Zone Data', -- Set Fly Forbid Area Data
     [0x41] = 'Upload Unlimit Areas', -- Set Whitelist Cmd
-    [0x42] = 'Flyc Unlimit State', -- Push Unlimit Areas / Push UAV Posture
+    [0x42] = 'FlyC Unlimit State', -- Push Unlimit Areas / Push UAV Posture
     [0x43] = 'OSD General Data',
     [0x44] = 'OSD Home Point',
-    [0x45] = 'Flyc GPS SNR Get',
-    [0x46] = 'Flyc GPS SNR Set', -- Enable GPS SNR
+    [0x45] = 'FlyC GPS SNR Get',
+    [0x46] = 'FlyC GPS SNR Set', -- Enable GPS SNR
     [0x47] = 'Enable Unlimit Areas', -- Toggle Whitelist
     [0x49] = 'Push Encrypted Package',
     [0x4A] = 'Push Att IMU Info',
     [0x4B] = 'Push RC Stick Value',
     [0x4C] = 'Push Fussed Pos Speed Data',
     [0x50] = 'Imu Data Status',
-    [0x51] = 'Flyc Battery Status', -- Smart Battery Status
+    [0x51] = 'FlyC Battery Status', -- Smart Battery Status
     [0x52] = 'Smart Low Battery Actn', -- Set Battery Alarm Action / Low Bat Departure Cnf Cancel
-    [0x53] = 'Flyc Vis Avoidance Param', -- Push Visual Avoidance Info
-    [0x55] = 'Flyc Limit State',
-    [0x56] = 'Flyc Led Status',
+    [0x53] = 'FlyC Vis Avoidance Param', -- Push Visual Avoidance Info
+    [0x55] = 'FlyC Limit State',
+    [0x56] = 'FlyC Led Status',
     [0x57] = 'GPS GLNS Info',
     [0x58] = 'Push Att Stick Speed Pos Data',
     [0x59] = 'Push Sdk Data',
     [0x5A] = 'Push FC Data',
     [0x60] = 'SVO API Transfer',
-    [0x61] = 'Flyc Activation Info', -- Sdk Activation Info or Request
-    [0x62] = 'Flyc Activation Exec', -- Sdk Activation or Activation Result
-    [0x63] = 'Flyc On Board Recv',
+    [0x61] = 'FlyC Activation Info', -- Sdk Activation Info or Request
+    [0x62] = 'FlyC Activation Exec', -- Sdk Activation or Activation Result
+    [0x63] = 'FlyC On Board Recv',
     [0x64] = 'Set Send On Board', -- SDK Pure Transfer From App To MC
-    [0x67] = 'Flyc Power Param', -- Motive Power Info
+    [0x67] = 'FlyC Power Param', -- Motive Power Info
     [0x69] = 'RTK Switch', -- Handle App To Rtk Pack
-    [0x6a] = 'Flyc Avoid', -- or Battery Valid Stste?
+    [0x6a] = 'FlyC Avoid', -- or Battery Valid Stste?
     [0x6b] = 'Recorder Data Cfg',
-    [0x6c] = 'Flyc Rtk Location Data',
+    [0x6c] = 'FlyC Rtk Location Data',
     [0x6d] = 'Upload Hotpoint',
     [0x6e] = 'Download Hotpoint',
     [0x70] = 'Set Product SN',     --Some licensing string check
@@ -456,8 +456,8 @@ local FLYC_UART_CMD_TEXT = {
     [0x85] = 'Download Waypoint Info By Idx', -- Download WayPoint Msg By Index
     [0x86] = 'Mission WP: Go/Stop', -- Start Or Cancel WayLine Mission
     [0x87] = 'Mission WP: Pasue/Resume', -- Pause Or Continue WayLine Mission
-    [0x88] = 'Push Navigation Status Info', -- Flyc WayPoint Mission Info
-    [0x89] = 'Push Navigation Event Info', -- Flyc WayPoint Mission Current Event
+    [0x88] = 'Push Navigation Status Info', -- FlyC WayPoint Mission Info
+    [0x89] = 'Push Navigation Event Info', -- FlyC WayPoint Mission Current Event
     [0x8A] = 'Miss. HotPoint: Start With Info', -- Start HotPoint Mission With Info
     [0x8B] = 'Miss. HotPoint: Cancel', -- Stop HotPoint Mission
     [0x8C] = 'Miss. HotPoint: Pasue/Resume', -- HotPoint Mission Switch
@@ -481,7 +481,7 @@ local FLYC_UART_CMD_TEXT = {
     [0x9e] = 'App Ctrl Mission Yaw Rate',
     [0x9f] = 'Miss. HotPoint: Auto Radius Ctrl',
     [0xa0] = 'Send AGPS Data',
-    [0xa1] = 'Flyc AGPS Status',
+    [0xa1] = 'FlyC AGPS Status',
     [0xa2] = 'Race Drone OSD Push',
     [0xa3] = 'Miss. WP: Get BreakPoint Info',
     [0xa4] = 'Miss. WP: Return To Cur Line',
@@ -490,12 +490,12 @@ local FLYC_UART_CMD_TEXT = {
     [0xaa] = 'Sbus Packet',
     [0xab] = 'Ctrl Attitude Data Send', -- Set Attitude
     [0xac] = 'Ctrl Taillock Data Send', -- Set Tail Lock
-    [0xad] = 'Flyc Install Error',
+    [0xad] = 'FlyC Install Error',
     [0xae] = 'Cmd Handler RC App Chl Handler',
     [0xaf] = 'Product Config',
     [0xb0] = 'Get Battery Groups Single Info',
     [0xb5] = 'Fault Inject', -- FIT Set Parameter / Fdi Input
-    [0xb6] = 'Flyc Fault Inject', -- Change Dev Colour
+    [0xb6] = 'FlyC Fault Inject', -- Change Dev Colour
     [0xb7] = 'Set And Get Redundancy IMU Index', -- RNS Set Parameter
     [0xb8] = 'Redundancy Status', -- RNS Get State
     [0xb9] = 'Push Redundancy Status',
@@ -510,9 +510,9 @@ local FLYC_UART_CMD_TEXT = {
     [0xce] = 'Push Forbid Data Infos', -- FMU Api Get Db Info
     [0xcf] = 'Get New Nofly Area', -- Get New Flyforbid Area
     [0xd4] = 'Get Additional Info', -- Get Moto Speed
-    [0xd7] = 'Flyc Flight Record', -- Record Log
+    [0xd7] = 'FlyC Flight Record', -- Record Log
     [0xd9] = 'Process Sensor Api Data',
-    [0xda] = 'Flyc Detection', -- Handler Monitor Cmd Set
+    [0xda] = 'FlyC Detection', -- Handler Monitor Cmd Set
     [0xdf] = 'Assistant Unlock Handler',
     [0xe0] = 'Config Table: Get Tbl Attribute',
     [0xe1] = 'Config Table: Get Item Attribute', -- returns parameter name and properties post-mavic
@@ -554,7 +554,7 @@ local GIMBAL_UART_CMD_TEXT = {
     [0x03] = 'Gimbal Set Param',
     [0x04] = 'Gimbal Get Param',
     [0x05] = 'Gimbal Params', -- Push Position
-    [0x06] = 'Gimbal Push Aetr',
+    [0x06] = 'Gimbal Push AETR',
     [0x07] = 'Gimbal Adjust Roll',
     [0x08] = 'Gimbal Calibration',
     [0x09] = 'Gimbal Reserved2',
@@ -567,9 +567,12 @@ local GIMBAL_UART_CMD_TEXT = {
     [0x10] = 'Gimbal Get User Param',
     [0x11] = 'Gimbal Save User Param',
     [0x13] = 'Gimbal Resume Default Param',
+    [0x14] = 'Gimbal TBD 14', -- seen in P3X_FW_V01.11.0030_m0400
     [0x15] = 'Gimbal Movement',
     [0x1C] = 'Gimbal Type',
     [0x1E] = 'Gimbal Degree Info Subscription',
+    [0x20] = 'Gimbal TBD 20', -- seen in P3X_FW_V01.11.0030_m0400
+    [0x21] = 'Gimbal TBD 21', -- seen in P3X_FW_V01.11.0030_m0400
     [0x24] = 'Gimbal User Params',
     [0x27] = 'Gimbal Abnormal Status',
     [0x2b] = 'Gimbal Tutorial Status',
@@ -579,6 +582,7 @@ local GIMBAL_UART_CMD_TEXT = {
     [0x39] = 'Gimbal Lock',
     [0x3A] = 'Gimbal Rotate Camera X Axis',
     [0x45] = 'Gimbal Get Temp',
+    [0x47] = 'Gimbal TBD 47', -- seen in P3X_FW_V01.11.0030_m0400
     [0x4C] = 'Gimbal Set Mode',
 }
 
@@ -642,7 +646,7 @@ local RC_UART_CMD_TEXT = {
     [0x23] = 'RC Request Gimbal Control',
     [0x24] = 'RC Set Simulate Flight Mode',
     [0x25] = 'RC Get Simulate Flight Mode',
-    [0x26] = 'RC Push Aetr Value',
+    [0x26] = 'RC Push AETR Value',
     [0x27] = 'RC Get Detection Info',
     [0x28] = 'RC Get Gimbal Control Access Right',
     [0x29] = 'RC Set Slave Control Mode',
@@ -1030,16 +1034,39 @@ end
 
 -- General - Get Device State - 0x0c
 
---f.general_get_device_state_unknown0 = ProtoField.none ("dji_p3.general_get_device_state_unknown0", "Unknown0", base.NONE)
+f.general_get_device_state_status = ProtoField.uint8 ("dji_p3.general_get_device_state_status", "Status", base.HEX)
+f.general_get_device_state_unknown1 = ProtoField.uint8 ("dji_p3.general_get_device_state_unknown1", "Unknown1", base.HEX)
+f.general_get_device_state_state = ProtoField.uint32 ("dji_p3.general_get_device_state_state", "Device State", base.HEX)
 
 local function general_get_device_state_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    -- Details from DM36x could be decoded using func Dec_Serial_Get_Device_State from `usbclient` binary
+    if pack_type == 0 then -- Request
 
-    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Get Device State: Offset does not match - internal inconsistency") end
+        if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Get Device State: Offset does not match - internal inconsistency") end
+
+    else -- Response
+
+        -- Checked with P3X DM36x func Dec_Serial_Get_Device_State from `usbclient` binary
+        -- Checked with P3X_FW_V01.11.0030_m0400
+
+        subtree:add_le (f.general_get_device_state_status, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.general_get_device_state_unknown1, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.general_get_device_state_state, payload(offset, 4))
+        offset = offset + 4
+
+        if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Get Device State: Offset does not match - internal inconsistency") end
+
+    end
+
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Get Device State: Payload size different than expected") end
 end
 
@@ -1156,14 +1183,14 @@ enums.COMMON_ENCRYPT_CONFIG_CMD_TYPE_ENUM = {
 enums.COMMON_ENCRYPT_CONFIG_OPER_TYPE_ENUM = {
     [0]="Write_Key_File+Write_Factory_Info_File",
     [1]="Write_Key+Write_Factory_Info",
-    [2]="Write_Key_All+Write_Factory_Info_All",
+    [2]="Write_Key_All+Write_Factory_Info_All", -- This writes the data to both places
 }
 
 f.general_encrypt_config_cmd_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_cmd_type", "Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CONFIG_CMD_TYPE_ENUM, nil, nil)
 
 f.general_encrypt_config_oper_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_oper_type", "Oper Type", base.DEC, enums.COMMON_ENCRYPT_CONFIG_OPER_TYPE_ENUM, nil, nil)
 f.general_encrypt_config_magic = ProtoField.bytes ("dji_p3.general_encrypt_config_magic", "Magic value", base.SPACE, nil, nil, "Should be `F0 BD E3 06 81 3E 85 CB`")
-f.general_encrypt_config_dev_id = ProtoField.uint8 ("dji_p3.general_encrypt_config_dev_id", "Device ID", base.DEC, nil, nil, "Only 13 is accepted")
+f.general_encrypt_config_dev_id = ProtoField.uint8 ("dji_p3.general_encrypt_config_dev_id", "Device ID", base.DEC, nil, nil, "Type of the module; only packets with specific value are accepted by each module, ie. gimbal accepts 4.")
 f.general_encrypt_config_factory_info_bn = ProtoField.bytes ("dji_p3.general_encrypt_config_factory_info_bn", "Factory Info Bn", base.SPACE, nil, nil, "FactoryInfo.aucBn")
 f.general_encrypt_config_key = ProtoField.bytes ("dji_p3.general_encrypt_config_key", "Encrypt Key", base.SPACE, nil, nil, "AES encryption key")
 f.general_encrypt_config_factory_info_sn = ProtoField.bytes ("dji_p3.general_encrypt_config_factory_info_sn", "Factory Info Sn", base.SPACE, nil, nil, "FactoryInfo.aucSn")
@@ -3094,7 +3121,7 @@ local CAMERA_UART_CMD_DISSECT = {
     [0xf2] = camera_camera_tau_param_dissector,
 }
 
--- Flight Controller - Flyc Forbid Status - 0x09
+-- Flight Controller - FlyC Forbid Status - 0x09
 
 enums.FLYC_FORBID_STATUS_FLIGHT_LIMIT_AREA_STATE_DJI_FLIGHT_LIMIT_AREA_STATE_ENUM = {
     [0x00] = 'None',
@@ -3137,8 +3164,8 @@ local function flyc_flyc_forbid_status_dissector(pkt_length, buffer, pinfo, subt
     subtree:add_le (f.flyc_flyc_forbid_status_unknown3, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 7) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Forbid Status: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Forbid Status: Payload size different than expected") end
+    if (offset ~= 7) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Forbid Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Forbid Status: Payload size different than expected") end
 end
 
 -- Flight Controller - A2 Commom - 0x10
@@ -3205,7 +3232,7 @@ local function flyc_function_control_dissector(pkt_length, buffer, pinfo, subtre
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Function Control: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Deform Status - 0x32
+-- Flight Controller - FlyC Deform Status - 0x32
 
 enums.FLYC_DEFORM_STATUS_DEFORM_STATUS_TRIPOD_STATUS_ENUM = {
     [0x00] = 'UNKNOWN',
@@ -3239,11 +3266,11 @@ local function flyc_flyc_deform_status_dissector(pkt_length, buffer, pinfo, subt
     subtree:add_le (f.flyc_flyc_deform_status_deform_mode, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Deform Status: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Deform Status: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Deform Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Deform Status: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Request Limit Update - 0x3e
+-- Flight Controller - FlyC Request Limit Update - 0x3e
 
 --f.flyc_flyc_request_limit_update_unknown0 = ProtoField.none ("dji_p3.flyc_flyc_request_limit_update_unknown0", "Unknown0", base.NONE)
 
@@ -3252,11 +3279,11 @@ local function flyc_flyc_request_limit_update_dissector(pkt_length, buffer, pinf
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Request Limit Update: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Request Limit Update: Payload size different than expected") end
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Request Limit Update: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Request Limit Update: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Unlimit State - 0x42
+-- Flight Controller - FlyC Unlimit State - 0x42
 
 f.flyc_flyc_unlimit_state_is_in_unlimit_area = ProtoField.uint8 ("dji_p3.flyc_flyc_unlimit_state_is_in_unlimit_area", "Is In Unlimit Area", base.HEX)
 f.flyc_flyc_unlimit_state_unlimit_areas_action = ProtoField.uint8 ("dji_p3.flyc_flyc_unlimit_state_unlimit_areas_action", "Unlimit Areas Action", base.HEX)
@@ -3280,8 +3307,8 @@ local function flyc_flyc_unlimit_state_dissector(pkt_length, buffer, pinfo, subt
     subtree:add_le (f.flyc_flyc_unlimit_state_unlimit_areas_enabled, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Unlimit State: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Unlimit State: Payload size different than expected") end
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Unlimit State: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Unlimit State: Payload size different than expected") end
 end
 
 -- Flight Controller - OSD General Data - 0x43, identical to flight recorder packet 0x000c
@@ -3815,12 +3842,12 @@ f.flyc_osd_home_point_data_recorder_remain_time = ProtoField.uint16 ("dji_p3.fly
 f.flyc_osd_home_point_cur_data_recorder_file_index = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_cur_data_recorder_file_index", "Cur Data Recorder File Index", base.HEX)
 -- Version of the packet from newer firmwares, 34 bytes long
 f.flyc_osd_home_point_ver1_masked20 = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_ver1_masked20", "Masked20", base.HEX)
-  f.flyc_osd_home_point_ver1_flyc_in_simulation_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_ver1_flyc_in_simulation_mode", "Flyc In Simulation Mode", base.HEX, nil, 0x01, nil)
-  f.flyc_osd_home_point_ver1_flyc_in_navigation_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_ver1_flyc_in_navigation_mode", "Flyc In Navigation Mode", base.HEX, nil, 0x02, nil)
+  f.flyc_osd_home_point_ver1_flyc_in_simulation_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_ver1_flyc_in_simulation_mode", "FlyC In Simulation Mode", base.HEX, nil, 0x01, nil)
+  f.flyc_osd_home_point_ver1_flyc_in_navigation_mode = ProtoField.uint16 ("dji_p3.flyc_osd_home_point_ver1_flyc_in_navigation_mode", "FlyC In Navigation Mode", base.HEX, nil, 0x02, nil)
 -- Version of the packet from older firmwares, 68 bytes long
 f.flyc_osd_home_point_masked20 = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_masked20", "Masked20", base.HEX)
-  f.flyc_osd_home_point_flyc_in_simulation_mode = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_flyc_in_simulation_mode", "Flyc In Simulation Mode", base.HEX, nil, 0x01, nil)
-  f.flyc_osd_home_point_flyc_in_navigation_mode = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_flyc_in_navigation_mode", "Flyc In Navigation Mode", base.HEX, nil, 0x02, nil)
+  f.flyc_osd_home_point_flyc_in_simulation_mode = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_flyc_in_simulation_mode", "FlyC In Simulation Mode", base.HEX, nil, 0x01, nil)
+  f.flyc_osd_home_point_flyc_in_navigation_mode = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_flyc_in_navigation_mode", "FlyC In Navigation Mode", base.HEX, nil, 0x02, nil)
   f.flyc_osd_home_point_wing_broken = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_wing_broken", "Wing Broken", base.HEX, nil, 0x1000, nil)
   f.flyc_osd_home_point_big_gale = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_big_gale", "Big Gale", base.HEX, nil, 0x4000, nil)
   f.flyc_osd_home_point_big_gale_warning = ProtoField.uint32 ("dji_p3.flyc_osd_home_point_big_gale_warning", "Big Gale Warning", base.HEX, nil, 0x100000, nil)
@@ -3922,7 +3949,7 @@ local function flyc_osd_home_point_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"OSD Home Point: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Gps Snr - 0x45
+-- Flight Controller - FlyC Gps Snr - 0x45
 
 --f.flyc_flyc_gps_snr_unknown0 = ProtoField.none ("dji_p3.flyc_flyc_gps_snr_unknown0", "Unknown0", base.NONE)
 
@@ -3931,8 +3958,8 @@ local function flyc_flyc_gps_snr_dissector(pkt_length, buffer, pinfo, subtree)
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Gps Snr: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Gps Snr: Payload size different than expected") end
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Gps Snr: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Gps Snr: Payload size different than expected") end
 end
 
 -- Flight Controller - Imu Data Status - 0x50, identical to flight recorder packet 0x0013
@@ -3955,7 +3982,7 @@ local function flyc_imu_data_status_dissector(pkt_length, buffer, pinfo, subtree
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Imu Data Status: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Battery Status - 0x51
+-- Flight Controller - FlyC Battery Status - 0x51
 
 enums.FLYC_SMART_BATTERY_GO_HOME_STATUS_SMART_GO_HOME_STATUS_ENUM = {
     [0x00] = 'NON_GOHOME',
@@ -4037,11 +4064,11 @@ local function flyc_flyc_battery_status_dissector(pkt_length, buffer, pinfo, sub
     subtree:add_le (f.flyc_flyc_battery_status_voltage_percent, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Battery Status: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Battery Status: Payload size different than expected") end
+    if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Battery Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Battery Status: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Vis Avoidance Param - 0x53
+-- Flight Controller - FlyC Vis Avoidance Param - 0x53
 
 f.flyc_flyc_vis_avoid_param_masked00 = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_masked00", "Masked00", base.HEX)
   f.flyc_flyc_vis_avoid_param_avoid_obstacle_enable = ProtoField.uint16 ("dji_p3.flyc_flyc_vis_avoid_param_avoid_obstacle_enable", "Avoid Obstacle Enable", base.HEX, nil, 0x01, nil)
@@ -4077,11 +4104,11 @@ local function flyc_flyc_vis_avoid_param_dissector(pkt_length, buffer, pinfo, su
     subtree:add_le (f.flyc_flyc_vis_avoid_param_vert_low_limit_work_flag, payload(offset, 2))
     offset = offset + 2
 
-    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Vis Avoidance Param: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Vis Avoidance Param: Payload size different than expected") end
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Vis Avoidance Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Vis Avoidance Param: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Limit State - 0x55
+-- Flight Controller - FlyC Limit State - 0x55
 
 f.flyc_flyc_limit_state_latitude = ProtoField.double ("dji_p3.flyc_flyc_limit_state_latitude", "Latitude", base.DEC)
 f.flyc_flyc_limit_state_longitude = ProtoField.double ("dji_p3.flyc_flyc_limit_state_longitude", "Longitude", base.DEC)
@@ -4121,11 +4148,11 @@ local function flyc_flyc_limit_state_dissector(pkt_length, buffer, pinfo, subtre
     subtree:add_le (f.flyc_flyc_limit_state_enable, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Limit State: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Limit State: Payload size different than expected") end
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Limit State: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Limit State: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Led Status - 0x56
+-- Flight Controller - FlyC Led Status - 0x56
 
 enums.FLYC_LED_STATUS_LED_REASON_ENUM = {
     [0x00] = 'SET_HOME',
@@ -4168,8 +4195,8 @@ local function flyc_flyc_led_status_dissector(pkt_length, buffer, pinfo, subtree
     subtree:add_le (f.flyc_flyc_led_status_led_reason, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Led Status: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Led Status: Payload size different than expected") end
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Led Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Led Status: Payload size different than expected") end
 end
 
 -- Flight Controller - Gps Glns - 0x57, similar to flight recorder packet 0x0005
@@ -4228,7 +4255,7 @@ local function flyc_gps_glns_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gps Glns: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Activation Info - 0x61
+-- Flight Controller - FlyC Activation Info - 0x61
 
 f.flyc_flyc_active_request_app_id = ProtoField.uint32 ("dji_p3.flyc_flyc_active_request_app_id", "App Id", base.HEX)
 f.flyc_flyc_active_request_app_level = ProtoField.uint32 ("dji_p3.flyc_flyc_active_request_app_level", "App Level", base.HEX)
@@ -4248,11 +4275,11 @@ local function flyc_flyc_active_request_dissector(pkt_length, buffer, pinfo, sub
     subtree:add_le (f.flyc_flyc_active_request_app_version, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Activation Info: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Activation Info: Payload size different than expected") end
+    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Activation Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Activation Info: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Board Recv - 0x63
+-- Flight Controller - FlyC Board Recv - 0x63
 
 --f.flyc_flyc_board_recv_unknown0 = ProtoField.none ("dji_p3.flyc_flyc_board_recv_unknown0", "Unknown0", base.NONE)
 
@@ -4261,11 +4288,11 @@ local function flyc_flyc_board_recv_dissector(pkt_length, buffer, pinfo, subtree
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Board Recv: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Board Recv: Payload size different than expected") end
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Board Recv: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Board Recv: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Power Param - 0x67
+-- Flight Controller - FlyC Power Param - 0x67
 
 f.flyc_flyc_power_param_esc_average_speed = ProtoField.float ("dji_p3.flyc_flyc_power_param_esc_average_speed", "Esc Average Speed", base.DEC)
 f.flyc_flyc_power_param_lift = ProtoField.float ("dji_p3.flyc_flyc_power_param_lift", "Lift", base.DEC)
@@ -4281,11 +4308,11 @@ local function flyc_flyc_power_param_dissector(pkt_length, buffer, pinfo, subtre
     subtree:add_le (f.flyc_flyc_power_param_lift, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Power Param: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Power Param: Payload size different than expected") end
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Power Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Power Param: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Avoid - 0x6a
+-- Flight Controller - FlyC Avoid - 0x6a
 
 f.flyc_flyc_avoid_masked00 = ProtoField.uint8 ("dji_p3.flyc_flyc_avoid_masked00", "Masked00", base.HEX)
   f.flyc_flyc_avoid_visual_sensor_enable = ProtoField.uint8 ("dji_p3.flyc_flyc_avoid_visual_sensor_enable", "Visual Sensor Enable", base.HEX, nil, 0x01, nil)
@@ -4303,11 +4330,11 @@ local function flyc_flyc_avoid_dissector(pkt_length, buffer, pinfo, subtree)
     subtree:add_le (f.flyc_flyc_avoid_in_stop, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Avoid: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Avoid: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Avoid: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Avoid: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Rtk Location Data - 0x6c
+-- Flight Controller - FlyC Rtk Location Data - 0x6c
 
 f.flyc_flyc_rtk_location_data_longitude = ProtoField.double ("dji_p3.flyc_flyc_rtk_location_data_longitude", "Longitude", base.DEC)
 f.flyc_flyc_rtk_location_data_latitude = ProtoField.double ("dji_p3.flyc_flyc_rtk_location_data_latitude", "Latitude", base.DEC)
@@ -4339,11 +4366,11 @@ local function flyc_flyc_rtk_location_data_dissector(pkt_length, buffer, pinfo, 
     subtree:add_le (f.flyc_flyc_rtk_location_data_rtk_canbe_used, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Rtk Location Data: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Rtk Location Data: Payload size different than expected") end
+    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Rtk Location Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Rtk Location Data: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Way Point Mission Info - 0x88
+-- Flight Controller - FlyC Way Point Mission Info - 0x88
 
 enums.FLYC_WAY_POINT_MISSION_INFO_MISSION_TYPE_ENUM = {
     [0x01] = 'Way Point',
@@ -4461,8 +4488,8 @@ local function flyc_flyc_way_point_mission_info_dissector(pkt_length, buffer, pi
     subtree:add_le (f.flyc_flyc_way_point_mission_info_is_tracking_enabled, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 7) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Way Point Mission Info: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Way Point Mission Info: Payload size different than expected") end
+    if (offset ~= 7) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Way Point Mission Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Way Point Mission Info: Payload size different than expected") end
 end
 
 -- Flight Controller - Push Navigation Event Info - 0x89
@@ -4531,7 +4558,7 @@ local function flyc_flyc_way_point_mission_current_event_dissector(pkt_length, b
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Push Navigation Event Info: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Agps Status - 0xa1
+-- Flight Controller - FlyC Agps Status - 0xa1
 
 f.flyc_flyc_agps_status_time_stamp = ProtoField.uint32 ("dji_p3.flyc_flyc_agps_status_time_stamp", "Time Stamp", base.HEX)
 f.flyc_flyc_agps_status_data_length = ProtoField.uint32 ("dji_p3.flyc_flyc_agps_status_data_length", "Data Length", base.HEX)
@@ -4551,11 +4578,11 @@ local function flyc_flyc_agps_status_dissector(pkt_length, buffer, pinfo, subtre
     subtree:add_le (f.flyc_flyc_agps_status_crc16_hash, payload(offset, 2))
     offset = offset + 2
 
-    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Agps Status: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Agps Status: Payload size different than expected") end
+    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Agps Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Agps Status: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Flyc Install Error - 0xad
+-- Flight Controller - FlyC Flyc Install Error - 0xad
 
 f.flyc_flyc_flyc_install_error_masked00 = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_masked00", "Masked00", base.HEX)
   f.flyc_flyc_flyc_install_error_yaw_install_error_level = ProtoField.uint32 ("dji_p3.flyc_flyc_flyc_install_error_yaw_install_error_level", "Yaw Install Error Level", base.HEX, nil, 0x03, nil)
@@ -4587,11 +4614,11 @@ local function flyc_flyc_flyc_install_error_dissector(pkt_length, buffer, pinfo,
     subtree:add_le (f.flyc_flyc_flyc_install_error_thrust_install_error_level, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Flyc Install Error: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Flyc Install Error: Payload size different than expected") end
+    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Flyc Install Error: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Flyc Install Error: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Fault Inject - 0xb6
+-- Flight Controller - FlyC Fault Inject - 0xb6
 
 enums.FLYC_FAULT_INJECT_STATUS_ENUM = {
     [0x01] = 'FIT_VERSION_UNMATCH',
@@ -4629,11 +4656,11 @@ local function flyc_flyc_fault_inject_dissector(pkt_length, buffer, pinfo, subtr
     subtree:add_le (f.flyc_flyc_fault_inject_status, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Fault Inject: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Fault Inject: Payload size different than expected") end
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Fault Inject: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Fault Inject: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Redundancy Status - 0xb9
+-- Flight Controller - FlyC Redundancy Status - 0xb9
 
 enums.FLYC_REDUNDANCY_STATUS_CMD_TYPE_ENUM = {
     [0x01] = 'a',
@@ -4696,8 +4723,8 @@ local function flyc_flyc_redundancy_status_dissector(pkt_length, buffer, pinfo, 
     subtree:add_le (f.flyc_flyc_redundancy_status_unknownB, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Redundancy Status: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Redundancy Status: Payload size different than expected") end
+    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Redundancy Status: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Redundancy Status: Payload size different than expected") end
 end
 
 -- Flight Controller - Assistant Unlock Handler - 0xdf
@@ -6136,24 +6163,24 @@ local function flyc_config_table_write_param_by_hash_dissector(pkt_length, buffe
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table Write Param By Hash: Payload size different than expected") end
 end
 
--- Flight Controller - Flyc Params By Hash - 0xfb
+-- Flight Controller - Config Table: Read Params By Hash - 0xfb
 
-f.flyc_flyc_params_by_hash_unknown00 = ProtoField.uint8 ("dji_p3.flyc_flyc_params_by_hash_unknown00", "Unknown00", base.HEX)
-f.flyc_flyc_params_by_hash_first_name_hash = ProtoField.uint32 ("dji_p3.flyc_flyc_params_by_hash_first_name_hash", "Param Name Hash", base.HEX, enums.FLYC_PARAMETER_BY_HASH_ENUM, nil, "Hash of a flight controller parameter name string")
+f.flyc_config_table_read_params_by_hash_unknown00 = ProtoField.uint8 ("dji_p3.flyc_config_table_read_params_by_hash_unknown00", "Unknown00", base.HEX)
+f.flyc_config_table_read_params_by_hash_first_name_hash = ProtoField.uint32 ("dji_p3.flyc_config_table_read_params_by_hash_first_name_hash", "Param Name Hash", base.HEX, enums.FLYC_PARAMETER_BY_HASH_ENUM, nil, "Hash of a flight controller parameter name string")
 
-local function flyc_flyc_params_by_hash_dissector(pkt_length, buffer, pinfo, subtree)
+local function flyc_config_table_read_params_by_hash_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.flyc_flyc_params_by_hash_unknown00, payload(offset, 1))
+    subtree:add_le (f.flyc_config_table_read_params_by_hash_unknown00, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.flyc_flyc_params_by_hash_first_name_hash, payload(offset, 4))
+    subtree:add_le (f.flyc_config_table_read_params_by_hash_first_name_hash, payload(offset, 4))
     offset = offset + 4
 
-    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Flyc Params By Hash: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Flyc Params By Hash: Payload size different than expected") end
+    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table: Read Params By Hash: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Config Table: Read Params By Hash: Payload size different than expected") end
 end
 
 local FLYC_UART_CMD_DISSECT = {
@@ -6194,7 +6221,7 @@ local FLYC_UART_CMD_DISSECT = {
     [0xf7] = flyc_config_table_get_param_info_by_hash_dissector,
     [0xf8] = flyc_config_table_read_param_by_hash_dissector,
     [0xf9] = flyc_config_table_write_param_by_hash_dissector,
-    [0xfb] = flyc_flyc_params_by_hash_dissector,
+    [0xfb] = flyc_config_table_read_params_by_hash_dissector,
 }
 
 -- Gimbal - Gimbal Params - 0x05
@@ -6218,10 +6245,10 @@ f.gimbal_params_yaw_angle = ProtoField.uint16 ("dji_p3.gimbal_params_yaw_angle",
   f.gimbal_params_joystick_ver_direction = ProtoField.uint16 ("dji_p3.gimbal_params_joystick_ver_direction", "Joystick Ver Direction", base.HEX, nil, 0x03, nil)
   f.gimbal_params_joystick_hor_direction = ProtoField.uint16 ("dji_p3.gimbal_params_joystick_hor_direction", "Joystick Hor Direction", base.HEX, nil, 0x0c, nil)
 f.gimbal_params_masked0a = ProtoField.uint8 ("dji_p3.gimbal_params_masked0a", "Masked0A", base.HEX)
-  f.gimbal_params_pitch_in_limit = ProtoField.uint8 ("dji_p3.gimbal_params_pitch_in_limit", "Pitch In Limit", base.HEX, nil, 0x01, nil)
-  f.gimbal_params_roll_in_limit = ProtoField.uint8 ("dji_p3.gimbal_params_roll_in_limit", "Roll In Limit", base.HEX, nil, 0x02, nil)
-  f.gimbal_params_yaw_in_limit = ProtoField.uint8 ("dji_p3.gimbal_params_yaw_in_limit", "Yaw In Limit", base.HEX, nil, 0x04, nil)
-  f.gimbal_params_auto_calibration = ProtoField.uint8 ("dji_p3.gimbal_params_auto_calibration", "Auto Calibration", base.HEX, nil, 0x08, nil)
+  f.gimbal_params_pitch_in_limit = ProtoField.uint8 ("dji_p3.gimbal_params_pitch_in_limit", "Pitch In Limit", base.HEX, nil, 0x01, "Pitch arm is beyond its limit positions")
+  f.gimbal_params_roll_in_limit = ProtoField.uint8 ("dji_p3.gimbal_params_roll_in_limit", "Roll In Limit", base.HEX, nil, 0x02, "Roll arm is beyond its limit positions")
+  f.gimbal_params_yaw_in_limit = ProtoField.uint8 ("dji_p3.gimbal_params_yaw_in_limit", "Yaw In Limit", base.HEX, nil, 0x04, "Yaw arm is beyond its limit positions")
+  f.gimbal_params_auto_calibration = ProtoField.uint8 ("dji_p3.gimbal_params_auto_calibration", "Auto Calibration", base.HEX, nil, 0x08, "Auto calibration in progress")
   f.gimbal_params_auto_calibration_result = ProtoField.uint8 ("dji_p3.gimbal_params_auto_calibration_result", "Auto Calibration Result", base.HEX, nil, 0x10, nil)
   f.gimbal_params_stuck = ProtoField.uint8 ("dji_p3.gimbal_params_stuck", "Stuck", base.HEX, nil, 0x40, nil)
 f.gimbal_params_masked0b = ProtoField.uint8 ("dji_p3.gimbal_params_masked0b", "Masked0B", base.HEX)
@@ -6727,6 +6754,26 @@ local function gimbal_timelapse_status_dissector(pkt_length, buffer, pinfo, subt
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Timelapse Status: Payload size different than expected") end
 end
 
+-- Gimbal - Gimbal Set Mode - 0x4C
+
+f.gimbal_set_mode_mode = ProtoField.uint8 ("dji_p3.gimbal_set_mode_mode", "Mode", base.HEX)
+f.gimbal_set_mode_cmd = ProtoField.uint8 ("dji_p3.gimbal_set_mode_cmd", "Cmd", base.HEX)
+
+local function gimbal_set_mode_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.gimbal_set_mode_mode, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.gimbal_set_mode_cmd, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Set Mode: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Set Mode: Payload size different than expected") end
+end
+
 local GIMBAL_UART_CMD_DISSECT = {
     [0x05] = gimbal_params_dissector,
     [0x08] = gimbal_calibrate_dissector,
@@ -6738,6 +6785,7 @@ local GIMBAL_UART_CMD_DISSECT = {
     [0x30] = gimbal_auto_calibration_status_dissector,
     [0x33] = gimbal_battery_info_dissector,
     [0x38] = gimbal_timelapse_status_dissector,
+    [0x4C] = gimbal_set_mode_dissector,
 }
 
 -- Center Board - Center Battery Common - 0x06
@@ -8622,52 +8670,52 @@ local ESC_UART_CMD_DISSECT = {
 
 -- Battery - Battery Dynamic Data - 0x02
 
-f.battery_smart_battery_dynamic_data_index = ProtoField.uint8 ("dji_p3.battery_smart_battery_dynamic_data_index", "Index", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
-  f.battery_smart_battery_dynamic_data_result = ProtoField.uint8 ("dji_p3.battery_smart_battery_dynamic_data_result", "Result", base.HEX, nil, 0xff, nil)
-f.battery_smart_battery_dynamic_data_voltage = ProtoField.uint32 ("dji_p3.battery_smart_battery_dynamic_data_voltage", "Voltage", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
-f.battery_smart_battery_dynamic_data_current = ProtoField.uint32 ("dji_p3.battery_smart_battery_dynamic_data_current", "Current", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
-f.battery_smart_battery_dynamic_data_full_capacity = ProtoField.uint32 ("dji_p3.battery_smart_battery_dynamic_data_full_capacity", "Full Capacity", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
-f.battery_smart_battery_dynamic_data_remain_capacity = ProtoField.uint32 ("dji_p3.battery_smart_battery_dynamic_data_remain_capacity", "Remain Capacity", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
-f.battery_smart_battery_dynamic_data_temperature = ProtoField.uint16 ("dji_p3.battery_smart_battery_dynamic_data_temperature", "Temperature", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
-f.battery_smart_battery_dynamic_data_cell_size = ProtoField.uint8 ("dji_p3.battery_smart_battery_dynamic_data_cell_size", "Cell Size", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
-f.battery_smart_battery_dynamic_data_relative_capacity_percentage = ProtoField.uint8 ("dji_p3.battery_smart_battery_dynamic_data_relative_capacity_percentage", "Relative Capacity Percentage", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
-f.battery_smart_battery_dynamic_data_status = ProtoField.uint64 ("dji_p3.battery_smart_battery_dynamic_data_status", "Status", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
-f.battery_smart_battery_dynamic_data_version = ProtoField.uint8 ("dji_p3.battery_smart_battery_dynamic_data_version", "Version", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_dynamic_data_index = ProtoField.uint8 ("dji_p3.battery_dynamic_data_index", "Index", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+  f.battery_dynamic_data_result = ProtoField.uint8 ("dji_p3.battery_dynamic_data_result", "Result", base.HEX, nil, 0xff, nil)
+f.battery_dynamic_data_voltage = ProtoField.uint32 ("dji_p3.battery_dynamic_data_voltage", "Voltage", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_dynamic_data_current = ProtoField.uint32 ("dji_p3.battery_dynamic_data_current", "Current", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_dynamic_data_full_capacity = ProtoField.uint32 ("dji_p3.battery_dynamic_data_full_capacity", "Full Capacity", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_dynamic_data_remain_capacity = ProtoField.uint32 ("dji_p3.battery_dynamic_data_remain_capacity", "Remain Capacity", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_dynamic_data_temperature = ProtoField.uint16 ("dji_p3.battery_dynamic_data_temperature", "Temperature", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_dynamic_data_cell_size = ProtoField.uint8 ("dji_p3.battery_dynamic_data_cell_size", "Cell Size", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_dynamic_data_relative_capacity_percentage = ProtoField.uint8 ("dji_p3.battery_dynamic_data_relative_capacity_percentage", "Relative Capacity Percentage", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_dynamic_data_status = ProtoField.uint64 ("dji_p3.battery_dynamic_data_status", "Status", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_dynamic_data_version = ProtoField.uint8 ("dji_p3.battery_dynamic_data_version", "Version", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
 
-local function battery_smart_battery_dynamic_data_dissector(pkt_length, buffer, pinfo, subtree)
+local function battery_dynamic_data_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.battery_smart_battery_dynamic_data_index, payload(offset, 1))
-    subtree:add_le (f.battery_smart_battery_dynamic_data_result, payload(offset, 1))
+    subtree:add_le (f.battery_dynamic_data_index, payload(offset, 1))
+    subtree:add_le (f.battery_dynamic_data_result, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.battery_smart_battery_dynamic_data_voltage, payload(offset, 4))
+    subtree:add_le (f.battery_dynamic_data_voltage, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.battery_smart_battery_dynamic_data_current, payload(offset, 4))
+    subtree:add_le (f.battery_dynamic_data_current, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.battery_smart_battery_dynamic_data_full_capacity, payload(offset, 4))
+    subtree:add_le (f.battery_dynamic_data_full_capacity, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.battery_smart_battery_dynamic_data_remain_capacity, payload(offset, 4))
+    subtree:add_le (f.battery_dynamic_data_remain_capacity, payload(offset, 4))
     offset = offset + 4
 
-    subtree:add_le (f.battery_smart_battery_dynamic_data_temperature, payload(offset, 2))
+    subtree:add_le (f.battery_dynamic_data_temperature, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.battery_smart_battery_dynamic_data_cell_size, payload(offset, 1))
+    subtree:add_le (f.battery_dynamic_data_cell_size, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.battery_smart_battery_dynamic_data_relative_capacity_percentage, payload(offset, 1))
+    subtree:add_le (f.battery_dynamic_data_relative_capacity_percentage, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.battery_smart_battery_dynamic_data_status, payload(offset, 8))
+    subtree:add_le (f.battery_dynamic_data_status, payload(offset, 8))
     offset = offset + 8
 
-    subtree:add_le (f.battery_smart_battery_dynamic_data_version, payload(offset, 1))
+    subtree:add_le (f.battery_dynamic_data_version, payload(offset, 1))
     offset = offset + 1
 
     if (offset ~= 30) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Dynamic Data: Offset does not match - internal inconsistency") end
@@ -8676,20 +8724,20 @@ end
 
 -- Battery - Battery Cell Voltage - 0x03
 
-f.battery_smart_battery_cell_voltage_index = ProtoField.uint8 ("dji_p3.battery_smart_battery_cell_voltage_index", "Index", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
-  f.battery_smart_battery_cell_voltage_result = ProtoField.uint8 ("dji_p3.battery_smart_battery_cell_voltage_result", "Result", base.HEX, nil, 0xff, nil)
-f.battery_smart_battery_cell_voltage_cells = ProtoField.uint8 ("dji_p3.battery_smart_battery_cell_voltage_cells", "Cells", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+f.battery_cell_voltage_index = ProtoField.uint8 ("dji_p3.battery_cell_voltage_index", "Index", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
+  f.battery_cell_voltage_result = ProtoField.uint8 ("dji_p3.battery_cell_voltage_result", "Result", base.HEX, nil, 0xff, nil)
+f.battery_cell_voltage_cells = ProtoField.uint8 ("dji_p3.battery_cell_voltage_cells", "Cells", base.HEX, nil, nil, "Offset shifted by unknown value this.dataOffset")
 
-local function battery_smart_battery_cell_voltage_dissector(pkt_length, buffer, pinfo, subtree)
+local function battery_cell_voltage_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.battery_smart_battery_cell_voltage_index, payload(offset, 1))
-    subtree:add_le (f.battery_smart_battery_cell_voltage_result, payload(offset, 1))
+    subtree:add_le (f.battery_cell_voltage_index, payload(offset, 1))
+    subtree:add_le (f.battery_cell_voltage_result, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.battery_smart_battery_cell_voltage_cells, payload(offset, 1))
+    subtree:add_le (f.battery_cell_voltage_cells, payload(offset, 1))
     offset = offset + 1
 
     if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Cell Voltage: Offset does not match - internal inconsistency") end
@@ -8698,9 +8746,9 @@ end
 
 -- Battery - Battery Re-Arrangement - 0x31
 
---f.battery_smart_battery_re_arrangement_unknown0 = ProtoField.none ("dji_p3.battery_smart_battery_re_arrangement_unknown0", "Unknown0", base.NONE)
+--f.battery_re_arrangement_unknown0 = ProtoField.none ("dji_p3.battery_re_arrangement_unknown0", "Unknown0", base.NONE)
 
-local function battery_smart_battery_re_arrangement_dissector(pkt_length, buffer, pinfo, subtree)
+local function battery_re_arrangement_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
@@ -8710,9 +8758,9 @@ local function battery_smart_battery_re_arrangement_dissector(pkt_length, buffer
 end
 
 local BATTERY_UART_CMD_DISSECT = {
-    [0x02] = battery_smart_battery_dynamic_data_dissector,
-    [0x03] = battery_smart_battery_cell_voltage_dissector,
-    [0x31] = battery_smart_battery_re_arrangement_dissector,
+    [0x02] = battery_dynamic_data_dissector,
+    [0x03] = battery_cell_voltage_dissector,
+    [0x31] = battery_re_arrangement_dissector,
 }
 
 local DATA_LOG_UART_CMD_DISSECT = {
