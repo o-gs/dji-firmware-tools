@@ -12,74 +12,128 @@
 
   Address         Publics by Value
 
+ 0003:08008190       start
  0003:08008B24       strcmp
  0003:080093E4       recompute_packet_crc16
  0003:08009410       recompute_packet_crc8
+ 0003:080095B8       init_sub_80095B8
+ 0003:08009A20       init_sub_8009A20
+ 0003:08009BA8       packet_recv_sub_8009BA8
+ 0003:08009BE0       init_sub_8009BE0
+ 0003:08009D08       init_sub_8009D08
+ 0003:08009DD4       packet_recv_sub_8009DD4
+ 0003:08009E0C       init_sub_8009E0C
+ 0003:0800A36C       init_sub_800A36C
+ 0003:0800AA00       tick_gimbal_mode
  0003:0800CA4C       jpt_800CA48
  0003:0800CB36       def_800CA48
  0003:0800CCF8       jpt_800CCF4
  0003:0800CDF0       def_800CCF4
+ 0003:0800D42A       init_sub_800D42A
+ 0003:0800D828       persist_set_dword_40023C0C
+ 0003:0800D834       persist_sub_800D834
+ 0003:0800D948       persist_set_dword_40023C10_flag_80000000
+ 0003:0800D9A8       persist_sub_800D9A8
+ 0003:0800D9F8       persist_set_dword_40023C04
+ 0003:0800DA3E       persist_memread_by_dw
+ 0003:0800DA58       persist_memstore_by_dw
+ 0003:0800DC1A       init_sub_800DC1A
+ 0003:0800DE9C       persist_get_location_length
  0003:0800DF80       compute_crc16
  0003:0800DFB4       compute_crc8
+ 0003:0800E0E4       init_sub_800E0E4
+ 0003:0800FFB4       init_sub_800FFB4
+ 0003:0801005C       init_sub_801005C
+ 0003:08010070       init_sub_8010070
+ 0003:08010DFC       persist_encrypt_set_dword_50060800_flag0004
+ 0003:08010E20       persist_encrypt_check_dword_50060804_flag
+ 0003:08010E38       persist_encrypt_get_dword_50060808
+ 0003:0801130C       encrypt_config_store
+ 0003:080113A4       storebuf
  0003:0801141A       jpt_8011416
  0003:080114BC       def_8011416
+ 0003:08011670       packet_recv_ch2_sub_8011670
+ 0003:08011724       packet_recv_sub_8011724
+ 0003:080117BC       packet_recv_sub_80117BC
+ 0003:08011870       packet_recv_sub_8011870
+ 0003:080118C0       packet_recv_sub_80118C0
  0003:08011A8C       verify_packet_crc16
- 0003:08013774       packet_answer1_set00_cmd30
+ 0003:08011AC8       packet_recv_sub_8011AC8
+ 0003:08013774       packet_encrypt_config_get_chip_state
  0003:08013864       packet_send_set00_cmd30_a
- 0003:08013A18       packet_send_set00_cmd30_b
+ 0003:080139AC       packet_encrypt_config_process_response
+ 0003:08013A18       packet_encrypt_config_store
  0003:08013B40       packet_send_set00_cmd30_c
+ 0003:08013C54       packet_encrypt_config_get_module_state
  0003:08013F64       payld_flags
- 0003:08013FCC       packet_exec_univ_cmd30
+ 0003:08013F78       persist_encrypt_memread
+ 0003:08013FCC       packet_exec_gener_encrypt_config
+ 0003:08014036       persist_encrypt_memstore
  0003:08014228       jpt_8014224
  0003:0801431E       def_8014224
+ 0003:080148B4       init_sub_80148B4
+ 0003:08014BF0       outbuf
+ 0003:08014C10       main_thread_loop
+ 0003:08014EF4       tick_calibration
  0003:08014F02       jpt_8014EFE
  0003:08014FFC       def_8014EFE
+ 0003:0801546C       inbuf
+ 0003:08015824       packet_receive_channel1
  0003:0801584A       jpt_8015846
  0003:08015944       def_8015846
  0003:08015984       pkt
- 0003:08015A50       packet_exec_gimb_cmd0A
- 0003:08015C88       packet_exec_gimb_cmd0C
- 0003:08015EB4       packet_exec_gimb_cmd0B
+ 0003:08015A50       packet_exec_gimb_ext_ctrl_degree
+ 0003:08015C88       packet_exec_gimb_ext_ctrl_accel
+ 0003:08015EB4       packet_exec_gimb_get_ext_ctrl_status
  0003:08015FE0       packet_exec_gimb_cmd14
- 0003:08016188       packet_exec_univ_cmd09
- 0003:080161E8       packet_exec_gimb_cmd13
- 0003:08016254       packet_exec_univ_cmd01
- 0003:080162E4       packet_exec_univ_cmd0A
- 0003:08016338       packet_exec_univ_cmd07
- 0003:080163C4       packet_exec_gimb_cmd10
+ 0003:08016188       packet_exec_gener_update_transmit
+ 0003:080161E8       packet_exec_gimb_resume_default_param
+ 0003:08016254       packet_exec_gener_version_inquiry
+ 0003:080162E4       packet_exec_gener_update_finish
+ 0003:08016338       packet_exec_gener_enter_loader
+ 0003:080163C4       packet_exec_gimb_get_user_param
  0003:08016492       jpt_801648E
  0003:080164D8       def_801648E
  0003:08016518       packet_switch_sender_and_receiver
- 0003:08016564       packet_exec_gimb_cmd01
- 0003:08016634       packet_exec_flyc_cmd42
- 0003:0801675C       packet_exec_gimb_cmd06
- 0003:080167E0       packet_exec_gimb_cmd0E
- 0003:08016840       packet_exec_univ_cmd0B
- 0003:080168AC       packet_exec_gimb_cmd07
- 0003:08016930       packet_exec_gimb_cmd11
- 0003:08016990       packet_exec_gimb_cmd08
- 0003:08016A98       packet_exec_gimb_cmd0F
- 0003:08016BF8       packet_exec_univ_cmd0D
- 0003:08016C78       packet_exec_spec_cmd01
- 0003:08016CDC       packet_exec_univ_cmd08
- 0003:08016D30       packet_exec_univ_cmd0C
+ 0003:08016564       packet_exec_gimb_control
+ 0003:08016634       packet_exec_flyc_posture
+ 0003:0801675C       packet_exec_gimb_push_aetr
+ 0003:080167E0       packet_exec_gimb_thirdp_magn
+ 0003:08016840       packet_exec_gener_reboot_chip
+ 0003:080168AC       packet_exec_gimb_adjust_roll
+ 0003:08016930       packet_exec_gimb_save_user_param
+ 0003:08016990       packet_exec_gimb_calibration
+ 0003:08016A98       packet_exec_gimb_set_user_param
+ 0003:08016BF8       packet_exec_gener_set_device_version
+ 0003:08016C78       packet_exec_spec_special_app_control
+ 0003:08016CDC       packet_exec_gener_update_confirm
+ 0003:08016D30       packet_exec_gener_get_device_state
  0003:08016D94       send_packet
  0003:08016E14       packet_exec_gimb_cmd20
  0003:08016E30       packet_exec_gimb_cmd21
- 0003:08016EAC       packet_exec_gimb_cmd0D
+ 0003:08016EAC       packet_exec_gimb_suspend_resume
  0003:08016EF0       packet_send_set04_cmd47
+ 0003:08016FAC       packet_recv_sub_8016FAC
  0003:08016FF4       packet_exec_receive_cb
  0003:080172C2       jpt_80172BE
  0003:080173BC       def_80172BE
+ 0003:08018A64       perptr
+ 0003:08018C54       packet_recv_sub_8018C54
  0003:08019636       jpt_8019632
  0003:080196CC       def_8019632
+ 0003:08019B3C       check_device_version_trigger_values
+ 0003:08019C90       store_new_device_version
+ 0003:08019F04       main_startup
+ 0003:0801A7BC       packet_receive_channel0
  0003:0801A7E6       jpt_801A7E2
  0003:0801A8E0       def_801A7E2
- 0003:0801A918       packet_send_set04_cmd05
- 0003:0801ABA0       packet_send_set04_cmd15
+ 0003:0801A918       packet_send_gimbal_params
+ 0003:0801ABA0       packet_send_gimbal_movement
  0003:0801ADE0       packet_send_component_state
+ 0003:0801AF44       packet_receive_channel2
  0003:0801AF6E       jpt_801AF6A
  0003:0801B068       def_801AF6A
+ 0003:0801B0A0       packet_recv_ch0_sub_801B0A0
  0004:0801B6D4       crc16_table
  0004:0801B8D7       crc8_table
  0004:0801C230       aMotorStop
@@ -88,9 +142,15 @@
  0004:0801C252       a080e0000
  0004:0801C25B       a080a0000
  0004:0801D46C       receive_commands
+ 0005:20000020       pkt_recv_ch2_len
+ 0005:20000022       pkt_recv_ch2_parse_pos
+ 0005:200002E8       is_dword_200048A8_below_zero
  0005:20000344       params_stuck_count
  0005:20000354       gimbal_params_mode
  0005:20000374       pkt_gimbal_params_seqctr
+ 0005:20000694       packet_recv_ch0_state
+ 0005:20000695       packet_recv_ch1_state
+ 0005:200006B1       packet_recv_ch2_state
  0005:200047A4       pos_real_roll
  0005:200047A8       pos_real_pitch
  0005:200047AC       pos_real_yaw
@@ -98,8 +158,14 @@
  0005:20004B20       yaw_angle_2
  0005:20004B58       yaw_angle_limit_1
  0005:20004B5C       yaw_angle_limit_2
+ 0005:20004B74       cali_state
  0005:20004BFC       gimbal_params_mode_prev
  0005:20004C04       auto_calibration_result
  0005:20005041       roll_adjust
+ 0005:2000548C       component_state_pkt
+ 0005:20005497       component_state_pkt_payload
+ 0005:2000BB1C       resp_chip_state_1
+ 0005:2000BB3C       resp_chip_state_2
+ 0005:2000BB57       resp_chip_state_3
 
 Program entry point at 0003:00000000
