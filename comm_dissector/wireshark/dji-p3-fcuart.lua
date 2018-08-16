@@ -329,6 +329,7 @@ local CAMERA_UART_CMD_TEXT = {
     [0xA5] = 'Tracking Region Get',
     [0xA6] = 'Tracking Region Set',
     [0xB4] = 'Camera Prepare Open Fan',
+    [0xB5] = 'Camera Sensor Id Get',
     [0xB6] = 'Forearm Lamp Config Set',
     [0xB7] = 'Forearm Lamp Config Get',
     [0xB8] = 'Camera Optics Zoom Mode',
@@ -1190,25 +1191,25 @@ f.general_encrypt_config_cmd_type = ProtoField.uint8 ("dji_p3.general_encrypt_co
 
 f.general_encrypt_config_oper_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_oper_type", "Oper Type", base.DEC, enums.COMMON_ENCRYPT_CONFIG_OPER_TYPE_ENUM, nil, nil)
 f.general_encrypt_config_magic = ProtoField.bytes ("dji_p3.general_encrypt_config_magic", "Magic value", base.SPACE, nil, nil, "Should be `F0 BD E3 06 81 3E 85 CB`")
-f.general_encrypt_config_dev_id = ProtoField.uint8 ("dji_p3.general_encrypt_config_dev_id", "Device ID", base.DEC, nil, nil, "Type of the module; only packets with specific value are accepted by each module, ie. gimbal accepts 4.")
-f.general_encrypt_config_factory_info_bn = ProtoField.bytes ("dji_p3.general_encrypt_config_factory_info_bn", "Factory Info Bn", base.SPACE, nil, nil, "FactoryInfo.aucBn")
-f.general_encrypt_config_key = ProtoField.bytes ("dji_p3.general_encrypt_config_key", "Encrypt Key", base.SPACE, nil, nil, "AES encryption key")
-f.general_encrypt_config_factory_info_sn = ProtoField.bytes ("dji_p3.general_encrypt_config_factory_info_sn", "Factory Info Sn", base.SPACE, nil, nil, "FactoryInfo.aucSn")
+f.general_encrypt_config_mod_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_mod_type", "Module Type", base.DEC, nil, nil, "Type of the module; only packets with specific value are accepted by each module, ie. gimbal accepts 4.")
+f.general_encrypt_config_board_sn = ProtoField.bytes ("dji_p3.general_encrypt_config_board_sn", "Board SN", base.SPACE, nil, nil, "Factory Serial Number of the Board")
+f.general_encrypt_config_key = ProtoField.bytes ("dji_p3.general_encrypt_config_key", "Encrypt Key", base.SPACE, nil, nil, "New AES encryption key")
+f.general_encrypt_config_secure_num = ProtoField.bytes ("dji_p3.general_encrypt_config_secure_num", "Security Num", base.SPACE, nil, nil, "MD5 of Board SN and Encrypt Key")
 
 f.general_encrypt_config_buf_len = ProtoField.uint8 ("dji_p3.general_encrypt_config_buf_len", "Buffer Length", base.DEC, nil, nil, "Length in DWords")
 f.general_encrypt_config_buf_data = ProtoField.bytes ("dji_p3.general_encrypt_config_buf_data", "Buffer data", base.SPACE, nil, nil)
 
 f.general_encrypt_config_resp_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_type", "Response To Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CONFIG_CMD_TYPE_ENUM, nil, nil)
 
-f.general_encrypt_config_resp_unknown0 = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_unknown0", "Unknown0", base.HEX, nil, nil)
+f.general_encrypt_config_resp_status = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_status", "Status", base.HEX, nil, nil, "Packet processing status; non-zero value means error. On error, packet content may be meaningless.")
 f.general_encrypt_config_resp_state_flags = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_state_flags", "State Flags", base.HEX, nil, nil)
-f.general_encrypt_config_resp_chip_state_conf_zone_unlock = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_chip_state_conf_zone_unlock", "Config Zone Unlocked", base.DEC, nil, 0x01)
-f.general_encrypt_config_resp_chip_state_data_zone_unlock = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_chip_state_data_zone_unlock", "Data Zone Unlocked", base.DEC, nil, 0x06)
+  f.general_encrypt_config_resp_chip_state_conf_zone_unlock = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_chip_state_conf_zone_unlock", "Config Zone Unlocked", base.DEC, nil, 0x01)
+  f.general_encrypt_config_resp_chip_state_data_zone_unlock = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_chip_state_data_zone_unlock", "Data and&otp Zone Unlocked", base.DEC, nil, 0x06)
 f.general_encrypt_config_resp_modl_state_module_ready = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_modl_state_module_ready", "Module reports ready", base.DEC, nil, 0x01)
 f.general_encrypt_config_resp_modl_state_verify_pass = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_modl_state_verify_pass", "Module verification passed", base.DEC, nil, 0x02)
-f.general_encrypt_config_resp_unknown2 = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_unknown2", "Unknown2", base.SPACE, nil, nil)
-f.general_encrypt_config_resp_unknown12 = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_unknown12", "Unknown12", base.SPACE, nil, nil)
-f.general_encrypt_config_resp_unknown22 = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_unknown22", "Unknown22", base.SPACE, nil, nil)
+f.general_encrypt_config_resp_m01_boardsn = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_m01_boardsn", "Module 01 Board SN", base.SPACE, nil, nil, "Board number for camera module")
+f.general_encrypt_config_resp_m04_boardsn = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_m04_boardsn", "Module 04 Board SN", base.SPACE, nil, nil, "Board number for gimbal module")
+f.general_encrypt_config_resp_m08_boardsn = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_m08_boardsn", "Module 08 Board SN", base.SPACE, nil, nil, "Board number for dm3xx module")
 
 f.general_encrypt_config_resp_mac = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_mac", "MAC", base.SPACE, nil, nil)
 f.general_encrypt_config_resp_brdnum = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_brdnum", "Board Num", base.SPACE, nil, nil)
@@ -1240,16 +1241,16 @@ local function general_encrypt_config_dissector(pkt_length, buffer, pinfo, subtr
             subtree:add_le (f.general_encrypt_config_magic, payload(offset, 8))
             offset = offset + 8
 
-            subtree:add_le (f.general_encrypt_config_dev_id, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_mod_type, payload(offset, 1))
             offset = offset + 1
 
-            subtree:add_le (f.general_encrypt_config_factory_info_bn, payload(offset, 10))
+            subtree:add_le (f.general_encrypt_config_board_sn, payload(offset, 10))
             offset = offset + 10
 
             subtree:add_le (f.general_encrypt_config_key, payload(offset, 32))
             offset = offset + 32
 
-            subtree:add_le (f.general_encrypt_config_factory_info_sn, payload(offset, 16))
+            subtree:add_le (f.general_encrypt_config_secure_num, payload(offset, 16))
             offset = offset + 16
 
             if (offset ~= 69) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 3: Offset does not match - internal inconsistency") end
@@ -1265,11 +1266,11 @@ local function general_encrypt_config_dissector(pkt_length, buffer, pinfo, subtr
             if (offset ~= 1+4*buf_len) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 4: Offset does not match - internal inconsistency") end
         end
     else -- Response
+        subtree:add_le (f.general_encrypt_config_resp_status, payload(offset, 1))
+        offset = offset + 1
+
         if (payload:len() >= 59) then
             subtree:add_le (f.general_encrypt_config_resp_type, 4) -- Add response type without related byte within packet (type is recognized by size, not by field)
-
-            subtree:add_le (f.general_encrypt_config_resp_unknown0, payload(offset, 1)) -- Is that supposed to be response type?
-            offset = offset + 1
 
             subtree:add_le (f.general_encrypt_config_resp_mac, payload(offset, 32))
             offset = offset + 32
@@ -1284,29 +1285,23 @@ local function general_encrypt_config_dissector(pkt_length, buffer, pinfo, subtr
         elseif (payload:len() >= 32) then
             subtree:add_le (f.general_encrypt_config_resp_type, 1)
 
-            subtree:add_le (f.general_encrypt_config_resp_unknown0, payload(offset, 1))
-            offset = offset + 1
-
             subtree:add_le (f.general_encrypt_config_resp_state_flags, payload(offset, 1))
             subtree:add_le (f.general_encrypt_config_resp_chip_state_conf_zone_unlock, payload(offset, 1))
             subtree:add_le (f.general_encrypt_config_resp_chip_state_data_zone_unlock, payload(offset, 1))
             offset = offset + 1
 
-            subtree:add_le (f.general_encrypt_config_resp_unknown2, payload(offset, 10))
+            subtree:add_le (f.general_encrypt_config_resp_m01_boardsn, payload(offset, 10))
             offset = offset + 10
 
-            subtree:add_le (f.general_encrypt_config_resp_unknown12, payload(offset, 10))
+            subtree:add_le (f.general_encrypt_config_resp_m04_boardsn, payload(offset, 10))
             offset = offset + 10
 
-            subtree:add_le (f.general_encrypt_config_resp_unknown22, payload(offset, 10))
+            subtree:add_le (f.general_encrypt_config_resp_m08_boardsn, payload(offset, 10))
             offset = offset + 10
 
             if (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt reply: Offset does not match - internal inconsistency") end
         elseif (payload:len() >= 2) then
             subtree:add_le (f.general_encrypt_config_resp_type, 2)
-
-            subtree:add_le (f.general_encrypt_config_resp_unknown0, payload(offset, 1))
-            offset = offset + 1
 
             subtree:add_le (f.general_encrypt_config_resp_state_flags, payload(offset, 1))
             subtree:add_le (f.general_encrypt_config_resp_modl_state_module_ready, payload(offset, 1))
@@ -1316,9 +1311,6 @@ local function general_encrypt_config_dissector(pkt_length, buffer, pinfo, subtr
             if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt reply: Offset does not match - internal inconsistency") end
         elseif (payload:len() >= 1) then
             subtree:add_le (f.general_encrypt_config_resp_type, 3)
-
-            subtree:add_le (f.general_encrypt_config_resp_unknown0, payload(offset, 1))
-            offset = offset + 1
 
             if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt reply: Offset does not match - internal inconsistency") end
         end
