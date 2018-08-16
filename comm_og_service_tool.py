@@ -1112,6 +1112,56 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
 
     gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq, 30000, [40, 1])
 
+def gimbal_calib_request_p3x(po, ser):
+    # We don't really need any payload, but that one byte won't influence anything, so we may keep it
+    payload = DJIPayload_Gimbal_CalibRq()
+    payload.command = 0
+
+    if (po.verbose > 2):
+        print("Prepared request - {:s}:".format(type(payload).__name__))
+        print(payload)
+
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"))
+
+    pktrpl, pktreq = send_request_and_receive_reply(po, ser,
+      COMM_DEV_TYPE.GIMBAL, 0,
+      ACK_TYPE.ACK_BEFORE_EXEC,
+      CMD_SET_TYPE.ZENMUSE, 0x08,
+      payload, seqnum_check=False)
+
+    if pktrpl is None:
+        raise ConnectionError("No response on Auto Calibration request.")
+
+    rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+    rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+
+    if (rplpayload is None):
+        raise ConnectionError("Unrecognized response to Auto Calibration request.")
+
+    if (po.verbose > 2):
+        print("Parsed response - {:s}:".format(type(rplpayload).__name__))
+        print(rplpayload)
+
+    return rplpayload, pktreq
+
+def do_gimbal_calib_request_p3x_autocal(po, ser):
+    """ Initiates Phantom 3 Gimbal Automatic Calibration.
+
+        Tested on the following platforms and FW versions:
+        None
+    """
+
+    print("\nInfo: The Gimbal will move through its boundary positions, then it will fine-tune its central position. It will take around 15 seconds.\n")
+
+    rplpayload, pktreq = gimbal_calib_request_p3x(po, ser)
+
+    print("Calibration process started; monitoring progress.")
+
+    gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq, 15000, [16, 1])
+
+
 def do_gimbal_calib_request(po):
     ser = open_serial_port(po)
 
@@ -1120,6 +1170,13 @@ def do_gimbal_calib_request(po):
             do_gimbal_calib_request_spark_joint_coarse(po, ser)
         elif po.subcmd == GIMBAL_CALIB_CMD.LINEARHALL:
             do_gimbal_calib_request_spark_linear_hall(po, ser)
+        else:
+            raise ValueError("Unrecognized {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
+    elif po.product.value >= PRODUCT_CODE.P330.value:
+        if po.subcmd == GIMBAL_CALIB_CMD.JOINTCOARSE:
+            do_gimbal_calib_request_p3x_autocal(po, ser)
+        elif po.subcmd == GIMBAL_CALIB_CMD.LINEARHALL:
+            raise ValueError("Gimbal in selected platform does not have Hall Effect sensors.")
         else:
             raise ValueError("Unrecognized {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
     else:
