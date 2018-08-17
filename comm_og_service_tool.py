@@ -34,6 +34,7 @@ import types
 import struct
 import serial
 import select
+import hashlib
 import binascii
 import argparse
 from ctypes import *
@@ -88,6 +89,7 @@ ALT_PRODUCT_CODE = {
 class SERVICE_CMD(DecoratedEnum):
     FlycParam = 0
     GimbalCalib = 1
+    CameraCalib = 2
 
 class FLYC_PARAM_CMD(DecoratedEnum):
     LIST = 0
@@ -97,6 +99,9 @@ class FLYC_PARAM_CMD(DecoratedEnum):
 class GIMBAL_CALIB_CMD(DecoratedEnum):
     JOINTCOARSE = 0
     LINEARHALL = 1
+
+class CAMERA_CALIB_CMD(DecoratedEnum):
+    ENCRYPTPAIR = 0
 
 def detect_serial_port(po):
     """ Detects the serial port device name of a Dji product.
@@ -1185,6 +1190,126 @@ def do_gimbal_calib_request(po):
     ser.close()
 
 
+def general_encrypt_get_state_request_p3x(po, ser, cmd):
+    """ Sends Encrypt GetChipState or Encrypt GetoduleState request.
+    """
+    payload = DJIPayload_General_EncryptGetStateRq()
+    payload.command = cmd.value
+
+    if (po.verbose > 2):
+        print("Prepared request - {:s}:".format(type(payload).__name__))
+        print(payload)
+
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("55 2d 04 f2 01 0a e9 ab c0 00 30 00 07 30 34 38 4c 41 41 31 45 4a 51 30 34 38 4c 41 41 31 45 4a 51 30 34 38 4c 41 41 31 45 4a 51 94 fd"))
+
+    pktrpl, pktreq = send_request_and_receive_reply(po, ser,
+      COMM_DEV_TYPE.CAMERA, 0,
+      ACK_TYPE.ACK_AFTER_EXEC,
+      CMD_SET_TYPE.GENERAL, 0x30,
+      payload, seqnum_check=True)
+
+    if pktrpl is None:
+        raise ConnectionError("No response on Encrypt GetState request.")
+
+    rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+    rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+
+    if (rplpayload is None):
+        raise ConnectionError("Unrecognized response to Encrypt GetState request.")
+
+    if (po.verbose > 2):
+        print("Parsed response - {:s}:".format(type(rplpayload).__name__))
+        print(rplpayload)
+
+    return rplpayload, pktreq
+
+def general_encrypt_configure_request_p3x(po, ser, target_type, boardsn, enckey):
+    """ Sends Encrypt Configure request.
+    """
+    payload = DJIPayload_General_EncryptConfigRq()
+    payload.command = DJIPayload_General_EncryptCmd.Config.value
+    payload.oper_type = DJIPayload_General_EncryptOperType.WriteAll.value
+    payload.config_magic = (c_ubyte * 8).from_buffer_copy(bytes.fromhex("F0 BD E3 06 81 3E 85 CB"))
+    payload.mod_type = target_type.value
+    payload.board_sn = (c_ubyte * 10).from_buffer_copy(boardsn)
+    payload.key = (c_ubyte * 32).from_buffer_copy(enckey)
+    # MD5 of the board sn and key
+    md5_sum = hashlib.md5()
+    md5_sum.update(payload.board_sn)
+    md5_sum.update(payload.key)
+    payload.secure_num = (c_ubyte * 16).from_buffer_copy(md5_sum.digest())
+
+    if (po.verbose > 2):
+        print("Prepared request - {:s}:".format(type(payload).__name__))
+        print(payload)
+
+    if po.dry_test:
+        # use to test the code without a drone
+        ser.mock_data_for_read(bytes.fromhex("")) # TODO
+
+    raise NotImplementedError('Not implemented yet!') # TODO
+
+    pktrpl, pktreq = send_request_and_receive_reply(po, ser,
+      target_type, 0,
+      ACK_TYPE.ACK_AFTER_EXEC,
+      CMD_SET_TYPE.GENERAL, 0x30,
+      payload, seqnum_check=True)
+
+    if pktrpl is None:
+        raise ConnectionError("No response on Encrypt Configure {:s} request.".format(target_type.name))
+
+    rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+    rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+
+    if (rplpayload is None):
+        raise ConnectionError("Unrecognized response to Encrypt Configure {:s} request.".format(target_type.name))
+
+    if (po.verbose > 2):
+        print("Parsed response - {:s}:".format(type(rplpayload).__name__))
+        print(rplpayload)
+
+    return rplpayload, pktreq
+
+def do_camera_calib_request_p3x_encryptpair(po, ser):
+    """ Initiates Phantom 3 Camera Encryption Pairing.
+
+        Tested on the following platforms and FW versions:
+        None
+    """
+
+    print("\nInfo: The tool will retrieve Board Serial Numbers of {:s}, {:s} and {:s}; ".format(
+            COMM_DEV_TYPE.CAMERA.name, COMM_DEV_TYPE.GIMBAL.name, COMM_DEV_TYPE.LB_DM3XX_SKY.name) + \
+        "then it will write new encryption key to each of them. It will take around 1 second.\n")
+
+    chipstate, _ = general_encrypt_get_state_request_p3x(po, ser, DJIPayload_General_EncryptCmd.GetChipState)
+
+    print("Retrieved Board Serial Numbers; flashing new encryption key.")
+    enckey = bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00") # TODO what encryption keys DJI uses?
+
+    rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, chipstate.m01_boardsn, enckey)
+
+    rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.GIMBAL, chipstate.m04_boardsn, enckey)
+
+    rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.LB_DM3XX_SKY, chipstate.m08_boardsn, enckey)
+
+def do_camera_calib_request(po):
+    ser = open_serial_port(po)
+
+    if po.product.value >= PRODUCT_CODE.WM100.value:
+        raise ValueError("Calibration for selected platform is not supported.")
+    elif po.product.value >= PRODUCT_CODE.WM610.value:
+        if po.subcmd == CAMERA_CALIB_CMD.ENCRYPTPAIR:
+            do_camera_calib_request_p3x_encryptpair(po, ser)
+        else:
+            raise ValueError("Unrecognized {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
+    else:
+        raise ValueError("Calibration for selected platform is not supported.")
+
+    ser.close()
+
+
 def parse_product_code(s):
     """ Parses product code string in known formats.
     """
@@ -1269,13 +1394,23 @@ def main():
     subpar_gimbcal_subcmd = subpar_gimbcal.add_subparsers(dest='subcmd',
             help="Gimbal Calibration Command")
 
-    subpar_gimbcal_list = subpar_gimbcal_subcmd.add_parser('JointCoarse',
+    subpar_gimbcal_coarse = subpar_gimbcal_subcmd.add_parser('JointCoarse',
             help="gimbal Joint Coarse calibration; to be performed after " \
              "gimbal has been fixed or replaced, or is not straight")
 
-    subpar_gimbcal_list = subpar_gimbcal_subcmd.add_parser('LinearHall',
+    subpar_gimbcal_hall = subpar_gimbcal_subcmd.add_parser('LinearHall',
             help="gimbal Linear Hall calibration; to be performed always "\
              "after JointCoarse calibration")
+
+    subpar_camcal = subparsers.add_parser('CameraCalib',
+            help="Camera Calibration options")
+
+    subpar_camcal_subcmd = subpar_camcal.add_subparsers(dest='subcmd',
+            help="Camera Calibration Command")
+
+    subpar_camcal_encrypt = subpar_camcal_subcmd.add_parser('EncryptPair',
+            help="set encryption key to pair the Camera, Gimbal and DM3xx; " \
+             "to be performed after replacing software in any of these chips; UNTESTED - may not work")
 
     po = parser.parse_args()
 
@@ -1288,6 +1423,9 @@ def main():
     elif po.svcmd == SERVICE_CMD.GimbalCalib:
         po.subcmd = GIMBAL_CALIB_CMD.from_name(po.subcmd.upper())
         do_gimbal_calib_request(po)
+    elif po.svcmd == SERVICE_CMD.CameraCalib:
+        po.subcmd = CAMERA_CALIB_CMD.from_name(po.subcmd.upper())
+        do_camera_calib_request(po)
 
 if __name__ == '__main__':
     try:
