@@ -1182,9 +1182,9 @@ enums.COMMON_ENCRYPT_CONFIG_CMD_TYPE_ENUM = {
 }
 
 enums.COMMON_ENCRYPT_CONFIG_OPER_TYPE_ENUM = {
-    [0]="Write_Key_File+Write_Factory_Info_File",
-    [1]="Write_Key+Write_Factory_Info",
-    [2]="Write_Key_All+Write_Factory_Info_All", -- This writes the data to both places
+    [0]="Write to target chip",
+    [1]="Write to SH204 storage",
+    [2]="Write both target and SH204",
 }
 
 f.general_encrypt_config_cmd_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_cmd_type", "Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CONFIG_CMD_TYPE_ENUM, nil, nil)
