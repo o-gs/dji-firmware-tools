@@ -132,7 +132,7 @@ def get_unique_sequence_number(po):
     # This will be unique as long as we do 10ms delay between packets
     return int(time.time()*100) & 0xffff
 
-def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_type, cmd_set, cmd_id, payload, seqnum_check=True):
+def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_type, cmd_set, cmd_id, payload, seqnum_check=True, retry_num=3):
     global last_seq_num
     if not 'last_seq_num' in globals():
         last_seq_num = get_unique_sequence_number(po)
@@ -153,8 +153,12 @@ def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_t
     else:
         pktprop.payload = (c_ubyte * sizeof(payload)).from_buffer_copy(payload)
 
-    for nretry in range(0, 3):
+    for nretry in range(0, retry_num):
         pktreq = do_send_request(po, ser, pktprop)
+
+        if pktprop.ack_type == ACK_TYPE.NO_ACK_NEEDED: # Only wait for response if it was requested
+            pktrpl = None
+            break
 
         pktrpl = do_receive_reply(po, ser, pktreq,
           seqnum_check=(seqnum_check and not po.dry_test))
@@ -1128,16 +1132,20 @@ def gimbal_calib_request_p3x(po, ser):
 
     if po.dry_test:
         # use to test the code without a drone
-        ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"))
+        pass # gimbal does not offer response to the auto calib request
 
+    # in P3X the response is hard-coded to go to MOBILE_APP, so we won't receive it
+    # nut we need to request it anyway - otherwise calibration will not start
     pktrpl, pktreq = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.GIMBAL, 0,
       ACK_TYPE.ACK_BEFORE_EXEC,
       CMD_SET_TYPE.ZENMUSE, 0x08,
-      payload, seqnum_check=False)
+      payload, seqnum_check=False, retry_num=1)
 
     if pktrpl is None:
-        raise ConnectionError("No response on Auto Calibration request.")
+        # Allow no response as only MOBILE_APP can get it
+        #raise ConnectionError("No response on Auto Calibration request.")
+        return None, pktreq
 
     rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
     rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
@@ -1158,14 +1166,14 @@ def do_gimbal_calib_request_p3x_autocal(po, ser):
         None
     """
 
-    print("\nInfo: The Gimbal will move through its boundary positions, then it will fine-tune its central position. It will take around 15 seconds.\n")
+    print("\nInfo: The Gimbal will average its readings without movement, then it will move Yaw arm through its boundary positions. " + \
+        "Then it will do limited pitch movement. End of calibration will be marked by two beeps from gimbal motors. It will take around 15 seconds.\n")
 
     rplpayload, pktreq = gimbal_calib_request_p3x(po, ser)
 
-    print("Calibration process started; monitoring progress.")
-
-    gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq, 15000, [16, 1])
-
+    print("Calibration process started; do not touch the drone for 15 seconds.")
+    sleep(5)
+    print("Monitoring the progress is only possibe from a mobile app, so exiting.")
 
 def do_gimbal_calib_request(po):
     ser = open_serial_port(po)
