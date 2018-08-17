@@ -574,6 +574,43 @@ class DJIPayload_Gimbal_CalibRe(DJIPayload_Base):
               ('status2', c_ubyte),
              ]
 
+
+class DJIPayload_General_EncryptCmd(DecoratedEnum):
+    GetChipState = 1
+    GetModuleState = 2
+    Config = 3
+    DoEncrypt = 4
+
+class DJIPayload_General_EncryptOperType(DecoratedEnum):
+    WriteTarget = 0
+    WriteSH204 = 1
+    WriteAll = 2
+
+class DJIPayload_General_EncryptGetStateRq(DJIPayload_Base):
+  # Matches both GetChipState and GetModuleState
+  _fields_ = [('command', c_ubyte),
+             ]
+
+class DJIPayload_General_EncryptConfigRq(DJIPayload_Base):
+  # Matches only Config command
+  _fields_ = [('command', c_ubyte),
+              ('oper_type', c_ubyte),
+              ('config_magic', c_ubyte * 8),
+              ('mod_type', c_ubyte),
+              ('board_sn', c_ubyte * 10),
+              ('key', c_ubyte * 32),
+              ('secure_num', c_ubyte * 16),
+             ]
+
+class DJIPayload_General_EncryptGetChipStateRe(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
+              ('state_flags', c_ubyte),
+              ('m01_boardsn', c_ubyte * 10),
+              ('m04_boardsn', c_ubyte * 10),
+              ('m08_boardsn', c_ubyte * 10),
+             ]
+
+
 def flyc_parameter_compute_hash(po, parname):
   """ Computes hash from given flyc parameter name. Parameters are recognized by the FC by the hash.
   """
@@ -631,6 +668,11 @@ def encode_command_packet_en(sender_type, sender_index, receiver_type, receiver_
       seq_num, pack_type.value, ack_type.value, encrypt_type.value, cmd_set.value, cmd_id, payload)
 
 def get_known_payload(pkthead, payload):
+    if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 0:
+        if (pkthead.cmd_id == 0x30):
+            if len(payload) >= sizeof(DJIPayload_General_EncryptGetStateRq):
+                return DJIPayload_General_EncryptGetStateRq.from_buffer_copy(payload)
+
     if pkthead.cmd_set == CMD_SET_TYPE.GENERAL.value and pkthead.packet_type == 1:
         if (pkthead.cmd_id == 0x01):
             if len(payload) >= sizeof(DJIPayload_General_VersionInquiryRe):
@@ -638,6 +680,9 @@ def get_known_payload(pkthead, payload):
         if (pkthead.cmd_id == 0x0b):
             if len(payload) >= sizeof(DJIPayload_General_ChipRebootRe):
                 return DJIPayload_General_ChipRebootRe.from_buffer_copy(payload)
+        if (pkthead.cmd_id == 0x30):
+            if len(payload) >= sizeof(DJIPayload_General_EncryptGetChipStateRe):
+                return DJIPayload_General_EncryptGetChipStateRe.from_buffer_copy(payload)
 
     if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 0:
         if (pkthead.cmd_id == 0xdf):
