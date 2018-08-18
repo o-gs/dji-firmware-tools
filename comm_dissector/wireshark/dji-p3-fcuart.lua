@@ -1202,11 +1202,12 @@ f.general_encrypt_config_buf_data = ProtoField.bytes ("dji_p3.general_encrypt_co
 f.general_encrypt_config_resp_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_type", "Response To Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CONFIG_CMD_TYPE_ENUM, nil, nil)
 
 f.general_encrypt_config_resp_status = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_status", "Status", base.HEX, nil, nil, "Packet processing status; non-zero value means error. On error, packet content may be meaningless.")
-f.general_encrypt_config_resp_state_flags = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_state_flags", "State Flags", base.HEX, nil, nil)
+f.general_encrypt_config_resp_chip_state_flags = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_chip_state_flags", "Chip State Flags", base.HEX, nil, nil)
   f.general_encrypt_config_resp_chip_state_conf_zone_unlock = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_chip_state_conf_zone_unlock", "Config Zone Unlocked", base.DEC, nil, 0x01)
   f.general_encrypt_config_resp_chip_state_data_zone_unlock = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_chip_state_data_zone_unlock", "Data and&otp Zone Unlocked", base.DEC, nil, 0x06)
-f.general_encrypt_config_resp_modl_state_module_ready = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_modl_state_module_ready", "Module reports ready", base.DEC, nil, 0x01)
-f.general_encrypt_config_resp_modl_state_verify_pass = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_modl_state_verify_pass", "Module verification passed", base.DEC, nil, 0x02)
+f.general_encrypt_config_resp_modl_state_flags = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_modl_state_flags", "Module State Flags", base.HEX, nil, nil)
+  f.general_encrypt_config_resp_modl_state_module_ready = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_modl_state_module_ready", "Module reports ready / Key file exists", base.DEC, nil, 0x01, "On P3X: When sent to Camera, returns SH204 status; when sent to DM3xx, returns if key.bin exists")
+  f.general_encrypt_config_resp_modl_state_verify_pass = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_modl_state_verify_pass", "Module/KeyFile verification passed", base.DEC, nil, 0x02, "On P3X: When sent to Camera, returns SH204 verification status;  when sent to DM3xx, it returns whrther DoEncrypt sent to Camera gives same result as encryption using local key.bin")
 f.general_encrypt_config_resp_m01_boardsn = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_m01_boardsn", "Module 01 Board SN", base.SPACE, nil, nil, "Board number for camera module")
 f.general_encrypt_config_resp_m04_boardsn = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_m04_boardsn", "Module 04 Board SN", base.SPACE, nil, nil, "Board number for gimbal module")
 f.general_encrypt_config_resp_m08_boardsn = ProtoField.bytes ("dji_p3.general_encrypt_config_resp_m08_boardsn", "Module 08 Board SN", base.SPACE, nil, nil, "Board number for dm3xx module")
@@ -1285,7 +1286,7 @@ local function general_encrypt_config_dissector(pkt_length, buffer, pinfo, subtr
         elseif (payload:len() >= 32) then
             subtree:add_le (f.general_encrypt_config_resp_type, 1)
 
-            subtree:add_le (f.general_encrypt_config_resp_state_flags, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_resp_chip_state_flags, payload(offset, 1))
             subtree:add_le (f.general_encrypt_config_resp_chip_state_conf_zone_unlock, payload(offset, 1))
             subtree:add_le (f.general_encrypt_config_resp_chip_state_data_zone_unlock, payload(offset, 1))
             offset = offset + 1
@@ -1303,7 +1304,7 @@ local function general_encrypt_config_dissector(pkt_length, buffer, pinfo, subtr
         elseif (payload:len() >= 2) then
             subtree:add_le (f.general_encrypt_config_resp_type, 2)
 
-            subtree:add_le (f.general_encrypt_config_resp_state_flags, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_resp_modl_state_flags, payload(offset, 1))
             subtree:add_le (f.general_encrypt_config_resp_modl_state_module_ready, payload(offset, 1))
             subtree:add_le (f.general_encrypt_config_resp_modl_state_verify_pass, payload(offset, 1))
             offset = offset + 1
