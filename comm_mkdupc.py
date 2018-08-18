@@ -610,6 +610,11 @@ class DJIPayload_General_EncryptGetChipStateRe(DJIPayload_Base):
               ('m08_boardsn', c_ubyte * 10),
              ]
 
+class DJIPayload_General_EncryptGetModuleStateRe(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
+              ('state_flags', c_ubyte),
+             ]
+
 
 def flyc_parameter_compute_hash(po, parname):
   """ Computes hash from given flyc parameter name. Parameters are recognized by the FC by the hash.
@@ -683,6 +688,8 @@ def get_known_payload(pkthead, payload):
         if (pkthead.cmd_id == 0x30):
             if len(payload) >= sizeof(DJIPayload_General_EncryptGetChipStateRe):
                 return DJIPayload_General_EncryptGetChipStateRe.from_buffer_copy(payload)
+            if len(payload) >= sizeof(DJIPayload_General_EncryptGetModuleStateRe):
+                return DJIPayload_General_EncryptGetModuleStateRe.from_buffer_copy(payload)
 
     if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 0:
         if (pkthead.cmd_id == 0xdf):
