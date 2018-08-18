@@ -101,7 +101,8 @@ class GIMBAL_CALIB_CMD(DecoratedEnum):
     LINEARHALL = 1
 
 class CAMERA_CALIB_CMD(DecoratedEnum):
-    ENCRYPTPAIR = 0
+    ENCRYPTCHECK = 0
+    ENCRYPTPAIR = 1
 
 def detect_serial_port(po):
     """ Detects the serial port device name of a Dji product.
@@ -1198,7 +1199,7 @@ def do_gimbal_calib_request(po):
     ser.close()
 
 
-def general_encrypt_get_state_request_p3x(po, ser, cmd):
+def general_encrypt_get_state_request_p3x(po, ser, receiver_type, cmd):
     """ Sends Encrypt GetChipState or Encrypt GetoduleState request.
     """
     payload = DJIPayload_General_EncryptGetStateRq()
@@ -1210,22 +1211,30 @@ def general_encrypt_get_state_request_p3x(po, ser, cmd):
 
     if po.dry_test:
         # use to test the code without a drone
-        ser.mock_data_for_read(bytes.fromhex("55 2d 04 f2 01 0a e9 ab c0 00 30 00 07 30 34 38 4c 41 41 31 45 4a 51 30 34 38 4c 41 41 31 45 4a 51 30 34 38 4c 41 41 31 45 4a 51 94 fd"))
+        if cmd == DJIPayload_General_EncryptCmd.GetChipState:
+            ser.mock_data_for_read(bytes.fromhex("55 2d 04 f2 01 0a e9 ab c0 00 30 00 07 30 34 38 4c 41 41 31 45 4a 51 30 34 38 4c 41 41 31 45 4a 51 30 34 38 4c 41 41 31 45 4a 51 94 fd"))
+        else: # DJIPayload_General_EncryptCmd.GetModuleState
+            if receiver_type == COMM_DEV_TYPE.CAMERA:
+                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 01 0a ad 00 c0 00 30 00 03 84 5b"))
+            elif receiver_type == COMM_DEV_TYPE.GIMBAL:
+                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a c5 10 80 00 30 00 33 e4 e1"))
+            else: # COMM_DEV_TYPE.LB_DM3XX_SKY
+                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 08 0a c6 0a c0 00 30 00 03 ba 92"))
 
     pktrpl, pktreq = send_request_and_receive_reply(po, ser,
-      COMM_DEV_TYPE.CAMERA, 0,
+      receiver_type, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.GENERAL, 0x30,
       payload, seqnum_check=True)
 
     if pktrpl is None:
-        raise ConnectionError("No response on Encrypt GetState request.")
+        raise ConnectionError("No response on Encrypt {:s} request.".format(cmd.name))
 
     rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
     rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
 
     if (rplpayload is None):
-        raise ConnectionError("Unrecognized response to Encrypt GetState request.")
+        raise ConnectionError("Unrecognized response to Encrypt {:s} request.".format(cmd.name))
 
     if (po.verbose > 2):
         print("Parsed response - {:s}:".format(type(rplpayload).__name__))
@@ -1233,14 +1242,14 @@ def general_encrypt_get_state_request_p3x(po, ser, cmd):
 
     return rplpayload, pktreq
 
-def general_encrypt_configure_request_p3x(po, ser, target_type, boardsn, enckey):
+def general_encrypt_configure_request_p3x(po, ser, receiver_type, boardsn, enckey):
     """ Sends Encrypt Configure request.
     """
     payload = DJIPayload_General_EncryptConfigRq()
     payload.command = DJIPayload_General_EncryptCmd.Config.value
     payload.oper_type = DJIPayload_General_EncryptOperType.WriteAll.value
     payload.config_magic = (c_ubyte * 8).from_buffer_copy(bytes.fromhex("F0 BD E3 06 81 3E 85 CB"))
-    payload.mod_type = target_type.value
+    payload.mod_type = receiver_type.value
     payload.board_sn = (c_ubyte * 10).from_buffer_copy(boardsn)
     payload.key = (c_ubyte * 32).from_buffer_copy(enckey)
     # MD5 of the board sn and key
@@ -1260,25 +1269,75 @@ def general_encrypt_configure_request_p3x(po, ser, target_type, boardsn, enckey)
     raise NotImplementedError('Not implemented yet!') # TODO
 
     pktrpl, pktreq = send_request_and_receive_reply(po, ser,
-      target_type, 0,
+      receiver_type, 0,
       ACK_TYPE.ACK_AFTER_EXEC,
       CMD_SET_TYPE.GENERAL, 0x30,
       payload, seqnum_check=True)
 
     if pktrpl is None:
-        raise ConnectionError("No response on Encrypt Configure {:s} request.".format(target_type.name))
+        raise ConnectionError("No response on Encrypt Configure {:s} request.".format(receiver_type.name))
 
     rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
     rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
 
     if (rplpayload is None):
-        raise ConnectionError("Unrecognized response to Encrypt Configure {:s} request.".format(target_type.name))
+        raise ConnectionError("Unrecognized response to Encrypt Configure {:s} request.".format(receiver_type.name))
 
     if (po.verbose > 2):
         print("Parsed response - {:s}:".format(type(rplpayload).__name__))
         print(rplpayload)
 
     return rplpayload, pktreq
+
+def do_camera_calib_request_p3x_encryptcheck(po, ser):
+    """ Verifies Phantom 3 Camera Encryption Pairing.
+
+        Tested on the following platforms and FW versions:
+        P3X_FW_V01.07.0060 (2018-08-18)
+    """
+
+    result = True
+    # Get module states; if state_flags 0x01 and 0x02 are set, then that module has working encryption
+
+    modulestate, _ = general_encrypt_get_state_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, DJIPayload_General_EncryptCmd.GetModuleState)
+
+    if (modulestate.state_flags & (0x01|0x02)) == (0x01|0x02):
+        print("Confirmed proper key storage within {:s}.".format(COMM_DEV_TYPE.CAMERA.name))
+    elif (modulestate.state_flags & (0x01|0x02)) == (0x01):
+        print("Inconsistent key storage within {:s}.".format(COMM_DEV_TYPE.CAMERA.name))
+        result = False
+    else: # This means no flag set (it is impossible to get only 0x02 without 0x01)
+        print("Uninitialized key verification system within {:s}.".format(COMM_DEV_TYPE.CAMERA.name))
+        result = False
+
+    # When LB_DM3XX_SKY receives GetModuleState command, it sends DoEncrypt to CAMERA and compares result with encryption using local key.bin
+    modulestate, _ = general_encrypt_get_state_request_p3x(po, ser, COMM_DEV_TYPE.LB_DM3XX_SKY, DJIPayload_General_EncryptCmd.GetModuleState)
+
+    if (modulestate.state_flags & (0x01|0x02)) == (0x01|0x02):
+        print("Confirmed proper communication between {:s} and {:s}.".format(COMM_DEV_TYPE.LB_DM3XX_SKY.name, COMM_DEV_TYPE.CAMERA.name))
+    elif (modulestate.state_flags & (0x01|0x02)) == (0x01):
+        print("Inconsistent key encountered between {:s} and {:s}.".format(COMM_DEV_TYPE.LB_DM3XX_SKY.name, COMM_DEV_TYPE.CAMERA.name))
+        result = False
+    else: # This means no flag set (it is impossible to get only 0x02 without 0x01)
+        print("No key file stored within {:s}.".format(COMM_DEV_TYPE.LB_DM3XX_SKY.name))
+        result = False
+
+    modulestate, _ = general_encrypt_get_state_request_p3x(po, ser, COMM_DEV_TYPE.GIMBAL, DJIPayload_General_EncryptCmd.GetModuleState)
+
+    if (modulestate.state_flags & (0x01|0x02)) == (0x01|0x02):
+        print("Confirmed proper key storage within {:s}.".format(COMM_DEV_TYPE.GIMBAL.name))
+    elif (modulestate.state_flags & (0x01|0x02)) == (0x01):
+        print("Inconsistent key storage within {:s}.".format(COMM_DEV_TYPE.GIMBAL.name))
+        result = False
+    else: # This means no flag set (it is impossible to get only 0x02 without 0x01)
+        print("Uninitialized key verification system within {:s}.".format(COMM_DEV_TYPE.GIMBAL.name))
+        result = False
+
+    # Final recommendation
+    if result:
+        print("Encryption pairing NOT recommended.")
+    else:
+        print("Encryption pairing NEEDED.")
 
 def do_camera_calib_request_p3x_encryptpair(po, ser):
     """ Initiates Phantom 3 Camera Encryption Pairing.
@@ -1291,7 +1350,8 @@ def do_camera_calib_request_p3x_encryptpair(po, ser):
             COMM_DEV_TYPE.CAMERA.name, COMM_DEV_TYPE.GIMBAL.name, COMM_DEV_TYPE.LB_DM3XX_SKY.name) + \
         "then it will write new encryption key to each of them. It will take around 1 second.\n")
 
-    chipstate, _ = general_encrypt_get_state_request_p3x(po, ser, DJIPayload_General_EncryptCmd.GetChipState)
+    # Camera ChipState contains board serial numbersfor all 3 components
+    chipstate, _ = general_encrypt_get_state_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, DJIPayload_General_EncryptCmd.GetChipState)
 
     print("Retrieved Board Serial Numbers; flashing new encryption key.")
     enckey = bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00") # TODO what encryption keys DJI uses?
@@ -1308,7 +1368,9 @@ def do_camera_calib_request(po):
     if po.product.value >= PRODUCT_CODE.WM100.value:
         raise ValueError("Calibration for selected platform is not supported.")
     elif po.product.value >= PRODUCT_CODE.WM610.value:
-        if po.subcmd == CAMERA_CALIB_CMD.ENCRYPTPAIR:
+        if po.subcmd == CAMERA_CALIB_CMD.ENCRYPTCHECK:
+            do_camera_calib_request_p3x_encryptcheck(po, ser)
+        elif po.subcmd == CAMERA_CALIB_CMD.ENCRYPTPAIR:
             do_camera_calib_request_p3x_encryptpair(po, ser)
         else:
             raise ValueError("Unrecognized {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
@@ -1416,7 +1478,11 @@ def main():
     subpar_camcal_subcmd = subpar_camcal.add_subparsers(dest='subcmd',
             help="Camera Calibration Command")
 
-    subpar_camcal_encrypt = subpar_camcal_subcmd.add_parser('EncryptPair',
+    subpar_camcal_encryptcheck = subpar_camcal_subcmd.add_parser('EncryptCheck',
+            help="verify encryption pairing between Camera, Gimbal and DM3xx; " \
+             "returns whether pairing is required")
+
+    subpar_camcal_encryptpair = subpar_camcal_subcmd.add_parser('EncryptPair',
             help="set encryption key to pair the Camera, Gimbal and DM3xx; " \
              "to be performed after replacing software in any of these chips; UNTESTED - may not work")
 
