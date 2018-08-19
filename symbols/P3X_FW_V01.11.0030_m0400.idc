@@ -344,7 +344,16 @@ static Bytes_0(void) {
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
 	create_dword	(0X8008198);
-	make_array	(0X8008198,	0XA);
+	create_dword	(0X800819C);
+	create_dword	(0X80081A0);
+	create_dword	(0X80081A4);
+	make_array	(0X80081A4,	0X5);
+	create_dword	(x=0X80081B8);
+	op_plain_offset	(x,	0,	0);
+	op_plain_offset	(x,	128,	0);
+	create_dword	(x=0X80081BC);
+	op_plain_offset	(x,	0,	0);
+	op_plain_offset	(x,	128,	0);
 	create_insn	(0X80081C0);
 	create_insn	(x=0X8008272);
 	op_hex		(x,	1);
@@ -402,6 +411,7 @@ static Bytes_0(void) {
 	op_plain_offset	(x,	128,	0);
 	create_float	(0X8008AD8);
 	create_insn	(0X8008ADC);
+	set_name	(0X8008ADC,	"memcpy");
 	create_insn	(0X8008AE6);
 	create_insn	(0X8008AF2);
 	create_insn	(0X8008B00);
@@ -1023,6 +1033,9 @@ static Bytes_0(void) {
 	create_insn	(x=0X800989C);
 	op_plain_offset	(x,	1,	0X200007DC);
 	op_plain_offset	(x,	129,	0X200007DC);
+	set_cmt	(0X800989E,	"num",	0);
+	set_cmt	(0X80098A0,	"source",	0);
+	set_cmt	(0X80098A2,	"destination",	0);
 	create_insn	(x=0X80098A8);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -1050,10 +1063,13 @@ static Bytes_0(void) {
 	create_insn	(x=0X80098E0);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X80098EC,	"num",	0);
 	create_insn	(0X80098EC);
+	set_cmt	(0X80098EE,	"source",	0);
 	create_insn	(x=0X80098EE);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X80098F0,	"destination",	0);
 	create_insn	(x=0X80098F0);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -1063,6 +1079,7 @@ static Bytes_0(void) {
 	create_dword	(x=0X8009900);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
+	set_name	(0X8009900,	"source");
 	create_dword	(x=0X8009904);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
@@ -1075,6 +1092,7 @@ static Bytes_0(void) {
 	create_dword	(x=0X8009910);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
+	set_name	(0X8009910,	"destination");
 	create_dword	(x=0X8009914);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
@@ -1097,6 +1115,9 @@ static Bytes_0(void) {
 	create_insn	(x=0X8009938);
 	op_plain_offset	(x,	1,	0X200007DC);
 	op_plain_offset	(x,	129,	0X200007DC);
+	set_cmt	(0X800993A,	"num",	0);
+	set_cmt	(0X800993C,	"source",	0);
+	set_cmt	(0X800993E,	"destination",	0);
 	create_insn	(x=0X8009944);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -1136,6 +1157,9 @@ static Bytes_0(void) {
 	create_insn	(x=0X80099A0);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X80099A2,	"destination",	0);
+	set_cmt	(0X80099A6,	"num",	0);
+	set_cmt	(0X80099A8,	"source",	0);
 	create_insn	(x=0X80099A8);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -5915,6 +5939,9 @@ static Bytes_0(void) {
 	create_insn	(0X800E07C);
 	create_insn	(x=0X800E094);
 	op_stkvar	(x,	1);
+	set_cmt	(0X800E09A,	"source",	0);
+	set_cmt	(0X800E09C,	"num",	0);
+	set_cmt	(0X800E0A0,	"destination",	0);
 	make_array	(0X800E0AA,	0X2);
 	create_dword	(0X800E0AC);
 	create_insn	(0X800E0B0);
@@ -5988,6 +6015,15 @@ static Bytes_0(void) {
 	create_insn	(x=0X800E204);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_1(void) {
+        auto x;
+#define id x
+
 	create_insn	(x=0X800E210);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -6030,15 +6066,6 @@ static Bytes_0(void) {
 	create_insn	(x=0X800E270);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_1(void) {
-        auto x;
-#define id x
-
 	create_insn	(0X800E278);
 	create_insn	(x=0X800E27A);
 	op_plain_offset	(x,	1,	0);
@@ -6599,7 +6626,13 @@ static Bytes_1(void) {
 	create_dword	(0X800EF78);
 	create_dword	(0X800EF7C);
 	create_insn	(0X800EF80);
+	set_cmt	(0X800EFC0,	"destination",	0);
+	set_cmt	(0X800EFC4,	"num",	0);
+	set_cmt	(0X800EFC6,	"source",	0);
+	set_cmt	(0X800EFDC,	"source",	0);
 	create_insn	(0X800EFDC);
+	set_cmt	(0X800EFDE,	"num",	0);
+	set_cmt	(0X800EFE0,	"destination",	0);
 	create_insn	(x=0X800EFE0);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -6607,6 +6640,9 @@ static Bytes_1(void) {
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
 	create_insn	(0X800F000);
+	set_cmt	(0X800F002,	"num",	0);
+	set_cmt	(0X800F004,	"source",	0);
+	set_cmt	(0X800F00A,	"destination",	0);
 	make_array	(0X800F016,	0X2);
 	create_dword	(x=0X800F018);
 	op_plain_offset	(x,	0,	0);
@@ -7623,6 +7659,7 @@ static Bytes_1(void) {
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X8010084);
+	set_name	(0X8010084,	"reboot");
 	create_insn	(x=0X801008C);
 	op_hex		(x,	1);
 	make_array	(0X80100A2,	0X2);
@@ -10071,7 +10108,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X801385A);
 	op_stkvar	(x,	1);
 	create_insn	(0X8013864);
-	set_name	(0X8013864,	"packet_send_set00_cmd30_a");
+	set_name	(0X8013864,	"packet_send_encrypt_config_get_module_state_response");
 	create_insn	(x=0X801386E);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -10461,6 +10498,7 @@ static Bytes_1(void) {
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X8013CEC);
+	set_name	(0X8013CEC,	"encrypt_module_state_verify");
 	create_insn	(x=0X8013CF2);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8013CF6);
@@ -10476,9 +10514,15 @@ static Bytes_1(void) {
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
 	set_cmt	(0X8013D20,	"val",	0);
+	set_cmt	(0X8013D26,	"num",	0);
+	set_cmt	(0X8013D28,	"source",	0);
+	set_cmt	(0X8013D2A,	"destination",	0);
 	create_insn	(x=0X8013D2A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8013D30,	"num",	0);
+	set_cmt	(0X8013D32,	"source",	0);
+	set_cmt	(0X8013D34,	"destination",	0);
 	create_insn	(x=0X8013D34);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -10593,12 +10637,18 @@ static Bytes_1(void) {
 	create_insn	(x=0X8013E0E);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8013E10,	"num",	0);
 	create_insn	(x=0X8013E12);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8013E14,	"source",	0);
+	set_cmt	(0X8013E16,	"destination",	0);
+	set_cmt	(0X8013E1E,	"num",	0);
 	create_insn	(x=0X8013E20);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8013E22,	"source",	0);
+	set_cmt	(0X8013E24,	"destination",	0);
 	create_insn	(x=0X8013E2E);
 	op_plain_offset	(x,	1,	0X2000BBB8);
 	op_plain_offset	(x,	129,	0X2000BBB8);
@@ -11679,6 +11729,15 @@ static Bytes_1(void) {
 	create_insn	(x=0X8014E10);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_2(void) {
+        auto x;
+#define id x
+
 	create_insn	(x=0X8014E16);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -11767,15 +11826,6 @@ static Bytes_1(void) {
 	create_dword	(x=0X8014EA0);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_2(void) {
-        auto x;
-#define id x
-
 	create_dword	(x=0X8014EA4);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
@@ -13454,6 +13504,9 @@ static Bytes_2(void) {
 	create_insn	(x=0X80161F8);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X80161FE,	"destination",	0);
+	set_cmt	(0X8016202,	"num",	0);
+	set_cmt	(0X8016204,	"source",	0);
 	create_insn	(x=0X8016204);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -13987,6 +14040,9 @@ static Bytes_2(void) {
 	create_insn	(x=0X8016B00);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8016B06,	"num",	0);
+	set_cmt	(0X8016B14,	"destination",	0);
+	set_cmt	(0X8016B16,	"source",	0);
 	create_insn	(x=0X8016B24);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -13998,6 +14054,9 @@ static Bytes_2(void) {
 	create_insn	(x=0X8016B42);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8016B4C,	"destination",	0);
+	set_cmt	(0X8016B5C,	"num",	0);
+	set_cmt	(0X8016B5E,	"source",	0);
 	create_insn	(x=0X8016B64);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -17168,6 +17227,15 @@ static Bytes_2(void) {
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
 	set_cmt	(0X80189CE,	"a1",	0);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_3(void) {
+        auto x;
+#define id x
+
 	create_insn	(x=0X80189D6);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -17267,15 +17335,6 @@ static Bytes_2(void) {
 	create_insn	(x=0X8018AF4);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_3(void) {
-        auto x;
-#define id x
-
 	create_insn	(x=0X8018B0C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -20381,9 +20440,15 @@ static Bytes_3(void) {
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X801B4FC);
 	create_insn	(0X801B514);
+	set_cmt	(0X801B51E,	"destination",	0);
+	set_cmt	(0X801B520,	"num",	0);
+	set_cmt	(0X801B522,	"source",	0);
 	create_insn	(0X801B53A);
 	create_insn	(x=0X801B55C);
 	op_hex		(x,	1);
+	set_cmt	(0X801B560,	"source",	0);
+	set_cmt	(0X801B564,	"num",	0);
+	set_cmt	(0X801B566,	"destination",	0);
 	create_insn	(0X801B57E);
 	create_insn	(x=0X801B59A);
 	op_stkvar	(x,	1);
@@ -21139,12 +21204,18 @@ static Bytes_3(void) {
 	make_array	(0X2000BB57,	0X19);
 	set_name	(0X2000BB57,	"resp_chip_state_3");
 	create_byte	(0X2000BB70);
+	set_name	(0X2000BB70,	"encrypt_module_state_verified");
 	create_byte	(0X2000BB71);
+	set_name	(0X2000BB71,	"encrypt_module_state_initialized");
 	create_byte	(0X2000BB72);
 	create_byte	(0X2000BB73);
+	set_name	(0X2000BB73,	"module_state_rq_byte_2000BB73");
 	create_byte	(0X2000BB74);
+	set_name	(0X2000BB74,	"module_state_rq_byte_2000BB74");
 	create_byte	(0X2000BB75);
+	set_name	(0X2000BB75,	"module_state_rq_byte_2000BB75");
 	create_word	(0X2000BB76);
+	set_name	(0X2000BB76,	"module_state_rq_word_2000BB76");
 	create_byte	(0X2000BBB8);
 	create_byte	(0X2000BBB9);
 	create_word	(0X2000BBBA);
@@ -21285,7 +21356,9 @@ static Functions_0(void) {
 	set_func_flags(0X8008A44,0x400);
 	set_frame_size(0X8008A44, 0X4, 0, 0);
 	add_func    (0X8008ADC,0X8008B00);
-	set_func_flags(0X8008ADC,0x400);
+	set_func_flags(0X8008ADC,0x404);
+	SetType(0X8008ADC, "void *__cdecl memcpy(void *destination, const void *source, size_t num);");
+	set_frame_size(0X8008ADC, 0, 0, 0);
 	add_func    (0X8008B00,0X8008B0E);
 	set_func_flags(0X8008B00,0x400);
 	add_func    (0X8008B0E,0X8008B12);
@@ -21808,6 +21881,9 @@ static Functions_0(void) {
 	add_func    (0X80113C4,0X80114C2);
 	set_func_flags(0X80113C4,0x400);
 	set_frame_size(0X80113C4, 0X8, 0, 0);
+	add_func    (0X80114CC,0X8011524);
+	set_func_flags(0X80114CC,0x400);
+	set_frame_size(0X80114CC, 0X8, 0, 0);
 	add_func    (0X8011534,0X801155A);
 	set_func_flags(0X8011534,0x400);
 	set_frame_size(0X8011534, 0X8, 0, 0);
@@ -21940,7 +22016,7 @@ static Functions_0(void) {
 	define_local_var(0X8013774, 0X8013864, "[bp-0X44]", "pkt");
 	add_func    (0X8013864,0X80139A4);
 	set_func_flags(0X8013864,0x400);
-	SetType(0X8013864, "void __fastcall packet_send_set00_cmd30_a(int recvr, int channel, int seqcnt, int payld_flags);");
+	SetType(0X8013864, "void __fastcall packet_send_encrypt_config_get_module_state_response(int recvr, int channel, int seqcnt, int payld_flags);");
 	set_frame_size(0X8013864, 0X28, 0, 0);
 	define_local_var(0X8013864, 0X80139A4, "[bp-0X28]", "pkt");
 	define_local_var(0X8013864, 0X80139A4, "[bp-0X1D]", "pkt_payload");
@@ -21971,6 +22047,7 @@ static Functions_0(void) {
 	set_func_flags(0X8013CB8,0x400);
 	add_func    (0X8013CEC,0X8013F60);
 	set_func_flags(0X8013CEC,0x400);
+	SetType(0X8013CEC, "void encrypt_module_state_verify(void);");
 	set_frame_size(0X8013CEC, 0XA8, 0, 0);
 	add_func    (0X8013F78,0X8013FCC);
 	set_func_flags(0X8013F78,0x400);
@@ -22278,7 +22355,7 @@ static Functions_0(void) {
 	define_local_var(0X801A918, 0X801AB7C, "[bp-0X19]", "pkt_payload");
 	add_func    (0X801ABA0,0X801ADC8);
 	set_func_flags(0X801ABA0,0x400);
-	SetType(0X801ABA0, "void __fastcall packet_send_gimbal_movement(int a1);");
+	SetType(0X801ABA0, "void __fastcall packet_send_gimbal_movement(int rcv_type);");
 	set_frame_size(0X801ABA0, 0X30, 0, 0);
 	define_local_var(0X801ABA0, 0X801ADC8, "[bp-0X2C]", "pkt");
 	define_local_var(0X801ABA0, 0X801ADC8, "[bp-0X21]", "pkt_payload");

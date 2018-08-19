@@ -9683,6 +9683,7 @@
  0001:0E684700       aDji_ustSUseDef
  0001:0E68472C       aDji_ustSLoadDe
  0001:0E684764       aDji_ustSUser_2
+ 0001:0E68489C       vid_setting_bitrates
  0001:0E6849E0       aSaveUserSettingsToRomTDjiUstSPos_E
  0001:0E684A20       aLoadUserSettingsFromRomTDjiUstLPos
  0001:0E684A64       aLoadDefaultUserSettingsTDjiUstD_Eg
@@ -17839,9 +17840,13 @@
  0001:0E6F493C       MemAllocate
  0001:0E6F4998       AmbaKAL_MemFree
  0001:0E6F49BC       DSP_ImgCoreProcessToneCurve
+ 0001:0E6F4F4C       SENSOR_INPUT_SETUP_CMD
+ 0001:0E6F50B4       FIXED_PATTERN_NOISE_CORRECTION_CMD
  0001:0E6F5270       AmbaDSP_ImgSetCfaLeakageFilterCmdInfo
  0001:0E6F530C       AmbaDSP_ImgSetAntiAliasingCmdInfo
+ 0001:0E6F53B0       SET_VIN_CONFIG_CMD
  0001:0E6F5534       AmbaDSP_ImgSetStaticBlackLevelCmdInfo
+ 0001:0E6F56F8       RGB_GAIN_ADJUSTMENT_CMD
  0001:0E6F5870       AmbaDSP_ImgSetDgainSaturationLevelCmdInfo
  0001:0E6F593C       AmbaDSP_ImgSetVignetteCompensationCmdInfo
  0001:0E6F59EC       AmbaDSP_ImgSetLocalExposureCmdInfo
@@ -17851,11 +17856,13 @@
  0001:0E6F5DCC       AmbaDSP_ImgSetDynamicBadPixelCorrectionCmdInfo
  0001:0E6F5E90       AmbaDSP_ImgSetCfaNoiseFilterCmdInfo
  0001:0E6F604C       AmbaDSP_ImgSetDemosaicFilterCmdInfo
+ 0001:0E6F60D8       DEMOASIC_FILTER_CMD
  0001:0E6F61E8       AmbaDSP_ImgSetNoiseFilterCmdInfo
  0001:0E6F6364       AmbaDSP_ImgSetChromaMedianFilterCmdInfo
  0001:0E6F649C       AmbaDSP_ImgSet1stLumaSharpeningCmdInfo
  0001:0E6F668C       AmbaDSP_ImgSetLumaSharpenFirConfigCmdInfo
  0001:0E6F67F0       AmbaDSP_ImgSetLumaSharpeningLnlCmdInfo
+ 0001:0E6F69D0       pLumaSharpeningToneInfo_CMD
  0001:0E6F6B00       AmbaDSP_ImgSetLumaSharpeningBlendControlCmdInfo
  0001:0E6F6C08       AmbaDSP_ImgSetLumaSharpeningLevelControlCmdInfo
  0001:0E6F6DB4       AmbaDSP_ImgSetAaaStatisticsSetupCmdInfo
@@ -18377,6 +18384,7 @@
  0001:0E75F32C       AmbaDSP_ImgHighIsoSetHighIsoBlendLumaLevel
  0001:0E75F4D8       AmbaDSP_ImgHighIsoGetHighIsoBlendLumaLevel
  0001:0E75F870       _SdHostGetStatus
+ 0001:0E75FD54       pread
  0001:0E7603BC       AmbaFS_PfUnicodeFsexec
  0001:0E760408       AmbaFS_PfUnicodeFsfirst
  0001:0E760868       FSGetFreeSpace
@@ -18404,26 +18412,32 @@
  0001:0E765BD4       DSP_ArmCommVdspMsgEventHandler
  0001:0E765C60       DSP_ArmCommAsyncMsgEventHandler
  0001:0E765D6C       DSP_ArmCommVdspEventHandler
+ 0001:0E765FBC       buf1
+ 0001:0E7663B4       AmbaDSP_CmdExec0
+ 0001:0E766614       AmbaDSP_CmdExec1
+ 0001:0E769424       AmbaPLL_SetOpMode
  0001:0E769A80       AmbaDSP_CmdSetSystemInfo
- 0001:0E769FD8       H264ENC_START
- 0001:0E76A2CC       H264ENC_STOP
- 0001:0E76A3A0       H264ENC_JPEG_SETUP
- 0001:0E76A5C4       H264ENC_UPDATE_ON_DEMAND_IDR
- 0001:0E76A6CC       H264ENC_UPDATE_BITRATE_CHANGE
- 0001:0E76A804       H264ENC_MJPEG_CAPTURE
- 0001:0E76A904       H264ENC_ROTATE
- 0001:0E76AA68       H264ENC_UPDATE_FRMRATE_CHANGE
- 0001:0E76AB74       H264ENC_PAUSE
- 0001:0E76AC50       H264ENC_RESUME
- 0001:0E76AD60       H264DEC_SETUP
- 0001:0E76AEB4       H264DEC_DECODE
- 0001:0E76AF4C       H264DEC_STOP
- 0001:0E76B020       H264DEC_SPEED
- 0001:0E76B0C8       H264DEC_TRICKPLAY
- 0001:0E76B1A0       H264DEC_YUV2YUV
- 0001:0E76B354       H264DEC_PAINT
- 0001:0E76B46C       H264DEC_PBCAP_CFG
- 0001:0E76B50C       H264DEC_YUV2JPEG
+ 0001:0E769B74       AmbaDSP_CmdH264EncSetup
+ 0001:0E769FD8       AmbaDSP_CmdH264EncStart
+ 0001:0E76A2CC       AmbaDSP_CmdH264EncStop
+ 0001:0E76A3A0       AmbaDSP_CmdH264EncJpegSetup
+ 0001:0E76A5C4       AmbaDSP_CmdH264EncUpdateOnDemandIDR
+ 0001:0E76A6CC       AmbaDSP_CmdH264EncUpdateBitrateChange
+ 0001:0E76A804       AmbaDSP_CmdH264EncMJpegCapture
+ 0001:0E76A904       AmbaDSP_CmdH264EncRotate
+ 0001:0E76AA68       AmbaDSP_CmdH264EncUpdateFrmrateChange
+ 0001:0E76AB74       AmbaDSP_CmdH264EncPause
+ 0001:0E76AC50       AmbaDSP_CmdH264EncResume
+ 0001:0E76AD60       AmbaDSP_CmdH264DecSetup
+ 0001:0E76AEB4       AmbaDSP_CmdH264DecDecode
+ 0001:0E76AF4C       AmbaDSP_CmdH264DecStop
+ 0001:0E76AFE0       AmbaDSP_sub_E76AFE0
+ 0001:0E76B020       AmbaDSP_CmdH264DecSpeed
+ 0001:0E76B0C8       AmbaDSP_CmdH264DecTrivkplay
+ 0001:0E76B1A0       AmbaDSP_CmdH264DecYuv2Yuv
+ 0001:0E76B354       AmbaDSP_CmdH264DecPaint
+ 0001:0E76B46C       AmbaDSP_CmdH264DecPbcapCfg
+ 0001:0E76B50C       AmbaDSP_CmdH264DecYuv2Jpeg
  0001:0E76B6F0       VOUT_MIXER_SETUP
  0001:0E76B888       VOUT_VIDEO_SETUP
  0001:0E76B9C4       VOUT_OSD_SETUP
@@ -18680,6 +18694,7 @@
  0001:0E7AEBF4       NandFS_GetDiskInfo
  0001:0E7AEF64       NandFS_Init
  0001:0E7AF178       AmbaFS_NandFormatDrive
+ 0001:0E7AF564       pdm_init_diskmanager
  0001:0E7AF5D4       pdm_open_disk
  0001:0E7AF604       pdm_open_partition
  0001:0E7AF680       AmbaFS_SdPrf2DoEject
@@ -18694,6 +18709,7 @@
  0001:0E7B0208       AmbaFS_SdPrf2GetDiskInfo
  0001:0E7B0404       AmbaFS_SdPrf2init
  0001:0E7B08A4       AmbaFS_NullPrFileinit
+ 0001:0E7B0D7C       pf_attach
  0001:0E7B0F2C       AmbaSysInitPreOS
  0001:0E7B0F78       AmbaSysInitPostOS
  0001:0E7B13A8       AmbaRTSL_VicIsrHook
@@ -18736,6 +18752,11 @@
  0001:0E7C0850       _tx_thread_system_resume
  0001:0E7C0EBC       _tx_timer_system_deactivate
  0001:0E7C11EC       _tx_sub_E7C11EC
+ 0001:0E7C1634       AmbaVideo_EncoderConfigure
+ 0001:0E7C1658       AmbaVideo_StreamConfigure
+ 0001:0E7C16C8       AmbaVideo_EncodeStart
+ 0001:0E7C34DC       AmbaVideo_sub_E7C34DC
+ 0001:0E7C3C5C       jpt_E7C3C58
  0001:0E7C3F8C       AmbaDSP_ImgSetWarpCompensation
  0001:0E7C43E8       AmbaDSP_ImgCalcWarpCompensation
  0001:0E7C47F0       AmbaDSP_ImgCalcWarpCompensation_0
@@ -19222,7 +19243,12 @@
  0001:0E8336D4       Liveview_Entry
  0001:0E833964       Liveview_SuperViewLoadWarpTable
  0001:0E833B48       Liveview_SuperViewReSetupWarpTable
+ 0001:0E8344E8       AmbaLiveview_sub_E8344E8
+ 0001:0E834668       AmbaLiveview_sub_E834668
  0001:0E834AB8       aPal
+ 0001:0E835068       AmbaLiveview_sub_E835068
+ 0001:0E8350C4       jpt_E8350C0
+ 0001:0E83565C       aPal_0
  0001:0E835668       AmbaLiveview_SensorConfig
  0001:0E835928       AmbaLiveview_LowDelayCtrl
  0001:0E835B14       AmbaLiveview_LiveviewStart
@@ -19286,6 +19312,7 @@
  0001:0E83FBE0       DjiMsgGimbalWorkModeCtrlPush
  0001:0E83FD44       DjiMsgUsbSwitchStatusPush
  0001:0E83FED4       DjiMsgCaptureParamPush
+ 0001:0E84003C       rpl_payld
  0001:0E841368       DjiMsgHistogramPush
  0001:0E841474       DjiFileInfoPush
  0001:0E841834       DjiMsgUpdateStatusPush
@@ -19342,6 +19369,8 @@
  0001:0E846E54       DjiMsgFileSendRequest
  0001:0E8471E0       DjiMsgFileSegmentErr
  0001:0E847528       DjiMsgEncpyptConfig
+ 0001:0E847648       jpt_E847644
+ 0001:0E8476D0       def_E847644
  0001:0E847740       DjiMsgActivateConfig
  0001:0E847970       DjiMsgSelfTestStatusPush
  0001:0E847AA8       DjiMsgFwUpdateControl
@@ -19467,6 +19496,8 @@
  0001:0E8604B0       DjiMsg_sub_E8604B0
  0001:0E8604D0       DjiMsgAuthorLevelSet
  0001:0E86056C       DjiMsgAuthorLevelGet
+ 0001:0E86057C       DjiPacketReceiveSenderKnown
+ 0001:0E860600       DjiPacketReceiveGet
  0001:0E8607E0       DjiMsgSeqNumCreate
  0001:0E860918       DjiMsgSeqNumEQ
  0001:0E860D40       DjiMsgSeqNumDQ
@@ -19512,11 +19543,18 @@
  0001:0E86B0D4       DjiMsgTestVideoStandardCtrl
  0001:0E86B2DC       DjiMsgTestPinCtrl
  0001:0E86B3E8       DjiMsgTestStageCtrl
+ 0001:0E86B5C4       DjiMsgPrintIOpMode
  0001:0E86CD18       DjiMsgTestUnitTest
+ 0001:0E86D2F8       sha204_wake_up_and_verify
+ 0001:0E86D664       sha204_prep_get_mac
+ 0001:0E86D9DC       sha204_mac
+ 0001:0E86DA7C       sha204_nonce
+ 0001:0E86DB44       sha204_random
  0001:0E86DBAC       sha204m_read
  0001:0E86DD54       sha204m_write
  0001:0E86E454       sha204p_wakeup
  0001:0E86E50C       sha204p_i2c_send
+ 0001:0E86E638       sha204_go_to_sleep
  0001:0E86E650       sha204p_receive_response
  0001:0E86EC00       sha204d_test_read_config_zone
  0001:0E86ED34       sha204d_test_nonce
@@ -19543,6 +19581,10 @@
  0001:0E870EE4       DjiEncryptWriteKeyToDataZone
  0001:0E8710B0       DjiEncryptWriteAllBoardNumToOTP
  0001:0E871258       DjiEncryptWriteSnToDataZone
+ 0001:0E8714D8       DjiEncryptGet204BoardNum
+ 0001:0E871568       DjiEncryptGet204SerNum
+ 0001:0E871668       a9_get_mac
+ 0001:0E8717B0       sha204_get_mac
  0001:0E871980       DjiEncryptGetKey
  0001:0E871A50       DjiEncryptCheckA9Mac
  0001:0E871E04       DjiEncryptInit
@@ -19550,6 +19592,7 @@
  0001:0E8723C0       DjiEncryptSaveToA9
  0001:0E87251C       DjiEncryptResaveSn
  0001:0E8726B0       DjiEncryptSaveBothToSha204AndA9
+ 0001:0E872830       DjiEncryptGetSHA204Status
  0001:0E872B28       DjiEncryptReGetA9Status
  0001:0E872DA8       DjiEncryptGetA9Status
  0001:0E872E90       DjiEncryptTrans
@@ -19984,6 +20027,7 @@
  0001:0E8AE5D0       AmbaMovieRecord_Stop
  0001:0E8AE7E4       AmbaMovieRecord_Pause
  0001:0E8AE968       AmbaMovieRecord_Resume
+ 0001:0E8AF190       enconf
  0001:0E8AF1CC       MovieRecordKeyTaskEntry
  0001:0E8AFAC0       MovieRecordVideoSetup
  0001:0E8AFEA4       MovieRecordVideoStart
@@ -20102,7 +20146,16 @@
  0001:0E8CCB50       a0_1
  0001:0E8CCB54       a1
  0001:0E8CCB58       aClk
+ 0001:0E8CE378       SVC_EncodeTestCmd
  0001:0E8D0AD8       AppMainTask_RegisterCommands
+ 0001:0E8D0B44       aEnc
+ 0001:0E8D0B48       aDec_2
+ 0001:0E8D0B4C       aKey
+ 0001:0E8D0B50       aMem
+ 0001:0E8D0B68       aWdt
+ 0001:0E8D0B6C       aSvc
+ 0001:0E8D0B70       aImg
+ 0001:0E8D0B74       aCal_1
  0001:0E8D0DAC       imgproc_enableaeb
  0001:0E8D103C       Capture_Start
  0001:0E8D1BC8       Capture_RawDataEventHandler
@@ -20313,6 +20366,7 @@
  0001:0E8ED200       fname
  0001:0E8ED3E0       DjiTranscodeStoreFpsSet
  0001:0E8ED4DC       DjiTranscodeFpsGet
+ 0001:0E8ED538       DjiMovieSetBitrate
  0001:0E8ED5E0       DjiXcodeFnumSet
  0001:0E8ED65C       DjiXcodedFnumIncrease
  0001:0E8ED8CC       DjiXcodeTaskEntry
@@ -21719,42 +21773,25 @@
  0002:0EA97168       feed_raw_pre_process_hdlr
  0002:0EA9716C       yuv_data_hdlr
  0002:0EA97170       video_data_hdlr
+ 0002:0EA97178       VideoEncode_State
+ 0002:0EA9F764       usr_VideoTuner_Pitch
+ 0002:0EA9F76A       usr_VideoTuner_Width
+ 0002:0EA9F76C       usr_VideoTuner_Height
+ 0002:0EA9F770       video_raw_sequence_file
  0002:0EA9F774       h264_RawSeqFilePath
- 0002:0EAB166C       VideoEncode_DataFmt
- 0002:0EAB166D       VideoEncode_IsIntervalCap
- 0002:0EAB166E       VideoEncode_StreamID_StreamID
- 0002:0EAB166F       VideoEncode_StreamID_ViewZoneID
- 0002:0EAB1674       VideoEncode_Window_Width
- 0002:0EAB1676       VideoEncode_Window_Height
- 0002:0EAB1678       VideoEncode_FrameRateDivisor
- 0002:0EAB167E       h264_IsCabac
- 0002:0EAB167F       h264_M
- 0002:0EAB1680       h264_N
- 0002:0EAB1684       h264_QualityLevel
- 0002:0EAB1688       h264_BitRateSetting
- 0002:0EAB168A       h264_VbrPercent
- 0002:0EAB168C       h264_VbrMinRatio
- 0002:0EAB168E       h264_VbrMaxRatio
- 0002:0EAB1690       h264_IdrInterval
- 0002:0EAB1694       h264_pBitsBufAddr
- 0002:0EAB1698       h264_BitsBufSize
- 0002:0EAB169C       h264_BitRate
- 0002:0EAB16AC       VideoEncode_RotateConfig
- 0002:0EAB16B0       VideoEncode_FrameRate_Interlace
- 0002:0EAB16B4       VideoEncode_FrameRate_TimeScale
- 0002:0EAB16B8       VideoEncode_FrameRate_NumUnitsInTick
- 0002:0EAB16C0       VideoTuner_CompressRaw
- 0002:0EAB16C2       VideoTuner_Pitch
- 0002:0EAB16C4       VideoTuner_Width
- 0002:0EAB16C6       VideoTuner_Height
- 0002:0EAB16C8       VideoTuner_FrameSize
+ 0002:0EAB166C       VideoEncode
+ 0002:0EAB16BC       VideoTuner_raw_header
  0002:0EAB16D0       h264_EnableReadRawData
  0002:0EAB16D1       h264_EnableSaveYuvData
  0002:0EAB16D2       h264_EnableSaveVidData
  0002:0EAB16DC       h264_YuvSeqFilePath
  0002:0EAB171C       h264_VidBitStreamFilePath
+ 0002:0EAB1760       usr_vid_encode
+ 0002:0ECB5888       mutex_ECB5888
  0002:0ECB5B48       vid_settings
  0002:0ECB69D4       aAmbademo
+ 0002:0ECB69E7       vid_setting_live_index
+ 0002:0ECB69E8       vid_setting_rec_index
  0002:0ECB6A24       video_thumbnail_enabled
  0002:0ECB84E4       aFc300x_1
  0002:0ECB8504       aDji
@@ -21828,10 +21865,15 @@
  0002:0EDB4BB4       dji_cmm_state
  0002:0EDB4C34       aDjiPrivate
  0002:0EDB4D40       aFc300x_2
+ 0002:0EDB6FB0       enc_a9_encrypt_status
+ 0002:0EDB6FB1       enc_a9_verify_state
  0002:0EDB72B0       aDji_1
  0002:0EDB8324       aDji_app_0
  0002:0EDB8BB0       mcctrl_modules
- 0002:0EDB8C14       struct_EDB8C14
+ 0002:0EDB8C14       receive_commands_from_m0001
+ 0002:0EDB8C44       receive_commands_from_m0801_m1601
+ 0002:0EDB911C       receive_commands_from_m0101_m0901_m1701
+ 0002:0EDB915C       receive_commands
  0002:0EDBA638       firmwares
  0002:0EDBC0A8       dji_ust_properties
  0002:0EDBC634       aCa9_0
@@ -21842,6 +21884,7 @@
  0002:0EDBC6B4       _AmbaSysLogCtrl__State
  0002:0EDBC78C       _AmbaRTC_DaysOfMonth
  0002:0EDBC7BC       _AmbaRootTaskStackSize
+ 0002:0EDBCAF0       AmbaDSP_CmdExec
  0002:0EDBD3D4       g_SdCmdTimeout
  0002:0EDBD43C       _TestSpiConfig
  0002:0EDBD448       _TestSpiProtocol
@@ -21990,6 +22033,7 @@
  0003:1163A3D4       _AmbaSPI_Ctrl__EventFlags
  0003:1163B51C       g_AmbaSD_EventFlag
  0003:1163B544       g_SdMutex
+ 0003:1163B99C       curr_encode
  0003:1163BF0C       NandPartitionMutex
  0003:1163BF40       _nand_PageBuf
  0003:1163C740       _nand_SpareBuf

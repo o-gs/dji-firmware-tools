@@ -13,10 +13,13 @@
   Address         Publics by Value
 
  0003:08008190       start
+ 0003:08008ADC       memcpy
  0003:08008B24       strcmp
  0003:080093E4       recompute_packet_crc16
  0003:08009410       recompute_packet_crc8
  0003:080095B8       init_sub_80095B8
+ 0003:08009900       source
+ 0003:08009910       destination
  0003:08009A20       init_sub_8009A20
  0003:08009BA8       packet_recv_sub_8009BA8
  0003:08009BE0       init_sub_8009BE0
@@ -45,6 +48,7 @@
  0003:0800FFB4       init_sub_800FFB4
  0003:0801005C       init_sub_801005C
  0003:08010070       init_sub_8010070
+ 0003:08010084       reboot
  0003:08010DFC       persist_encrypt_set_dword_50060800_flag0004
  0003:08010E20       persist_encrypt_check_dword_50060804_flag
  0003:08010E38       persist_encrypt_get_dword_50060808
@@ -60,11 +64,12 @@
  0003:08011A8C       verify_packet_crc16
  0003:08011AC8       packet_recv_sub_8011AC8
  0003:08013774       packet_encrypt_config_get_chip_state
- 0003:08013864       packet_send_set00_cmd30_a
+ 0003:08013864       packet_send_encrypt_config_get_module_state_response
  0003:080139AC       packet_encrypt_config_process_response
  0003:08013A18       packet_encrypt_config_store
  0003:08013B40       packet_send_set00_cmd30_c
  0003:08013C54       packet_encrypt_config_get_module_state
+ 0003:08013CEC       encrypt_module_state_verify
  0003:08013F64       payld_flags
  0003:08013F78       persist_encrypt_memread
  0003:08013FCC       packet_exec_gener_encrypt_config
@@ -167,5 +172,11 @@
  0005:2000BB1C       resp_chip_state_1
  0005:2000BB3C       resp_chip_state_2
  0005:2000BB57       resp_chip_state_3
+ 0005:2000BB70       encrypt_module_state_verified
+ 0005:2000BB71       encrypt_module_state_initialized
+ 0005:2000BB73       module_state_rq_byte_2000BB73
+ 0005:2000BB74       module_state_rq_byte_2000BB74
+ 0005:2000BB75       module_state_rq_byte_2000BB75
+ 0005:2000BB76       module_state_rq_word_2000BB76
 
 Program entry point at 0003:00000000
