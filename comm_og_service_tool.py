@@ -104,6 +104,18 @@ class CAMERA_CALIB_CMD(DecoratedEnum):
     ENCRYPTCHECK = 0
     ENCRYPTPAIR = 1
 
+class CAMERA_ENCRYPT_PAIR_TARGET(DecoratedEnum):
+    ALL = 0
+    CAMERA = 1
+    GIMBAL = 4
+    LB_DM3XX_SKY = 8
+
+
+default_32byte_key = bytes([ # Default key
+    0x56, 0x79, 0x6C, 0x0E, 0xEE, 0x0F, 0x38, 0x05, 0x20, 0xE0, 0xBE, 0x70, 0xF2, 0x77, 0xD9, 0x0B,
+    0x30, 0x72, 0x31, 0x67, 0x31, 0x6E, 0x61, 0x6C, 0x47, 0x61, 0x6E, 0x39, 0x73, 0x74, 0x61, 0x60,
+    ])
+
 def detect_serial_port(po):
     """ Detects the serial port device name of a Dji product.
     """
@@ -1242,14 +1254,14 @@ def general_encrypt_get_state_request_p3x(po, ser, receiver_type, cmd):
 
     return rplpayload, pktreq
 
-def general_encrypt_configure_request_p3x(po, ser, receiver_type, boardsn, enckey):
-    """ Sends Encrypt Configure request.
+def general_encrypt_configure_request_p3x(po, ser, receiver_type, target_type, boardsn, enckey):
+    """ Sends Encrypt Pair/Configure request.
     """
     payload = DJIPayload_General_EncryptConfigRq()
     payload.command = DJIPayload_General_EncryptCmd.Config.value
     payload.oper_type = DJIPayload_General_EncryptOperType.WriteAll.value
-    payload.config_magic = (c_ubyte * 8).from_buffer_copy(bytes.fromhex("F0 BD E3 06 81 3E 85 CB"))
-    payload.mod_type = receiver_type.value
+    payload.config_magic = (c_ubyte * 8).from_buffer_copy(bytes([0xF0, 0xBD, 0xE3, 0x06, 0x81, 0x3E, 0x85, 0xCB]))
+    payload.mod_type = target_type.value
     payload.board_sn = (c_ubyte * 10).from_buffer_copy(boardsn)
     payload.key = (c_ubyte * 32).from_buffer_copy(enckey)
     # MD5 of the board sn and key
@@ -1264,9 +1276,12 @@ def general_encrypt_configure_request_p3x(po, ser, receiver_type, boardsn, encke
 
     if po.dry_test:
         # use to test the code without a drone
-        ser.mock_data_for_read(bytes.fromhex("")) # TODO
-
-    raise NotImplementedError('Not implemented yet!') # TODO
+        if receiver_type == COMM_DEV_TYPE.CAMERA:
+            ser.mock_data_for_read(bytes.fromhex("55 0e 04 66 01 0a 00 ff 80 00 30 00 fa 57"))
+        elif receiver_type == COMM_DEV_TYPE.GIMBAL:
+            ser.mock_data_for_read(bytes.fromhex("55 0e 04 66 04 0a 00 ff 80 00 30 00 9b c0"))
+        else: # COMM_DEV_TYPE.LB_DM3XX_SKY
+            ser.mock_data_for_read(bytes.fromhex("55 0e 04 66 08 0a 00 ff 80 00 30 00 f9 fb"))
 
     pktrpl, pktreq = send_request_and_receive_reply(po, ser,
       receiver_type, 0,
@@ -1275,13 +1290,13 @@ def general_encrypt_configure_request_p3x(po, ser, receiver_type, boardsn, encke
       payload, seqnum_check=True)
 
     if pktrpl is None:
-        raise ConnectionError("No response on Encrypt Configure {:s} request.".format(receiver_type.name))
+        raise ConnectionError("No response from {:s} during Encrypt Pair {:s} request.".format(receiver_type.name, target_type.name))
 
     rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
     rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
 
     if (rplpayload is None):
-        raise ConnectionError("Unrecognized response to Encrypt Configure {:s} request.".format(receiver_type.name))
+        raise ConnectionError("Unrecognized response from {:s} during Encrypt Pair {:s} request.".format(receiver_type.name, target_type.name))
 
     if (po.verbose > 2):
         print("Parsed response - {:s}:".format(type(rplpayload).__name__))
@@ -1354,13 +1369,29 @@ def do_camera_calib_request_p3x_encryptpair(po, ser):
     chipstate, _ = general_encrypt_get_state_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, DJIPayload_General_EncryptCmd.GetChipState)
 
     print("Retrieved Board Serial Numbers; flashing new encryption key.")
-    enckey = bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00") # TODO what encryption keys DJI uses?
 
-    rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, chipstate.m01_boardsn, enckey)
+    if (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.CAMERA) or (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.ALL):
+        rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, COMM_DEV_TYPE.CAMERA, chipstate.m01_boardsn, po.pairkey)
+        if rplpayload.status != 0:
+            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.CAMERA.name,po.target_type.name))
 
-    rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.GIMBAL, chipstate.m04_boardsn, enckey)
+    if (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.GIMBAL) or (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.ALL):
+        rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, COMM_DEV_TYPE.GIMBAL, chipstate.m01_boardsn, po.pairkey)
+        if rplpayload.status != 0:
+            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.CAMERA.name,po.target_type.name))
+        rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.GIMBAL, COMM_DEV_TYPE.GIMBAL, chipstate.m04_boardsn, po.pairkey)
+        if rplpayload.status != 0:
+            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.GIMBAL.name,po.target_type.name))
 
-    rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.LB_DM3XX_SKY, chipstate.m08_boardsn, enckey)
+    if (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.LB_DM3XX_SKY) or (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.ALL):
+        rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA,       COMM_DEV_TYPE.LB_DM3XX_SKY, chipstate.m01_boardsn, po.pairkey)
+        if rplpayload.status != 0:
+            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.CAMERA.name,po.target_type.name))
+        rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.LB_DM3XX_SKY, COMM_DEV_TYPE.LB_DM3XX_SKY, chipstate.m08_boardsn, po.pairkey)
+        if rplpayload.status != 0:
+            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.LB_DM3XX_SKY.name,po.target_type.name))
+
+    print("Pairing complete; try EncryptCheck command to verify.")
 
 def do_camera_calib_request(po):
     ser = open_serial_port(po)
@@ -1371,6 +1402,11 @@ def do_camera_calib_request(po):
         if po.subcmd == CAMERA_CALIB_CMD.ENCRYPTCHECK:
             do_camera_calib_request_p3x_encryptcheck(po, ser)
         elif po.subcmd == CAMERA_CALIB_CMD.ENCRYPTPAIR:
+            po.target_type = CAMERA_ENCRYPT_PAIR_TARGET.from_name(po.target_type.upper())
+            if po.pairkey is None:
+                po.pairkey = default_32byte_key
+            if len(po.pairkey) != 32:
+                raise ValueError("Length of encryption key must be 32 bytes, not {:d}.".format(len(po.pairkey)))
             do_camera_calib_request_p3x_encryptpair(po, ser)
         else:
             raise ValueError("Unrecognized {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
@@ -1483,8 +1519,14 @@ def main():
              "returns whether pairing is required")
 
     subpar_camcal_encryptpair = subpar_camcal_subcmd.add_parser('EncryptPair',
-            help="set encryption key to pair the Camera, Gimbal and DM3xx; " \
+            help="set encryption key to pair the Camera, Gimbal or DM3xx; " \
              "to be performed after replacing software in any of these chips; UNTESTED - may not work")
+
+    subpar_camcal_encryptpair.add_argument('target_type', choices=[i.name for i in CAMERA_ENCRYPT_PAIR_TARGET], type=str.upper,
+            help="target module to pair with camera; selecting camera writes the new key only to camera")
+
+    subpar_camcal_encryptpair.add_argument('-k', '--pairkey', type=bytes.fromhex,
+            help='Provide 32-byte pairing key as hex string')
 
     po = parser.parse_args()
 
