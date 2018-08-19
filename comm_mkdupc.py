@@ -602,6 +602,13 @@ class DJIPayload_General_EncryptConfigRq(DJIPayload_Base):
               ('secure_num', c_ubyte * 16),
              ]
 
+class DJIPayload_General_EncryptDoEncryptRq(DJIPayload_Base):
+  # Matches only DoEncrypt command
+  _fields_ = [('command', c_ubyte),
+              ('mod_type', c_ubyte),
+              ('data', c_ubyte * 32),
+             ]
+
 class DJIPayload_General_EncryptGetChipStateRe(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
               ('state_flags', c_ubyte),
@@ -613,6 +620,10 @@ class DJIPayload_General_EncryptGetChipStateRe(DJIPayload_Base):
 class DJIPayload_General_EncryptGetModuleStateRe(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
               ('state_flags', c_ubyte),
+             ]
+
+class DJIPayload_General_EncryptConfigRe(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
              ]
 
 
@@ -690,6 +701,8 @@ def get_known_payload(pkthead, payload):
                 return DJIPayload_General_EncryptGetChipStateRe.from_buffer_copy(payload)
             if len(payload) >= sizeof(DJIPayload_General_EncryptGetModuleStateRe):
                 return DJIPayload_General_EncryptGetModuleStateRe.from_buffer_copy(payload)
+            if len(payload) >= sizeof(DJIPayload_General_EncryptConfigRe):
+                return DJIPayload_General_EncryptConfigRe.from_buffer_copy(payload)
 
     if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 0:
         if (pkthead.cmd_id == 0xdf):
