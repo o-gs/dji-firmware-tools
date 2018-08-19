@@ -1191,12 +1191,11 @@ f.general_encrypt_config_cmd_type = ProtoField.uint8 ("dji_p3.general_encrypt_co
 
 f.general_encrypt_config_oper_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_oper_type", "Oper Type", base.DEC, enums.COMMON_ENCRYPT_CONFIG_OPER_TYPE_ENUM, nil, nil)
 f.general_encrypt_config_magic = ProtoField.bytes ("dji_p3.general_encrypt_config_magic", "Magic value", base.SPACE, nil, nil, "Should be `F0 BD E3 06 81 3E 85 CB`")
-f.general_encrypt_config_mod_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_mod_type", "Module Type", base.DEC, nil, nil, "Type of the module; only packets with specific value are accepted by each module, ie. gimbal accepts 4.")
+f.general_encrypt_config_mod_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_mod_type", "Module Type", base.DEC, nil, nil, "Type of the module; selects encryption key to use; Camera supports keys 1, 4 and 8; gimbal accepts only 4 and DM3xx only 8.")
 f.general_encrypt_config_board_sn = ProtoField.bytes ("dji_p3.general_encrypt_config_board_sn", "Board SN", base.SPACE, nil, nil, "Factory Serial Number of the Board")
 f.general_encrypt_config_key = ProtoField.bytes ("dji_p3.general_encrypt_config_key", "Encrypt Key", base.SPACE, nil, nil, "New AES encryption key")
 f.general_encrypt_config_secure_num = ProtoField.bytes ("dji_p3.general_encrypt_config_secure_num", "Security Num", base.SPACE, nil, nil, "MD5 of Board SN and Encrypt Key")
 
-f.general_encrypt_config_buf_len = ProtoField.uint8 ("dji_p3.general_encrypt_config_buf_len", "Buffer Length", base.DEC, nil, nil, "Length in DWords")
 f.general_encrypt_config_buf_data = ProtoField.bytes ("dji_p3.general_encrypt_config_buf_data", "Buffer data", base.SPACE, nil, nil)
 
 f.general_encrypt_config_resp_type = ProtoField.uint8 ("dji_p3.general_encrypt_config_resp_type", "Response To Cmd Type", base.DEC, enums.COMMON_ENCRYPT_CONFIG_CMD_TYPE_ENUM, nil, nil)
@@ -1258,13 +1257,13 @@ local function general_encrypt_config_dissector(pkt_length, buffer, pinfo, subtr
         elseif cmd_type == 4 then
             -- Answer could be decoded using func Encrypt_Request from `encode_usb` binary
             local buf_len = payload(offset,1):le_uint()
-            subtree:add_le (f.general_encrypt_config_buf_len, payload(offset, 1))
+            subtree:add_le (f.general_encrypt_config_mod_type, payload(offset, 1))
             offset = offset + 1
 
-            subtree:add_le (f.general_encrypt_config_buf_data, payload(offset, 4*buf_len))
-            offset = offset + 4*buf_len
+            subtree:add_le (f.general_encrypt_config_buf_data, payload(offset, 32))
+            offset = offset + 32
 
-            if (offset ~= 1+4*buf_len) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 4: Offset does not match - internal inconsistency") end
+            if (offset ~= 33) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Encrypt type 4: Offset does not match - internal inconsistency") end
         end
     else -- Response
         subtree:add_le (f.general_encrypt_config_resp_status, payload(offset, 1))
