@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -1363,7 +1363,9 @@ def do_camera_calib_request_p3x_encryptpair(po, ser):
 
     print("\nInfo: The tool will retrieve Board Serial Numbers of {:s}, {:s} and {:s}; ".format(
             COMM_DEV_TYPE.CAMERA.name, COMM_DEV_TYPE.GIMBAL.name, COMM_DEV_TYPE.LB_DM3XX_SKY.name) + \
-        "then it will write new encryption key to each of them. It will take around 1 second.\n")
+        "then it will write new encryption key to some of them. It will take around 1 second.\n")
+
+    dm3xx_missing = po.product == PRODUCT_CODE.P3S
 
     # Camera ChipState contains board serial numbersfor all 3 components
     chipstate, _ = general_encrypt_get_state_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, DJIPayload_General_EncryptCmd.GetChipState)
@@ -1383,7 +1385,10 @@ def do_camera_calib_request_p3x_encryptpair(po, ser):
         if rplpayload.status != 0:
             raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.GIMBAL.name,po.target_type.name))
 
-    if (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.LB_DM3XX_SKY) or (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.ALL):
+    if dm3xx_missing:
+        if po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.LB_DM3XX_SKY:
+            raise ValueError("Module {:s} does not exist within {:s}.".format(po.target_type.name,po.product.name))
+    elif (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.LB_DM3XX_SKY) or (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.ALL):
         rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA,       COMM_DEV_TYPE.LB_DM3XX_SKY, chipstate.m01_boardsn, po.pairkey)
         if rplpayload.status != 0:
             raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.CAMERA.name,po.target_type.name))
