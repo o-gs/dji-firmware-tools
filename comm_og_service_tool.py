@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -1304,6 +1304,66 @@ def general_encrypt_configure_request_p3x(po, ser, receiver_type, target_type, b
 
     return rplpayload, pktreq
 
+def general_encrypt_configure_triple_request_p3x(po, ser, receiver_type, m01_boardsn, m01_enckey, m04_boardsn, m04_enckey, m08_boardsn, m08_enckey):
+    """ Sends Triple Encrypt Pair/Configure request.
+    """
+    payload = DJIPayload_General_EncryptConfig3Rq()
+    payload.command = DJIPayload_General_EncryptCmd.Config.value
+    payload.oper_type = DJIPayload_General_EncryptOperType.WriteAll.value
+    payload.config_magic = (c_ubyte * 8).from_buffer_copy(bytes([0xF0, 0xBD, 0xE3, 0x06, 0x81, 0x3E, 0x85, 0xCB]))
+    payload.m01_mod_type = COMM_DEV_TYPE.CAMERA.value
+    payload.m01_board_sn = (c_ubyte * 10).from_buffer_copy(m01_boardsn)
+    payload.m01_key = (c_ubyte * 32).from_buffer_copy(m01_enckey)
+    payload.m04_mod_type = COMM_DEV_TYPE.GIMBAL.value
+    payload.m04_board_sn = (c_ubyte * 10).from_buffer_copy(m04_boardsn)
+    payload.m04_key = (c_ubyte * 32).from_buffer_copy(m04_enckey)
+    payload.m08_mod_type = COMM_DEV_TYPE.LB_DM3XX_SKY.value
+    payload.m08_board_sn = (c_ubyte * 10).from_buffer_copy(m08_boardsn)
+    payload.m08_key = (c_ubyte * 32).from_buffer_copy(m08_enckey)
+    # MD5 of the board sn and key
+    md5_sum = hashlib.md5()
+    md5_sum.update(payload.m01_board_sn)
+    md5_sum.update(payload.m01_key)
+    payload.m01_secure_num = (c_ubyte * 16).from_buffer_copy(md5_sum.digest())
+    md5_sum = hashlib.md5()
+    md5_sum.update(payload.m04_board_sn)
+    md5_sum.update(payload.m04_key)
+    payload.m04_secure_num = (c_ubyte * 16).from_buffer_copy(md5_sum.digest())
+    md5_sum = hashlib.md5()
+    md5_sum.update(payload.m08_board_sn)
+    md5_sum.update(payload.m08_key)
+    payload.m08_secure_num = (c_ubyte * 16).from_buffer_copy(md5_sum.digest())
+
+    if (po.verbose > 2):
+        print("Prepared request - {:s}:".format(type(payload).__name__))
+        print(payload)
+
+    if po.dry_test:
+        # use to test the code without a drone
+        if receiver_type == COMM_DEV_TYPE.CAMERA:
+            ser.mock_data_for_read(bytes.fromhex("55 0e 04 66 01 0a 00 ff 80 00 30 00 fa 57"))
+
+    pktrpl, pktreq = send_request_and_receive_reply(po, ser,
+      receiver_type, 0,
+      ACK_TYPE.ACK_AFTER_EXEC,
+      CMD_SET_TYPE.GENERAL, 0x30,
+      payload, seqnum_check=True)
+
+    if pktrpl is None:
+        raise ConnectionError("No response from {:s} during Triple Encrypt Pair request.".format(receiver_type.name))
+
+    rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
+    rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
+
+    if (rplpayload is None):
+        raise ConnectionError("Unrecognized response from {:s} during Triple Encrypt Pair request.".format(receiver_type.name))
+
+    if (po.verbose > 2):
+        print("Parsed response - {:s}:".format(type(rplpayload).__name__))
+        print(rplpayload)
+
+    return rplpayload, pktreq
+
 def do_camera_calib_request_p3x_encryptcheck(po, ser):
     """ Verifies Phantom 3 Camera Encryption Pairing.
 
@@ -1372,29 +1432,22 @@ def do_camera_calib_request_p3x_encryptpair(po, ser):
 
     print("Retrieved Board Serial Numbers; flashing new encryption key.")
 
-    if (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.CAMERA) or (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.ALL):
-        rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, COMM_DEV_TYPE.CAMERA, chipstate.m01_boardsn, po.pairkey)
+    if True:
+        rplpayload, pktreq = general_encrypt_configure_triple_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, chipstate.m01_boardsn, po.pairkey, chipstate.m04_boardsn, po.pairkey, chipstate.m08_boardsn, po.pairkey)
         if rplpayload.status != 0:
-            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.CAMERA.name,po.target_type.name))
+            raise ValueError("Failure status {:d} returned from {:s} during Triple Encrypt Pair request.".format(rplpayload.status,COMM_DEV_TYPE.CAMERA.name))
 
-    if (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.GIMBAL) or (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.ALL):
-        rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, COMM_DEV_TYPE.GIMBAL, chipstate.m01_boardsn, po.pairkey)
-        if rplpayload.status != 0:
-            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.CAMERA.name,po.target_type.name))
+    if True:
         rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.GIMBAL, COMM_DEV_TYPE.GIMBAL, chipstate.m04_boardsn, po.pairkey)
         if rplpayload.status != 0:
-            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.GIMBAL.name,po.target_type.name))
+            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.GIMBAL.name,COMM_DEV_TYPE.GIMBAL.name))
 
     if dm3xx_missing:
-        if po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.LB_DM3XX_SKY:
-            raise ValueError("Module {:s} does not exist within {:s}.".format(po.target_type.name,po.product.name))
-    elif (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.LB_DM3XX_SKY) or (po.target_type == CAMERA_ENCRYPT_PAIR_TARGET.ALL):
-        rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA,       COMM_DEV_TYPE.LB_DM3XX_SKY, chipstate.m01_boardsn, po.pairkey)
-        if rplpayload.status != 0:
-            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.CAMERA.name,po.target_type.name))
+            print("Module {:s} skipped - does not exist within {:s}.".format(COMM_DEV_TYPE.LB_DM3XX_SKY.name,po.product.name))
+    else:
         rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.LB_DM3XX_SKY, COMM_DEV_TYPE.LB_DM3XX_SKY, chipstate.m08_boardsn, po.pairkey)
         if rplpayload.status != 0:
-            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.LB_DM3XX_SKY.name,po.target_type.name))
+            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.LB_DM3XX_SKY.name,COMM_DEV_TYPE.LB_DM3XX_SKY.name))
 
     print("Pairing complete; try EncryptCheck command to verify.")
 
@@ -1407,7 +1460,6 @@ def do_camera_calib_request(po):
         if po.subcmd == CAMERA_CALIB_CMD.ENCRYPTCHECK:
             do_camera_calib_request_p3x_encryptcheck(po, ser)
         elif po.subcmd == CAMERA_CALIB_CMD.ENCRYPTPAIR:
-            po.target_type = CAMERA_ENCRYPT_PAIR_TARGET.from_name(po.target_type.upper())
             if po.pairkey is None:
                 po.pairkey = default_32byte_key
             if len(po.pairkey) != 32:
@@ -1526,9 +1578,6 @@ def main():
     subpar_camcal_encryptpair = subpar_camcal_subcmd.add_parser('EncryptPair',
             help="set encryption key to pair the Camera, Gimbal or DM3xx; " \
              "to be performed after replacing software in any of these chips; UNTESTED - may not work")
-
-    subpar_camcal_encryptpair.add_argument('target_type', choices=[i.name for i in CAMERA_ENCRYPT_PAIR_TARGET], type=str.upper,
-            help="target module to pair with camera; selecting camera writes the new key only to camera")
 
     subpar_camcal_encryptpair.add_argument('-k', '--pairkey', type=bytes.fromhex,
             help='Provide 32-byte pairing key as hex string')
