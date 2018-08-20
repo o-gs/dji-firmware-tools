@@ -602,6 +602,25 @@ class DJIPayload_General_EncryptConfigRq(DJIPayload_Base):
               ('secure_num', c_ubyte * 16),
              ]
 
+class DJIPayload_General_EncryptConfig3Rq(DJIPayload_Base):
+  # Matches only Config command
+  _fields_ = [('command', c_ubyte),
+              ('oper_type', c_ubyte),
+              ('config_magic', c_ubyte * 8),
+              ('m01_mod_type', c_ubyte),
+              ('m01_board_sn', c_ubyte * 10),
+              ('m01_key', c_ubyte * 32),
+              ('m01_secure_num', c_ubyte * 16),
+              ('m04_mod_type', c_ubyte),
+              ('m04_board_sn', c_ubyte * 10),
+              ('m04_key', c_ubyte * 32),
+              ('m04_secure_num', c_ubyte * 16),
+              ('m08_mod_type', c_ubyte),
+              ('m08_board_sn', c_ubyte * 10),
+              ('m08_key', c_ubyte * 32),
+              ('m08_secure_num', c_ubyte * 16),
+             ]
+
 class DJIPayload_General_EncryptDoEncryptRq(DJIPayload_Base):
   # Matches only DoEncrypt command
   _fields_ = [('command', c_ubyte),
@@ -686,6 +705,10 @@ def encode_command_packet_en(sender_type, sender_index, receiver_type, receiver_
 def get_known_payload(pkthead, payload):
     if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 0:
         if (pkthead.cmd_id == 0x30):
+            if len(payload) >= sizeof(DJIPayload_General_EncryptConfig3Rq):
+                return DJIPayload_General_EncryptConfig3Rq.from_buffer_copy(payload)
+            if len(payload) >= sizeof(DJIPayload_General_EncryptConfigRq):
+                return DJIPayload_General_EncryptConfigRq.from_buffer_copy(payload)
             if len(payload) >= sizeof(DJIPayload_General_EncryptGetStateRq):
                 return DJIPayload_General_EncryptGetStateRq.from_buffer_copy(payload)
 
