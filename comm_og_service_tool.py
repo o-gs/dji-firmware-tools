@@ -1425,26 +1425,21 @@ def do_camera_calib_request_p3x_encryptpair(po, ser):
             COMM_DEV_TYPE.CAMERA.name, COMM_DEV_TYPE.GIMBAL.name, COMM_DEV_TYPE.LB_DM3XX_SKY.name) + \
         "then it will write new encryption key to some of them. It will take around 1 second.\n")
 
-    dm3xx_missing = po.product == PRODUCT_CODE.P3S
-
     # Camera ChipState contains board serial numbersfor all 3 components
     chipstate, _ = general_encrypt_get_state_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, DJIPayload_General_EncryptCmd.GetChipState)
 
     print("Retrieved Board Serial Numbers; flashing new encryption key.")
 
-    if True:
-        rplpayload, pktreq = general_encrypt_configure_triple_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, chipstate.m01_boardsn, po.pairkey, chipstate.m04_boardsn, po.pairkey, chipstate.m08_boardsn, po.pairkey)
-        if rplpayload.status != 0:
-            raise ValueError("Failure status {:d} returned from {:s} during Triple Encrypt Pair request.".format(rplpayload.status,COMM_DEV_TYPE.CAMERA.name))
+    rplpayload, pktreq = general_encrypt_configure_triple_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, chipstate.m01_boardsn, po.pairkey, chipstate.m04_boardsn, po.pairkey, chipstate.m08_boardsn, po.pairkey)
+    if rplpayload.status != 0:
+        raise ValueError("Failure status {:d} returned from {:s} during Triple Encrypt Pair request.".format(rplpayload.status,COMM_DEV_TYPE.CAMERA.name))
 
-    if True:
+    if False: # Do NOT send EncryptConfig to gimbal - camera should have sent it already
         rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.GIMBAL, COMM_DEV_TYPE.GIMBAL, chipstate.m04_boardsn, po.pairkey)
         if rplpayload.status != 0:
             raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.GIMBAL.name,COMM_DEV_TYPE.GIMBAL.name))
 
-    if dm3xx_missing:
-            print("Module {:s} skipped - does not exist within {:s}.".format(COMM_DEV_TYPE.LB_DM3XX_SKY.name,po.product.name))
-    else:
+    if False: # Do NOT send EncryptConfig to gimbal - camera should have sent it
         rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.LB_DM3XX_SKY, COMM_DEV_TYPE.LB_DM3XX_SKY, chipstate.m08_boardsn, po.pairkey)
         if rplpayload.status != 0:
             raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.LB_DM3XX_SKY.name,COMM_DEV_TYPE.LB_DM3XX_SKY.name))
