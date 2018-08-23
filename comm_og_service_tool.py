@@ -1179,7 +1179,7 @@ def do_gimbal_calib_request_p3x_autocal(po, ser):
         None
     """
 
-    print("\nInfo: The Gimbal will average its readings without movement, then it will move Yaw arm through its boundary positions. " + \
+    print("\nInfo: The Gimbal will average its readings without movement, then it will move Yaw arm through its boundary positions. " \
         "Then it will do limited pitch movement. End of calibration will be marked by two beeps from gimbal motors. It will take around 15 seconds.\n")
 
     rplpayload, pktreq = gimbal_calib_request_p3x(po, ser)
@@ -1425,8 +1425,16 @@ def do_camera_calib_request_p3x_encryptpair(po, ser):
             COMM_DEV_TYPE.CAMERA.name, COMM_DEV_TYPE.GIMBAL.name, COMM_DEV_TYPE.LB_DM3XX_SKY.name) + \
         "then it will write new encryption key to some of them. It will take around 1 second.\n")
 
+    print("WARNING: Do not use this command unless you know what you're doing! If SH204 chip in your " \
+        "gimbal has Config Zone locked (and all drones have it locked during production), this command " \
+        "will just make encryption config inconsistent between the Camera and the SH204 chip. " + \
+        "The camera will then enter Authority Level 0 and will ignore most commands.\n")
+
     # Camera ChipState contains board serial numbersfor all 3 components
     chipstate, _ = general_encrypt_get_state_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, DJIPayload_General_EncryptCmd.GetChipState)
+
+    if not po.force:
+        raise ValueError("Use '--force' parameter if you really want to write new keys to the device.")
 
     print("Retrieved Board Serial Numbers; flashing new encryption key.")
 
@@ -1557,7 +1565,7 @@ def main():
              "gimbal has been fixed or replaced, or is not straight")
 
     subpar_gimbcal_hall = subpar_gimbcal_subcmd.add_parser('LinearHall',
-            help="gimbal Linear Hall calibration; to be performed always "\
+            help="gimbal Linear Hall calibration; to be performed always " \
              "after JointCoarse calibration")
 
     subpar_camcal = subparsers.add_parser('CameraCalib',
@@ -1575,7 +1583,11 @@ def main():
              "to be performed after replacing software in any of these chips; UNTESTED - may not work")
 
     subpar_camcal_encryptpair.add_argument('-k', '--pairkey', type=bytes.fromhex,
-            help='Provide 32-byte pairing key as hex string')
+            help="Provide 32-byte pairing key as hex string")
+
+    subpar_camcal_encryptpair.add_argument('--force', action='store_true',
+            help="forces the keys to be written, even if this could " \
+             "lead to inconsistent keys due to their read-only copy")
 
     po = parser.parse_args()
 
