@@ -497,6 +497,9 @@ def main():
 
   po.expect_func_align = 2
   po.expect_sect_align = 0x10
+  # For some reason, if no "--section" parameters are present, argparse leaves this unset
+  if po.section is None:
+      po.section = []
   # Flatten the sections we got in arguments
   po.section_pos = {}
   po.section_size = {}
