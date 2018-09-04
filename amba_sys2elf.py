@@ -163,6 +163,9 @@ def main():
 
   po.expect_func_align = 4 # Full length instructions are used in Cortex A9 binary
   po.expect_sect_align = 0x20 # This is how sections are aligned in Ambarella SDK
+  # For some reason, if no "--section" parameters are present, argparse leaves this unset
+  if po.section is None:
+      po.section = []
   # Flatten the sections we got in arguments
   po.section_pos = {}
   po.section_size = {}
@@ -173,7 +176,8 @@ def main():
   po.basename = os.path.splitext(os.path.basename(po.fwpartfile))[0]
   # What differs Ambarella BIN from other BINs is INI file with base address inside
   if len(po.fwpartfile) > 0 and (po.inifile is None or len(po.inifile) == 0):
-     po.inifile = po.basename + ".a9h"
+     # Assume .a9h is in the same folder as .a9s - do not strip path for it
+     po.inifile = os.path.splitext(po.fwpartfile)[0] + ".a9h"
   if len(po.fwpartfile) > 0 and (po.elffile is None or len(po.elffile) == 0):
       po.elffile = po.basename + ".elf"
 
