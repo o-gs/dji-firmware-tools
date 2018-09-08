@@ -381,6 +381,10 @@ re_func_DjiMsgSettingsInit = {
 },
 }
 
+re_general_list = [
+  {'sect': ".text", 'func': re_func_DjiMsgSettingsInit,},
+]
+
 def get_asm_arch_by_name(arname):
     for arch in elf_archs:
         if arch['name'] == arname:
@@ -574,28 +578,83 @@ def armfw_elf_section_search_process_vars_from_code(search, elf_sections, addres
     """
     for var_name, var_val in re_code.groupdict().items():
         var_info = search['var_defs'][var_name]
+        # Get direct int value or offset
         if (var_info['type'] == VarType.DIRECT_INT_VALUE):
             prop_val = int(var_val, 0)
         elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_CODE):
             prop_val = int(var_val, 0)
         elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA):
             prop_val = int(var_val, 0)
-            #TODO - interpret var_val
         elif (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_CODE):
             prop_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
         elif (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA):
             prop_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
-            #TODO - interpret var_val
         else:
-            return False
-        #offset_str = 8
-        #print("aaa {:x}".format(get_arm_vma_relative_to_pc_register(asm_arch, section, address, size, offset_str)))
+            raise NotImplementedError('Unexpected variable type found.')
+
+        # Get expected length of the value
+        if var_info['variety'] in [DataVariety.CHAR, DataVariety.UINT8_T, DataVariety.INT8_T]:
+            prop_size = 1
+        elif var_info['variety'] in [DataVariety.UINT16_T, DataVariety.INT16_T]:
+            prop_size = 2
+        elif var_info['variety'] in [DataVariety.UINT32_T, DataVariety.INT32_T, DataVariety.FLOAT]:
+            prop_size = 4
+        elif var_info['variety'] in [DataVariety.UINT64_T, DataVariety.INT64_T, DataVariety.DOUBLE]:
+            prop_size = 8
+        else:
+            prop_size = 0
+
+        if 'array' in var_info:
+            if isinstance(var_info['array'], int):
+                prop_count = var_info['array']
+            else:
+                # We have variable size array; just use static limit
+                prop_count = 2048
+        else:
+            prop_count = 1
+
+        # Either convert the direct value to bytes, or get bytes from offset
+        if (var_info['type'] == VarType.DIRECT_INT_VALUE):
+            prop_bytes = (prop_val).to_bytes(prop_size*prop_count, byteorder=search['asm_arch']['byteorder'])
+        elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA) or (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA):
+            prop_bytes = b"" #TODO
+        else:
+            prop_bytes = b""
+
+        if var_info['variety'] in [DataVariety.CHAR]:
+            if 'array' in var_info:
+                prop_str = prop_bytes.rstrip(b"\0").decode("utf-8")
+            else:
+                prop_str = chr(prop_val)
+        elif var_info['variety'] in [DataVariety.UINT8_T, DataVariety.UINT16_T, DataVariety.UINT32_T, DataVariety.UINT64_T]:
+            prop_str = ""
+            for i in range(len(prop_bytes) // prop_size):
+                prop_str += "0x{:x} ".format(int.from_bytes(prop_bytes[i*prop_size:(i+1)*prop_size], byteorder=search['asm_arch']['byteorder'], signed=False))
+            prop_str = prop_str.rstrip()
+        elif var_info['variety'] in [DataVariety.INT8_T, DataVariety.INT16_T, DataVariety.INT32_T, DataVariety.INT64_T]:
+            prop_str = ""
+            for i in range(len(prop_bytes) // prop_size):
+                prop_str += "{:d} ".format(int.from_bytes(prop_bytes[i*prop_size:(i+1)*prop_size], byteorder=search['asm_arch']['byteorder'], signed=True))
+            prop_str = prop_str.rstrip()
+        elif var_info['variety'] in [DataVariety.FLOAT, DataVariety.DOUBLE]:
+            prop_str = ""
+            for i in range(len(prop_bytes) // prop_size):
+                if prop_size >= 8:
+                    prop_str += "{:d} ".format(struct.unpack("<f",prop_bytes[i*prop_size:(i+1)*prop_size]))
+                else:
+                    prop_str += "{:f} ".format(struct.unpack("<f",prop_bytes[i*prop_size:(i+1)*prop_size]))
+            prop_str = prop_str.rstrip()
+        else:
+            prop_str = ""
+
         if var_name in search['var_vals']:
             var_val = search['var_vals'][var_name]
             if var_val['value'] != prop_val:
                 return False
         else:
-            search['var_vals'][var_name] = {'value': prop_val, 'address': address, 'instr_size': size, 're_line': search['match_lines']}
+            var_def = search['var_defs'][var_name]
+            search['var_vals'][var_name] = {'str_value': prop_str, 'value': prop_val, 'address': address, 'instr_size': size, 're_line': search['match_lines']}
+            search['var_vals'][var_name].update(var_def)
     return True
 
 
@@ -612,8 +671,7 @@ def armfw_elf_section_search_block(search, sect_offs, elf_sections, cs, block_le
         re_isdata = re.search(re_dataline, curr_pattern)
         if re_isdata is not None:
             # now matching a data line; get its length
-            # TODO
-            print("d")
+            raise NotImplementedError('TODO data')
         else:
             # now matching an assembly code line
             for (address, size, mnemonic, op_str) in cs.disasm_lite(search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs):
@@ -677,6 +735,16 @@ def armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, sect_name, pa
 
     return search['full_matches']
 
+
+def armfw_elf_match_to_public_values(po, match):
+    params_list = {}
+    for var_name, var_info in match['vars'].items():
+        if 'public' in var_info:
+            par_name = var_info['public']+"."+var_name
+            params_list[par_name] = var_info.copy()
+    return params_list
+
+
 def armfw_elf_ambavals_list(po, elffh):
 
     elf = ELFFile(elffh)
@@ -694,6 +762,7 @@ def armfw_elf_ambavals_list(po, elffh):
             asm_arch['boundary'] = mode['boundary']
         if 'retshift' in mode:
             retshift = mode['retshift']
+    asm_arch['byteorder']='big' #TODO get byte order based on real params
 
     cs = Cs(asm_arch['cs_const'], cs_mode)
 
@@ -719,11 +788,16 @@ def armfw_elf_ambavals_list(po, elffh):
         if not sect_name in elf_sections:
             raise ValueError("ELF does not contain expected section '{:s}'.".format(sect_name))
 
-    matches = armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, '.text', re_func_DjiMsgSettingsInit)
-    if len(matches) == 1:
-        match = matches[0]
-        for var_name, var_val in match['vars'].items():
-            print(var_name,var_val)
+    # prepare list of parameter values
+    params_list = {}
+    for re_item in re_general_list:
+        matches = armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, re_item['sect'], re_item['func'])
+        if len(matches) == 1:
+            params_list.update(armfw_elf_match_to_public_values(po, matches[0]))
+
+    # print list of parameter values
+    for par_name, par_info in params_list.items():
+        print("{:s}\t{:s}".format(par_name,par_info['str_value']))
 
 def main():
     """ Main executable function.
