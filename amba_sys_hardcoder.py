@@ -346,9 +346,15 @@ re_func_DjiMsgSettingsInit = {
   'dji_msg_mutex':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.STRUCT},
   'msg_adjust_task_finished':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
   'printk_log_level':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
-  'encrypt_query_fail_authority_level':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T, 'public': "og_hardcoded.p3x_ambarella"},
-  'verify_state_good_authority_level':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T, 'public': "og_hardcoded.p3x_ambarella"},
-  'verify_state_bad_authority_level':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T, 'public': "og_hardcoded.p3x_ambarella"},
+  'encrypt_query_fail_authority_level':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT32_T,
+    'public': "og_hardcoded.p3x_ambarella", 'minValue': "0", 'maxValue': "2", 'defaultValue': "0",
+    'description': "AuthorityLevel established when SH204 communication fail; 0-restricted,1-normal,2-superuser"},
+  'verify_state_good_authority_level':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT32_T,
+    'public': "og_hardcoded.p3x_ambarella", 'minValue': "0", 'maxValue': "2", 'defaultValue': "1",
+    'description': "AuthorityLevel established when encryption keys match; 0-restricted,1-normal,2-superuser"},
+  'verify_state_bad_authority_level':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT32_T,
+    'public': "og_hardcoded.p3x_ambarella", 'minValue': "0", 'maxValue': "2", 'defaultValue': "0",
+    'description': "AuthorityLevel established on encryption mismatch; 0-restricted,1-normal,2-superuser"},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label03':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label06':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -745,7 +751,7 @@ def armfw_elf_match_to_public_values(po, match):
     return params_list
 
 
-def armfw_elf_ambavals_list(po, elffh):
+def armfw_elf_ambavals_extract_list(po, elffh):
 
     elf = ELFFile(elffh)
 
@@ -795,9 +801,55 @@ def armfw_elf_ambavals_list(po, elffh):
         if len(matches) == 1:
             params_list.update(armfw_elf_match_to_public_values(po, matches[0]))
 
+    return params_list
+
+
+def armfw_elf_ambavals_list(po, elffh):
+    params_list = armfw_elf_ambavals_extract_list(po, elffh)
     # print list of parameter values
     for par_name, par_info in params_list.items():
         print("{:s}\t{:s}".format(par_name,par_info['str_value']))
+
+
+def armfw_elf_ambavals_extract(po, elffh):
+    """ Extracts all values from firmware to JSON format text file.
+    """
+    params_list = armfw_elf_ambavals_extract_list(po, elffh)
+    if len(params_list) <= 0:
+        raise ValueError("No known values found in ELF file.")
+    valfile = open(po.valfile, "w")
+    valfile.write("[\n")
+    full_index = 0
+    for par_name, par_info in params_list.items():
+        if (full_index != 0):
+            valfile.write(",\n")
+        valfile.write("\t{\n")
+        for ppname in ('index',):
+            valfile.write("\t\t\"{:s}\" : {:d}".format(ppname,full_index))
+        for ppname in ('description',):
+            valfile.write(",\n")
+            valfile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,par_info[ppname]))
+        for ppname in ('minValue', 'maxValue', 'defaultValue'):
+            if not ppname in par_info: continue
+            valfile.write(",\n")
+            valfile.write("\t\t\"{:s}\" : {:s}".format(ppname,par_info[ppname]))
+        for ppname in ('setValue',):
+            valfile.write(",\n")
+            valfile.write("\t\t\"{:s}\" : {:s}".format(ppname,par_info['str_value']))
+        for ppname in ('name',):
+            valfile.write(",\n")
+            valfile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,par_name))
+        valfile.write("\n")
+        valfile.write("\t}")
+        full_index += 1
+    valfile.write("\n")
+    valfile.write("]\n")
+    valfile.close()
+
+
+def armfw_elf_ambavals_update(po, elffh):
+    raise NotImplementedError('Unsupported command.')
+
 
 def main():
     """ Main executable function.
@@ -863,6 +915,28 @@ def main():
         elffh = open(po.elffile, "rb")
 
         armfw_elf_ambavals_list(po, elffh)
+
+        elffh.close();
+
+    elif po.extract:
+
+        if (po.verbose > 0):
+            print("{}: Opening for extract".format(po.elffile))
+
+        elffh = open(po.elffile, "rb")
+
+        armfw_elf_ambavals_extract(po, elffh)
+
+        elffh.close();
+
+    elif po.update:
+
+        if (po.verbose > 0):
+            print("{}: Opening for update".format(po.elffile))
+
+        elffh = open(po.elffile, "r+b")
+
+        armfw_elf_ambavals_update(po, elffh)
 
         elffh.close();
 
