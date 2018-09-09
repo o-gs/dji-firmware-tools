@@ -29,6 +29,7 @@ import sys
 import argparse
 import os
 import re
+import io
 import collections.abc
 import itertools
 import enum
@@ -406,12 +407,12 @@ def get_asm_mode_by_name(arch, mdname):
     return None
 
 
-def elf_march_to_asm_config(elf):
+def elf_march_to_asm_config(elfobj):
     """ Retrieves machine architecture for given elf.
 
     Returns config for capstone and keystone.
     """
-    march = elf.get_machine_arch()
+    march = elfobj.get_machine_arch()
     asm_arch = None
     asm_mode = None
     if march == "x64":
@@ -422,14 +423,14 @@ def elf_march_to_asm_config(elf):
         asm_mode = get_asm_mode_by_name(asm_arch, "32b")
     elif march == "ARM":
         asm_arch = get_asm_arch_by_name("arm")
-        if elf.little_endian:
+        if elfobj.little_endian:
             asm_mode = get_asm_mode_by_name(asm_arch, "le")
         else:
             asm_mode = get_asm_mode_by_name(asm_arch, "be")
     elif march == "MIPS":
         asm_arch = get_asm_arch_by_name("mips")
         asm_mode = get_asm_mode_by_name(asm_arch, "32b")
-        if elf.little_endian:
+        if elfobj.little_endian:
             asm_mode = get_asm_mode_by_name(asm_arch, "le")
         else:
             asm_mode = get_asm_mode_by_name(asm_arch, "be")
@@ -448,11 +449,11 @@ def get_arm_vma_relative_to_pc_register(asm_arch, section, address, size, offset
 def armfw_elf_ambavals_objdump(po, elffh):
     """ Dump executable in similar manner to objdump disassemble function.
     """
-    elf = ELFFile(elffh)
+    elfobj = ELFFile(elffh)
 
-    asm_arch, asm_modes = elf_march_to_asm_config(elf)
+    asm_arch, asm_modes = elf_march_to_asm_config(elfobj)
     if len(asm_modes) < 1 or not isinstance(asm_modes[0], collections.abc.Mapping):
-        raise ValueError("ELF has unsupported machine type ({:s}).".format(elf['e_machine']))
+        raise ValueError("ELF has unsupported machine type ({:s}).".format(elfobj['e_machine']))
 
     cs_mode = 0
     retshift = 0
@@ -468,8 +469,8 @@ def armfw_elf_ambavals_objdump(po, elffh):
 
     # Get sections dictionary, so that we can easily access them by name
     elf_sections = {}
-    for i in range(elf.num_sections()):
-        esection = elf.get_section(i)
+    for i in range(elfobj.num_sections()):
+        esection = elfobj.get_section(i)
 
         if esection['sh_type'] != "SHT_PROGBITS":
             continue
@@ -810,7 +811,7 @@ def armfw_elf_get_value_update_bytes(asm_arch, elf_sections, var_info, new_value
         valbt['sect'] = '.text'
         section = elf_sections[valbt['sect']]
         valbt['offs'] = var_info['address'] - section['addr']
-        valbt['data'] = encoding
+        valbt['data'] = bytes(encoding)
         if (valbt['offs'] < 0) or (valbt['offs'] + len (valbt['data']) > len(section['data'])):
             raise ValueError('Got past code section border - internal error.')
         #print("{:s} = {:s}".format(asm_line, encoding))
@@ -847,11 +848,11 @@ def armfw_elf_get_value_update_bytes(asm_arch, elf_sections, var_info, new_value
 
 def armfw_elf_ambavals_extract_list(po, elffh):
 
-    elf = ELFFile(elffh)
+    elfobj = ELFFile(elffh)
 
-    asm_arch, asm_modes = elf_march_to_asm_config(elf)
+    asm_arch, asm_modes = elf_march_to_asm_config(elfobj)
     if len(asm_modes) < 1 or not isinstance(asm_modes[0], collections.abc.Mapping):
-        raise ValueError("ELF has unsupported machine type ({:s}).".format(elf['e_machine']))
+        raise ValueError("ELF has unsupported machine type ({:s}).".format(elfobj['e_machine']))
 
     cs_mode = 0
     ks_mode = 0
@@ -872,8 +873,8 @@ def armfw_elf_ambavals_extract_list(po, elffh):
 
     # Get sections dictionary, so that we can easily access them by name
     elf_sections = {}
-    for i in range(elf.num_sections()):
-        section = elf.get_section(i)
+    for i in range(elfobj.num_sections()):
+        section = elfobj.get_section(i)
 
         if section['sh_type'] != "SHT_PROGBITS":
             continue
@@ -899,7 +900,7 @@ def armfw_elf_ambavals_extract_list(po, elffh):
         if len(matches) == 1:
             params_list.update(armfw_elf_match_to_public_values(po, matches[0]))
 
-    return params_list, elf_sections, cs, elf, asm_arch
+    return params_list, elf_sections, cs, elfobj, asm_arch
 
 
 def armfw_elf_ambavals_list(po, elffh):
@@ -915,7 +916,10 @@ def armfw_elf_ambavals_extract(po, elffh):
     params_list, _, _, _, _ = armfw_elf_ambavals_extract_list(po, elffh)
     if len(params_list) <= 0:
         raise ValueError("No known values found in ELF file.")
-    valfile = open(po.valfile, "w")
+    if not po.dry_run:
+        valfile = open(po.valfile, "w")
+    else:
+        valfile = io.StringIO()
     valfile.write("[\n")
     full_index = 0
     for par_name, par_info in params_list.items():
@@ -954,11 +958,14 @@ def armfw_elf_ambavals_extract(po, elffh):
 def armfw_elf_ambavals_update(po, elffh):
     """ Updates all hardcoded values in firmware from JSON format text file.
     """
-    params_list, elf_sections, cs, elf, asm_arch = armfw_elf_ambavals_extract_list(po, elffh)
+    params_list, elf_sections, cs, elfobj, asm_arch = armfw_elf_ambavals_extract_list(po, elffh)
     if len(params_list) <= 0:
         raise ValueError("No known values found in ELF file.")
     with open(po.valfile) as valfile:
         nxparams_list = json.load(valfile)
+    # Change section data buffers to bytearrays, so we can change them easily
+    for section_name, section in elf_sections.items():
+        section['data'] = bytearray(section['data'])
     update_count = 0
     for nxpar in nxparams_list:
         if not nxpar['name'] in params_list:
@@ -966,12 +973,25 @@ def armfw_elf_ambavals_update(po, elffh):
             continue
         par_info = params_list[nxpar['name']]
         valbt = armfw_elf_get_value_update_bytes(asm_arch, elf_sections, par_info, nxpar['setValue'])
-        #TODO
-        print(valbt)
-        print(nxpar)
+        section = elf_sections[valbt['sect']]
+        old_beg = valbt['offs']
+        old_end = valbt['offs']+len(valbt['data'])
+        old_data = section['data'][old_beg:old_end]
+        if valbt['data'] != old_data:
+            if (po.verbose > 1):
+                print("Replacing {:s} -> {:s} to set {:s}".format(old_data.hex(),valbt['data'].hex(),par_info['name']))
+            sect_data = section['data']
+            sect_data[old_beg:old_end] = valbt['data']
+            update_count += 1
     if (po.verbose > 0):
         print("{:s}: Updated {:d} hardcoded values".format(po.elffile,update_count))
-    raise NotImplementedError('NOT DONE yet.')
+    # Now update the ELF file
+    for section_name, section in elf_sections.items():
+        elfsect = elfobj.get_section_by_name(section_name)
+        elfsect.set_data(section['data'])
+        elfobj.set_section_by_name(section_name, elfsect)
+    if not po.dry_run:
+        elfobj.write_changes()
 
 
 def main():
