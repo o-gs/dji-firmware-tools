@@ -6,7 +6,7 @@
 The tool can parse Ambarella firmware SYS partition converted to ELF.
 It finds certain hard-coded values in the binary data, and allows
 exporting or importing them. Only 'setValue' element in the exported file
-os really changeable, all the other data is just informational.
+is really changeable, all the other data is just informational.
 """
 
 # Copyright (C) 2016,2017 Mefistotelis <mefistotelis@gmail.com>
@@ -40,6 +40,7 @@ import itertools
 import enum
 import json
 
+from ctypes import *
 from capstone import *
 from keystone import *
 sys.path.insert(0, '../pyelftools')
@@ -60,6 +61,8 @@ class VarType(enum.Enum):
     RELATIVE_PC_ADDR_TO_CODE = enum.auto()
     # Variable contains address to a global variable relative to current value of PC register
     RELATIVE_PC_ADDR_TO_GLOBAL_DATA = enum.auto()
+    # Variable contains relative address to a global variable which contains absolute address to the real value
+    RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA = enum.auto()
 
 class DataVariety(enum.Enum):
     UNKNOWN = enum.auto()
@@ -81,6 +84,10 @@ class CodeVariety(enum.Enum):
     CHUNK = enum.auto()
     # The pointed place is a function start
     FUNCTION = enum.auto()
+
+class DummyStruct(LittleEndianStructure):
+  _pack_ = 1
+  _fields_ = [('unk', c_uint8)]
 
 # List of architectures
 # based on ropstone by blasty
@@ -192,7 +199,7 @@ re_func_DjiMsgAuthorLevelGet = {
   bx	lr
 """,
 'vars': {
-  'msg_author_level': {'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
+  'msg_author_level': {'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
 },
 }
 
@@ -348,11 +355,11 @@ re_func_DjiMsgSettingsInit = {
   'DjiMsgAuthorLevelSet':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'DjiEncryptGetA9Status':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'memset_0':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'cstr_fmt_text1':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'cstr_func_name':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'dji_msg_mutex':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.STRUCT},
-  'msg_adjust_task_finished':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
-  'printk_log_level':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
+  'cstr_fmt_text1':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'cstr_func_name':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'dji_msg_mutex':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+  'msg_adjust_task_finished':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
+  'printk_log_level':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
   'encrypt_query_fail_authority_level':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT32_T,
     'public': "og_hardcoded.p3x_ambarella", 'minValue': "0", 'maxValue': "2", 'defaultValue': "0",
     'description': "AuthorityLevel established when SH204 communication fail; 0-restricted,1-normal,2-superuser"},
@@ -393,6 +400,12 @@ re_func_DjiMsgSettingsInit = {
   'unk_var20':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
 },
 }
+
+class AmbaP3XBitrateTableEntry(LittleEndianStructure):
+  _pack_ = 1
+  _fields_ = [('min', c_int),
+              ('avg', c_int),
+              ('max', c_int)]
 
 re_func_DjiUstVideoQualitySetInner = {
 'name': "DjiUstVideoQualitySetInner",
@@ -459,8 +472,8 @@ re_func_DjiUstVideoQualitySetInner = {
   b	#(?P<loc_label08>[0-9a-fx]+)
 """,
 'vars': {
-  'cstr_fmt_text1':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'cstr_func_name':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'cstr_fmt_text1':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'cstr_func_name':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
   'AmbaPrintk_Disabled':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'AmbaPrintk':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -472,12 +485,12 @@ re_func_DjiUstVideoQualitySetInner = {
   'loc_label07':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label08':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'unk_var01':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
-  'vid_settings_ust':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.STRUCT},
-  'vid_setting_bitrates':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.STRUCT, 'array': 27,
-    'struct': collections.OrderedDict([('min',DataVariety.UINT32_T), ('avg',DataVariety.UINT32_T), ('max',DataVariety.UINT32_T)]),
-    'public': "og_hardcoded.p3x_ambarella", 'minValue': "1000000", 'maxValue': "64000000",
-    'description': "Bitrate used for h.264 video compression"},
-  'printk_log_level':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
+  'vid_settings_ust':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+  'vid_setting_bitrates':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.STRUCT, 'array': 27,
+    'struct': AmbaP3XBitrateTableEntry,
+    'public': "og_hardcoded.p3x_ambarella", 'minValue': "1000000 1000000 1000000", 'maxValue': "64000000 64000000 64000000",
+    'description': "Bitrates used for h.264 video compression; 3 values: min, avg, max"},
+  'printk_log_level':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
 },
 }
 
@@ -535,8 +548,18 @@ def get_arm_vma_relative_to_pc_register(asm_arch, section, address, size, offset
 
     ARMs have a way of storing relative offsets which may be confusing at first.
     """
-    vma = address + size + int(offset_str, 0)
+    vma = address + size + asm_arch['boundary'] + int(offset_str, 0)
     return vma - (vma % asm_arch['boundary'])
+
+
+def get_section_and_offset_from_address(asm_arch, elf_sections, address):
+    """ Gets Virtual Memory Address associated with offet given within an asm instruction.
+    """
+    for sect_name, sect in elf_sections.items():
+        offset = address - sect['addr']
+        if (offset >= 0) and (offset < len(sect['data'])):
+            return sect_name, offset
+    return None, None
 
 
 def armfw_elf_ambavals_objdump(po, elffh):
@@ -674,18 +697,29 @@ def armfw_elf_section_search_get_next_search_pos(search, sect_offs):
         return new_offs - (new_offs % asm_arch['boundary'])
 
 
-def armfw_elf_section_search_get_value_size(asm_arch, var_info):
-    # Get expected length of the value
-    if var_info['variety'] in [DataVariety.CHAR, DataVariety.UINT8_T, DataVariety.INT8_T]:
+def armfw_elf_section_search_get_value_variety_size(var_variety):
+    """ Get expected size of the value
+    """
+    if var_variety in [DataVariety.CHAR, DataVariety.UINT8_T, DataVariety.INT8_T]:
         var_size = 1
-    elif var_info['variety'] in [DataVariety.UINT16_T, DataVariety.INT16_T]:
+    elif var_variety in [DataVariety.UINT16_T, DataVariety.INT16_T]:
         var_size = 2
-    elif var_info['variety'] in [DataVariety.UINT32_T, DataVariety.INT32_T, DataVariety.FLOAT]:
+    elif var_variety in [DataVariety.UINT32_T, DataVariety.INT32_T, DataVariety.FLOAT]:
         var_size = 4
-    elif var_info['variety'] in [DataVariety.UINT64_T, DataVariety.INT64_T, DataVariety.DOUBLE]:
+    elif var_variety in [DataVariety.UINT64_T, DataVariety.INT64_T, DataVariety.DOUBLE]:
         var_size = 8
     else:
         var_size = 0
+    return var_size
+
+
+def armfw_elf_section_search_get_value_size(asm_arch, var_info):
+    """ Get expected item size size and count of the value
+    """
+    if var_info['variety'] in [DataVariety.STRUCT]:
+        var_size = sizeof(var_info['struct'])
+    else:
+        var_size = armfw_elf_section_search_get_value_variety_size(var_info['variety'])
 
     if 'array' in var_info:
         if isinstance(var_info['array'], int):
@@ -698,22 +732,46 @@ def armfw_elf_section_search_get_value_size(asm_arch, var_info):
     return var_size, var_count
 
 
+def armfw_elf_section_search_add_var(search, var_name, var_suffix, var_info, prop_val, prop_str, address, size):
+    if var_name in search['var_vals']:
+        var_val = search['var_vals'][var_name+var_suffix]
+        if var_val['value'] != prop_val:
+            return False
+    else:
+        var_def = search['var_defs'][var_name]
+        var_val = {'str_value': prop_str, 'value': prop_val, 'address': address, 'instr_size': size, 're_line': search['match_lines']}
+        var_val.update(var_def)
+        # For direct values, also store the regex matched to the line
+        if (var_info['type'] == VarType.DIRECT_INT_VALUE):
+            var_val['re_line_str'] = armfw_elf_section_search_get_pattern(search)
+        search['var_vals'][var_name+var_suffix] = var_val
+    return True
+
+
 def armfw_elf_section_search_process_vars_from_code(search, elf_sections, address, size, re_code):
     """ Process variable values from a code line and add them to search results.
     """
     for var_name, var_val in re_code.groupdict().items():
         var_info = search['var_defs'][var_name]
-        # Get direct int value or offset
+        # Get direct int value or offset to value
         if (var_info['type'] == VarType.DIRECT_INT_VALUE):
-            prop_val = int(var_val, 0)
+            prop_ofs_val = int(var_val, 0)
         elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_CODE):
-            prop_val = int(var_val, 0)
+            prop_ofs_val = int(var_val, 0)
         elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA):
-            prop_val = int(var_val, 0)
+            prop_ofs_val = int(var_val, 0)
         elif (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_CODE):
-            prop_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
+            prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
         elif (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA):
-            prop_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
+            prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
+        elif (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA):
+            prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
+            var_sect, var_offs = get_section_and_offset_from_address(search['asm_arch'], elf_sections, prop_ofs_val)
+            if var_sect is not None:
+                var_data = elf_sections[var_sect]['data']
+                prop_ofs_val = int.from_bytes(var_data[var_offs:var_offs+4], byteorder=search['asm_arch']['byteorder'], signed=False)
+            else:
+                raise ValueError('Address to uninitialized data found.')
         else:
             raise NotImplementedError('Unexpected variable type found.')
 
@@ -722,17 +780,23 @@ def armfw_elf_section_search_process_vars_from_code(search, elf_sections, addres
 
         # Either convert the direct value to bytes, or get bytes from offset
         if (var_info['type'] == VarType.DIRECT_INT_VALUE):
-            prop_bytes = (prop_val).to_bytes(prop_size*prop_count, byteorder=search['asm_arch']['byteorder'])
-        elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA) or (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA):
-            prop_bytes = b"" #TODO
+            prop_bytes = (prop_ofs_val).to_bytes(prop_size*prop_count, byteorder=search['asm_arch']['byteorder'])
+        elif ((var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA) or (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA)
+          or (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA)):
+            var_sect, var_offs = get_section_and_offset_from_address(search['asm_arch'], elf_sections, prop_ofs_val)
+            if var_sect is not None:
+                var_data = elf_sections[var_sect]['data']
+                prop_bytes = var_data[var_offs:var_offs+prop_size*prop_count]
+            else:
+                prop_bytes = b""
         else:
             prop_bytes = b""
 
         if var_info['variety'] in [DataVariety.CHAR]:
             if 'array' in var_info:
-                prop_str = prop_bytes.rstrip(b"\0").decode("utf-8")
+                prop_str = prop_bytes.rstrip(b"\0").decode("ISO-8859-1")
             else:
-                prop_str = chr(prop_val)
+                prop_str = chr(prop_ofs_val)
         elif var_info['variety'] in [DataVariety.UINT8_T, DataVariety.UINT16_T, DataVariety.UINT32_T, DataVariety.UINT64_T]:
             prop_str = ""
             for i in range(len(prop_bytes) // prop_size):
@@ -751,21 +815,27 @@ def armfw_elf_section_search_process_vars_from_code(search, elf_sections, addres
                 else:
                     prop_str += "{:f} ".format(struct.unpack("<f",prop_bytes[i*prop_size:(i+1)*prop_size]))
             prop_str = prop_str.rstrip()
+        elif var_info['variety'] in [DataVariety.STRUCT]:
+            prop_str = ""
+            prop_array_len = len(prop_bytes) // prop_size
+            for i in range(prop_array_len):
+                var_struct = var_info['struct'].from_buffer_copy(prop_bytes[i*prop_size:(i+1)*prop_size])
+                for field in var_struct._fields_:
+                    prop_str += "{:d} ".format(getattr(var_struct, field[0]))
+                if prop_array_len > 1:
+                    prop_str = prop_str.rstrip()
+                    if not armfw_elf_section_search_add_var(search, var_name, "_{:02d}".format(i), var_info, prop_ofs_val + i*prop_size, prop_str, address, size):
+                        return False
+                    prop_str = ""
+            if prop_array_len > 1:
+                return True
+
         else:
             prop_str = ""
 
-        if var_name in search['var_vals']:
-            var_val = search['var_vals'][var_name]
-            if var_val['value'] != prop_val:
-                return False
-        else:
-            var_def = search['var_defs'][var_name]
-            var_val = {'str_value': prop_str, 'value': prop_val, 'address': address, 'instr_size': size, 're_line': search['match_lines']}
-            var_val.update(var_def)
-            # For direct values, also store the regex matched to the line
-            if (var_info['type'] == VarType.DIRECT_INT_VALUE):
-                var_val['re_line_str'] = armfw_elf_section_search_get_pattern(search)
-            search['var_vals'][var_name] = var_val
+        if not armfw_elf_section_search_add_var(search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
+            return False
+
     return True
 
 
@@ -905,10 +975,9 @@ def armfw_elf_get_value_update_bytes(asm_arch, elf_sections, var_info, new_value
         section = elf_sections[valbt['sect']]
         valbt['offs'] = var_info['address'] - section['addr']
         valbt['data'] = bytes(encoding)
-        if (valbt['offs'] < 0) or (valbt['offs'] + len (valbt['data']) > len(section['data'])):
-            raise ValueError('Got past code section border - internal error.')
         #print("{:s} = {:s}".format(asm_line, encoding))
-    elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA) or (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA):
+    elif ((var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA) or (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA)
+      or (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA)):
         # The value was referenced in code, but stored outside
         if var_info['variety'] in [DataVariety.CHAR]:
             if 'array' in var_info:
@@ -928,14 +997,27 @@ def armfw_elf_get_value_update_bytes(asm_arch, elf_sections, var_info, new_value
                     prop_bytes += struct.pack("d", valflt)
                 else:
                     prop_bytes += struct.pack("f", valflt)
+        elif var_info['variety'] in [DataVariety.STRUCT]:
+            var_struct = var_info['struct']()
+            for field, valstr in zip(var_struct._fields_,new_value_str.split()):
+                setattr(var_struct, field[0], int(valstr,0))
+            prop_bytes = (c_ubyte * sizeof(var_struct)).from_buffer_copy(var_struct)
         else:
             prop_bytes = b""
 
         if len(prop_bytes) < 1:
             raise ValueError('Unable to prepare bytes from provided string value.')
-        #TODO
+
+        var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, var_info['address'])
+        valbt['sect'] = var_sect
+        section = elf_sections[valbt['sect']]
+        valbt['offs'] = var_offs
+        valbt['data'] = bytes(prop_bytes)
     else:
         raise NotImplementedError('Unexpected variable type found.')
+
+    if (valbt['offs'] < 0) or (valbt['offs'] + len (valbt['data']) > len(section['data'])):
+        raise ValueError('Got past code section border - internal error.')
     return valbt
 
 
@@ -958,7 +1040,7 @@ def armfw_elf_ambavals_extract_list(po, elffh):
             asm_arch['boundary'] = mode['boundary']
         if 'retshift' in mode:
             retshift = mode['retshift']
-    asm_arch['byteorder']='big' #TODO get byte order based on real params
+    asm_arch['byteorder']='little' #TODO get byte order based on real params
     asm_arch['cs_mode'] = cs_mode
     asm_arch['ks_mode'] = ks_mode
 
