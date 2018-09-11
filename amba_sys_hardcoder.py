@@ -496,7 +496,7 @@ re_func_DjiUstVideoQualitySetInner = {
 
 re_general_list = [
   {'sect': ".text", 'func': re_func_DjiMsgSettingsInit,},
-  #{'sect': ".text", 'func': re_func_DjiUstVideoQualitySetInner,},
+  {'sect': ".text", 'func': re_func_DjiUstVideoQualitySetInner,},
 ]
 
 def get_asm_arch_by_name(arname):
@@ -732,14 +732,24 @@ def armfw_elf_section_search_get_value_size(asm_arch, var_info):
     return var_size, var_count
 
 
-def armfw_elf_section_search_add_var(search, var_name, var_suffix, var_info, prop_val, prop_str, address, size):
+def armfw_elf_section_search_add_var(search, var_name, var_suffix, var_info, prop_ofs_val, prop_str, address, size):
+    """ Adds variable to current search results.
+
+       @search - the target search results
+       @var_name, @var_suffix - variable name and its suffix
+       @var_info - static info about the variable
+       @prop_ofs_val - offset or value to compare while validating the variable
+       @prop_str - real value of the variable, converted to string
+       @address - address to the initial finding place (not dereferenced if the place contained pointer to pointer)
+       @size - instruction size, if the variable is a value within code
+    """
     if var_name in search['var_vals']:
         var_val = search['var_vals'][var_name+var_suffix]
-        if var_val['value'] != prop_val:
+        if var_val['value'] != prop_ofs_val:
             return False
     else:
         var_def = search['var_defs'][var_name]
-        var_val = {'str_value': prop_str, 'value': prop_val, 'address': address, 'instr_size': size, 're_line': search['match_lines']}
+        var_val = {'str_value': prop_str, 'value': prop_ofs_val, 'address': address, 'instr_size': size, 're_line': search['match_lines']}
         var_val.update(var_def)
         # For direct values, also store the regex matched to the line
         if (var_info['type'] == VarType.DIRECT_INT_VALUE):
@@ -1008,7 +1018,7 @@ def armfw_elf_get_value_update_bytes(asm_arch, elf_sections, var_info, new_value
         if len(prop_bytes) < 1:
             raise ValueError('Unable to prepare bytes from provided string value.')
 
-        var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, var_info['address'])
+        var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, var_info['value']) # for "*_ADDR_*" types, value stores address
         valbt['sect'] = var_sect
         section = elf_sections[valbt['sect']]
         valbt['offs'] = var_offs
