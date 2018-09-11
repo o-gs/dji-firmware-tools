@@ -123,7 +123,7 @@ Optimized examples for specific firmwares:
 Ambarella A7/A9 firmware "System Software" partition converter. The partition
 contains a binary image of executable file, and this tool wraps it with ELF
 header. The ELF format can be then easily disassembled, as most debuggers can
-read ELF files. This tool is very similar to arm_bin2elf.py, it is just
+read ELF files. This tool is very similar to `arm_bin2elf.py`, it is just
 pre-configured to specific firmware.
 
 Example: ```./amba_sys2elf.py -vv -e -l 0x6000000 -p P3X_FW_V01.08.0080_m0100_part_sys.a9s```
@@ -135,6 +135,25 @@ Optimized examples for specific firmwares:
 ```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x483E4C:0 -p P3X_FW_V01.08.0080_m0100_part_sys.a9s```
 
 ```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x482EC0:0 -p P3X_FW_V01.07.0060_m0100_part_sys.a9s```
+
+```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x464774:0 -p P3X_FW_V01.01.0008_m0100_part_sys.a9s```
+
+### amba_sys_hardcoder.py
+
+Ambarella A7/A9 firmware "System Software" partition hard-coded values editor.
+
+The tool can parse Ambarella firmware SYS partition converted to ELF.
+It finds certain hard-coded values in the binary data, and allows
+exporting or importing them. Only `setValue` element in the exported JSON file
+is really changeable, all the other data is just informational.
+
+Example of exporting hard-coded values to JSON file:
+
+```./amba_sys_hardcoder.py -vv -x --elffile P3X_FW_V01.08.0080_m0100_part_sys.elf```
+
+Example of importing values from JSON file back to ELF:
+
+```./amba_sys_hardcoder.py -vv -u --elffile P3X_FW_V01.08.0080_m0100_part_sys.elf```
 
 ### dji_flyc_param_ed.py
 
