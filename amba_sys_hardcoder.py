@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """ Ambarella Firmware SYS partiton hard-coded values editor.
+
+The tool can parse Ambarella firmware SYS partition converted to ELF.
+It finds certain hard-coded values in the binary data, and allows
+exporting or importing them. Only 'setValue' element in the exported file
+os really changeable, all the other data is just informational.
 """
 
 # Copyright (C) 2016,2017 Mefistotelis <mefistotelis@gmail.com>
@@ -389,8 +394,96 @@ re_func_DjiMsgSettingsInit = {
 },
 }
 
+re_func_DjiUstVideoQualitySetInner = {
+'name': "DjiUstVideoQualitySetInner",
+'re': """
+  push	{r4, r5, lr}
+  sub	sp, sp, #0x14
+  movs	r4, r0
+  ldr	r0, \[r4\]
+  cmp	r0, #0
+  beq	#(?P<loc_label01>[0-9a-fx]+)
+  cmp	r0, #2
+  beq	#(?P<loc_label02>[0-9a-fx]+)
+  blo	#(?P<loc_label03>[0-9a-fx]+)
+  b	#(?P<loc_label04>[0-9a-fx]+)
+  add	r0, r2, r2, lsl #1
+  ldr	r1, \[pc, #(?P<vid_setting_bitrates>[0-9a-fx]+)\]
+  ldr	r0, \[r1, r0, lsl #2\]
+  cmp	r0, #0
+  beq	#(?P<loc_label05>[0-9a-fx]+)
+  ldr	r1, \[pc, #(?P<unk_var01>[0-9a-fx]+)\]
+  ldrsb	r1, \[r1, #0x12\]
+  mov	r2, #0x54
+  ldr	r3, \[pc, #(?P<vid_settings_ust>[0-9a-fx]+)\]
+  smlabb	r1, r1, r2, r3
+  str	r0, \[r1, #8\]
+  mov	r0, #0
+  add	sp, sp, #0x14
+  pop	{r4, r5, pc}
+  add	r0, r2, r2, lsl #1
+  ldr	r1, \[pc, #(?P<vid_setting_bitrates>[0-9a-fx]+)\]
+  adds	r0, r1, r0, lsl #2
+  ldr	r0, \[r0, #4\]
+  b	#(?P<loc_label06>[0-9a-fx]+)
+  add	r0, r2, r2, lsl #1
+  ldr	r1, \[pc, #(?P<vid_setting_bitrates>[0-9a-fx]+)\]
+  adds	r0, r1, r0, lsl #2
+  ldr	r0, \[r0, #8\]
+  b	#(?P<loc_label06>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<printk_log_level>[0-9a-fx]+)\]
+  ldr	r0, \[r0\]
+  cmp	r0, #0
+  bmi	#(?P<loc_label07>[0-9a-fx]+)
+  mov	r5, #0
+  mov	r0, #1
+  movs	r5, r0
+  bl	#(?P<AmbaPrintk_Disabled>[0-9a-fx]+)
+  cmp	r0, #1
+  beq	#(?P<loc_label07>[0-9a-fx]+)
+  ldr	r0, \[r4\]
+  str	r0, \[sp, #0x10\]
+  ldr	r0, \[pc, #(?P<cstr_func_name>[0-9a-fx]+)\]
+  str	r0, \[sp, #0xc\]
+  ldr	r0, \[pc, #(?P<cstr_fmt_text1>[0-9a-fx]+)\]
+  str	r0, \[sp, #8\]
+  str	r5, \[sp, #4\]
+  mov	r0, #0
+  str	r0, \[sp\]
+  mov	r3, #0
+  mov	r2, #1
+  mov	r1, #1
+  mov	r0, #1
+  bl	#(?P<AmbaPrintk>[0-9a-fx]+)
+  mvn	r0, #0
+  b	#(?P<loc_label08>[0-9a-fx]+)
+""",
+'vars': {
+  'cstr_fmt_text1':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'cstr_func_name':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'AmbaPrintk_Disabled':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'AmbaPrintk':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label03':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label04':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label05':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label06':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label07':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label08':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'unk_var01':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'vid_settings_ust':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.STRUCT},
+  'vid_setting_bitrates':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.STRUCT, 'array': 27,
+    'struct': collections.OrderedDict([('min',DataVariety.UINT32_T), ('avg',DataVariety.UINT32_T), ('max',DataVariety.UINT32_T)]),
+    'public': "og_hardcoded.p3x_ambarella", 'minValue': "1000000", 'maxValue': "64000000",
+    'description': "Bitrate used for h.264 video compression"},
+  'printk_log_level':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
+},
+}
+
 re_general_list = [
   {'sect': ".text", 'func': re_func_DjiMsgSettingsInit,},
+  #{'sect': ".text", 'func': re_func_DjiUstVideoQualitySetInner,},
 ]
 
 def get_asm_arch_by_name(arname):
