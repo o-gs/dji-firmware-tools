@@ -5,8 +5,38 @@
 
 The tool can parse Ambarella firmware SYS partition converted to ELF.
 It finds certain hard-coded values in the binary data, and allows
-exporting or importing them. Only 'setValue' element in the exported file
-is really changeable, all the other data is just informational.
+exporting or importing them.
+
+Only 'setValue' element in the exported file is really changeable,
+all the other data is just informational. This includes `maxValue` and
+`minValue` - they don't do anything and changing them in the JSON file
+will not influence update operation.
+
+Exported values:
+
+og_hardcoded.p3x_ambarella.*_authority_level -
+
+  Authority Level controls whether the module should respond to external
+  commands. Normally it is set to `1`, but if encryption keys verification
+  failed at startup, it is set to `0`. These parameters allow to change the
+  value, so that the camera continues to operate normally even if keys are
+  different or SHA204 chip is missing. There is no reason to keep the values
+  unchanged even if encryption pairing currently works fine - the changes might
+  become helpful in case of hardware malfunction in that area.
+
+  Here's an example AmbaShell log when there's an issue with encryption which
+  results in lowest Authority Level:
+  ```
+  [DJI_ENCRYPT] [DjiEncryptCheckA9]check a9 mac failed
+  [DJI_ENCRYPT] [DjiEncryptReGetA9Status]a9's encrypt status[1] verify state[0]
+  ```
+
+og_hardcoded.p3x_ambarella.vid_setting_bitrates_* -
+
+  These are bitrates used when encoding videos to SD-card. There are 27 sets,
+  and which one is used depends on options selected in mobile app and on
+  model of the drone. Specifics are not known at this point.
+
 """
 
 # Copyright (C) 2016,2017 Mefistotelis <mefistotelis@gmail.com>
@@ -362,7 +392,7 @@ re_func_DjiMsgSettingsInit = {
   'printk_log_level':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
   'encrypt_query_fail_authority_level':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT32_T,
     'public': "og_hardcoded.p3x_ambarella", 'minValue': "0", 'maxValue': "2", 'defaultValue': "0",
-    'description': "AuthorityLevel established when SH204 communication fail; 0-restricted,1-normal,2-superuser"},
+    'description': "AuthorityLevel established when SHA204 communication fail; 0-restricted,1-normal,2-superuser"},
   'verify_state_good_authority_level':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT32_T,
     'public': "og_hardcoded.p3x_ambarella", 'minValue': "0", 'maxValue': "2", 'defaultValue': "1",
     'description': "AuthorityLevel established when encryption keys match; 0-restricted,1-normal,2-superuser"},
