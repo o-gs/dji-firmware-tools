@@ -141,12 +141,14 @@ elf_archs = [
             {
                 'name'     : "le",
                 'desc'     : "Little endian",
+                'byteorder': "little",
                 'cs_const' : CS_MODE_LITTLE_ENDIAN,
                 'ks_const' : KS_MODE_LITTLE_ENDIAN,
             },
             {
                 'name'     : "be",
                 'desc'     : "Big endian",
+                'byteorder': "big",
                 'cs_const' : CS_MODE_BIG_ENDIAN,
                 'ks_const' : KS_MODE_BIG_ENDIAN,
             },
@@ -161,6 +163,7 @@ elf_archs = [
             {
                 'name'     : "le",
                 'desc'     : "Little Endian",
+                'byteorder': "little",
                 'cs_const' : CS_MODE_LITTLE_ENDIAN,
                 'ks_const' : KS_MODE_LITTLE_ENDIAN,
             },
@@ -187,12 +190,14 @@ elf_archs = [
             {
                 'name'     : "le",
                 'desc'     : "Little endian",
+                'byteorder': "little",
                 'cs_const' : CS_MODE_LITTLE_ENDIAN,
                 'ks_const' : KS_MODE_LITTLE_ENDIAN,
             },
             {
                 'name'     : "be",
                 'desc'     : "Big endian",
+                'byteorder': "big",
                 'cs_const' : CS_MODE_BIG_ENDIAN,
                 'ks_const' : KS_MODE_BIG_ENDIAN,
             },
@@ -207,12 +212,14 @@ elf_archs = [
             {
                 'name'     : "32b",
                 'desc'     : "x86 32bit",
+                'byteorder': "little",
                 'cs_const' : CS_MODE_32,
                 'ks_const' : KS_MODE_32,
             },
             {
                 'name'     : "64b",
                 'desc'     : "x86_64 64bit",
+                'byteorder': "little",
                 'cs_const' : CS_MODE_64,
                 'ks_const' : KS_MODE_64,
             },
@@ -1061,7 +1068,7 @@ def armfw_elf_get_value_update_bytes(asm_arch, elf_sections, var_info, new_value
     return valbt
 
 
-def armfw_elf_ambavals_extract_list(po, elffh):
+def armfw_elf_paramvals_extract_list(po, elffh, re_list):
 
     elfobj = ELFFile(elffh)
 
@@ -1075,12 +1082,13 @@ def armfw_elf_ambavals_extract_list(po, elffh):
     for mode in asm_modes:
         cs_mode = cs_mode | mode['cs_const']
         ks_mode = ks_mode | mode['ks_const']
-        # check for mode specific overrides (only needed for THUMB atm)
+        # check for mode specific overrides
+        if 'byteorder' in mode:
+            asm_arch['byteorder'] = mode['byteorder']
         if 'boundary' in mode:
             asm_arch['boundary'] = mode['boundary']
         if 'retshift' in mode:
             retshift = mode['retshift']
-    asm_arch['byteorder']='little' #TODO get byte order based on real params
     asm_arch['cs_mode'] = cs_mode
     asm_arch['ks_mode'] = ks_mode
 
@@ -1104,13 +1112,17 @@ def armfw_elf_ambavals_extract_list(po, elffh):
         }
 
     # Check if expected sections are there
-    for sect_name in ('.text', '.data'):
+    expect_sections = ['.text', '.data']
+    for re_item in re_list:
+        if not re_item['sect'] in expect_sections:
+            expect_sections.append(re_item['sect'])
+    for sect_name in expect_sections:
         if not sect_name in elf_sections:
             raise ValueError("ELF does not contain expected section '{:s}'.".format(sect_name))
 
     # prepare list of parameter values
     params_list = {}
-    for re_item in re_general_list:
+    for re_item in re_list:
         matches = armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, re_item['sect'], re_item['func'])
         if len(matches) == 1:
             params_list.update(armfw_elf_match_to_public_values(po, matches[0]))
@@ -1119,7 +1131,7 @@ def armfw_elf_ambavals_extract_list(po, elffh):
 
 
 def armfw_elf_ambavals_list(po, elffh):
-    params_list, _, _, _, _ = armfw_elf_ambavals_extract_list(po, elffh)
+    params_list, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
     # print list of parameter values
     for par_name, par_info in params_list.items():
         print("{:s}\t{:s}".format(par_name,par_info['str_value']))
@@ -1128,7 +1140,7 @@ def armfw_elf_ambavals_list(po, elffh):
 def armfw_elf_ambavals_extract(po, elffh):
     """ Extracts all values from firmware to JSON format text file.
     """
-    params_list, _, _, _, _ = armfw_elf_ambavals_extract_list(po, elffh)
+    params_list, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
     if len(params_list) <= 0:
         raise ValueError("No known values found in ELF file.")
     if not po.dry_run:
@@ -1173,7 +1185,7 @@ def armfw_elf_ambavals_extract(po, elffh):
 def armfw_elf_ambavals_update(po, elffh):
     """ Updates all hardcoded values in firmware from JSON format text file.
     """
-    params_list, elf_sections, cs, elfobj, asm_arch = armfw_elf_ambavals_extract_list(po, elffh)
+    params_list, elf_sections, cs, elfobj, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
     if len(params_list) <= 0:
         raise ValueError("No known values found in ELF file.")
     with open(po.valfile) as valfile:
