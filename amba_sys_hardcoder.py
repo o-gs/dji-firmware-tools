@@ -81,6 +81,8 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 class VarType(enum.Enum):
+    # Variable points to code line from asm regular expression
+    DIRECT_LINE_OF_CODE = enum.auto()
     # Variable contains directly entered integer value
     DIRECT_INT_VALUE = enum.auto()
     # Variable contains absolute address to a code chunk or function
@@ -93,6 +95,8 @@ class VarType(enum.Enum):
     RELATIVE_PC_ADDR_TO_GLOBAL_DATA = enum.auto()
     # Variable contains relative address to a global variable which contains absolute address to the real value
     RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA = enum.auto()
+    # Variable contains data not directly bound to any input offset
+    DETACHED_DATA = enum.auto()
 
 class DataVariety(enum.Enum):
     UNKNOWN = enum.auto()
@@ -236,6 +240,7 @@ re_func_DjiMsgAuthorLevelGet = {
   bx	lr
 """,
 'vars': {
+  'DjiMsgAuthorLevelGet':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
   'msg_author_level': {'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
 },
 }
@@ -386,6 +391,7 @@ re_func_DjiMsgSettingsInit = {
   pop	{r4, r5, pc}
 """,
 'vars': {
+  'DjiMsgSettingsInit':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
   'AmbaKAL_MutexCreate':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'AmbaPrintk_Disabled':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'AmbaPrintk':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
@@ -509,6 +515,7 @@ re_func_DjiUstVideoQualitySetInner = {
   b	#(?P<loc_label08>[0-9a-fx]+)
 """,
 'vars': {
+  'DjiUstVideoQualitySetInner':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
   'cstr_fmt_text1':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_func_name':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
   'AmbaPrintk_Disabled':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
@@ -769,6 +776,186 @@ def armfw_elf_section_search_get_value_size(asm_arch, var_info):
     return var_size, var_count
 
 
+def armfw_elf_search_value_bytes_to_native_type(asm_arch, var_info, var_bytes):
+    """ Converts bytes to a variable described in info struct and architecture.
+    """
+    # Get expected length of the value
+    var_size, var_count = armfw_elf_section_search_get_value_size(asm_arch, var_info)
+    if var_info['variety'] in [DataVariety.CHAR]:
+        # Native type is str
+        if 'array' in var_info:
+            var_nativ = var_bytes.rstrip(b"\0").decode("ISO-8859-1")
+        else:
+            var_nativ = chr(prop_ofs_val)
+    elif var_info['variety'] in [DataVariety.UINT8_T, DataVariety.UINT16_T, DataVariety.UINT32_T, DataVariety.UINT64_T]:
+        var_nativ = []
+        for i in range(len(var_bytes) // var_size):
+            var_nativ.append(int.from_bytes(var_bytes[i*var_size:(i+1)*var_size], byteorder=asm_arch['byteorder'], signed=False))
+        if len(var_nativ) == 1:
+            var_nativ = var_nativ[0]
+    elif var_info['variety'] in [DataVariety.INT8_T, DataVariety.INT16_T, DataVariety.INT32_T, DataVariety.INT64_T]:
+        var_nativ = []
+        for i in range(len(var_bytes) // var_size):
+            var_nativ.append(int.from_bytes(var_bytes[i*var_size:(i+1)*var_size], byteorder=asm_arch['byteorder'], signed=True))
+        if len(var_nativ) == 1:
+            var_nativ = var_nativ[0]
+    elif var_info['variety'] in [DataVariety.FLOAT, DataVariety.DOUBLE]:
+        var_nativ = []
+        for i in range(len(var_bytes) // var_size):
+            if var_size >= 8:
+                var_nativ.append(struct.unpack("<d",var_bytes[i*var_size:(i+1)*var_size]))
+            else:
+                var_nativ.append(struct.unpack("<f",var_bytes[i*var_size:(i+1)*var_size]))
+        if len(var_nativ) == 1:
+            var_nativ = var_nativ[0]
+    elif var_info['variety'] in [DataVariety.STRUCT]:
+        var_nativ = []
+        prop_array_len = len(var_bytes) // var_size
+        for i in range(prop_array_len):
+            var_struct = var_info['struct'].from_buffer_copy(var_bytes[i*var_size:(i+1)*var_size])
+            var_nativ.append(var_struct)
+        if len(var_nativ) == 1:
+            var_nativ = var_nativ[0]
+    else:
+        var_nativ = None
+    return var_nativ
+
+def armfw_elf_search_value_native_type_to_bytes(asm_arch, var_info, var_nativ):
+    """ Converts native variable to bytes as described in info struct and architecture.
+    """
+    # Get expected length of the value
+    var_size, var_count = armfw_elf_section_search_get_value_size(asm_arch, var_info)
+    if isinstance(var_nativ, str):
+        var_bytes = var_nativ.encode("ISO-8859-1")
+    elif isinstance(var_nativ, int):
+        var_bytes = var_nativ.to_bytes(var_size, asm_arch['byteorder'])
+    elif isinstance(var_nativ, float):
+        if var_size >= 8:
+            var_bytes = struct.pack("<d", var_nativ)
+        else:
+            var_bytes = struct.pack("<f", var_nativ)
+    elif hasattr(var_nativ, "_fields_"): # check if we have a ctypes struct
+        var_bytes = (c_ubyte * sizeof(var_nativ)).from_buffer_copy(var_nativ)
+    elif hasattr(var_nativ, "__len__"): # check if we have an array
+        var_bytes = b''
+        for itm in var_nativ:
+            var_bytes.append(armfw_elf_search_value_native_type_to_bytes(asm_arch, var_info, itm))
+    else:
+        var_bytes = b''
+    return var_bytes
+
+
+def armfw_elf_search_value_native_type_to_string(var_nativ):
+    """ Converts given native type to string or array of strings.
+    """
+    if isinstance(var_nativ, str):
+        val_str = var_nativ
+    elif isinstance(var_nativ, int):
+        val_str = "{:d}".format(var_nativ)
+    elif isinstance(var_nativ, float):
+        val_str = "{:f}".format(var_nativ)
+    elif hasattr(var_nativ, "_fields_"): # check if we have a ctypes struct
+        val_str = ""
+        for field in var_nativ._fields_:
+            val_str += "{:d} ".format(getattr(var_nativ, field[0]))
+        val_str = val_str.rstrip()
+    elif hasattr(var_nativ, "__len__"): # check if we have an array
+        val_str = []
+        for itm in var_nativ:
+            val_str.append(armfw_elf_search_value_native_type_to_string(itm))
+    else:
+        val_str = ""
+    return val_str
+
+def armfw_elf_search_value_string_to_native_type(var_info, var_str):
+    """
+    Converts string value to native type.
+    Native type can be str, int, float, struct or array of int or float.
+    """
+    if var_info['variety'] in [DataVariety.CHAR]:
+        var_nativ = str(var_str)
+    elif var_info['variety'] in [DataVariety.UINT8_T, DataVariety.UINT16_T, DataVariety.UINT32_T, DataVariety.UINT64_T, DataVariety.INT8_T, DataVariety.INT16_T, DataVariety.INT32_T, DataVariety.INT64_T]:
+        if isinstance(var_str, int):
+            # If we already got an int - no processing required (this happens if JSON value is not in quotes)
+            var_nativ = var_str
+        else:
+            var_nativ = []
+            for val_itm in var_str.split():
+                var_nativ.append(int(val_itm,0))
+            if len(var_nativ) == 1:
+                var_nativ = var_nativ[0]
+    elif var_info['variety'] in [DataVariety.FLOAT, DataVariety.DOUBLE]:
+        if isinstance(var_str, float):
+            # If we already got a float - no processing required
+            var_nativ = var_str
+        else:
+            var_nativ = []
+            for val_itm in var_str.split():
+                var_nativ.append(float(val_itm,0))
+            if len(var_nativ) == 1:
+                var_nativ = var_nativ[0]
+    elif var_info['variety'] in [DataVariety.STRUCT]:
+        var_nativ = var_info['struct']()
+        for field, valstr in zip(var_nativ._fields_,var_str.split()):
+            # currently we only accept int values within struct
+            setattr(var_nativ, field[0], int(valstr,0))
+    else:
+        var_nativ = None
+    return var_nativ
+
+
+def find_patterns_containing_variable(re_list, var_type=None, var_variety=None, var_sect=None, var_name=None, var_size=None, var_setValue=None):
+    for re_item in re_list:
+        if var_sect is not None and re_item['sect'] != var_sect:
+            continue
+        patterns = re_item['func']
+        for v_name, var_info in patterns['vars'].items():
+            if var_type is not None and var_info['type'] != var_type:
+                continue
+            if var_variety is not None and var_info['variety'] != var_variety:
+                continue
+            if var_name is not None and v_name != var_name:
+                continue
+            if var_size is not None and var_info['size'] != var_size:
+                continue
+            if var_setValue is not None and var_info['setValue'] != var_setValue:
+                continue
+            return patterns
+    return None
+
+
+def find_patterns_diff(patterns_prev, patterns_next):
+    re_lines_prev = patterns_prev['re'].split(sep="\n")
+    re_lines_prev = list(map(str.strip, re_lines_prev))
+    re_lines_prev = list(filter(None, re_lines_prev))
+    re_lines_next = patterns_next['re'].split(sep="\n")
+    re_lines_next = list(map(str.strip, re_lines_next))
+    re_lines_next = list(filter(None, re_lines_next))
+    sp = 0
+    sn = 0
+    while sp < len(re_lines_prev) and sn < len(re_lines_next):
+        line_p = re_lines_prev[sp]
+        line_n = re_lines_next[sn]
+        if line_p != line_n:
+            break
+        sp += 1
+        sn += 1
+    ep = len(re_lines_prev) - 1
+    en = len(re_lines_next) - 1
+    while ep > sp and en > sn:
+        line_p = re_lines_prev[ep]
+        line_n = re_lines_next[en]
+        if line_p != line_n:
+            break
+        sp -= 1
+        sn -= 1
+    patterns_diff = []
+    for i in range(sn, en+1):
+        line_n = re_lines_next[i]
+        patterns_diff.append(line_n)
+    return patterns_diff
+
+
 def armfw_elf_section_search_add_var(search, var_name, var_suffix, var_info, prop_ofs_val, prop_str, address, size):
     """ Adds variable to current search results.
 
@@ -818,12 +1005,12 @@ def armfw_elf_section_search_process_vars_from_code(search, elf_sections, addres
                 var_data = elf_sections[var_sect]['data']
                 prop_ofs_val = int.from_bytes(var_data[var_offs:var_offs+4], byteorder=search['asm_arch']['byteorder'], signed=False)
             else:
-                raise ValueError('Address to uninitialized data found.')
+                raise ValueError("Address to uninitialized data found.")
         else:
-            raise NotImplementedError('Unexpected variable type found.')
+            raise NotImplementedError("Unexpected variable type found.")
 
         # Get expected length of the value
-        prop_size, prop_count = armfw_elf_section_search_get_value_size(search, var_info)
+        prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
 
         # Either convert the direct value to bytes, or get bytes from offset
         if (var_info['type'] == VarType.DIRECT_INT_VALUE):
@@ -839,49 +1026,35 @@ def armfw_elf_section_search_process_vars_from_code(search, elf_sections, addres
         else:
             prop_bytes = b""
 
-        if var_info['variety'] in [DataVariety.CHAR]:
-            if 'array' in var_info:
-                prop_str = prop_bytes.rstrip(b"\0").decode("ISO-8859-1")
-            else:
-                prop_str = chr(prop_ofs_val)
-        elif var_info['variety'] in [DataVariety.UINT8_T, DataVariety.UINT16_T, DataVariety.UINT32_T, DataVariety.UINT64_T]:
-            prop_str = ""
-            for i in range(len(prop_bytes) // prop_size):
-                prop_str += "0x{:x} ".format(int.from_bytes(prop_bytes[i*prop_size:(i+1)*prop_size], byteorder=search['asm_arch']['byteorder'], signed=False))
-            prop_str = prop_str.rstrip()
-        elif var_info['variety'] in [DataVariety.INT8_T, DataVariety.INT16_T, DataVariety.INT32_T, DataVariety.INT64_T]:
-            prop_str = ""
-            for i in range(len(prop_bytes) // prop_size):
-                prop_str += "{:d} ".format(int.from_bytes(prop_bytes[i*prop_size:(i+1)*prop_size], byteorder=search['asm_arch']['byteorder'], signed=True))
-            prop_str = prop_str.rstrip()
-        elif var_info['variety'] in [DataVariety.FLOAT, DataVariety.DOUBLE]:
-            prop_str = ""
-            for i in range(len(prop_bytes) // prop_size):
-                if prop_size >= 8:
-                    prop_str += "{:f} ".format(struct.unpack("<d",prop_bytes[i*prop_size:(i+1)*prop_size]))
-                else:
-                    prop_str += "{:f} ".format(struct.unpack("<f",prop_bytes[i*prop_size:(i+1)*prop_size]))
-            prop_str = prop_str.rstrip()
-        elif var_info['variety'] in [DataVariety.STRUCT]:
-            prop_str = ""
-            prop_array_len = len(prop_bytes) // prop_size
-            for i in range(prop_array_len):
-                var_struct = var_info['struct'].from_buffer_copy(prop_bytes[i*prop_size:(i+1)*prop_size])
-                for field in var_struct._fields_:
-                    prop_str += "{:d} ".format(getattr(var_struct, field[0]))
-                if prop_array_len > 1:
-                    prop_str = prop_str.rstrip()
-                    if not armfw_elf_section_search_add_var(search, var_name, "_{:02d}".format(i), var_info, prop_ofs_val + i*prop_size, prop_str, address, size):
-                        return False
-                    prop_str = ""
-            if prop_array_len > 1:
-                return True
+        var_nativ = armfw_elf_search_value_bytes_to_native_type(search['asm_arch'], var_info, prop_bytes)
+        prop_str = armfw_elf_search_value_native_type_to_string(var_nativ)
+        if isinstance(prop_str, str):
+            if not armfw_elf_section_search_add_var(search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
+                return False
+        else: # array of strings
+            for i in range(len(prop_str)):
+                prop_sstr = prop_str[i]
+                if not armfw_elf_section_search_add_var(search, var_name, "_{:02d}".format(i), var_info, prop_ofs_val + i*prop_size, prop_sstr, address, size):
+                    return False
 
-        else:
+    # Now get variables associated to line of code, not anything within the code
+    for var_name, var_info in search['var_defs'].items():
+        # Add variables attached to code line (usually function name)
+        if var_info['type'] in [VarType.DIRECT_LINE_OF_CODE] and search['match_lines'] == var_info['line']:
+            # Get expected length of the value
+            prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
+            prop_ofs_val = address
             prop_str = ""
-
-        if not armfw_elf_section_search_add_var(search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
-            return False
+            if not armfw_elf_section_search_add_var(search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
+                return False
+        # Add variables detached from data (per-regex constants)
+        if var_info['type'] in [VarType.DETACHED_DATA] and search['match_lines'] == 0:
+            # Get expected length of the value
+            prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
+            prop_ofs_val = 0
+            prop_str = var_info['setValue']
+            if not armfw_elf_section_search_add_var(search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
+                return False
 
     return True
 
@@ -899,7 +1072,7 @@ def armfw_elf_section_search_block(search, sect_offs, elf_sections, cs, block_le
         re_isdata = re.search(re_dataline, curr_pattern)
         if re_isdata is not None:
             # now matching a data line; get its length
-            raise NotImplementedError('TODO data')
+            raise NotImplementedError("TODO data")
         else:
             # now matching an assembly code line
             for (address, size, mnemonic, op_str) in cs.disasm_lite(search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs):
@@ -975,97 +1148,65 @@ def armfw_elf_match_to_public_values(po, match):
     return params_list
 
 
-def armfw_elf_get_value_update_bytes(asm_arch, elf_sections, var_info, new_value_str):
-    valbt = {}
+def armfw_elf_get_value_update_bytes(asm_arch, elf_sections, re_list, var_info, new_value_str):
+    valbts = []
     # Get expected length of the value
     prop_size, prop_count = armfw_elf_section_search_get_value_size(asm_arch, var_info)
+    new_var_nativ = armfw_elf_search_value_string_to_native_type(var_info, new_value_str)
 
-    if (var_info['type'] == VarType.DIRECT_INT_VALUE):
-        # The value was taken directly from code
-        if isinstance(new_value_str, int):
-            # If we already got an int - no processing required
-            new_value = new_value_str
-        elif var_info['variety'] in [DataVariety.CHAR]:
-            if 'array' in var_info:
-                prop_bytes = new_value_str.encode("utf-8")
-                prop_pad = len(prop_bytes) % 4
-                if prop_pad != 0:
-                    prop_bytes = prop_bytes + (b"\0" * (4 - prop_pad))
-                new_value = int.from_bytes(prop_bytes, byteorder=search['asm_arch']['byteorder'], signed=False)
-            else:
-                new_value = int(new_value_str,0)
-        elif var_info['variety'] in [DataVariety.UINT8_T, DataVariety.UINT16_T, DataVariety.UINT32_T, DataVariety.UINT64_T, DataVariety.INT8_T, DataVariety.INT16_T, DataVariety.INT32_T, DataVariety.INT64_T]:
-            prop_bytes = b""
-            for valstr in new_value_str.split():
-                valint = int(valstr,0)
-                prop_bytes += valint.to_bytes(prop_size, search['asm_arch']['byteorder'])
-            new_value = int.from_bytes(prop_bytes, byteorder=search['asm_arch']['byteorder'], signed=False)
-        elif var_info['variety'] in [DataVariety.FLOAT, DataVariety.DOUBLE]:
-            prop_bytes = b""
-            for valstr in new_value_str.split():
-                valflt = float(valstr,0)
-                if prop_size >= 8:
-                    prop_bytes += struct.pack("d", valflt)
-                else:
-                    prop_bytes += struct.pack("f", valflt)
-            new_value = int.from_bytes(prop_bytes, byteorder=search['asm_arch']['byteorder'], signed=False)
+    if (var_info['type'] in [VarType.DIRECT_INT_VALUE]):
+        # The value was taken directly from code - must be converted to int form
+        prop_bytes = armfw_elf_search_value_native_type_to_bytes(asm_arch, var_info, new_var_nativ)
+        if len(prop_bytes) > 0:
+            prop_pad = len(prop_bytes) % 4
+            if prop_pad != 0:
+                prop_bytes = prop_bytes + (b"\0" * (4 - prop_pad))
+            new_value = int.from_bytes(prop_bytes, byteorder=asm_arch['byteorder'], signed=False)
         else:
             new_value = None
         if new_value is None:
-            raise ValueError('Unable to prepare direct int value from provided string value.')
+            raise ValueError("Unable to prepare direct int value from provided string value.")
         new_value_for_asm = "0x{:x}".format(new_value)
         asm_line = re.sub(r'[(][?]P<'+var_info['name']+r'>[^)]+[)]', new_value_for_asm, var_info['re_line_str'])
         # Now compile our new code line
         ks = Ks(asm_arch['ks_const'], asm_arch['ks_mode'])
         encoding, _ = ks.asm(asm_line)
+        valbt = {}
         valbt['sect'] = '.text'
         section = elf_sections[valbt['sect']]
         valbt['offs'] = var_info['address'] - section['addr']
         valbt['data'] = bytes(encoding)
+        valbts.append(valbt)
         #print("{:s} = {:s}".format(asm_line, encoding))
-    elif ((var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA) or (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA)
-      or (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA)):
+    elif (var_info['type'] in [VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,
+      VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA]):
         # The value was referenced in code, but stored outside
-        if var_info['variety'] in [DataVariety.CHAR]:
-            if 'array' in var_info:
-                prop_bytes = new_value_str.encode("utf-8")
-            else:
-                prop_bytes = struct.pack("B", int(new_value_str,0))
-        elif var_info['variety'] in [DataVariety.UINT8_T, DataVariety.UINT16_T, DataVariety.UINT32_T, DataVariety.UINT64_T, DataVariety.INT8_T, DataVariety.INT16_T, DataVariety.INT32_T, DataVariety.INT64_T]:
-            prop_bytes = b""
-            for valstr in new_value_str.split():
-                valint = int(valstr,0)
-                prop_bytes += valint.to_bytes(prop_size, search['asm_arch']['byteorder'])
-        elif var_info['variety'] in [DataVariety.FLOAT, DataVariety.DOUBLE]:
-            prop_bytes = b""
-            for valstr in new_value_str.split():
-                valflt = float(valstr,0)
-                if prop_size >= 8:
-                    prop_bytes += struct.pack("d", valflt)
-                else:
-                    prop_bytes += struct.pack("f", valflt)
-        elif var_info['variety'] in [DataVariety.STRUCT]:
-            var_struct = var_info['struct']()
-            for field, valstr in zip(var_struct._fields_,new_value_str.split()):
-                setattr(var_struct, field[0], int(valstr,0))
-            prop_bytes = (c_ubyte * sizeof(var_struct)).from_buffer_copy(var_struct)
-        else:
-            prop_bytes = b""
-
+        prop_bytes = armfw_elf_search_value_native_type_to_bytes(asm_arch, var_info, new_var_nativ)
         if len(prop_bytes) < 1:
-            raise ValueError('Unable to prepare bytes from provided string value.')
+            raise ValueError("Unable to prepare bytes from provided string value.")
 
         var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, var_info['value']) # for "*_ADDR_*" types, value stores address
+        valbt = {}
         valbt['sect'] = var_sect
         section = elf_sections[valbt['sect']]
         valbt['offs'] = var_offs
         valbt['data'] = bytes(prop_bytes)
+        valbts.append(valbt)
+    elif (var_info['type'] in [VarType.DETACHED_DATA]):
+        patterns_next = find_patterns_containing_variable(re_list, var_type=var_info['type'], var_name=var_info['name'], var_setValue=new_var_nativ)
+        patterns_prev = find_patterns_containing_variable(re_list, var_type=var_info['type'], var_name=var_info['name'], var_setValue=var_info['setValue'])
+        if patterns_prev != patterns_next:
+            patterns_diff = find_patterns_diff(patterns_prev, patterns_next)
+            #TODO
+            raise NotImplementedError("WIP")
     else:
-        raise NotImplementedError('Unexpected variable type found.')
+        raise NotImplementedError("Unexpected variable type found.")
 
-    if (valbt['offs'] < 0) or (valbt['offs'] + len (valbt['data']) > len(section['data'])):
-        raise ValueError('Got past code section border - internal error.')
-    return valbt
+    for valbt in valbts:
+        section = elf_sections[valbt['sect']]
+        if (valbt['offs'] < 0) or (valbt['offs'] + len (valbt['data']) > len(section['data'])):
+            raise ValueError("Got past section '{:s}' border - internal error.".format(valbt['sect']))
+    return valbts
 
 
 def armfw_elf_paramvals_extract_list(po, elffh, re_list):
@@ -1135,6 +1276,8 @@ def armfw_elf_ambavals_list(po, elffh):
     # print list of parameter values
     for par_name, par_info in params_list.items():
         print("{:s}\t{:s}".format(par_name,par_info['str_value']))
+    if (po.verbose > 0):
+        print("{:s}: Listed {:d} hardcoded values".format(po.elffile,len(params_list)))
 
 
 def armfw_elf_ambavals_extract(po, elffh):
@@ -1179,6 +1322,8 @@ def armfw_elf_ambavals_extract(po, elffh):
         full_index += 1
     valfile.write("\n")
     valfile.write("]\n")
+    if (po.verbose > 0):
+        print("{:s}: Extracted {:d} hardcoded values".format(po.elffile,len(params_list)))
     valfile.close()
 
 
@@ -1199,19 +1344,23 @@ def armfw_elf_ambavals_update(po, elffh):
             eprint("{:s}: Value '{:s}' not found in ELF file.".format(po.elffile,nxpar['name']))
             continue
         par_info = params_list[nxpar['name']]
-        valbt = armfw_elf_get_value_update_bytes(asm_arch, elf_sections, par_info, nxpar['setValue'])
-        section = elf_sections[valbt['sect']]
-        old_beg = valbt['offs']
-        old_end = valbt['offs']+len(valbt['data'])
-        old_data = section['data'][old_beg:old_end]
-        if valbt['data'] != old_data:
-            if (po.verbose > 1):
-                print("Replacing {:s} -> {:s} to set {:s}".format(old_data.hex(),valbt['data'].hex(),par_info['name']))
-            sect_data = section['data']
-            sect_data[old_beg:old_end] = valbt['data']
+        valbts = armfw_elf_get_value_update_bytes(asm_arch, elf_sections, re_general_list, par_info, nxpar['setValue'])
+        update_performed = False
+        for valbt in valbts:
+            section = elf_sections[valbt['sect']]
+            old_beg = valbt['offs']
+            old_end = valbt['offs']+len(valbt['data'])
+            old_data = section['data'][old_beg:old_end]
+            if valbt['data'] != old_data:
+                update_performed = True
+                if (po.verbose > 1):
+                    print("Replacing {:s} -> {:s} to set {:s}".format(old_data.hex(),valbt['data'].hex(),par_info['name']))
+                sect_data = section['data']
+                sect_data[old_beg:old_end] = valbt['data']
+        if update_performed:
             update_count += 1
     if (po.verbose > 0):
-        print("{:s}: Updated {:d} hardcoded values".format(po.elffile,update_count))
+        print("{:s}: Updated {:d} out of {:d} hardcoded values".format(po.elffile,update_count,len(params_list)))
     # Now update the ELF file
     for section_name, section in elf_sections.items():
         elfsect = elfobj.get_section_by_name(section_name)
@@ -1312,7 +1461,7 @@ def main():
 
     else:
 
-        raise NotImplementedError('Unsupported command.')
+        raise NotImplementedError("Unsupported command.")
 
 if __name__ == "__main__":
     main()
