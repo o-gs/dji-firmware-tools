@@ -27,16 +27,22 @@ f.rec_seqctr = ProtoField.uint16 ("dji_mavic.rec_seqctr", "Seq Counter", base.DE
 
 -- Fields for ProtoVer = 1 (UART communication)
 
+-- [4]  Sender Idx
+f.sender_idx = ProtoField.uint8 ("dji_mavic.sender_idx", "Sender Index", base.DEC, nil, 0xE0)
 -- [4]  Sender
 f.sender = ProtoField.uint8 ("dji_mavic.sender", "Sender", base.DEC, DJI_MAVIC_FLIGHT_CONTROL_UART_SRC_DEST, 0x1F)
+-- [5]  Receiver Idx
+f.receiver_idx = ProtoField.uint8 ("dji_mavic.receiver_idx", "Receiver Index", base.DEC, nil, 0xE0)
 -- [5]  Receiver
 f.receiver = ProtoField.uint8 ("dji_mavic.receiver", "Receiver", base.DEC, DJI_MAVIC_FLIGHT_CONTROL_UART_SRC_DEST, 0x1F)
 -- [6-7]  Sequence Ctr
 f.seqctr = ProtoField.uint16 ("dji_mavic.seqctr", "Seq Counter", base.DEC)
 -- [8] Encryption
 f.encrypt = ProtoField.uint8 ("dji_mavic.encrypt", "Encryption Type", base.DEC, DJI_MAVIC_FLIGHT_CONTROL_UART_ENCRYPT_TYPE, 0x0F)
--- [8] Ack (to be improved)
-f.ack = ProtoField.uint8 ("dji_mavic.ack", "Ack", base.HEX, DJI_MAVIC_FLIGHT_CONTROL_UART_ACK_POLL, 0x60)
+-- [8] Ack
+f.ack = ProtoField.uint8 ("dji_mavic.ack", "Ack", base.HEX, DJI_MAVIC_FLIGHT_CONTROL_UART_ACK_TYPE, 0x60)
+-- [8] Packet Type
+f.pack_type = ProtoField.uint8 ("dji_mavic.pack_type", "Packet Type", base.HEX, DJI_MAVIC_FLIGHT_CONTROL_UART_PACKET_TYPE, 0x80)
 -- [9] Cmd Set
 f.cmdset = ProtoField.uint8("dji_mavic.cmdset", "Cmd Set", base.DEC, DJI_MAVIC_FLIGHT_CONTROL_UART_CMD_SET, 0xFF)
 -- [A] Cmd
@@ -135,10 +141,12 @@ local function main_dissector(buffer, pinfo, subtree)
     else
 
         -- [4] Sender
+        subtree:add (f.sender_idx, buffer(offset, 1))
         subtree:add (f.sender, buffer(offset, 1))
         offset = offset + 1
 
         -- [5] Receiver
+        subtree:add (f.receiver_idx, buffer(offset, 1))
         subtree:add (f.receiver, buffer(offset, 1))
         offset = offset + 1
 
@@ -146,9 +154,10 @@ local function main_dissector(buffer, pinfo, subtree)
         subtree:add_le (f.seqctr, buffer(offset, 2))
         offset = offset + 2
 
-        -- [8] Encrypt | Ack
+        -- [8] Encrypt | Ack | Response
         subtree:add (f.encrypt, buffer(offset, 1))
         subtree:add (f.ack, buffer(offset, 1))
+        subtree:add (f.pack_type, buffer(offset, 1))
         offset = offset + 1
 
         -- [9] Cmd Set
