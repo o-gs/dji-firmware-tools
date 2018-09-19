@@ -38,7 +38,7 @@ Below the specific tools are described in short. Running them without parameters
 will give you details on supported commands in each of them.
 
 To get specifics about command line arguments of each tool, run them with `--help`
-option.
+option. Some tools also have additional remarks in their headers - try viewing them.
 
 ### dji_xv4_fwcon.py
 
@@ -181,6 +181,23 @@ Example of exporting hard-coded values to JSON file:
 Example of importing values from JSON file back to ELF:
 
 ```./amba_sys_hardcoder.py -vv -u --elffile P3X_FW_V01.08.0080_m0100_part_sys.elf```
+
+### dm3xx_encode_usb_hardcoder.py
+
+Dji DM3xx DaVinci encode_usb binary hard-coded values editor.
+
+The tool can parse encode_usb ELF file from Dji Firmware module for
+TI DM3xx DaVinci Media Processor.
+It finds certain hard-coded values in the binary data, and allows
+exporting or importing them.
+
+Example of exporting hard-coded values to JSON file:
+
+```./dm3xx_encode_usb_hardcoder.py -vv -x --elffile P3X_FW_V01.07.0060_m0800-encode_usb.elf```
+
+Example of importing values from JSON file back to ELF:
+
+```./dm3xx_encode_usb_hardcoder.py -vv -u --elffile P3X_FW_V01.07.0060_m0800-encode_usb.elf```
 
 ### dji_flyc_param_ed.py
 
