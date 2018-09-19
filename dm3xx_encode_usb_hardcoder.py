@@ -402,7 +402,7 @@ re_general_list = [
 
 
 def armfw_elf_dm3xxvals_list(po, elffh):
-    params_list, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
+    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
     # print list of parameter values
     for par_name, par_info in params_list.items():
         print("{:s}\t{:s}".format(par_name,par_info['str_value']))
@@ -413,7 +413,7 @@ def armfw_elf_dm3xxvals_list(po, elffh):
 def armfw_elf_dm3xxvals_extract(po, elffh):
     """ Extracts all values from firmware to JSON format text file.
     """
-    params_list, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
+    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
     if len(params_list) <= 0:
         raise ValueError("No known values found in ELF file.")
     if not po.dry_run:
