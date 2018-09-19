@@ -684,7 +684,9 @@ def armfw_elf_ambavals_objdump(po, elffh):
                     print("")
                 sect_offs += size
 
-def armfw_asm_search_string_to_re(re_patterns):
+def armfw_asm_search_strings_to_re_list(re_patterns):
+    """ Converts multiline regex string to a list of patterns.
+    """
     # Divide to lines
     re_lines = re_patterns.split(sep="\n")
     # Remove comments
@@ -706,7 +708,7 @@ def armfw_elf_section_search_init(asm_arch, section, patterns):
     search['asm_arch'] = asm_arch
     search['section'] = section
     search['name'] = patterns['name']
-    search['re'] = armfw_asm_search_string_to_re(patterns['re'])
+    search['re'] = armfw_asm_search_strings_to_re_list(patterns['re'])
     search['var_defs'] = patterns['vars']
     search['var_vals'] = {}
     search['match_address'] = 0
@@ -797,6 +799,8 @@ def armfw_elf_section_search_get_value_size(asm_arch, var_info):
 
 
 def armfw_elf_compute_code_length(asm_arch, patterns):
+    """ Returns length in bytes of given asm patterns list.
+    """
     # TODO - make support of variable instruction size architactures
     return len(patterns)*asm_arch['boundary']
 
@@ -890,8 +894,8 @@ def armfw_elf_search_value_native_type_to_string(var_nativ):
     return val_str
 
 def armfw_elf_search_value_string_to_native_type(var_info, var_str):
-    """
-    Converts string value to native type.
+    """ Converts string value to native type.
+
     Native type can be str, int, float, struct or array of int or float.
     """
     if var_info['variety'] in [DataVariety.CHAR]:
@@ -947,8 +951,12 @@ def find_patterns_containing_variable(re_list, var_type=None, var_variety=None, 
 
 
 def find_patterns_diff(patterns_prev, patterns_next):
-    re_lines_prev = armfw_asm_search_string_to_re(patterns_prev['re'])
-    re_lines_next = armfw_asm_search_string_to_re(patterns_next['re'])
+    """ Given two patterns, returns a part which is different between them.
+
+    Assumes that patterns correspond to code of the same langth.
+    """
+    re_lines_prev = armfw_asm_search_strings_to_re_list(patterns_prev['re'])
+    re_lines_next = armfw_asm_search_strings_to_re_list(patterns_next['re'])
     sp = 0
     sn = 0
     while sp < len(re_lines_prev) and sn < len(re_lines_next):
@@ -1227,6 +1235,29 @@ def armfw_elf_match_to_global_values(po, match, cfunc_name):
     return params_list
 
 
+def armfw_asm_compile_lines(asm_arch, asm_addr, asm_lines):
+    ks = Ks(asm_arch['ks_const'], asm_arch['ks_mode'])
+    asm_ln_start = 0
+    bt_enc_data = b''
+    for asm_ln_curr in range(len(asm_lines)+1):
+        if asm_ln_curr < len(asm_lines):
+            curr_data = armfw_asm_parse_data_definition(asm_arch, asm_lines[asm_ln_curr])
+        else:
+            curr_data = {'value': b''}
+        if curr_data is not None:
+            # Compile any pending asm lines
+            if asm_ln_start < asm_ln_curr:
+                asm_addr_curr = asm_addr + len(bt_enc_data)
+                encoding, encoded_num = ks.asm("\n".join(asm_lines[asm_ln_start:asm_ln_curr]), addr=asm_addr_curr)
+                if encoded_num != asm_ln_curr-asm_ln_start:
+                    raise ValueError("Cannot compile all assembly lines; compiled circa {:d} out of {:d}.".format(asm_ln_start+encoded_num, len(asm_lines)))
+                bt_enc_data += bytes(encoding)
+            # Add data from the line at end
+            bt_enc_data += curr_data['value']
+            asm_ln_start = asm_ln_curr + 1
+    return bt_enc_data
+
+
 def prepare_asm_line_from_pattern(asm_arch, elf_sections, glob_params_list, address, cfunc_name, pat_line):
     # List regex parameters used in that line
     vars_used = re.findall(r'[(][?]P<([^>]+)>[^)]+[)]', pat_line)
@@ -1263,6 +1294,17 @@ def prepare_asm_line_from_pattern(asm_arch, elf_sections, glob_params_list, addr
     asm_line = re.sub(r'\\([\[\]])', r'\1', asm_line)
     return asm_line, instr_size
 
+
+def prepare_asm_lines_from_pattern_list(asm_arch, elf_sections, glob_params_list, patterns_addr, var_info, pattern_lines):
+    asm_lines = []
+    asm_addr_curr = patterns_addr
+    for pat_line in pattern_lines:
+        asm_line, code_size = prepare_asm_line_from_pattern(asm_arch, elf_sections, glob_params_list, asm_addr_curr, var_info['cfunc_name'], pat_line)
+        asm_addr_curr += code_size
+        asm_lines.append(asm_line)
+    return asm_lines, (asm_addr_curr-patterns_addr)
+
+
 def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, var_info, new_value_str):
     valbts = []
     # Get expected length of the value
@@ -1285,24 +1327,40 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             new_value = None
         if new_value is None:
             raise ValueError("Unable to prepare direct int value from provided string value.")
-        #TODO replace with the more complex patching used below for DETACHED_DATA
-        new_value_for_asm = "0x{:x}".format(new_value)
-        asm_line = re.sub(r'[(][?]P<'+var_info['name']+r'>[^)]+[)]', new_value_for_asm, var_info['re_line_str'])
+        # We are only changing one line, but use the whole multiline algorithm just for unification
+        patterns_list = [var_info['re_line_str'],]
+        # The global variable is named either exactly like property, or is preceded by function name
+        glob_var_info = None
+        if var_info['name'] in glob_params_list:
+            glob_var_info = glob_params_list[var_info['name']]
+        if var_info['cfunc_name']+'.'+var_info['name'] in glob_params_list:
+            glob_var_info = glob_params_list[var_info['cfunc_name']+'.'+var_info['name']]
+        if glob_var_info is None:
+            raise ValueError("Lost the variable to set, '{:s}' - internal error.".format(var_info['name']))
+        # Set new value of lthe global variable and generate the code with it
+        glob_var_info['value'] = new_value
+        patterns_addr = var_info['address']
+        var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
+        asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, elf_sections, glob_params_list, patterns_addr, var_info, patterns_list)
         # Now compile our new code line
-        ks = Ks(asm_arch['ks_const'], asm_arch['ks_mode'])
-        encoding, _ = ks.asm(asm_line)
+        if (po.verbose > 2):
+            print("Compiling code:","; ".join(asm_lines))
+        bt_enc_data = armfw_asm_compile_lines(asm_arch, patterns_addr, asm_lines)
+        if len(bt_enc_data) != bt_size_predict:
+            raise ValueError("Compiled code size different than expected (got {:d} instead of {:d} bytes) - internal error.".format(len(bt_enc_data),bt_size_predict))
         valbt = {}
-        valbt['sect'] = '.text'
+        valbt['sect'] = var_sect
         section = elf_sections[valbt['sect']]
-        valbt['offs'] = var_info['address'] - section['addr']
-        valbt['data'] = bytes(encoding)
+        valbt['offs'] = var_offs
+        valbt['data'] = bt_enc_data
         valbts.append(valbt)
+
         #print("{:s} = {:s}".format(asm_line, encoding))
     elif (var_info['type'] in [VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,
       VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA]):
         # The value was referenced in code, but stored outside
-        prop_bytes = armfw_elf_search_value_native_type_to_bytes(asm_arch, var_info, new_var_nativ)
-        if len(prop_bytes) < 1:
+        bt_enc_data = armfw_elf_search_value_native_type_to_bytes(asm_arch, var_info, new_var_nativ)
+        if len(bt_enc_data) < 1:
             raise ValueError("Unable to prepare bytes from provided string value.")
 
         var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, var_info['value']) # for "*_ADDR_*" types, value stores address
@@ -1310,7 +1368,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
         valbt['sect'] = var_sect
         section = elf_sections[valbt['sect']]
         valbt['offs'] = var_offs
-        valbt['data'] = bytes(prop_bytes)
+        valbt['data'] = bytes(bt_enc_data)
         valbts.append(valbt)
     elif (var_info['type'] in [VarType.DETACHED_DATA]):
         # For detached data, we need to find an assembly pattern with matching value, and then patch the asm code to look like it
@@ -1324,37 +1382,15 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             # From patterns preceding the diff, compute offset where the diff starts
             patterns_addr = var_info['address'] + armfw_elf_compute_code_length(asm_arch, patterns_preced)
             var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
-            asm_lines = []
-            asm_addr_curr = patterns_addr
-            for pat_line in patterns_diff:
-                asm_line, code_size = prepare_asm_line_from_pattern(asm_arch, elf_sections, glob_params_list, asm_addr_curr, var_info['cfunc_name'], pat_line)
-                asm_addr_curr += code_size
-                asm_lines.append(asm_line)
+            asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, elf_sections, glob_params_list, patterns_addr, var_info, patterns_diff)
             if len(asm_lines) < 1:
                 raise ValueError("No assembly lines prepared - internal error.")
-            if (po.verbose > 2):
-                print("Compiling code:",asm_lines)
             # Now compile our new code line
-            ks = Ks(asm_arch['ks_const'], asm_arch['ks_mode'])
-            asm_ln_start = 0
-            bt_enc_data = b''
-            for asm_ln_curr in range(len(asm_lines)+1):
-                if asm_ln_curr < len(asm_lines):
-                    curr_data = armfw_asm_parse_data_definition(asm_arch, asm_lines[asm_ln_curr])
-                else:
-                    curr_data = {'value': b''}
-                if curr_data is not None:
-                    # Compile any pending asm lines
-                    if asm_ln_start < asm_ln_curr:
-                        asm_addr_curr = patterns_addr + len(bt_enc_data)
-                        encoding, encoded_num = ks.asm("\n".join(asm_lines[asm_ln_start:asm_ln_curr]), addr=asm_addr_curr)
-                        if encoded_num != asm_ln_curr-asm_ln_start:
-                            raise ValueError("Cannot compile all assembly lines; compiled circa {:d} out of {:d}.".format(asm_ln_start+encoded_num, len(asm_lines)))
-                        bt_enc_data += bytes(encoding)
-                    # Add data from the line at end
-                    bt_enc_data += curr_data['value']
-                    asm_ln_start = asm_ln_curr + 1
-
+            if (po.verbose > 2):
+                print("Compiling code:","; ".join(asm_lines))
+            bt_enc_data = armfw_asm_compile_lines(asm_arch, patterns_addr, asm_lines)
+            if len(bt_enc_data) != bt_size_predict:
+                raise ValueError("Compiled code size different than expected (got {:d} instead of {:d} bytes) - internal error.".format(len(bt_enc_data),bt_size_predict))
             valbt = {}
             valbt['sect'] = var_sect
             section = elf_sections[valbt['sect']]
