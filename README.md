@@ -35,6 +35,9 @@ The source code is intended to also act as a format documentation.
 Below the specific tools are described in short. Running them without parameters
 will give you details on supported commands in each of them.
 
+To get specifics about command line arguments of each tool, run them with `--help`
+option.
+
 ### dji_xv4_fwcon.py
 
 DJI Firmware xV4 Container tool; allows extracting modules from package file which
@@ -86,27 +89,48 @@ Example: ```./amba_romfs.py -vv -x -p P3X_FW_V01.08.0080_m0100_part_rom_fw.a9s``
 Linux script for mounting UBIFS partition from the Ambarella firmware. After
 mounting, the files can be copied or modified. Use this after the Ambarella
 firmware is extracted. The file containing UBIFS can be easily recognized
-by "UBI#" at the beginning of the file.
+by `UBI#` at the beginning of the file.
 
 Example: ```sudo ./amba_ubifs.sh P3X_FW_V01.08.0080_m0100_part_rfs.a9s```
 
 
 ### arm_bin2elf.py
 
-Tool which wrapps binary execytable ARM images with ELF header. If a firmware
+Tool which wrapps binary executable ARM images with ELF header. If a firmware
 contains binary image of executable file, this tool can rebuild ELF header for it.
 The ELF format can be then easily disassembled, as most debuggers can read ELF files.
 Note that using this tool on encrypted firmwares will not result in useable ELF.
 
 Example: ```./arm_bin2elf.py -vv -e -b 0x8020000 -l 0x6000000 -p P3X_FW_V01.07.0060_m0306.bin```
 
-After first look at the disassembly, it is good to find where the correct border
-between '.text' and '.data' sections is located. File offset of this location can
-be used to generate better ELF file in case '.ARM.exidx' section was not detected.
-This section is treated as a separator between '.text' and '.data'. This means that
-position of the '.ARM.exidx' influences length of the '.text' section, and starting
-offset of the '.data' section. If there is no '.ARM.exidx' section in the file, it
-will still be used as separator, just with zero size.
+The command above will cause the tool to try and detect where the border between
+code (`.text`) and data (`.data`) sections should be. This detection is not perfect,
+especially for binaries with no `.ARM.exidx` section between them. If `.ARM.exidx`
+exists in the binary, the tool can easily find it and divide binary data properly,
+treating `.ARM.exidx` as a separator between `.text` and `.data`.
+
+In other words, position of the `.ARM.exidx` influences length of the `.text` section,
+and starting offset of the `.data` section. If there is no `.ARM.exidx` section in
+the file, it will still be used as separator, just with zero size.
+After first look at the disassembly, it is good to check where the correct border
+between `.text` and `.data` sections is located. File offset of this location can
+be used to generate better ELF file.
+
+Additional updates to the ELF after first look can include defining `.bss` sections.
+These sections represent uninitialized RAM used by the binary. It is tempting to just
+define one big section which covers whole RAM address range according to the processor
+documentation, but that results in huge memory usage and related slowdowns while
+disassembling the file.
+
+Note that all section offsets are defined using start of the BIN file as reference,
+or in other words - they assume base address of 0x0. If you have found proper location
+of a section, remember to remove base address from the memory location before inserting
+to the command line of this tool.
+
+Base address can be often found in processor documentation; sometimes it may be shifted
+from that location, if the binary is loaded by an additional bootloader. In such cases
+the bootloader takes the location from documentation, and the real firmware binary is
+loaded at a bit higher address.
 
 Optimized examples for specific firmwares:
 
