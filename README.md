@@ -30,6 +30,8 @@ Since all the tools are available in source code form, it is easy to check detai
 on the structure and protocols processed by these tools by looking at their source.
 The source code is intended to also act as a format documentation.
 
+For higher level and more hardware related info, check [the project Wiki](https://github.com/o-gs/dji-firmware-tools/wiki).
+
 # Tools
 
 Below the specific tools are described in short. Running them without parameters
@@ -51,7 +53,8 @@ Example: ```./dji_xv4_fwcon.py -vv -x -p P3X_FW_V01.08.0080.bin```
 
 DJI Firmware IMaH Un-signer and Decryptor tool; allows to decrypt and un-sign module
 from `.sig` file which starts with `IM*H`. Use this tool after untarring single
-modules from a firmware package, to decrypt its content.
+modules from a firmware package, to decrypt its content. The tool can also sign
+an un-signed module, as long as private part of the chosen key is available.
 
 Example: ```./dji_imah_fwsig.py -vv -u -i wm335_0306_v03.03.04.10_20180429.pro.fw.sig```
 
@@ -118,8 +121,8 @@ be used to generate better ELF file.
 
 Additional updates to the ELF after first look can include defining `.bss` sections.
 These sections represent uninitialized RAM used by the binary. It is tempting to just
-define one big section which covers whole RAM address range according to the processor
-documentation, but that results in huge memory usage and related slowdowns while
+define one big section which covers whole RAM address range according to programming
+guide of the chip, but that results in huge memory usage and related slowdowns while
 disassembling the file.
 
 Note that all section offsets are defined using start of the BIN file as reference,
@@ -127,10 +130,10 @@ or in other words - they assume base address of 0x0. If you have found proper lo
 of a section, remember to remove base address from the memory location before inserting
 to the command line of this tool.
 
-Base address can be often found in processor documentation; sometimes it may be shifted
-from that location, if the binary is loaded by an additional bootloader. In such cases
-the bootloader takes the location from documentation, and the real firmware binary is
-loaded at a bit higher address.
+Base address can be often found in programming guide of the specific chip; sometimes it
+may be shifted from that location, if the binary is loaded by an additional bootloader.
+In such cases the bootloader takes the location from documentation, and the real firmware
+binary is loaded at a bit higher base address.
 
 Optimized examples for specific firmwares:
 
