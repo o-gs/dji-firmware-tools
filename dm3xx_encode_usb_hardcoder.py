@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" Ambarella Firmware SYS partiton hard-coded values editor.
+""" Dji DM3xx DaVinci encode_usb binary hard-coded values editor.
 
-The tool can parse Ambarella firmware SYS partition converted to ELF.
+The tool can parse encode_usb ELF file from Dji Firmware module for
+TI DM3xx DaVinci Media Processor.
 It finds certain hard-coded values in the binary data, and allows
 exporting or importing them.
 
@@ -14,6 +15,24 @@ will not influence update operation.
 
 Exported values:
 
+og_hardcoded.p3x_dm3xx.startup_encrypt_check_always_pass -
+
+  The binary does encryption check at startup by sending encrypt request
+  to camera (m0100) and comparing result with same data encrypted locally.
+  If the comparison fails (which means encryption keys are different),
+  the binary will continously retry encryption, generating considerable
+  CPU load and degrading video compression to 8FPS due to that.
+  This option, when set to 1, prevents the continous loop by always setting
+  encryption check status to "passed".
+
+  Here's an example DaVinci console log when there is no issue with encryption:
+  ```
+  Entry Encrypt qury mode
+  [...]
+  Encrypt passed!
+  ```
+  The second line should show within 100 lines after first one. If it never
+  shows, then there is an issue which results in continous retries.
 
 """
 
@@ -34,7 +53,7 @@ Exported values:
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
