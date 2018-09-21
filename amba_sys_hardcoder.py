@@ -798,11 +798,21 @@ def armfw_elf_section_search_get_value_size(asm_arch, var_info):
     return var_size, var_count
 
 
-def armfw_elf_compute_code_length(asm_arch, patterns):
+def armfw_elf_compute_pattern_code_length(asm_arch, patterns, pattern_vars):
     """ Returns length in bytes of given asm patterns list.
     """
-    # TODO - make support of variable instruction size architactures
-    return len(patterns)*asm_arch['boundary']
+    code_size = 0
+    for pat_line in patterns:
+        data_item_size = armfw_asm_is_data_definition(asm_arch, pat_line)
+        vars_used = re.findall(r'[(][?]P<([^>]+)>[^)]+[)]', pat_line)
+        if data_item_size is not None:
+            # TODO - make support of arrays
+            code_size += data_item_size
+        else:
+            # TODO - make support of variable instruction size architactures
+            # ie. by replacing all vars in regex by arbitrary value
+            code_size += asm_arch['boundary']
+    return code_size
 
 def armfw_elf_search_value_bytes_to_native_type(asm_arch, var_info, var_bytes):
     """ Converts bytes to a variable described in info struct and architecture.
@@ -1025,6 +1035,27 @@ def armfw_asm_parse_data_definition(asm_arch, asm_line):
     return {'variety': dt_variety, 'value': dt_bytes }
 
 
+def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, var_defs):
+    """ Converts bytes into data definition, keeping format given in pattern line.
+    """
+    whole_size = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs)
+    itm_size = armfw_asm_is_data_definition(asm_arch, pat_line)
+    if itm_size == 1:
+        mnemonic = 'dcb'
+    elif itm_size == 2:
+        mnemonic = 'dcw'
+    elif itm_size == 4:
+        mnemonic = 'dcd'
+    elif itm_size == 8:
+        mnemonic = 'dcq'
+    itm_count = whole_size // itm_size
+    op_list = []
+    for i in range(itm_count):
+        op_list.append(int.from_bytes(bt_data[i*itm_size:(i+1)*itm_size], byteorder=asm_arch['byteorder'], signed=False))
+    op_list_str = ["0x{:x}".format(itm) for itm in op_list]
+    return bt_addr, whole_size, mnemonic, ", ".join(op_list_str)
+
+
 def armfw_elf_section_search_add_var(search, var_name, var_suffix, var_info, prop_ofs_val, prop_str, address, size):
     """ Adds variable to current search results.
 
@@ -1140,7 +1171,34 @@ def armfw_elf_section_search_block(search, sect_offs, elf_sections, cs, block_le
         curr_is_data = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
         if curr_is_data is not None:
             # now matching a data line; get its length
-            raise NotImplementedError("TODO data '{:s}'".format(curr_pattern))
+            line_iter = [armfw_elf_data_definition_from_bytes(search['asm_arch'],search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs, curr_pattern, search['var_defs']),]
+            for (address, size, mnemonic, op_str) in line_iter:
+                instruction_str = "{:s}\t{:s}".format(mnemonic, op_str).strip()
+                #print("aa",instruction_str,curr_pattern)
+                re_code = re.search(curr_pattern, instruction_str)
+                # The block below is exactly the same as for normal instruction
+                match_ok = (re_code is not None)
+                if match_ok:
+                    match_ok = armfw_elf_section_search_process_vars_from_code(search, elf_sections, address, size, re_code)
+
+                if match_ok:
+                    #print("a {:d} @ {:x}".format(search['match_lines'],address))
+                    search = armfw_elf_section_search_progress(search, address, size)
+                    if search['match_lines'] == 0: # This means we had a full match; we need to go back with offset to search for overlapping areas
+                        sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
+                        break
+                    curr_pattern = armfw_elf_section_search_get_pattern(search)
+                    sect_offs += size
+                    curr_is_data = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
+                    if curr_is_data is not None: break
+                else:
+                    # Breaking the loop is expensive; do it only if we had more than one line matched, to search for overlapping areas
+                    if search['match_lines'] > 0: # this really means > 1 because the value of 1 (fast reset) was handled before
+                        sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
+                        search = armfw_elf_section_search_reset(search)
+                        break
+                    else: # search['match_lines'] == 0
+                        sect_offs += size
         else:
             # now matching an assembly code line
             for (address, size, mnemonic, op_str) in cs.disasm_lite(search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs):
@@ -1178,7 +1236,8 @@ def armfw_elf_section_search_block(search, sect_offs, elf_sections, cs, block_le
                     else: # search['match_lines'] == 0
                         sect_offs += size
             else: # for loop finished by inability to decode next instruction
-                # Currently end of code means end of matching - data search is todo
+                # We know that curr_is_data is None - otherwise we'd break the loop; so since we encoured
+                # invalid instruction, we are sure that the current matching failed and we should reset.
                 sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
                 search = armfw_elf_section_search_reset(search)
     return (search, sect_offs)
@@ -1261,8 +1320,7 @@ def armfw_asm_compile_lines(asm_arch, asm_addr, asm_lines):
 def prepare_asm_line_from_pattern(asm_arch, elf_sections, glob_params_list, address, cfunc_name, pat_line):
     # List regex parameters used in that line
     vars_used = re.findall(r'[(][?]P<([^>]+)>[^)]+[)]', pat_line)
-    #TODO would be better to have instruction size from the assembly, ie. by replacing all vars in regex by arbitrary value
-    instr_size = asm_arch['boundary']
+    instr_size = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], glob_params_list)
     # Replace parameters with their values
     asm_line = pat_line
     for var_name in vars_used:
@@ -1380,7 +1438,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             patterns_diff, patterns_preced = find_patterns_diff(patterns_prev, patterns_next)
         if len(patterns_diff) > 0:
             # From patterns preceding the diff, compute offset where the diff starts
-            patterns_addr = var_info['address'] + armfw_elf_compute_code_length(asm_arch, patterns_preced)
+            patterns_addr = var_info['address'] + armfw_elf_compute_pattern_code_length(asm_arch, patterns_preced, patterns_next['vars'])
             var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
             asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, elf_sections, glob_params_list, patterns_addr, var_info, patterns_diff)
             if len(asm_lines) < 1:
