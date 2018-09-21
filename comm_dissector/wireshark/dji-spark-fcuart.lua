@@ -87,8 +87,42 @@ local CENTER_BRD_CMDS = {
 local RC_CMDS = {
 }
 
+-- source: dji.go.4_4.1.14, dji.midware.data.config.P3.s
 local WIFI_CMDS = {
-    [0x30] = 'Set Region',
+    [7] = 'GetSSID',
+    [8] = 'SetSSID',
+    [9] = 'GetSignalPush',
+    [16] = 'SetWifiFrequency',
+    [14] = 'GetPassword',
+    [13] = 'SetPassword',
+    [17] = 'GetPushFirstAppMac',
+    [18] = 'GetPushElectricSignal',
+    [19] = 'SetPowerMode',
+    [21] = 'RestartWifi',
+    [22] = 'SetSelectionMode',
+    [23] = 'GetSelectionMode',
+    [0x20] = 'GetWifiFrequency',
+    [38] = 'SetNoiseCheckAdapt',
+    [39] = 'SwitchSDR',
+    [40] = 'GetChannelList',
+    [41] = 'SetSweepFrequency',
+    [42] = 'GetPushSweepFrequency',
+    [43] = 'SetWifiModeChannel',
+    [44] = 'SetWifiCodeRate',
+    [45] = 'GetWifiCurCodeRate',
+    [46] = 'SetWifiFreq5GMode',
+    [0x2F] = 'GetWifiFreqMode',
+    [0x30] = 'SetWiFiCountryCode',
+--  [0x30] = 'Set Region',
+    [51] = 'IsSupportCountryCode',
+    [41] = 'RequestSnrPush',
+    [0x80] = 'GetPushLog',
+    [130] = 'GetPushMasterSlaveStatus',
+    [0x83] = 'SetMasterSlaveAuthCode',
+    [0x84] = 'ScanMasterList',
+    [0x85] = 'ConnectMasterWithIdAuthCode',
+    [0x89] = 'GetAuthCode',
+    [0x8B] = 'GetPushMSErrorInfo',
 }
 
 local DM36X_CMDS = {
