@@ -140,7 +140,23 @@ local SIM_CMDS = {
 local ESC_CMDS = {
 }
 
+-- source: dji.go.4_4.1.14, dji.midware.data.config.P3.q
 local BATTERY_CMDS = {
+    [1] = 'GetStaticData',
+    [2] = 'GetPushDynamicData',
+    [3] = 'GetPushCellVoltage',
+    [4] = 'GetBarCode',
+    [5] = 'GetHistory',
+    [17] = 'GetSetSelfDischargeDays',
+    [18] = 'ShutDown',
+    [19] = 'ForceShutDown',
+    [20] = 'StartUp',
+    [21] = 'GetPair',
+    [22] = 'SetPair',
+    [34] = 'DataRecordControl',
+    [35] = 'Authentication',
+    [49] = 'GetPushReArrangement',
+    [50] = 'GetMultBatteryInfo',
 }
 
 local DATA_LOG_CMDS = {
