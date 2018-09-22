@@ -118,12 +118,14 @@ local ESC_CMDS = {
 }
 
 local BATTERY_CMDS = {
-    [0x02] = 'Battery State',
-    [0x03] = 'Battery Cell State',
+    [0x01] = 'Battery Static Data',
+    [0x02] = 'Battery Dynamic Data',
+    [0x03] = 'Battery Cell Data',
+    [0x04] = 'Battery Barcode Data',
 }
 
 local DATA_LOG_CMDS = {
-    [0x22] = 'Battery State',
+    [0x22] = 'Battery Data',
     [0x23] = 'Battery Message',
 }
 
@@ -300,55 +302,124 @@ local SIM_DISSECT = {
 local ESC_DISSECT = {
 }
 
--- Battery Data packet
-f.bat_battery_data_unk1 = ProtoField.bytes ("dji_mavic.bat_battery_data_unknown1", "Unknown", base.SPACE)
-f.bat_battery_data_voltage = ProtoField.uint32 ("dji_mavic.bet_battery_data_voltage", "Pack Voltage [mV]", base.DEC)
-f.bat_battery_data_current = ProtoField.int32 ("dji_mavic.bat_battery_data_current", "Current [mA]", base.DEC)
-f.bat_battery_data_full_charge_capacity = ProtoField.uint32 ("dji_mavic.bat_battery_data_full_charge_capacity", "Full Charge Capacity [mAh]", base.DEC)
-f.bat_battery_data_current_capacity = ProtoField.uint32 ("dji_mavic.bat_battery_data_current_capacity", "Current Capacity [mAh]", base.DEC)
-f.bat_battery_data_unk2 = ProtoField.bytes ("dji_mavic.bat_battery_data_unknown2", "Unknown", base.SPACE)
-f.bat_battery_data_state_of_charge = ProtoField.uint8 ("dji_mavic.datlog_battery_data_state_of_charge", "State of Charge [%]", base.DEC)
-f.bat_battery_data_unk3 = ProtoField.bytes ("dji_mavic.bat_battery_data_unknown3", "Unknown", base.SPACE)
+-- Static Data packet
+f.bat_static_data_unk1 = ProtoField.bytes ("dji_mavic.bat_static_data_unknown1", "Unknown", base.SPACE)
+f.bat_static_data_design_capacity = ProtoField.uint32 ("dji_mavic.bat_static_data_design_capacity", "Design Capacity [mAh]", base.DEC)
+f.bat_static_data_discharge_count = ProtoField.uint16 ("dji_mavic.bat_static_data_discharge_count", "Discharge Count", base.DEC)
+f.bat_static_data_design_voltage = ProtoField.uint32 ("dji_mavic.bat_static_data_design_voltage", "Design Voltage [mV]", base.DEC)
+f.bat_static_data_manufacture_date = ProtoField.uint16 ("dji_mavic.bat_static_data_manufacture_date", "Manufacture Date (packed)", base.BIN)
+f.bat_static_data_serial_number = ProtoField.uint16 ("dji_mavic.bat_static_data_serial_number", "Serial Number", base.DEC)
+f.bat_static_data_manufacturer_name = ProtoField.string ("dji_mavic.bat_static_data_manufacturer_name", "Manufacturer Name", base.ASCII)
+f.bat_static_data_unk2 = ProtoField.bytes ("dji_mavic.bat_static_data_unknown2", "Unknown", base.SPACE)
+f.bat_static_data_device_name = ProtoField.string ("dji_mavic.bat_static_data_device_name", "Device Name", base.ASCII)
+f.bat_static_data_loader_version = ProtoField.string ("dji_mavic.bat_static_data_loader_version", "Loader Version", base.ASCII)
+f.bat_static_data_app_version = ProtoField.string ("dji_mavic.bat_static_data_firmware_version", "App Version", base.ASCII)
+f.bat_static_data_state_of_health = ProtoField.uint8 ("dji_mavic.bat_static_data_state_of_health", "State of Health (%)", base.DEC)
 
-local function bat_battery_data_dissector(pkt_length, buffer, pinfo, subtree)
+local function bat_static_data_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if (payload:len() == 40) then
+        subtree:add (f.bat_static_data_unk1, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.bat_static_data_design_capacity, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.bat_static_data_discharge_count, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.bat_static_data_design_voltage, payload(offset, 4))
+        offset = offset + 4
+
+        local manufacture_date = payload(offset, 2):le_uint()
+        offset = offset + 2
+
+        local manufacture_date_day = bit.band(manufacture_date, 0x001F)
+        manufacture_date = bit.rshift(manufacture_date, 5)
+        local manufacture_date_month = bit.band(manufacture_date, 0x000F)
+        manufacture_date = bit.rshift(manufacture_date, 4)
+        local manufacture_date_year = bit.band(manufacture_date, 0x007F) + 1980
+
+        local manufacture_date_str = string.format("Manufacture Date: %d-%02d-%02d", manufacture_date_year, manufacture_date_month, manufacture_date_day)
+        subtree:add (f.bat_static_data_manufacture_date, payload(offset-2, 2), 0, manufacture_date_str)
+
+        subtree:add_le (f.bat_static_data_serial_number, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add (f.bat_static_data_manufacturer_name, payload(offset, 8))
+        offset = offset + 8
+
+        subtree:add (f.bat_static_data_unk2, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add (f.bat_static_data_device_name, payload(offset, 5))
+        offset = offset + 5
+
+        local loader_version = string.format("%02d.%02d.%02d.%02d", payload(offset+3,1):uint(), payload(offset+2,1):uint(), payload(offset+1,1):uint(), payload(offset,1):uint())
+        subtree:add(f.bat_static_data_loader_version, loader_version)
+        offset = offset + 4
+
+        local app_version = string.format("%02d.%02d.%02d.%02d", payload(offset+3,1):uint(), payload(offset+2,1):uint(), payload(offset+1,1):uint(), payload(offset,1):uint())
+        subtree:add(f.bat_static_data_app_version, app_version)
+        offset = offset + 4
+
+        subtree:add_le (f.bat_static_data_state_of_health, payload(offset, 1))
+        offset = offset + 1
+    end
+end
+
+-- Dymainc Data packet
+f.bat_dynamic_data_unk1 = ProtoField.bytes ("dji_mavic.bat_dynamic_data_unknown1", "Unknown", base.SPACE)
+f.bat_dynamic_data_voltage = ProtoField.uint32 ("dji_mavic.bat_dynamic_data_voltage", "Pack Voltage [mV]", base.DEC)
+f.bat_dynamic_data_current = ProtoField.int32 ("dji_mavic.bat_dynamic_data_current", "Current [mA]", base.DEC)
+f.bat_dynamic_data_full_charge_capacity = ProtoField.uint32 ("dji_mavic.bat_dynamic_data_full_charge_capacity", "Full Charge Capacity [mAh]", base.DEC)
+f.bat_dynamic_data_current_capacity = ProtoField.uint32 ("dji_mavic.bat_dynamic_data_current_capacity", "Current Capacity [mAh]", base.DEC)
+f.bat_dynamic_data_unk2 = ProtoField.bytes ("dji_mavic.bat_dynamic_data_unknown2", "Unknown", base.SPACE)
+f.bat_dynamic_data_state_of_charge = ProtoField.uint8 ("dji_mavic.datlog_battery_data_state_of_charge", "State of Charge [%]", base.DEC)
+f.bat_dynamic_data_unk3 = ProtoField.bytes ("dji_mavic.bat_dynamic_data_unknown3", "Unknown", base.SPACE)
+
+local function bat_dynamic_data_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
     if ((payload:len() == 31) or (payload:len() == 32)) then
         if (payload:len() == 31) then
-            subtree:add (f.bat_battery_data_unk1, payload(offset, 1))
+            subtree:add (f.bat_dynamic_data_unk1, payload(offset, 1))
             offset = offset + 1
         else
-            subtree:add (f.bat_battery_data_unk1, payload(offset, 2))
+            subtree:add (f.bat_dynamic_data_unk1, payload(offset, 2))
             offset = offset + 2
         end
 
-        subtree:add_le (f.bat_battery_data_voltage, payload(offset, 4))
+        subtree:add_le (f.bat_dynamic_data_voltage, payload(offset, 4))
         offset = offset + 4
 
-        subtree:add_le (f.bat_battery_data_current, payload(offset, 4))
+        subtree:add_le (f.bat_dynamic_data_current, payload(offset, 4))
         offset = offset + 4
 
-        subtree:add_le (f.bat_battery_data_full_charge_capacity, payload(offset, 4))
+        subtree:add_le (f.bat_dynamic_data_full_charge_capacity, payload(offset, 4))
         offset = offset + 4
 
-        subtree:add_le (f.bat_battery_data_current_capacity, payload(offset, 4))
+        subtree:add_le (f.bat_dynamic_data_current_capacity, payload(offset, 4))
         offset = offset + 4
 
-        subtree:add (f.bat_battery_data_unk2, payload(offset, 3))
+        subtree:add (f.bat_dynamic_data_unk2, payload(offset, 3))
         offset = offset + 3
 
-        subtree:add_le (f.bat_battery_data_state_of_charge, payload(offset, 1))
+        subtree:add_le (f.bat_dynamic_data_state_of_charge, payload(offset, 1))
         offset = offset + 1
 
-        subtree:add (f.bat_battery_data_unk3, payload(offset, 10))
+        subtree:add (f.bat_dynamic_data_unk3, payload(offset, 10))
         offset = offset + 10
     end
 end
 
 -- Cell Data packet
-f.bat_cell_data_unk1 = ProtoField.bytes ("dji_mavic.bat_battery_data_unknown1", "Unknown", base.SPACE)
+f.bat_cell_data_unk1 = ProtoField.bytes ("dji_mavic.bat_cell_data_unknown1", "Unknown", base.SPACE)
 f.bat_cell_data_cell_count = ProtoField.uint8 ("dji_mavic.bat_cell_data_cell_count", "Number of Cells", base.DEC)
 f.bat_cell_data_cell1_voltage = ProtoField.uint16 ("dji_mavic.bat_cell_data_cell1_voltage", "Cell 1 Voltage [mV]", base.DEC)
 f.bat_cell_data_cell2_voltage = ProtoField.uint16 ("dji_mavic.bat_cell_data_cell2_voltage", "Cell 2 Voltage [mV]", base.DEC)
@@ -382,18 +453,46 @@ local function bat_cell_data_dissector(pkt_length, buffer, pinfo, subtree)
     end
 end
 
+-- Barcode Data packet
+f.bat_barcode_data_unk1 = ProtoField.bytes ("dji_mavic.bat_barcode_data_unknown1", "Unknown", base.SPACE)
+f.bat_barcode_data_length = ProtoField.uint8 ("dji_mavic.bat_barcode_data_length", "Data Length", base.DEC)
+f.bat_barcode_data_string = ProtoField.string ("dji_mavic.bat_barcode_data_string", "Barcode String", base.ASCII)
+
+local function bat_barcode_data_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if (payload:len() > 9) then
+        subtree:add (f.bat_barcode_data_unk1, payload(offset, 2))
+        offset = offset + 2
+
+        local data_length = payload(offset, 1):uint()
+        subtree:add (f.bat_barcode_data_length, payload(offset, 1))
+        offset = offset + 1
+
+        if ((payload:len() - offset) == data_length) then
+            subtree:add_le (f.bat_barcode_data_string, payload(offset, data_length))
+            offset = offset + data_length
+        end
+    end
+end
+
 local BATTERY_DISSECT = {
-    [0x02] = bat_battery_data_dissector,
+    [0x01] = bat_static_data_dissector,
+    [0x02] = bat_dynamic_data_dissector,
     [0x03] = bat_cell_data_dissector,
+    [0x04] = bat_barcode_data_dissector,
 }
 
 -- Battery Data packet
-f.datlog_battery_data_unk1 = ProtoField.bytes ("dji_mavic.datlog_battery_data_unknown1", "Unknown", base.SPACE)
+f.datlog_battery_data_block_id = ProtoField.uint16 ("dji_mavic.datlog_battery_data_block_id", "Block ID", base.DEC)
+f.datlog_battery_data_length = ProtoField.uint8 ("dji_mavic.datlog_battery_data_length", "Data Length", base.DEC)
 f.datlog_battery_data_voltage = ProtoField.uint16 ("dji_mavic.datlog_battery_data_voltage", "Pack Voltage [mV]", base.DEC)
 f.datlog_battery_data_current = ProtoField.int32 ("dji_mavic.datlog_battery_data_current", "Current [mA]", base.DEC)
 f.datlog_battery_data_full_charge_capacity = ProtoField.uint16 ("dji_mavic.datlog_battery_data_full_charge_capacity", "Full Charge Capacity [mAh]", base.DEC)
 f.datlog_battery_data_current_capacity = ProtoField.uint16 ("dji_mavic.datlog_battery_data_current_capacity", "Current Capacity [mAh]", base.DEC)
-f.datlog_battery_data_temperature = ProtoField.uint16 ("dji_mavic.datlog_battery_data_temperature", "Temperature [deg C]", base.DEC)
+f.datlog_battery_data_temperature = ProtoField.int16 ("dji_mavic.datlog_battery_data_temperature", "Temperature [deg C]", base.DEC)
 f.datlog_battery_data_state_of_charge = ProtoField.uint16 ("dji_mavic.datlog_battery_data_state_of_charge", "State of Charge [%]", base.DEC)
 f.datlog_battery_data_status1 = ProtoField.uint8 ("dji_mavic.datlog_battery_data_status1", "Status 1", base.HEX)
 f.datlog_battery_data_status2 = ProtoField.uint8 ("dji_mavic.datlog_battery_data_status1", "Status 2", base.HEX)
@@ -408,48 +507,54 @@ local function datlog_battery_data_dissector(pkt_length, buffer, pinfo, subtree)
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    if (payload:len() == 29) then
-        subtree:add (f.datlog_battery_data_unk1, payload(offset, 3))
-        offset = offset + 3
-
-        subtree:add_le (f.datlog_battery_data_voltage, payload(offset, 2))
+    if (payload:len() > 4) then
+        subtree:add_le (f.datlog_battery_data_block_id, payload(offset, 2))
         offset = offset + 2
 
-        subtree:add_le (f.datlog_battery_data_current, payload(offset, 4))
-        offset = offset + 4
-
-        subtree:add_le (f.datlog_battery_data_full_charge_capacity, payload(offset, 2))
-        offset = offset + 2
-
-        subtree:add_le (f.datlog_battery_data_current_capacity, payload(offset, 2))
-        offset = offset + 2
-
-        subtree:add_le (f.datlog_battery_data_temperature, payload(offset, 2))
-        offset = offset + 2
-
-        subtree:add_le (f.datlog_battery_data_state_of_charge, payload(offset, 2))
-        offset = offset + 2
-
-        subtree:add_le (f.datlog_battery_data_status1, payload(offset, 1))
+        local data_length = payload(offset, 1): uint()
+        subtree:add (f.datlog_battery_data_length, payload(offset, 1))
         offset = offset + 1
 
-        subtree:add_le (f.datlog_battery_data_status2, payload(offset, 1))
-        offset = offset + 1
+        if(payload:len() - offset == data_length) then
+            subtree:add_le (f.datlog_battery_data_voltage, payload(offset, 2))
+            offset = offset + 2
 
-        subtree:add_le (f.datlog_battery_data_status3, payload(offset, 1))
-        offset = offset + 1
+            subtree:add_le (f.datlog_battery_data_current, payload(offset, 4))
+            offset = offset + 4
 
-        subtree:add_le (f.datlog_battery_data_status4, payload(offset, 1))
-        offset = offset + 1
+            subtree:add_le (f.datlog_battery_data_full_charge_capacity, payload(offset, 2))
+            offset = offset + 2
 
-        subtree:add_le (f.datlog_battery_data_cell1_voltage, payload(offset, 2))
-        offset = offset + 2
+            subtree:add_le (f.datlog_battery_data_current_capacity, payload(offset, 2))
+            offset = offset + 2
 
-        subtree:add_le (f.datlog_battery_data_cell2_voltage, payload(offset, 2))
-        offset = offset + 2
+            subtree:add_le (f.datlog_battery_data_temperature, payload(offset, 2))
+            offset = offset + 2
 
-        subtree:add_le (f.datlog_battery_data_cell2_voltage, payload(offset, 2))
-        offset = offset + 2
+            subtree:add_le (f.datlog_battery_data_state_of_charge, payload(offset, 2))
+            offset = offset + 2
+
+            subtree:add_le (f.datlog_battery_data_status1, payload(offset, 1))
+            offset = offset + 1
+
+            subtree:add_le (f.datlog_battery_data_status2, payload(offset, 1))
+            offset = offset + 1
+
+            subtree:add_le (f.datlog_battery_data_status3, payload(offset, 1))
+            offset = offset + 1
+
+            subtree:add_le (f.datlog_battery_data_status4, payload(offset, 1))
+            offset = offset + 1
+
+            subtree:add_le (f.datlog_battery_data_cell1_voltage, payload(offset, 2))
+            offset = offset + 2
+
+            subtree:add_le (f.datlog_battery_data_cell2_voltage, payload(offset, 2))
+            offset = offset + 2
+
+            subtree:add_le (f.datlog_battery_data_cell2_voltage, payload(offset, 2))
+            offset = offset + 2
+        end
     end
 end
 
