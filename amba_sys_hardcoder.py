@@ -557,34 +557,36 @@ def get_asm_mode_by_name(arch, mdname):
     return None
 
 
-def elf_march_to_asm_config(elfobj):
+def elf_march_to_asm_config(elfobj, submode=None):
     """ Retrieves machine architecture for given elf.
 
     Returns config for capstone and keystone.
     """
     march = elfobj.get_machine_arch()
     asm_arch = None
-    asm_mode = None
+    asm_modes = []
     if march == "x64":
         asm_arch = get_asm_arch_by_name("x86")
-        asm_mode = get_asm_mode_by_name(asm_arch, "64b")
+        asm_modes.append( get_asm_mode_by_name(asm_arch, "64b") )
     elif march == "x86":
         asm_arch = get_asm_arch_by_name("x86")
-        asm_mode = get_asm_mode_by_name(asm_arch, "32b")
+        asm_modes.append( get_asm_mode_by_name(asm_arch, "32b") )
     elif march == "ARM":
         asm_arch = get_asm_arch_by_name("arm")
         if elfobj.little_endian:
-            asm_mode = get_asm_mode_by_name(asm_arch, "le")
+            asm_modes.append( get_asm_mode_by_name(asm_arch, "le") )
         else:
-            asm_mode = get_asm_mode_by_name(asm_arch, "be")
+            asm_modes.append( get_asm_mode_by_name(asm_arch, "be") )
     elif march == "MIPS":
         asm_arch = get_asm_arch_by_name("mips")
-        asm_mode = get_asm_mode_by_name(asm_arch, "32b")
+        asm_modes.append( get_asm_mode_by_name(asm_arch, "32b") )
         if elfobj.little_endian:
-            asm_mode = get_asm_mode_by_name(asm_arch, "le")
+            asm_modes.append( get_asm_mode_by_name(asm_arch, "le") )
         else:
-            asm_mode = get_asm_mode_by_name(asm_arch, "be")
-    return (asm_arch, [asm_mode])
+            asm_modes.append( get_asm_mode_by_name(asm_arch, "be") )
+    if submode != None:
+        asm_modes.append( get_asm_mode_by_name(asm_arch, submode) )
+    return (asm_arch, asm_modes)
 
 
 def get_arm_vma_relative_to_pc_register(asm_arch, section, address, size, offset_str):
@@ -613,12 +615,12 @@ def get_section_and_offset_from_address(asm_arch, elf_sections, address):
     return None, None
 
 
-def armfw_elf_ambavals_objdump(po, elffh):
+def armfw_elf_generic_objdump(po, elffh, asm_submode=None):
     """ Dump executable in similar manner to objdump disassemble function.
     """
     elfobj = ELFFile(elffh)
 
-    asm_arch, asm_modes = elf_march_to_asm_config(elfobj)
+    asm_arch, asm_modes = elf_march_to_asm_config(elfobj, asm_submode)
     if len(asm_modes) < 1 or not isinstance(asm_modes[0], collections.abc.Mapping):
         raise ValueError("ELF has unsupported machine type ({:s}).".format(elfobj['e_machine']))
 
@@ -1465,11 +1467,11 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
     return valbts
 
 
-def armfw_elf_paramvals_extract_list(po, elffh, re_list):
+def armfw_elf_paramvals_extract_list(po, elffh, re_list, asm_submode=None):
 
     elfobj = ELFFile(elffh)
 
-    asm_arch, asm_modes = elf_march_to_asm_config(elfobj)
+    asm_arch, asm_modes = elf_march_to_asm_config(elfobj, asm_submode)
     if len(asm_modes) < 1 or not isinstance(asm_modes[0], collections.abc.Mapping):
         raise ValueError("ELF has unsupported machine type ({:s}).".format(elfobj['e_machine']))
 
@@ -1680,7 +1682,7 @@ def main():
 
         elffh = open(po.elffile, "rb")
 
-        armfw_elf_ambavals_objdump(po, elffh)
+        armfw_elf_generic_objdump(po, elffh)
 
         elffh.close();
 
