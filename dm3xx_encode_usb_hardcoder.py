@@ -78,7 +78,7 @@ sys.path.insert(0, './')
 from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
   armfw_elf_whole_section_search, armfw_elf_match_to_public_values, \
   armfw_elf_paramvals_extract_list, armfw_elf_get_value_update_bytes, \
-  VarType, DataVariety, CodeVariety
+  armfw_elf_generic_objdump, VarType, DataVariety, CodeVariety
 
 
 def startup_encrypt_check_always_pass_params_update(asm_arch, elf_sections, re_list, glob_params_list, var_info, new_var_nativ):
@@ -406,12 +406,8 @@ re_func_Encrypt_Request = {
   'CalMac':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'CalMD5':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   's_bPassedEnc':		{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
-  'Encrypt_Request':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
 },
 }
-
-def armfw_elf_dm3xxvals_func_encryptThrFxn_prep(po, xxx):
-    pass
 
 re_general_list = [
   {'sect': ".text", 'func': re_func_encryptThrFxn_original,},
@@ -571,7 +567,7 @@ def main():
 
         elffh = open(po.elffile, "rb")
 
-        armfw_elf_dm3xxvals_objdump(po, elffh)
+        armfw_elf_generic_objdump(po, elffh)
 
         elffh.close();
 
