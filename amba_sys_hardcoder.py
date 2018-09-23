@@ -1176,7 +1176,7 @@ def armfw_elf_section_search_block(search, sect_offs, elf_sections, cs, block_le
             line_iter = [armfw_elf_data_definition_from_bytes(search['asm_arch'],search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs, curr_pattern, search['var_defs']),]
             for (address, size, mnemonic, op_str) in line_iter:
                 instruction_str = "{:s}\t{:s}".format(mnemonic, op_str).strip()
-                #print("aa",instruction_str,curr_pattern)
+                #print("Current instruction vs pattern:",instruction_str,curr_pattern)
                 re_code = re.search(curr_pattern, instruction_str)
                 # The block below is exactly the same as for normal instruction
                 match_ok = (re_code is not None)
@@ -1184,7 +1184,7 @@ def armfw_elf_section_search_block(search, sect_offs, elf_sections, cs, block_le
                     match_ok = armfw_elf_section_search_process_vars_from_code(search, elf_sections, address, size, re_code)
 
                 if match_ok:
-                    #print("a {:d} @ {:x}".format(search['match_lines'],address))
+                    #print("Match lines: {:d} @ {:x}".format(search['match_lines'],address))
                     search = armfw_elf_section_search_progress(search, address, size)
                     if search['match_lines'] == 0: # This means we had a full match; we need to go back with offset to search for overlapping areas
                         sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
@@ -1220,7 +1220,7 @@ def armfw_elf_section_search_block(search, sect_offs, elf_sections, cs, block_le
                     match_ok = armfw_elf_section_search_process_vars_from_code(search, elf_sections, address, size, re_code)
 
                 if match_ok:
-                    #print("a {:d} @ {:x}".format(search['match_lines'],address))
+                    #print("Match lines: {:d} @ {:x}".format(search['match_lines'],address))
                     search = armfw_elf_section_search_progress(search, address, size)
                     if search['match_lines'] == 0: # This means we had a full match; we need to go back with offset to search for overlapping areas
                         sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
@@ -1274,6 +1274,8 @@ def armfw_elf_match_to_public_values(po, match):
     params_list = {}
     for var_name, var_info in match['vars'].items():
         if 'public' in var_info:
+            if 'depend' in var_info:
+                continue
             par_name = var_info['public']+"."+var_name
             par_info = var_info.copy()
             par_info['name'] = var_name
@@ -1587,6 +1589,51 @@ def armfw_elf_ambavals_extract(po, elffh):
     valfile.close()
 
 
+def armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, par_nxvalue):
+    """ Gets a list of depending values which should be updated if specific public param changed value.
+
+    Emulates the list format we get from JSON, so that the same update functions can be used as for
+    the parent public parameter.
+    """
+    depend_list = []
+    for var_name_iter, var_info_iter in glob_params_list.items():
+        if 'depend' not in var_info_iter:
+            continue
+        if var_info_iter['depend'] != par_info['name']:
+            continue
+        if var_info_iter['public'] != par_info['public']:
+            continue
+        #deppar_name = var_info_iter['public']+"."+var_name_iter
+        deppar_info = var_info_iter.copy()
+        #deppar_info['name'] = deppar_name
+        if 'getter' in var_info_iter:
+            get_value_from_depend_value = var_info_iter['getter']
+            deppar_info['setValue'] = get_value_from_depend_value(par_nxvalue)
+        if 'setValue' not in deppar_info:
+            raise ValueError("No 'setValue' and no 'getter' in '{:s}'.".format(deppar_info['name']))
+        depend_list.append(deppar_info)
+    return depend_list
+
+
+def armfw_elf_publicval_update(po, asm_arch, elf_sections, re_list, glob_params_list, par_info, par_nxvalue):
+    """ Updates given hardcoded value in ELF section data.
+    """
+    valbts = armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, par_info, par_nxvalue)
+    update_performed = False
+    for valbt in valbts:
+        section = elf_sections[valbt['sect']]
+        old_beg = valbt['offs']
+        old_end = valbt['offs']+len(valbt['data'])
+        old_data = section['data'][old_beg:old_end]
+        if valbt['data'] != old_data:
+            update_performed = True
+            if (po.verbose > 1):
+                print("Replacing {:s} -> {:s} to set {:s}".format(old_data.hex(),valbt['data'].hex(),par_info['name']))
+            sect_data = section['data']
+            sect_data[old_beg:old_end] = valbt['data']
+    return update_performed
+
+
 def armfw_elf_ambavals_update(po, elffh):
     """ Updates all hardcoded values in firmware from JSON format text file.
     """
@@ -1604,20 +1651,11 @@ def armfw_elf_ambavals_update(po, elffh):
             eprint("{:s}: Value '{:s}' not found in ELF file.".format(po.elffile,nxpar['name']))
             continue
         par_info = pub_params_list[nxpar['name']]
-        valbts = armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_general_list, glob_params_list, par_info, nxpar['setValue'])
-        update_performed = False
-        for valbt in valbts:
-            section = elf_sections[valbt['sect']]
-            old_beg = valbt['offs']
-            old_end = valbt['offs']+len(valbt['data'])
-            old_data = section['data'][old_beg:old_end]
-            if valbt['data'] != old_data:
-                update_performed = True
-                if (po.verbose > 1):
-                    print("Replacing {:s} -> {:s} to set {:s}".format(old_data.hex(),valbt['data'].hex(),par_info['name']))
-                sect_data = section['data']
-                sect_data[old_beg:old_end] = valbt['data']
+        update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_general_list, glob_params_list, par_info, nxpar['setValue'])
         if update_performed:
+            depparams_list = armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, nxpar['setValue'])
+            for deppar in depparams_list:
+                update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_general_list, glob_params_list, deppar, deppar['setValue'])
             update_count += 1
     if (po.verbose > 0):
         print("{:s}: Updated {:d} out of {:d} hardcoded values".format(po.elffile,update_count,len(pub_params_list)))
