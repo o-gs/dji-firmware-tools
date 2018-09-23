@@ -78,6 +78,7 @@ sys.path.insert(0, './')
 from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
   armfw_elf_whole_section_search, armfw_elf_match_to_public_values, \
   armfw_elf_paramvals_extract_list, armfw_elf_get_value_update_bytes, \
+  armfw_elf_paramvals_get_depend_list, armfw_elf_publicval_update, \
   armfw_elf_generic_objdump, VarType, DataVariety, CodeVariety
 
 
@@ -489,20 +490,11 @@ def armfw_elf_dm3xxvals_update(po, elffh):
             eprint("{:s}: Value '{:s}' not found in ELF file.".format(po.elffile,nxpar['name']))
             continue
         par_info = pub_params_list[nxpar['name']]
-        valbts = armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_general_list, glob_params_list, par_info, nxpar['setValue'])
-        update_performed = False
-        for valbt in valbts:
-            section = elf_sections[valbt['sect']]
-            old_beg = valbt['offs']
-            old_end = valbt['offs']+len(valbt['data'])
-            old_data = section['data'][old_beg:old_end]
-            if valbt['data'] != old_data:
-                update_performed = True
-                if (po.verbose > 1):
-                    print("Replacing {:s} -> {:s} to set {:s}".format(old_data.hex(),valbt['data'].hex(),par_info['name']))
-                sect_data = section['data']
-                sect_data[old_beg:old_end] = valbt['data']
+        update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_general_list, glob_params_list, par_info, nxpar['setValue'])
         if update_performed:
+            depparams_list = armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, nxpar['setValue'])
+            for deppar in depparams_list:
+                update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_general_list, glob_params_list, deppar, deppar['setValue'])
             update_count += 1
     if (po.verbose > 0):
         print("{:s}: Updated {:d} out of {:d} hardcoded values".format(po.elffile,update_count,len(pub_params_list)))
