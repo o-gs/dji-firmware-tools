@@ -235,12 +235,13 @@ elf_archs = [
 re_func_DjiMsgAuthorLevelGet = {
 'name': "DjiMsgAuthorLevelGet",
 're': """
+DjiMsgAuthorLevelGet:
   ldr	r0, \[pc, #(?P<msg_author_level>[0-9a-fx]+)\]
   ldr	r0, \[r0\]
   bx	lr
 """,
 'vars': {
-  'DjiMsgAuthorLevelGet':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
+  'DjiMsgAuthorLevelGet':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'msg_author_level': {'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
 },
 }
@@ -248,6 +249,7 @@ re_func_DjiMsgAuthorLevelGet = {
 re_func_DjiMsgSettingsInit = {
 'name': "DjiMsgSettingsInit",
 're': """
+DjiMsgSettingsInit:
   push	{r4, r5, lr}
   sub	sp, sp, #0x14
   mov	r4, #0
@@ -283,8 +285,10 @@ re_func_DjiMsgSettingsInit = {
   mov	r1, #1
   mov	r0, #1
   bl	#(?P<AmbaPrintk>[0-9a-fx]+)
+loc_label03:
   movs	r0, r4
   b	#(?P<loc_label06>[0-9a-fx]+)
+loc_label02:
   mov	r0, #0
   bl	#(?P<DjiMsgAuthorLevelSet>[0-9a-fx]+)
   movs	r4, r0
@@ -295,6 +299,7 @@ re_func_DjiMsgSettingsInit = {
   beq	#(?P<loc_label09>[0-9a-fx]+)
   mov	r0, #(?P<encrypt_query_fail_authority_level>[0-9a-fx]+)
   bl	#(?P<DjiMsgAuthorLevelSet>[0-9a-fx]+)
+loc_label09:
   ldrb	r0, \[sp, #0x11\]
   cmp	r0, #1
   bne	#(?P<loc_label10>[0-9a-fx]+)
@@ -304,10 +309,13 @@ re_func_DjiMsgSettingsInit = {
   mov	r0, #(?P<verify_state_good_authority_level>[0-9a-fx]+)
   bl	#(?P<DjiMsgAuthorLevelSet>[0-9a-fx]+)
   b	#(?P<loc_label11>[0-9a-fx]+)
+loc_label10:
   mov	r0, #(?P<verify_state_bad_authority_level>[0-9a-fx]+)
   bl	#(?P<DjiMsgAuthorLevelSet>[0-9a-fx]+)
+loc_label11:
   mov	r5, #0
   b	#(?P<loc_label12>[0-9a-fx]+)
+loc_label13:
   ldr	r0, \[pc, #(?P<unk_var01>[0-9a-fx]+)\]
   lsls	r1, r5, #2
   ldr	r2, \[pc, #(?P<unk_var02>[0-9a-fx]+)\]
@@ -315,6 +323,7 @@ re_func_DjiMsgSettingsInit = {
   mov	r2, #1
   str	r2, \[r0, r1\]
   adds	r5, r5, #1
+loc_label12:
   cmp	r5, #4
   blo	#(?P<loc_label13>[0-9a-fx]+)
   ldr	r0, \[pc, #(?P<unk_var03>[0-9a-fx]+)\]
@@ -387,11 +396,12 @@ re_func_DjiMsgSettingsInit = {
   ldr	r0, \[pc, #(?P<unk_var20>[0-9a-fx]+)\]
   bl	#(?P<memset_0>[0-9a-fx]+)
   mov	r0, #0
+loc_label06:
   add	sp, sp, #0x14
   pop	{r4, r5, pc}
 """,
 'vars': {
-  'DjiMsgSettingsInit':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
+  'DjiMsgSettingsInit':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'AmbaKAL_MutexCreate':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'AmbaPrintk_Disabled':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'AmbaPrintk':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
@@ -453,6 +463,7 @@ class AmbaP3XBitrateTableEntry(LittleEndianStructure):
 re_func_DjiUstVideoQualitySetInner = {
 'name': "DjiUstVideoQualitySetInner",
 're': """
+DjiUstVideoQualitySetInner:
   push	{r4, r5, lr}
   sub	sp, sp, #0x14
   movs	r4, r0
@@ -463,9 +474,11 @@ re_func_DjiUstVideoQualitySetInner = {
   beq	#(?P<loc_label02>[0-9a-fx]+)
   blo	#(?P<loc_label03>[0-9a-fx]+)
   b	#(?P<loc_label04>[0-9a-fx]+)
+loc_label01:
   add	r0, r2, r2, lsl #1
   ldr	r1, \[pc, #(?P<vid_setting_bitrates>[0-9a-fx]+)\]
   ldr	r0, \[r1, r0, lsl #2\]
+loc_label06:
   cmp	r0, #0
   beq	#(?P<loc_label05>[0-9a-fx]+)
   ldr	r1, \[pc, #(?P<unk_var01>[0-9a-fx]+)\]
@@ -474,19 +487,24 @@ re_func_DjiUstVideoQualitySetInner = {
   ldr	r3, \[pc, #(?P<vid_settings_ust>[0-9a-fx]+)\]
   smlabb	r1, r1, r2, r3
   str	r0, \[r1, #8\]
+loc_label05:
   mov	r0, #0
+loc_label08:
   add	sp, sp, #0x14
   pop	{r4, r5, pc}
+loc_label03:
   add	r0, r2, r2, lsl #1
   ldr	r1, \[pc, #(?P<vid_setting_bitrates>[0-9a-fx]+)\]
   adds	r0, r1, r0, lsl #2
   ldr	r0, \[r0, #4\]
   b	#(?P<loc_label06>[0-9a-fx]+)
+loc_label02:
   add	r0, r2, r2, lsl #1
   ldr	r1, \[pc, #(?P<vid_setting_bitrates>[0-9a-fx]+)\]
   adds	r0, r1, r0, lsl #2
   ldr	r0, \[r0, #8\]
   b	#(?P<loc_label06>[0-9a-fx]+)
+loc_label04:
   ldr	r0, \[pc, #(?P<printk_log_level>[0-9a-fx]+)\]
   ldr	r0, \[r0\]
   cmp	r0, #0
@@ -511,11 +529,12 @@ re_func_DjiUstVideoQualitySetInner = {
   mov	r1, #1
   mov	r0, #1
   bl	#(?P<AmbaPrintk>[0-9a-fx]+)
+loc_label07:
   mvn	r0, #0
   b	#(?P<loc_label08>[0-9a-fx]+)
 """,
 'vars': {
-  'DjiUstVideoQualitySetInner':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
+  'DjiUstVideoQualitySetInner':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'cstr_fmt_text1':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_func_name':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
   'AmbaPrintk_Disabled':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
@@ -691,17 +710,28 @@ def armfw_asm_search_strings_to_re_list(re_patterns):
     """
     # Divide to lines
     re_lines = re_patterns.split(sep="\n")
+    re_labels = {}
     # Remove comments
     re_lines = [s.split(";",1)[0]  if ";" in s else s for s in re_lines]
     # Remove labels
     for i, s in enumerate(re_lines):
-        re_label = re.search(r'^([a-zA-Z0-9_]*):(.*)$', s)
+        re_label = re.search(r'^([a-zA-Z0-9_]+):(.*)$', s)
         if re_label is not None:
             re_lines[i] = re_label.group(2)
+            re_labels[re_label.group(1)] = i
     # Strip whitespaces
     re_lines = list(map(str.strip, re_lines))
+    # Later empty lines will be removed; update re_labels accordingly
+    reduced_line = 0
+    for s in re_lines:
+        if s is "":
+            for lab_name, lab_line in re_labels.items():
+                if (lab_line > reduced_line):
+                    re_labels[lab_name] = lab_line - 1
+        else:
+            reduced_line += 1
     # Remove empty lines
-    return list(filter(None, re_lines))
+    return list(filter(None, re_lines)), re_labels
 
 def armfw_elf_section_search_init(asm_arch, section, patterns):
     """ Initialize search data.
@@ -710,8 +740,13 @@ def armfw_elf_section_search_init(asm_arch, section, patterns):
     search['asm_arch'] = asm_arch
     search['section'] = section
     search['name'] = patterns['name']
-    search['re'] = armfw_asm_search_strings_to_re_list(patterns['re'])
-    search['var_defs'] = patterns['vars']
+    re_lines, re_labels = armfw_asm_search_strings_to_re_list(patterns['re'])
+    search['re'] = re_lines
+    search['var_defs'] = patterns['vars'].copy()
+    for lab_name, lab_line in re_labels.items():
+        if lab_name in search['var_defs']:
+            var_def = search['var_defs'][lab_name]
+            var_def['line'] = lab_line
     search['var_vals'] = {}
     search['match_address'] = 0
     search['first_line_size'] = 0
@@ -967,8 +1002,9 @@ def find_patterns_diff(patterns_prev, patterns_next):
 
     Assumes that patterns correspond to code of the same langth.
     """
-    re_lines_prev = armfw_asm_search_strings_to_re_list(patterns_prev['re'])
-    re_lines_next = armfw_asm_search_strings_to_re_list(patterns_next['re'])
+    #TODO we should get and compare labels as well
+    re_lines_prev, _ = armfw_asm_search_strings_to_re_list(patterns_prev['re'])
+    re_lines_next, _ = armfw_asm_search_strings_to_re_list(patterns_next['re'])
     sp = 0
     sn = 0
     while sp < len(re_lines_prev) and sn < len(re_lines_next):
