@@ -64,60 +64,67 @@ from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
 
 
 re_func_cmd_exec_set09_cmd12_original = {
-'name': "re_func_cmd_exec_set09_cmd12-original",
+'name': "cmd_exec_set09_cmd12-original",
 're': """
+cmd_exec_set09_cmd12:
   push	{r3, r4, r5, lr}
   mov	r5, r0
   movs	r0, #0
   strb.w	r0, \[sp\]
   add.w	r4, r5, #0xb
-  bl	#0x80105fa
+  bl	#(?P<tcx_config_80105FA>[0-9a-fx]+)
   ldrb	r0, \[r4\]
   lsls	r0, r0, #0x18
-  bmi	#0x8011e66
+  bmi	#(?P<loc_label01>[0-9a-fx]+)
   movs	r0, #0
-  bl	#0x8010664
-  b	#0x8011e76
+  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
+  b	#(?P<loc_label02>[0-9a-fx]+)
+loc_label01:
   movs	r0, #1
-  bl	#0x8010664
+  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
   ldrb	r0, \[r4\]
   and	r0, r0, #0x7f
-  bl	#0x801067a
+  bl	#(?P<set_transciever_flag_20001A28_D>[0-9a-fx]+)
+loc_label02:
   ldrb	r0, \[r4, #1\]
   lsrs	r0, r0, #6
-  bl	#0x80106cc
+  bl	#(?P<set_transciever_flag_20001A28_A>[0-9a-fx]+)
   ldrb	r0, \[r4, #1\]
   and	r0, r0, #0x3f
-  bl	#0x8010690
+  bl	#(?P<set_transciever_flag_20001A28_B>[0-9a-fx]+)
   ldrb	r0, \[r4, #2\]
-  bl	#0x80106bc
+  bl	#(?P<set_transciever_attenuation>[0-9a-fx]+)
   ldrb	r0, \[r4, #3\]
-  bl	#0x80106a6
+  bl	#(?P<set_transciever_flag_20001A28_C>[0-9a-fx]+)
   movs	r3, #1
   mov	r2, sp
   mov	r1, r5
-  ldr	r0, \[pc, #0x124\]
-  bl	#0x8011a16
+  ldr	r0, \[pc, #0x124\] ; func packet_send
+  bl	#(?P<packet_make_response>[0-9a-fx]+)
   pop	{r3, r4, r5, pc}
 """,
 'vars': {
-  're_func_cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
-  'startup_encrypt_check_always_pass':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.p3x_dm3xx", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "0",
-    'description': "Set startup encryption test as passed even if it did not; 0-repeat forever on fail,1-force pass"},
-  'cstr_ent_query_md':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'cstr_enc_pass':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'loc_label1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'puts':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'sleep':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'Encrypt_Request':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_received_attenuation_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "-1",
+    'description': "When received a packet with power set request, override the received value with constant one; -1 - use value from packet, >=0 - override with given value"},
+  'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'tcx_config_80105FA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_B':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_D':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_attenuation':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_make_response':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
 },
 }
 
 re_func_cmd_exec_set09_cmd12_constatt = {
-'name': "re_func_cmd_exec_set09_cmd12-constatt",
+'name': "cmd_exec_set09_cmd12-constatt",
 're': """
+cmd_exec_set09_cmd12:
   push	{r3, r4, r5, lr}
   mov	r5, r0
   movs	r0, #0
@@ -153,7 +160,7 @@ re_func_cmd_exec_set09_cmd12_constatt = {
   pop	{r3, r4, r5, pc}
 """,
 'vars': {
-  're_func_cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
+  'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'startup_encrypt_check_always_pass':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.p3x_dm3xx", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "1",
     'description': "Set startup encryption test as passed even if it did not; 0-repeat forever on fail,1-force pass"},
@@ -172,6 +179,7 @@ re_func_cmd_exec_set09_cmd12_constatt = {
 re_func_tcx_config_power_zone = {
 'name': "tcx_config_power_zone",
 're': """
+tcx_config_power_zone:
   ldr	r1, \[pc, #0x170\]
   push	{r4, lr}
   ldrb	r2, \[r1, #0x12\]
@@ -316,7 +324,7 @@ loc_label_ret1:
   pop	{r4, pc}
 """,
 'vars': {
-  'tcx_config_power_zone':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
+  'tcx_config_power_zone':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label03':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -407,6 +415,7 @@ loc_label_ret1:
 re_func_init_fpga_config = {
 'name': "init_fpga_config",
 're': """
+init_fpga_config:
   push.w	{r4, r5, r6, r7, r8, sb, sl, lr}
   mov.w	r8, #0
   mov	r7, r8
@@ -719,7 +728,7 @@ loc_label34:
   b	#(?P<loc_label_ret1>[0-9a-fx]+)
 """,
 'vars': {
-  'init_fpga_config':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
+  'init_fpga_config':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'get_board_version':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'ad936x_reg_sync_write':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'ad936x_reg_sync_read':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
