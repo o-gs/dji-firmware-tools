@@ -127,6 +127,24 @@ from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
   armfw_elf_generic_objdump, VarType, DataVariety, CodeVariety
 
 
+def packet_received_attenuation_override_update(asm_arch, elf_sections, re_list, glob_params_list, var_info, new_var_nativ):
+    """ Callback function to prepare 'packet_received_attenuation_override_update' value change.
+    Changes variable type as required for the switch.
+    """
+    glob_var_info = glob_params_list['packet_received_attenuation_override']
+    if new_var_nativ == -1:
+        # Set variables requires to change original into constatt
+        re_vars = re_func_cmd_exec_set09_cmd12_original['vars']
+        glob_var_info['type'] = re_vars['packet_received_attenuation_override']['type']
+    else:
+        # Set variables requires to change encpass back to original
+        re_vars = re_func_cmd_exec_set09_cmd12_constatt['vars']
+        re_expr = re_func_cmd_exec_set09_cmd12_constatt['re']
+        glob_var_info['type'] = re_vars['packet_received_attenuation_override']['type']
+        re_line = re.search(r'\n(.+'+var_info['name']+'.+)\n', re_expr)
+        glob_var_info['re_line_str'] = re_line.group(1).strip()
+
+
 re_func_cmd_exec_set09_cmd12_original = {
 'name': "cmd_exec_set09_cmd12-original",
 're': """
@@ -171,6 +189,7 @@ loc_label02:
   'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'packet_received_attenuation_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "-1", 'maxValue': "255", 'defaultValue': "-1", 'setValue': "-1",
+    'custom_params_callback': packet_received_attenuation_override_update,
     'description': "When received a packet with power set request, override the received value with constant one; -1 - use value from packet, >=0 - override with given value"},
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -214,7 +233,7 @@ loc_label02:
   ldrb	r0, \[r4, #1\]
   and	r0, r0, #0x3f
   bl	#(?P<set_transciever_flag_20001A28_B>[0-9a-fx]+)
-  ldrb	r0, #(?P<packet_received_attenuation_override>[0-9a-fx]+)
+  movs	r0, #(?P<packet_received_attenuation_override>[0-9a-fx]+)
   bl	#(?P<set_transciever_attenuation>[0-9a-fx]+)
   ldrb	r0, \[r4, #3\]
   bl	#(?P<set_transciever_flag_20001A28_C>[0-9a-fx]+)
@@ -229,6 +248,7 @@ loc_label02:
   'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'packet_received_attenuation_override':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "-1", 'maxValue': "255", 'defaultValue': "-1",
+    'custom_params_callback': packet_received_attenuation_override_update,
     'description': "When received a packet with power set request, override the received value with constant one; -1 - use value from packet, >=0 - override with given value"},
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -865,8 +885,8 @@ loc_label34:
 }
 
 re_general_list = [
-  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_original,},
-  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_constatt,},
+  #{'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_original,},
+  #{'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_constatt,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone,},
   {'sect': ".text", 'func': re_func_init_fpga_config,},
 ]
