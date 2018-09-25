@@ -106,7 +106,7 @@ loc_label02:
 'vars': {
   'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'packet_received_attenuation_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "-1",
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "-1", 'maxValue': "255", 'defaultValue': "-1", 'setValue': "-1",
     'description': "When received a packet with power set request, override the received value with constant one; -1 - use value from packet, >=0 - override with given value"},
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -130,49 +130,52 @@ cmd_exec_set09_cmd12:
   movs	r0, #0
   strb.w	r0, \[sp\]
   add.w	r4, r5, #0xb
-  bl	#0x80105fa
+  bl	#(?P<tcx_config_80105FA>[0-9a-fx]+)
   ldrb	r0, \[r4\]
   lsls	r0, r0, #0x18
-  bmi	#0x8011e66
+  bmi	#(?P<loc_label01>[0-9a-fx]+)
   movs	r0, #0
-  bl	#0x8010664
-  b	#0x8011e76
+  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
+  b	#(?P<loc_label02>[0-9a-fx]+)
+loc_label01:
   movs	r0, #1
-  bl	#0x8010664
+  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
   ldrb	r0, \[r4\]
   and	r0, r0, #0x7f
-  bl	#0x801067a
+  bl	#(?P<set_transciever_flag_20001A28_D>[0-9a-fx]+)
+loc_label02:
   ldrb	r0, \[r4, #1\]
   lsrs	r0, r0, #6
-  bl	#0x80106cc
+  bl	#(?P<set_transciever_flag_20001A28_A>[0-9a-fx]+)
   ldrb	r0, \[r4, #1\]
   and	r0, r0, #0x3f
-  bl	#0x8010690
-  ldrb	r0, \[r4, #2\]
-  bl	#0x80106bc
+  bl	#(?P<set_transciever_flag_20001A28_B>[0-9a-fx]+)
+  ldrb	r0, #(?P<packet_received_attenuation_override>[0-9a-fx]+)
+  bl	#(?P<set_transciever_attenuation>[0-9a-fx]+)
   ldrb	r0, \[r4, #3\]
-  bl	#0x80106a6
+  bl	#(?P<set_transciever_flag_20001A28_C>[0-9a-fx]+)
   movs	r3, #1
   mov	r2, sp
   mov	r1, r5
-  ldr	r0, \[pc, #0x124\]
-  bl	#0x8011a16
+  ldr	r0, \[pc, #0x124\] ; func packet_send
+  bl	#(?P<packet_make_response>[0-9a-fx]+)
   pop	{r3, r4, r5, pc}
 """,
 'vars': {
   'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
-  'startup_encrypt_check_always_pass':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.p3x_dm3xx", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "1",
-    'description': "Set startup encryption test as passed even if it did not; 0-repeat forever on fail,1-force pass"},
-  'cstr_ent_query_md':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'cstr_enc_pass':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'loc_label1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'puts':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'sleep':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'Encrypt_Request':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  's_bPassedEnc':		{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
-  's_bPassedEnc_p':	{'type': VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UINT32_T},
+  'packet_received_attenuation_override':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "-1", 'maxValue': "255", 'defaultValue': "-1",
+    'description': "When received a packet with power set request, override the received value with constant one; -1 - use value from packet, >=0 - override with given value"},
+  'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'tcx_config_80105FA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_B':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_D':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_attenuation':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_make_response':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
 },
 }
 
@@ -798,8 +801,8 @@ loc_label34:
 }
 
 re_general_list = [
-#  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_original,},
-#  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_constatt,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_original,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_constatt,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone,},
   {'sect': ".text", 'func': re_func_init_fpga_config,},
 ]
