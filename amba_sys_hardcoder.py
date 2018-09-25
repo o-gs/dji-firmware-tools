@@ -978,6 +978,7 @@ def armfw_elf_search_value_string_to_native_type(var_info, var_str):
 
 
 def find_patterns_containing_variable(re_list, var_type=None, var_variety=None, var_sect=None, var_name=None, var_size=None, var_setValue=None):
+    loose_matched_patts = None
     for re_item in re_list:
         if var_sect is not None and re_item['sect'] != var_sect:
             continue
@@ -991,10 +992,19 @@ def find_patterns_containing_variable(re_list, var_type=None, var_variety=None, 
                 continue
             if var_size is not None and var_info['size'] != var_size:
                 continue
-            if var_setValue is not None and var_info['setValue'] != var_setValue:
-                continue
+            if var_setValue is not None:
+                if 'setValue' not in var_info:
+                    # if we cannot check setValue, consider this loose match
+                    # That allows values merged together from definitions with
+                    # different types, as long as only one has no setValue.
+                    if var_setValue >= var_info['minValue']:
+                        if var_setValue <= var_info['maxValue']:
+                            loose_matched_patts = patterns
+                    continue
+                if var_setValue != var_info['setValue']:
+                    continue
             return patterns
-    return None
+    return loose_matched_patts
 
 
 def find_patterns_diff(patterns_prev, patterns_next):
@@ -1197,7 +1207,7 @@ def armfw_elf_section_search_process_vars_from_code(search, elf_sections, addres
     return True
 
 
-def armfw_elf_section_search_block(search, sect_offs, elf_sections, cs, block_len):
+def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, block_len):
     """ Search for pattern in a block of ELF file section.
         The function will try to save state and stop somewhere around given block_len.
     """
@@ -1289,7 +1299,7 @@ def armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, sect_name, pa
     sect_offs = 0
     sect_progress_treshold = 0
     while sect_offs < len(search['section']['data']):
-        search, sect_offs = armfw_elf_section_search_block(search, sect_offs, elf_sections, cs, 65536)
+        search, sect_offs = armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, 65536)
         # Print progress info
         if (po.verbose > 2) and (sect_offs > sect_progress_treshold):
             print("{:s}: Searching for {:s}, progress {:3d}%".format(po.elffile, search['name'], sect_offs * 100 // len(search['section']['data'])))
@@ -1382,7 +1392,7 @@ def prepare_asm_line_from_pattern(asm_arch, elf_sections, glob_params_list, addr
         elif (var_info['type'] in [VarType.RELATIVE_PC_ADDR_TO_CODE, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA]):
             prop_ofs_val = get_arm_offset_val_relative_to_pc_register(asm_arch, elf_sections, address, instr_size, var_info['value'])
         else:
-            raise NotImplementedError("Unexpected variable type found.")
+            raise NotImplementedError("Unexpected variable type found, '{:s}'.".format(var_info['type'].name))
 
         var_value = "0x{:x}".format(prop_ofs_val)
         asm_line = re.sub(r'[(][?]P<'+var_name+r'>[^)]+[)]', var_value, asm_line)
@@ -1435,7 +1445,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             glob_var_info = glob_params_list[var_info['cfunc_name']+'.'+var_info['name']]
         if glob_var_info is None:
             raise ValueError("Lost the variable to set, '{:s}' - internal error.".format(var_info['name']))
-        # Set new value of lthe global variable and generate the code with it
+        # Set new value of the global variable and generate the code with it
         glob_var_info['value'] = new_value
         patterns_addr = var_info['address']
         var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
@@ -1470,7 +1480,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
         valbts.append(valbt)
     elif (var_info['type'] in [VarType.DETACHED_DATA]):
         # For detached data, we need to find an assembly pattern with matching value, and then patch the asm code to look like it
-        patterns_next = find_patterns_containing_variable(re_list, var_type=var_info['type'], var_name=var_info['name'], var_setValue=str(new_var_nativ))
+        patterns_next = find_patterns_containing_variable(re_list, var_name=var_info['name'], var_setValue=str(new_var_nativ))
         patterns_prev = find_patterns_containing_variable(re_list, var_type=var_info['type'], var_name=var_info['name'], var_setValue=var_info['setValue'])
         # Get part of the pattern which is different between the current one and the one we want
         patterns_diff = []
