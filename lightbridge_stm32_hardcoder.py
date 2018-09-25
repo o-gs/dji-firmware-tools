@@ -14,6 +14,70 @@ will not influence update operation.
 
 Exported values:
 
+og_hardcoded.lightbridge_stm32.packet_received_attenuation_override -
+
+  Allows to override attenuation value in an incomming packet command.
+  The firmware allows to set attenuation via DUML packet received from
+  another module of the drone or RC. This parameter allows to replace
+  the value set by that packet with a constant number. Value of -1 means
+  the attenuation setting from packet should work as it originally does,
+  non-negative value will cause attenuation to be set to it, and the value
+  received in packet will be ignored.
+
+og_hardcoded.lightbridge_stm32.board_ad4_attenuation_tx?_* -
+
+  Sets attenuation value for `tx1` or `tx2` for either `fcc` or `ce` region.
+  Used on `ad4` OFDM board variant only.
+
+  There are several variants of OFDM boards supported by the firmware.
+  Each of these boards has different power output, so different attenuation
+  values are set to keep the power level in bound of CE or FCC regulations.
+  The values with `ad4` in name means board variant 4 with Analog Devices
+  transciever.
+
+  That chip is a double transciever, hence attenuation can be set for both
+  channels - `tx1` and `tx2`. Each of the channels is used to send and receive
+  data through one antenna within the drone. There are four antennas, and only
+  two are used at a specific time. The drone switches used antennas
+  automatically when a need arises. There are minor differences in default
+  attenuation values between channels; these are due to specifics of high
+  frequency signal progagation through the circuit board.
+
+og_hardcoded.lightbridge_stm32.board_ad5_attenuation_tx?_* -
+
+  Sets attenuation value for `tx1` or `tx2` for either `fcc` or `ce` region.
+  Used on `ad5` OFDM board variant only.
+
+  Look at previous values descriptions for detailed explanation.
+  The values with `ad5` in name means board variant 5 with Analog Devices
+  transciever.
+
+og_hardcoded.lightbridge_stm32.board_ar6_attenuation_tx?_* -
+
+  Sets attenuation value for `tx1` or `tx2` for either `fcc` or `ce` region.
+  Used on `ar6` OFDM board variant only.
+
+  Look at previous values descriptions for detailed explanation.
+  The values with `ar6` in name means board variant 6 with Artosyn AR8003
+  transciever.
+
+og_hardcoded.lightbridge_stm32.board_ar7_attenuation_tx?_* -
+
+  Sets attenuation value for `tx1` or `tx2` for either `fcc` or `ce` region.
+  Used on `ar7` OFDM board variant only.
+
+  Look at previous values descriptions for detailed explanation.
+  The values with `ar7` in name means board variant 7 with Artosyn AR8003
+  transciever.
+
+og_hardcoded.lightbridge_stm32.board_ad2_attenuation_tx?_* -
+
+  Sets attenuation value for `tx1` or `tx2` for either `fcc` or `ce` region.
+  Used on `ad2` OFDM board variant only.
+
+  Look at previous values descriptions for detailed explanation.
+  The values with `ad2` in name means board variant 2 with Analog Devices
+  transciever.
 
 """
 
