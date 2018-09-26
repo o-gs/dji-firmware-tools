@@ -84,7 +84,7 @@ from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
 
 def startup_encrypt_check_always_pass_params_update(asm_arch, elf_sections, re_list, glob_params_list, var_info, new_var_nativ):
     """ Callback function to prepare 'startup_encrypt_check_always_pass' value change.
-    Sets global params required for the switch.3
+    Sets global params required for the switch.
     """
     if new_var_nativ == 1:
         # Set variables requires to change original into encpass
@@ -105,6 +105,7 @@ def startup_encrypt_check_always_pass_params_update(asm_arch, elf_sections, re_l
 re_func_encryptThrFxn_original = {
 'name': "encryptThrFxn-original",
 're': """
+encryptThrFxn:
   push	{fp, lr}
   add	fp, sp, #4
   sub	sp, sp, #0x10
@@ -129,7 +130,7 @@ loc_label2:
   pop	{fp, pc}
 """,
 'vars': {
-  'encryptThrFxn':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
+  'encryptThrFxn':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'startup_encrypt_check_always_pass':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.p3x_dm3xx", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "0",
     'custom_params_callback': startup_encrypt_check_always_pass_params_update,
@@ -147,6 +148,7 @@ loc_label2:
 re_func_encryptThrFxn_encpass = {
 'name': "encryptThrFxn-encpass",
 're': """
+encryptThrFxn:
   push	{fp, lr}
   add	fp, sp, #4
   sub	sp, sp, #0x10
@@ -171,7 +173,7 @@ loc_label2:
   pop	{fp, pc}
 """,
 'vars': {
-  'encryptThrFxn':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
+  'encryptThrFxn':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'startup_encrypt_check_always_pass':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.p3x_dm3xx", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "1",
     'description': "Set startup encryption test as passed even if it did not; 0-repeat forever on fail,1-force pass"},
@@ -190,6 +192,7 @@ loc_label2:
 re_func_Encrypt_Request = {
 'name': "Encrypt_Request",
 're': """
+Encrypt_Request:
   push	{fp, lr}
   add	fp, sp, #4
   sub	sp, sp, #0x360
@@ -383,7 +386,7 @@ re_func_Encrypt_Request = {
   pop	{fp, pc}
 """,
 'vars': {
-  'Encrypt_Request':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION, 'line': 0},
+  'Encrypt_Request':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'cstr_fname_key':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
