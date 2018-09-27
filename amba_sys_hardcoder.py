@@ -617,7 +617,7 @@ def get_arm_vma_relative_to_pc_register(asm_arch, section, address, size, offset
     return vma - (vma % asm_arch['boundary'])
 
 
-def get_arm_offset_val_relative_to_pc_register(asm_arch, elf_sections, address, size, vma):
+def get_arm_offset_val_relative_to_pc_register(asm_arch, address, size, vma):
     """ Gets offset associated with Virtual Memory Address given to place into asm instruction.
     """
     offset_val = vma - address - size - asm_arch['boundary']
@@ -800,6 +800,19 @@ def armfw_elf_section_search_get_next_search_pos(search, sect_offs):
         return new_offs - (new_offs % asm_arch['boundary'])
 
 
+def variety_is_signed_int(var_variety):
+    return  var_variety in [DataVariety.INT8_T, DataVariety.INT16_T, DataVariety.INT32_T, DataVariety.INT64_T]
+
+def variety_is_unsigned_int(var_variety):
+    return  var_variety in [DataVariety.UINT8_T, DataVariety.UINT16_T, DataVariety.UINT32_T, DataVariety.UINT64_T]
+
+def variety_is_string(var_variety):
+    return  var_variety in [DataVariety.CHAR]
+
+def variety_is_float(var_variety):
+    return  var_variety in [DataVariety.FLOAT, DataVariety.DOUBLE]
+
+
 def armfw_elf_section_search_get_value_variety_size(var_variety):
     """ Get expected size of the value
     """
@@ -835,21 +848,59 @@ def armfw_elf_section_search_get_value_size(asm_arch, var_info):
     return var_size, var_count
 
 
-def armfw_elf_compute_pattern_code_length(asm_arch, patterns, pattern_vars):
-    """ Returns length in bytes of given asm patterns list.
+def prepare_simplified_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, pattern_lines):
+    """ Given a list of patterns and variables to put inside, produces assembly code.
+
+    Removes regex-specific clauses and replaces named groups with values of variables.
     """
-    code_size = 0
-    for pat_line in patterns:
-        data_item_size = armfw_asm_is_data_definition(asm_arch, pat_line)
-        vars_used = re.findall(r'[(][?]P<([^>]+)>[^)]+[)]', pat_line)
-        if data_item_size is not None:
-            # TODO - make support of arrays
-            code_size += data_item_size
+    asm_lines = []
+    asm_addr_curr = patterns_addr
+    for pat_line in pattern_lines:
+        asm_line, code_size = prepare_asm_line_from_pattern(asm_arch, glob_params_list, asm_addr_curr, '', pat_line, inaccurate_size=True)
+        asm_addr_curr += code_size
+        asm_lines.append(asm_line)
+    return asm_lines, (asm_addr_curr-patterns_addr)
+
+
+def armfw_elf_compute_pattern_code_length(asm_arch, patterns_list, pattern_vars):
+    """ Returns best estimate length in bytes of given asm patterns list.
+
+    Using this function should be avoided whenever possible. It tries hard to provide correct length,
+    but it is simply impossible - not only because of parameter values influencing the length, but also
+    because there are many binary equivalents to an instruction, and they have different lengths. Every
+    compiler prepares different code for some instructions.
+    """
+    dummy_patt_base = 0x10000
+    dummy_params_list = {}
+    for var_name, var_info_orig in pattern_vars.items():
+        var_info = var_info_orig.copy()
+        # Predict proper value of each variable
+        if 'setValue' in var_info:
+            var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['setValue'])
+        elif ('maxValue' in var_info) and ('minValue' in var_info) and (variety_is_float(var_info['variety']) or
+          variety_is_unsigned_int(var_info['variety']) or variety_is_signed_int(var_info['variety'])):
+            var_info['value'] = (armfw_elf_search_value_string_to_native_type(var_info, var_info['maxValue'])
+                               + armfw_elf_search_value_string_to_native_type(var_info, var_info['minValue'])) // 2
+        elif 'defaultValue' in var_info:
+            var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['defaultValue'])
+        elif 'maxValue' in var_info:
+            var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['maxValue'])
+        elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_CODE) or \
+             (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA):
+            if 'line' in var_info:
+                var_info['value'] = dummy_patt_base + asm_arch['boundary'] * var_info['line']
+            else:
+                var_info['value'] = dummy_patt_base + 0x20
         else:
-            # TODO - make support of variable instruction size architactures
-            # ie. by replacing all vars in regex by arbitrary value
-            code_size += asm_arch['boundary']
-    return code_size
+            # Use low enough value to make short jump in case the variable is an address
+            var_info['value'] = 0x20
+        dummy_params_list[var_name] = var_info
+    asm_lines, _ = prepare_simplified_asm_lines_from_pattern_list(asm_arch, dummy_params_list, dummy_patt_base, patterns_list)
+    # Now compile our new code line to get proper length
+    #print("Compiling code for len:","; ".join(asm_lines))
+    bt_enc_data = armfw_asm_compile_lines(asm_arch, dummy_patt_base, asm_lines)
+    return len(bt_enc_data)
+
 
 def armfw_elf_search_value_bytes_to_native_type(asm_arch, var_info, var_bytes):
     """ Converts bytes to a variable described in info struct and architecture.
@@ -862,15 +913,15 @@ def armfw_elf_search_value_bytes_to_native_type(asm_arch, var_info, var_bytes):
             var_nativ = [ var_bytes.rstrip(b"\0").decode("ISO-8859-1") ]
         else:
             var_nativ = [ var_bytes.decode("ISO-8859-1") ]
-    elif var_info['variety'] in [DataVariety.UINT8_T, DataVariety.UINT16_T, DataVariety.UINT32_T, DataVariety.UINT64_T]:
+    elif variety_is_unsigned_int(var_info['variety']):
         var_nativ = []
         for i in range(len(var_bytes) // var_size):
             var_nativ.append(int.from_bytes(var_bytes[i*var_size:(i+1)*var_size], byteorder=asm_arch['byteorder'], signed=False))
-    elif var_info['variety'] in [DataVariety.INT8_T, DataVariety.INT16_T, DataVariety.INT32_T, DataVariety.INT64_T]:
+    elif variety_is_signed_int(var_info['variety']):
         var_nativ = []
         for i in range(len(var_bytes) // var_size):
             var_nativ.append(int.from_bytes(var_bytes[i*var_size:(i+1)*var_size], byteorder=asm_arch['byteorder'], signed=True))
-    elif var_info['variety'] in [DataVariety.FLOAT, DataVariety.DOUBLE]:
+    elif variety_is_float(var_info['variety']):
         var_nativ = []
         for i in range(len(var_bytes) // var_size):
             if var_size >= 8:
@@ -1367,10 +1418,13 @@ def armfw_asm_compile_lines(asm_arch, asm_addr, asm_lines):
     return bt_enc_data
 
 
-def prepare_asm_line_from_pattern(asm_arch, elf_sections, glob_params_list, address, cfunc_name, pat_line):
+def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_name, pat_line, inaccurate_size=False):
     # List regex parameters used in that line
     vars_used = re.findall(r'[(][?]P<([^>]+)>[^)]+[)]', pat_line)
-    instr_size = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], glob_params_list)
+    if not inaccurate_size:
+        instr_size = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], glob_params_list)
+    else:
+        instr_size = asm_arch['boundary'] # not true, but good enough if we don't care about the code being properly executable
     # Replace parameters with their values
     asm_line = pat_line
     for var_name in vars_used:
@@ -1383,14 +1437,15 @@ def prepare_asm_line_from_pattern(asm_arch, elf_sections, glob_params_list, addr
             for var_name_iter, var_info_iter in glob_params_list.items():
                 if var_name_iter.endswith("."+var_name):
                     var_info = var_info_iter
-                    eprint("Warning: Parameter '{:s}' for function '{:s}' matched from other function '{:s}'.".format(var_name,cfunc_name,var_info['cfunc_name']))
+                    if not inaccurate_size:
+                        eprint("Warning: Parameter '{:s}' for function '{:s}' matched from other function '{:s}'.".format(var_name,cfunc_name,var_info['cfunc_name']))
                     break
         if var_info is None:
             raise ValueError("Parameter '{:s}' is required to compose assembly patch but was not found.".format(var_name))
         if (var_info['type'] in [VarType.DIRECT_INT_VALUE, VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA]):
             prop_ofs_val = var_info['value']
         elif (var_info['type'] in [VarType.RELATIVE_PC_ADDR_TO_CODE, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA]):
-            prop_ofs_val = get_arm_offset_val_relative_to_pc_register(asm_arch, elf_sections, address, instr_size, var_info['value'])
+            prop_ofs_val = get_arm_offset_val_relative_to_pc_register(asm_arch, address, instr_size, var_info['value'])
         else:
             raise NotImplementedError("Unexpected variable type found, '{:s}'.".format(var_info['type'].name))
 
@@ -1403,11 +1458,15 @@ def prepare_asm_line_from_pattern(asm_arch, elf_sections, glob_params_list, addr
     return asm_line, instr_size
 
 
-def prepare_asm_lines_from_pattern_list(asm_arch, elf_sections, glob_params_list, patterns_addr, var_info, pattern_lines):
+def prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, cfunc_name, pattern_lines):
+    """ Given a list of patterns and variables to put inside, produces assembly code.
+
+    Removes regex-specific clauses and replaces named groups with values of variables.
+    """
     asm_lines = []
     asm_addr_curr = patterns_addr
     for pat_line in pattern_lines:
-        asm_line, code_size = prepare_asm_line_from_pattern(asm_arch, elf_sections, glob_params_list, asm_addr_curr, var_info['cfunc_name'], pat_line)
+        asm_line, code_size = prepare_asm_line_from_pattern(asm_arch, glob_params_list, asm_addr_curr, cfunc_name, pat_line)
         asm_addr_curr += code_size
         asm_lines.append(asm_line)
     return asm_lines, (asm_addr_curr-patterns_addr)
@@ -1449,7 +1508,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
         glob_var_info['value'] = new_value
         patterns_addr = var_info['address']
         var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
-        asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, elf_sections, glob_params_list, patterns_addr, var_info, patterns_list)
+        asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_list)
         # Now compile our new code line
         if (po.verbose > 2):
             print("Compiling code:","; ".join(asm_lines))
@@ -1490,7 +1549,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             # From patterns preceding the diff, compute offset where the diff starts
             patterns_addr = var_info['address'] + armfw_elf_compute_pattern_code_length(asm_arch, patterns_preced, patterns_next['vars'])
             var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
-            asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, elf_sections, glob_params_list, patterns_addr, var_info, patterns_diff)
+            asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_diff)
             if len(asm_lines) < 1:
                 raise ValueError("No assembly lines prepared - internal error.")
             # Now compile our new code line
