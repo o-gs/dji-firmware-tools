@@ -355,7 +355,7 @@ def imah_get_auth_params(po, pkghead):
         auth_key_struct = ImgRSAPublicKey()
         memmove(addressof(auth_key_struct), auth_key_data, sizeof(auth_key_struct))
         auth_key_n = combine_int_array(auth_key_struct.n, 32)
-        auth_key = RSA.construct( (auth_key_n, auth_key_struct.exponent, None, None, None, None, ) )
+        auth_key = RSA.construct( (auth_key_n, auth_key_struct.exponent, ) )
     else:
         eprint("{}: Warning: Unrecognized format of auth_key '{:s}'".format(po.sigfile,auth_k_str))
         return (None)
