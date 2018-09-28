@@ -176,6 +176,7 @@ loc_label2:
   'encryptThrFxn':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'startup_encrypt_check_always_pass':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.p3x_dm3xx", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "1",
+    'custom_params_callback': startup_encrypt_check_always_pass_params_update,
     'description': "Set startup encryption test as passed even if it did not; 0-repeat forever on fail,1-force pass"},
   'cstr_ent_query_md':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_enc_pass':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
