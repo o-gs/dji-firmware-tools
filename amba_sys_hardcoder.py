@@ -97,6 +97,10 @@ class VarType(enum.Enum):
     RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA = enum.auto()
     # Variable contains data not directly bound to any input offset
     DETACHED_DATA = enum.auto()
+    # Variable which value is unused in current variant of the code
+    UNUSED_DATA = enum.auto()
+    # Internal variable of the tool, not to be used in pattern definitions
+    INTERNAL_DATA = enum.auto()
 
 class DataVariety(enum.Enum):
     UNKNOWN = enum.auto()
@@ -748,8 +752,10 @@ def armfw_elf_section_search_init(asm_arch, section, patterns):
             var_def = search['var_defs'][lab_name]
             var_def['line'] = lab_line
     search['var_vals'] = {}
+    # Starting address of the current match
     search['match_address'] = 0
-    search['first_line_size'] = 0
+    # Binary size of each matched regex line
+    search['re_size'] = []
     search['match_lines'] = 0
     search['best_match_address'] = 0
     search['best_match_lines'] = 0
@@ -764,7 +770,7 @@ def armfw_elf_section_search_reset(search):
         search['best_match_lines'] = search['match_lines']
     search['var_vals'] = {}
     search['match_address'] = 0
-    search['first_line_size'] = 0
+    search['re_size'] = []
     search['match_lines'] = 0
     return search
 
@@ -775,9 +781,10 @@ def armfw_elf_section_search_progress(search, match_address, match_line_size):
     search['match_lines'] += 1
     if search['match_lines'] == 1:
         search['match_address'] = match_address
-        search['first_line_size'] = match_line_size
+        search['re_size'] = []
+    search['re_size'].append(match_line_size)
     if search['match_lines'] == len(search['re']):
-        search['full_matches'].append({'address': search['match_address'], 'vars': search['var_vals']})
+        search['full_matches'].append({'address': search['match_address'], 're': search['re'], 're_size': search['re_size'], 'vars': search['var_vals']})
         search['match_lines'] = 0
     return search
 
@@ -791,10 +798,10 @@ def armfw_elf_section_search_get_pattern(search):
 def armfw_elf_section_search_get_next_search_pos(search, sect_offs):
     """ Get position to start a next search before resetting current one.
     """
-    # We intentionally zero first_line_size only on reset, so that it could be used here even after full msatch
+    # We intentionally clean 're_size' only on reset, so that it could be used here even after full match
     asm_arch = search['asm_arch']
-    if search['first_line_size'] > 0:
-        return search['match_address'] - search['section']['addr'] + search['first_line_size']
+    if len(search['re_size']) > 0:
+        return search['match_address'] - search['section']['addr'] + search['re_size'][0]
     else:
         new_offs = sect_offs + asm_arch['boundary']
         return new_offs - (new_offs % asm_arch['boundary'])
@@ -1246,8 +1253,8 @@ def armfw_elf_section_search_process_vars_from_code(search, elf_sections, addres
             prop_str = ""
             if not armfw_elf_section_search_add_var(search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
                 return False
-        # Add variables detached from data (per-regex constants)
-        if var_info['type'] in [VarType.DETACHED_DATA] and search['match_lines'] == 0:
+        # Add variables detached from data (per-regex constants) or unused (used in different variant of the regex code)
+        if var_info['type'] in [VarType.DETACHED_DATA, VarType.UNUSED_DATA] and search['match_lines'] == 0:
             # Get expected length of the value
             prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
             prop_ofs_val = 0
@@ -1373,24 +1380,45 @@ def armfw_elf_match_to_public_values(po, match):
         if 'public' in var_info:
             if 'depend' in var_info:
                 continue
-            par_name = var_info['public']+"."+var_name
+            par_name = var_info['public']+'.'+var_name
             par_info = var_info.copy()
             par_info['name'] = var_name
             params_list[par_name] = par_info
     return params_list
 
 
+def value_needs_global_name(var_name, var_info):
+    if var_info['variety'] in [DataVariety.UNKNOWN]:
+        return False
+    if var_info['type'] in [VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA]:
+        return True
+    if var_info['type'] in [VarType.DETACHED_DATA]:
+        return True
+    if var_info['type'] in [VarType.UNUSED_DATA] and 'public' in var_info:
+        return True
+    if var_info['variety'] in [CodeVariety.FUNCTION]:
+        return True
+    return False
+
 def armfw_elf_match_to_global_values(po, match, cfunc_name):
     params_list = {}
     for var_name, var_info in match['vars'].items():
-        if (var_info['type'] in [VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, VarType.DETACHED_DATA] or
-          var_info['variety'] in [CodeVariety.FUNCTION]) and var_info['variety'] not in [DataVariety.UNKNOWN]:
+        if value_needs_global_name(var_name, var_info):
             par_info = var_info.copy()
             var_full_name = var_name
         else:
             par_info = var_info.copy()
-            var_full_name = cfunc_name+"."+var_name
+            var_full_name = cfunc_name+'.'+var_name
         par_info['name'] = var_full_name
+        params_list[var_full_name] = par_info
+    # Internal variables
+    if True:
+        var_name = '.re_size'
+        par_info = {'type': VarType.INTERNAL_DATA, 'variety': DataVariety.UNKNOWN}
+        var_full_name = cfunc_name+'.'+var_name
+        par_info['name'] = var_full_name
+        par_info['value'] = match['re_size']
+        par_info['cfunc_name'] = cfunc_name
         params_list[var_full_name] = par_info
     return params_list
 
@@ -1431,11 +1459,11 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
         var_info = None
         if var_name in glob_params_list:
             var_info = glob_params_list[var_name]
-        elif cfunc_name+"."+var_name in glob_params_list:
-            var_info = glob_params_list[cfunc_name+"."+var_name]
+        elif cfunc_name+'.'+var_name in glob_params_list:
+            var_info = glob_params_list[cfunc_name+'.'+var_name]
         else:
             for var_name_iter, var_info_iter in glob_params_list.items():
-                if var_name_iter.endswith("."+var_name):
+                if var_name_iter.endswith('.'+var_name):
                     var_info = var_info_iter
                     if not inaccurate_size:
                         eprint("Warning: Parameter '{:s}' for function '{:s}' matched from other function '{:s}'.".format(var_name,cfunc_name,var_info['cfunc_name']))
@@ -1547,7 +1575,10 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             patterns_diff, patterns_preced = find_patterns_diff(patterns_prev, patterns_next)
         if len(patterns_diff) > 0:
             # From patterns preceding the diff, compute offset where the diff starts
-            patterns_addr = var_info['address'] + armfw_elf_compute_pattern_code_length(asm_arch, patterns_preced, patterns_next['vars'])
+            glob_re_size = glob_params_list[var_info['cfunc_name']+'..re_size']['value']
+            # for DETACHED_DATA, 'address' identifies beginning of the whole matched block; add proper amount of instruction sizes to it
+            aaa = glob_re_size[0:len(patterns_preced)]
+            patterns_addr = var_info['address'] + sum(aaa)
             var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
             asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_diff)
             if len(asm_lines) < 1:
@@ -1708,7 +1739,7 @@ def armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, par_nxvalue)
             continue
         if var_info_iter['public'] != par_info['public']:
             continue
-        #deppar_name = var_info_iter['public']+"."+var_name_iter
+        #deppar_name = var_info_iter['public']+'.'+var_name_iter
         deppar_info = var_info_iter.copy()
         #deppar_info['name'] = deppar_name
         if 'getter' in var_info_iter:
