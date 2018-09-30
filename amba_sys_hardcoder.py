@@ -95,6 +95,8 @@ class VarType(enum.Enum):
     RELATIVE_PC_ADDR_TO_GLOBAL_DATA = enum.auto()
     # Variable contains relative address to a global variable which contains absolute address to the real value
     RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA = enum.auto()
+    # Variable contains offset in relation to some address, ie field position within a struct
+    RELATIVE_OFFSET = enum.auto()
     # Variable contains data not directly bound to any input offset
     DETACHED_DATA = enum.auto()
     # Variable which value is unused in current variant of the code
@@ -1201,17 +1203,13 @@ def armfw_elf_section_search_process_vars_from_code(search, elf_sections, addres
     for var_name, var_val in re_code.groupdict().items():
         var_info = search['var_defs'][var_name]
         # Get direct int value or offset to value
-        if (var_info['type'] == VarType.DIRECT_INT_VALUE):
+        if var_info['type'] in (VarType.DIRECT_INT_VALUE, VarType.RELATIVE_OFFSET,):
             prop_ofs_val = int(var_val, 0)
-        elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_CODE):
+        elif var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA,):
             prop_ofs_val = int(var_val, 0)
-        elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA):
-            prop_ofs_val = int(var_val, 0)
-        elif (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_CODE):
+        elif var_info['type'] in (VarType.RELATIVE_PC_ADDR_TO_CODE, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,):
             prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
-        elif (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA):
-            prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
-        elif (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA):
+        elif var_info['type'] in (VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA,):
             prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
             var_sect, var_offs = get_section_and_offset_from_address(search['asm_arch'], elf_sections, prop_ofs_val)
             if var_sect is not None:
@@ -1287,7 +1285,8 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
             line_iter = [armfw_elf_data_definition_from_bytes(search['asm_arch'],search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs, curr_pattern, search['var_defs']),]
             for (address, size, mnemonic, op_str) in line_iter:
                 instruction_str = "{:s}\t{:s}".format(mnemonic, op_str).strip()
-                #print("Current instruction vs pattern:",instruction_str,curr_pattern)
+                if (po.verbose > 3) and (search['match_lines'] > 1):
+                    print("Current vs pattern {:3d} `{:s}` `{:s}`".format(search['match_lines'],instruction_str,curr_pattern))
                 re_code = re.search(curr_pattern, instruction_str)
                 # The block below is exactly the same as for normal instruction
                 match_ok = (re_code is not None)
@@ -1316,6 +1315,8 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
             # now matching an assembly code line
             for (address, size, mnemonic, op_str) in cs.disasm_lite(search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs):
                 instruction_str = "{:s}\t{:s}".format(mnemonic, op_str).strip()
+                if (po.verbose > 3) and (search['match_lines'] > 1):
+                    print("Current vs pattern {:3d} `{:s}` `{:s}`".format(search['match_lines'],instruction_str,curr_pattern))
                 re_code = re.search(curr_pattern, instruction_str)
                 # If matching failed after exactly one line, get back to checking first line without resetting offset
                 # This is a major perforance optimization
@@ -1366,11 +1367,11 @@ def armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, sect_name, pa
     while sect_offs < len(search['section']['data']):
         search, sect_offs = armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, 65536)
         # Print progress info
-        if (po.verbose > 2) and (sect_offs > sect_progress_treshold):
+        if (po.verbose > 1) and (sect_offs > sect_progress_treshold):
             print("{:s}: Searching for {:s}, progress {:3d}%".format(po.elffile, search['name'], sect_offs * 100 // len(search['section']['data'])))
             sect_progress_treshold += len(search['section']['data']) / 10
 
-    if (po.verbose > 1):
+    if (po.verbose > 0):
         if len(search['full_matches']) == 1:
             print("{:s}: Pattern of {:s} located at 0x{:x}".format(po.elffile, search['name'], search['full_matches'][0]['address']))
         elif len(search['full_matches']) > 1:
