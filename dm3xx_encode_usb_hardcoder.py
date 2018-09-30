@@ -79,28 +79,56 @@ from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
   armfw_elf_whole_section_search, armfw_elf_match_to_public_values, \
   armfw_elf_paramvals_extract_list, armfw_elf_get_value_update_bytes, \
   armfw_elf_paramvals_get_depend_list, armfw_elf_publicval_update, \
-  armfw_elf_generic_objdump, VarType, DataVariety, CodeVariety
+  armfw_elf_paramvals_update_list, armfw_elf_generic_objdump, \
+  armfw_asm_search_strings_to_re_list, VarType, DataVariety, CodeVariety
 
 
 def startup_encrypt_check_always_pass_params_update(asm_arch, elf_sections, re_list, glob_params_list, var_info, new_var_nativ):
     """ Callback function to prepare 'startup_encrypt_check_always_pass' value change.
     Sets global params required for the switch.
     """
+    glob_re = glob_params_list[var_info['cfunc_name']+'..re']['value']
+    glob_re_size = glob_params_list[var_info['cfunc_name']+'..re_size']['value']
+    var_encryptThrFxn = glob_params_list['encryptThrFxn']
     if new_var_nativ == 1:
         # Set variables requires to change original into encpass
+        patterns = re_func_encryptThrFxn_encpass
+        re_lines, re_labels = armfw_asm_search_strings_to_re_list(patterns['re'])
+        # First variable
+        var_bPassedEnc_name = 's_bPassedEnc'
         var_bPassedEnc = glob_params_list['Encrypt_Request.s_bPassedEnc'].copy()
-        var_bPassedEnc['re_line'] = None
         var_bPassedEnc['cfunc_name'] = var_info['cfunc_name']
+        var_bPassedEnc['name'] = var_bPassedEnc['cfunc_name']+'.'+var_bPassedEnc_name
+        var_bPassedEnc['line'] = None
         var_bPassedEnc['address'] = None
-        var_bPassedEnc['value'] = glob_params_list['encryptThrFxn']['value'] + 13*4 #var_bPassedEnc['address']
-        glob_params_list['encryptThrFxn-original.s_bPassedEnc'] = var_bPassedEnc
-        var_bPassedEnc_p = {'str_value': "", 'value': 0x0, 'address': None, 'instr_size': None, 're_line': None, 'cfunc_name': var_info['cfunc_name']}
+        var_bPassedEnc['value'] = None
+        for ln_num, ln_regex in enumerate(re_lines):
+            re_line = re.search(r'^.+P<'+var_bPassedEnc_name+'>.+$', ln_regex)
+            if re_line:
+                var_bPassedEnc['line'] = ln_num
+                var_bPassedEnc['address'] = var_encryptThrFxn['address'] + sum(glob_re_size[0:ln_num])
+                break
+        # Second variable
+        var_bPassedEnc_p_name = 's_bPassedEnc_p'
+        var_bPassedEnc_p = {'str_value': "", 'value': 0x0, 'address': None, 'line': None, 'cfunc_name': var_info['cfunc_name']}
         var_bPassedEnc_p['value'] = glob_params_list['Encrypt_Request.s_bPassedEnc']['value']
-        var_bPassedEnc_p.update(re_func_encryptThrFxn_encpass['vars']['s_bPassedEnc_p'])
-        glob_params_list['encryptThrFxn-original.s_bPassedEnc_p'] = var_bPassedEnc_p
+        var_bPassedEnc_p['name'] = var_bPassedEnc['cfunc_name']+'.'+var_bPassedEnc_p_name
+        var_bPassedEnc_p.update(patterns['vars'][var_bPassedEnc_p_name])
+        for ln_num, ln_regex in enumerate(re_lines):
+            re_line = re.search(r'^.+P<'+var_bPassedEnc_p_name+'>.+$', ln_regex)
+            if re_line:
+                var_bPassedEnc_p['line'] = ln_num
+                var_bPassedEnc_p['address'] = var_encryptThrFxn['address'] + sum(glob_re_size[0:ln_num])
+                break
+        # Make var_bPassedEnc point to var_bPassedEnc_p
+        var_bPassedEnc['value'] = var_bPassedEnc_p['address'] # var_encryptThrFxn['value'] + 13*4
+        # Store both variables
+        glob_params_list[var_bPassedEnc['name']] = var_bPassedEnc
+        glob_params_list[var_bPassedEnc_p['name']] = var_bPassedEnc_p
     else:
         # Set variables requires to change encpass back to original
         pass
+
 
 re_func_encryptThrFxn_original = {
 'name': "encryptThrFxn-original",
@@ -488,18 +516,7 @@ def armfw_elf_dm3xxvals_update(po, elffh):
     # Change section data buffers to bytearrays, so we can change them easily
     for section_name, section in elf_sections.items():
         section['data'] = bytearray(section['data'])
-    update_count = 0
-    for nxpar in nxparams_list:
-        if not nxpar['name'] in pub_params_list:
-            eprint("{:s}: Value '{:s}' not found in ELF file.".format(po.elffile,nxpar['name']))
-            continue
-        par_info = pub_params_list[nxpar['name']]
-        update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_general_list, glob_params_list, par_info, nxpar['setValue'])
-        if update_performed:
-            depparams_list = armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, nxpar['setValue'])
-            for deppar in depparams_list:
-                update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_general_list, glob_params_list, deppar, deppar['setValue'])
-            update_count += 1
+    update_count = armfw_elf_paramvals_update_list(po, asm_arch, re_general_list, pub_params_list, glob_params_list, elf_sections, nxparams_list)
     if (po.verbose > 0):
         print("{:s}: Updated {:d} out of {:d} hardcoded values".format(po.elffile,update_count,len(pub_params_list)))
     # Now update the ELF file
