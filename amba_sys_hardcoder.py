@@ -566,6 +566,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_DjiUstVideoQualitySetInner,},
 ]
 
+
 def get_asm_arch_by_name(arname):
     for arch in elf_archs:
         if arch['name'] == arname:
@@ -708,6 +709,7 @@ def armfw_elf_generic_objdump(po, elffh, asm_submode=None):
                         print("0x{:02x} ".format(bt), end='')
                     print("")
                 sect_offs += size
+
 
 def armfw_asm_search_strings_to_re_list(re_patterns):
     """ Converts multiline regex string to a list of patterns.
@@ -998,6 +1000,7 @@ def armfw_elf_search_value_native_type_to_string(var_nativ):
         val_str = ""
     return val_str
 
+
 def armfw_elf_search_value_string_to_native_type(var_info, var_str):
     """ Converts string value to native type.
 
@@ -1183,7 +1186,7 @@ def armfw_elf_section_search_add_var(search, var_name, var_suffix, var_info, pro
         var_val.update(var_def)
         # For direct values, also store the regex matched to the line
         if (var_info['type'] == VarType.DIRECT_INT_VALUE):
-            var_val['re_line_str'] = armfw_elf_section_search_get_pattern(search)
+            var_val['line'] = search['match_lines']
         search['var_vals'][var_name+var_suffix] = var_val
     return True
 
@@ -1394,11 +1397,10 @@ def value_needs_global_name(var_name, var_info):
         return True
     if var_info['type'] in [VarType.DETACHED_DATA]:
         return True
-    if var_info['type'] in [VarType.UNUSED_DATA] and 'public' in var_info:
-        return True
     if var_info['variety'] in [CodeVariety.FUNCTION]:
         return True
     return False
+
 
 def armfw_elf_match_to_global_values(po, match, cfunc_name):
     params_list = {}
@@ -1418,6 +1420,14 @@ def armfw_elf_match_to_global_values(po, match, cfunc_name):
         var_full_name = cfunc_name+'.'+var_name
         par_info['name'] = var_full_name
         par_info['value'] = match['re_size']
+        par_info['cfunc_name'] = cfunc_name
+        params_list[var_full_name] = par_info
+    if True:
+        var_name = '.re'
+        par_info = {'type': VarType.INTERNAL_DATA, 'variety': DataVariety.UNKNOWN}
+        var_full_name = cfunc_name+'.'+var_name
+        par_info['name'] = var_full_name
+        par_info['value'] = match['re']
         par_info['cfunc_name'] = cfunc_name
         params_list[var_full_name] = par_info
     return params_list
@@ -1446,6 +1456,19 @@ def armfw_asm_compile_lines(asm_arch, asm_addr, asm_lines):
     return bt_enc_data
 
 
+def variable_info_from_value_name(glob_params_list, cfunc_name, var_name):
+    var_info = None
+    if var_name in glob_params_list:
+        var_info = glob_params_list[var_name]
+    elif cfunc_name+'.'+var_name in glob_params_list:
+        var_info = glob_params_list[cfunc_name+'.'+var_name]
+    else:
+        for var_name_iter, var_info_iter in glob_params_list.items():
+            if var_name_iter.endswith('.'+var_name):
+                var_info = var_info_iter
+                break
+    return var_info
+
 def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_name, pat_line, inaccurate_size=False):
     # List regex parameters used in that line
     vars_used = re.findall(r'[(][?]P<([^>]+)>[^)]+[)]', pat_line)
@@ -1456,20 +1479,12 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
     # Replace parameters with their values
     asm_line = pat_line
     for var_name in vars_used:
-        var_info = None
-        if var_name in glob_params_list:
-            var_info = glob_params_list[var_name]
-        elif cfunc_name+'.'+var_name in glob_params_list:
-            var_info = glob_params_list[cfunc_name+'.'+var_name]
-        else:
-            for var_name_iter, var_info_iter in glob_params_list.items():
-                if var_name_iter.endswith('.'+var_name):
-                    var_info = var_info_iter
-                    if not inaccurate_size:
-                        eprint("Warning: Parameter '{:s}' for function '{:s}' matched from other function '{:s}'.".format(var_name,cfunc_name,var_info['cfunc_name']))
-                    break
+        var_info = variable_info_from_value_name(glob_params_list, cfunc_name, var_name)
         if var_info is None:
             raise ValueError("Parameter '{:s}' is required to compose assembly patch but was not found.".format(var_name))
+        if (var_info['cfunc_name'] != cfunc_name) and not inaccurate_size:
+            eprint("Warning: Parameter '{:s}' for function '{:s}' matched from other function '{:s}'.".format(var_name,cfunc_name,var_info['cfunc_name']))
+
         if (var_info['type'] in [VarType.DIRECT_INT_VALUE, VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA]):
             prop_ofs_val = var_info['value']
         elif (var_info['type'] in [VarType.RELATIVE_PC_ADDR_TO_CODE, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA]):
@@ -1500,19 +1515,23 @@ def prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_add
     return asm_lines, (asm_addr_curr-patterns_addr)
 
 
-def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, var_info, new_value_str):
-    valbts = []
-    # Get expected length of the value
-    prop_size, prop_count = armfw_elf_section_search_get_value_size(asm_arch, var_info)
+def armfw_elf_value_pre_update_call(po, asm_arch, elf_sections, re_list, glob_params_list, var_info, new_value_str):
+    """ Calls update callback of a variable.
+    """
     new_var_nativ = armfw_elf_search_value_string_to_native_type(var_info, new_value_str)
 
     if 'custom_params_callback' in var_info:
         custom_params_update = var_info['custom_params_callback']
         custom_params_update(asm_arch, elf_sections, re_list, glob_params_list, var_info, new_var_nativ)
 
-    if (var_info['type'] in [VarType.DIRECT_INT_VALUE]):
+    # The global variable is named either exactly like property, or is preceded by function name
+    glob_var_info = variable_info_from_value_name(glob_params_list, var_info['cfunc_name'], var_info['name'])
+    if glob_var_info is None:
+        raise ValueError("Lost the variable to set, '{:s}' - internal error.".format(var_info['name']))
+
+    if (glob_var_info['type'] in [VarType.DIRECT_INT_VALUE]):
         # The value was taken directly from code - must be converted to int form
-        prop_bytes = armfw_elf_search_value_native_type_to_bytes(asm_arch, var_info, new_var_nativ)
+        prop_bytes = armfw_elf_search_value_native_type_to_bytes(asm_arch, glob_var_info, new_var_nativ)
         if len(prop_bytes) > 0:
             prop_pad = len(prop_bytes) % 4
             if prop_pad != 0:
@@ -1522,18 +1541,39 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             new_value = None
         if new_value is None:
             raise ValueError("Unable to prepare direct int value from provided string value.")
-        # We are only changing one line, but use the whole multiline algorithm just for unification
-        patterns_list = [var_info['re_line_str'],]
-        # The global variable is named either exactly like property, or is preceded by function name
-        glob_var_info = None
-        if var_info['name'] in glob_params_list:
-            glob_var_info = glob_params_list[var_info['name']]
-        if var_info['cfunc_name']+'.'+var_info['name'] in glob_params_list:
-            glob_var_info = glob_params_list[var_info['cfunc_name']+'.'+var_info['name']]
-        if glob_var_info is None:
-            raise ValueError("Lost the variable to set, '{:s}' - internal error.".format(var_info['name']))
         # Set new value of the global variable and generate the code with it
         glob_var_info['value'] = new_value
+    elif (glob_var_info['type'] in [VarType.DETACHED_DATA]):
+        glob_re_var = glob_params_list[glob_var_info['cfunc_name']+'..re']
+        # For detached data, we need to find an assembly pattern with matching value, and then patch the asm code to look like it
+        patterns_next = find_patterns_containing_variable(re_list, var_name=glob_var_info['name'], var_setValue=str(new_var_nativ))
+        re_lines, re_labels = armfw_asm_search_strings_to_re_list(patterns_next['re'])
+        glob_re_var['value'] = re_lines
+        #for lab_name, lab_line in re_labels.items(): #TODO - update line numbers in label variables if this will be needed
+    else:
+        # No pre-update glob_var_info modifications needed for other types
+        pass
+    # We might have glob_params_list updated now, but pub_params_list has an outdated copy
+    if True:
+        for fld_name, fld_value in glob_var_info.items():
+            if fld_name in ('name',):
+                continue
+            var_info[fld_name] = fld_value
+
+
+def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, var_info, new_value_str):
+    valbts = []
+    # Get expected length of the value
+    prop_size, prop_count = armfw_elf_section_search_get_value_size(asm_arch, var_info)
+    new_var_nativ = armfw_elf_search_value_string_to_native_type(var_info, new_value_str)
+
+    # not calling 'custom_params_callback' here - it should have been called before
+
+    if (var_info['type'] in [VarType.DIRECT_INT_VALUE]):
+        # We are only changing one line, but use the whole multiline algorithm just for unification
+        glob_re = glob_params_list[var_info['cfunc_name']+'..re']['value']
+        patterns_list = [glob_re[var_info['line']],]
+
         patterns_addr = var_info['address']
         var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
         asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_list)
@@ -1549,8 +1589,8 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
         valbt['offs'] = var_offs
         valbt['data'] = bt_enc_data
         valbts.append(valbt)
-
-        #print("{:s} = {:s}".format(asm_line, encoding))
+        if (po.verbose > 3):
+            print("Offset 0x{:06x} data {:s}".format(valbt['offs'], valbt['data'].hex()))
     elif (var_info['type'] in [VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,
       VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA]):
         # The value was referenced in code, but stored outside
@@ -1577,8 +1617,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             # From patterns preceding the diff, compute offset where the diff starts
             glob_re_size = glob_params_list[var_info['cfunc_name']+'..re_size']['value']
             # for DETACHED_DATA, 'address' identifies beginning of the whole matched block; add proper amount of instruction sizes to it
-            aaa = glob_re_size[0:len(patterns_preced)]
-            patterns_addr = var_info['address'] + sum(aaa)
+            patterns_addr = var_info['address'] + sum(glob_re_size[0:len(patterns_preced)])
             var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
             asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_diff)
             if len(asm_lines) < 1:
@@ -1595,6 +1634,9 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             valbt['offs'] = var_offs
             valbt['data'] = bt_enc_data
             valbts.append(valbt)
+    elif (var_info['type'] in [VarType.UNUSED_DATA]):
+        # No binary change needed in regard to that variable
+        pass
     else:
         raise NotImplementedError("Unexpected variable type found.")
 
@@ -1770,6 +1812,38 @@ def armfw_elf_publicval_update(po, asm_arch, elf_sections, re_list, glob_params_
     return update_performed
 
 
+def armfw_elf_paramvals_update_list(po, asm_arch, re_list, pub_params_list, glob_params_list, elf_sections, nxparams_list):
+    update_list_a = [] # Most parameters are updated as part of this list
+    update_list_b = [] # Some parameters have multiline changes and should be updated at end
+
+    for nxpar in nxparams_list:
+        if not nxpar['name'] in pub_params_list:
+            eprint("{:s}: Value '{:s}' not found in ELF file.".format(po.elffile,nxpar['name']))
+            continue
+        par_info = pub_params_list[nxpar['name']]
+        if par_info['type'] in [VarType.DETACHED_DATA]:
+            update_list_b.append(nxpar)
+        else:
+            update_list_a.append(nxpar)
+
+    for nxpar in update_list_b + update_list_a:
+        par_info = pub_params_list[nxpar['name']]
+        armfw_elf_value_pre_update_call(po, asm_arch, elf_sections, re_list, glob_params_list, par_info, nxpar['setValue'])
+
+    update_count = 0
+    # Update the params from priority lists
+    for nxpar in update_list_a + update_list_b:
+        par_info = pub_params_list[nxpar['name']]
+        update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_list, glob_params_list, par_info, nxpar['setValue'])
+        if update_performed:
+            depparams_list = armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, nxpar['setValue'])
+            for deppar in depparams_list:
+                update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_list, glob_params_list, deppar, deppar['setValue'])
+            update_count += 1
+
+    return update_count
+
+
 def armfw_elf_ambavals_update(po, elffh):
     """ Updates all hardcoded values in firmware from JSON format text file.
     """
@@ -1781,18 +1855,7 @@ def armfw_elf_ambavals_update(po, elffh):
     # Change section data buffers to bytearrays, so we can change them easily
     for section_name, section in elf_sections.items():
         section['data'] = bytearray(section['data'])
-    update_count = 0
-    for nxpar in nxparams_list:
-        if not nxpar['name'] in pub_params_list:
-            eprint("{:s}: Value '{:s}' not found in ELF file.".format(po.elffile,nxpar['name']))
-            continue
-        par_info = pub_params_list[nxpar['name']]
-        update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_general_list, glob_params_list, par_info, nxpar['setValue'])
-        if update_performed:
-            depparams_list = armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, nxpar['setValue'])
-            for deppar in depparams_list:
-                update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_general_list, glob_params_list, deppar, deppar['setValue'])
-            update_count += 1
+    update_count = armfw_elf_paramvals_update_list(po, asm_arch, re_general_list, pub_params_list, glob_params_list, elf_sections, nxparams_list)
     if (po.verbose > 0):
         print("{:s}: Updated {:d} out of {:d} hardcoded values".format(po.elffile,update_count,len(pub_params_list)))
     # Now update the ELF file
