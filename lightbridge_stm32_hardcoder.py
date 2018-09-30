@@ -124,25 +124,43 @@ from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
   armfw_elf_whole_section_search, armfw_elf_match_to_public_values, \
   armfw_elf_paramvals_extract_list, armfw_elf_get_value_update_bytes, \
   armfw_elf_paramvals_get_depend_list, armfw_elf_publicval_update, \
-  armfw_elf_generic_objdump, VarType, DataVariety, CodeVariety
+  armfw_elf_paramvals_update_list, armfw_elf_generic_objdump, \
+  armfw_asm_search_strings_to_re_list, VarType, DataVariety, CodeVariety
 
 
 def packet_received_attenuation_override_update(asm_arch, elf_sections, re_list, glob_params_list, var_info, new_var_nativ):
     """ Callback function to prepare 'packet_received_attenuation_override_update' value change.
     Changes variable type as required for the switch.
     """
-    glob_var_info = glob_params_list['packet_received_attenuation_override']
-    if new_var_nativ == -1:
-        # Set variables requires to change original into constatt
-        re_vars = re_func_cmd_exec_set09_cmd12_original['vars']
-        glob_var_info['type'] = re_vars['packet_received_attenuation_override']['type']
+    glob_re = glob_params_list[var_info['cfunc_name']+'..re']['value']
+    glob_re_size = glob_params_list[var_info['cfunc_name']+'..re_size']['value']
+    # Note that the value we're modifying is not the one we got in var_info
+    var_name = 'packet_received_attenuation_value'
+    for cfunc_name in (re_func_cmd_exec_set09_cmd12_original['name'], re_func_cmd_exec_set09_cmd12_constatt['name'], ):
+        var_full_name = cfunc_name+'.'+var_name
+        if var_full_name in glob_params_list:
+            glob_var_info = glob_params_list[var_full_name]
+            break
+    if new_var_nativ == 0:
+        # Set variables requires to change constatt back to original
+        patterns = re_func_cmd_exec_set09_cmd12_original
+        re_var_info = patterns['vars'][var_name]
+        if glob_var_info['type'] != re_var_info['type']:
+            glob_var_info['type'] = re_var_info['type']
+            del glob_var_info['line']
     else:
-        # Set variables requires to change encpass back to original
-        re_vars = re_func_cmd_exec_set09_cmd12_constatt['vars']
-        re_expr = re_func_cmd_exec_set09_cmd12_constatt['re']
-        glob_var_info['type'] = re_vars['packet_received_attenuation_override']['type']
-        re_line = re.search(r'\n(.+'+var_info['name']+'.+)\n', re_expr)
-        glob_var_info['re_line_str'] = re_line.group(1).strip()
+        # Set variables requires to change original into constatt
+        patterns = re_func_cmd_exec_set09_cmd12_constatt
+        re_lines, re_labels = armfw_asm_search_strings_to_re_list(patterns['re'])
+        re_var_info = patterns['vars'][var_name]
+        if glob_var_info['type'] != re_var_info['type']:
+            for ln_num, ln_regex in enumerate(re_lines):
+                re_line = re.search(r'^.+P<'+var_name+'>.+$', ln_regex)
+                if re_line:
+                    glob_var_info['line'] = ln_num
+                    glob_var_info['address'] = var_info['address'] + sum(glob_re_size[0:ln_num])
+                    break
+            glob_var_info['type'] = re_var_info['type']
 
 
 re_func_cmd_exec_set09_cmd12_original = {
@@ -188,9 +206,12 @@ loc_label02:
 'vars': {
   'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'packet_received_attenuation_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "-1", 'maxValue': "255", 'defaultValue': "-1", 'setValue': "-1",
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "0",
     'custom_params_callback': packet_received_attenuation_override_update,
-    'description': "When received a packet with power set request, override the received value with constant one; -1 - use value from packet, >=0 - override with given value"},
+    'description': "What to do when received a packet with transceiver power set request; 0 - use the received attenuation value, 1 - override the value with constant one"},
+  'packet_received_attenuation_value':	{'type': VarType.UNUSED_DATA, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'setValue': "40",
+    'description': "Constant attenuation value used when packet_received_attenuation_override is enabled; unit depends on OFDM board type"},
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'tcx_config_80105FA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
@@ -233,7 +254,7 @@ loc_label02:
   ldrb	r0, \[r4, #1\]
   and	r0, r0, #0x3f
   bl	#(?P<set_transciever_flag_20001A28_B>[0-9a-fx]+)
-  movs	r0, #(?P<packet_received_attenuation_override>[0-9a-fx]+)
+  movs	r0, #(?P<packet_received_attenuation_value>[0-9a-fx]+)
   bl	#(?P<set_transciever_attenuation>[0-9a-fx]+)
   ldrb	r0, \[r4, #3\]
   bl	#(?P<set_transciever_flag_20001A28_C>[0-9a-fx]+)
@@ -246,10 +267,13 @@ loc_label02:
 """,
 'vars': {
   'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
-  'packet_received_attenuation_override':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "-1", 'maxValue': "255", 'defaultValue': "-1",
+  'packet_received_attenuation_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "1",
     'custom_params_callback': packet_received_attenuation_override_update,
-    'description': "When received a packet with power set request, override the received value with constant one; -1 - use value from packet, >=0 - override with given value"},
+    'description': "What to do when received a packet with transceiver power set request; 0 - use the received attenuation value, 1 - override the value with constant one"},
+  'packet_received_attenuation_value':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255",
+    'description': "Constant attenuation value used when packet_received_attenuation_override is enabled; unit depends on OFDM board type"},
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'tcx_config_80105FA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
@@ -885,8 +909,8 @@ loc_label34:
 }
 
 re_general_list = [
-  #{'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_original,},
-  #{'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_constatt,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_original,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_constatt,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone,},
   {'sect': ".text", 'func': re_func_init_fpga_config,},
 ]
@@ -959,18 +983,7 @@ def armfw_elf_lbstm32_update(po, elffh):
     # Change section data buffers to bytearrays, so we can change them easily
     for section_name, section in elf_sections.items():
         section['data'] = bytearray(section['data'])
-    update_count = 0
-    for nxpar in nxparams_list:
-        if not nxpar['name'] in pub_params_list:
-            eprint("{:s}: Value '{:s}' not found in ELF file.".format(po.elffile,nxpar['name']))
-            continue
-        par_info = pub_params_list[nxpar['name']]
-        update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_general_list, glob_params_list, par_info, nxpar['setValue'])
-        if update_performed:
-            depparams_list = armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, nxpar['setValue'])
-            for deppar in depparams_list:
-                update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_general_list, glob_params_list, deppar, deppar['setValue'])
-            update_count += 1
+    update_count = armfw_elf_paramvals_update_list(po, asm_arch, re_general_list, pub_params_list, glob_params_list, elf_sections, nxparams_list)
     if (po.verbose > 0):
         print("{:s}: Updated {:d} out of {:d} hardcoded values".format(po.elffile,update_count,len(pub_params_list)))
     # Now update the ELF file
