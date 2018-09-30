@@ -56,7 +56,7 @@ og_hardcoded.p3x_ambarella.vid_setting_bitrates_* -
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -900,6 +900,10 @@ def armfw_elf_compute_pattern_code_length(asm_arch, patterns_list, pattern_vars)
                 var_info['value'] = dummy_patt_base + asm_arch['boundary'] * var_info['line']
             else:
                 var_info['value'] = dummy_patt_base + 0x20
+        elif (var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,
+          VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA,)):
+            # Address relative to PC - must be near base offset
+            var_info['value'] = dummy_patt_base + 0x20
         else:
             # Use low enough value to make short jump in case the variable is an address
             var_info['value'] = 0x20
@@ -1182,7 +1186,7 @@ def armfw_elf_section_search_add_var(search, var_name, var_suffix, var_info, pro
             return False
     else:
         var_def = search['var_defs'][var_name]
-        var_val = {'str_value': prop_str, 'value': prop_ofs_val, 'address': address, 'instr_size': size, 're_line': search['match_lines'], 'cfunc_name': search['name']}
+        var_val = {'str_value': prop_str, 'value': prop_ofs_val, 'address': address, 'line': search['match_lines'], 'cfunc_name': search['name']}
         var_val.update(var_def)
         # For direct values, also store the regex matched to the line
         if (var_info['type'] == VarType.DIRECT_INT_VALUE):
@@ -1224,8 +1228,8 @@ def armfw_elf_section_search_process_vars_from_code(search, elf_sections, addres
         # Either convert the direct value to bytes, or get bytes from offset
         if (var_info['type'] == VarType.DIRECT_INT_VALUE):
             prop_bytes = (prop_ofs_val).to_bytes(prop_size*prop_count, byteorder=search['asm_arch']['byteorder'])
-        elif ((var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA) or (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA)
-          or (var_info['type'] == VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA)):
+        elif (var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,
+          VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA,)):
             var_sect, var_offs = get_section_and_offset_from_address(search['asm_arch'], elf_sections, prop_ofs_val)
             if var_sect is not None:
                 var_data = elf_sections[var_sect]['data']
@@ -1482,7 +1486,7 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
         var_info = variable_info_from_value_name(glob_params_list, cfunc_name, var_name)
         if var_info is None:
             raise ValueError("Parameter '{:s}' is required to compose assembly patch but was not found.".format(var_name))
-        if (var_info['cfunc_name'] != cfunc_name) and not inaccurate_size:
+        if (not inaccurate_size) and (var_info['cfunc_name'] != cfunc_name):
             eprint("Warning: Parameter '{:s}' for function '{:s}' matched from other function '{:s}'.".format(var_name,cfunc_name,var_info['cfunc_name']))
 
         if (var_info['type'] in [VarType.DIRECT_INT_VALUE, VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA]):
@@ -1491,8 +1495,10 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
             prop_ofs_val = get_arm_offset_val_relative_to_pc_register(asm_arch, address, instr_size, var_info['value'])
         else:
             raise NotImplementedError("Unexpected variable type found, '{:s}'.".format(var_info['type'].name))
-
-        var_value = "0x{:x}".format(prop_ofs_val)
+        if (prop_ofs_val >= 0):
+            var_value = "0x{:x}".format(prop_ofs_val)
+        else:
+            var_value = "-0x{:x}".format(-prop_ofs_val)
         asm_line = re.sub(r'[(][?]P<'+var_name+r'>[^)]+[)]', var_value, asm_line)
     # Remove regex square bracket clauses
     asm_line = re.sub(r'[^\\]\[(.*)[^\\]\]', r'\1', asm_line)
@@ -1576,6 +1582,8 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
 
         patterns_addr = var_info['address']
         var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
+        if (po.verbose > 2):
+            print("Making code from:","; ".join(patterns_list))
         asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_list)
         # Now compile our new code line
         if (po.verbose > 2):
@@ -1619,6 +1627,8 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             # for DETACHED_DATA, 'address' identifies beginning of the whole matched block; add proper amount of instruction sizes to it
             patterns_addr = var_info['address'] + sum(glob_re_size[0:len(patterns_preced)])
             var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
+            if (po.verbose > 2):
+                print("Making code from:","; ".join(patterns_diff))
             asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_diff)
             if len(asm_lines) < 1:
                 raise ValueError("No assembly lines prepared - internal error.")
