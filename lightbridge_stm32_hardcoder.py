@@ -526,7 +526,6 @@ loc_label_ret1:
 },
 }
 
-
 re_func_tcx_config_power_zone_V01_11 = {
 'name': "tcx_config_power_zone-V01_11",
 're': """
@@ -761,6 +760,394 @@ loc_label_ret1:
     'description': "Transceiver attenuation value for board type 2 with Analog Devices chip, change by 1 means 0.25 dBm"},
   'unk_var01':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'unk_var02':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+},
+}
+
+
+re_func_tcx_config_update1_V01_08 = {
+'name': "tcx_config_update1-V01_08",
+'re': """
+tcx_config_update1:
+  push	{r4, r5, r6, lr}
+  ldr	r4, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
+  ldrb.w	r0, \[r4, #(?P<rel_tcx_control_attenuation_by_packet>[0-9a-fx]+)\]
+  ldr	r5, \[pc, #(?P<byte_2000015C>[0-9a-fx]+)\]
+  cmp	r0, #0
+  beq	#(?P<loc_phase2_s5>[0-9a-fx]+)
+  ldrb.w	r0, \[r4, #(?P<rel_transciever_attenuation>[0-9a-fx]+)\]
+  ldrb	r1, \[r5, #(?P<rel_active_transciever_attenuation>[0-9a-fx]+)\]
+  cmp	r0, r1
+  beq	#(?P<loc_phase2_s5>[0-9a-fx]+)
+  movs	r0, #0xe9 ; FPGA_REG_UNKN_E9
+  bl	#(?P<spi_fpga_raw_read>[0-9a-fx]+)
+  mvns	r0, r0
+  lsls	r0, r0, #0x1e
+  bne	#(?P<loc_phase2_s5>[0-9a-fx]+)
+  bl	#(?P<spi_fpga_raw_read>[0-9a-fx]+)
+  orr	r0, r0, #8
+  strb	r0, \[r5, #0x11\]
+  orr	r1, r0, #1
+  movs	r0, #0 ; FPGA_REG_UNKN_00
+  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #4
+  beq	#(?P<loc_ad_from_pkt>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #5
+  beq	#(?P<loc_ad_from_pkt>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #2
+  beq	#(?P<loc_ad_from_pkt>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #6
+  beq	#(?P<loc_ar_from_pkt>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #7
+  beq	#(?P<loc_ar_from_pkt>[0-9a-fx]+)
+  b	#(?P<loc_phase2_s4>[0-9a-fx]+)
+loc_ad_from_pkt:
+  movs	r1, #1
+  movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  ldrb.w	r1, \[r4, #0x113\]
+  cmp	r0, r1
+  beq	#(?P<loc_ad_from_pkt_s1>[0-9a-fx]+)
+  ldrb.w	r1, \[r4, #0x113\]
+  movs	r2, #1
+  movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+loc_ad_from_pkt_s1:
+  movs	r1, #1
+  movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  ldrb.w	r1, \[r4, #0x113\]
+  cmp	r0, r1
+  beq	#(?P<loc_phase2_s4>[0-9a-fx]+)
+  ldrb.w	r1, \[r4, #0x113\]
+  movs	r2, #1
+  movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
+  b	#(?P<loc_last4_dirct>[0-9a-fx]+)
+loc_ar_from_pkt:
+  movs	r0, #1
+  bl	#(?P<sub_800D3E4>[0-9a-fx]+)
+  movs	r0, #0xce ; FPGA_REG_UNKN_CE
+  bl	#(?P<spi_fpga_raw_read>[0-9a-fx]+)
+  ldrb.w	r1, \[r4, #0x113\]
+  cmp	r0, r1
+  beq	#(?P<loc_ar_from_pkt_s1>[0-9a-fx]+)
+  ldrb.w	r1, \[r4, #0x113\]
+  movs	r0, #0xce ; FPGA_REG_UNKN_CE
+  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
+loc_ar_from_pkt_s1:
+  movs	r0, #2
+  bl	#(?P<sub_800D3E4>[0-9a-fx]+)
+  movs	r1, #1
+  movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  ldrb.w	r1, \[r4, #0x113\]
+  cmp	r0, r1
+  beq	#(?P<loc_ar_from_pkt_s2>[0-9a-fx]+)
+  ldrb.w	r1, \[r4, #0x113\]
+  movs	r2, #1
+  movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+loc_ar_from_pkt_s2:
+  movs	r1, #1
+  movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  ldrb.w	r1, \[r4, #0x113\]
+  cmp	r0, r1
+  beq	#(?P<loc_phase2_s4>[0-9a-fx]+)
+  ldrb.w	r1, \[r4, #0x113\]
+  movs	r2, #1
+  movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
+loc_last4_dirct:
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+loc_phase2_s4:
+  ldrb	r1, \[r5, #0x11\]
+  movs	r0, #0 ; FPGA_REG_UNKN_00
+  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
+  ldrb.w	r0, \[r4, #0x113\]
+  strb	r0, \[r5, #0xf\]
+loc_phase2_s5:
+  ldrb.w	r0, \[r4, #0x111\]
+  cbnz	r0, #(?P<loc_phase2_j_s2>[0-9a-fx]+)
+  ldrb.w	r0, \[r4, #0x112\]
+  cbnz	r0, #(?P<loc_phase2_j_s2>[0-9a-fx]+)
+  ldr	r0, \[r4, #0xc\]
+  ldrb	r1, \[r5, #0x10\]
+  cmp.w	r1, r0, lsr #31
+  beq	#(?P<loc_phase2_s2>[0-9a-fx]+)
+  movs	r0, #0xe9 ; FPGA_REG_UNKN_E9
+  bl	#(?P<spi_fpga_raw_read>[0-9a-fx]+)
+  mvns	r0, r0
+  lsls	r0, r0, #0x1e
+  bne	#(?P<loc_phase2_s2>[0-9a-fx]+)
+  ldr	r0, \[r4, #0xc\]
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #4
+  beq	#(?P<loc_ad4_dirct>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #5
+  beq	#(?P<loc_ad5_dirct>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #6
+  beq	#(?P<loc_ar6_dirct>[0-9a-fx]+)
+  b	#(?P<loc_phase3_s1>[0-9a-fx]+)
+loc_ad4_dirct:
+  movs	r2, #0
+  movs	r1, #(?P<board_ad4_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ad4_attenuation_tx2_cnup>[0-9a-fx]+)
+  b	#(?P<loc_last_dirct>[0-9a-fx]+)
+loc_ad5_dirct:
+  movs	r2, #0
+  movs	r1, #(?P<board_ad5_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ad5_attenuation_tx2_cnup>[0-9a-fx]+)
+loc_last_dirct:
+  movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
+loc_last2_dirct:
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+loc_phase3_s1:
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #7
+  beq	#(?P<loc_phase3_s3>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #2
+  beq	#(?P<loc_ad2_dirct>[0-9a-fx]+)
+  b	#(?P<loc_phase2_s1>[0-9a-fx]+)
+loc_phase2_j_s2:
+  b	#(?P<loc_phase2_s2>[0-9a-fx]+)
+loc_phase3_s3:
+  movs	r0, #1
+  bl	#(?P<sub_800D3E4>[0-9a-fx]+)
+  movs	r1, #2
+  movs	r0, #0xce ; FPGA_REG_UNKN_CE
+  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
+  movs	r0, #2
+  bl	#(?P<sub_800D3E4>[0-9a-fx]+)
+  movs	r2, #0
+  movs	r1, #(?P<board_ar7_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ar7_attenuation_tx2_cnup>[0-9a-fx]+)
+  movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
+  b	#(?P<loc_last3_dirct>[0-9a-fx]+)
+loc_ad2_dirct:
+  movs	r2, #0
+  movs	r1, #(?P<board_ad2_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ad2_attenuation_tx2_cnup>[0-9a-fx]+)
+  movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
+loc_last3_dirct:
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+loc_phase2_s1:
+  ldr	r0, \[r4, #0xc\]
+  lsrs	r0, r0, #0x1f
+  strb	r0, \[r5, #0x10\]
+loc_phase2_s2:
+  ldrb.w	r0, \[r4, #0x107\]
+  cmp	r0, #0xff
+  beq	#(?P<loc_phase4_s2>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #4
+  beq	#(?P<loc_phase2_s3>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #5
+  beq	#(?P<loc_phase2_s3>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #2
+  beq	#(?P<loc_phase2_s3>[0-9a-fx]+)
+  b	#(?P<loc_phase4_s2>[0-9a-fx]+)
+loc_ar6_dirct:
+  movs	r0, #1
+  bl	#(?P<sub_800D3E4>[0-9a-fx]+)
+  movs	r1, #0xa
+  movs	r0, #0xce ; FPGA_REG_UNKN_CE
+  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
+  movs	r0, #2
+  bl	#(?P<sub_800D3E4>[0-9a-fx]+)
+  movs	r2, #0
+  movs	r1, #(?P<board_ar6_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ar6_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
+  b	#(?P<loc_last2_dirct>[0-9a-fx]+)
+loc_phase2_s3:
+  movs	r0, #1
+  bl	#(?P<sub_800D3E4>[0-9a-fx]+)
+  movs	r0, #9
+  bl	#(?P<spi_fpga_raw_read>[0-9a-fx]+)
+  ldrb.w	r1, \[r4, #0x107\]
+  and	r0, r0, #0xf
+  and	r1, r1, #0xf
+  cmp	r0, r1
+  beq	#(?P<loc_phase4_s1>[0-9a-fx]+)
+  movs	r0, #9 ; FPGA_REG_UNKN_09
+  bl	#(?P<spi_fpga_raw_read>[0-9a-fx]+)
+  and	r1, r0, #0xf0
+  ldrb.w	r0, \[r4, #0x107\]
+  and	r0, r0, #0xf
+  orrs	r1, r0
+  movs	r0, #9 ; FPGA_REG_UNKN_09
+  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
+loc_phase4_s1:
+  movs	r0, #2
+  bl	#(?P<sub_800D3E4>[0-9a-fx]+)
+loc_phase4_s2:
+  ldrb.w	r0, \[r4, #0x6c\]
+  cmp	r0, #1
+  bne	#(?P<loc_label_ret1>[0-9a-fx]+)
+  ldr	r0, \[r5, #0x24\]
+  movs	r1, #0xa
+  adds	r0, r0, #1
+  udiv	r2, r0, r1
+  str	r0, \[r5, #0x24\]
+  mls	r0, r1, r2, r0
+  cmp	r0, #0
+  bne	#(?P<loc_label_ret1>[0-9a-fx]+)
+  bl	#(?P<spi_fpga_raw_read>[0-9a-fx]+)
+  orr	r1, r0, #1
+  movs	r0, #0
+  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #4
+  beq	#(?P<loc_state_ad_check>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #5
+  beq	#(?P<loc_state_ad_check>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #2
+  beq	#(?P<loc_state_ad_check>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #6
+  beq	#(?P<loc_state_ar_check>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #7
+  beq	#(?P<loc_state_ar_check>[0-9a-fx]+)
+  b	#(?P<loc_state_ok>[0-9a-fx]+)
+loc_state_ad_check:
+  movs	r1, #1
+  movs	r0, #0x17 ; AD9363_REG_STATE
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  cmp	r0, #0x1a
+  beq	#(?P<loc_state_ok>[0-9a-fx]+)
+  movs	r0, #0x40 ; OFDM_TCX_REGISTER_ERR
+  bl	#(?P<ofdm_tx_state_set_flag>[0-9a-fx]+)
+  movs	r1, #1
+  movs	r0, #0x17 ; AD9363_REG_STATE
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  mov	r2, r0
+  adr	r1, #(?P<cstr_err_ad9363_reg17>[0-9a-fx]+)
+  b	#(?P<loc_state_err>[0-9a-fx]+)
+loc_state_ar_check:
+  movs	r1, #1
+  movs	r0, #0x7c ; AR8003_REG_STATE_FLAGS
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  lsls	r0, r0, #0x19
+  bmi	#(?P<loc_state_ok>[0-9a-fx]+)
+  movs	r1, #1
+  movs	r0, #0x7c ; AR8003_REG_STATE_FLAGS
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  lsls	r0, r0, #0x19
+  bmi	#(?P<loc_state_ok>[0-9a-fx]+)
+  movs	r0, #0x40 ; OFDM_TCX_REGISTER_ERR
+  bl	#(?P<ofdm_tx_state_set_flag>[0-9a-fx]+)
+  movs	r1, #1
+  movs	r0, #0x7c ; AR8003_REG_STATE_FLAGS
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  mov	r2, r0
+  adr	r1, #(?P<cstr_err_ar8003_reg7c>[0-9a-fx]+)
+loc_state_err:
+  movs	r0, #3
+  bl	#(?P<log_printf>[0-9a-fx]+)
+  bl	#(?P<sub_800BD8A>[0-9a-fx]+)
+loc_state_ok:
+  movs	r0, #0 ; FPGA_REG_UNKN_00
+  bl	#(?P<spi_fpga_raw_read>[0-9a-fx]+)
+  pop.w	{r4, r5, r6, lr}
+  and	r1, r0, #0xfe
+  movs	r0, #0
+  b.w	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
+loc_label_ret1:
+  pop	{r4, r5, r6, pc}
+""",
+'vars': {
+  'tcx_config_update1':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'get_board_version':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'ad936x_reg_sync_write':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'ad936x_reg_sync_read':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'spi_fpga_raw_write':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'spi_fpga_raw_read':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'ofdm_tx_state_set_flag':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'log_printf':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_800BD8A':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_800D3E4':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'ofdm_receiver_id':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'rel_tcx_control_attenuation_by_packet':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'byte_2000015C':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'rel_transciever_attenuation':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_active_transciever_attenuation':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'cstr_err_ad9363_reg17':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'cstr_err_ar8003_reg7c':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'loc_ad_from_pkt':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_ad_from_pkt_s1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_ar_from_pkt':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_ar_from_pkt_s1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_ar_from_pkt_s2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_last4_dirct':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_phase2_s4':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_phase2_s5':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_ad4_dirct':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_ad5_dirct':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_last_dirct':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_last2_dirct':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_phase3_s1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_phase2_j_s2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_phase3_s3':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_ad2_dirct':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_last3_dirct':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_phase2_s1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_phase2_s2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_ar6_dirct':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_phase2_s3':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_phase4_s1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_phase4_s2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_state_ad_check':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_state_ar_check':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_state_err':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_state_ok':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'board_ad4_attenuation_tx1_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad4_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ad4_attenuation_tx2_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad4_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ad5_attenuation_tx1_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad5_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ad5_attenuation_tx2_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad5_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ar6_attenuation_tx1_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ar6_attenuation_tx2_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ar7_attenuation_tx1_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ar7_attenuation_tx2_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ad2_attenuation_tx1_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ad2_attenuation_tx2_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx2_fcc", 'getter': (lambda val: val)},
 },
 }
 
@@ -1155,6 +1542,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_constatt,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone_V01_08,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone_V01_11,},
+  {'sect': ".text", 'func': re_func_tcx_config_update1_V01_08,},
   {'sect': ".text", 'func': re_func_init_fpga_config,},
 ]
 
