@@ -125,7 +125,8 @@ from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
   armfw_elf_paramvals_extract_list, armfw_elf_get_value_update_bytes, \
   armfw_elf_paramvals_get_depend_list, armfw_elf_publicval_update, \
   armfw_elf_paramvals_update_list, armfw_elf_generic_objdump, \
-  armfw_asm_search_strings_to_re_list, VarType, DataVariety, CodeVariety
+  armfw_asm_search_strings_to_re_list, armfw_elf_paramvals_export_json, \
+  VarType, DataVariety, CodeVariety
 
 
 def packet_received_attenuation_override_update(asm_arch, elf_sections, re_list, glob_params_list, var_info, new_var_nativ):
@@ -2121,40 +2122,7 @@ def armfw_elf_lbstm32_extract(po, elffh):
         valfile = open(po.valfile, "w")
     else:
         valfile = io.StringIO()
-    valfile.write("[\n")
-    full_index = 0
-    for par_name, par_info in params_list.items():
-        if (full_index != 0):
-            valfile.write(",\n")
-        valfile.write("\t{\n")
-        for ppname in ('index',):
-            valfile.write("\t\t\"{:s}\" : {:d}".format(ppname,full_index))
-        for ppname in ('description',):
-            valfile.write(",\n")
-            valfile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,par_info[ppname]))
-        for ppname in ('minValue', 'maxValue', 'defaultValue'):
-            if not ppname in par_info: continue
-            valfile.write(",\n")
-            if re.match(r"^(0[Xx][0-9a-fA-F]+|[0-9]+)$", par_info['str_value']):
-                valfile.write("\t\t\"{:s}\" : {:s}".format(ppname,par_info[ppname]))
-            else:
-                valfile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,par_info[ppname]))
-        for ppname in ('setValue',):
-            valfile.write(",\n")
-            if re.fullmatch(r"^(0[Xx][0-9a-fA-F]+|[0-9]+)$", par_info['str_value']):
-                valfile.write("\t\t\"{:s}\" : {:s}".format(ppname,par_info['str_value']))
-            else:
-                valfile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,par_info['str_value']))
-        for ppname in ('name',):
-            valfile.write(",\n")
-            valfile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,par_name))
-        valfile.write("\n")
-        valfile.write("\t}")
-        full_index += 1
-    valfile.write("\n")
-    valfile.write("]\n")
-    if (po.verbose > 0):
-        print("{:s}: Extracted {:d} hardcoded values".format(po.elffile,len(params_list)))
+    armfw_elf_paramvals_export_json(po, params_list, valfile)
     valfile.close()
 
 
