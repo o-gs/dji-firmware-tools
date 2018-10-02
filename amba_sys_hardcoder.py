@@ -240,6 +240,7 @@ elf_archs = [
 # Function with address to _msg_author_level
 re_func_DjiMsgAuthorLevelGet = {
 'name': "DjiMsgAuthorLevelGet",
+'version': "P3X_FW_V01.01",
 're': """
 DjiMsgAuthorLevelGet:
   ldr	r0, \[pc, #(?P<msg_author_level>[0-9a-fx]+)\]
@@ -254,6 +255,7 @@ DjiMsgAuthorLevelGet:
 
 re_func_DjiMsgSettingsInit = {
 'name': "DjiMsgSettingsInit",
+'version': "P3X_FW_V01.01",
 're': """
 DjiMsgSettingsInit:
   push	{r4, r5, lr}
@@ -468,6 +470,7 @@ class AmbaP3XBitrateTableEntry(LittleEndianStructure):
 
 re_func_DjiUstVideoQualitySetInner = {
 'name': "DjiUstVideoQualitySetInner",
+'version': "P3X_FW_V01.01",
 're': """
 DjiUstVideoQualitySetInner:
   push	{r4, r5, lr}
@@ -748,6 +751,7 @@ def armfw_elf_section_search_init(asm_arch, section, patterns):
     search['asm_arch'] = asm_arch
     search['section'] = section
     search['name'] = patterns['name']
+    search['version'] = patterns['version']
     re_lines, re_labels = armfw_asm_search_strings_to_re_list(patterns['re'])
     search['re'] = re_lines
     search['var_defs'] = patterns['vars'].copy()
@@ -1044,12 +1048,14 @@ def armfw_elf_search_value_string_to_native_type(var_info, var_str):
     return var_nativ
 
 
-def find_patterns_containing_variable(re_list, var_type=None, var_variety=None, var_sect=None, var_name=None, var_size=None, var_setValue=None):
+def find_patterns_containing_variable(re_list, cfunc_ver=None, var_type=None, var_variety=None, var_sect=None, var_name=None, var_size=None, var_setValue=None):
     loose_matched_patts = None
     for re_item in re_list:
         if var_sect is not None and re_item['sect'] != var_sect:
             continue
         patterns = re_item['func']
+        if cfunc_ver is not None and patterns['version'] != cfunc_ver:
+            continue
         for v_name, var_info in patterns['vars'].items():
             if var_type is not None and var_info['type'] != var_type:
                 continue
@@ -1188,7 +1194,7 @@ def armfw_elf_section_search_add_var(search, var_name, var_suffix, var_info, pro
             return False
     else:
         var_def = search['var_defs'][var_name]
-        var_val = {'str_value': prop_str, 'value': prop_ofs_val, 'address': address, 'line': search['match_lines'], 'cfunc_name': search['name']}
+        var_val = {'str_value': prop_str, 'value': prop_ofs_val, 'address': address, 'line': search['match_lines'], 'cfunc_name': search['name'], 'cfunc_ver': search['version']}
         var_val.update(var_def)
         # For direct values, also store the regex matched to the line
         if (var_info['type'] == VarType.DIRECT_INT_VALUE):
@@ -1368,16 +1374,16 @@ def armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, sect_name, pa
         search, sect_offs = armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, 65536)
         # Print progress info
         if (po.verbose > 1) and (sect_offs > sect_progress_treshold):
-            print("{:s}: Searching for {:s}, progress {:3d}%".format(po.elffile, search['name'], sect_offs * 100 // len(search['section']['data'])))
+            print("{:s}: Searching for {:s} ver {:s}, progress {:3d}%".format(po.elffile, search['name'], search['version'], sect_offs * 100 // len(search['section']['data'])))
             sect_progress_treshold += len(search['section']['data']) / 10
 
     if (po.verbose > 0):
         if len(search['full_matches']) == 1:
-            print("{:s}: Pattern of {:s} located at 0x{:x}".format(po.elffile, search['name'], search['full_matches'][0]['address']))
+            print("{:s}: Pattern of {:s} ver {:s} located at 0x{:x}".format(po.elffile, search['name'], search['version'], search['full_matches'][0]['address']))
         elif len(search['full_matches']) > 1:
-            print("{:s}: Pattern of {:s} found {:d} times".format(po.elffile, search['name'], len(search['full_matches'])))
+            print("{:s}: Pattern of {:s} ver {:s} found {:d} times".format(po.elffile, search['name'], search['version'], len(search['full_matches'])))
         else:
-            print("{:s}: Pattern of {:s} was not found; closest was {:d} lines at 0x{:x}".format(po.elffile, search['name'], search['best_match_lines'], search['best_match_address']))
+            print("{:s}: Pattern of {:s} ver {:s} was not found; closest was {:d} lines at 0x{:x}".format(po.elffile, search['name'], search['version'], search['best_match_lines'], search['best_match_address']))
 
     return search['full_matches']
 
@@ -1553,7 +1559,7 @@ def armfw_elf_value_pre_update_call(po, asm_arch, elf_sections, re_list, glob_pa
     elif (glob_var_info['type'] in [VarType.DETACHED_DATA]):
         glob_re_var = glob_params_list[glob_var_info['cfunc_name']+'..re']
         # For detached data, we need to find an assembly pattern with matching value, and then patch the asm code to look like it
-        patterns_next = find_patterns_containing_variable(re_list, var_name=glob_var_info['name'], var_setValue=str(new_var_nativ))
+        patterns_next = find_patterns_containing_variable(re_list, cfunc_ver=glob_var_info['cfunc_ver'], var_name=glob_var_info['name'], var_setValue=str(new_var_nativ))
         re_lines, re_labels = armfw_asm_search_strings_to_re_list(patterns_next['re'])
         glob_re_var['value'] = re_lines
         #for lab_name, lab_line in re_labels.items(): #TODO - update line numbers in label variables if this will be needed
@@ -1584,7 +1590,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
         patterns_addr = var_info['address']
         var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
         if (po.verbose > 2):
-            print("Making code from:","; ".join(patterns_list))
+            print("Making code re:","; ".join(patterns_list))
         asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_list)
         # Now compile our new code line
         if (po.verbose > 2):
@@ -1616,8 +1622,8 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
         valbts.append(valbt)
     elif (var_info['type'] in [VarType.DETACHED_DATA]):
         # For detached data, we need to find an assembly pattern with matching value, and then patch the asm code to look like it
-        patterns_next = find_patterns_containing_variable(re_list, var_name=var_info['name'], var_setValue=str(new_var_nativ))
-        patterns_prev = find_patterns_containing_variable(re_list, var_type=var_info['type'], var_name=var_info['name'], var_setValue=var_info['setValue'])
+        patterns_next = find_patterns_containing_variable(re_list, cfunc_ver=var_info['cfunc_ver'], var_name=var_info['name'], var_setValue=str(new_var_nativ))
+        patterns_prev = find_patterns_containing_variable(re_list, cfunc_ver=var_info['cfunc_ver'], var_type=var_info['type'], var_name=var_info['name'], var_setValue=var_info['setValue'])
         # Get part of the pattern which is different between the current one and the one we want
         patterns_diff = []
         if patterns_prev != patterns_next:
