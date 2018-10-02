@@ -135,23 +135,30 @@ def packet_received_attenuation_override_update(asm_arch, elf_sections, re_list,
     """
     glob_re = glob_params_list[var_info['cfunc_name']+'..re']['value']
     glob_re_size = glob_params_list[var_info['cfunc_name']+'..re_size']['value']
+    # Multi-version support - get patterns for current version
+    if var_info['cfunc_ver'] == re_func_cmd_exec_set09_cmd12_V01_07_original['version']:
+        re_func_cmd_exec_set09_cmd12_CURR_original = re_func_cmd_exec_set09_cmd12_V01_07_original
+        re_func_cmd_exec_set09_cmd12_CURR_constatt = re_func_cmd_exec_set09_cmd12_V01_07_constatt
+    else:
+        re_func_cmd_exec_set09_cmd12_CURR_original = re_func_cmd_exec_set09_cmd12_V01_08_original
+        re_func_cmd_exec_set09_cmd12_CURR_constatt = re_func_cmd_exec_set09_cmd12_V01_08_constatt
     # Note that the value we're modifying is not the one we got in var_info
     var_name = 'packet_received_attenuation_value'
-    for cfunc_name in (re_func_cmd_exec_set09_cmd12_V01_08_original['name'], re_func_cmd_exec_set09_cmd12_V01_08_constatt['name'], ):
+    for cfunc_name in (re_func_cmd_exec_set09_cmd12_CURR_original['name'], re_func_cmd_exec_set09_cmd12_CURR_constatt['name'], ):
         var_full_name = cfunc_name+'.'+var_name
         if var_full_name in glob_params_list:
             glob_var_info = glob_params_list[var_full_name]
             break
     if new_var_nativ == 0:
         # Set variables requires to change constatt back to original
-        patterns = re_func_cmd_exec_set09_cmd12_V01_08_original
+        patterns = re_func_cmd_exec_set09_cmd12_CURR_original
         re_var_info = patterns['vars'][var_name]
         if glob_var_info['type'] != re_var_info['type']:
             glob_var_info['type'] = re_var_info['type']
             del glob_var_info['line']
     else:
         # Set variables requires to change original into constatt
-        patterns = re_func_cmd_exec_set09_cmd12_V01_08_constatt
+        patterns = re_func_cmd_exec_set09_cmd12_CURR_constatt
         re_lines, re_labels = armfw_asm_search_strings_to_re_list(patterns['re'])
         re_var_info = patterns['vars'][var_name]
         if glob_var_info['type'] != re_var_info['type']:
