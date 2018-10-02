@@ -1737,16 +1737,7 @@ def armfw_elf_ambavals_list(po, elffh):
         print("{:s}: Listed {:d} hardcoded values".format(po.elffile,len(params_list)))
 
 
-def armfw_elf_ambavals_extract(po, elffh):
-    """ Extracts all values from firmware to JSON format text file.
-    """
-    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
-    if len(params_list) <= 0:
-        raise ValueError("No known values found in ELF file.")
-    if not po.dry_run:
-        valfile = open(po.valfile, "w")
-    else:
-        valfile = io.StringIO()
+def armfw_elf_paramvals_export_json(po, params_list, valfile):
     valfile.write("[\n")
     full_index = 0
     for par_name, par_info in params_list.items():
@@ -1781,6 +1772,18 @@ def armfw_elf_ambavals_extract(po, elffh):
     valfile.write("]\n")
     if (po.verbose > 0):
         print("{:s}: Extracted {:d} hardcoded values".format(po.elffile,len(params_list)))
+
+def armfw_elf_ambavals_extract(po, elffh):
+    """ Extracts all values from firmware to JSON format text file.
+    """
+    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
+    if len(params_list) <= 0:
+        raise ValueError("No known values found in ELF file.")
+    if not po.dry_run:
+        valfile = open(po.valfile, "w")
+    else:
+        valfile = io.StringIO()
+    armfw_elf_paramvals_export_json(po, params_list, valfile)
     valfile.close()
 
 
