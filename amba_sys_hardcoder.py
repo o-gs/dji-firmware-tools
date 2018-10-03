@@ -623,8 +623,12 @@ def get_arm_vma_relative_to_pc_register(asm_arch, section, address, size, offset
 
     ARMs have a way of storing relative offsets which may be confusing at first.
     """
+    alignment = asm_arch['boundary']
+    # In ARM THUMB mode, alignment is 4
+    if (asm_arch['name'] == "arm") and (alignment == 2):
+        alignment = 4
     vma = address + size + asm_arch['boundary'] + int(offset_str, 0)
-    return vma - (vma % asm_arch['boundary'])
+    return vma - (vma % alignment)
 
 
 def get_arm_offset_val_relative_to_pc_register(asm_arch, address, size, vma):
@@ -795,6 +799,15 @@ def armfw_elf_section_search_progress(search, match_address, match_line_size):
         search['full_matches'].append({'address': search['match_address'], 're': search['re'], 're_size': search['re_size'], 'vars': search['var_vals']})
         search['match_lines'] = 0
     return search
+
+def armfw_elf_section_search_print_unused_vars(search):
+    """ Show messages about unused variables defined in the regex.
+    To be used after a match is found.
+    """
+    for var_name in search['var_defs']:
+        if var_name in search['var_vals']:
+            continue
+        print("Variable '{:s}' defined but not used within matched regex".format(var_name))
 
 def armfw_elf_section_search_get_pattern(search):
     """ Get regex pattern to match with next line.
@@ -1177,7 +1190,7 @@ def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, v
     return bt_addr, whole_size, mnemonic, ", ".join(op_list_str)
 
 
-def armfw_elf_section_search_add_var(search, var_name, var_suffix, var_info, prop_ofs_val, prop_str, address, size):
+def armfw_elf_section_search_add_var(po, search, var_name, var_suffix, var_info, prop_ofs_val, prop_str, address, size):
     """ Adds variable to current search results.
 
        @search - the target search results
@@ -1191,6 +1204,8 @@ def armfw_elf_section_search_add_var(search, var_name, var_suffix, var_info, pro
     if var_name in search['var_vals']:
         var_val = search['var_vals'][var_name+var_suffix]
         if var_val['value'] != prop_ofs_val:
+            if (po.verbose > 3):
+                print("Mismatch on var '{:s}' value - is 0x{:x}, now got 0x{:x}".format(var_name+var_suffix,var_val['value'],prop_ofs_val))
             return False
     else:
         var_def = search['var_defs'][var_name]
@@ -1203,7 +1218,7 @@ def armfw_elf_section_search_add_var(search, var_name, var_suffix, var_info, pro
     return True
 
 
-def armfw_elf_section_search_process_vars_from_code(search, elf_sections, address, size, re_code):
+def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, address, size, re_code):
     """ Process variable values from a code line and add them to search results.
     """
     for var_name, var_val in re_code.groupdict().items():
@@ -1246,12 +1261,12 @@ def armfw_elf_section_search_process_vars_from_code(search, elf_sections, addres
         var_nativ = armfw_elf_search_value_bytes_to_native_type(search['asm_arch'], var_info, prop_bytes)
         prop_str = armfw_elf_search_value_native_type_to_string(var_nativ)
         if isinstance(prop_str, str):
-            if not armfw_elf_section_search_add_var(search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
+            if not armfw_elf_section_search_add_var(po, search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
                 return False
         else: # array of strings
             for i in range(len(prop_str)):
                 prop_sstr = prop_str[i]
-                if not armfw_elf_section_search_add_var(search, var_name, "_{:02d}".format(i), var_info, prop_ofs_val + i*prop_size, prop_sstr, address, size):
+                if not armfw_elf_section_search_add_var(po, search, var_name, "_{:02d}".format(i), var_info, prop_ofs_val + i*prop_size, prop_sstr, address, size):
                     return False
 
     # Now get variables associated to line of code, not anything within the code
@@ -1262,7 +1277,7 @@ def armfw_elf_section_search_process_vars_from_code(search, elf_sections, addres
             prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
             prop_ofs_val = address
             prop_str = ""
-            if not armfw_elf_section_search_add_var(search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
+            if not armfw_elf_section_search_add_var(po, search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
                 return False
         # Add variables detached from data (per-regex constants) or unused (used in different variant of the regex code)
         if var_info['type'] in [VarType.DETACHED_DATA, VarType.UNUSED_DATA] and search['match_lines'] == 0:
@@ -1270,7 +1285,7 @@ def armfw_elf_section_search_process_vars_from_code(search, elf_sections, addres
             prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
             prop_ofs_val = 0
             prop_str = var_info['setValue']
-            if not armfw_elf_section_search_add_var(search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
+            if not armfw_elf_section_search_add_var(po, search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
                 return False
 
     return True
@@ -1297,12 +1312,14 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                 # The block below is exactly the same as for normal instruction
                 match_ok = (re_code is not None)
                 if match_ok:
-                    match_ok = armfw_elf_section_search_process_vars_from_code(search, elf_sections, address, size, re_code)
+                    match_ok = armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, address, size, re_code)
 
                 if match_ok:
                     #print("Match lines: {:d} @ {:x}".format(search['match_lines'],address))
                     search = armfw_elf_section_search_progress(search, address, size)
                     if search['match_lines'] == 0: # This means we had a full match; we need to go back with offset to search for overlapping areas
+                        if (po.verbose > 2):
+                            armfw_elf_section_search_print_unused_vars(search)
                         sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
                         break
                     curr_pattern = armfw_elf_section_search_get_pattern(search)
@@ -1335,12 +1352,14 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
 
                 match_ok = (re_code is not None)
                 if match_ok:
-                    match_ok = armfw_elf_section_search_process_vars_from_code(search, elf_sections, address, size, re_code)
+                    match_ok = armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, address, size, re_code)
 
                 if match_ok:
                     #print("Match lines: {:d} @ {:x}".format(search['match_lines'],address))
                     search = armfw_elf_section_search_progress(search, address, size)
                     if search['match_lines'] == 0: # This means we had a full match; we need to go back with offset to search for overlapping areas
+                        if (po.verbose > 2):
+                            armfw_elf_section_search_print_unused_vars(search)
                         sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
                         break
                     curr_pattern = armfw_elf_section_search_get_pattern(search)
