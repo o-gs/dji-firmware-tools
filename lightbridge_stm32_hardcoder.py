@@ -1052,11 +1052,11 @@ loc_800FC3E:
   cmp	r0, #4
   bne	#(?P<loc_800FC82>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad4_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad4_attenuation_tx1_cnup1>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad4_attenuation_tx2_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad4_attenuation_tx2_cnup1>[0-9a-fx]+)
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FCD0>[0-9a-fx]+)
@@ -1065,11 +1065,11 @@ loc_800FC82:
   cmp	r0, #5
   bne	#(?P<loc_800FCA0>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad5_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad5_attenuation_tx1_cnup1>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad5_attenuation_tx2_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad5_attenuation_tx2_cnup1>[0-9a-fx]+)
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FCD0>[0-9a-fx]+)
@@ -1085,11 +1085,11 @@ loc_800FCA0:
   movs	r0, #2
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar6_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar6_attenuation_tx1_cnup1>[0-9a-fx]+)
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar6_attenuation_tx2_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar6_attenuation_tx2_cnup1>[0-9a-fx]+)
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
 loc_800FCD0:
@@ -1104,11 +1104,11 @@ loc_800FCD0:
   movs	r0, #2
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar7_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar7_attenuation_tx1_cnup1>[0-9a-fx]+)
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar7_attenuation_tx2_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar7_attenuation_tx2_cnup1>[0-9a-fx]+)
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FDDC>[0-9a-fx]+)
@@ -1117,11 +1117,11 @@ loc_800FD02:
   cmp	r0, #2
   bne	#(?P<loc_800FDDC>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad2_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad2_attenuation_tx1_cnup1>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad2_attenuation_tx2_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad2_attenuation_tx2_cnup1>[0-9a-fx]+)
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FDDC>[0-9a-fx]+)
@@ -1132,11 +1132,11 @@ loc_800FD22:
   cmp	r0, #4
   bne	#(?P<loc_800FD40>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad4_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad4_attenuation_tx1_cnup2>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad4_attenuation_tx2_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad4_attenuation_tx2_cnup2>[0-9a-fx]+)
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FD8E>[0-9a-fx]+)
@@ -1145,11 +1145,11 @@ loc_800FD40:
   cmp	r0, #5
   bne	#(?P<loc_800FD5E>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad5_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad5_attenuation_tx1_cnup2>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad5_attenuation_tx2_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad5_attenuation_tx2_cnup2>[0-9a-fx]+)
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FD8E>[0-9a-fx]+)
@@ -1165,11 +1165,11 @@ loc_800FD5E:
   movs	r0, #2
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar6_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar6_attenuation_tx1_cnup2>[0-9a-fx]+)
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar6_attenuation_tx2_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar6_attenuation_tx2_cnup2>[0-9a-fx]+)
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
 loc_800FD8E:
@@ -1184,11 +1184,11 @@ loc_800FD8E:
   movs	r0, #2
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar7_attenuation_tx1_cnup>[0-9a-fx]+) ; default was 0xa?
+  movs	r1, #(?P<board_ar7_attenuation_tx1_cnup2>[0-9a-fx]+) ; default was 0xa?
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar7_attenuation_tx2_cnup>[0-9a-fx]+) ; default was 0xa?
+  movs	r1, #(?P<board_ar7_attenuation_tx2_cnup2>[0-9a-fx]+) ; default was 0xa?
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FDDC>[0-9a-fx]+)
@@ -1197,11 +1197,11 @@ loc_800FDC0:
   cmp	r0, #2
   bne	#(?P<loc_800FDDC>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad2_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad2_attenuation_tx1_cnup2>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad2_attenuation_tx2_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad2_attenuation_tx2_cnup2>[0-9a-fx]+)
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
 loc_800FDDC:
@@ -1372,25 +1372,45 @@ loc_label_ret1:
   'loc_state_ok':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label_ret2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'board_ad4_attenuation_tx1_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ad4_attenuation_tx1_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad4_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ad4_attenuation_tx2_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ad4_attenuation_tx2_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad4_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ad5_attenuation_tx1_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ad5_attenuation_tx1_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad5_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ad5_attenuation_tx2_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ad5_attenuation_tx2_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad5_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ar6_attenuation_tx1_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ar6_attenuation_tx1_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ar6_attenuation_tx2_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ar6_attenuation_tx2_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ar7_attenuation_tx1_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ar7_attenuation_tx1_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ar7_attenuation_tx2_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ar7_attenuation_tx2_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ad2_attenuation_tx1_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ad2_attenuation_tx1_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ad2_attenuation_tx2_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ad2_attenuation_tx2_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ad4_attenuation_tx1_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad4_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ad4_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad4_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ad5_attenuation_tx1_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad5_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ad5_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad5_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ar6_attenuation_tx1_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ar6_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ar7_attenuation_tx1_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ar7_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ad2_attenuation_tx1_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ad2_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx2_fcc", 'getter': (lambda val: val)},
 },
 }
@@ -1613,7 +1633,7 @@ loc_ar6_dirct:
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar6_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar6_attenuation_tx2_cnup>[0-9a-fx]+)
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   b	#(?P<loc_last2_dirct>[0-9a-fx]+)
 loc_phase2_s3:
@@ -2007,7 +2027,7 @@ loc_ar6_dirct:
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar6_attenuation_tx1_cnup>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar6_attenuation_tx2_cnup>[0-9a-fx]+)
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   b	#(?P<loc_last2_dirct>[0-9a-fx]+)
 loc_phase2_s3:
