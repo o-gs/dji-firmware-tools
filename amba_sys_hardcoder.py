@@ -807,6 +807,14 @@ def armfw_elf_section_search_print_unused_vars(search):
     for var_name in search['var_defs']:
         if var_name in search['var_vals']:
             continue
+        var_val_found = False
+        # Handle vars with suffixes
+        for var_val_name in search['var_vals']:
+            if var_val_name.startswith(var_name+"_"):
+                var_val_found = True
+                break
+        if var_val_found:
+            continue
         print("Variable '{:s}' defined but not used within matched regex".format(var_name))
 
 def armfw_elf_section_search_get_pattern(search):
@@ -1207,6 +1215,8 @@ def armfw_elf_section_search_add_var(po, search, var_name, var_suffix, var_info,
             if (po.verbose > 3):
                 print("Mismatch on var '{:s}' value - is 0x{:x}, now got 0x{:x}".format(var_name+var_suffix,var_val['value'],prop_ofs_val))
             return False
+        if var_info['type'] in [VarType.DIRECT_INT_VALUE]:
+            raise ValueError("Mismatch on var '{:s}' occurences - direct int value can only occur once".format(var_name+var_suffix))
     else:
         var_def = search['var_defs'][var_name]
         var_val = {'str_value': prop_str, 'value': prop_ofs_val, 'address': address, 'line': search['match_lines'], 'cfunc_name': search['name'], 'cfunc_ver': search['version']}
