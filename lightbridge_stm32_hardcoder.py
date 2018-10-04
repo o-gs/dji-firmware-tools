@@ -244,6 +244,70 @@ loc_label02:
 },
 }
 
+re_func_cmd_exec_set09_cmd12_V01_07_constatt = {
+'name': "cmd_exec_set09_cmd12-constatt",
+'version': "P3X_FW_V01.07",
+'re': """
+cmd_exec_set09_cmd12:
+  push	{r3, r4, r5, r6, r7, lr}
+  mov	r5, r0
+  mov	r6, r1
+  movs	r0, #0
+  str	r0, \[sp\]
+  add.w	r4, r5, #0xb
+  bl	#(?P<tcx_config_80105FA>[0-9a-fx]+)
+  ldrb	r0, \[r4\]
+  lsrs	r0, r0, #7
+  bne	#(?P<loc_label01>[0-9a-fx]+)
+  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
+  b	#(?P<loc_label02>[0-9a-fx]+)
+loc_label01:
+  movs	r0, #1
+  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
+  ldrb	r1, \[r4\]
+  and	r0, r1, #0x7f
+  bl	#(?P<set_transciever_flag_20001A28_D>[0-9a-fx]+)
+loc_label02:
+  ldrb	r1, \[r4, #1\]
+  lsrs	r0, r1, #6
+  bl	#(?P<set_transciever_flag_20001A28_A>[0-9a-fx]+)
+  ldrb	r1, \[r4, #1\]
+  and	r0, r1, #0x3f
+  bl	#(?P<set_transciever_flag_20001A28_B>[0-9a-fx]+)
+  movs	r0, #(?P<packet_received_attenuation_value>[0-9a-fx]+)
+  bl	#(?P<set_transciever_attenuation>[0-9a-fx]+)
+  ldrb	r0, \[r4, #3\]
+  bl	#(?P<set_transciever_flag_20001A28_C>[0-9a-fx]+)
+  movs	r3, #1
+  mov	r2, sp
+  mov	r1, r5
+  ldr	r0, \[pc, #(?P<rel_func_packet_send>[0-9a-fx]+)\] ; relative address to func packet_send
+  bl	#(?P<packet_make_response>[0-9a-fx]+)
+  pop	{r3, r4, r5, r6, r7, pc}
+""",
+'vars': {
+  'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_received_attenuation_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "1",
+    'custom_params_callback': packet_received_attenuation_override_update,
+    'description': "What to do when received a packet with transceiver power set request; 0 - use the received attenuation value, 1 - override the value with constant one"},
+  'packet_received_attenuation_value':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255",
+    'description': "Constant attenuation value used when packet_received_attenuation_override is enabled; unit depends on OFDM board type"},
+  'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'tcx_config_80105FA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_B':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_D':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_attenuation':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'rel_func_packet_send':		{'type': VarType.RELATIVE_PC_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_make_response':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+},
+}
+
 re_func_cmd_exec_set09_cmd12_V01_08_original = {
 'name': "cmd_exec_set09_cmd12-original",
 'version': "P3X_FW_V01.08",
@@ -293,70 +357,6 @@ loc_label02:
     'description': "What to do when received a packet with transceiver power set request; 0 - use the received attenuation value, 1 - override the value with constant one"},
   'packet_received_attenuation_value':	{'type': VarType.UNUSED_DATA, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'setValue': "40",
-    'description': "Constant attenuation value used when packet_received_attenuation_override is enabled; unit depends on OFDM board type"},
-  'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'tcx_config_80105FA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_B':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_D':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_attenuation':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'rel_func_packet_send':		{'type': VarType.RELATIVE_PC_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'packet_make_response':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-},
-}
-
-re_func_cmd_exec_set09_cmd12_V01_07_constatt = {
-'name': "cmd_exec_set09_cmd12-constatt",
-'version': "P3X_FW_V01.07",
-'re': """
-cmd_exec_set09_cmd12:
-  push	{r3, r4, r5, lr}
-  mov	r5, r0
-  movs	r0, #0
-  strb.w	r0, \[sp\]
-  add.w	r4, r5, #0xb
-  bl	#(?P<tcx_config_80105FA>[0-9a-fx]+)
-  ldrb	r0, \[r4\]
-  lsls	r0, r0, #0x18
-  bmi	#(?P<loc_label01>[0-9a-fx]+)
-  movs	r0, #0
-  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
-  b	#(?P<loc_label02>[0-9a-fx]+)
-loc_label01:
-  movs	r0, #1
-  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
-  ldrb	r0, \[r4\]
-  and	r0, r0, #0x7f
-  bl	#(?P<set_transciever_flag_20001A28_D>[0-9a-fx]+)
-loc_label02:
-  ldrb	r0, \[r4, #1\]
-  lsrs	r0, r0, #6
-  bl	#(?P<set_transciever_flag_20001A28_A>[0-9a-fx]+)
-  ldrb	r0, \[r4, #1\]
-  and	r0, r0, #0x3f
-  bl	#(?P<set_transciever_flag_20001A28_B>[0-9a-fx]+)
-  movs	r0, #(?P<packet_received_attenuation_value>[0-9a-fx]+)
-  bl	#(?P<set_transciever_attenuation>[0-9a-fx]+)
-  ldrb	r0, \[r4, #3\]
-  bl	#(?P<set_transciever_flag_20001A28_C>[0-9a-fx]+)
-  movs	r3, #1
-  mov	r2, sp
-  mov	r1, r5
-  ldr	r0, \[pc, #(?P<rel_func_packet_send>[0-9a-fx]+)\] ; relative address to func packet_send
-  bl	#(?P<packet_make_response>[0-9a-fx]+)
-  pop	{r3, r4, r5, pc}
-""",
-'vars': {
-  'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
-  'packet_received_attenuation_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "1",
-    'custom_params_callback': packet_received_attenuation_override_update,
-    'description': "What to do when received a packet with transceiver power set request; 0 - use the received attenuation value, 1 - override the value with constant one"},
-  'packet_received_attenuation_value':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255",
     'description': "Constant attenuation value used when packet_received_attenuation_override is enabled; unit depends on OFDM board type"},
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
