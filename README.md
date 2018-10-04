@@ -145,6 +145,17 @@ Optimized examples for specific firmwares:
 
 ```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x0136D0:0 --section .bss@0x17FF7700:0xC900 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x7000 --section .bss5@0x48058800:0x100 -p P3X_FW_V01.11.0030_m0400.bin```
 
+This tool supports only conversion in direction of bin-to-elf. To convert an ELF
+file back to BIN (ie. after modifications), use `objcopy` utility for the
+specific architecture. The `objcopy` tool is a part of GNU Binary Utilities
+(`binutils`) and not a part of this repository.
+
+Examples:
+
+```arm-none-eabi-objcopy -O binary P3X_FW_V01.07.0060_m0100_part_sys.elf P3X_FW_V01.07.0060_m0100_part_sys.bin```
+
+```arm-none-eabi-objcopy -O binary P3X_FW_V01.07.0060_m0900.elf P3X_FW_V01.07.0060_m0900.bin```
+
 ### amba_sys2elf.py
 
 Ambarella A7/A9 firmware "System Software" partition converter. The partition
@@ -198,6 +209,22 @@ Example of exporting hard-coded values to JSON file:
 Example of importing values from JSON file back to ELF:
 
 ```./dm3xx_encode_usb_hardcoder.py -vv -u --elffile P3X_FW_V01.07.0060_m0800-encode_usb.elf```
+
+### lightbridge_stm32_hardcoder.py
+
+Dji Lightbridge STM32 micro-controller binary hard-coded values editor.
+
+The tool can parse Lightbridge MCU firmware converted to ELF.
+It finds certain hard-coded values in the binary data, and allows
+exporting or importing them.
+
+Example of exporting hard-coded values to JSON file:
+
+```./lightbridge_stm32_hardcoder.py -vv -x --elffile P3X_FW_V01.07.0060_m0900.elf```
+
+Example of importing values from JSON file back to ELF:
+
+```./lightbridge_stm32_hardcoder.py -vv -u --elffile P3X_FW_V01.07.0060_m0900.elf```
 
 ### dji_flyc_param_ed.py
 
