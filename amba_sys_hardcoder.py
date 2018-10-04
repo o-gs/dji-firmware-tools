@@ -1778,6 +1778,10 @@ def armfw_elf_paramvals_export_json(po, params_list, valfile):
         for ppname in ('description',):
             valfile.write(",\n")
             valfile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,par_info[ppname]))
+        for ppname in ('hint1','hint2','hint3','hint4','hint5'):
+            if not ppname in par_info: continue
+            valfile.write(",\n")
+            valfile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,par_info[ppname]))
         for ppname in ('minValue', 'maxValue', 'defaultValue'):
             if not ppname in par_info: continue
             valfile.write(",\n")
