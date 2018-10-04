@@ -18,11 +18,20 @@ og_hardcoded.lightbridge_stm32.packet_received_attenuation_override -
 
   Allows to override attenuation value in an incomming packet command.
   The firmware allows to set attenuation via DUML packet received from
-  another module of the drone or RC. This parameter allows to replace
-  the value set by that packet with a constant number. Value of -1 means
+  another module of the drone, or RC. This parameter allows to replace
+  the value set by that packet with a constant number. Value of `0` means
   the attenuation setting from packet should work as it originally does,
-  non-negative value will cause attenuation to be set to it, and the value
-  received in packet will be ignored.
+  value of `1` will set the attenuation to `packet_received_attenuation_value`
+  and the value received in packet will be ignored.
+
+og_hardcoded.lightbridge_stm32.packet_received_attenuation_value -
+
+  Used as attenuation value when `packet_received_attenuation_override` is
+  set to `1`. The value is not scaled to board variant - which means specific
+  attenuation can mean different values of output power, depending on OFDM
+  board used. Increasing attenuation by 1 changes the output signal strength
+  by either -1 dBm or -0.25 dBm, depending on board variant. If override
+  function is disabled, this value has no effect.
 
 og_hardcoded.lightbridge_stm32.board_ad4_attenuation_tx?_* -
 
