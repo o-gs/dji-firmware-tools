@@ -1079,7 +1079,7 @@ loc_800FCA0:
   bne	#(?P<loc_800FCD0>[0-9a-fx]+)
   movs	r0, #1
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
-  movs	r1, #0xa
+  movs	r1, #(?P<board_ar6_attenuation_fpga_cnup1>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
@@ -1098,7 +1098,7 @@ loc_800FCD0:
   bne	#(?P<loc_800FD02>[0-9a-fx]+)
   movs	r0, #1
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
-  movs	r1, #0xa
+  movs	r1, #(?P<board_ar7_attenuation_fpga_cnup1>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
@@ -1159,7 +1159,7 @@ loc_800FD5E:
   bne	#(?P<loc_800FD8E>[0-9a-fx]+)
   movs	r0, #1
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
-  movs	r1, #0xa
+  movs	r1, #(?P<board_ar6_attenuation_fpga_cnup2>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
@@ -1178,7 +1178,7 @@ loc_800FD8E:
   bne	#(?P<loc_800FDC0>[0-9a-fx]+)
   movs	r0, #1
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
-  movs	r1, #0xa
+  movs	r1, #(?P<board_ar7_attenuation_fpga_cnup2>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
@@ -1412,6 +1412,14 @@ loc_label_ret1:
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx1_fcc", 'getter': (lambda val: val)},
   'board_ad2_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ar6_attenuation_fpga_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ar7_attenuation_fpga_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ar6_attenuation_fpga_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ar7_attenuation_fpga_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
 },
 }
 
@@ -1579,7 +1587,7 @@ loc_phase2_j_s2:
 loc_phase3_s3:
   movs	r0, #1
   bl	#(?P<sub_800D3E4>[0-9a-fx]+)
-  movs	r1, #2
+  movs	r1, #(?P<board_ar7_attenuation_fpga_cnup>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
@@ -1623,7 +1631,7 @@ loc_phase2_s2:
 loc_ar6_dirct:
   movs	r0, #1
   bl	#(?P<sub_800D3E4>[0-9a-fx]+)
-  movs	r1, #0xa
+  movs	r1, #(?P<board_ar6_attenuation_fpga_cnup>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
@@ -1806,6 +1814,10 @@ loc_label_ret1:
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx1_fcc", 'getter': (lambda val: val)},
   'board_ad2_attenuation_tx2_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ar6_attenuation_fpga_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ar7_attenuation_fpga_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
 },
 }
 
@@ -1973,7 +1985,7 @@ loc_phase2_j_s2:
 loc_phase3_s3:
   movs	r0, #1
   bl	#(?P<sub_800D3E4>[0-9a-fx]+)
-  movs	r1, #2
+  movs	r1, #(?P<board_ar7_attenuation_fpga_cnup>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
@@ -2017,7 +2029,7 @@ loc_phase2_s2:
 loc_ar6_dirct:
   movs	r0, #1
   bl	#(?P<sub_800D3E4>[0-9a-fx]+)
-  movs	r1, #0xa
+  movs	r1, #(?P<board_ar6_attenuation_fpga_cnup>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
@@ -2219,6 +2231,10 @@ loc_label_ret1:
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx1_fcc", 'getter': (lambda val: val)},
   'board_ad2_attenuation_tx2_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ar6_attenuation_fpga_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ar7_attenuation_fpga_cnup':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
 },
 }
 
@@ -2345,7 +2361,7 @@ loc_board_check_7:
   bne	#(?P<loc_board_check_6>[0-9a-fx]+)
   movs	r0, #1
   bl	#(?P<sub_800D3E4>[0-9a-fx]+)
-  movs	r1, #0xa
+  movs	r1, #(?P<board_ar6_attenuation_fpga_init>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
@@ -2364,7 +2380,7 @@ loc_board_check_6:
   bne	#(?P<loc_board_check_5>[0-9a-fx]+)
   movs	r0, #1
   bl	#(?P<sub_800D3E4>[0-9a-fx]+)
-  movs	r1, #0xa
+  movs	r1, #(?P<board_ar7_attenuation_fpga_init>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
@@ -2579,6 +2595,10 @@ loc_label35:
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx1_fcc", 'getter': (lambda val: val)},
   'board_ad2_attenuation_tx2_init':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ar6_attenuation_fpga_init':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ar7_attenuation_fpga_init':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
 },
 }
 
@@ -2823,7 +2843,7 @@ loc_label25:
 loc_label26:
   movs	r0, #1
   bl	#(?P<sub_800D3E4>[0-9a-fx]+)
-  movs	r1, #0xa
+  movs	r1, #(?P<board_ar6_attenuation_fpga_init>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
@@ -2854,7 +2874,7 @@ loc_label29:
 loc_label30:
   movs	r0, #1
   bl	#(?P<sub_800D3E4>[0-9a-fx]+)
-  movs	r1, #2
+  movs	r1, #(?P<board_ar7_attenuation_fpga_init>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
@@ -2965,6 +2985,10 @@ loc_label34:
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx1_fcc", 'getter': (lambda val: val)},
   'board_ad2_attenuation_tx2_init':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx2_fcc", 'getter': (lambda val: val)},
+  'board_ar6_attenuation_fpga_init':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
+  'board_ar7_attenuation_fpga_init':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
 },
 }
 
