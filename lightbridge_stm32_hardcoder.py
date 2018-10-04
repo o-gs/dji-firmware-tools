@@ -632,7 +632,8 @@ loc_label_ret1:
     'description': "Transceiver attenuation value for board type 2 with Analog Devices chip, change by 1 means 0.25 dBm"},
   'board_ad4_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "10",
-    'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm"},
+    'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm",
+    'hint1': "value of 0 means minimal attenuation and therefore max output power of the transceiver"},
   'board_ad4_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "4",
     'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm"},
@@ -870,7 +871,8 @@ loc_label_ret1:
     'description': "Transceiver attenuation value for board type 2 with Analog Devices chip, change by 1 means 0.25 dBm"},
   'board_ad4_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "10",
-    'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm"},
+    'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm",
+    'hint1': "value of 0 means minimal attenuation and therefore max output power of the transceiver"},
   'board_ad4_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "4",
     'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm"},
@@ -1052,11 +1054,11 @@ loc_800FC3E:
   cmp	r0, #4
   bne	#(?P<loc_800FC82>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad4_attenuation_tx1_cnup1>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad4_attenuation_tx1_fcc>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad4_attenuation_tx2_cnup1>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad4_attenuation_tx2_fcc>[0-9a-fx]+)
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FCD0>[0-9a-fx]+)
@@ -1065,11 +1067,11 @@ loc_800FC82:
   cmp	r0, #5
   bne	#(?P<loc_800FCA0>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad5_attenuation_tx1_cnup1>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad5_attenuation_tx1_fcc>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad5_attenuation_tx2_cnup1>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad5_attenuation_tx2_fcc>[0-9a-fx]+)
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FCD0>[0-9a-fx]+)
@@ -1079,17 +1081,17 @@ loc_800FCA0:
   bne	#(?P<loc_800FCD0>[0-9a-fx]+)
   movs	r0, #1
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
-  movs	r1, #(?P<board_ar6_attenuation_fpga_cnup1>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar6_attenuation_fpga_fcc>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar6_attenuation_tx1_cnup1>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar6_attenuation_tx1_fcc>[0-9a-fx]+)
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar6_attenuation_tx2_cnup1>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar6_attenuation_tx2_fcc>[0-9a-fx]+)
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
 loc_800FCD0:
@@ -1098,17 +1100,17 @@ loc_800FCD0:
   bne	#(?P<loc_800FD02>[0-9a-fx]+)
   movs	r0, #1
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
-  movs	r1, #(?P<board_ar7_attenuation_fpga_cnup1>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar7_attenuation_fpga_fcc>[0-9a-fx]+)
   movs	r0, #0xce ; FPGA_REG_UNKN_CE
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   movs	r0, #2
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar7_attenuation_tx1_cnup1>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar7_attenuation_tx1_fcc>[0-9a-fx]+)
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar7_attenuation_tx2_cnup1>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar7_attenuation_tx2_fcc>[0-9a-fx]+)
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FDDC>[0-9a-fx]+)
@@ -1117,11 +1119,11 @@ loc_800FD02:
   cmp	r0, #2
   bne	#(?P<loc_800FDDC>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad2_attenuation_tx1_cnup1>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad2_attenuation_tx1_fcc>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad2_attenuation_tx2_cnup1>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad2_attenuation_tx2_fcc>[0-9a-fx]+)
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FDDC>[0-9a-fx]+)
@@ -1208,7 +1210,7 @@ loc_800FDDC:
   ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
   ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
   lsrs	r0, r0, #0x1f
-  ldr	r1, \[pc, #(?P<byte_2000018D>[0-9a-fx]+)\]
+  ldr	r1, \[pc, #(?P<transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
   strb	r0, \[r1\]
 loc_800FDE6:
   ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
@@ -1283,7 +1285,7 @@ loc_st3_board_ad:
   bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
   cmp	r0, #0x1a
   beq	#(?P<loc_state_ok>[0-9a-fx]+)
-  movs	r0, #0x40
+  movs	r0, #0x40 ; OFDM_TCX_REGISTER_ERR
   bl	#(?P<ofdm_tx_state_set_flag>[0-9a-fx]+)
   bl	#(?P<sub_800CCC8>[0-9a-fx]+)
   b	#(?P<loc_state_ok>[0-9a-fx]+)
@@ -1300,7 +1302,7 @@ loc_st3_board_ar:
   bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
   tst.w	r0, #0x40
   bne	#(?P<loc_state_ok>[0-9a-fx]+)
-  movs	r0, #0x40
+  movs	r0, #0x40 ; OFDM_TCX_REGISTER_ERR
   bl	#(?P<ofdm_tx_state_set_flag>[0-9a-fx]+)
   bl	#(?P<sub_800CCC8>[0-9a-fx]+)
 loc_state_ok:
@@ -1334,7 +1336,7 @@ loc_label_ret1:
   'rel_byte_20001DAF':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_fpga_reg_unkn00_value':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.INT32_T},
   'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
-  'byte_2000018D':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'transceiver_pwr_mode_unk016C':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'dword_20000190':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'rel_transciever_attenuation':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'loc_800fc36':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -1372,26 +1374,42 @@ loc_label_ret1:
   'loc_state_ok':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label_ret2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'board_ad4_attenuation_tx1_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad4_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ad4_attenuation_tx2_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad4_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ad5_attenuation_tx1_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad5_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ad5_attenuation_tx2_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad5_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ar6_attenuation_tx1_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ad4_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "10",
+    'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm",
+    'hint1': "value of 0 means minimal attenuation and therefore max output power of the transceiver",
+    'hint2': "in P3X_FW_V01.07, CE attenuation values are not defined and FCC values are used initially, until power is set via packet"},
+  'board_ad4_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "4",
+    'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm"},
+  'board_ad5_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "4",
+    'description': "Transceiver attenuation value for board type 5 with Analog Devices chip, change by 1 means 0.25 dBm"},
+  'board_ad5_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "5",
+    'description': "Transceiver attenuation value for board type 5 with Analog Devices chip, change by 1 means 0.25 dBm"},
+  'board_ar6_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "10",
+    'description': "Transceiver attenuation value for board type 6 with Artosyn chip, change by 1 means 1 dBm"},
+  'board_ar6_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "10",
+    'description': "Transceiver attenuation value for board type 6 with Artosyn chip, change by 1 means 1 dBm"},
+  'board_ar7_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "2",
+    'description': "Transceiver attenuation value for board type 7 with Artosyn chip, change by 1 means 1 dBm"},
+  'board_ar7_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "2",
+    'description': "Transceiver attenuation value for board type 7 with Artosyn chip, change by 1 means 1 dBm"},
+  'board_ad2_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "4",
+    'description': "Transceiver attenuation value for board type 2 with Analog Devices chip, change by 1 means 0.25 dBm"},
+  'board_ad2_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "5",
+    'description': "Transceiver attenuation value for board type 2 with Analog Devices chip, change by 1 means 0.25 dBm"},
+  'board_ar6_attenuation_fpga_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ar6_attenuation_tx2_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ar7_attenuation_tx1_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ar7_attenuation_fpga_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ar7_attenuation_tx2_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ad2_attenuation_tx1_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ad2_attenuation_tx2_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx2_fcc", 'getter': (lambda val: val)},
   'board_ad4_attenuation_tx1_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad4_attenuation_tx1_fcc", 'getter': (lambda val: val)},
   'board_ad4_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
@@ -1412,10 +1430,6 @@ loc_label_ret1:
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx1_fcc", 'getter': (lambda val: val)},
   'board_ad2_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ar6_attenuation_fpga_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ar7_attenuation_fpga_cnup1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
   'board_ar6_attenuation_fpga_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
   'board_ar7_attenuation_fpga_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
@@ -1536,7 +1550,7 @@ loc_phase2_s5:
   ldrb.w	r0, \[r4, #(?P<rel_tcx_control_attenuation_by_unkn1>[0-9a-fx]+)\]
   cbnz	r0, #(?P<loc_phase2_j_s2>[0-9a-fx]+)
   ldr	r0, \[r4, #0xc\]
-  ldrb	r1, \[r5, #(?P<rel_byte_r5p010>[0-9a-fx]+)\]
+  ldrb	r1, \[r5, #(?P<rel_transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
   cmp.w	r1, r0, lsr #31
   beq	#(?P<loc_phase2_s2>[0-9a-fx]+)
   movs	r0, #0xe9 ; FPGA_REG_UNKN_E9
@@ -1613,7 +1627,7 @@ loc_last3_dirct:
 loc_phase2_s1:
   ldr	r0, \[r4, #0xc\]
   lsrs	r0, r0, #0x1f
-  strb	r0, \[r5, #(?P<rel_byte_r5p010>[0-9a-fx]+)\]
+  strb	r0, \[r5, #(?P<rel_transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
 loc_phase2_s2:
   ldrb.w	r0, \[r4, #(?P<rel_byte_20001B23>[0-9a-fx]+)\]
   cmp	r0, #0xff
@@ -1759,7 +1773,7 @@ loc_label_ret1:
   'rel_tcx_control_attenuation_by_unkn1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_byte_20001B23':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_fpga_reg_unkn00_value':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
-  'rel_byte_r5p010':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_pwr_mode_unk016C':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_byte_r5p024':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'byte_2000015C':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'rel_transciever_attenuation':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
@@ -1934,7 +1948,7 @@ loc_phase2_s5:
   ldrb.w	r0, \[r4, #(?P<rel_tcx_control_attenuation_by_unkn1>[0-9a-fx]+)\]
   cbnz	r0, #(?P<loc_phase2_j_s2>[0-9a-fx]+)
   ldr	r0, \[r4, #0xc\]
-  ldrb	r1, \[r5, #(?P<rel_byte_r5p010>[0-9a-fx]+)\]
+  ldrb	r1, \[r5, #(?P<rel_transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
   cmp.w	r1, r0, lsr #31
   beq	#(?P<loc_phase2_s2>[0-9a-fx]+)
   movs	r0, #0xe9 ; FPGA_REG_UNKN_E9
@@ -2011,7 +2025,7 @@ loc_last3_dirct:
 loc_phase2_s1:
   ldr	r0, \[r4, #0xc\]
   lsrs	r0, r0, #0x1f
-  strb	r0, \[r5, #(?P<rel_byte_r5p010>[0-9a-fx]+)\]
+  strb	r0, \[r5, #(?P<rel_transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
 loc_phase2_s2:
   ldrb.w	r0, \[r4, #(?P<rel_byte_20001B23>[0-9a-fx]+)\]
   cmp	r0, #0xff
@@ -2170,7 +2184,7 @@ loc_label_ret1:
   'rel_fpga_reg_unkn00_value':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_byte_20001B23':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_byte_r4p11a':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
-  'rel_byte_r5p010':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_pwr_mode_unk016C':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_byte_r5p024':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'data_ptr_unkn1':	{'type': VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'data_ptr_unkn2':	{'type': VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
