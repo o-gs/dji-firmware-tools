@@ -357,3 +357,8 @@ to generate ELF files with content matching to the symbols.
 
 When working on a firmware version for which no symbols are available, you may
 want to use a version with symbols for reference in naming.
+
+If you are looking for a best FW version for reference symbols, or you do not care
+for FW versions at all and just want the most complete symbols - check size of MAP
+file. MAP file mostly contains manually-named symbols, so the largest one will be
+for firmware version on which more reversing work was done.
