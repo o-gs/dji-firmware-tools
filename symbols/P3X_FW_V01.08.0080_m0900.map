@@ -12,13 +12,20 @@
 
   Address         Publics by Value
 
+ 0001:08008208       init_sub_8008208
  0001:0800A764       USART_Init
  0001:0800AE90       USARTx
  0001:0800B0AC       packet_send_sub1
  0001:0800B508       SPI_UsrWaitTransferComplete
- 0001:0800B5F0       spi_ad936x_transfer_mark
- 0001:0800B5FE       spi_ad936x_transfer_clear
+ 0001:0800B5F0       spi_fpga_or_tcx_transfer_mark
+ 0001:0800B5FE       spi_fpga_or_tcx_transfer_clear
+ 0001:0800BB1C       set_quadrant_state
+ 0001:0800BB24       switch_active_quadrant
+ 0001:0800BBCE       get_active_quadrant_state
+ 0001:0800BBD4       gey_active_quadrant_num
  0001:0800BC1E       memcpy
+ 0001:0800C0C4       update_board_version
+ 0001:0800C14A       get_board_version
  0001:0800C2C0       log_printf
  0001:0800C2F4       nullsub_7
  0001:0800C2F6       nullsub_8
@@ -29,12 +36,14 @@
  0001:0800C34C       ofdm_tx_state_get_all
  0001:0800C4C4       payload
  0001:0800CE24       src
- 0001:0800CE8A       spi_ad936x_raw_write_xE
- 0001:0800CEAE       spi_ad936x_raw_read_xF
+ 0001:0800CE8A       spi_fpga_raw_write
+ 0001:0800CEAE       spi_fpga_raw_read
  0001:0800CED2       ad936x_reg_sync_write
  0001:0800CF14       ad936x_reg_sync_read
+ 0001:0800D32C       ofdm_init_instruction
  0001:0800D342       jpt_800D33E
  0001:0800D398       def_800D33E
+ 0001:0800D7DA       init_fpga_config
  0001:0800DCBC       aPhantom2x
  0001:0800DCC8       aDDDDD
  0001:0800DCDC       aVerD
@@ -49,15 +58,18 @@
  0001:0800E28C       dest
  0001:0800E322       spipacket_verify_checksum
  0001:0800E99E       packet_receive
+ 0001:0800EFC8       tcx_config_update1
+ 0001:0800F2C2       fpga_set_receiver_id
  0001:0800F3B4       aErrorAd9363Reg
  0001:0800F3D0       aErrorAr8003Reg
  0001:0800F54A       spipacket_sub_800F54A
  0001:0800F87C       a_2x_2x_2x_2x_0
+ 0001:0800FB70       tcx_config_power_zone
  0001:0800FC7A       j_ad936x_reg_sync_write
  0001:0800FCB8       prev_seqno
  0001:0800FCBC       a_2x_2x_2x_2x_1
  0001:0800FCEC       aSetAlterD
- 0001:0800FE7E       packet_sub_800FE7E
+ 0001:0800FE7E       init_unk800FE7E_config
  0001:08010130       dst
  0001:08010154       a3
  0001:08010158       cb
@@ -65,6 +77,33 @@
  0001:08010234       jpt_8010230
  0001:08010272       def_8010230
  0001:080105A4       a_2x_2x_2x_2x_2
+ 0001:080105FA       tcx_config_80105FA
+ 0001:08010664       set_transciever_flag_20001A28_E
+ 0001:0801067A       set_transciever_flag_20001A28_D
+ 0001:08010686       get_transciever_flag_20001A28_D
+ 0001:08010690       set_transciever_flag_20001A28_B
+ 0001:0801069C       get_transciever_flag_20001A28_B
+ 0001:080106A6       set_transciever_flag_20001A28_C
+ 0001:080106B2       get_transciever_flag_20001A28_C
+ 0001:080106BC       set_transciever_attenuation
+ 0001:080106C4       get_transciever_attenuation
+ 0001:080106CC       set_transciever_flag_20001A28_A
+ 0001:080106D8       get_transciever_flag_20001A28_A
+ 0001:08010864       math_vector_8010864
+ 0001:08010946       math_sub_8010946
+ 0001:08010AA2       math_sub_8010AA2
+ 0001:08010BC4       recompute_quadrant
+ 0001:08010C70       a2
+ 0001:08010C7C       a1
+ 0001:08010D8C       cmd_exec_set09_cmd2C_sub901
+ 0001:08010DC2       cmd_exec_set09_cmd2C_sub902
+ 0001:08010E1C       cmd_exec_set09_cmd2C_sub903
+ 0001:08010E52       cmd_exec_set09_cmd2C_sub904
+ 0001:08010E82       cmd_exec_set09_cmd2C_sub911
+ 0001:08010EAA       cmd_exec_set09_cmd2C_sub912
+ 0001:08010EE0       cmd_exec_set09_cmd2C_sub913
+ 0001:08010F5C       cmd_exec_set09_cmd2C_sub914
+ 0001:0801103A       cmd_exec_set09_cmd2C_exec
  0001:0801106C       packet_make_and_send_response
  0001:08011080       send_func
  0001:08011084       packet_sub_8011084
@@ -86,9 +125,9 @@
  0001:08011B04       compute_buf_crc16
  0001:08011B2A       packet_crc_correct
  0001:08011B5E       packet_make_checksum
- 0001:08011B84       cmd_exec_set03_cmd43
- 0001:08011C48       cmd_exec_set03_cmd44
- 0001:08011CC2       cmd_exec_set03_cmd42
+ 0001:08011B84       cmd_exec_osd_general
+ 0001:08011C48       cmd_exec_osd_home
+ 0001:08011CC2       cmd_exec_flyc_unlimit_state
  0001:08011CEC       cmd_exec_set09_cmd0E
  0001:08011D18       cmd_exec_set09_cmd0F
  0001:08011D74       cmd_exec_set09_cmd04
@@ -117,25 +156,50 @@
  0001:08012714       memset_zero
  0001:080128F0       aSigrtmemOutOfH
  0001:08012910       aHeapMemoryCorr
+ 0001:08014110       math_sub_8014110
+ 0001:08014288       math_double_div
+ 0001:080146C0       math_double_mul
  0001:08014884       jpt_8014880
  0001:0801524A       jpt_8015246
  0002:08015612       pkt_payload_dec_table
+ 0002:08016518       ofdm_init_list_2
+ 0002:08018E54       ofdm_init_list_3
+ 0002:08018F60       ofdm_init_list_1
  0002:080196FE       packet_input_buf_a
  0002:080198A2       packet_input_buf_b
  0002:08019C80       ofdm_exec_commands
  0002:08019D60       crc8_tab
  0002:08019E60       crc16_tab
+ 0003:200000C4       active_quadrant_state
+ 0003:200000C5       quadrant_state
+ 0003:200000C6       active_quadrant_num
+ 0003:200000C7       quadrant_num
+ 0003:200000D8       ofdm_board_version_flags
  0003:200000E8       ofdm_tx_state
  0003:200000F0       ofdm_tx_state_seqno
  0003:200000F4       last_ofdm_tx_state
+ 0003:20000128       pkt_set03_cmdAA_seqno
+ 0003:2000016B       active_transciever_attenuation
+ 0003:2000016C       transceiver_pwr_mode_unk016C
+ 0003:2000016D       fpga_reg_unkn00_value
+ 0003:2000016E       active_power_zone
+ 0003:2000019C       pkt_set04_cmd06_seqno
+ 0003:200016FD       payload_set03_cmdAA
  0003:20001920       input_buf
+ 0003:20001A1C       ofdm_receiver_id
+ 0003:20001A28       transciever_flags_20001A28
  0003:20001A30       spipacket_buf
+ 0003:20001B2D       tcx_control_attenuation_by_packet
+ 0003:20001B2E       tcx_control_attenuation_by_unkn1
+ 0003:20001B2F       transciever_attenuation
+ 0003:20001BC4       payload_set09_cmd00_src
+ 0003:20001C05       payload_set09_cmd00
  0003:20001C48       pkt_20001C48
  0003:20001D58       pkt_20001D58
  0003:200022A0       pkt_200022A0
  0003:200024A8       pkt_200024A8
- 0003:200024F8       payload_s03_p43
- 0003:20002524       payload_s03_p44
+ 0003:200024F8       payload_osd_general
+ 0003:20002524       payload_osd_home
  0003:20002558       pkt_20002558
  0008:40002800       RTC
  0008:40002C00       WWDG

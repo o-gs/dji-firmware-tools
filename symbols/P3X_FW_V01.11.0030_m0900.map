@@ -1,0 +1,62 @@
+﻿
+ Start         Length     Name                   Class
+ 0003:00000000 00000D500H .text                  CODE
+ 0004:00000000 000005314H .data                  DATA
+ 0005:00000000 000005A00H .bss                   BSS
+ 000A:00000000 000006700H .bss2                  BSS
+ 0009:00000000 000005500H .bss3                  BSS
+ 0008:00000000 000002200H .bss4                  BSS
+ 0007:00000000 000000100H .bss5                  BSS
+ 0006:00000000 000000500H .bss6                  BSS
+ 0001:00000000 000000008H EXIDX                  DATA
+
+
+  Address         Publics by Value
+
+ 0003:0800B500       SPI_UsrWaitTransferComplete
+ 0003:0800B5E8       spi_fpga_or_tcx_transfer_mark
+ 0003:0800B5F6       spi_fpga_or_tcx_transfer_clear
+ 0003:0800C142       get_board_version
+ 0003:0800C2B8       nullsub_1
+ 0003:0800CE76       spi_fpga_raw_write
+ 0003:0800CE9A       spi_fpga_raw_read
+ 0003:0800CEBE       ad936x_reg_sync_write
+ 0003:0800CF00       ad936x_reg_sync_read
+ 0003:0800D32E       jpt_800D32A
+ 0003:0800D384       def_800D32A
+ 0003:0800D7C6       init_fpga_config
+ 0003:0800DCA8       aPhantom2x
+ 0003:0800DCB4       aDDDDD
+ 0003:0800DCC8       aVerD
+ 0003:0800DCD4       aFpgaBootD
+ 0003:0800DCE8       aFpgaCfgOk
+ 0003:0800DCF8       aFpgaCfgError
+ 0003:0800F0BC       tcx_config_update1
+ 0003:0800F784       aErrorAd9363Reg
+ 0003:0800F7A0       aErrorAr8003Reg
+ 0003:0800FC00       a2x2x2x2x2x
+ 0003:0800FC24       a2x2x2x2x2xD
+ 0003:0800FDC2       tcx_config_power_zone
+ 0003:08010054       aSetAlterD
+ 0003:08010480       aId2x2x2x2x2x
+ 0003:080104EC       jpt_80104E8
+ 0003:0801052A       def_80104E8
+ 0003:080108CC       a2x2x2x2x2x_0
+ 0003:08011320       send_func
+ 0003:08011680       nullsub_2
+ 0003:080118D0       packet_send
+ 0003:080118E4       jpt_80118E0
+ 0003:08011988       def_80118E0
+ 0003:08011A9E       jpt_8011A9A
+ 0003:08011B84       def_8011A9A
+ 0003:08011D66       packet_make_response
+ 0003:08012122       cmd_exec_set09_cmd06
+ 0003:080121B4       cmd_exec_set09_cmd12
+ 0003:080125F0       aWm32xA4Fpga201
+ 0003:080149CC       jpt_80149C8
+ 0003:08015392       jpt_801538E
+ 0005:20000167       active_transciever_attenuation
+ 0005:20001BCD       tcx_control_attenuation_by_packet
+ 0005:20001BCF       transciever_attenuation
+
+Program entry point at 0003:00000000

@@ -18383,6 +18383,7 @@
  0001:0E75F1D4       AmbaDSP_ImgHighIsoGetHighIsoLumaBlend
  0001:0E75F32C       AmbaDSP_ImgHighIsoSetHighIsoBlendLumaLevel
  0001:0E75F4D8       AmbaDSP_ImgHighIsoGetHighIsoBlendLumaLevel
+ 0001:0E75F6C0       rand
  0001:0E75F870       _SdHostGetStatus
  0001:0E75FD54       pread
  0001:0E7603BC       AmbaFS_PfUnicodeFsexec
@@ -18962,19 +18963,27 @@
  0001:0E801168       DjiUstPalNtscGet
  0001:0E80120C       DjiUstCamReverseGet
  0001:0E8012D8       DjiUstSetFuncExecAll
+ 0001:0E80166C       nvidsett
  0001:0E801684       DjiUstTakeEffect
  0001:0E801904       DjiUstVideoQualitySetInner
  0001:0E801A08       DjiUstPhotoSizeSetCallBack
  0001:0E801B74       DjiUstPhotoFmtSetCallBack
+ 0001:0E801C2C       DjiUstUnknown12CallBack
+ 0001:0E801C54       DjiUstUnknown13CallBack
  0001:0E801CB8       DjiUstVideoSizeSetCallBack
+ 0001:0E801FCC       DjiUstVideoQualitySetAfterSettingsChange
  0001:0E801FF8       DjiUstVideoStreamSetCallBack
+ 0001:0E802128       DjiUstUnknown26CallBack
+ 0001:0E8021AC       DjiUstUnknown29CallBack
  0001:0E8021BC       DjiUstUsbClassSetCallBack
+ 0001:0E8022DC       DjiUstUnknown34CallBack
  0001:0E8022F0       DjiUstModeDialSetCallBack
  0001:0E8025AC       DjiUstSetCallbackReg
+ 0001:0E80265C       DjiUstRegisterCallbacks
  0001:0E802760       DjiUstUserSettingsSave
  0001:0E802A6C       DjiUserSettingsLoadOnly
  0001:0E802CC4       DjiUserSettingsLoad
- 0001:0E802F20       DjiUst_sub_E802F20
+ 0001:0E802F20       DjiUstPrintAllProperties
  0001:0E8035DC       DjiUstDefaultUserSettingsLoadOnly
  0001:0E803740       DjiUstDefaultUserSettingsLoad
  0001:0E803920       DjiUstUserSettingsSet
@@ -19039,6 +19048,7 @@
  0001:0E80C2A4       _ShlPrintResetReason
  0001:0E80C360       DjiDspAssertionHandlerInit
  0001:0E80C484       DjiRomDataMiscInit
+ 0001:0E80C6AC       DjiLed_sub_E80C6AC
  0001:0E80C6C8       DjiMiscInit
  0001:0E80C7C4       DjiRTCInit
  0001:0E80C920       DjiPrintResetReason
@@ -19070,7 +19080,8 @@
  0001:0E811E7C       AmpBeep_Init
  0001:0E81217C       AmbaAudioOutputStart
  0001:0E8121E8       AmbaAudioOutputStop
- 0001:0E812594       AmbaAudio_sub_E812594
+ 0001:0E81251C       SVC_AudioTestCmd
+ 0001:0E812594       SVC_AudioCodecTestCmd
  0001:0E812BAC       DjiOpModeInit
  0001:0E812C44       AppMainTask_Entry
  0001:0E8137B4       AmbaOpModeCtrlTaskCreate
@@ -19281,6 +19292,7 @@
  0001:0E83B0E0       DjiSerialNumGenerate
  0001:0E83B750       DjiMsgMuMapIndexGetByMKey
  0001:0E83B830       DjiMsgMuMapIndexGetByUKey
+ 0001:0E83B914       DjiPacketGetProtoVersion
  0001:0E83BB60       DjiMsgEncChipStatusGet
  0001:0E83BC60       DjiMsgEncModStatusGet
  0001:0E83BD8C       DjiUnknHandle_sub_E83BD8C
@@ -19311,6 +19323,7 @@
  0001:0E83F5FC       DjiMsgCameraStatusPush
  0001:0E83FBE0       DjiMsgGimbalWorkModeCtrlPush
  0001:0E83FD44       DjiMsgUsbSwitchStatusPush
+ 0001:0E83FEC8       pData
  0001:0E83FED4       DjiMsgCaptureParamPush
  0001:0E84003C       rpl_payld
  0001:0E841368       DjiMsgHistogramPush
@@ -19507,11 +19520,15 @@
  0001:0E861598       DjiMsgIpcCmdInit
  0001:0E8616C4       DjiMsgIpcCmdRecv
  0001:0E8618F8       DjiMsgChannelInit
+ 0001:0E861D80       DjiMsgPktGenerateHeaderChecksum
  0001:0E861DA4       DjiMsgPktGenerateSendChecksum
  0001:0E861DC8       DjiMsgPktLogicalCheck
  0001:0E8620FC       DjiMsgPktAssemble
  0001:0E862BD8       DjiMsgPktPieceSend
+ 0001:0E862D08       jpt_E862D04
+ 0001:0E862DE4       def_E862D04
  0001:0E862F2C       DjiMsgPkePieceRecv
+ 0001:0E864830       DjiMsgPktFillBaseHeader
  0001:0E8648AC       DjiMsgPktGenerate
  0001:0E864A44       DjiMsgPktGenerateRsp
  0001:0E864C10       DjiMsgPktSendIRQ
@@ -19592,6 +19609,8 @@
  0001:0E8723C0       DjiEncryptSaveToA9
  0001:0E87251C       DjiEncryptResaveSn
  0001:0E8726B0       DjiEncryptSaveBothToSha204AndA9
+ 0001:0E872814       random_part
+ 0001:0E872824       out_mac
  0001:0E872830       DjiEncryptGetSHA204Status
  0001:0E872B28       DjiEncryptReGetA9Status
  0001:0E872DA8       DjiEncryptGetA9Status
@@ -20142,12 +20161,27 @@
  0001:0E8CAD38       test_gdma
  0001:0E8CB764       test_hdmi
  0001:0E8CB784       AmbaTest_RegisterHwTests
+ 0001:0E8CBB5C       SVC_TestCmd_help
+ 0001:0E8CBD00       SVC_EncodeTestCmd_Help
+ 0001:0E8CC13C       SVC_LivTestCmd
  0001:0E8CCB4C       aOn
  0001:0E8CCB50       a0_1
  0001:0E8CCB54       a1
  0001:0E8CCB58       aClk
+ 0001:0E8CD1F8       SVC_CapTestCmd
  0001:0E8CE378       SVC_EncodeTestCmd
+ 0001:0E8CF4D4       SVC_DecodeTestCmd
+ 0001:0E8CF9E8       SVC_KeyTestCmd
+ 0001:0E8CFAC0       SVC_MemUsageCmd
+ 0001:0E8CFBD8       SVC_VOutTestCmd
+ 0001:0E8CFDC4       SVC_PrefTestCmd
+ 0001:0E8CFF68       SVC_SensorTestCmd
+ 0001:0E8D0648       SVC_WDTTestCmd
+ 0001:0E8D0820       SVC_SDScanTestCmd
+ 0001:0E8D08A4       SVC_TestCmd
+ 0001:0E8D0ABC       aLiv
  0001:0E8D0AD8       AppMainTask_RegisterCommands
+ 0001:0E8D0B3C       aCap_1
  0001:0E8D0B44       aEnc
  0001:0E8D0B48       aDec_2
  0001:0E8D0B4C       aKey
@@ -20470,6 +20504,7 @@
  0001:0E9056F4       AmbaImageMainEis_Enable
  0001:0E9083D0       sscanf
  0001:0E90840C       AmbaPrint_AsHex
+ 0001:0E90852C       DjiPrintDefaultLevel
  0001:0E908558       TRANSSRV_MemInit
  0001:0E908610       TRANSSRV_MemAlloc
  0001:0E9088C8       TRANSSRV_MemFree
@@ -20555,6 +20590,7 @@
  0001:0E913628       DjiIpcSend
  0001:0E9138FC       DjiUegUpdateTramsmitRequest
  0001:0E913938       DjiIpcState
+ 0001:0E913A64       srand
  0001:0E913A94       MoviePlaybackTaskEntry
  0001:0E913F08       AmbaMoviePlayback_TaskCreate
  0001:0E914204       AmbaMoviePlayback_TaskDelete
@@ -21193,6 +21229,7 @@
  0001:0EA2B5E8       AmbaCaptureYuvGenTask
  0001:0EA2CC98       AppLib_HiberTestEntry
  0001:0EA2CEC0       aD_4
+ 0001:0EA2CEF8       AmbaImgProc_TestCmd
  0001:0EA2EAA0       IpcTestSlock
  0001:0EA2EB9C       IpcTestMutex
  0001:0EA2ECF8       aU_0
@@ -21360,6 +21397,8 @@
  0001:0EA4DB04       DjiShlLogTest
  0001:0EA4DD64       DjiShlUpdateMAC
  0001:0EA4DE74       DjiShlAfZone
+ 0001:0EA4DF00       AmbaShell_DjiCmd_help
+ 0001:0EA4DF88       DjiShl_DjiCmdExec
  0001:0EA4E0D4       DjiShlCmdInit
  0001:0EA4E2A8       Print_FS_Dev_INFO
  0001:0EA4E474       Print_SD_Factoryinfo
@@ -21377,6 +21416,7 @@
  0001:0EA50A88       DjiFileWriteTest
  0001:0EA50CD0       DjiTestDCF
  0001:0EA51B04       DjiTestBpc
+ 0001:0EA51C0C       DjiShlStorageTestExec
  0001:0EA51DAC       _tx_initialize_low_level
  0001:0EA51DB0       __tx_irq_handler
  0001:0EA51DB4       _tx_sub_EA51DB4
@@ -21788,8 +21828,11 @@
  0002:0EAB171C       h264_VidBitStreamFilePath
  0002:0EAB1760       usr_vid_encode
  0002:0ECB5888       mutex_ECB5888
- 0002:0ECB5B48       vid_settings
+ 0002:0ECB5B48       vid_settings_mctfliv
+ 0002:0ECB5C98       vid_settings_ust
+ 0002:0ECB68D8       vid_settings_live
  0002:0ECB69D4       aAmbademo
+ 0002:0ECB69E6       vid_setting_unk0_index
  0002:0ECB69E7       vid_setting_live_index
  0002:0ECB69E8       vid_setting_rec_index
  0002:0ECB6A24       video_thumbnail_enabled
@@ -21862,6 +21905,7 @@
  0002:0EDA9A50       aA9_dsc_platfor
  0002:0EDA9A60       a6668828
  0002:0EDA9C40       aBpcMode_0
+ 0002:0EDAC16C       printk_log_disabled
  0002:0EDB4BB4       dji_cmm_state
  0002:0EDB4C34       aDjiPrivate
  0002:0EDB4D40       aFc300x_2
@@ -21869,11 +21913,16 @@
  0002:0EDB6FB1       enc_a9_verify_state
  0002:0EDB72B0       aDji_1
  0002:0EDB8324       aDji_app_0
+ 0002:0EDB8B20       init_callbacks_stage0
+ 0002:0EDB8B30       init_callbacks_stage1
+ 0002:0EDB8B54       init_callbacks_stage2
  0002:0EDB8BB0       mcctrl_modules
- 0002:0EDB8C14       receive_commands_from_m0001
- 0002:0EDB8C44       receive_commands_from_m0801_m1601
- 0002:0EDB911C       receive_commands_from_m0101_m0901_m1701
+ 0002:0EDB8C14       receive_commands_for_m0100_auth0
+ 0002:0EDB8C44       receive_commands_for_m0100_auth1
+ 0002:0EDB911C       receive_commands_for_m0401
  0002:0EDB915C       receive_commands
+ 0002:0EDBA170       printk_log_level
+ 0002:0EDBA290       amba_shell_commands
  0002:0EDBA638       firmwares
  0002:0EDBC0A8       dji_ust_properties
  0002:0EDBC634       aCa9_0
@@ -21993,13 +22042,20 @@
  0002:0EE27C2C       a98765443210_
  0002:0EE27E2C       aSg
  0002:0EE28760       a98765443210__0
+ 0002:0EE2A004       shutter_settings_state
  0003:0EF7A548       VideoEnc_TimeScale
  0003:0EF7A54C       VideoEnc_NumUnitsInTick
  0003:0EF7A550       VideoEnc_PtsOff
+ 0003:0EF959B8       dji_msg_mutex
  0003:0EFC4540       SdHostAmb
  0003:0F2D6E40       unused_after_end
  0003:107112AC       _DjiDspImgFirData
  0003:107FDD6C       _AmbaLinkCtrl
+ 0003:10960D7C       cmm_mutex
+ 0003:10960DB0       cmm_recording_state
+ 0003:10964E74       encrypt_mac_sha204
+ 0003:10964E94       encrypt_mac_a9
+ 0003:10964EB4       encrypt_mac_random_part
  0003:1096E154       mcctrl_initialized
  0003:109D00B8       _msg_author_level
  0003:109D00D8       _msg_adjust_task_finished
@@ -22015,6 +22071,47 @@
  0003:10BCD690       _printk_buf
  0003:10BCDA90       _upgrade_log_buf
  0003:10BCDE94       _ueg_update_in_progress
+ 0003:10BCDE98       ust_user_settings_mutex
+ 0003:10BCE688       ust_multi_cap_num
+ 0003:10BCE68C       ust_photo_jpeg_quality
+ 0003:10BCE690       ust_photo_size
+ 0003:10BCE694       ust_photo_fmt
+ 0003:10BCE698       ust_iso
+ 0003:10BCE6B0       ust_wb
+ 0003:10BCE6B4       ust_ae_meter_mode
+ 0003:10BCE6CC       ust_shutter_time
+ 0003:10BCE6E4       ust_ev_bias
+ 0003:10BCE6FC       ust_photo_aeb
+ 0003:10BCE700       ust_sharpness
+ 0003:10BCE704       ust_contrast
+ 0003:10BCE708       ust_conti_cap
+ 0003:10BCE70C       ust_photo_quickview
+ 0003:10BCE710       ust_scene
+ 0003:10BCE714       ust_face_detect
+ 0003:10BCE718       ust_saturation
+ 0003:10BCE71C       ust_hue
+ 0003:10BCE720       ust_aperture
+ 0003:10BCE738       ust_digital_effect
+ 0003:10BCE73C       ust_vid_size_sett
+ 0003:10BCE744       ust_video_storage
+ 0003:10BCE748       ust_video_aflk
+ 0003:10BCE74C       ust_video_fov
+ 0003:10BCE750       ust_video_quality
+ 0003:10BCE754       ust_video_stream
+ 0003:10BCE758       ust_video_audio
+ 0003:10BCE75C       ust_camera_config
+ 0003:10BCE760       ust_gps_config
+ 0003:10BCE764       ust_op_mode
+ 0003:10BCE768       ust_usb_class
+ 0003:10BCE76C       ust_hdmi_out
+ 0003:10BCE770       ust_dmf
+ 0003:10BCE774       ust_mode_dial
+ 0003:10BCE778       ust_histogram
+ 0003:10BCE77C       ust_subtitles
+ 0003:10BCE784       ust_pal_ntsc
+ 0003:10BCE788       ust_pano_mode
+ 0003:10BCE78C       ust_cam_reverse
+ 0003:10BCEF64       callback_reg
  0003:115FDA1C       _AmbaPrintEventFlag
  0003:115FDAAC       _AmbaPrintRtosMsgReadMutex
  0003:115FDB3C       _AmbaI2C_Ctrl__EventFlags

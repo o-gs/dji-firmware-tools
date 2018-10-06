@@ -144,6 +144,7 @@
  0001:08024000       aHardfaultLast_
  0001:0802402C       aHardfaultFaile
  0001:0802404C       aHardfaultDebug
+ 0001:0802469C       pkt
  0001:080246C8       aRefuseToStartS
  0001:080246F4       aSimulatorAgree
  0001:08024734       aSimulatorstop
@@ -288,6 +289,7 @@
  0001:0802C096       check_imu_no_atti
  0001:0802C0B0       set_led_error
  0001:0802C0D4       set_led_status
+ 0001:0802C1D6       update_led_indication
  0001:0802C2CC       state_arr
  0001:0802C2D0       aLedChangedS
  0001:0802C2EC       copy_led_status
@@ -385,6 +387,7 @@
  0001:08038490       aFdiGyroDEventT
  0001:08038740       aFdiBaroDEventT
  0001:080397DA       j_nullsub_4
+ 0001:0803E0C0       set_motor_status
  0001:0803E1C0       aArmStopCmd
  0001:0803E1D0       aRxNotConnect
  0001:0803E1E0       aMotorStop
@@ -549,12 +552,21 @@
  0001:080434CC       nullsub_82
  0001:0804352A       nullsub_83
  0001:0804352C       nullsub_84
+ 0001:08043542       get_cfg_var_table_size
+ 0001:08043548       get_cfg_var_table_ptr
+ 0001:0804354E       get_cfg_var_table_entry
+ 0001:08043566       get_cfg_var_table_entry_addr
+ 0001:08043580       get_cfg_var_table_entry_field8
+ 0001:080435EC       cfg_var_set_all_default
+ 0001:08043614       cfg_var_table_verify
  0001:080438BC       aVarIsRepeatSS
  0001:080438D4       aVarIsEepromBut
  0001:080438FC       aVarAddrIsNullB
+ 0001:0804396C       cfg_var_table_log
  0001:080439D4       a13sS
  0001:08043D14       aFdiAccDEventTu
  0001:08043D30       aFdiAcc_or_coun
+ 0001:08043EB8       snprintf
  0001:08044018       jpt_8044014
  0001:08044030       def_8044014
  0001:08044334       jpt_8044330
@@ -565,6 +577,7 @@
  0001:080446F8       aUnknownTypeS
  0001:0804470C       aCfgInitOverLow
  0001:08044724       aCfgInitOverHig
+ 0001:0804473C       cfg_var_set_default
  0001:08044756       jpt_8044752
  0001:0804479E       def_8044752
  0001:080447C6       jpt_80447C2
@@ -598,6 +611,7 @@
  0001:08045B84       packet_send_s05_c06
  0001:08045BB4       aMissionFinishe
  0001:08045BE8       aWaypointDReach
+ 0001:08045FD0       flight_rec_store_version_info_entries
  0001:08046038       aBatVersionV_8x
  0001:0804604C       aMcIdS
  0001:08046058       aMcVerVD_D_D_D
@@ -611,6 +625,7 @@
  0001:08046220       jpt_804621C
  0001:08046258       def_804621C
  0001:08046312       cmd_exec_fc_F4
+ 0001:0804634A       cfg_var_value_to_str
  0001:0804635E       jpt_804635A
  0001:080463B0       def_804635A
  0001:080464A4       a40_40sXD
@@ -634,8 +649,15 @@
  0001:08047F54       aDjiDemoAes256K
  0001:08047F78       aReqDRealDD
  0001:08047F8C       aSdkUserSdk_set
+ 0001:080488E0       send_buffer_init
+ 0001:080488FC       send_buffer_add
+ 0001:0804892E       prepare_and_send_packet_response
  0001:0804894C       packet_send_s03_cF4
  0001:0804897C       packet_send_s03_cFB
+ 0001:080489AA       send_buffer_add_byte
+ 0001:080489B6       send_buffer_add_word
+ 0001:080489C2       send_buffer_add_dword
+ 0001:080489CE       send_buffer_add_str
  0001:08048A94       aNullPointer
  0001:08048AA4       aSendBufferFull
  0001:08048AC0       aAssistantProte
@@ -727,7 +749,7 @@
  0001:0804E63A       nullsub_10
  0001:0804E726       jpt_804E722
  0001:0804E792       def_804E722
- 0001:0804EC0A       find_stru_80B2DE0_fld0_to_fld4
+ 0001:0804EC0A       find_cfg_var_table_index_for_hash
  0001:0804F46E       api_camera_shot_handler
  0001:0804F4B6       api_camera_start_video_handler
  0001:0804F4FE       api_camera_stop_video_handler
@@ -852,10 +874,13 @@
  0001:08051FFC       aCmd_agencyOkWa
  0001:0805208A       jpt_8052086
  0001:08052108       def_8052086
+ 0001:0805296E       get_stru20027614_item
+ 0001:08052982       packet_send
  0001:080529CC       aUart
  0001:080529D4       aUsb
  0001:080529DC       bit_shift_left
  0001:08052A04       sprintf
+ 0001:08052A30       strlen
  0001:08052CDC       src
  0001:08052CF0       aHomegpsLat11_7
  0001:08052D2C       aIoc_plLat11_7f
@@ -1126,6 +1151,7 @@
  0001:0806902C       aBatteryResetDe
  0001:080690BA       get_battery_stat
  0001:0806B01C       packet_send_response
+ 0001:0806B050       get_packet_from_20020234
  0001:0806B07E       packet_send_s0X_c32
  0001:0806BFAE       jpt_806BFAA
  0001:0806BFF0       def_806BFAA
@@ -1134,7 +1160,10 @@
  0001:0806CF8A       check_gps_ctrl_levels
  0001:0806D2A4       get_horiz_vel_sensor_id
  0001:0806D410       a10_7f10_7f6_2f
+ 0001:0806D52E       get_byte20025AC3
  0001:0806D534       flight_rec_store_payload
+ 0001:0806D62E       get_byte20025AC1
+ 0001:0806D634       set_byte20025AC1
  0001:0806D6A6       packet_sub_806D6A6
  0001:0806D91C       aFly03d_dat
  0001:0806D930       aSys_dji
@@ -1364,7 +1393,7 @@
  0001:0807DF20       compute_buf_crc8
  0001:0807DF54       packet_recompute_head_checksum
  0001:0807EDAC       packet_send_s03_c09_0
- 0001:0807EE34       send_pkt_g2_c77
+ 0001:0807EE34       packet_send_s02_c77
  0001:0807F1C0       aCameraCameraSe
  0001:0807F1F0       aCameraCamera_0
  0001:0807F210       aCameraSetCamer
@@ -1395,7 +1424,8 @@
  0001:0807F662       battery_command_23
  0001:0807F664       battery_command_24
  0001:0807F698       battery_command_25
- 0001:0807F826       send_pkt_g0_c32
+ 0001:0807F69A       packet_fill_payload_s05_c06
+ 0001:0807F826       packet_send_s00_c32
  0001:0807F908       aBatteryNameS
  0001:0807F920       aManufactureDat
  0001:0807F93C       aSerialNumberD
@@ -1462,7 +1492,7 @@
  0001:08084CD4       aEscPeriodPackC
  0001:08084D0C       packet_sub_8084D0C
  0001:08084DB0       packet_sub_8084DB0
- 0001:08084E80       packet_sub_8084E80
+ 0001:08084E80       send_response_to_packet_with_payload
  0001:08084F2E       packet_send_response_wth_buf
  0001:08084FEA       packet_sub_8084FEA
  0001:08085474       jpt_8085470
@@ -1598,6 +1628,8 @@
  0001:080963AC       aErrorInvalid_8
  0001:080963E8       aErrorInvalid_6
  0001:08096424       aErrorTheDbIsNu
+ 0001:0809645C       get_led_action_name
+ 0001:08096738       led_sub_8096738
  0001:080967D4       aNormalFlash
  0001:080967E4       aInvalidLedActi
  0001:08096800       aLedActionChang
@@ -1867,6 +1899,9 @@
  0002:080A6900       flyc_params
  0002:080AE100       flyc_params_pt2
  0002:080B2DB0       reply_commands
+ 0002:080B2DE0       cfg_var_table_hashes
+ 0002:080B4818       cfg_var_table_hashes2
+ 0002:080B4890       hashtable_80B4890
  0002:080B56BC       led_status_errors
  0002:080B5BC4       led_error_checks
  0002:080B5C74       led_status_normal
@@ -1925,7 +1960,8 @@
  0002:080D57F0       aErrorNullBuf_5
  0002:080D5834       aErrorIndexDIsO
  0002:080D5A88       aSmart_batteryT
- 0002:080D5CD8       struc_80D5CD8
+ 0002:080D5CD8       led_actions
+ 0002:080D6158       led_normal
  0002:080D6BBC       struc_80D6BBC
  0002:080D6CE8       struc_80D6CE8
  0002:080D6D18       aMisKillAllNotP
@@ -3016,6 +3052,7 @@
  0005:200000E8       test_deformation
  0005:200002EA       packet_seqctr
  0005:20000324       fw_upgrading
+ 0005:20000350       pkt_seqcntr_s05_c06
  0005:20000498       compass_mag_x
  0005:2000049A       compass_mag_y
  0005:2000049C       compass_mag_z
@@ -3077,6 +3114,7 @@
  0005:20001880       g_real__knob
  0005:2000188C       g_real__config
  0005:20001E1C       g_real__config_status
+ 0005:20001E68       previous_motor_status
  0005:20001E82       g_real__wm610_app_command
  0005:20001E84       g_real__force_on
  0005:20001F48       g_raw__input
@@ -3178,6 +3216,7 @@
  0005:2001C990       wall_dis_right
  0005:2001C994       wall_dis_back
  0005:2001C998       wall_dis_left
+ 0005:2001C9A4       battery_version
  0005:2001CAA8       follow_me_mission_status
  0005:2001CAD0       follow_me_dist_phone2phone
  0005:2001CAD4       follow_me_dist_drone2drone
@@ -3225,6 +3264,7 @@
  0005:20020054       curr_follow_me_mission
  0005:200200B4       gimbal_type
  0005:200200D0       ioc_type
+ 0005:200200D4       cfg_var_table
  0005:200200D8       cfg_var_table_size
  0005:200201CE       imu_init_counter
  0005:2002020C       imu_package_lost_count
@@ -3268,6 +3308,7 @@
  0005:20023F94       airport_limit_flash_key_20023F94
  0005:200248B0       acc_or_count
  0005:20026D98       pkt_input_buf
+ 0005:200276D4       stru20027614_len
  0005:20027928       imu_offset_x
  0005:2002792C       imu_offset_y
  0005:20027930       imu_offset_z
