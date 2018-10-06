@@ -6950,8 +6950,49 @@ local function rc_push_param_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"RC Push Parameter: Payload size different than expected") end
 end
 
+-- Remote Control - RC Set RF Cert Config - 0xF0
+
+f.rc_set_rf_cert_config_field0 = ProtoField.uint8 ("dji_p3.rc_set_rf_cert_config_field0", "Field 0", base.HEX)
+f.rc_set_rf_cert_config_field1 = ProtoField.uint8 ("dji_p3.rc_set_rf_cert_config_field1", "Field 1", base.HEX)
+f.rc_set_rf_cert_config_field2 = ProtoField.uint8 ("dji_p3.rc_set_rf_cert_config_field2", "Field 2", base.HEX)
+f.rc_set_rf_cert_config_field3 = ProtoField.uint16 ("dji_p3.rc_set_rf_cert_config_field3", "Field 3", base.HEX)
+f.rc_set_rf_cert_config_field5 = ProtoField.uint8 ("dji_p3.rc_set_rf_cert_config_field5", "Field 5", base.HEX)
+f.rc_set_rf_cert_config_field6 = ProtoField.uint8 ("dji_p3.rc_set_rf_cert_config_field6", "Field 6", base.HEX)
+f.rc_set_rf_cert_config_field7 = ProtoField.uint8 ("dji_p3.rc_set_rf_cert_config_field7", "Field 7", base.HEX)
+
+local function rc_set_rf_cert_config_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.rc_set_rf_cert_config_field0, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rc_set_rf_cert_config_field1, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rc_set_rf_cert_config_field2, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rc_set_rf_cert_config_field3, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.rc_set_rf_cert_config_field5, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rc_set_rf_cert_config_field6, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.rc_set_rf_cert_config_field7, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"RC Set RF Cert Config: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"RC Set RF Cert Config: Payload size different than expected") end
+end
+
 local RC_UART_CMD_DISSECT = {
     [0x05] = rc_push_param_dissector,
+    [0xF0] = rc_set_rf_cert_config_dissector,
 }
 
 -- Wi-Fi - WiFi Ap Push RSSI - 0x09
