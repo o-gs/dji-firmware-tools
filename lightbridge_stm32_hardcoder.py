@@ -151,12 +151,12 @@ def packet_received_attenuation_override_update(asm_arch, elf_sections, re_list,
     elif var_info['cfunc_ver'] == re_func_cmd_exec_set09_cmd12_P3X_V01_08_original['version']:
         re_func_cmd_exec_set09_cmd12_CURR_original = re_func_cmd_exec_set09_cmd12_P3X_V01_08_original
         re_func_cmd_exec_set09_cmd12_CURR_constatt = re_func_cmd_exec_set09_cmd12_P3X_V01_08_constatt
-    elif var_info['cfunc_ver'] == re_func_cmd_exec_set09_cmd12_C1_V01_04_original['version']:
-        re_func_cmd_exec_set09_cmd12_CURR_original = re_func_cmd_exec_set09_cmd12_C1_V01_04_original
-        re_func_cmd_exec_set09_cmd12_CURR_constatt = re_func_cmd_exec_set09_cmd12_C1_V01_04_constatt
-    elif var_info['cfunc_ver'] == re_func_cmd_exec_set09_cmd12_C1_V01_06_original['version']:
-        re_func_cmd_exec_set09_cmd12_CURR_original = re_func_cmd_exec_set09_cmd12_C1_V01_06_original
-        re_func_cmd_exec_set09_cmd12_CURR_constatt = re_func_cmd_exec_set09_cmd12_C1_V01_06_constatt
+    elif var_info['cfunc_ver'] == re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_original['version']:
+        re_func_cmd_exec_set09_cmd12_CURR_original = re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_original
+        re_func_cmd_exec_set09_cmd12_CURR_constatt = re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_constatt
+    elif var_info['cfunc_ver'] == re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_original['version']:
+        re_func_cmd_exec_set09_cmd12_CURR_original = re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_original
+        re_func_cmd_exec_set09_cmd12_CURR_constatt = re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_constatt
     else:
         raise ValueError("Unrecognized version of 'cmd_exec_set09_cmd12' - internal error.")
     # Note that the value we're modifying is not the one we got in var_info
@@ -444,9 +444,9 @@ loc_label02:
 },
 }
 
-re_func_cmd_exec_set09_cmd12_C1_V01_04_original = {
+re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_original = {
 'name': "cmd_exec_set09_cmd12-original",
-'version': "C1_FW_V01.04",
+'version': "C1_FW_V01.04-m1400",
 're': """
 cmd_exec_set09_cmd12:
   push	{r4, r5, lr}
@@ -516,9 +516,9 @@ loc_retlabel01:
 },
 }
 
-re_func_cmd_exec_set09_cmd12_C1_V01_04_constatt = {
+re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_constatt = {
 'name': "cmd_exec_set09_cmd12-constatt",
-'version': "C1_FW_V01.04",
+'version': "C1_FW_V01.04-m1400",
 're': """
 cmd_exec_set09_cmd12:
   push	{r4, r5, lr}
@@ -588,9 +588,9 @@ loc_retlabel01:
 },
 }
 
-re_func_cmd_exec_set09_cmd12_C1_V01_06_original = {
+re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_original = {
 'name': "cmd_exec_set09_cmd12-original",
-'version': "C1_FW_V01.06",
+'version': "C1_FW_V01.06-m1400",
 're': """
 cmd_exec_set09_cmd12:
   push	{r4, r5, lr}
@@ -661,9 +661,9 @@ loc_retlabel01:
 },
 }
 
-re_func_cmd_exec_set09_cmd12_C1_V01_06_constatt = {
+re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_constatt = {
 'name': "cmd_exec_set09_cmd12-constatt",
-'version': "C1_FW_V01.06",
+'version': "C1_FW_V01.06-m1400",
 're': """
 cmd_exec_set09_cmd12:
   push	{r4, r5, lr}
@@ -734,7 +734,7 @@ loc_retlabel01:
 },
 }
 
-re_func_tcx_config_power_zone_V01_08 = {
+re_func_tcx_config_power_zone_P3X_V01_08 = {
 'name': "tcx_config_power_zone",
 'version': "P3X_FW_V01.08",
 're': """
@@ -973,7 +973,7 @@ loc_label_ret1:
 },
 }
 
-re_func_tcx_config_power_zone_V01_11 = {
+re_func_tcx_config_power_zone_P3X_V01_11 = {
 'name': "tcx_config_power_zone",
 'version': "P3X_FW_V01.11",
 're': """
@@ -2561,9 +2561,9 @@ loc_label_ret1:
 },
 }
 
-re_func_tcx_config_update1_C1_V01_04 = {
+re_func_tcx_config_update1_C1_V01_04_m1400 = {
 'name': "tcx_config_update1",
-'version': "C1_FW_V01.05",
+'version': "C1_FW_V01.05-m1400",
 're': """
 tcx_config_update1:
   push	{r4, r5, r6, lr}
@@ -2817,9 +2817,9 @@ loc_label_ret1:
 }
 
 
-re_func_tcx_config_update1_C1_V01_06 = {
+re_func_tcx_config_update1_C1_V01_06_m1400 = {
 'name': "tcx_config_update1",
-'version': "C1_FW_V01.06",
+'version': "C1_FW_V01.06-m1400",
 're': """
 tcx_config_update1:
   push	{r4, r5, r6, lr}
@@ -3061,7 +3061,7 @@ loc_label_ret1:
 }
 
 
-re_func_init_fpga_config_V01_07 = {
+re_func_init_fpga_config_P3X_V01_07 = {
 'name': "init_fpga_config",
 'version': "P3X_FW_V01.07",
 're': """
@@ -3424,7 +3424,7 @@ loc_label35:
 },
 }
 
-re_func_init_fpga_config_V01_08 = {
+re_func_init_fpga_config_P3X_V01_08 = {
 'name': "init_fpga_config",
 'version': "P3X_FW_V01.08",
 're': """
@@ -3819,19 +3819,19 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_P3X_V01_07_constatt,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_P3X_V01_08_original,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_P3X_V01_08_constatt,},
-  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_04_original,},
-  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_04_constatt,},
-  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_original,},
-  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_constatt,},
-  {'sect': ".text", 'func': re_func_tcx_config_power_zone_V01_08,},
-  {'sect': ".text", 'func': re_func_tcx_config_power_zone_V01_11,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_original,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_constatt,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_original,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_constatt,},
+  {'sect': ".text", 'func': re_func_tcx_config_power_zone_P3X_V01_08,},
+  {'sect': ".text", 'func': re_func_tcx_config_power_zone_P3X_V01_11,},
   {'sect': ".text", 'func': re_func_tcx_config_update1_P3X_V01_07,},
   {'sect': ".text", 'func': re_func_tcx_config_update1_P3X_V01_08,},
   {'sect': ".text", 'func': re_func_tcx_config_update1_P3X_V01_11,},
-  {'sect': ".text", 'func': re_func_tcx_config_update1_C1_V01_04,},
-  {'sect': ".text", 'func': re_func_tcx_config_update1_C1_V01_06,},
-  {'sect': ".text", 'func': re_func_init_fpga_config_V01_07,},
-  {'sect': ".text", 'func': re_func_init_fpga_config_V01_08,},
+  {'sect': ".text", 'func': re_func_tcx_config_update1_C1_V01_04_m1400,},
+  {'sect': ".text", 'func': re_func_tcx_config_update1_C1_V01_06_m1400,},
+  {'sect': ".text", 'func': re_func_init_fpga_config_P3X_V01_07,},
+  {'sect': ".text", 'func': re_func_init_fpga_config_P3X_V01_08,},
 ]
 
 
