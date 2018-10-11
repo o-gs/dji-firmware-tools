@@ -157,6 +157,9 @@ def packet_received_attenuation_override_update(asm_arch, elf_sections, re_list,
     elif var_info['cfunc_ver'] == re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_original['version']:
         re_func_cmd_exec_set09_cmd12_CURR_original = re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_original
         re_func_cmd_exec_set09_cmd12_CURR_constatt = re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_constatt
+    elif var_info['cfunc_ver'] == re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_original['version']:
+        re_func_cmd_exec_set09_cmd12_CURR_original = re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_original
+        re_func_cmd_exec_set09_cmd12_CURR_constatt = re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_constatt
     else:
         raise ValueError("Unrecognized version of 'cmd_exec_set09_cmd12' - internal error.")
     # Note that the value we're modifying is not the one we got in var_info
@@ -710,6 +713,158 @@ loc_label02:
 loc_retlabel01:
   add	sp, #0x14
   pop	{r4, r5, pc}
+""",
+'vars': {
+  'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_received_attenuation_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "1",
+    'custom_params_callback': packet_received_attenuation_override_update,
+    'description': "What to do when received a packet with transceiver power set request; 0 - use the received attenuation value, 1 - override the value with constant one"},
+  'packet_received_attenuation_value':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255",
+    'description': "Constant attenuation value used when packet_received_attenuation_override is enabled; unit depends on OFDM board type"},
+  'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_retlabel01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'tcx_config_80105FA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_B':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_D':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_attenuation':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_send':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_prepare_response':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+},
+}
+
+re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_original = {
+'name': "cmd_exec_set09_cmd12-original",
+'version': "C1_FW_V01.06-m1401",
+'re': """
+cmd_exec_set09_cmd12:
+  push	{r4, r5, r6, lr}
+  sub	sp, #0x18
+  mov	r6, r0
+  mov	r4, r6
+  add.w	r5, r4, #0xb
+  movs	r0, #0
+  bl	#(?P<tcx_config_80105FA>[0-9a-fx]+)
+  ldrb	r0, \[r5\]
+  lsrs	r0, r0, #7
+  cbnz	r0, #(?P<loc_label01>[0-9a-fx]+)
+  movs	r0, #0
+  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
+  b	#(?P<loc_label02>[0-9a-fx]+)
+loc_label01:
+  movs	r0, #1
+  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
+  ldrb	r1, \[r5\]
+  and	r0, r1, #0x7f
+  bl	#(?P<set_transciever_flag_20001A28_D>[0-9a-fx]+)
+loc_label02:
+  ldrb	r1, \[r5, #1\]
+  and	r0, r1, #0x3f
+  bl	#(?P<set_transciever_flag_20001A28_B>[0-9a-fx]+)
+  ldrb	r0, \[r5, #2\]
+  bl	#(?P<set_transciever_attenuation>[0-9a-fx]+)
+  ldrb	r0, \[r5, #3\]
+  bl	#(?P<set_transciever_flag_20001A28_C>[0-9a-fx]+)
+  ldrb	r0, \[r4, #8\]
+  ubfx	r0, r0, #5, #2
+  cmp	r0, #2
+  bne	#(?P<loc_retlabel01>[0-9a-fx]+)
+  movs	r0, #0
+  str	r0, \[sp, #0x14\]
+  ldrb	r0, \[r4, #8\]
+  bic	r0, r0, #0x80
+  adds	r0, #0x80
+  strb	r0, \[r4, #8\]
+  add	r3, sp, #4
+  movs	r2, #1
+  add	r1, sp, #0x14
+  mov	r0, r4
+  bl	#(?P<packet_prepare_response>[0-9a-fx]+)
+  add	r0, sp, #4
+  bl	#(?P<packet_send>[0-9a-fx]+)
+loc_retlabel01:
+  add	sp, #0x18
+  pop	{r4, r5, r6, pc}
+""",
+'vars': {
+  'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_received_attenuation_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "0",
+    'custom_params_callback': packet_received_attenuation_override_update,
+    'description': "What to do when received a packet with transceiver power set request; 0 - use the received attenuation value, 1 - override the value with constant one"},
+  'packet_received_attenuation_value':	{'type': VarType.UNUSED_DATA, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'setValue': "40",
+    'description': "Constant attenuation value used when packet_received_attenuation_override is enabled; unit depends on OFDM board type"},
+  'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_retlabel01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'tcx_config_80105FA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_B':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_D':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_flag_20001A28_E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_transciever_attenuation':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_send':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_prepare_response':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+},
+}
+
+re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_constatt = {
+'name': "cmd_exec_set09_cmd12-constatt",
+'version': "C1_FW_V01.06-m1401",
+'re': """
+cmd_exec_set09_cmd12:
+  push	{r4, r5, r6, lr}
+  sub	sp, #0x18
+  mov	r6, r0
+  mov	r4, r6
+  add.w	r5, r4, #0xb
+  movs	r0, #0
+  bl	#(?P<tcx_config_80105FA>[0-9a-fx]+)
+  ldrb	r0, \[r5\]
+  lsrs	r0, r0, #7
+  cbnz	r0, #(?P<loc_label01>[0-9a-fx]+)
+  movs	r0, #0
+  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
+  b	#(?P<loc_label02>[0-9a-fx]+)
+loc_label01:
+  movs	r0, #1
+  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
+  ldrb	r1, \[r5\]
+  and	r0, r1, #0x7f
+  bl	#(?P<set_transciever_flag_20001A28_D>[0-9a-fx]+)
+loc_label02:
+  ldrb	r1, \[r5, #1\]
+  and	r0, r1, #0x3f
+  bl	#(?P<set_transciever_flag_20001A28_B>[0-9a-fx]+)
+  movs	r0, #(?P<packet_received_attenuation_value>[0-9a-fx]+)
+  bl	#(?P<set_transciever_attenuation>[0-9a-fx]+)
+  ldrb	r0, \[r5, #3\]
+  bl	#(?P<set_transciever_flag_20001A28_C>[0-9a-fx]+)
+  ldrb	r0, \[r4, #8\]
+  ubfx	r0, r0, #5, #2
+  cmp	r0, #2
+  bne	#(?P<loc_retlabel01>[0-9a-fx]+)
+  movs	r0, #0
+  str	r0, \[sp, #0x14\]
+  ldrb	r0, \[r4, #8\]
+  bic	r0, r0, #0x80
+  adds	r0, #0x80
+  strb	r0, \[r4, #8\]
+  add	r3, sp, #4
+  movs	r2, #1
+  add	r1, sp, #0x14
+  mov	r0, r4
+  bl	#(?P<packet_prepare_response>[0-9a-fx]+)
+  add	r0, sp, #4
+  bl	#(?P<packet_send>[0-9a-fx]+)
+loc_retlabel01:
+  add	sp, #0x18
+  pop	{r4, r5, r6, pc}
 """,
 'vars': {
   'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
@@ -3823,6 +3978,8 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_constatt,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_original,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_constatt,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_original,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_constatt,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone_P3X_V01_08,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone_P3X_V01_11,},
   {'sect': ".text", 'func': re_func_tcx_config_update1_P3X_V01_07,},
