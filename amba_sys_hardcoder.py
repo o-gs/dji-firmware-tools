@@ -1282,7 +1282,7 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
     # Now get variables associated to line of code, not anything within the code
     for var_name, var_info in search['var_defs'].items():
         # Add variables attached to code line (usually function name)
-        if var_info['type'] in [VarType.DIRECT_LINE_OF_CODE] and search['match_lines'] == var_info['line']:
+        if var_info['type'] in [VarType.DIRECT_LINE_OF_CODE] and 'line' in var_info and search['match_lines'] == var_info['line']:
             # Get expected length of the value
             prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
             prop_ofs_val = address
