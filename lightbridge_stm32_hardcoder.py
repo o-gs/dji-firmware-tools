@@ -88,6 +88,21 @@ og_hardcoded.lightbridge_stm32.board_ad2_attenuation_tx?_* -
   The values with `ad2` in name means board variant 2 with Analog Devices
   transciever.
 
+og_hardcoded.lightbridge_stm32.power_zone_selection_override -
+
+  The C1 firmware within Remote Controller is responsinble for selecting
+  either FCC or CE power zone for both the RC and the drone. Selection is
+  made when the GPS coordinates are stable - then they are compared to
+  list of areas where FCC compliant power levels can be used. This causes
+  a flag to be set within a block of config data shared between RC and the
+  drone.
+
+  This value allows changing the behavior when power zone is about to be
+  selected from geo coordinates. Value of `0` means the value based on
+  GPS location will be stored in shared config block. Value of `1` will
+  cause the stored flag to be overriden and always set to a value which
+  corresponds to FCC power zone.
+
 """
 
 # Copyright (C) 2016,2017 Mefistotelis <mefistotelis@gmail.com>
@@ -3773,6 +3788,7 @@ loc_label_ret1:
   'loc_16D68':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_16D9A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_16DE8':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_16E0E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_16E2A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'board_ad1_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "8",
@@ -3786,6 +3802,120 @@ loc_label_ret1:
   'board_ad1_attenuation_tx2_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "36",
     'description': "Transceiver attenuation value for board type 1 with Analog Devices chip, change by 1 means 0.25 dBm"},
+},
+}
+
+re_func_update_tcx_power_zone_flag_C1_V01_05_m1400_original = {
+'name': "update_tcx_power_zone_flag-original",
+'version': "C1_FW_V01.05-m1400",
+'re': """
+update_tcx_power_zone_flag:
+  ldr	r1, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
+  ldr([.]w)?	r2, \[r1, #(?P<rel_tcx_dword_33C0>[0-9a-fx]+)\]
+  lsls	r2, r2, #0x1f
+  bne	#(?P<loc_label_ret1>[0-9a-fx]+)
+  ldr	r2, \[r1, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  bfi	r2, r0, #0x1f, #1
+  str	r2, \[r1, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+loc_label_ret1:
+  bx	lr
+""",
+'vars': {
+  'power_zone_selection_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "0",
+    'description': "What to do when power zone is about to be selected from geo coordinates; 0 - set the value based on geolocation, 1 - override the value and set to FCC"},
+  'update_tcx_power_zone_flag':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'ofdm_receiver_id':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'rel_tcx_dword_33C0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+},
+}
+
+re_func_update_tcx_power_zone_flag_C1_V01_05_m1400_setfcc = {
+'name': "update_tcx_power_zone_flag-setfcc",
+'version': "C1_FW_V01.05-m1400",
+'re': """
+update_tcx_power_zone_flag:
+  ldr	r1, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
+  ldr([.]w)?	r2, \[r1, #(?P<rel_tcx_dword_33C0>[0-9a-fx]+)\]
+  lsls	r2, r2, #0x1f
+  bne	#(?P<loc_label_ret1>[0-9a-fx]+)
+  ldr	r2, \[r1, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  bfc	r2, #0x1f, #1
+  str	r2, \[r1, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+loc_label_ret1:
+  bx	lr
+""",
+'vars': {
+  'power_zone_selection_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "1",
+    'description': "What to do when power zone is about to be selected from geo coordinates; 0 - set the value based on geolocation, 1 - override the value and set to FCC"},
+  'update_tcx_power_zone_flag':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'ofdm_receiver_id':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'rel_tcx_dword_33C0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+},
+}
+
+re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_original = {
+'name': "update_tcx_power_zone_flag-original",
+'version': "C1_FW_V01.05-m1401",
+'re': """
+update_tcx_power_zone_flag:
+  push	{lr}
+  mov	r1, r0
+  bl	#(?P<get_dword_33C0>[0-9a-fx]+)
+  and	r0, r0, #1
+  cbnz	r0, #(?P<loc_label_ret1>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  bfi	r0, r1, #0x1f, #1
+  ldr	r2, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
+  str	r0, \[r2, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+loc_label_ret1:
+  pop	{pc}
+""",
+'vars': {
+  'power_zone_selection_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "0",
+    'description': "What to do when power zone is about to be selected from geo coordinates; 0 - set the value based on geolocation, 1 - override the value and set to FCC"},
+  'update_tcx_power_zone_flag':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'ofdm_receiver_id':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'get_dword_33C0':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+},
+}
+
+re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_setfcc = {
+'name': "update_tcx_power_zone_flag-setfcc",
+'version': "C1_FW_V01.05-m1401",
+'re': """
+update_tcx_power_zone_flag:
+  push	{lr}
+  movs	r1, #0x0
+  bl	#(?P<get_dword_33C0>[0-9a-fx]+)
+  and	r0, r0, #1
+  cbnz	r0, #(?P<loc_label_ret1>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  bfi	r0, r1, #0x1f, #1
+  ldr	r2, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
+  str	r0, \[r2, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+loc_label_ret1:
+  pop	{pc}
+""",
+'vars': {
+  'power_zone_selection_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "1",
+    'description': "What to do when power zone is about to be selected from geo coordinates; 0 - set the value based on geolocation, 1 - override the value and set to FCC"},
+  'update_tcx_power_zone_flag':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'ofdm_receiver_id':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'get_dword_33C0':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
 },
 }
 
@@ -4563,6 +4693,10 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_tcx_config_update1_C1_V01_06_m1400,},
   {'sect': ".text", 'func': re_func_tcx_config_update1_C1_V01_05_m1401,},
   {'sect': ".text", 'func': re_func_tcx_config_update1_C1_V01_06_m1401,},
+  {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1400_original,},
+  {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1400_setfcc,},
+  {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_original,},
+  {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_setfcc,},
   {'sect': ".text", 'func': re_func_init_fpga_config_P3X_V01_07,},
   {'sect': ".text", 'func': re_func_init_fpga_config_P3X_V01_08,},
 ]
