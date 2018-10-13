@@ -1128,10 +1128,13 @@ def find_patterns_diff(patterns_prev, patterns_next):
         ep -= 1
         en -= 1
     patterns_diff = []
+    patterns_diff_prev = []
     for i in range(sn, en+1):
         line_n = re_lines_next[i]
         patterns_diff.append(line_n)
-    return patterns_diff, re_lines_prev[0:sp]
+        line_p = re_lines_prev[i]
+        patterns_diff_prev.append(line_p)
+    return patterns_diff, re_lines_prev[0:sp], patterns_diff_prev
 
 
 def armfw_asm_is_data_definition(asm_arch, asm_line):
@@ -1589,6 +1592,8 @@ def armfw_elf_value_pre_update_call(po, asm_arch, elf_sections, re_list, glob_pa
         glob_re_var = glob_params_list[glob_var_info['cfunc_name']+'..re']
         # For detached data, we need to find an assembly pattern with matching value, and then patch the asm code to look like it
         patterns_next = find_patterns_containing_variable(re_list, cfunc_ver=glob_var_info['cfunc_ver'], var_name=glob_var_info['name'], var_setValue=str(new_var_nativ))
+        if patterns_next is None:
+            raise ValueError("Cannot find function modification which would allow to set the value of {:s}={:s}.".format(glob_var_info['name'],str(new_var_nativ)))
         re_lines, re_labels = armfw_asm_search_strings_to_re_list(patterns_next['re'])
         glob_re_var['value'] = re_lines
         #for lab_name, lab_line in re_labels.items(): #TODO - update line numbers in label variables if this will be needed
@@ -1615,26 +1620,30 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
         # We are only changing one line, but use the whole multiline algorithm just for unification
         glob_re = glob_params_list[var_info['cfunc_name']+'..re']['value']
         patterns_list = [glob_re[var_info['line']],]
-
-        patterns_addr = var_info['address']
-        var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
-        if (po.verbose > 2):
-            print("Making code re:","; ".join(patterns_list))
-        asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_list)
-        # Now compile our new code line
-        if (po.verbose > 2):
-            print("Compiling code:","; ".join(asm_lines))
-        bt_enc_data = armfw_asm_compile_lines(asm_arch, patterns_addr, asm_lines)
-        if len(bt_enc_data) != bt_size_predict:
-            raise ValueError("Compiled code size different than expected (got {:d} instead of {:d} bytes) - internal error.".format(len(bt_enc_data),bt_size_predict))
-        valbt = {}
-        valbt['sect'] = var_sect
-        section = elf_sections[valbt['sect']]
-        valbt['offs'] = var_offs
-        valbt['data'] = bt_enc_data
-        valbts.append(valbt)
-        if (po.verbose > 3):
-            print("Offset 0x{:06x} data {:s}".format(valbt['offs'], valbt['data'].hex()))
+        if len(patterns_list) > 0:
+            glob_re_size = glob_params_list[var_info['cfunc_name']+'..re_size']['value']
+            patterns_addr = var_info['address']
+            var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
+            if (po.verbose > 2):
+                print("Making code re:","; ".join(patterns_list))
+            asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_list)
+            # Now compile our new code line
+            if (po.verbose > 2):
+                print("Compiling code:","; ".join(asm_lines))
+            bt_enc_data = armfw_asm_compile_lines(asm_arch, patterns_addr, asm_lines)
+            if len(bt_enc_data) != bt_size_predict:
+                raise ValueError("Compiled code size different than expected (got {:d} instead of {:d} bytes) - internal error.".format(len(bt_enc_data),bt_size_predict))
+            bt_size_previous = glob_re_size[var_info['line']]
+            if len(bt_enc_data) != bt_size_previous:
+                raise ValueError("Compiled code size different than previous (got {:d} instead of {:d} bytes) - internal error.".format(len(bt_enc_data),bt_size_previous))
+            valbt = {}
+            valbt['sect'] = var_sect
+            section = elf_sections[valbt['sect']]
+            valbt['offs'] = var_offs
+            valbt['data'] = bt_enc_data
+            valbts.append(valbt)
+            if (po.verbose > 3):
+                print("Offset 0x{:06x} data {:s}".format(valbt['offs'], valbt['data'].hex()))
     elif (var_info['type'] in [VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,
       VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA]):
         # The value was referenced in code, but stored outside
@@ -1656,7 +1665,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
         # Get part of the pattern which is different between the current one and the one we want
         patterns_diff = []
         if patterns_prev != patterns_next:
-            patterns_diff, patterns_preced = find_patterns_diff(patterns_prev, patterns_next)
+            patterns_diff, patterns_preced, patterns_diff_prev = find_patterns_diff(patterns_prev, patterns_next)
         if len(patterns_diff) > 0:
             # From patterns preceding the diff, compute offset where the diff starts
             glob_re_size = glob_params_list[var_info['cfunc_name']+'..re_size']['value']
@@ -1664,7 +1673,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             patterns_addr = var_info['address'] + sum(glob_re_size[0:len(patterns_preced)])
             var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
             if (po.verbose > 2):
-                print("Making code from:","; ".join(patterns_diff))
+                print("Making code re:","; ".join(patterns_diff))
             asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_diff)
             if len(asm_lines) < 1:
                 raise ValueError("No assembly lines prepared - internal error.")
@@ -1674,6 +1683,9 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             bt_enc_data = armfw_asm_compile_lines(asm_arch, patterns_addr, asm_lines)
             if len(bt_enc_data) != bt_size_predict:
                 raise ValueError("Compiled code size different than expected (got {:d} instead of {:d} bytes) - internal error.".format(len(bt_enc_data),bt_size_predict))
+            bt_size_previous = sum(glob_re_size[len(patterns_preced):len(patterns_preced)+len(patterns_diff_prev)])
+            if len(bt_enc_data) != bt_size_previous:
+                raise ValueError("Compiled code size different than previous (got {:d} instead of {:d} bytes) - internal error.".format(len(bt_enc_data),bt_size_previous))
             valbt = {}
             valbt['sect'] = var_sect
             section = elf_sections[valbt['sect']]
