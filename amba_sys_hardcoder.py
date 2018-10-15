@@ -73,9 +73,18 @@ import json
 from ctypes import *
 from capstone import *
 from keystone import *
+
 sys.path.insert(0, '../pyelftools')
-from elftools.elf.elffile import ELFFile
-from elftools.elf.constants import SH_FLAGS
+try:
+    from elftools.elf.elffile import ELFFile
+    from elftools.elf.constants import SH_FLAGS
+    if not callable(getattr(ELFFile, "write_changes", None)):
+        raise ImportError("The pyelftools library provided has no write support")
+except ImportError:
+    print("Warning:")
+    print("This tool requires version of pyelftools with ELF write support.")
+    print("Try `arm_bin2elf.py` for details.")
+    raise
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
