@@ -1387,9 +1387,9 @@ loc_label_ret1:
 }
 
 
-re_func_tcx_config_update1_P3X_V01_07 = {
+re_func_tcx_config_update1_P3X_V01_05 = {
 'name': "tcx_config_update1",
-'version': "P3X_FW_V01.07",
+'version': "P3X_FW_V01.05",
 're': """
 tcx_config_update1:
   push	{r4, lr}
@@ -1516,8 +1516,8 @@ loc_800FC36:
 loc_800FC3E:
   bne	#(?P<loc_800FD20>[0-9a-fx]+)
   ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
-  ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
-  ldr	r1, \[pc, #0x2d4\]
+  ldr	r0, \[r0, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
+  ldr	r1, \[pc, #(?P<transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
   ldrb	r1, \[r1\]
   cmp.w	r1, r0, lsr #31
   beq	#(?P<loc_800FD20>[0-9a-fx]+)
@@ -1528,18 +1528,18 @@ loc_800FC3E:
   bne	#(?P<loc_800FC3E>[0-9a-fx]+)
 
   ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
-  ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   lsrs	r0, r0, #0x1f
-  beq	#(?P<loc_800FD22>[0-9a-fx]+)
+  beq	#(?P<loc_init_fcc>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #4
   bne	#(?P<loc_800FC82>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad4_attenuation_tx1_fcc>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad4_attenuation_tx1_ce>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad4_attenuation_tx2_fcc>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad4_attenuation_tx2_ce>[0-9a-fx]+)
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FCD0>[0-9a-fx]+)
@@ -1548,11 +1548,11 @@ loc_800FC82:
   cmp	r0, #5
   bne	#(?P<loc_800FCA0>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad5_attenuation_tx1_fcc>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad5_attenuation_tx1_ce>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ad5_attenuation_tx2_fcc>[0-9a-fx]+)
+  movs	r1, #(?P<board_ad5_attenuation_tx2_ce>[0-9a-fx]+)
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FCD0>[0-9a-fx]+)
@@ -1560,6 +1560,86 @@ loc_800FCA0:
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #6
   bne	#(?P<loc_800FCD0>[0-9a-fx]+)
+  movs	r0, #1
+  bl	#(?P<sub_800DD72>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar6_attenuation_fpga_ce>[0-9a-fx]+)
+  movs	r0, #0xce ; FPGA_REG_UNKN_CE
+  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
+  movs	r0, #2
+  bl	#(?P<sub_800DD72>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ar6_attenuation_tx1_ce>[0-9a-fx]+)
+  movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ar6_attenuation_tx2_ce>[0-9a-fx]+)
+  movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+loc_800FCD0:
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #7
+  bne	#(?P<loc_800FD02>[0-9a-fx]+)
+  movs	r0, #1
+  bl	#(?P<sub_800DD72>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar7_attenuation_fpga_ce>[0-9a-fx]+)
+  movs	r0, #0xce ; FPGA_REG_UNKN_CE
+  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
+  movs	r0, #2
+  bl	#(?P<sub_800DD72>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ar7_attenuation_tx1_ce>[0-9a-fx]+)
+  movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ar7_attenuation_tx2_ce>[0-9a-fx]+)
+  movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  b	#(?P<loc_800FDDC>[0-9a-fx]+)
+loc_800FD02:
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #2
+  bne	#(?P<loc_800FDDC>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ad2_attenuation_tx1_ce>[0-9a-fx]+)
+  movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ad2_attenuation_tx2_ce>[0-9a-fx]+)
+  movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  b	#(?P<loc_800FDDC>[0-9a-fx]+)
+loc_800FD20:
+  b	#(?P<loc_800FDE6>[0-9a-fx]+)
+loc_init_fcc:
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #4
+  bne	#(?P<loc_800FD40>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ad4_attenuation_tx1_fcc>[0-9a-fx]+)
+  movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ad4_attenuation_tx2_fcc>[0-9a-fx]+)
+  movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  b	#(?P<loc_800FD8E>[0-9a-fx]+)
+loc_800FD40:
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #5
+  bne	#(?P<loc_800FD5E>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ad5_attenuation_tx1_fcc>[0-9a-fx]+)
+  movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  movs	r2, #1
+  movs	r1, #(?P<board_ad5_attenuation_tx2_fcc>[0-9a-fx]+)
+  movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  b	#(?P<loc_800FD8E>[0-9a-fx]+)
+loc_800FD5E:
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #6
+  bne	#(?P<loc_800FD8E>[0-9a-fx]+)
   movs	r0, #1
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
   movs	r1, #(?P<board_ar6_attenuation_fpga_fcc>[0-9a-fx]+)
@@ -1575,10 +1655,10 @@ loc_800FCA0:
   movs	r1, #(?P<board_ar6_attenuation_tx2_fcc>[0-9a-fx]+)
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
-loc_800FCD0:
+loc_800FD8E:
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #7
-  bne	#(?P<loc_800FD02>[0-9a-fx]+)
+  bne	#(?P<loc_800FDC0>[0-9a-fx]+)
   movs	r0, #1
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
   movs	r1, #(?P<board_ar7_attenuation_fpga_fcc>[0-9a-fx]+)
@@ -1587,15 +1667,15 @@ loc_800FCD0:
   movs	r0, #2
   bl	#(?P<sub_800DD72>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar7_attenuation_tx1_fcc>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar7_attenuation_tx1_fcc>[0-9a-fx]+) ; default was 0xa?
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
-  movs	r1, #(?P<board_ar7_attenuation_tx2_fcc>[0-9a-fx]+)
+  movs	r1, #(?P<board_ar7_attenuation_tx2_fcc>[0-9a-fx]+) ; default was 0xa?
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   b	#(?P<loc_800FDDC>[0-9a-fx]+)
-loc_800FD02:
+loc_800FDC0:
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #2
   bne	#(?P<loc_800FDDC>[0-9a-fx]+)
@@ -1607,89 +1687,9 @@ loc_800FD02:
   movs	r1, #(?P<board_ad2_attenuation_tx2_fcc>[0-9a-fx]+)
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
-  b	#(?P<loc_800FDDC>[0-9a-fx]+)
-loc_800FD20:
-  b	#(?P<loc_800FDE6>[0-9a-fx]+)
-loc_800FD22:
-  bl	#(?P<get_board_version>[0-9a-fx]+)
-  cmp	r0, #4
-  bne	#(?P<loc_800FD40>[0-9a-fx]+)
-  movs	r2, #1
-  movs	r1, #(?P<board_ad4_attenuation_tx1_cnup2>[0-9a-fx]+)
-  movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
-  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
-  movs	r2, #1
-  movs	r1, #(?P<board_ad4_attenuation_tx2_cnup2>[0-9a-fx]+)
-  movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
-  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
-  b	#(?P<loc_800FD8E>[0-9a-fx]+)
-loc_800FD40:
-  bl	#(?P<get_board_version>[0-9a-fx]+)
-  cmp	r0, #5
-  bne	#(?P<loc_800FD5E>[0-9a-fx]+)
-  movs	r2, #1
-  movs	r1, #(?P<board_ad5_attenuation_tx1_cnup2>[0-9a-fx]+)
-  movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
-  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
-  movs	r2, #1
-  movs	r1, #(?P<board_ad5_attenuation_tx2_cnup2>[0-9a-fx]+)
-  movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
-  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
-  b	#(?P<loc_800FD8E>[0-9a-fx]+)
-loc_800FD5E:
-  bl	#(?P<get_board_version>[0-9a-fx]+)
-  cmp	r0, #6
-  bne	#(?P<loc_800FD8E>[0-9a-fx]+)
-  movs	r0, #1
-  bl	#(?P<sub_800DD72>[0-9a-fx]+)
-  movs	r1, #(?P<board_ar6_attenuation_fpga_cnup2>[0-9a-fx]+)
-  movs	r0, #0xce ; FPGA_REG_UNKN_CE
-  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
-  movs	r0, #2
-  bl	#(?P<sub_800DD72>[0-9a-fx]+)
-  movs	r2, #1
-  movs	r1, #(?P<board_ar6_attenuation_tx1_cnup2>[0-9a-fx]+)
-  movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
-  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
-  movs	r2, #1
-  movs	r1, #(?P<board_ar6_attenuation_tx2_cnup2>[0-9a-fx]+)
-  movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
-  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
-loc_800FD8E:
-  bl	#(?P<get_board_version>[0-9a-fx]+)
-  cmp	r0, #7
-  bne	#(?P<loc_800FDC0>[0-9a-fx]+)
-  movs	r0, #1
-  bl	#(?P<sub_800DD72>[0-9a-fx]+)
-  movs	r1, #(?P<board_ar7_attenuation_fpga_cnup2>[0-9a-fx]+)
-  movs	r0, #0xce ; FPGA_REG_UNKN_CE
-  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
-  movs	r0, #2
-  bl	#(?P<sub_800DD72>[0-9a-fx]+)
-  movs	r2, #1
-  movs	r1, #(?P<board_ar7_attenuation_tx1_cnup2>[0-9a-fx]+) ; default was 0xa?
-  movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
-  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
-  movs	r2, #1
-  movs	r1, #(?P<board_ar7_attenuation_tx2_cnup2>[0-9a-fx]+) ; default was 0xa?
-  movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
-  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
-  b	#(?P<loc_800FDDC>[0-9a-fx]+)
-loc_800FDC0:
-  bl	#(?P<get_board_version>[0-9a-fx]+)
-  cmp	r0, #2
-  bne	#(?P<loc_800FDDC>[0-9a-fx]+)
-  movs	r2, #1
-  movs	r1, #(?P<board_ad2_attenuation_tx1_cnup2>[0-9a-fx]+)
-  movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
-  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
-  movs	r2, #1
-  movs	r1, #(?P<board_ad2_attenuation_tx2_cnup2>[0-9a-fx]+)
-  movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
-  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
 loc_800FDDC:
   ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
-  ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   lsrs	r0, r0, #0x1f
   ldr	r1, \[pc, #(?P<transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
   strb	r0, \[r1\]
@@ -1816,7 +1816,7 @@ loc_label_ret1:
   'rel_tcx_control_attenuation_by_packet':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_byte_20001DAF':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_fpga_reg_unkn00_value':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.INT32_T},
-  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_flags_1A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'transceiver_pwr_mode_unk016C':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'dword_20000190':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'rel_transciever_attenuation':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
@@ -1831,7 +1831,7 @@ loc_label_ret1:
   'loc_800FD02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_800FD20':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_800FD40':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_800FD22':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_init_fcc':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_800FD5E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_800FD8E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_800FDC0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -1855,11 +1855,45 @@ loc_label_ret1:
   'loc_state_ok':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label_ret2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'board_ad4_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+  'board_ad4_attenuation_tx1_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "10",
     'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm",
     'hint1': "value of 0 means minimal attenuation and therefore max output power of the transceiver",
-    'hint2': "in P3X_FW_V01.07, CE attenuation values are not defined and FCC values are used initially, until power is set via packet"},
+    'hint2': "in P3X_FW_V01.05-V01.07, CE and FCC attenuation values are initially equal"},
+  'board_ad4_attenuation_tx2_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "4",
+    'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm"},
+  'board_ad5_attenuation_tx1_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "4",
+    'description': "Transceiver attenuation value for board type 5 with Analog Devices chip, change by 1 means 0.25 dBm"},
+  'board_ad5_attenuation_tx2_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "5",
+    'description': "Transceiver attenuation value for board type 5 with Analog Devices chip, change by 1 means 0.25 dBm"},
+  'board_ar6_attenuation_tx1_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "10",
+    'description': "Transceiver attenuation value for board type 6 with Artosyn chip, change by 1 means 1 dBm"},
+  'board_ar6_attenuation_tx2_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "10",
+    'description': "Transceiver attenuation value for board type 6 with Artosyn chip, change by 1 means 1 dBm"},
+  'board_ar7_attenuation_tx1_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "10",
+    'description': "Transceiver attenuation value for board type 7 with Artosyn chip, change by 1 means 1 dBm"},
+  'board_ar7_attenuation_tx2_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "10",
+    'description': "Transceiver attenuation value for board type 7 with Artosyn chip, change by 1 means 1 dBm"},
+  'board_ad2_attenuation_tx1_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "4",
+    'description': "Transceiver attenuation value for board type 2 with Analog Devices chip, change by 1 means 0.25 dBm"},
+  'board_ad2_attenuation_tx2_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "5",
+    'description': "Transceiver attenuation value for board type 2 with Analog Devices chip, change by 1 means 0.25 dBm"},
+  'board_ar6_attenuation_fpga_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_ce", 'getter': (lambda val: val)},
+  'board_ar7_attenuation_fpga_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_ce", 'getter': (lambda val: val)},
+  'board_ad4_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "10",
+    'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm"},
   'board_ad4_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "4",
     'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm"},
@@ -1876,10 +1910,10 @@ loc_label_ret1:
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "10",
     'description': "Transceiver attenuation value for board type 6 with Artosyn chip, change by 1 means 1 dBm"},
   'board_ar7_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "2",
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "10",
     'description': "Transceiver attenuation value for board type 7 with Artosyn chip, change by 1 means 1 dBm"},
   'board_ar7_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "2",
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "10",
     'description': "Transceiver attenuation value for board type 7 with Artosyn chip, change by 1 means 1 dBm"},
   'board_ad2_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "4",
@@ -1890,30 +1924,6 @@ loc_label_ret1:
   'board_ar6_attenuation_fpga_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
   'board_ar7_attenuation_fpga_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ad4_attenuation_tx1_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad4_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ad4_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad4_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ad5_attenuation_tx1_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad5_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ad5_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad5_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ar6_attenuation_tx1_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ar6_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ar7_attenuation_tx1_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ar7_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ad2_attenuation_tx1_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ad2_attenuation_tx2_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad2_attenuation_tx2_fcc", 'getter': (lambda val: val)},
-  'board_ar6_attenuation_fpga_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar6_attenuation_tx1_fcc", 'getter': (lambda val: val)},
-  'board_ar7_attenuation_fpga_cnup2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ar7_attenuation_tx1_fcc", 'getter': (lambda val: val)},
 },
 }
@@ -2030,7 +2040,7 @@ loc_phase2_s5:
   cbnz	r0, #(?P<loc_phase2_j_s2>[0-9a-fx]+)
   ldrb.w	r0, \[r4, #(?P<rel_tcx_control_attenuation_by_unkn1>[0-9a-fx]+)\]
   cbnz	r0, #(?P<loc_phase2_j_s2>[0-9a-fx]+)
-  ldr	r0, \[r4, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r4, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   ldrb	r1, \[r5, #(?P<rel_transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
   cmp.w	r1, r0, lsr #31
   beq	#(?P<loc_phase2_s2>[0-9a-fx]+)
@@ -2039,7 +2049,7 @@ loc_phase2_s5:
   mvns	r0, r0
   lsls	r0, r0, #0x1e
   bne	#(?P<loc_phase2_s2>[0-9a-fx]+)
-  ldr	r0, \[r4, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r4, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #4
   beq	#(?P<loc_ad4_dirct>[0-9a-fx]+)
@@ -2106,7 +2116,7 @@ loc_ad2_dirct:
 loc_last3_dirct:
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
 loc_phase2_s1:
-  ldr	r0, \[r4, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r4, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   lsrs	r0, r0, #0x1f
   strb	r0, \[r5, #(?P<rel_transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
 loc_phase2_s2:
@@ -2252,7 +2262,7 @@ loc_label_ret1:
   'ofdm_receiver_id':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'rel_tcx_control_attenuation_by_packet':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_tcx_control_attenuation_by_unkn1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
-  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_flags_1A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_byte_20001B23':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_fpga_reg_unkn00_value':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_transceiver_pwr_mode_unk016C':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
@@ -2429,7 +2439,7 @@ loc_phase2_s5:
   cbnz	r0, #(?P<loc_phase2_j_s2>[0-9a-fx]+)
   ldrb.w	r0, \[r4, #(?P<rel_tcx_control_attenuation_by_unkn1>[0-9a-fx]+)\]
   cbnz	r0, #(?P<loc_phase2_j_s2>[0-9a-fx]+)
-  ldr	r0, \[r4, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r4, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   ldrb	r1, \[r5, #(?P<rel_transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
   cmp.w	r1, r0, lsr #31
   beq	#(?P<loc_phase2_s2>[0-9a-fx]+)
@@ -2438,7 +2448,7 @@ loc_phase2_s5:
   mvns	r0, r0
   lsls	r0, r0, #0x1e
   bne	#(?P<loc_phase2_s2>[0-9a-fx]+)
-  ldr	r0, \[r4, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r4, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #4
   beq	#(?P<loc_ad4_dirct>[0-9a-fx]+)
@@ -2505,7 +2515,7 @@ loc_ad2_dirct:
 loc_last3_dirct:
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
 loc_phase2_s1:
-  ldr	r0, \[r4, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r4, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   lsrs	r0, r0, #0x1f
   strb	r0, \[r5, #(?P<rel_transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
 loc_phase2_s2:
@@ -2664,7 +2674,7 @@ loc_label_ret1:
   'rel_tcx_control_attenuation_by_packet':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_tcx_control_attenuation_by_unkn1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_fpga_reg_unkn00_value':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
-  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_flags_1A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_byte_20001B23':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_byte_r4p11a':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_transceiver_pwr_mode_unk016C':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
@@ -2827,7 +2837,7 @@ loc_phase2_s4:
 loc_phase2_s5:
   ldrb.w	r0, \[r6, #(?P<rel_tcx_control_attenuation_by_packet>[0-9a-fx]+)\]
   cbnz	r0, #(?P<loc_j_167B0>[0-9a-fx]+)
-  ldr	r0, \[r6, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r6, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   ldrb	r1, \[r5, #(?P<rel_transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
   cmp.w	r1, r0, lsr #31
   beq	#(?P<loc_167B0>[0-9a-fx]+)
@@ -2842,7 +2852,7 @@ loc_phase2_s5:
   movs	r0, #0xe
   bl	#(?P<spi_raw_ct16_dt8_write>[0-9a-fx]+)
 loc_16E76:
-  ldr	r0, \[r6, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r6, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   cmp	r0, #0
   bge	#(?P<loc_16EBC>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
@@ -2901,7 +2911,7 @@ loc_16EE2:
   movs	r0, #0xe
   bl	#(?P<spi_raw_ct16_dt8_write>[0-9a-fx]+)
 loc_phase2_s1:
-  ldr	r0, \[r6, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r6, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   lsrs	r0, r0, #0x1f
   strb	r0, \[r5, #(?P<rel_transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
 loc_167B0:
@@ -2941,7 +2951,7 @@ loc_label_ret1:
   'tx_sub_800D3E4':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'rel_dword_10004258':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'rel_tcx_control_attenuation_by_packet':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
-  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_flags_1A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_fpga_reg_unkn15_value':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_transceiver_pwr_mode_unk016C':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'tcx_byte_2000015C':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
@@ -3097,7 +3107,7 @@ loc_phase2_s5:
   ldrb.w	r0, \[r6, #(?P<rel_tcx_control_attenuation_by_unkn1>[0-9a-fx]+)\]
   cmp	r0, #0
   bne	#(?P<loc_label_ret1>[0-9a-fx]+)
-  ldr	r0, \[r6, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r6, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   ldrb	r1, \[r5, #(?P<rel_transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
   cmp.w	r1, r0, lsr #31
   beq	#(?P<loc_label_ret1>[0-9a-fx]+)
@@ -3112,7 +3122,7 @@ loc_phase2_s5:
   movs	r0, #0xe
   bl	#(?P<spi_raw_ct16_dt8_write>[0-9a-fx]+)
 loc_16E76:
-  ldr	r0, \[r6, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r6, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   cmp	r0, #0
   bge	#(?P<loc_16EBC>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
@@ -3169,7 +3179,7 @@ loc_16EE2:
   movs	r0, #0xe
   bl	#(?P<spi_raw_ct16_dt8_write>[0-9a-fx]+)
 loc_phase2_s1:
-  ldr	r0, \[r6, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r6, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   lsrs	r0, r0, #0x1f
   strb	r0, \[r5, #(?P<rel_transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
 loc_label_ret1:
@@ -3187,7 +3197,7 @@ loc_label_ret1:
   'rel_dword_10004258':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'rel_tcx_control_attenuation_by_packet':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_tcx_control_attenuation_by_unkn1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
-  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_flags_1A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_fpga_reg_unkn15_value':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_transceiver_pwr_mode_unk016C':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'tcx_byte_2000015C':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
@@ -3348,7 +3358,7 @@ loc_16DA2:
   cmp	r0, #0
   bne	#(?P<loc_14D58>[0-9a-fx]+)
   ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
-  ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   ldr	r1, \[pc, #(?P<transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
   ldrb	r1, \[r1\]
   cmp.w	r1, r0, lsr #31
@@ -3369,7 +3379,7 @@ loc_16DA2:
   bl	#(?P<spi_raw_ct16_dt8_write>[0-9a-fx]+)
 loc_16DE8:
   ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
-  ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   lsrs	r0, r0, #0x1f
   cbz	r0, #(?P<loc_16E0E>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
@@ -3454,7 +3464,7 @@ loc_14D42:
   bl	#(?P<spi_raw_ct16_dt8_write>[0-9a-fx]+)
 loc_14D50:
   ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
-  ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   lsrs	r0, r0, #0x1f
   b	#(?P<loc_14D5A>[0-9a-fx]+)
 loc_14D58:
@@ -3506,7 +3516,7 @@ loc_label_ret1:
   'tx_sub_16A5C':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'rel_tcx_control_attenuation_by_packet':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_tcx_control_attenuation_by_unkn1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
-  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_flags_1A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_tx_byte_20033B4':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'fpga_reg_unkn15_value':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.INT32_T},
   'transceiver_pwr_mode_unk016C':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.INT32_T},
@@ -3694,7 +3704,7 @@ loc_16DA2:
   cmp	r0, #0
   bne	#(?P<loc_label_ret1>[0-9a-fx]+)
   ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
-  ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   ldr	r1, \[pc, #(?P<transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
   ldrb	r1, \[r1\]
   cmp.w	r1, r0, lsr #31
@@ -3751,7 +3761,7 @@ loc_16E2A:
   bl	#(?P<spi_raw_ct16_dt8_write>[0-9a-fx]+)
 loc_phase2_s1:
   ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
-  ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   lsrs	r0, r0, #0x1f
   ldr	r1, \[pc, #(?P<transceiver_pwr_mode_unk016C>[0-9a-fx]+)\]
   strb	r0, \[r1\]
@@ -3770,7 +3780,7 @@ loc_label_ret1:
   'tx_sub_16A5C':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'rel_tcx_control_attenuation_by_packet':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'rel_tcx_control_attenuation_by_unkn1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
-  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_flags_1A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'fpga_reg_unkn15_value':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.INT32_T},
   'transceiver_pwr_mode_unk016C':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.INT32_T},
   'rel_transciever_attenuation':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
@@ -3814,9 +3824,9 @@ update_tcx_power_zone_flag:
   ldr([.]w)?	r2, \[r1, #(?P<rel_tcx_dword_33C0>[0-9a-fx]+)\]
   lsls	r2, r2, #0x1f
   bne	#(?P<loc_label_ret1>[0-9a-fx]+)
-  ldr	r2, \[r1, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r2, \[r1, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   bfi	r2, r0, #0x1f, #1
-  str	r2, \[r1, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  str	r2, \[r1, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
 loc_label_ret1:
   bx	lr
 """,
@@ -3827,7 +3837,7 @@ loc_label_ret1:
   'update_tcx_power_zone_flag':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'ofdm_receiver_id':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'rel_tcx_dword_33C0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
-  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_flags_1A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
 },
 }
@@ -3841,9 +3851,9 @@ update_tcx_power_zone_flag:
   ldr([.]w)?	r2, \[r1, #(?P<rel_tcx_dword_33C0>[0-9a-fx]+)\]
   lsls	r2, r2, #0x1f
   bne	#(?P<loc_label_ret1>[0-9a-fx]+)
-  ldr	r2, \[r1, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r2, \[r1, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   bfc	r2, #0x1f, #1
-  str	r2, \[r1, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  str	r2, \[r1, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
 loc_label_ret1:
   bx	lr
 """,
@@ -3854,7 +3864,7 @@ loc_label_ret1:
   'update_tcx_power_zone_flag':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'ofdm_receiver_id':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'rel_tcx_dword_33C0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
-  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_flags_1A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
 },
 }
@@ -3870,10 +3880,10 @@ update_tcx_power_zone_flag:
   and	r0, r0, #1
   cbnz	r0, #(?P<loc_label_ret1>[0-9a-fx]+)
   ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
-  ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   bfi	r0, r1, #0x1f, #1
   ldr	r2, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
-  str	r0, \[r2, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  str	r0, \[r2, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
 loc_label_ret1:
   pop	{pc}
 """,
@@ -3884,7 +3894,7 @@ loc_label_ret1:
   'update_tcx_power_zone_flag':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'ofdm_receiver_id':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'get_dword_33C0':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_flags_1A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
 },
 }
@@ -3900,10 +3910,10 @@ update_tcx_power_zone_flag:
   and	r0, r0, #1
   cbnz	r0, #(?P<loc_label_ret1>[0-9a-fx]+)
   ldr	r0, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
-  ldr	r0, \[r0, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
   bfi	r0, r1, #0x1f, #1
   ldr	r2, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
-  str	r0, \[r2, #(?P<rel_transciever_flags_20001A28>[0-9a-fx]+)\]
+  str	r0, \[r2, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
 loc_label_ret1:
   pop	{pc}
 """,
@@ -3914,7 +3924,7 @@ loc_label_ret1:
   'update_tcx_power_zone_flag':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'ofdm_receiver_id':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'get_dword_33C0':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'rel_transciever_flags_20001A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'rel_transceiver_flags_1A28':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
   'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
 },
 }
@@ -4686,7 +4696,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_constatt,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone_P3X_V01_08,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone_P3X_V01_11,},
-  {'sect': ".text", 'func': re_func_tcx_config_update1_P3X_V01_07,},
+  {'sect': ".text", 'func': re_func_tcx_config_update1_P3X_V01_05,},
   {'sect': ".text", 'func': re_func_tcx_config_update1_P3X_V01_08,},
   {'sect': ".text", 'func': re_func_tcx_config_update1_P3X_V01_11,},
   {'sect': ".text", 'func': re_func_tcx_config_update1_C1_V01_04_m1400,},
