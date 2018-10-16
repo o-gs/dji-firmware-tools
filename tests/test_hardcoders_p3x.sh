@@ -124,12 +124,81 @@ function exec_mod_for_m0800 {
   echo "### SUCCESS: Amount of changes in bin file is reasonable. ###"
 }
 
+function exec_mod_for_m0900 {
+  local FWPKG=$1
+  set -x
+  cp "${FWPKG}_m0900.bin" "${FWPKG}_m0900.orig.bin"
+  ./arm_bin2elf.py -vvv -e -b 0x8008000 --section .ARM.exidx@0x0D500:0 --section .bss@0x17FF7700:0x5A00 \
+   --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x2200 \
+   --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p "${FWPKG}_m0900.bin"
+  ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWPKG}_m0900.elf"
+
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override"\)$/\11\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${FWPKG}_m0900.json"
+
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value"\)$/\10\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${FWPKG}_m0900.json"
+
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*"\)$/\10\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${FWPKG}_m0900.json"
+
+  ./lightbridge_stm32_hardcoder.py -vvv -u -e "${FWPKG}_m0900.elf"
+  arm-none-eabi-objcopy -O binary "${FWPKG}_m0900.elf" "${FWPKG}_m0900.bin"
+
+  # Verify by checking amount of changes within the file
+  local FWDIFF_COUNT=$(cmp -l "${FWPKG}_m0900.orig.bin" "${FWPKG}_m0900.bin" | wc -l)
+  set +x
+
+  if [ "${FWDIFF_COUNT}" -le "1" ] || [ "${FWDIFF_COUNT}" -ge "32" ]; then
+    echo "### FAIL: found ${FWDIFF_COUNT} binary changes which is outside expected range. ###"
+    exit 2
+  fi
+  echo "### SUCCESS: Amount of changes in bin file is reasonable. ###"
+}
+
 for FWPKG in "${FWPKG_LIST[@]}"; do
   echo "### TEST of hardcoders with ${FWPKG} ###"
   ./dji_xv4_fwcon.py -vvv -x -p "fw/${FWPKG}.bin"
 
   exec_mod_for_m0100 "${FWPKG}"
   exec_mod_for_m0800 "${FWPKG}"
+  exec_mod_for_m0900 "${FWPKG}"
 done
 
 echo "### PASS all tests ###"
