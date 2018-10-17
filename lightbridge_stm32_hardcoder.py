@@ -917,11 +917,11 @@ tcx_config_power_zone:
   push	{r4, lr}
   ldrb	r2, \[r1, #(?P<unk_var02>[0-9a-fx]+)\]
   cmp	r0, r2
-  beq	#(?P<loc_label16>[0-9a-fx]+)
+  beq	#(?P<loc_label_ret2>[0-9a-fx]+)
   strb	r0, \[r1, #(?P<unk_var02>[0-9a-fx]+)\]
   cbz	r0, #(?P<loc_label01>[0-9a-fx]+)
   cmp	r0, #1
-  bne	#(?P<loc_label16>[0-9a-fx]+)
+  bne	#(?P<loc_label_ret2>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #4
   beq	#(?P<loc_label09>[0-9a-fx]+)
@@ -950,7 +950,7 @@ loc_label02:
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
   movs	r1, #(?P<board_ad4_attenuation_tx2_ce>[0-9a-fx]+)
-  b	#(?P<loc_label04>[0-9a-fx]+)
+  b	#(?P<loc_board_ad_set_tx2a>[0-9a-fx]+)
 loc_label03:
   movs	r2, #0
   movs	r1, #(?P<board_ad5_attenuation_tx1_ce>[0-9a-fx]+)
@@ -958,7 +958,7 @@ loc_label03:
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
   movs	r1, #(?P<board_ad5_attenuation_tx2_ce>[0-9a-fx]+)
-loc_label04:
+loc_board_ad_set_tx2a:
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   b	#(?P<loc_label06>[0-9a-fx]+)
 loc_label05:
@@ -978,21 +978,23 @@ loc_label07:
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #2
   bne	#(?P<loc_label_ret1>[0-9a-fx]+)
+; Set attenuation values for board AD2 in CE zone
   movs	r2, #0
   movs	r1, #(?P<board_ad2_attenuation_tx1_ce>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
   movs	r1, #(?P<board_ad2_attenuation_tx2_ce>[0-9a-fx]+)
-  b	#(?P<loc_label14>[0-9a-fx]+)
+  b	#(?P<loc_board_ad_set_tx2b>[0-9a-fx]+)
 loc_board_ar7:
+; Set attenuation values for board AR7 in CE zone
   movs	r2, #0
   movs	r1, #(?P<board_ar7_attenuation_tx1_ce>[0-9a-fx]+)
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
   movs	r1, #(?P<board_ar7_attenuation_tx2_ce>[0-9a-fx]+)
-  b	#(?P<loc_label19>[0-9a-fx]+)
+  b	#(?P<loc_board_ar_set_tx2>[0-9a-fx]+)
 loc_label09:
   movs	r2, #0
   movs	r1, #(?P<board_ad4_attenuation_tx1_fcc>[0-9a-fx]+)
@@ -1034,12 +1036,12 @@ loc_label13:
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
   movs	r1, #(?P<board_ad2_attenuation_tx2_fcc>[0-9a-fx]+)
-loc_label14:
+loc_board_ad_set_tx2b:
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
 loc_label15:
   pop.w	{r4, lr}
   b	#(?P<loc_j_ad936x_reg_sync_write>[0-9a-fx]+)
-loc_label16:
+loc_label_ret2:
   b	#(?P<loc_label_ret1>[0-9a-fx]+)
 loc_j_ad936x_reg_sync_write:
   b.w	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
@@ -1050,7 +1052,7 @@ loc_label18:
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
   movs	r1, #(?P<board_ar7_attenuation_tx2_fcc>[0-9a-fx]+)
-loc_label19:
+loc_board_ar_set_tx2:
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   b	#(?P<loc_label15>[0-9a-fx]+)
 loc_label_ret1:
@@ -1061,7 +1063,7 @@ loc_label_ret1:
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label03':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label04':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ad_set_tx2a':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label05':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label06':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label07':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -1071,13 +1073,13 @@ loc_label_ret1:
   'loc_label11':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label12':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label13':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label14':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ad_set_tx2b':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label15':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label16':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label_ret2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label17':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_j_ad936x_reg_sync_write':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label18':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label19':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ar_set_tx2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'get_board_version':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'ad936x_reg_sync_write':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
@@ -1156,11 +1158,11 @@ tcx_config_power_zone:
   push	{r4, lr}
   ldrb	r2, \[r1, #(?P<unk_var02>[0-9a-fx]+)\]
   cmp	r0, r2
-  beq	#(?P<loc_label16>[0-9a-fx]+)
+  beq	#(?P<loc_label_ret2>[0-9a-fx]+)
   strb	r0, \[r1, #(?P<unk_var02>[0-9a-fx]+)\]
   cbz	r0, #(?P<loc_label01>[0-9a-fx]+)
   cmp	r0, #1
-  bne	#(?P<loc_label16>[0-9a-fx]+)
+  bne	#(?P<loc_label_ret2>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #4
   beq	#(?P<loc_label09>[0-9a-fx]+)
@@ -1189,7 +1191,7 @@ loc_label02:
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
   movs	r1, #(?P<board_ad4_attenuation_tx2_ce>[0-9a-fx]+)
-  b	#(?P<loc_label04>[0-9a-fx]+)
+  b	#(?P<loc_board_ad_set_tx2a>[0-9a-fx]+)
 loc_label03:
   movs	r2, #0
   movs	r1, #(?P<board_ad5_attenuation_tx1_ce>[0-9a-fx]+)
@@ -1197,7 +1199,7 @@ loc_label03:
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
   movs	r1, #(?P<board_ad5_attenuation_tx2_ce>[0-9a-fx]+)
-loc_label04:
+loc_board_ad_set_tx2a:
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   b	#(?P<loc_label06>[0-9a-fx]+)
 loc_label05:
@@ -1223,7 +1225,7 @@ loc_label07:
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
   movs	r1, #(?P<board_ad2_attenuation_tx2_ce>[0-9a-fx]+)
-  b	#(?P<loc_label14>[0-9a-fx]+)
+  b	#(?P<loc_board_ad_set_tx2b>[0-9a-fx]+)
 loc_board_ar7:
   movs	r2, #0
   movs	r1, #(?P<board_ar7_attenuation_tx1_ce>[0-9a-fx]+)
@@ -1231,7 +1233,7 @@ loc_board_ar7:
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
   movs	r1, #(?P<board_ar7_attenuation_tx2_ce>[0-9a-fx]+)
-  b	#(?P<loc_label19>[0-9a-fx]+)
+  b	#(?P<loc_board_ar_set_tx2>[0-9a-fx]+)
 loc_label09:
   movs	r2, #0
   movs	r1, #(?P<board_ad4_attenuation_tx1_fcc>[0-9a-fx]+)
@@ -1273,10 +1275,10 @@ loc_label13:
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
   movs	r1, #(?P<board_ad2_attenuation_tx2_fcc>[0-9a-fx]+)
-loc_label14:
+loc_board_ad_set_tx2b:
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   b	#(?P<loc_label15>[0-9a-fx]+)
-loc_label16:
+loc_label_ret2:
   b	#(?P<loc_label_ret1>[0-9a-fx]+)
 loc_label15:
   pop.w	{r4, lr}
@@ -1289,7 +1291,7 @@ loc_label18:
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
   movs	r2, #1
   movs	r1, #(?P<board_ar7_attenuation_tx2_fcc>[0-9a-fx]+)
-loc_label19:
+loc_board_ar_set_tx2:
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   b	#(?P<loc_j_ad936x_reg_sync_write>[0-9a-fx]+)
 loc_label_ret1:
@@ -1300,7 +1302,7 @@ loc_label_ret1:
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label03':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label04':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ad_set_tx2a':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label05':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label06':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label07':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -1310,13 +1312,13 @@ loc_label_ret1:
   'loc_label11':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label12':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label13':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label14':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ad_set_tx2b':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label15':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label16':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label_ret2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label17':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_j_ad936x_reg_sync_write':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label18':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label19':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ar_set_tx2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'get_board_version':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'ad936x_reg_sync_write':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
