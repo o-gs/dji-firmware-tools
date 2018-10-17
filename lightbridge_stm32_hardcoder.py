@@ -974,7 +974,7 @@ loc_label06:
 loc_label07:
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #7
-  beq	#(?P<loc_label08>[0-9a-fx]+)
+  beq	#(?P<loc_board_ar7>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #2
   bne	#(?P<loc_label_ret1>[0-9a-fx]+)
@@ -985,7 +985,7 @@ loc_label07:
   movs	r2, #1
   movs	r1, #(?P<board_ad2_attenuation_tx2_ce>[0-9a-fx]+)
   b	#(?P<loc_label14>[0-9a-fx]+)
-loc_label08:
+loc_board_ar7:
   movs	r2, #0
   movs	r1, #(?P<board_ar7_attenuation_tx1_ce>[0-9a-fx]+)
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
@@ -1065,7 +1065,7 @@ loc_label_ret1:
   'loc_label05':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label06':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label07':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label08':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ar7':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label09':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label10':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label11':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -1213,7 +1213,7 @@ loc_label06:
 loc_label07:
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #7
-  beq	#(?P<loc_label08>[0-9a-fx]+)
+  beq	#(?P<loc_board_ar7>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #2
   bne	#(?P<loc_label_ret1>[0-9a-fx]+)
@@ -1224,7 +1224,7 @@ loc_label07:
   movs	r2, #1
   movs	r1, #(?P<board_ad2_attenuation_tx2_ce>[0-9a-fx]+)
   b	#(?P<loc_label14>[0-9a-fx]+)
-loc_label08:
+loc_board_ar7:
   movs	r2, #0
   movs	r1, #(?P<board_ar7_attenuation_tx1_ce>[0-9a-fx]+)
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
@@ -1304,7 +1304,7 @@ loc_label_ret1:
   'loc_label05':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label06':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label07':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label08':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ar7':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label09':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label10':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label11':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
