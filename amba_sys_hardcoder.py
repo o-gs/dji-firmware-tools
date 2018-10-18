@@ -974,10 +974,11 @@ def armfw_elf_search_value_bytes_to_native_type(asm_arch, var_info, var_bytes):
     elif variety_is_float(var_info['variety']):
         var_nativ = []
         for i in range(len(var_bytes) // var_size):
+            # struct.unpack() returns a typle, even if with only one item; so we add it to list via extend().
             if var_size >= 8:
-                var_nativ.append(struct.unpack("<d",var_bytes[i*var_size:(i+1)*var_size]))
+                var_nativ.extend(struct.unpack("<d",var_bytes[i*var_size:(i+1)*var_size]))
             else:
-                var_nativ.append(struct.unpack("<f",var_bytes[i*var_size:(i+1)*var_size]))
+                var_nativ.extend(struct.unpack("<f",var_bytes[i*var_size:(i+1)*var_size]))
     elif var_info['variety'] in [DataVariety.STRUCT]:
         var_nativ = []
         prop_array_len = len(var_bytes) // var_size
@@ -1066,7 +1067,7 @@ def armfw_elf_search_value_string_to_native_type(var_info, var_str):
         else:
             var_nativ = []
             for val_itm in var_str.split():
-                var_nativ.append(float(val_itm,0))
+                var_nativ.append(float(val_itm))
             if len(var_nativ) == 1:
                 var_nativ = var_nativ[0]
     elif var_info['variety'] in [DataVariety.STRUCT]:
