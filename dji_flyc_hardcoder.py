@@ -14,13 +14,24 @@ will not influence update operation.
 
 Exported values:
 
-og_hardcoded.TODO -
+og_hardcoded.flyc.max_wp_dist_to_home -
 
-  TODO.
+  Max distance from one waypoint to home point.
+  This value is also app limited and need Android App side patch.
+
+og_hardcoded.flyc.min_alt_above_home -
+
+  Max altitude relative to home point.
+  This value is also app limited and need Android App side patch.
+
+og_hardcoded.flyc.min_alt_below_home -
+
+  Min altitude relative to home point.
+  This value is also app limited and need Android App side patch.
 
 """
 
-# Copyright (C) 2016,2017 Mefistotelis <mefistotelis@gmail.com>
+# Copyright (C) 2017,2018 Mefistotelis <mefistotelis@gmail.com>
 # Copyright (C) 2018 Original Gangsters <https://dji-rev.slack.com/>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -38,7 +49,7 @@ og_hardcoded.TODO -
 
 from __future__ import print_function
 __version__ = "0.0.1"
-__author__ = "Mefistotelis @ Original Gangsters"
+__author__ = "Mefistotelis, Matioupi @ Original Gangsters"
 __license__ = "GPL"
 
 import sys
@@ -264,9 +275,15 @@ loc_4ADD16:
   'dbl_pi_half':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
   'flt_minus_twentytwo_dot_four':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT},
   'flt_positive_epsylon':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT},
-  'max_wp_dist_to_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT},
-  'min_alt_above_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT},
-  'min_alt_below_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT},
+  'max_wp_dist_to_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'minValue': "10.0", 'maxValue': "1000000.0", 'defaultValue': "2000.0",
+    'description': "Max distance from one waypoint to home point"},
+  'min_alt_above_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'minValue': "1.0", 'maxValue': "1000000.0", 'defaultValue': "1000.0",
+    'description': "Max altitude relative to home point"},
+  'min_alt_below_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'minValue': "-1.0", 'maxValue': "-1000000.0", 'defaultValue': "-200.0",
+    'description': "Min altitude relative to home point"},
   'rel_byte_20428D15':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'rel_byte_20428D17':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'rel_byte_2042B3B0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
