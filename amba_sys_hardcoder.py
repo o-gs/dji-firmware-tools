@@ -67,6 +67,7 @@ import re
 import io
 import collections.abc
 import itertools
+import struct
 import enum
 import json
 
