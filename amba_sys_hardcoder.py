@@ -1808,13 +1808,13 @@ def armfw_elf_paramvals_export_json(po, params_list, valfile):
         for ppname in ('minValue', 'maxValue', 'defaultValue'):
             if not ppname in par_info: continue
             valfile.write(",\n")
-            if re.match(r"^(0[Xx][0-9a-fA-F]+|[0-9]+)$", par_info['str_value']):
+            if re.fullmatch(r"^(0[Xx][0-9a-fA-F]+|[0-9-]+|[0-9-]*[.][0-9]+)$", par_info['str_value']):
                 valfile.write("\t\t\"{:s}\" : {:s}".format(ppname,par_info[ppname]))
             else:
                 valfile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,par_info[ppname]))
         for ppname in ('setValue',):
             valfile.write(",\n")
-            if re.fullmatch(r"^(0[Xx][0-9a-fA-F]+|[0-9]+)$", par_info['str_value']):
+            if re.fullmatch(r"^(0[Xx][0-9a-fA-F]+|[0-9-]+|[0-9-]*[.][0-9]+)$", par_info['str_value']):
                 valfile.write("\t\t\"{:s}\" : {:s}".format(ppname,par_info['str_value']))
             else:
                 valfile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,par_info['str_value']))
