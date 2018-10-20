@@ -83,7 +83,7 @@ function exec_mod_for_m0100 {
 function exec_mod_for_m0800 {
   local FWMODL=$1
   set -x
-  openssl des3 -d -k Dji123456 -in "${FWMODL}.bin"  -out "${FWMODL}_decrypted.tar.gz"
+  openssl des3 -md md5 -d -k Dji123456 -in "${FWMODL}.bin"  -out "${FWMODL}_decrypted.tar.gz"
   tar -zxf "${FWMODL}_decrypted.tar.gz"
   cp ./dji/bin/encode_usb "./${FWMODL}-encode_usb.elf"
   cp "./${FWMODL}-encode_usb.elf" "./${FWMODL}-encode_usb.orig.elf"
@@ -111,7 +111,7 @@ function exec_mod_for_m0800 {
   cp -f "./${FWMODL}-encode_usb.elf" ./dji/bin/encode_usb
   tar -zcf "${FWMODL}_decrypted.tar.gz" ./dji
   rm -rf ./dji
-  openssl des3 -e -k Dji123456 -in "${FWMODL}_decrypted.tar.gz"  -out "${FWMODL}.bin"
+  openssl des3 -md md5 -e -k Dji123456 -in "${FWMODL}_decrypted.tar.gz"  -out "${FWMODL}.bin"
 
   # Verify by checking amount of changes within the file
   local FWDIFF_COUNT=$(cmp -l "./${FWMODL}-encode_usb.orig.elf" "./${FWMODL}-encode_usb.elf" | wc -l)
