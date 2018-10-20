@@ -79,9 +79,9 @@ from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
   VarType, DataVariety, CodeVariety
 
 
-re_func_wp_check_input_mission_validity_WM100_V03_02_43_20 = {
+re_func_wp_check_input_mission_validity_WM100_V03_02_34_02 = {
 'name': "wp_check_input_mission_validity",
-'version': "wm100_0306_v03.02.43.20",
+'version': "wm100_0306_v03.02.34.02",
 're': """
 wp_check_input_mission_validity:
   push.w	{r2, r3, r4, r5, r6, r7, r8, lr}
@@ -157,42 +157,38 @@ loc_val_fail:
   adr	r1, #(?P<cstr_wp_data_val_fail>[0-9a-fx]+)
   mov	r2, r5
   blx	r3
-  b	#(?P<loc_4ADF68>[0-9a-fx]+)
-loc_chk_contn1:
-  cmp	r1, r5
-  bls	#(?P<loc_4ADD36>[0-9a-fx]+)
-  adds	r7, #0xa0
-  mov	r1, r4
-  mov	r0, r7
-  bl	#(?P<sub_4A894E>[0-9a-fx]+)
-  vldr	s1, \[r7, #0x10\]
-  vldr	s2, \[r4, #0x10\]
-  vmul.f32	s0, s0, s0
-  vsub.f32	s1, s1, s2
-  vmla.f32	s0, s1, s1
-  bl	#(?P<sub_4AC860>[0-9a-fx]+)
-  ldrb	r0, \[r6, #(?P<rel_byte_20428D15>[0-9a-fx]+)\]
-  cmp	r0, #1
-  bne	#(?P<loc_4ADCC0>[0-9a-fx]+)
-  ldrb	r1, \[r6\]
-  subs	r1, r1, #1
-  cmp	r1, r5
-  beq	#(?P<loc_chk_contn3>[0-9a-fx]+)
-loc_4ADCC0:
-  vmov	r1, s0
-  cmp.w	r1, #0x3f000000 ; 0.5f
-  bge	#(?P<loc_chk_contn2>[0-9a-fx]+)
-  bl	#(?P<get_logger>[0-9a-fx]+)
-  b	#(?P<loc_dist_small>[0-9a-fx]+)
-loc_4ADCD0:
-  b	#(?P<loc_4ADFE2>[0-9a-fx]+)
-loc_dist_small:
-  ldr	r3, \[r0, #0xc\]
-  movs	r0, #0x28
-  adr	r1, #(?P<cstr_wp_dist_too_small>[0-9a-fx]+)
-  mov	r2, r5
-  blx	r3
-  movs	r0, #0xe5
+; The function continues
+""",
+'vars': {
+  'wp_check_input_mission_validity':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'get_logger':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4BEB10':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'loc_val_fail':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_chk_contn1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4ADCD0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4ADECE':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'byte_20428D08':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'unk_2042AD08':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'cstr_wp_data_val_fail':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'dbl_just_pi':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
+  'dbl_minus_pi':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
+  'dbl_minus_pi_half':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
+  'dbl_pi_half':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
+  'min_alt_above_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'minValue': "1.0", 'maxValue': "1000000.0", 'defaultValue': "1000.0",
+    'description': "Max altitude relative to home point"},
+  'min_alt_below_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'minValue': "-1.0", 'maxValue': "-1000000.0", 'defaultValue': "-200.0",
+    'description': "Min altitude relative to home point"},
+  'rel_byte_2042B3B0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+},
+}
+
+re_func_wp_check_input_mission_validity_chunk2_WM100_V03_02_34_02 = {
+'name': "wp_check_input_mission_validity_chunk2",
+'version': "wm100_0306_v03.02.34.02",
+'re': """
+wp_check_input_mission_validity_chunk2:
 loc_ret1:
   pop.w	{r2, r3, r4, r5, r6, r7, r8, pc}
 loc_chk_contn2:
@@ -236,23 +232,11 @@ loc_4ADD16:
   cmp	r0, r1
   blo	#(?P<loc_4ADD38>[0-9a-fx]+)
   bl	#(?P<get_logger>[0-9a-fx]+)
-  mov	r2, r5
-  b	#(?P<loc_4ADE94>[0-9a-fx]+)
 ; The function continues
 """,
 'vars': {
-  'wp_check_input_mission_validity':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  #'wp_check_input_mission_validity_chunk2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'get_logger':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'sub_4A894E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'sub_4AC860':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'sub_4BEB10':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'loc_val_fail':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_chk_contn1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_4ADCC0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_4ADCD0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_dist_small':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_chk_contn2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_chk_contn3':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4ADCEE':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4ADD0A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4ADD0E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -260,39 +244,20 @@ loc_4ADD16:
   'loc_4ADD36':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4ADD38':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4ADE94':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_4ADECE':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_4ADF68':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_4ADFE2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'byte_20428D08':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
-  'unk_2042AD08':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
-  'cstr_wp_data_val_fail':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_wp_dist_too_large':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'cstr_wp_dist_too_small':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'dbl_just_pi':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
-  'dbl_minus_pi':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
-  'dbl_minus_pi_half':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
-  'dbl_pi_half':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
   'flt_minus_twentytwo_dot_four':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT},
   'flt_positive_epsylon':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT},
   'max_wp_dist_to_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
     'public': "og_hardcoded.flyc", 'minValue': "10.0", 'maxValue': "1000000.0", 'defaultValue': "2000.0",
     'description': "Max distance from one waypoint to home point"},
-  'min_alt_above_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
-    'public': "og_hardcoded.flyc", 'minValue': "1.0", 'maxValue': "1000000.0", 'defaultValue': "1000.0",
-    'description': "Max altitude relative to home point"},
-  'min_alt_below_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
-    'public': "og_hardcoded.flyc", 'minValue': "-1.0", 'maxValue': "-1000000.0", 'defaultValue': "-200.0",
-    'description': "Min altitude relative to home point"},
-  'rel_byte_20428D15':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'rel_byte_20428D17':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
-  'rel_byte_2042B3B0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
 },
 }
 
-re_func_wp_check_input_mission_validity_chunk3_WM100_V03_02_43_20 = {
+re_func_wp_check_input_mission_validity_chunk3_WM100_V03_02_34_02 = {
 'name': "wp_check_input_mission_validity_chunk3",
-'version': "wm100_0306_v03.02.43.20",
+'version': "wm100_0306_v03.02.34.02",
 're': """
 wp_check_input_mission_validity_chunk3:
   adds	r5, r5, #1
@@ -324,7 +289,7 @@ loc_4ADF06:
 ; The function continues
 """,
 'vars': {
-  'wp_check_input_mission_validity_chunk3':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'wp_check_input_mission_validity_chunk3':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4ADBE8':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4ADF06':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4ADF30':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -341,8 +306,9 @@ loc_4ADF06:
 
 
 re_general_list = [
-  {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_WM100_V03_02_43_20,},
-  {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk3_WM100_V03_02_43_20,},
+  {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_WM100_V03_02_34_02,},
+  {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk2_WM100_V03_02_34_02,},
+  {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk3_WM100_V03_02_34_02,},
 ]
 
 
