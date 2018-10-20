@@ -43,12 +43,12 @@ if [ -f ./dji ]; then
 fi
 
 function exec_mod_for_m0100 {
-  local FWPKG=$1
+  local FWMODL=$1
   set -x
-  cp "${FWPKG}_m0100.bin" "${FWPKG}_m0100.orig.bin"
-  ./amba_fwpak.py -vvv -x -m "${FWPKG}_m0100.bin"
-  ./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x464800:0 -p "${FWPKG}_m0100_part_sys.a9s"
-  ./amba_sys_hardcoder.py -vvv -x -e "${FWPKG}_m0100_part_sys.elf"
+  cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
+  ./amba_fwpak.py -vvv -x -m "${FWMODL}.bin"
+  ./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x464800:0 -p "${FWMODL}_part_sys.a9s"
+  ./amba_sys_hardcoder.py -vvv -x -e "${FWMODL}_part_sys.elf"
 
   sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
        $!{ N        # append the next line when not on the last line
@@ -63,14 +63,14 @@ function exec_mod_for_m0100 {
          :sub-yes   # a label (the goto target of the 't' branch)
                     # fall through to final auto-pattern_print (2 lines)
        }    
-     }' "${FWPKG}_m0100_part_sys.json"
+     }' "${FWMODL}_part_sys.json"
 
-  ./amba_sys_hardcoder.py -vvv -u -e "${FWPKG}_m0100_part_sys.elf"
-  arm-none-eabi-objcopy -O binary "${FWPKG}_m0100_part_sys.elf" "${FWPKG}_m0100_part_sys.a9s"
-  ./amba_fwpak.py -vvv -a -m "${FWPKG}_m0100.bin"
+  ./amba_sys_hardcoder.py -vvv -u -e "${FWMODL}_part_sys.elf"
+  arm-none-eabi-objcopy -O binary "${FWMODL}_part_sys.elf" "${FWMODL}_part_sys.a9s"
+  ./amba_fwpak.py -vvv -a -m "${FWMODL}.bin"
 
   # Verify by checking amount of changes within the file
-  local FWDIFF_COUNT=$(cmp -l "${FWPKG}_m0100.orig.bin" "${FWPKG}_m0100.bin" | wc -l)
+  local FWDIFF_COUNT=$(cmp -l "${FWMODL}.orig.bin" "${FWMODL}.bin" | wc -l)
   set +x
 
   if [ "${FWDIFF_COUNT}" -le "4" ] || [ "${FWDIFF_COUNT}" -ge "48" ]; then
@@ -81,13 +81,13 @@ function exec_mod_for_m0100 {
 }
 
 function exec_mod_for_m0800 {
-  local FWPKG=$1
+  local FWMODL=$1
   set -x
-  openssl des3 -d -k Dji123456 -in "${FWPKG}_m0800.bin"  -out "${FWPKG}_m0800_decrypted.tar.gz"
-  tar -zxf "${FWPKG}_m0800_decrypted.tar.gz"
-  cp ./dji/bin/encode_usb "./${FWPKG}_m0800-encode_usb.elf"
-  cp "./${FWPKG}_m0800-encode_usb.elf" "./${FWPKG}_m0800-encode_usb.orig.elf"
-  ./dm3xx_encode_usb_hardcoder.py -vv -x -e "${FWPKG}_m0800-encode_usb.elf"
+  openssl des3 -d -k Dji123456 -in "${FWMODL}.bin"  -out "${FWMODL}_decrypted.tar.gz"
+  tar -zxf "${FWMODL}_decrypted.tar.gz"
+  cp ./dji/bin/encode_usb "./${FWMODL}-encode_usb.elf"
+  cp "./${FWMODL}-encode_usb.elf" "./${FWMODL}-encode_usb.orig.elf"
+  ./dm3xx_encode_usb_hardcoder.py -vv -x -e "${FWMODL}-encode_usb.elf"
 
   # now modify *_m0800-encode_usb.json - we will use sed
 
@@ -104,17 +104,17 @@ function exec_mod_for_m0800 {
          :sub-yes   # a label (the goto target of the 't' branch)
                     # fall through to final auto-pattern_print (2 lines)
        }    
-     }' "${FWPKG}_m0800-encode_usb.json"
+     }' "${FWMODL}-encode_usb.json"
 
 
-  ./dm3xx_encode_usb_hardcoder.py -vv -u -e "${FWPKG}_m0800-encode_usb.elf"
-  cp -f "./${FWPKG}_m0800-encode_usb.elf" ./dji/bin/encode_usb
-  tar -zcf "${FWPKG}_m0800_decrypted.tar.gz" ./dji
+  ./dm3xx_encode_usb_hardcoder.py -vv -u -e "${FWMODL}-encode_usb.elf"
+  cp -f "./${FWMODL}-encode_usb.elf" ./dji/bin/encode_usb
+  tar -zcf "${FWMODL}_decrypted.tar.gz" ./dji
   rm -rf ./dji
-  openssl des3 -e -k Dji123456 -in "${FWPKG}_m0800_decrypted.tar.gz"  -out "${FWPKG}_m0800.bin"
+  openssl des3 -e -k Dji123456 -in "${FWMODL}_decrypted.tar.gz"  -out "${FWMODL}.bin"
 
   # Verify by checking amount of changes within the file
-  local FWDIFF_COUNT=$(cmp -l "./${FWPKG}_m0800-encode_usb.orig.elf" "./${FWPKG}_m0800-encode_usb.elf" | wc -l)
+  local FWDIFF_COUNT=$(cmp -l "./${FWMODL}-encode_usb.orig.elf" "./${FWMODL}-encode_usb.elf" | wc -l)
   set +x
 
   if [ "${FWDIFF_COUNT}" -le "4" ] || [ "${FWDIFF_COUNT}" -ge "32" ]; then
@@ -124,14 +124,126 @@ function exec_mod_for_m0800 {
   echo "### SUCCESS: Amount of changes in bin file is reasonable. ###"
 }
 
-function exec_mod_for_m0900 {
-  local FWPKG=$1
+function exec_mod_for_m0306 {
+  local FWMODL=$1
   set -x
-  cp "${FWPKG}_m0900.bin" "${FWPKG}_m0900.orig.bin"
+  cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
+  ./arm_bin2elf.py -vvv -e -b 0x8020000 --section .ARM.exidx@0x085d34:0 --section .bss@0x07fe0000:0xA000 \
+   --section .bss2@0x17fe0000:0x30000 --section .bss3@0x37fe0000:0x30000 -p "${FWMODL}.bin"
+  ./dji_flyc_hardcoder.py -vvv -x -e "${FWMODL}.elf"
+
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]min_alt_below_home"\)$/\1-800.0\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${FWMODL}.json"
+
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_alt_above_home"\)$/\14000.0\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${FWMODL}.json"
+
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_wp_dist_to_home"\)$/\16000.0\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${FWMODL}.json"
+
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_mission_path_len"\)$/\140000.0\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${FWMODL}.json"
+
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_speed_pos"\)$/\125.0\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${FWMODL}.json"
+
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_speed_neg"\)$/\1-25.0\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${FWMODL}.json"
+
+  ./dji_flyc_hardcoder.py -vvv -u -e "${FWMODL}.elf"
+  arm-none-eabi-objcopy -O binary "${FWMODL}.elf" "${FWMODL}.bin"
+
+  # Verify by checking amount of changes within the file
+  local FWDIFF_COUNT=$(cmp -l "${FWMODL}.orig.bin" "${FWMODL}.bin" | wc -l)
+  set +x
+
+  if [ "${FWDIFF_COUNT}" -le "1" ] || [ "${FWDIFF_COUNT}" -ge "32" ]; then
+    echo "### FAIL: found ${FWDIFF_COUNT} binary changes which is outside expected range. ###"
+    exit 2
+  fi
+  echo "### SUCCESS: Amount of changes in bin file is reasonable. ###"
+}
+
+function exec_mod_for_m0900 {
+  local FWMODL=$1
+  set -x
+  cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
   ./arm_bin2elf.py -vvv -e -b 0x8008000 --section .ARM.exidx@0x0D500:0 --section .bss@0x17FF7700:0x5A00 \
    --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x2200 \
-   --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p "${FWPKG}_m0900.bin"
-  ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWPKG}_m0900.elf"
+   --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p "${FWMODL}.bin"
+  ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWMODL}.elf"
 
   sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
        $!{ N        # append the next line when not on the last line
@@ -146,7 +258,7 @@ function exec_mod_for_m0900 {
          :sub-yes   # a label (the goto target of the 't' branch)
                     # fall through to final auto-pattern_print (2 lines)
        }    
-     }' "${FWPKG}_m0900.json"
+     }' "${FWMODL}.json"
 
   sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
        $!{ N        # append the next line when not on the last line
@@ -161,7 +273,7 @@ function exec_mod_for_m0900 {
          :sub-yes   # a label (the goto target of the 't' branch)
                     # fall through to final auto-pattern_print (2 lines)
        }    
-     }' "${FWPKG}_m0900.json"
+     }' "${FWMODL}.json"
 
   sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
        $!{ N        # append the next line when not on the last line
@@ -176,13 +288,13 @@ function exec_mod_for_m0900 {
          :sub-yes   # a label (the goto target of the 't' branch)
                     # fall through to final auto-pattern_print (2 lines)
        }    
-     }' "${FWPKG}_m0900.json"
+     }' "${FWMODL}.json"
 
-  ./lightbridge_stm32_hardcoder.py -vvv -u -e "${FWPKG}_m0900.elf"
-  arm-none-eabi-objcopy -O binary "${FWPKG}_m0900.elf" "${FWPKG}_m0900.bin"
+  ./lightbridge_stm32_hardcoder.py -vvv -u -e "${FWMODL}.elf"
+  arm-none-eabi-objcopy -O binary "${FWMODL}.elf" "${FWMODL}.bin"
 
   # Verify by checking amount of changes within the file
-  local FWDIFF_COUNT=$(cmp -l "${FWPKG}_m0900.orig.bin" "${FWPKG}_m0900.bin" | wc -l)
+  local FWDIFF_COUNT=$(cmp -l "${FWMODL}.orig.bin" "${FWMODL}.bin" | wc -l)
   set +x
 
   if [ "${FWDIFF_COUNT}" -le "1" ] || [ "${FWDIFF_COUNT}" -ge "32" ]; then
@@ -196,9 +308,12 @@ for FWPKG in "${FWPKG_LIST[@]}"; do
   echo "### TEST of hardcoders with ${FWPKG} ###"
   ./dji_xv4_fwcon.py -vvv -x -p "fw/${FWPKG}.bin"
 
-  exec_mod_for_m0100 "${FWPKG}"
-  exec_mod_for_m0800 "${FWPKG}"
-  exec_mod_for_m0900 "${FWPKG}"
+  exec_mod_for_m0100 "${FWPKG}_m0100"
+  exec_mod_for_m0800 "${FWPKG}_m0800"
+  if [[ "${FWPKG}" > "P3X_FW_V01.04.9999" ]]; then
+    exec_mod_for_m0306 "${FWPKG}_m0306"
+  fi
+  exec_mod_for_m0900 "${FWPKG}_m0900"
 done
 
 echo "### PASS all tests ###"
