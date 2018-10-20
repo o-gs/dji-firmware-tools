@@ -20,11 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 declare -a FWPKG_LIST=(
-#V01.00.0006_Spark_dji_system.bin
-#V01.00.0500_Spark_dji_system.bin
-#V01.00.0600_Spark_dji_system.bin
+V01.00.0006_Spark_dji_system.bin
+V01.00.0500_Spark_dji_system.bin
+V01.00.0600_Spark_dji_system.bin
 V01.00.0701_Spark_dji_system.bin
-V01.00.0900_Spark_dji_system.bin
+#V01.00.0900_Spark_dji_system.bin # same m0306 version as 01.00.0701, no need to test
 )
 
 # In case we want to use Python from non-standard location
@@ -60,7 +60,7 @@ function exec_mod_for_m0306 {
 
   sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
        $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]min_alt_above_home"\)$/\14000.0\3/
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_alt_above_home"\)$/\14000.0\3/
                     # now test for a successful substitution, otherwise
                     #+  unpaired "a test" lines would be mis-handled
          t sub-yes  # branch_on_substitute (goto label :sub-yes)
@@ -88,6 +88,51 @@ function exec_mod_for_m0306 {
        }    
      }' "${FWMODL}.json"
 
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_mission_path_len"\)$/\140000.0\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${FWMODL}.json"
+
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_speed_pos"\)$/\125.0\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${FWMODL}.json"
+
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_speed_neg"\)$/\1-25.0\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${FWMODL}.json"
+
   ./dji_flyc_hardcoder.py -vvv -u -e "${FWMODL}.elf"
   arm-none-eabi-objcopy -O binary "${FWMODL}.elf" "${FWMODL}.bin"
 
@@ -95,7 +140,7 @@ function exec_mod_for_m0306 {
   local FWDIFF_COUNT=$(cmp -l "${FWMODL}.orig.bin" "${FWMODL}.bin" | wc -l)
   set +x
 
-  if [ "${FWDIFF_COUNT}" -le "1" ] || [ "${FWDIFF_COUNT}" -ge "32" ]; then
+  if [ "${FWDIFF_COUNT}" -le "10" ] || [ "${FWDIFF_COUNT}" -ge "32" ]; then
     echo "### FAIL: found ${FWDIFF_COUNT} binary changes which is outside expected range. ###"
     exit 2
   fi
