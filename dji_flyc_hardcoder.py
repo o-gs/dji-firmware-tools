@@ -238,7 +238,7 @@ loc_4ADD16:
   bl	#(?P<get_logger>[0-9a-fx]+)
   mov	r2, r5
   b	#(?P<loc_4ADE94>[0-9a-fx]+)
-; The function continues, but nothing interesting happens after this place
+; The function continues
 """,
 'vars': {
   'wp_check_input_mission_validity':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
@@ -290,8 +290,59 @@ loc_4ADD16:
 },
 }
 
+re_func_wp_check_input_mission_validity_chunk3_WM100_V03_02_43_20 = {
+'name': "wp_check_input_mission_validity_chunk3",
+'version': "wm100_0306_v03.02.43.20",
+'re': """
+wp_check_input_mission_validity_chunk3:
+  adds	r5, r5, #1
+  uxtb	r5, r5
+loc_4ADECE:
+  ldrb	r1, \[r6\]
+  cmp	r1, r5
+  bhi.w	#(?P<loc_4ADBE8>[0-9a-fx]+)
+  bl	#(?P<sub_4AD984>[0-9a-fx]+)
+  ldr	r4, \[pc, #(?P<unk_2042B108>[0-9a-fx]+)\]
+  vmov	r0, s0
+  ldr	r1, \[pc, #(?P<max_mission_path_len>[0-9a-fx]+)\]
+  vstr	s0, \[r4, #0x2b8\]
+  cmp	r0, r1
+  ble	#(?P<loc_4ADF06>[0-9a-fx]+)
+  bl	#(?P<get_logger>[0-9a-fx]+)
+  vldr	s0, \[r4, #0x2b8\]
+  ldr	r5, \[r0, #0xc\]
+  movs	r0, #0x28
+  ldr	r1, \[pc, #(?P<cstr_total_dis_too_long>[0-9a-fx]+)\]
+  vcvt.f64.f32	d0, s0
+  vmov	r2, r3, d0
+  blx	r5
+  movs	r0, #0xe2
+  b	#(?P<loc_ret1>[0-9a-fx]+)
+loc_4ADF06:
+  movs	r4, #0
+  b	#(?P<loc_4ADF30>[0-9a-fx]+)
+; The function continues
+""",
+'vars': {
+  'wp_check_input_mission_validity_chunk3':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4ADBE8':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4ADF06':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4ADF30':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'get_logger':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4AD984':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'cstr_total_dis_too_long':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'unk_2042B108':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'max_mission_path_len':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'minValue': "10.0", 'maxValue': "1000000.0", 'defaultValue': "30000.0",
+    'description': "Max total length of mission"},
+},
+}
+
+
 re_general_list = [
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_WM100_V03_02_43_20,},
+  {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk3_WM100_V03_02_43_20,},
 ]
 
 
