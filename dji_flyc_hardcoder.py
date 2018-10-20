@@ -19,7 +19,7 @@ og_hardcoded.flyc.max_wp_dist_to_home -
   Max distance from one waypoint to home point.
   This value is also app limited and need Android App side patch.
 
-og_hardcoded.flyc.min_alt_above_home -
+og_hardcoded.flyc.max_alt_above_home -
 
   Max altitude relative to home point.
   This value is also app limited and need Android App side patch.
@@ -125,7 +125,7 @@ loc_4ADBE8:
   ldr	r0, \[r4, #0x10\]
   cmp	r0, r2
   bhi	#(?P<loc_val_fail>[0-9a-fx]+)
-  ldr	r2, \[pc, #(?P<min_alt_above_home>[0-9a-fx]+)\]
+  ldr	r2, \[pc, #(?P<max_alt_above_home>[0-9a-fx]+)\]
   cmp	r0, r2
   bgt	#(?P<loc_val_fail>[0-9a-fx]+)
   ldrsh.w	r0, \[r4, #0x18\]
@@ -174,7 +174,7 @@ loc_val_fail:
   'dbl_minus_pi':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
   'dbl_minus_pi_half':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
   'dbl_pi_half':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
-  'min_alt_above_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+  'max_alt_above_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
     'public': "og_hardcoded.flyc", 'minValue': "1.0", 'maxValue': "1000000.0", 'defaultValue': "1000.0",
     'description': "Max altitude relative to home point"},
   'min_alt_below_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
@@ -304,11 +304,176 @@ loc_4ADF06:
 },
 }
 
+re_func_wp_mission_data_verify_chunk1_WM100_V03_02_34_02 = {
+'name': "wp_mission_data_verify_chunk1",
+'version': "wm100_0306_v03.02.34.02",
+'re_before': """
+wp_mission_data_verify:
+  push	{r4, r5, lr}
+  ldr	r4, \[pc, #(?P<byte_20428D08>[0-9a-fx]+)\]
+  sub	sp, #0x1c
+  ldrb	r1, \[r0\]
+  movs	r3, #0
+  strb	r1, \[r4\]
+  ldr.w	r1, \[r0, #1\]
+  str	r1, \[r4, #4\]
+  ldr.w	r1, \[r0, #5\]
+  str	r1, \[r4, #8\]
+  ldrb	r1, \[r0, #9\]
+  strb	r1, \[r4, #0xc\]
+  ldrb	r1, \[r0, #0xa\]
+  strb	r1, \[r4, #0xd\]
+  ldrb	r1, \[r0, #0xb\]
+  strb	r1, \[r4, #0xe\]
+  ldrb	r1, \[r0, #0xc\]
+  strb	r1, \[r4, #0xf\]
+  ldrb	r1, \[r0, #0xd\]
+  strb	r1, \[r4, #0x10\]
+  ldrb	r1, \[r0, #0xe\]
+  strb	r1, \[r4, #0x11\]
+  ldr.w	r2, \[r0, #0x13\]
+  ldr.w	r1, \[r0, #0xf\]
+  strd	r1, r2, \[r4, #0x18\]
+  ldr.w	r2, \[r0, #0x1b\]
+  ldr.w	r1, \[r0, #0x17\]
+  strd	r1, r2, \[r4, #0x20\]
+  ldr.w	r1, \[r0, #0x1f\]
+  str	r1, \[r4, #0x28\]
+  ldrb.w	r1, \[r0, #0x23\]
+  strb.w	r1, \[r4, #0x2c\]
+  ldrb.w	r1, \[r0, #0x24\]
+  strb.w	r1, \[r4, #0x2d\]
+  ldrh.w	r1, \[r0, #0x25\]
+  strh	r1, \[r4, #0x2e\]
+  ldrh.w	r1, \[r0, #0x27\]
+  strh	r1, \[r4, #0x30\]
+loc_4AE050:
+  adds	r1, r0, r3
+  adds	r2, r4, r3
+  adds	r3, r3, #1
+  ldrb.w	r1, \[r1, #(?P<rel_unkn_val1>[0-9a-fx]+)\]
+  uxtb	r3, r3
+  cmp	r3, #0xa
+  strb.w	r1, \[r2, #(?P<rel_unkn_val2>[0-9a-fx]+)\]
+  blo	#(?P<loc_4AE050>[0-9a-fx]+)
+  ldrb	r0, \[r4, #0xd\]
+  movs	r2, #1
+  cbnz	r0, #(?P<loc_4AE06C>[0-9a-fx]+)
+  strb	r2, \[r4, #0xd\]
+""",
+'re': """
+wp_mission_data_verify_chunk1:
+loc_4AE06C:
+  ldrb	r0, \[r4\]
+  subs	r0, r0, #2
+  cmp	r0, #0x63
+  bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
+  vldr	s5, \[r4, #4\]
+  vmov	r0, s5
+  cmp.w	r0, #0x40000000
+  blt	#(?P<loc_4AE12C>[0-9a-fx]+)
+  vmov	r0, s5
+  ldr	r1, \[pc, #(?P<max_speed_pos>[0-9a-fx]+)\]
+  cmp	r0, r1
+  bgt	#(?P<loc_4AE12C>[0-9a-fx]+)
+  vldr	s4, \[r4, #8\]
+  ldr	r3, \[pc, #(?P<max_speed_neg>[0-9a-fx]+)\]
+  vmov	r0, s4
+  cmp	r0, r3
+  bhi	#(?P<loc_4AE12C>[0-9a-fx]+)
+  vmov	r0, s4
+  cmp	r0, r1
+  bgt	#(?P<loc_4AE12C>[0-9a-fx]+)
+  ldrb	r0, \[r4, #0xc\]
+  cmp	r0, #(?P<max_unkn1_val>[0-9a-fx]+)
+  bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
+  ldrb	r0, \[r4, #0xe\]
+  cmp	r0, #(?P<max_unkn2_val>[0-9a-fx]+)
+  bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
+  ldrb	r0, \[r4, #0xf\]
+  cmp	r0, #2
+  bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
+  ldrb	r0, \[r4, #0x10\]
+  cmp	r0, #2
+  bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
+  ldrb	r0, \[r4, #0x11\]
+  cmp	r0, #3
+  bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
+  vldr	d0, \[r4, #0x18\]
+  vldr	d1, \[pc, #(?P<dbl_minus_pi_half>[0-9a-fx-]+)\]
+  vcmpe.f64	d0, d1
+  vmrs	apsr_nzcv, fpscr
+  blo	#(?P<loc_4AE12C>[0-9a-fx]+)
+  vldr	d1, \[pc, #(?P<dbl_pi_half>[0-9a-fx-]+)\]
+  vcmpe.f64	d0, d1
+  vmrs	apsr_nzcv, fpscr
+  bgt	#(?P<loc_4AE12C>[0-9a-fx]+)
+  vldr	d0, \[r4, #0x20\]
+  vldr	d1, \[pc, #(?P<dbl_minus_pi>[0-9a-fx-]+)\]
+  vcmpe.f64	d0, d1
+  vmrs	apsr_nzcv, fpscr
+  blo	#(?P<loc_4AE12C>[0-9a-fx]+)
+  vldr	d1, \[pc, #(?P<dbl_just_pi>[0-9a-fx-]+)\]
+  vcmpe.f64	d0, d1
+  vmrs	apsr_nzcv, fpscr
+  bgt	#(?P<loc_4AE12C>[0-9a-fx]+)
+  ldr	r1, \[pc, #(?P<min_alt_below_home_inst2>[0-9a-fx]+)\]
+  ldr	r0, \[r4, #0x28\]
+  cmp	r0, r1
+  bhi	#(?P<loc_4AE12C>[0-9a-fx]+)
+  ldr	r1, \[pc, #(?P<max_alt_above_home_inst2>[0-9a-fx]+)\]
+  cmp	r0, r1
+  bgt	#(?P<loc_4AE12C>[0-9a-fx]+)
+  ldrb.w	r0, \[r4, #0x2c\]
+  cmp	r0, #2
+  bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
+  ldrb.w	r0, \[r4, #0x2d\]
+  cmp	r0, #3
+  bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
+  vabs.f32	s0, s4
+  vcmpe.f32	s0, s5
+  vmrs	apsr_nzcv, fpscr
+  ble	#(?P<loc_4AE13E>[0-9a-fx]+)
+loc_4AE12C:
+  bl	#(?P<get_logger>[0-9a-fx]+)
+  ldr	r2, \[r0, #0xc\]
+  movs	r0, #0x28
+; The function continues
+""",
+'vars': {
+  #'wp_mission_data_verify_chunk1:':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'loc_4AE050':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'loc_4AE06C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4AE12C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4AE13E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'get_logger':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  #'rel_unkn_val1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  #'rel_unkn_val2':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  #'rel_byte_2042B3B0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'max_unkn1_val':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T},
+  'max_unkn2_val':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T},
+  'dbl_just_pi':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
+  'dbl_minus_pi':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
+  'dbl_minus_pi_half':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
+  'dbl_pi_half':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
+  'max_speed_pos':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'minValue': "1.0", 'maxValue': "1000000.0", 'defaultValue': "15.0",
+    'description': "Max speed (positive value); in meters per second [m/s]"},
+  'max_speed_neg':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'minValue': "-1.0", 'maxValue': "-1000000.0", 'defaultValue': "-15.0",
+    'description': "Max speed (negative value); in meters per second [m/s]"},
+  'max_alt_above_home_inst2':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'depend': "max_alt_above_home", 'getter': (lambda val: val)},
+  'min_alt_below_home_inst2':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'depend': "min_alt_below_home", 'getter': (lambda val: val)},
+},
+}
 
 re_general_list = [
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_WM100_V03_02_34_02,},
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk2_WM100_V03_02_34_02,},
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk3_WM100_V03_02_34_02,},
+  {'sect': ".text", 'func': re_func_wp_mission_data_verify_chunk1_WM100_V03_02_34_02,},
 ]
 
 
