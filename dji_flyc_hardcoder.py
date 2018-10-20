@@ -16,18 +16,34 @@ Exported values:
 
 og_hardcoded.flyc.max_wp_dist_to_home -
 
-  Max distance from one waypoint to home point.
+  Max distance from one waypoint to home point, in meters.
   This value is also app limited and need Android App side patch.
 
 og_hardcoded.flyc.max_alt_above_home -
 
-  Max altitude relative to home point.
+  Max altitude relative to home point, in meters.
   This value is also app limited and need Android App side patch.
 
 og_hardcoded.flyc.min_alt_below_home -
 
-  Min altitude relative to home point.
+  Min altitude relative to home point, in meters.
   This value is also app limited and need Android App side patch.
+
+og_hardcoded.flyc.max_mission_path_len -
+
+  Maximum total length of mission trace, in meters.
+
+og_hardcoded.flyc.max_speed_pos -
+
+  Maximum speed used when doing autonomous flights; in meters per second [m/s]".
+  This value should be positive - in represents the limit when calculated speed
+  vector is in positive direction.
+
+og_hardcoded.flyc.max_speed_neg -
+
+  Maximum negative speed used when doing autonomous flights; in meters
+  per second [m/s]". This value should be lower than zero, and equal to
+  max_speed_pos in its absolute value.
 
 """
 
@@ -541,6 +557,193 @@ loc_4ADF06:
 }
 
 
+re_func_wp_mission_data_verify_chunk1_P3X_V01_05_0030 = {
+'name': "wp_mission_data_verify_chunk1",
+'version': "P3X_FW_V01.05.0030",
+'re_before': """
+wp_mission_data_verify:
+  push	{r4, r5, lr}
+  ldr	r4, \[pc, #(?P<byte_20005DF8>[0-9a-fx]+)\]
+  movs	r1, #0
+  vpush	{d8}
+  sub	sp, #0xc
+  ldrb	r2, \[r0\], #7
+  strb	r2, \[r4\]
+  ldr	r2, \[r0, #-0x6\]
+  str	r2, \[r4, #(?P<rel_dword_20005DFC>[0-9a-fx]+)\]
+  ldr	r2, \[r0, #-0x2\]
+  str	r2, \[r4, #(?P<rel_dword_20005E00>[0-9a-fx]+)\]
+  ldrb	r2, \[r0, #2\]
+  strb	r2, \[r4, #(?P<rel_byte_20005E04>[0-9a-fx]+)\]
+  ldrb	r2, \[r0, #3\]
+  strb	r2, \[r4, #(?P<rel_byte_20005E05>[0-9a-fx]+)\]
+  ldrb	r2, \[r0, #4\]
+  strb	r2, \[r4, #(?P<rel_byte_20005E06>[0-9a-fx]+)\]
+  ldrb	r2, \[r0, #5\]
+  strb	r2, \[r4, #(?P<rel_byte_20005E07>[0-9a-fx]+)\]
+  ldrb	r2, \[r0, #6\]
+  strb	r2, \[r4, #(?P<rel_byte_20005E08>[0-9a-fx]+)\]
+  ldrb	r2, \[r0, #7\]
+  strb	r2, \[r4, #(?P<rel_byte_20005E09>[0-9a-fx]+)\]
+  ldr	r2, \[r0, #8\]
+  str	r2, \[sp\]
+  ldr	r2, \[r0, #0xc\]
+  str	r2, \[sp, #4\]
+  vldr	d0, \[sp\]
+  vstr	d0, \[r4, #0x18\]
+  ldr	r2, \[r0, #0x10\]
+  str	r2, \[sp\]
+  ldr	r2, \[r0, #0x14\]
+  str	r2, \[sp, #4\]
+  vldr	d0, \[sp\]
+  vstr	d0, \[r4, #0x20\]
+  ldr	r2, \[r0, #0x18\]
+  str	r2, \[r4, #(?P<rel_dword_20005E20>[0-9a-fx]+)\]
+  ldrb	r2, \[r0, #0x1c\]
+  subs	r0, r0, #7
+  strb.w	r2, \[r4, #(?P<rel_byte_20005E24>[0-9a-fx]+)\]
+loc_80643F0:
+  adds	r2, r0, r1
+  adds	r3, r4, r1
+  adds	r1, r1, #1
+  ldrb.w	r2, \[r2, #0x24\]
+  uxtb	r1, r1
+  strb.w	r2, \[r3, #(?P<rel_byte_20005E25>[0-9a-fx]+)\]
+  cmp	r1, #0xf
+  blo	#(?P<loc_80643F0>[0-9a-fx]+)
+  ldrb	r0, \[r4, #(?P<rel_byte_20005E05>[0-9a-fx]+)\]
+  movs	r5, #1
+  cbnz	r0, #(?P<loc_806440C>[0-9a-fx]+)
+  strb	r5, \[r4, #(?P<rel_byte_20005E05>[0-9a-fx]+)\]
+loc_806440C:
+""",
+'re': """
+wp_mission_data_verify_chunk1:
+  ldrb	r0, \[r4\]
+  subs	r0, r0, #2
+  cmp	r0, #0x63
+  bhs	#(?P<loc_8064478>[0-9a-fx]+)
+  ldr	r0, \[r4, #(?P<rel_dword_20005DFC>[0-9a-fx]+)\]
+  cmp.w	r0, #0x40000000 ; 2.0
+  blt	#(?P<loc_8064478>[0-9a-fx]+)
+  ldr	r1, \[pc, #(?P<max_speed_pos>[0-9a-fx]+)\]
+  cmp	r0, r1
+  bgt	#(?P<loc_8064478>[0-9a-fx]+)
+  ldr	r2, \[pc, #(?P<max_speed_neg>[0-9a-fx]+)\]
+  ldr	r0, \[r4, #(?P<rel_dword_20005E00>[0-9a-fx]+)\]
+  cmp	r0, r2
+  bhi	#(?P<loc_8064478>[0-9a-fx]+)
+  cmp	r0, r1
+  bgt	#(?P<loc_8064478>[0-9a-fx]+)
+  ldrb	r0, \[r4, #(?P<rel_byte_20005E04>[0-9a-fx]+)\]
+  cmp	r0, #5
+  bhs	#(?P<loc_8064478>[0-9a-fx]+)
+  ldrb	r0, \[r4, #(?P<rel_byte_20005E06>[0-9a-fx]+)\]
+  cmp	r0, #5
+  bhs	#(?P<loc_8064478>[0-9a-fx]+)
+  ldrb	r0, \[r4, #(?P<rel_byte_20005E07>[0-9a-fx]+)\]
+  cmp	r0, #2
+  bhs	#(?P<loc_8064478>[0-9a-fx]+)
+  ldrb	r0, \[r4, #(?P<rel_byte_20005E08>[0-9a-fx]+)\]
+  cmp	r0, #2
+  bhs	#(?P<loc_8064478>[0-9a-fx]+)
+  ldrb	r0, \[r4, #(?P<rel_byte_20005E09>[0-9a-fx]+)\]
+  cmp	r0, #2
+  bhs	#(?P<loc_8064478>[0-9a-fx]+)
+  vldr	d0, \[r4, #0x18\]
+  vldr	d1, \[pc, #(?P<dbl_minus_pi_half>[0-9a-fx-]+)\]
+  vmov	r0, r1, d0
+  vmov	r2, r3, d1
+  bl	#(?P<sub_808B480>[0-9a-fx]+)
+  blo	#(?P<loc_8064478>[0-9a-fx]+)
+  vldr	d0, \[r4, #0x18\]
+  vldr	d1, \[pc, #(?P<dbl_pi_half>[0-9a-fx-]+)\]
+  vmov	r0, r1, d0
+  vmov	r2, r3, d1
+  bl	#(?P<sub_8086F86>[0-9a-fx]+)
+; The function continues
+""",
+'vars': {
+  #'wp_mission_data_verify_chunk1:':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_8064478':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'sub_808B480':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_8086F86':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'rel_dword_20005DFC':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_dword_20005E00':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_byte_20005E04':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_byte_20005E06':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_byte_20005E07':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_byte_20005E08':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_byte_20005E09':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'dbl_minus_pi_half':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
+  'dbl_pi_half':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
+  'max_speed_pos':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'minValue': "1.0", 'maxValue': "1000000.0", 'defaultValue': "15.0",
+    'description': "Max speed (positive value); in meters per second [m/s]"},
+  'max_speed_neg':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'minValue': "-1.0", 'maxValue': "-1000000.0", 'defaultValue': "-15.0",
+    'description': "Max speed (negative value); in meters per second [m/s]"},
+},
+}
+
+re_func_wp_mission_data_verify_chunk2_P3X_V01_05_0030 = {
+'name': "wp_mission_data_verify_chunk2",
+'version': "P3X_FW_V01.05.0030",
+'re': """
+wp_mission_data_verify_chunk2:
+  vldr	d0, \[r4, #0x20\]
+  vldr	d1, \[pc, #(?P<dbl_minus_pi>[0-9a-fx-]+)\]
+  vmov	r0, r1, d0
+  vmov	r2, r3, d1
+  bl	#(?P<sub_808B480>[0-9a-fx]+)
+  blo	#(?P<loc_8064642>[0-9a-fx]+)
+  vldr	d0, \[r4, #0x20\]
+  vldr	d1, \[pc, #(?P<dbl_just_pi>[0-9a-fx-]+)\]
+  vmov	r0, r1, d0
+  vmov	r2, r3, d1
+  bl	#(?P<sub_8086F86>[0-9a-fx]+)
+  blo	#(?P<loc_8064642>[0-9a-fx]+)
+  ldr	r1, \[pc, #(?P<min_alt_below_home_inst2>[0-9a-fx]+)\]
+  ldr	r0, \[r4, #(?P<rel_dword_20005E20>[0-9a-fx]+)\]
+  cmp	r0, r1
+  bhi	#(?P<loc_8064642>[0-9a-fx]+)
+  ldr	r1, \[pc, #(?P<max_alt_above_home_inst2>[0-9a-fx]+)\]
+  cmp	r0, r1
+  bgt	#(?P<loc_8064642>[0-9a-fx]+)
+  ldrb.w	r0, \[r4, #(?P<rel_byte_20005E24>[0-9a-fx]+)\]
+  cmp	r0, #2
+  bhs	#(?P<loc_8064642>[0-9a-fx]+)
+  vldr	s0, \[r4, #8\]
+  vldr	s1, \[r4, #4\]
+  vabs.f32	s0, s0
+  vcmpe.f32	s0, s1
+  vmrs	apsr_nzcv, fpscr
+  ble	#(?P<loc_8064652>[0-9a-fx]+)
+loc_8064642:
+  adr	r0, #(?P<cstr_mission_info_data_invalid>[0-9a-fx]+)
+  bl	#(?P<flight_rec_printf_send_c0E>[0-9a-fx]+)
+  movs	r0, #0xe0
+; The function continues
+""",
+'vars': {
+  #'wp_mission_data_verify_chunk2:':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'sub_808B480':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_8086F86':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'flight_rec_printf_send_c0E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'loc_8064642':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_8064652':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'cstr_mission_info_data_invalid':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'dbl_just_pi':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
+  'dbl_minus_pi':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
+  'rel_dword_20005E20':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_byte_20005E24':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'max_alt_above_home_inst2':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'depend': "max_alt_above_home", 'getter': (lambda val: val)},
+  'min_alt_below_home_inst2':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
+    'public': "og_hardcoded.flyc", 'depend': "min_alt_below_home", 'getter': (lambda val: val)},
+},
+}
+
 re_func_wp_mission_data_verify_chunk1_WM100_V03_02_34_02 = {
 'name': "wp_mission_data_verify_chunk1",
 'version': "wm100_0306_v03.02.34.02",
@@ -607,7 +810,7 @@ loc_4AE06C:
   bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
   vldr	s5, \[r4, #4\]
   vmov	r0, s5
-  cmp.w	r0, #0x40000000
+  cmp.w	r0, #0x40000000 ; 2.0
   blt	#(?P<loc_4AE12C>[0-9a-fx]+)
   vmov	r0, s5
   ldr	r1, \[pc, #(?P<max_speed_pos>[0-9a-fx]+)\]
@@ -713,6 +916,8 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk2_WM100_V03_02_34_02,},
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk3_P3X_V01_05_0030,},
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk3_WM100_V03_02_34_02,},
+  {'sect': ".text", 'func': re_func_wp_mission_data_verify_chunk1_P3X_V01_05_0030,},
+  {'sect': ".text", 'func': re_func_wp_mission_data_verify_chunk2_P3X_V01_05_0030,},
   {'sect': ".text", 'func': re_func_wp_mission_data_verify_chunk1_WM100_V03_02_34_02,},
 ]
 
