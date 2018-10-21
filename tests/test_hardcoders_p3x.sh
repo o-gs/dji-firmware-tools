@@ -42,17 +42,13 @@ if [ -f ./dji ]; then
   exit 1
 fi
 
-function exec_mod_for_m0100 {
-  local FWMODL=$1
-  set -x
-  cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
-  ./amba_fwpak.py -vvv -x -m "${FWMODL}.bin"
-  ./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x464800:0 -p "${FWMODL}_part_sys.a9s"
-  ./amba_sys_hardcoder.py -vvv -x -e "${FWMODL}_part_sys.elf"
-
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
+function modify_json_value_inplace {
+  JSONFILE="$1"
+  VALNAME="$2"
+  VALSET="$3"
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
        $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]p3x_ambarella[.][a-z_]*_authority_level"\)$/\11\3/
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"'"${VALNAME}"'"\)$/\1'"${VALSET}"'\3/
                     # now test for a successful substitution, otherwise
                     #+  unpaired "a test" lines would be mis-handled
          t sub-yes  # branch_on_substitute (goto label :sub-yes)
@@ -63,7 +59,18 @@ function exec_mod_for_m0100 {
          :sub-yes   # a label (the goto target of the 't' branch)
                     # fall through to final auto-pattern_print (2 lines)
        }    
-     }' "${FWMODL}_part_sys.json"
+     }' "${JSONFILE}"
+}
+
+function exec_mod_for_m0100 {
+  local FWMODL=$1
+  set -x
+  cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
+  ./amba_fwpak.py -vvv -x -m "${FWMODL}.bin"
+  ./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x464800:0 -p "${FWMODL}_part_sys.a9s"
+  ./amba_sys_hardcoder.py -vvv -x -e "${FWMODL}_part_sys.elf"
+
+  modify_json_value_inplace "${FWMODL}_part_sys.json" "og_hardcoded[.]p3x_ambarella[.][a-z_]*_authority_level" "1"
 
   ./amba_sys_hardcoder.py -vvv -u -e "${FWMODL}_part_sys.elf"
   arm-none-eabi-objcopy -O binary "${FWMODL}_part_sys.elf" "${FWMODL}_part_sys.a9s"
@@ -89,23 +96,9 @@ function exec_mod_for_m0800 {
   cp "./${FWMODL}-encode_usb.elf" "./${FWMODL}-encode_usb.orig.elf"
   ./dm3xx_encode_usb_hardcoder.py -vv -x -e "${FWMODL}-encode_usb.elf"
 
-  # now modify *_m0800-encode_usb.json - we will use sed
+  # now modify the generated JSON file
 
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]p3x_dm3xx[.]startup_encrypt_check_always_pass"\)$/\11\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWMODL}-encode_usb.json"
-
+  modify_json_value_inplace "${FWMODL}-encode_usb.json" "og_hardcoded[.]p3x_dm3xx[.]startup_encrypt_check_always_pass" "1"
 
   ./dm3xx_encode_usb_hardcoder.py -vv -u -e "${FWMODL}-encode_usb.elf"
   cp -f "./${FWMODL}-encode_usb.elf" ./dji/bin/encode_usb
@@ -132,95 +125,12 @@ function exec_mod_for_m0306 {
    --section .bss2@0x17fe0000:0x30000 --section .bss3@0x37fe0000:0x30000 -p "${FWMODL}.bin"
   ./dji_flyc_hardcoder.py -vvv -x -e "${FWMODL}.elf"
 
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]min_alt_below_home"\)$/\1-800.0\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWMODL}.json"
-
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_alt_above_home"\)$/\14000.0\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWMODL}.json"
-
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_wp_dist_to_home"\)$/\16000.0\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWMODL}.json"
-
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_mission_path_len"\)$/\140000.0\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWMODL}.json"
-
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_speed_pos"\)$/\125.0\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWMODL}.json"
-
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]flyc[.]max_speed_neg"\)$/\1-25.0\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWMODL}.json"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]min_alt_below_home" "-800.0"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]max_alt_above_home" "4000.0"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]max_wp_dist_to_home" "6000.0"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]max_mission_path_len" "40000.0"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]max_speed_pos" "25.0"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]max_speed_neg" "-25.0"
 
   ./dji_flyc_hardcoder.py -vvv -u -e "${FWMODL}.elf"
   arm-none-eabi-objcopy -O binary "${FWMODL}.elf" "${FWMODL}.bin"
@@ -245,50 +155,9 @@ function exec_mod_for_m0900 {
    --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p "${FWMODL}.bin"
   ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWMODL}.elf"
 
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override"\)$/\11\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWMODL}.json"
-
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value"\)$/\10\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWMODL}.json"
-
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*"\)$/\10\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWMODL}.json"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override" "1"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value" "0"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*" "0"
 
   ./lightbridge_stm32_hardcoder.py -vvv -u -e "${FWMODL}.elf"
   arm-none-eabi-objcopy -O binary "${FWMODL}.elf" "${FWMODL}.bin"

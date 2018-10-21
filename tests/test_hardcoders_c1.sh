@@ -43,6 +43,26 @@ if [ -f ./dji ]; then
   exit 1
 fi
 
+function modify_json_value_inplace {
+  JSONFILE="$1"
+  VALNAME="$2"
+  VALSET="$3"
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
+       $!{ N        # append the next line when not on the last line
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"'"${VALNAME}"'"\)$/\1'"${VALSET}"'\3/
+                    # now test for a successful substitution, otherwise
+                    #+  unpaired "a test" lines would be mis-handled
+         t sub-yes  # branch_on_substitute (goto label :sub-yes)
+         :sub-not   # a label (not essential; here to self document)
+                    # if no substituion, print only the first line
+         P          # pattern_first_line_print
+         D          # pattern_ltrunc(line+nl)_top/cycle
+         :sub-yes   # a label (the goto target of the 't' branch)
+                    # fall through to final auto-pattern_print (2 lines)
+       }    
+     }' "${JSONFILE}"
+}
+
 function exec_mod_for_m1400 {
   local FWPKG=$1
   set -x
@@ -51,50 +71,9 @@ function exec_mod_for_m1400 {
    --section .bss2@0x3fff6000:0x50000 --section .bss3@0xdfff6000:0x10000 -p "${FWPKG}_m1400.bin"
   ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWPKG}_m1400.elf"
 
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override"\)$/\11\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWPKG}_m1400.json"
-
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value"\)$/\10\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWPKG}_m1400.json"
-
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*"\)$/\10\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWPKG}_m1400.json"
+  modify_json_value_inplace "${FWPKG}_m1400.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override" "1"
+  modify_json_value_inplace "${FWPKG}_m1400.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value" "0"
+  modify_json_value_inplace "${FWPKG}_m1400.json" "og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*" "0"
 
   ./lightbridge_stm32_hardcoder.py -vvv -u -e "${FWPKG}_m1400.elf"
   arm-none-eabi-objcopy -O binary "${FWPKG}_m1400.elf" "${FWPKG}_m1400.bin"
@@ -120,50 +99,9 @@ function exec_mod_for_m1401 {
    -p "${FWPKG}_m1401.bin"
   ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWPKG}_m1401.elf"
 
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override"\)$/\11\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWPKG}_m1401.json"
-
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value"\)$/\10\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWPKG}_m1401.json"
-
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9]\+,$/{
-       $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*"\)$/\10\3/
-                    # now test for a successful substitution, otherwise
-                    #+  unpaired "a test" lines would be mis-handled
-         t sub-yes  # branch_on_substitute (goto label :sub-yes)
-         :sub-not   # a label (not essential; here to self document)
-                    # if no substituion, print only the first line
-         P          # pattern_first_line_print
-         D          # pattern_ltrunc(line+nl)_top/cycle
-         :sub-yes   # a label (the goto target of the 't' branch)
-                    # fall through to final auto-pattern_print (2 lines)
-       }    
-     }' "${FWPKG}_m1401.json"
+  modify_json_value_inplace "${FWPKG}_m1401.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override" "1"
+  modify_json_value_inplace "${FWPKG}_m1401.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value" "0"
+  modify_json_value_inplace "${FWPKG}_m1401.json" "og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*" "0"
 
   ./lightbridge_stm32_hardcoder.py -vvv -u -e "${FWPKG}_m1401.elf"
   arm-none-eabi-objcopy -O binary "${FWPKG}_m1401.elf" "${FWPKG}_m1401.bin"
