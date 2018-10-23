@@ -95,6 +95,8 @@ class VarType(enum.Enum):
     DIRECT_LINE_OF_CODE = enum.auto()
     # Variable contains directly entered integer value
     DIRECT_INT_VALUE = enum.auto()
+    # Variable represents assembler operand
+    DIRECT_OPERAND = enum.auto()
     # Variable contains absolute address to a code chunk or function
     ABSOLUTE_ADDR_TO_CODE = enum.auto()
     # Variable contains absolute address to a global variable
