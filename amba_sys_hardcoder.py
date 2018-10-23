@@ -1082,6 +1082,31 @@ def armfw_elf_search_value_string_to_native_type(var_info, var_str):
     return var_nativ
 
 
+def get_matching_variable_from_patterns(patterns, var_type=None, var_variety=None, var_name=None, var_size=None, var_setValue=None):
+    for v_name, var_info in patterns['vars'].items():
+        if var_type is not None and var_info['type'] != var_type:
+            continue
+        if var_variety is not None and var_info['variety'] != var_variety:
+            continue
+        if var_name is not None and v_name != var_name:
+            continue
+        if var_size is not None and var_info['size'] != var_size:
+            continue
+        if var_setValue is not None:
+            if 'setValue' not in var_info:
+                # if we cannot check setValue, consider this loose match
+                # That allows values merged together from definitions with
+                # different types, as long as only one has no setValue.
+                if var_setValue >= var_info['minValue']:
+                    if var_setValue <= var_info['maxValue']:
+                        loose_matched_patts = patterns
+                continue
+            if var_setValue != var_info['setValue']:
+                continue
+        return v_name
+    return None
+
+
 def find_patterns_containing_variable(re_list, cfunc_ver=None, var_type=None, var_variety=None, var_sect=None, var_name=None, var_size=None, var_setValue=None):
     loose_matched_patts = None
     for re_item in re_list:
@@ -1090,26 +1115,8 @@ def find_patterns_containing_variable(re_list, cfunc_ver=None, var_type=None, va
         patterns = re_item['func']
         if cfunc_ver is not None and patterns['version'] != cfunc_ver:
             continue
-        for v_name, var_info in patterns['vars'].items():
-            if var_type is not None and var_info['type'] != var_type:
-                continue
-            if var_variety is not None and var_info['variety'] != var_variety:
-                continue
-            if var_name is not None and v_name != var_name:
-                continue
-            if var_size is not None and var_info['size'] != var_size:
-                continue
-            if var_setValue is not None:
-                if 'setValue' not in var_info:
-                    # if we cannot check setValue, consider this loose match
-                    # That allows values merged together from definitions with
-                    # different types, as long as only one has no setValue.
-                    if var_setValue >= var_info['minValue']:
-                        if var_setValue <= var_info['maxValue']:
-                            loose_matched_patts = patterns
-                    continue
-                if var_setValue != var_info['setValue']:
-                    continue
+        v_name = get_matching_variable_from_patterns(patterns, var_type, var_variety, var_name, var_size, var_setValue)
+        if v_name is not None:
             return patterns
     return loose_matched_patts
 
@@ -1419,7 +1426,7 @@ def armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, sect_name, pa
         search, sect_offs = armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, 65536)
         # Print progress info
         if (po.verbose > 1) and (sect_offs > sect_progress_treshold):
-            print("{:s}: Searching for {:s} ver {:s}, progress {:3d}%".format(po.elffile, search['name'], search['version'], sect_offs * 100 // len(search['section']['data'])))
+            print("{:s}: Search for {:s} ver {:s}, progress {:3d}%".format(po.elffile, search['name'], search['version'], sect_offs * 100 // len(search['section']['data'])))
             sect_progress_treshold += len(search['section']['data']) / 10
 
     if (po.verbose > 0):
@@ -1773,11 +1780,41 @@ def armfw_elf_paramvals_extract_list(po, elffh, re_list, asm_submode=None):
     # prepare list of parameter values
     pub_params_list = {}
     glob_params_list = {}
+    found_func_list = []
     for re_item in re_list:
         matches = armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, re_item['sect'], re_item['func'])
         if len(matches) == 1:
+            found_func_list.append(re_item['func'])
             pub_params_list.update(armfw_elf_match_to_public_values(po, matches[0]))
             glob_params_list.update(armfw_elf_match_to_global_values(po, matches[0], re_item['func']['name']))
+
+    # verify if we've found all the functions we should have founded
+    missed_func_list = []
+    for re_item in re_list:
+        # skip items with name identical to one of these we've found
+        if re_item['func']['name'] in [re_func['name'] for re_func in found_func_list]:
+            continue
+        # skip function variants identified by DETACHED_DATA variable
+        detached_var_found = False
+        detached_var_name = get_matching_variable_from_patterns(re_item['func'], var_type=VarType.DETACHED_DATA)
+        if detached_var_name is not None:
+            for re_func in found_func_list:
+                detached_match_name = get_matching_variable_from_patterns(re_func, var_type=VarType.DETACHED_DATA, var_name=detached_var_name)
+                if detached_match_name is not None:
+                    detached_var_found = True
+                    break
+        if detached_var_found:
+            continue
+        # add only one variant of each function
+        if re_item['func']['name'] in [re_func['name'] for re_func in missed_func_list]:
+            continue
+        missed_func_list.append(re_item['func'])
+    for re_func in missed_func_list:
+        print("{:s}: Warning: No variant of function '{:s}' was found".format(po.elffile,re_func['name']))
+    if len(missed_func_list) > 0:
+        print("{:s}: Warning: From expacted functions, {:d} were not found".format(po.elffile,len(missed_func_list)))
+    else:
+        print("{:s}: All expected functions were found".format(po.elffile))
 
     return pub_params_list, glob_params_list, elf_sections, cs, elfobj, asm_arch
 
