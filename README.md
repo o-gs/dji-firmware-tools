@@ -147,6 +147,8 @@ Optimized examples for specific firmwares:
 
 ```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x0136D0:0 --section .bss@0x17FF7700:0xC900 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x7000 --section .bss5@0x48058800:0x100 -p P3X_FW_V01.11.0030_m0400.bin```
 
+```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x00d0e00:0 --section .bss@0x1ffe0000:0x60100 --section .bss2@0x3fcc0000:0x2000 -p wm330_0306_v03.01.10.93_20160707.fw_0306.decrypted.bin```
+
 ```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x01077d0:0 --section .bss@0x1ffe0000:0x60000 --section .bss2@0x3fcc0000:0x1000 --section .bss3@0xdfbe0000:0x10000 -p wm100_0306_v03.02.43.20_20170920.pro.fw_0306.decrypted.bin```
 
 This tool supports only conversion in direction of bin-to-elf. To convert an ELF
