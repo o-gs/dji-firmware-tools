@@ -234,10 +234,10 @@ loc_80641D6:
 },
 }
 
-re_func_wp_check_input_mission_validity_WM100_V03_02_34_02 = {
-'name': "wp_check_input_mission_validity",
-'version': "wm100_0306_v03.02.34.02",
-'re': """
+re_func_wp_check_input_mission_validity_chunk1_WM330_V03_01_10_93 = {
+'name': "wp_check_input_mission_validity_chunk1",
+'version': "wm330_0306_v03.01.10.93",
+'re_before': """ ; this beginning comes from WM100 and WM220; it is different in WM330
 wp_check_input_mission_validity:
   push.w	{r2, r3, r4, r5, r6, r7, r8, lr}
   ldr	r0, \[pc, #(?P<unk_2042AD08>[0-9a-fx]+)\]
@@ -254,6 +254,9 @@ wp_check_input_mission_validity:
   add.w	r1, r6, #0x40
   bl	#(?P<sub_4BEB10>[0-9a-fx]+)
   b	#(?P<loc_4ADECE>[0-9a-fx]+)
+""",
+'re': """
+wp_check_input_mission_validity_chunk1:
 loc_4ADBE8:
   add.w	r0, r5, r5, lsl #1
   add.w	r7, r6, r0, lsl #5
@@ -293,6 +296,8 @@ loc_4ADBE8:
   blt	#(?P<loc_val_fail>[0-9a-fx]+)
   cmp	r0, #0
   bgt	#(?P<loc_val_fail>[0-9a-fx]+)
+""",
+'re_after': """ ; this comes from WM100 and WM220; it is different in WM330
   ldrsh.w	r0, \[r4, #0x1e\]
   movw	r2, #0x5dc ; 1500
   cmn	r0, r2
@@ -315,16 +320,17 @@ loc_val_fail:
 ; The function continues
 """,
 'vars': {
-  'wp_check_input_mission_validity':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
-  'get_logger':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'sub_4BEB10':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  #'wp_check_input_mission_validity':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  #'wp_check_input_mission_validity_chunk1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'get_logger':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  #'sub_4BEB10':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'loc_val_fail':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_chk_contn1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_4ADCD0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_4ADECE':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'byte_20428D08':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
-  'unk_2042AD08':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
-  'cstr_wp_data_val_fail':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
+  #'loc_chk_contn1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'loc_4ADCD0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'loc_4ADECE':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'byte_20428D08':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  #'unk_2042AD08':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  #'cstr_wp_data_val_fail':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
   'dbl_just_pi':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
   'dbl_minus_pi':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
   'dbl_minus_pi_half':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
@@ -335,7 +341,7 @@ loc_val_fail:
   'min_alt_below_home':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
     'public': "og_hardcoded.flyc", 'minValue': "-1.0", 'maxValue': "-1000000.0", 'defaultValue': "-200.0",
     'description': "Min altitude relative to home point"},
-  'rel_byte_2042B3B0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  #'rel_byte_2042B3B0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
 },
 }
 
@@ -392,13 +398,15 @@ loc_8064248:
 },
 }
 
-re_func_wp_check_input_mission_validity_chunk2_WM100_V03_02_34_02 = {
+re_func_wp_check_input_mission_validity_chunk2_WM330_V03_01_10_93 = {
 'name': "wp_check_input_mission_validity_chunk2",
-'version': "wm100_0306_v03.02.34.02",
+'version': "wm330_0306_v03.01.10.93",
+'re_before': """
+loc_ret1: ; this comes from WM100 and WM220; it is different in WM330
+  pop.w	{r2, r3, r4, r5, r6, r7, r8, pc}
+""",
 're': """
 wp_check_input_mission_validity_chunk2:
-loc_ret1:
-  pop.w	{r2, r3, r4, r5, r6, r7, r8, pc}
 loc_chk_contn2:
   cmp	r0, #1
   bne	#(?P<loc_4ADCEE>[0-9a-fx]+)
@@ -414,7 +422,7 @@ loc_4ADCEE:
   ble	#(?P<loc_4ADD0A>[0-9a-fx]+)
   bl	#(?P<get_logger>[0-9a-fx]+)
   ldr	r3, \[r0, #0xc\]
-  movs	r0, #0x28
+  movs	r0, #(?P<log_tag>[0-9a-fx]+)
   adr	r1, #(?P<cstr_wp_dist_too_large>[0-9a-fx]+)
   mov	r2, r5
   blx	r3
@@ -453,6 +461,7 @@ loc_4ADD16:
   'loc_4ADD38':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4ADE94':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'log_tag':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T},
   'cstr_wp_dist_too_large':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
   'flt_minus_twentytwo_dot_four':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT},
   'flt_positive_epsylon':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT},
@@ -507,9 +516,9 @@ loc_806429C:
 },
 }
 
-re_func_wp_check_input_mission_validity_chunk3_WM100_V03_02_34_02 = {
+re_func_wp_check_input_mission_validity_chunk3_WM330_V03_01_10_93 = {
 'name': "wp_check_input_mission_validity_chunk3",
-'version': "wm100_0306_v03.02.34.02",
+'version': "wm330_0306_v03.01.10.93",
 're': """
 wp_check_input_mission_validity_chunk3:
   adds	r5, r5, #1
@@ -522,13 +531,13 @@ loc_4ADECE:
   ldr	r4, \[pc, #(?P<unk_2042B108>[0-9a-fx]+)\]
   vmov	r0, s0
   ldr	r1, \[pc, #(?P<max_mission_path_len>[0-9a-fx]+)\]
-  vstr	s0, \[r4, #0x2b8\]
+  vstr	s0, \[r4, #(?P<rel_unk_var01>[0-9a-fx]+)\]
   cmp	r0, r1
   ble	#(?P<loc_4ADF06>[0-9a-fx]+)
   bl	#(?P<get_logger>[0-9a-fx]+)
-  vldr	s0, \[r4, #0x2b8\]
+  vldr	s0, \[r4, #(?P<rel_unk_var01>[0-9a-fx]+)\]
   ldr	r5, \[r0, #0xc\]
-  movs	r0, #0x28
+  movs	r0, #(?P<log_tag>[0-9a-fx]+)
   ldr	r1, \[pc, #(?P<cstr_total_dis_too_long>[0-9a-fx]+)\]
   vcvt.f64.f32	d0, s0
   vmov	r2, r3, d0
@@ -548,8 +557,10 @@ loc_4ADF06:
   'loc_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'get_logger':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'sub_4AD984':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'log_tag':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T},
   'cstr_total_dis_too_long':	{'type': VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, 'variety': DataVariety.CHAR, 'array': "null_term"},
   'unk_2042B108':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'rel_unk_var01':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'max_mission_path_len':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.FLOAT,
     'public': "og_hardcoded.flyc", 'minValue': "10.0", 'maxValue': "1000000.0", 'defaultValue': "30000.0",
     'description': "Max total length of mission"},
@@ -744,9 +755,9 @@ loc_8064642:
 },
 }
 
-re_func_wp_mission_data_verify_chunk1_WM100_V03_02_34_02 = {
+re_func_wp_mission_data_verify_chunk1_WM330_V03_01_10_93 = {
 'name': "wp_mission_data_verify_chunk1",
-'version': "wm100_0306_v03.02.34.02",
+'version': "wm330_0306_v03.01.10.93",
 're_before': """
 wp_mission_data_verify:
   push	{r4, r5, lr}
@@ -813,8 +824,8 @@ loc_4AE06C:
   cmp.w	r0, #0x40000000 ; 2.0
   blt	#(?P<loc_4AE12C>[0-9a-fx]+)
   vmov	r0, s5
-  ldr	r1, \[pc, #(?P<max_speed_pos>[0-9a-fx]+)\]
-  cmp	r0, r1
+  ldr	r[12], \[pc, #(?P<max_speed_pos>[0-9a-fx]+)\]
+  cmp	r0, r[12]
   bgt	#(?P<loc_4AE12C>[0-9a-fx]+)
   vldr	s4, \[r4, #8\]
   ldr	r3, \[pc, #(?P<max_speed_neg>[0-9a-fx]+)\]
@@ -822,7 +833,7 @@ loc_4AE06C:
   cmp	r0, r3
   bhi	#(?P<loc_4AE12C>[0-9a-fx]+)
   vmov	r0, s4
-  cmp	r0, r1
+  cmp	r0, r[12] ; either r1 or r2 is used
   bgt	#(?P<loc_4AE12C>[0-9a-fx]+)
   ldrb	r0, \[r4, #0xc\]
   cmp	r0, #(?P<max_unkn1_val>[0-9a-fx]+)
@@ -837,7 +848,7 @@ loc_4AE06C:
   cmp	r0, #2
   bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
   ldrb	r0, \[r4, #0x11\]
-  cmp	r0, #3
+  cmp	r0, #[32]
   bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
   vldr	d0, \[r4, #0x18\]
   vldr	d1, \[pc, #(?P<dbl_minus_pi_half>[0-9a-fx-]+)\]
@@ -857,16 +868,18 @@ loc_4AE06C:
   vcmpe.f64	d0, d1
   vmrs	apsr_nzcv, fpscr
   bgt	#(?P<loc_4AE12C>[0-9a-fx]+)
-  ldr	r1, \[pc, #(?P<min_alt_below_home_inst2>[0-9a-fx]+)\]
+  ldr	r[12], \[pc, #(?P<min_alt_below_home_inst2>[0-9a-fx]+)\]
   ldr	r0, \[r4, #0x28\]
-  cmp	r0, r1
+  cmp	r0, r[12]
   bhi	#(?P<loc_4AE12C>[0-9a-fx]+)
-  ldr	r1, \[pc, #(?P<max_alt_above_home_inst2>[0-9a-fx]+)\]
-  cmp	r0, r1
+  ldr	r[12], \[pc, #(?P<max_alt_above_home_inst2>[0-9a-fx]+)\]
+  cmp	r0, r[12]
   bgt	#(?P<loc_4AE12C>[0-9a-fx]+)
   ldrb.w	r0, \[r4, #0x2c\]
   cmp	r0, #2
   bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
+""",
+'re_after': """ ; this code matches WM100 and WM220, but not WM330
   ldrb.w	r0, \[r4, #0x2d\]
   cmp	r0, #3
   bhs	#(?P<loc_4AE12C>[0-9a-fx]+)
@@ -885,8 +898,8 @@ loc_4AE12C:
   #'loc_4AE050':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   #'loc_4AE06C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4AE12C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_4AE13E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'get_logger':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  #'loc_4AE13E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'get_logger':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   #'rel_unkn_val1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   #'rel_unkn_val2':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   #'rel_byte_2042B3B0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
@@ -911,14 +924,14 @@ loc_4AE12C:
 
 re_general_list = [
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_P3X_V01_05_0030,},
-  {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_WM100_V03_02_34_02,},
+  {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk1_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk2_P3X_V01_05_0030,},
-  {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk2_WM100_V03_02_34_02,},
+  {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk2_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk3_P3X_V01_05_0030,},
-  {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk3_WM100_V03_02_34_02,},
+  {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_chunk3_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_wp_mission_data_verify_chunk1_P3X_V01_05_0030,},
   {'sect': ".text", 'func': re_func_wp_mission_data_verify_chunk2_P3X_V01_05_0030,},
-  {'sect': ".text", 'func': re_func_wp_mission_data_verify_chunk1_WM100_V03_02_34_02,},
+  {'sect': ".text", 'func': re_func_wp_mission_data_verify_chunk1_WM330_V03_01_10_93,},
 ]
 
 
