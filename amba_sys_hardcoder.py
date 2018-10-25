@@ -1203,7 +1203,7 @@ def armfw_asm_parse_data_definition(asm_arch, asm_line):
 def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, var_defs):
     """ Converts bytes into data definition, keeping format given in pattern line.
     """
-    whole_size = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs)
+    whole_size = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs) # TODO: replace with better method; return range?
     itm_size = armfw_asm_is_data_definition(asm_arch, pat_line)
     if itm_size == 1:
         mnemonic = 'dcb'
@@ -1534,14 +1534,15 @@ def variable_info_from_value_name(glob_params_list, cfunc_name, var_name):
 
 def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_name, pat_line, inaccurate_size=False):
     # List regex parameters used in that line
-    vars_used = re.findall(r'[(][?]P<([^>]+)>[^)]+[)]', pat_line)
+    vars_used = re.findall(r'[(][?]P<([^>]+)>([^()]*([(][^()]+[)][^()]*)*)[)]', pat_line)
     if not inaccurate_size:
         instr_size = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], glob_params_list)
     else:
         instr_size = asm_arch['boundary'] # not true, but good enough if we don't care about the code being properly executable
     # Replace parameters with their values
     asm_line = pat_line
-    for var_name in vars_used:
+    for var_regex in vars_used:
+        var_name = var_regex[0]
         var_info = variable_info_from_value_name(glob_params_list, cfunc_name, var_name)
         if var_info is None:
             raise ValueError("Parameter '{:s}' is required to compose assembly patch but was not found.".format(var_name))
@@ -1558,7 +1559,7 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
             var_value = "0x{:x}".format(prop_ofs_val)
         else:
             var_value = "-0x{:x}".format(-prop_ofs_val)
-        asm_line = re.sub(r'[(][?]P<'+var_name+r'>[^)]+[)]', var_value, asm_line)
+        asm_line = re.sub(r'[(][?]P<'+var_name+r'>[^()]*([(][^()]+[)][^()]*)*[)]', var_value, asm_line)
     # Remove regex square bracket clauses
     asm_line = re.sub(r'[^\\]\[(.*)[^\\]\]', r'\1', asm_line)
     # Remove escaping from remaining square brackets
