@@ -65,7 +65,7 @@ import argparse
 import os
 import re
 import io
-import collections.abc
+import collections
 import itertools
 import struct
 import enum
@@ -877,8 +877,29 @@ def armfw_elf_section_search_get_value_variety_size(var_variety):
     return var_size
 
 
+def value_type_is_known_address(var_type):
+    """ Returns whether given type represents an address which can be referenced.
+
+    Only some addresses can be converted to global addresses by this tool; an address is known
+    if it either is global to begin with, or can be converted to global.
+    If the address is known, property 'value' field will hold the absolute address.
+    """
+    return var_type in [VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA,
+        VarType.RELATIVE_PC_ADDR_TO_CODE, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,
+        VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA, VarType.DIRECT_LINE_OF_CODE]
+
+def value_type_is_unknown_address(var_type):
+    """ Returns whether given type represents a relative address which cannot be referenced.
+
+    Only some addresses can be converted to global addresses by this tool; an address is known
+    if it either is global to begin with, or can be converted to global.
+    If the address is unknown, property 'value' field will hold offset relative to unknown base.
+    """
+    return var_type in [VarType.RELATIVE_OFFSET]
+
+
 def armfw_elf_section_search_get_value_size(asm_arch, var_info):
-    """ Get expected item size size and count of the value
+    """ Get expected item size and count of the value
     """
     if var_info['variety'] in [DataVariety.STRUCT]:
         var_size = sizeof(var_info['struct'])
@@ -888,6 +909,8 @@ def armfw_elf_section_search_get_value_size(asm_arch, var_info):
     if 'array' in var_info:
         if isinstance(var_info['array'], int):
             var_count = var_info['array']
+        elif isinstance(var_info['array'], tuple):
+            var_count = var_info['array'][1]
         else:
             # We have variable size array; just use static limit
             var_count = 2048
@@ -910,19 +933,12 @@ def prepare_simplified_asm_lines_from_pattern_list(asm_arch, glob_params_list, p
     return asm_lines, (asm_addr_curr-patterns_addr)
 
 
-def armfw_elf_compute_pattern_code_length(asm_arch, patterns_list, pattern_vars):
-    """ Returns best estimate length in bytes of given asm patterns list.
-
-    Using this function should be avoided whenever possible. It tries hard to provide correct length,
-    but it is simply impossible - not only because of parameter values influencing the length, but also
-    because there are many binary equivalents to an instruction, and they have different lengths. Every
-    compiler prepares different code for some instructions.
-    """
+def armfw_elf_create_dummy_params_list_for_patterns_with_best_match(asm_arch, patterns_list, pattern_vars):
     dummy_patt_base = 0x10000
     dummy_params_list = {}
     for var_name, var_info_orig in pattern_vars.items():
         var_info = var_info_orig.copy()
-        # Predict proper value of each variable
+        # Predict value of each variable which leads to best size match
         if 'setValue' in var_info:
             var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['setValue'])
         elif ('maxValue' in var_info) and ('minValue' in var_info) and (variety_is_float(var_info['variety']) or
@@ -947,6 +963,115 @@ def armfw_elf_compute_pattern_code_length(asm_arch, patterns_list, pattern_vars)
             # Use low enough value to make short jump in case the variable is an address
             var_info['value'] = 0x20
         dummy_params_list[var_name] = var_info
+    return dummy_params_list, dummy_patt_base
+
+
+def armfw_elf_create_dummy_params_list_for_patterns_with_short_values(asm_arch, patterns_list, pattern_vars):
+    dummy_patt_base = 0x10000
+    dummy_params_list = {}
+    for var_name, var_info_orig in pattern_vars.items():
+        var_info = var_info_orig.copy()
+        # Predict value of each variable which leads to shortest code
+        if 'minValue' in var_info:
+            var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['minValue'])
+        elif 'setValue' in var_info:
+            var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['setValue'])
+        elif 'defaultValue' in var_info:
+            var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['defaultValue'])
+        elif 'maxValue' in var_info:
+            var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['maxValue'])
+        elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_CODE) or \
+             (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA):
+            if 'line' in var_info:
+                var_info['value'] = dummy_patt_base + asm_arch['boundary'] * var_info['line']
+            else:
+                var_info['value'] = dummy_patt_base + 0x10
+        elif (var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,
+          VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA,)):
+            # Address relative to PC - must be near base offset
+            var_info['value'] = dummy_patt_base + 0x10
+        else:
+            # Use low enough value to make short jump in case the variable is an address
+            var_info['value'] = 0x10
+        dummy_params_list[var_name] = var_info
+    return dummy_params_list, dummy_patt_base
+
+
+def armfw_elf_create_dummy_params_list_for_patterns_with_long_values(asm_arch, patterns_list, pattern_vars):
+    dummy_patt_base = 0x10000
+    dummy_params_list = {}
+    for var_name, var_info_orig in pattern_vars.items():
+        var_info = var_info_orig.copy()
+        if value_type_is_known_address(var_info['type']):
+            var_size = 3
+            var_count = 1
+        elif value_type_is_unknown_address(var_info['type']):
+            var_size = 1
+            var_count = 1
+        else:
+            if var_info['variety'] in [DataVariety.STRUCT]:
+                var_size = sizeof(var_info['struct'])
+            else:
+                var_size = armfw_elf_section_search_get_value_variety_size(var_info['variety'])
+            var_count = 1
+            if 'array' in var_info:
+                if isinstance(var_info['array'], int):
+                    var_count = var_info['array']
+                elif isinstance(var_info['array'], tuple):
+                    var_count = var_info['array'][1]
+                else:
+                    # We have variable size array; just use static limit
+                    var_count = 2048
+        if var_size > 0:
+            var_limit_max = (2 << (var_size*8-1)) - 1
+        else:
+            var_limit_max = 0x7F
+        # Predict value of each variable which leads to longest code
+        if 'maxValue' in var_info:
+            prop_ofs_val = armfw_elf_search_value_string_to_native_type(var_info, var_info['maxValue'])
+        elif 'setValue' in var_info:
+            var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['setValue'])
+        elif 'defaultValue' in var_info:
+            var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['defaultValue'])
+        elif 'minValue' in var_info:
+            var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['minValue'])
+        elif value_type_is_known_address(var_info['type']):
+            if 'line' in var_info:
+                var_info['value'] = dummy_patt_base + asm_arch['boundary'] * var_info['line']
+            else:
+                var_info['value'] = dummy_patt_base + var_limit_max
+        elif value_type_is_unknown_address(var_info['type']):
+            # Relative address must be relatively small ot it might not compile
+            var_info['value'] = var_limit_max
+        else:
+            # Anything else - either single value or array
+            if var_count < 2:
+                prop_ofs_val = var_limit_max
+            else:
+                prop_ofs_val = [var_limit_max] * var_count
+            var_info['value'] = prop_ofs_val
+
+        dummy_params_list[var_name] = var_info
+    return dummy_params_list, dummy_patt_base
+
+
+def armfw_elf_compute_pattern_code_length(asm_arch, patterns_list, pattern_vars, variab_size_select):
+    """ Returns estimated length in bytes of given asm patterns list.
+
+    Using this function should be avoided whenever possible. It tries hard to provide correct length,
+    but it is simply impossible - not only because of parameter values influencing the length, but also
+    because there are many binary equivalents to an instruction, and they have different lengths. Every
+    compiler prepares different code for some instructions.
+    """
+    if variab_size_select == 'best':
+        dummy_params_list, dummy_patt_base = armfw_elf_create_dummy_params_list_for_patterns_with_best_match(asm_arch, patterns_list, pattern_vars)
+    elif variab_size_select == 'long':
+        dummy_params_list, dummy_patt_base = armfw_elf_create_dummy_params_list_for_patterns_with_long_values(asm_arch, patterns_list, pattern_vars)
+    elif variab_size_select == 'short':
+        dummy_params_list, dummy_patt_base = armfw_elf_create_dummy_params_list_for_patterns_with_short_values(asm_arch, patterns_list, pattern_vars)
+    else:
+        raise ValueError("Unknown variable size param '{:s}' - internal error".format(variab_size_select))
+
     asm_lines, _ = prepare_simplified_asm_lines_from_pattern_list(asm_arch, dummy_params_list, dummy_patt_base, patterns_list)
     # Now compile our new code line to get proper length
     #print("Compiling code for len:","; ".join(asm_lines))
@@ -1162,36 +1287,36 @@ def armfw_asm_is_data_definition(asm_arch, asm_line):
 
     The fat that it doesn 't interpret data means it will work for regex too.
     """
-    re_isdata = re.search(r'^dc([bwdq])\t(.*)$', asm_line)
+    re_isdata = re.search(r'^(dc[bwdq])\t(.*)$', asm_line)
     if re_isdata is None:
         return None
-    elif re_isdata.group(1) == 'b':
+    elif re_isdata.group(1) == 'dcb':
         single_len = 1
-    elif re_isdata.group(1) == 'w':
+    elif re_isdata.group(1) == 'dcw':
         single_len = 2
-    elif re_isdata.group(1) == 'd':
+    elif re_isdata.group(1) == 'dcd':
         single_len = 4
-    elif re_isdata.group(1) == 'q':
+    elif re_isdata.group(1) == 'dcq':
         single_len = 8
     return single_len
 
 def armfw_asm_parse_data_definition(asm_arch, asm_line):
     """ Recognizes data definition assembly line, returns data as bytes.
     """
-    re_isdata = re.search(r'^dc([bwdq])\t(.*)$', asm_line)
+    re_isdata = re.search(r'^(dc[bwdq])\t(.*)$', asm_line)
     dt_bytes = b''
     if re_isdata is None:
         return None
-    elif re_isdata.group(1) == 'b':
+    elif re_isdata.group(1) == 'dcb':
         dt_variety = DataVariety.UINT8_T
         single_len = 1
-    elif re_isdata.group(1) == 'w':
+    elif re_isdata.group(1) == 'dcw':
         dt_variety = DataVariety.UINT16_T
         single_len = 2
-    elif re_isdata.group(1) == 'd':
+    elif re_isdata.group(1) == 'dcd':
         dt_variety = DataVariety.UINT32_T
         single_len = 4
-    elif re_isdata.group(1) == 'q':
+    elif re_isdata.group(1) == 'dcq':
         dt_variety = DataVariety.UINT64_T
         single_len = 8
 
@@ -1203,7 +1328,9 @@ def armfw_asm_parse_data_definition(asm_arch, asm_line):
 def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, var_defs):
     """ Converts bytes into data definition, keeping format given in pattern line.
     """
-    whole_size = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs) # TODO: replace with better method; return range?
+    whole_size_min = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs, 'short')
+    whole_size_max = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs, 'long')
+    #TODO use both min and max size
     itm_size = armfw_asm_is_data_definition(asm_arch, pat_line)
     if itm_size == 1:
         mnemonic = 'dcb'
@@ -1213,12 +1340,12 @@ def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, v
         mnemonic = 'dcd'
     elif itm_size == 8:
         mnemonic = 'dcq'
-    itm_count = whole_size // itm_size
+    itm_count = whole_size_min // itm_size
     op_list = []
     for i in range(itm_count):
         op_list.append(int.from_bytes(bt_data[i*itm_size:(i+1)*itm_size], byteorder=asm_arch['byteorder'], signed=False))
     op_list_str = ["0x{:x}".format(itm) for itm in op_list]
-    return bt_addr, whole_size, mnemonic, ", ".join(op_list_str)
+    return bt_addr, whole_size_min, mnemonic, ", ".join(op_list_str)
 
 
 def armfw_elf_section_search_add_var(po, search, var_name, var_suffix, var_info, prop_ofs_val, prop_str, address, size):
@@ -1536,7 +1663,7 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
     # List regex parameters used in that line
     vars_used = re.findall(r'[(][?]P<([^>]+)>([^()]*([(][^()]+[)][^()]*)*)[)]', pat_line)
     if not inaccurate_size:
-        instr_size = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], glob_params_list)
+        instr_size = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], glob_params_list, 'best')
     else:
         instr_size = asm_arch['boundary'] # not true, but good enough if we don't care about the code being properly executable
     # Replace parameters with their values
@@ -1555,10 +1682,17 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
             prop_ofs_val = get_arm_offset_val_relative_to_pc_register(asm_arch, address, instr_size, var_info['value'])
         else:
             raise NotImplementedError("Unexpected variable type found, '{:s}'.".format(var_info['type'].name))
-        if (prop_ofs_val >= 0):
-            var_value = "0x{:x}".format(prop_ofs_val)
-        else:
-            var_value = "-0x{:x}".format(-prop_ofs_val)
+        if isinstance(prop_ofs_val, int):
+            prop_ofs_val = [ prop_ofs_val ]
+        var_value = None
+        if isinstance(prop_ofs_val, list):
+            var_value_list = []
+            for val in prop_ofs_val:
+                if (val >= 0):
+                    var_value_list.append("0x{:x}".format(val))
+                else:
+                    var_value_list.append("-0x{:x}".format(-val))
+            var_value = ', '.join(var_value_list)
         asm_line = re.sub(r'[(][?]P<'+var_name+r'>[^()]*([(][^()]+[)][^()]*)*[)]', var_value, asm_line)
     # Remove regex square bracket clauses
     asm_line = re.sub(r'[^\\]\[(.*)[^\\]\]', r'\1', asm_line)
