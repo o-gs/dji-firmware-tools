@@ -938,6 +938,21 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_best_match(asm_arch, pa
     dummy_params_list = {}
     for var_name, var_info_orig in pattern_vars.items():
         var_info = var_info_orig.copy()
+        if value_type_is_known_address(var_info['type']):
+            var_count = 1
+        elif value_type_is_unknown_address(var_info['type']):
+            var_count = 1
+        else:
+            var_count = 1
+            if 'array' in var_info:
+                if isinstance(var_info['array'], int):
+                    var_count = var_info['array']
+                elif isinstance(var_info['array'], tuple):
+                    var_count = var_info['array'][0] + (var_info['array'][1] - var_info['array'][0]) // 4
+                else:
+                    # We have variable size array; just use minimum length
+                    var_count = 1
+        var_limit_best = 0x20
         # Predict value of each variable which leads to best size match
         if 'setValue' in var_info:
             var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['setValue'])
@@ -949,19 +964,21 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_best_match(asm_arch, pa
             var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['defaultValue'])
         elif 'maxValue' in var_info:
             var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['maxValue'])
-        elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_CODE) or \
-             (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA):
+        elif value_type_is_known_address(var_info['type']):
             if 'line' in var_info:
                 var_info['value'] = dummy_patt_base + asm_arch['boundary'] * var_info['line']
             else:
-                var_info['value'] = dummy_patt_base + 0x20
-        elif (var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,
-          VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA,)):
-            # Address relative to PC - must be near base offset
-            var_info['value'] = dummy_patt_base + 0x20
+                var_info['value'] = dummy_patt_base + var_limit_best
+        elif value_type_is_unknown_address(var_info['type']):
+            # Relative address must be relatively small ot it might not compile
+            var_info['value'] = var_limit_best
         else:
-            # Use low enough value to make short jump in case the variable is an address
-            var_info['value'] = 0x20
+            # Anything else - either single value or array
+            if var_count < 2:
+                prop_ofs_val = var_limit_best
+            else:
+                prop_ofs_val = [var_limit_best] * var_count
+            var_info['value'] = prop_ofs_val
         dummy_params_list[var_name] = var_info
     return dummy_params_list, dummy_patt_base
 
@@ -971,6 +988,21 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_short_values(asm_arch, 
     dummy_params_list = {}
     for var_name, var_info_orig in pattern_vars.items():
         var_info = var_info_orig.copy()
+        if value_type_is_known_address(var_info['type']):
+            var_count = 1
+        elif value_type_is_unknown_address(var_info['type']):
+            var_count = 1
+        else:
+            var_count = 1
+            if 'array' in var_info:
+                if isinstance(var_info['array'], int):
+                    var_count = var_info['array']
+                elif isinstance(var_info['array'], tuple):
+                    var_count = var_info['array'][0]
+                else:
+                    # We have variable size array; just use minimum length
+                    var_count = 1
+        var_limit_min = 0x10
         # Predict value of each variable which leads to shortest code
         if 'minValue' in var_info:
             var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['minValue'])
@@ -980,19 +1012,21 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_short_values(asm_arch, 
             var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['defaultValue'])
         elif 'maxValue' in var_info:
             var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['maxValue'])
-        elif (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_CODE) or \
-             (var_info['type'] == VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA):
+        elif value_type_is_known_address(var_info['type']):
             if 'line' in var_info:
                 var_info['value'] = dummy_patt_base + asm_arch['boundary'] * var_info['line']
             else:
-                var_info['value'] = dummy_patt_base + 0x10
-        elif (var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,
-          VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA,)):
-            # Address relative to PC - must be near base offset
-            var_info['value'] = dummy_patt_base + 0x10
+                var_info['value'] = dummy_patt_base + var_limit_min
+        elif value_type_is_unknown_address(var_info['type']):
+            # Relative address must be relatively small ot it might not compile
+            var_info['value'] = var_limit_min
         else:
-            # Use low enough value to make short jump in case the variable is an address
-            var_info['value'] = 0x10
+            # Anything else - either single value or array
+            if var_count < 2:
+                prop_ofs_val = var_limit_min
+            else:
+                prop_ofs_val = [var_limit_min] * var_count
+            var_info['value'] = prop_ofs_val
         dummy_params_list[var_name] = var_info
     return dummy_params_list, dummy_patt_base
 
@@ -1325,13 +1359,27 @@ def armfw_asm_parse_data_definition(asm_arch, asm_line):
     return {'variety': dt_variety, 'value': dt_bytes }
 
 
-def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, var_defs):
+def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, var_defs, var_size_inc=0):
     """ Converts bytes into data definition, keeping format given in pattern line.
+
+    @asm_arch - Assembly architecture definition list.
+    @bt_data - bytes stroring data for the definition; its length may exceed the definiton
+    @bt_addr - address of the definition in memory
+    @pat_line - regex pattern line containing the definition
+    @var_defs - definitions of variables which may be used in the pattern
+    @var_size_inc - variable length increase when the variable is an array of varying size
     """
     whole_size_min = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs, 'short')
     whole_size_max = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs, 'long')
-    #TODO use both min and max size
     itm_size = armfw_asm_is_data_definition(asm_arch, pat_line)
+
+    if whole_size_max > whole_size_min:
+        whole_size = whole_size_min + itm_size * var_size_inc
+    else:
+        whole_size = whole_size_min
+    if whole_size > whole_size_max:
+        whole_size = whole_size_max
+
     if itm_size == 1:
         mnemonic = 'dcb'
     elif itm_size == 2:
@@ -1340,12 +1388,12 @@ def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, v
         mnemonic = 'dcd'
     elif itm_size == 8:
         mnemonic = 'dcq'
-    itm_count = whole_size_min // itm_size
+    itm_count = whole_size // itm_size
     op_list = []
     for i in range(itm_count):
         op_list.append(int.from_bytes(bt_data[i*itm_size:(i+1)*itm_size], byteorder=asm_arch['byteorder'], signed=False))
     op_list_str = ["0x{:x}".format(itm) for itm in op_list]
-    return bt_addr, whole_size_min, mnemonic, ", ".join(op_list_str)
+    return bt_addr, whole_size, whole_size_max, mnemonic, ", ".join(op_list_str)
 
 
 def armfw_elf_section_search_add_var(po, search, var_name, var_suffix, var_info, prop_ofs_val, prop_str, address, size):
@@ -1463,8 +1511,8 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
         curr_is_data = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
         if curr_is_data is not None:
             # now matching a data line; get its length
-            line_iter = [armfw_elf_data_definition_from_bytes(search['asm_arch'],search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs, curr_pattern, search['var_defs']),]
-            for (address, size, mnemonic, op_str) in line_iter:
+            line_iter = [armfw_elf_data_definition_from_bytes(search['asm_arch'],search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs, curr_pattern, search['var_defs'], 0),]
+            for (address, size, max_size, mnemonic, op_str) in line_iter:
                 instruction_str = "{:s}\t{:s}".format(mnemonic, op_str).strip()
                 if (po.verbose > 3) and (search['match_lines'] > 1):
                     print("Current vs pattern {:3d} `{:s}` `{:s}`".format(search['match_lines'],instruction_str,curr_pattern))
