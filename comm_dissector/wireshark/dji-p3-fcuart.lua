@@ -3275,6 +3275,64 @@ local function flyc_flyc_request_limit_update_dissector(pkt_length, buffer, pinf
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Request Limit Update: Payload size different than expected") end
 end
 
+-- Flight Controller - Set NoFly Zone Data - 0x3f
+
+-- Single transfer should include 100 entries. These entries can be divieded to up to 20 packets(fragments), in any way, as long as the total is correct.
+-- First fragment should have index of 0, last one should have num_entries = 0.
+-- Recognized by: P3X_FW_V01.07.0060_m0306
+
+f.flyc_set_nofly_zone_data_num_entries = ProtoField.uint8 ("dji_p3.flyc_set_nofly_zone_data_num_entries", "Number of entries", base.DEC, nil, nil, "Amount of entries transfeered it this packet; value of 0 means end of transfer.")
+f.flyc_set_nofly_zone_data_frag_num = ProtoField.uint8 ("dji_p3.flyc_set_nofly_zone_data_frag_num", "Transfer fragment index", base.DEC, nil, nil, "Fragment index, incrementing during transfer; proper values are 0-19, where 0 starts a new transfer.")
+f.flyc_set_nofly_zone_data_reserved2 = ProtoField.uint8 ("dji_p3.flyc_set_nofly_zone_data_reserved2", "Reserved2", base.HEX, nil, nil, "Should be zeros")
+
+f.flyc_nofly_zone_entry_latitude = ProtoField.uint8 ("dji_p3.flyc_nofly_zone_entry_latitude", "Latitude", base.HEX)
+f.flyc_nofly_zone_entry_longitude = ProtoField.uint8 ("dji_p3.flyc_nofly_zone_entry_longitude", "Longitude", base.HEX)
+f.flyc_nofly_zone_entry_radius = ProtoField.uint8 ("dji_p3.flyc_nofly_zone_entry_radius", "Radius", base.HEX)
+f.flyc_nofly_zone_entry_contry_code = ProtoField.uint8 ("dji_p3.flyc_nofly_zone_entry_contry_code", "Contry Code", base.HEX)
+f.flyc_nofly_zone_entry_type = ProtoField.uint8 ("dji_p3.flyc_nofly_zone_entry_type", "Type", base.HEX)
+f.flyc_nofly_zone_entry_id = ProtoField.uint8 ("dji_p3.flyc_nofly_zone_entry_id", "Id", base.HEX)
+
+local function flyc_set_nofly_zone_data_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    local num_entries = payload(offset,1):le_uint()
+    subtree:add_le (f.flyc_set_nofly_zone_data_num_entries, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_set_nofly_zone_data_frag_num, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.flyc_set_nofly_zone_data_reserved2, payload(offset, 3))
+    offset = offset + 3
+
+
+    while payload:len() >= offset+17 do
+        subtree:add_le (f.flyc_nofly_zone_entry_latitude, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.flyc_nofly_zone_entry_longitude, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.flyc_nofly_zone_entry_radius, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.flyc_nofly_zone_entry_contry_code, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.flyc_nofly_zone_entry_type, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_nofly_zone_entry_id, payload(offset, 4))
+        offset = offset + 4
+
+   end
+
+    if (offset ~= 5 + num_entries*17) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set NoFly Zone Data: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set NoFly Zone Data: Payload size different than expected") end
+end
+
 -- Flight Controller - FlyC Unlimit State - 0x42
 
 f.flyc_flyc_unlimit_state_is_in_unlimit_area = ProtoField.uint8 ("dji_p3.flyc_flyc_unlimit_state_is_in_unlimit_area", "Is In Unlimit Area", base.HEX)
@@ -6181,6 +6239,7 @@ local FLYC_UART_CMD_DISSECT = {
     [0x32] = flyc_flyc_deform_status_dissector,
     [0x2a] = flyc_function_control_dissector,
     [0x3e] = flyc_flyc_request_limit_update_dissector,
+    [0x3f] = flyc_set_nofly_zone_data_dissector,
     [0x42] = flyc_flyc_unlimit_state_dissector,
     [0x43] = flyc_osd_general_dissector,
     [0x44] = flyc_osd_home_point_dissector,
