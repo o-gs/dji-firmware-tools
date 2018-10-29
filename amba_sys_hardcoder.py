@@ -838,6 +838,7 @@ def armfw_elf_section_search_varlen_point_rewind(search):
     """
     for varlen in reversed(search['varlen_points']):
         if varlen['varlen_delta'] <= 0:
+            search['varlen_points'].pop()
             continue
         search['var_vals'] = varlen['var_vals'].copy()
         search['match_address'] = varlen['match_address'] # int value
@@ -1502,6 +1503,8 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
                 prop_ofs_val = int.from_bytes(var_data[var_offs:var_offs+4], byteorder=search['asm_arch']['byteorder'], signed=False)
             else:
                 raise ValueError("Address to uninitialized data found.")
+        elif var_info['type'] in (VarType.DIRECT_OPERAND,):
+            prop_ofs_val = var_val
         else:
             raise NotImplementedError("Unexpected variable type found.")
 
