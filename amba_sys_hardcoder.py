@@ -56,7 +56,7 @@ og_hardcoded.p3x_ambarella.vid_setting_bitrates_* -
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -780,10 +780,16 @@ def armfw_elf_section_search_init(asm_arch, section, patterns):
     search['match_address'] = 0
     # Binary size of each matched regex line
     search['re_size'] = []
+    # Amount of lines already matched (aka current line)
     search['match_lines'] = 0
     search['best_match_address'] = 0
     search['best_match_lines'] = 0
+    # List of datasets for full matches
     search['full_matches'] = []
+    # Variant of the current variable length statement
+    search['varlen_inc'] = 0
+    # List of points where variable length lines were found
+    search['varlen_points'] = []
     return search
 
 def armfw_elf_section_search_reset(search):
@@ -796,8 +802,50 @@ def armfw_elf_section_search_reset(search):
     search['match_address'] = 0
     search['re_size'] = []
     search['match_lines'] = 0
+    search['varlen_inc'] = 0
+    search['varlen_points'] = []
     return search
 
+
+def armfw_elf_section_search_varlen_point_mark(search, varlen_delta):
+    """ Add or update variable length point in given search results.
+    """
+    # do not change search['varlen_inc'], only the one which will be used if matching current one will fail
+    for varlen in search['varlen_points']:
+        if varlen['match_address'] != search['match_address']:
+            continue
+        if varlen['match_lines'] != search['match_lines']:
+            continue
+        if sum(varlen['re_size']) != sum(search['re_size']):
+            continue
+        # found pre-existing varlen point
+        varlen['varlen_delta'] = varlen_delta
+        if varlen_delta > 0:
+            varlen['varlen_inc'] += 1
+        return search
+    varlen = {}
+    varlen['var_vals'] = search['var_vals'].copy()
+    varlen['match_address'] = search['match_address'] # int value
+    varlen['re_size'] = search['re_size'].copy()
+    varlen['match_lines'] = search['match_lines'] # int value
+    varlen['varlen_inc'] = 1 # 0 is already being tested when this is added
+    varlen['varlen_delta'] = varlen_delta
+    search['varlen_points'].append(varlen)
+    return search
+
+def armfw_elf_section_search_varlen_point_rewind(search):
+    """ Rewinds the search to last varlen entry which may be increased.
+    """
+    for varlen in reversed(search['varlen_points']):
+        if varlen['varlen_delta'] <= 0:
+            continue
+        search['var_vals'] = varlen['var_vals'].copy()
+        search['match_address'] = varlen['match_address'] # int value
+        search['re_size'] = varlen['re_size'].copy()
+        search['match_lines'] = varlen['match_lines'] # int value
+        search['varlen_inc'] = varlen['varlen_inc']
+        return True
+    return False
 
 def armfw_elf_section_search_progress(search, match_address, match_line_size):
     """ Update search data after matching next line suceeded.
@@ -806,6 +854,7 @@ def armfw_elf_section_search_progress(search, match_address, match_line_size):
     if search['match_lines'] == 1:
         search['match_address'] = match_address
         search['re_size'] = []
+    search['varlen_inc'] = 0
     search['re_size'].append(match_line_size)
     if search['match_lines'] == len(search['re']):
         search['full_matches'].append({'address': search['match_address'], 're': search['re'], 're_size': search['re_size'], 'vars': search['var_vals']})
@@ -1431,10 +1480,17 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
     """
     for var_name, var_val in re_code.groupdict().items():
         var_info = search['var_defs'][var_name]
+        # Get expected length of the value
+        prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
+
         # Get direct int value or offset to value
-        if var_info['type'] in (VarType.DIRECT_INT_VALUE, VarType.RELATIVE_OFFSET,):
-            prop_ofs_val = int(var_val, 0)
-        elif var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA,):
+        if var_info['type'] in (VarType.DIRECT_INT_VALUE,):
+            # for direct values, count is used
+            if prop_count <= 1:
+                prop_ofs_val = int(var_val, 0)
+            else:
+                prop_ofs_val = [int(sing_var.strip(),0) for sing_var in var_val.split(',')]
+        elif var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_OFFSET,):
             prop_ofs_val = int(var_val, 0)
         elif var_info['type'] in (VarType.RELATIVE_PC_ADDR_TO_CODE, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,):
             prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
@@ -1449,12 +1505,13 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
         else:
             raise NotImplementedError("Unexpected variable type found.")
 
-        # Get expected length of the value
-        prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
-
         # Either convert the direct value to bytes, or get bytes from offset
         if (var_info['type'] == VarType.DIRECT_INT_VALUE):
-            prop_bytes = (prop_ofs_val).to_bytes(prop_size*prop_count, byteorder=search['asm_arch']['byteorder'])
+            if not isinstance(prop_ofs_val, list):
+                prop_ofs_val = [prop_ofs_val]
+            prop_bytes = b""
+            for prop_var in prop_ofs_val:
+                prop_bytes += (prop_var).to_bytes(prop_size, byteorder=search['asm_arch']['byteorder'])
         elif (var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,
           VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA,)):
             var_sect, var_offs = get_section_and_offset_from_address(search['asm_arch'], elf_sections, prop_ofs_val)
@@ -1472,10 +1529,16 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
             if not armfw_elf_section_search_add_var(po, search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
                 return False
         else: # array of strings
-            for i in range(len(prop_str)):
-                prop_sstr = prop_str[i]
-                if not armfw_elf_section_search_add_var(po, search, var_name, "_{:02d}".format(i), var_info, prop_ofs_val + i*prop_size, prop_sstr, address, size):
-                    return False
+            if var_info['type'] in (VarType.DIRECT_INT_VALUE,):
+                for i in range(len(prop_str)):
+                    prop_sstr = prop_str[i]
+                    if not armfw_elf_section_search_add_var(po, search, var_name, "_{:02d}".format(i), var_info, prop_ofs_val[i], prop_sstr, address, size):
+                        return False
+            else:
+                for i in range(len(prop_str)):
+                    prop_sstr = prop_str[i]
+                    if not armfw_elf_section_search_add_var(po, search, var_name, "_{:02d}".format(i), var_info, prop_ofs_val + i*prop_size, prop_sstr, address, size):
+                        return False
 
     # Now get variables associated to line of code, not anything within the code
     for var_name, var_info in search['var_defs'].items():
@@ -1511,8 +1574,10 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
         curr_is_data = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
         if curr_is_data is not None:
             # now matching a data line; get its length
-            line_iter = [armfw_elf_data_definition_from_bytes(search['asm_arch'],search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs, curr_pattern, search['var_defs'], 0),]
+            line_iter = [armfw_elf_data_definition_from_bytes(search['asm_arch'],search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs, curr_pattern, search['var_defs'], search['varlen_inc']),]
             for (address, size, max_size, mnemonic, op_str) in line_iter:
+                if size < max_size or search['varlen_inc'] > 0:
+                    search = armfw_elf_section_search_varlen_point_mark(search, max_size - size)
                 instruction_str = "{:s}\t{:s}".format(mnemonic, op_str).strip()
                 if (po.verbose > 3) and (search['match_lines'] > 1):
                     print("Current vs pattern {:3d} `{:s}` `{:s}`".format(search['match_lines'],instruction_str,curr_pattern))
@@ -1535,10 +1600,13 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                     curr_is_data = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
                     if curr_is_data is not None: break
                 else:
-                    # Breaking the loop is expensive; do it only if we had more than one line matched, to search for overlapping areas
-                    if search['match_lines'] > 0: # this really means > 1 because the value of 1 (fast reset) was handled before
-                        sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
-                        search = armfw_elf_section_search_reset(search)
+                    # Breaking the loop is only expensive for ASM code; for data, we don't really care that much
+                    if search['match_lines'] > 0:
+                        if armfw_elf_section_search_varlen_point_rewind(search):
+                            sect_offs = search['match_address'] - search['section']['addr'] + sum(search['re_size'])
+                        else:
+                            sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
+                            search = armfw_elf_section_search_reset(search)
                         break
                     else: # search['match_lines'] == 0
                         sect_offs += size
@@ -1550,7 +1618,7 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                     print("Current vs pattern {:3d} `{:s}` `{:s}`".format(search['match_lines'],instruction_str,curr_pattern))
                 re_code = re.search(curr_pattern, instruction_str)
                 # If matching failed after exactly one line, get back to checking first line without resetting offset
-                # This is a major perforance optimization
+                # This is a major perforance optimization - fast reset for no match at first line
                 if re_code is None and search['match_lines'] == 1:
                     search = armfw_elf_section_search_reset(search)
                     curr_pattern = armfw_elf_section_search_get_pattern(search)
@@ -1577,16 +1645,22 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                 else:
                     # Breaking the loop is expensive; do it only if we had more than one line matched, to search for overlapping areas
                     if search['match_lines'] > 0: # this really means > 1 because the value of 1 (fast reset) was handled before
-                        sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
-                        search = armfw_elf_section_search_reset(search)
+                        if armfw_elf_section_search_varlen_point_rewind(search):
+                            sect_offs = search['match_address'] - search['section']['addr'] + sum(search['re_size'])
+                        else:
+                            sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
+                            search = armfw_elf_section_search_reset(search)
                         break
                     else: # search['match_lines'] == 0
                         sect_offs += size
             else: # for loop finished by inability to decode next instruction
                 # We know that curr_is_data is None - otherwise we'd break the loop; so since we encoured
                 # invalid instruction, we are sure that the current matching failed and we should reset.
-                sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
-                search = armfw_elf_section_search_reset(search)
+                if armfw_elf_section_search_varlen_point_rewind(search):
+                    sect_offs = search['match_address'] - search['section']['addr'] + sum(search['re_size'])
+                else:
+                    sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
+                    search = armfw_elf_section_search_reset(search)
     return (search, sect_offs)
 
 
