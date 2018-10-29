@@ -935,15 +935,15 @@ tcx_config_power_zone:
 loc_label01:
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #4
-  beq	#(?P<loc_label02>[0-9a-fx]+)
+  beq	#(?P<loc_board_ad4_ce>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #5
   beq	#(?P<loc_label03>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #6
-  beq	#(?P<loc_label05>[0-9a-fx]+)
+  beq	#(?P<loc_board_ar6_ce>[0-9a-fx]+)
   b	#(?P<loc_label07>[0-9a-fx]+)
-loc_label02:
+loc_board_ad4_ce:
   movs	r2, #0
   movs	r1, #(?P<board_ad4_attenuation_tx1_ce>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
@@ -961,7 +961,7 @@ loc_label03:
 loc_board_ad_set_tx2a:
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   b	#(?P<loc_label06>[0-9a-fx]+)
-loc_label05:
+loc_board_ar6_ce:
   movs	r2, #0
   movs	r1, #(?P<board_ar6_attenuation_tx1_ce>[0-9a-fx]+)
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
@@ -977,6 +977,7 @@ loc_label07:
   beq	#(?P<loc_board_ar7>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #2
+  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){1,64})
   bne	#(?P<loc_label_ret1>[0-9a-fx]+)
 ; Set attenuation values for board AD2 in CE zone
   movs	r2, #0
@@ -1039,10 +1040,8 @@ loc_label13:
 loc_board_ad_set_tx2b:
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
 loc_label15:
-  pop.w	{r4, lr}
-  b	#(?P<loc_j_ad936x_reg_sync_write>[0-9a-fx]+)
-loc_label_ret2:
-  b	#(?P<loc_label_ret1>[0-9a-fx]+)
+  ; in wm330_0900_v03.01.00.01_20160422.fw_0900, the below is just: pop.w	{r4, lr}
+  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,64})
 loc_j_ad936x_reg_sync_write:
   b.w	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
 loc_label18:
@@ -1061,28 +1060,31 @@ loc_label_ret1:
 'vars': {
   'tcx_config_power_zone':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ad4_ce':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label03':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_board_ad_set_tx2a':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label05':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ar6_ce':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label06':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label07':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_board_ar7':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label09':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label10':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label11':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label12':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label13':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_board_ad_set_tx2b':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label15':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label_ret2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label17':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_j_ad936x_reg_sync_write':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label10':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label12':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ad_set_tx2b':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label18':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_board_ar_set_tx2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label15':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'get_board_version':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'ad936x_reg_sync_write':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'unk_var01':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'unk_var02':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,64)},
+  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,64)},
   'board_ad4_attenuation_tx1_ce':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "50",
     'description': "Transceiver attenuation value for board type 4 with Analog Devices chip, change by 1 means 0.25 dBm"},
@@ -1132,20 +1134,18 @@ loc_label_ret1:
   'board_ar6_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "10",
     'description': "Transceiver attenuation value for board type 6 with Artosyn chip, change by 1 means 1 dBm"},
-  'board_ar7_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "2",
-    'description': "Transceiver attenuation value for board type 7 with Artosyn chip, change by 1 means 1 dBm"},
-  'board_ar7_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "2",
-    'description': "Transceiver attenuation value for board type 7 with Artosyn chip, change by 1 means 1 dBm"},
   'board_ad2_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "4",
     'description': "Transceiver attenuation value for board type 2 with Analog Devices chip, change by 1 means 0.25 dBm"},
   'board_ad2_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'defaultValue': "5",
     'description': "Transceiver attenuation value for board type 2 with Analog Devices chip, change by 1 means 0.25 dBm"},
-  'unk_var01':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
-  'unk_var02':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'board_ar7_attenuation_tx1_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "2",
+    'description': "Transceiver attenuation value for board type 7 with Artosyn chip, change by 1 means 1 dBm"},
+  'board_ar7_attenuation_tx2_fcc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "63", 'defaultValue': "2",
+    'description': "Transceiver attenuation value for board type 7 with Artosyn chip, change by 1 means 1 dBm"},
 },
 }
 
@@ -1176,15 +1176,15 @@ tcx_config_power_zone:
 loc_label01:
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #4
-  beq	#(?P<loc_label02>[0-9a-fx]+)
+  beq	#(?P<loc_board_ad4_ce>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #5
   beq	#(?P<loc_label03>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #6
-  beq	#(?P<loc_label05>[0-9a-fx]+)
+  beq	#(?P<loc_board_ar6_ce>[0-9a-fx]+)
   b	#(?P<loc_label07>[0-9a-fx]+)
-loc_label02:
+loc_board_ad4_ce:
   movs	r2, #0
   movs	r1, #(?P<board_ad4_attenuation_tx1_ce>[0-9a-fx]+)
   movs	r0, #0x73 ; AD9363_REG_TX1_ATTEN_0
@@ -1202,7 +1202,7 @@ loc_label03:
 loc_board_ad_set_tx2a:
   movs	r0, #0x75 ; AD9363_REG_TX2_ATTEN_0
   b	#(?P<loc_label06>[0-9a-fx]+)
-loc_label05:
+loc_board_ar6_ce:
   movs	r2, #0
   movs	r1, #(?P<board_ar6_attenuation_tx1_ce>[0-9a-fx]+)
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
@@ -1300,10 +1300,10 @@ loc_label_ret1:
 'vars': {
   'tcx_config_power_zone':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ad4_ce':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label03':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_board_ad_set_tx2a':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label05':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_board_ar6_ce':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label06':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label07':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_board_ar7':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
