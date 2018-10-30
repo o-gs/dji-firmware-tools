@@ -1597,6 +1597,7 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                         if (po.verbose > 2):
                             armfw_elf_section_search_print_unused_vars(search)
                         sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
+                        search = armfw_elf_section_search_reset(search)
                         break
                     curr_pattern = armfw_elf_section_search_get_pattern(search)
                     sect_offs += size
@@ -1640,6 +1641,7 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                         if (po.verbose > 2):
                             armfw_elf_section_search_print_unused_vars(search)
                         sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
+                        search = armfw_elf_section_search_reset(search)
                         break
                     curr_pattern = armfw_elf_section_search_get_pattern(search)
                     sect_offs += size
