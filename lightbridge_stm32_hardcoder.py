@@ -3933,51 +3933,53 @@ loc_label_ret1:
 }
 
 
-re_func_init_fpga_config_C1_V01_06 = {
+re_func_init_fpga_config_C1_V01_05_m1400 = {
 'name': "init_fpga_config",
-'version': "C1_FW_V01.06",
+'version': "C1_FW_V01.05-m1400",
 # This pattern does not define anything meaningful.
 # It is here only to keep init_fpga_config defined for C1_FW versions.
 're': """
 init_fpga_config:
   push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,12}), lr}
   movs	r6, #0
-  mov	r5, r6
+  ;mov	r5, r6
+  dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){1,8})
   bl	#(?P<get_board_version>[0-9a-fx]+)
-  cbz	r0, #(?P<loc_15B9C>[0-9a-fx]+)
-  bl	#(?P<get_board_version>[0-9a-fx]+)
-  cmp	r0, #1
-  bne	#(?P<loc_15BBA>[0-9a-fx]+)
-loc_15B9C:
+  ; in C1_FW_V01.06 the wildcard is for 4 lines
+  ;cbz	r0, #(?P<loc_15836>[0-9a-fx]+)
+  ;bl	#(?P<get_board_version>[0-9a-fx]+)
+  ;cmp	r0, #1
+  ;bne	#(?P<loc_15BBA>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){1,8})
+loc_15836:
   movs	r0, #0xa
   bl	#(?P<sub_15D96>[0-9a-fx]+)
-  ldr	r4, \[pc, #0x20c\]
-  ldr	r0, \[r4, #0x3c\]
+  ldr	(r4|r0), \[pc, #(?P<unk_var01>[0-9a-fx]+)\]
+  ldr	r0, \[(r4|r0), #(?P<unk_var02>[0-9a-fx]+)\]
   orr	r0, r0, #0x800000
-  str	r0, \[r4, #0x3c\]
+  str	r0, \[r4, #(?P<unk_var02>[0-9a-fx]+)\]
   movs	r0, #1
   bl	#(?P<sub_15D96>[0-9a-fx]+)
-  ldr	r0, \[r4, #0x38\]
+  ldr	r0, \[r4, #(?P<unk_var03>[0-9a-fx]+)\]
   orr	r0, r0, #0x800000
-  str	r0, \[r4, #0x38\]
+  str	r0, \[r4, #(?P<unk_var03>[0-9a-fx]+)\]
 loc_15BBA:
-  ldr.w	sl, \[pc, #(?P<ofdm_init_list_2>[0-9a-fx]+)\]
-  movs	r4, #0
-  ldr.w	r8, \[pc, #(?P<ofdm_init_list_1>[0-9a-fx]+)\]
-  movw	sb, #0x91c
-  movw	r7, #0x313c
-  addw	fp, sl, #0x91c
+  ldr.w	(sl|r8), \[pc, #(?P<ofdm_init_list_2>[0-9a-fx]+)\]
+  ; in C1_FW_V01.06 the wildcard is for 4 lines
+  ;movs	r4, #0
+  ;ldr.w	r8, \[pc, #(?P<ofdm_init_list_1>[0-9a-fx]+)\]
+  ;movw	sb, #0x91c
+  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){2,8})
+  ; in earlier versions, they tend to switch order
+  movw	(r7|sb), #(0x313c|0x91c)
+  (addw|add.w)	(fp|sl), (sl|r8), (r7|#0x91c)
 loc_15BD0:
   bl	#(?P<WDT_Feed_cond>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #3
   beq	#(?P<loc_15BEC>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
-  cbz	r0, #0x15bf6
-  bl	#(?P<get_board_version>[0-9a-fx]+)
-  cmp	r0, #1
-  beq	#(?P<loc_15C00>[0-9a-fx]+)
-  b	#(?P<loc_15C10>[0-9a-fx]+)
+  cbz	r0, #(?P<loc_15BF6>[0-9a-fx]+)
 """,
 'vars': {
   'init_fpga_config':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
@@ -3986,12 +3988,81 @@ loc_15BD0:
   'WDT_Feed_cond':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'ofdm_init_list_1':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'ofdm_init_list_2':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,8)},
+  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,8)},
+  'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,8)},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
-  'loc_15B9C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_15BBA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'unk_var01':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'unk_var02':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'unk_var03':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'loc_15BF6':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'loc_15BBA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_15BEC':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_15C00':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_15C10':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+},
+}
+
+re_func_init_fpga_config_C1_V01_05_m1401 = {
+'name': "init_fpga_config",
+'version': "C1_FW_V01.05-m1401",
+# This pattern does not define anything meaningful.
+# It is here only to keep init_fpga_config defined for C1_FW versions.
+'re': """
+init_fpga_config:
+  push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,12}), lr}
+  mov[.]w	r8, #0
+  movs	r7, #0
+  movs	r5, #0
+  movs	r6, #0
+  movs	r4, #0
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){2,8})
+loc_15836:
+  movs	r0, #0xa
+  bl	#(?P<sub_15D96>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<unk_var01>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<unk_var02>[0-9a-fx]+)\]
+  orr	r1, r0, #0x400000
+  ldr	r0, \[pc, #(?P<unk_var01>[0-9a-fx]+)\]
+  str	r1, \[r0, #(?P<unk_var02>[0-9a-fx]+)\]
+  movs	r0, #1
+  bl	#(?P<sub_15D96>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<unk_var01>[0-9a-fx]+)\]
+  subs	r0, #0x80
+  ldr	r0, \[r0, #(?P<unk_var03>[0-9a-fx]+)\]
+  orr	r1, r0, #0x4000000
+  ldr	r0, \[pc, #(?P<unk_var01>[0-9a-fx]+)\]
+  subs	r0, #0x80
+  str	r1, \[r0, #(?P<unk_var03>[0-9a-fx]+)\]
+  movs	r7, #0
+  b	#(?P<loc_CF74>[0-9a-fx]+)
+  movs	r4, #0
+  b	#(?P<loc_CE72>[0-9a-fx]+)
+  bl	#(?P<WDT_Feed_cond>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #1
+  beq	#(?P<loc_CE3E>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #3
+  bne	#(?P<loc_CE50>[0-9a-fx]+)
+  movw	r0, #0x313c
+  cmp	r4, r0
+""",
+'vars': {
+  'init_fpga_config':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'get_board_version':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_15D96':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'WDT_Feed_cond':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,8)},
+  'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'unk_var01':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'unk_var02':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'unk_var03':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
+  'loc_CF74':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_CE72':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_CE3E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_CE50':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
 },
 }
 
@@ -4759,7 +4830,8 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_constatt,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_original,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_constatt,},
-  {'sect': ".text", 'func': re_func_init_fpga_config_C1_V01_06,},
+  {'sect': ".text", 'func': re_func_init_fpga_config_C1_V01_05_m1400,},
+  {'sect': ".text", 'func': re_func_init_fpga_config_C1_V01_05_m1401,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone_P3X_V01_08,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone_P3X_V01_11,},
   {'sect': ".text", 'func': re_func_tcx_config_update1_P3X_V01_05,},
@@ -4776,6 +4848,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_init_fpga_config_P3X_V01_07,},
   {'sect': ".text", 'func': re_func_init_fpga_config_P3X_V01_08,},
 ]
+
 
 def armfw_elf_lbstm32_list(po, elffh):
     params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
