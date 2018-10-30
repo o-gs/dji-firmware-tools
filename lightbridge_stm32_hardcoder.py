@@ -977,8 +977,9 @@ loc_label07:
   beq	#(?P<loc_board_ar7>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #2
+  ; in P3X_FW_V01.08, wildcard data replaces one line:
+  ;bne	#(?P<loc_label_ret1>[0-9a-fx]+)
   dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){1,64})
-  bne	#(?P<loc_label_ret1>[0-9a-fx]+)
 ; Set attenuation values for board AD2 in CE zone
   movs	r2, #0
   movs	r1, #(?P<board_ad2_attenuation_tx1_ce>[0-9a-fx]+)
@@ -3932,6 +3933,68 @@ loc_label_ret1:
 }
 
 
+re_func_init_fpga_config_C1_V01_06 = {
+'name': "init_fpga_config",
+'version': "C1_FW_V01.06",
+# This pattern does not define anything meaningful.
+# It is here only to keep init_fpga_config defined for C1_FW versions.
+'re': """
+init_fpga_config:
+  push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,12}), lr}
+  movs	r6, #0
+  mov	r5, r6
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cbz	r0, #(?P<loc_15B9C>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #1
+  bne	#(?P<loc_15BBA>[0-9a-fx]+)
+loc_15B9C:
+  movs	r0, #0xa
+  bl	#(?P<sub_15D96>[0-9a-fx]+)
+  ldr	r4, \[pc, #0x20c\]
+  ldr	r0, \[r4, #0x3c\]
+  orr	r0, r0, #0x800000
+  str	r0, \[r4, #0x3c\]
+  movs	r0, #1
+  bl	#(?P<sub_15D96>[0-9a-fx]+)
+  ldr	r0, \[r4, #0x38\]
+  orr	r0, r0, #0x800000
+  str	r0, \[r4, #0x38\]
+loc_15BBA:
+  ldr.w	sl, \[pc, #(?P<ofdm_init_list_2>[0-9a-fx]+)\]
+  movs	r4, #0
+  ldr.w	r8, \[pc, #(?P<ofdm_init_list_1>[0-9a-fx]+)\]
+  movw	sb, #0x91c
+  movw	r7, #0x313c
+  addw	fp, sl, #0x91c
+loc_15BD0:
+  bl	#(?P<WDT_Feed_cond>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #3
+  beq	#(?P<loc_15BEC>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cbz	r0, #0x15bf6
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #1
+  beq	#(?P<loc_15C00>[0-9a-fx]+)
+  b	#(?P<loc_15C10>[0-9a-fx]+)
+""",
+'vars': {
+  'init_fpga_config':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'get_board_version':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_15D96':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'WDT_Feed_cond':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'ofdm_init_list_1':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'ofdm_init_list_2':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'loc_15B9C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_15BBA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_15BEC':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_15C00':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_15C10':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+},
+}
+
 re_func_init_fpga_config_P3X_V01_07 = {
 'name': "init_fpga_config",
 'version': "P3X_FW_V01.07",
@@ -4696,6 +4759,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1400_constatt,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_original,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_constatt,},
+  {'sect': ".text", 'func': re_func_init_fpga_config_C1_V01_06,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone_P3X_V01_08,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone_P3X_V01_11,},
   {'sect': ".text", 'func': re_func_tcx_config_update1_P3X_V01_05,},
@@ -4712,7 +4776,6 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_init_fpga_config_P3X_V01_07,},
   {'sect': ".text", 'func': re_func_init_fpga_config_P3X_V01_08,},
 ]
-
 
 def armfw_elf_lbstm32_list(po, elffh):
     params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
