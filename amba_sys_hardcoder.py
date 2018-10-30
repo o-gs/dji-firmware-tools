@@ -2067,17 +2067,16 @@ def armfw_elf_paramvals_extract_list(po, elffh, re_list, asm_submode=None):
                     break
         if detached_var_found:
             continue
-        # skip items which name is within 'alt_name' of these we've found
+        # skip items which have 'alt_name' pointing to a function we've found
         alt_name_found = False
-        for re_func in found_func_list:
-            if 'alt_name' not in re_func:
-                continue
-            for re_alt_name in re_func['alt_name'].split(','):
-                if re.fullmatch(re_alt_name, re_item['func']['name']):
-                    alt_name_found = True
+        if 'alt_name' in re_item['func']:
+            for re_alt_name in re_item['func']['alt_name'].split(','):
+                for re_func in found_func_list:
+                    if re.fullmatch(re_alt_name, re_func['name']):
+                        alt_name_found = True
+                        break
+                if alt_name_found:
                     break
-            if alt_name_found:
-                break
         if alt_name_found:
             continue
         # add only one variant of each function
