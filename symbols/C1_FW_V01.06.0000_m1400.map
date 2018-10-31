@@ -71,7 +71,7 @@
  0001:0000CCD0       cmd_exec_set09_cmd05
  0001:0000CD0A       cmd_exec_set09_cmd04
  0001:0000CD44       dbg_printf
- 0001:0000CD46       packet_prepare
+ 0001:0000CD46       packet_prepare_from
  0001:0000CE94       cmd_exec_set09_cmd00
  0001:0000CF8A       cmd_exec_set06_cmd41
  0001:0000CFA4       cmd_exec_set06_cmdFD
@@ -155,12 +155,15 @@
  0001:0000F7C0       cmd_exec_set02_cmd81
  0001:0000F836       cmd_exec_set03_cmd51
  0001:0000F84E       cmd_exec_set00_cmd01_rcv18
+ 0001:0000F93C       power_zone_auto_select
  0001:0000FA96       cmd_exec_set09_cmd02
  0001:0000FABC       cmd_exec_set09_cmd01
  0001:0000FBB0       parse_command_5BB0
  0001:0000FC90       jpt_5C8C
  0001:0000FCF6       jpt_5CF2
  0001:0000FD28       def_5CF2
+ 0001:0000FD2A       packet_prepare
+ 0001:000106EC       payload_buf
  0001:000106F8       pkt
  0001:000107A8       def_6832
  0001:00010836       jpt_6832
@@ -198,20 +201,36 @@
  0001:00014D50       aMonitor
  0001:000156C0       packet_perm_store
  0001:00015A1C       cmd_exec_set09_cmd2C
+ 0001:00015A6C       ofdm_init_instruction
  0001:00015A82       jpt_BA7E
  0001:00015AE0       def_BA7E
- 0001:00015DF6       spi_ad936x_raw_write
- 0001:00015E24       spi_ad936x_raw_read
+ 0001:00015B86       init_fpga_config
+ 0001:00015DC4       get_board_version
+ 0001:00015DF6       spi_raw_ct16_dt8_write
+ 0001:00015E24       spi_raw_ct16_dt8_read
  0001:00015E50       spi_ad936x_raw_write_multi
  0001:00015E8A       spi_ad936x_raw_read_multi
  0001:00015EC8       ad936x_reg_sync_write
  0001:00015F16       ad936x_reg_sync_read
+ 0001:00016850       fpga_set_receiver_id
+ 0001:00016D54       tcx_config_update1
  0001:000171A6       unkn4_IRQHandler
  0001:000173A8       jpt_D3A4
  0001:000173D8       def_D3A4
  0001:0001749C       p_err
  0001:0001750A       unkn3_IRQHandler
+ 0001:000178F0       set_transciever_flag_20001A28_E
+ 0001:00017906       set_transciever_flag_20001A28_D
+ 0001:00017912       get_transciever_flag_20001A28_D
+ 0001:0001791C       set_transciever_flag_20001A28_B
+ 0001:00017942       set_transciever_flag_20001A28_C
+ 0001:0001795C       update_tcx_power_zone_flag
+ 0001:00017978       set_transciever_attenuation
+ 0001:00017980       get_transciever_attenuation
+ 0001:00017A94       tcx_config_80105FA
  0001:00017B60       ad936x_config_set
+ 0001:00017C30       ad936x_config_get
+ 0001:00017CFA       spi_clear_flag_r00_f02
  0001:00017D54       SPI_Init
  0001:00017DDC       SPI_UsrWaitTransferComplete
  0001:00018680       a2d2d2d
@@ -549,6 +568,9 @@
  0001:00023BA8       Reset_Handler
  0001:00026214       jpt_1C210
  0001:00026BDA       jpt_1CBD6
+ 0002:000271D4       ofdm_init_list_1
+ 0002:0002A310       ofdm_init_list_2
+ 0002:0002AC2C       ofdm_init_list_3
  0002:0002E9D2       crc8_table
  0002:0002EF00       aIRmsdos5_0
  0002:0002EF1E       aDjiIosdlog
@@ -565,7 +587,11 @@
  0002:0002F7CC       a0123456789ab_0
  0002:0002FABC       aChDMcsDModeDBw
  0002:0002FCB3       aTestdjiw
+ 0003:100000D6       max_mcs
  0003:10000168       radio_status
+ 0003:10000313       ofdm_board_version_flags
+ 0003:10000322       active_transciever_attenuation
+ 0003:10000324       fpga_reg_unkn15_value
  0003:1000047C       CANAF_FullCAN_cnt
  0003:1000047E       CANAF_std_cnt
  0003:10000480       CANAF_unkn2_cnt
@@ -639,7 +665,16 @@
  0003:1000327C       packet_7
  0003:10003288       packet_7_payload_p1
  0003:1000337C       packet_ptr7
+ 0003:10003788       pkt_buf1
+ 0003:10003988       pkt_buf2
  0003:10003B2C       amc_sem
+ 0003:100041D8       ofdm_receiver_id
+ 0003:100041E4       transceiver_flags_1A28
+ 0003:1000426C       transciever_attenuation
+ 0003:1000426D       tcx_control_attenuation_by_packet
+ 0003:1000426E       tcx_control_attenuation_by_unkn1
+ 0003:10004280       tcx_dword_33C0
+ 0003:10004341       sweep_frequency
  0003:10004566       timec_HOUR
  0003:1000457D       timec_MIN
  0003:1000457E       timec_SEC

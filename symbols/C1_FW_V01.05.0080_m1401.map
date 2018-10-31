@@ -1,0 +1,142 @@
+﻿
+ Start         Length     Name                   Class
+ 0003:00000000 000019300H .text                  CODE
+ 0004:00000000 000001B78H .data                  DATA
+ 0005:00000000 000004000H .bss                   BSS
+ 000B:00000000 000001000H .bss2                  BSS
+ 000A:00000000 000002400H .bss3                  BSS
+ 0009:00000000 000002400H .bss4                  BSS
+ 0008:00000000 000050000H .bss5                  BSS
+ 0007:00000000 000000200H .bss6                  BSS
+ 0001:00000000 000000008H EXIDX                  DATA
+ 0006:00000000 000001200H .bss7                  BSS
+
+
+  Address         Publics by Value
+
+ 0003:0000A688       aSigrtmemOutOfH
+ 0003:0000A6A8       aHeapMemoryCorr
+ 0003:0000A700       ad936x_reg_sync_read
+ 0003:0000A760       ad936x_reg_sync_write
+ 0003:0000C758       aDDD
+ 0003:0000C9D6       jpt_C9D2
+ 0003:0000CABC       def_C9D2
+ 0003:0000CDDC       init_fpga_config
+ 0003:0000CF94       ofdm_init_instruction
+ 0003:0000CFAE       jpt_CFAA
+ 0003:0000CFC6       def_CFAA
+ 0003:0000D164       tx_sub_800D3E4
+ 0003:0000D1D2       nullsub_2
+ 0003:0000D1D4       nullsub_3
+ 0003:0000D1D6       nullsub_5
+ 0003:0000D2A2       jpt_D29E
+ 0003:0000D2F6       def_D29E
+ 0003:0000DE78       aWm610A71549201
+ 0003:0000E11C       nullsub_12
+ 0003:0000E124       aCommonEncryptC
+ 0003:0000E458       nullsub_13
+ 0003:0000E460       aCommonEncryptC_0
+ 0003:0000E478       aIn
+ 0003:0000E47C       aEncryptionChec
+ 0003:0000E4B4       aEncryptionChec_0
+ 0003:0000E4EC       aEncryptWriteFl
+ 0003:0000E500       aNeedAck
+ 0003:0000E50C       aGoToErr
+ 0003:0000E824       aCommonEncryptG
+ 0003:0000E8F4       aCommonEncryptG_0
+ 0003:0000E9A4       aCommonEncryptI
+ 0003:0000EC48       nullsub_6
+ 0003:0000F1C8       power_zone_auto_select
+ 0003:0000F600       packet_send
+ 0003:0000F614       jpt_F610
+ 0003:0000F698       def_F610
+ 0003:0000F6CC       jpt_F6C8
+ 0003:0000F786       def_F6C8
+ 0003:0000F7D2       packet_prepare_response
+ 0003:0000F960       jpt_F95C
+ 0003:0000F98C       def_F95C
+ 0003:0000F9FA       jpt_F9F6
+ 0003:0000FA6E       def_F9F6
+ 0003:0000FC64       aMacErr
+ 0003:0000FC6C       aChipInfoErr
+ 0003:0000FC7C       aFactoryInfoErr
+ 0003:00010540       get_board_version
+ 0003:000105D0       spi_raw_ct16_dt8_read
+ 0003:00010760       spi_raw_ct16_dt8_write
+ 0003:0001125E       jpt_1125A
+ 0003:00011358       def_1125A
+ 0003:00011836       jpt_11832
+ 0003:00011840       def_11832
+ 0003:00012162       jpt_1215E
+ 0003:000121A4       def_1215E
+ 0003:0001292A       jpt_12926
+ 0003:00012970       def_12926
+ 0003:00012B74       jpt_12B70
+ 0003:00012C4A       def_12CA0
+ 0003:00012C4E       def_12B70
+ 0003:00012C54       jpt_12C50
+ 0003:00012C84       jpt_12C80
+ 0003:00012CA4       jpt_12CA0
+ 0003:00012CCA       def_12C50
+ 0003:00012EA2       jpt_12E9E
+ 0003:00012F20       def_12E9E
+ 0003:000130CC       cmd_exec_set09_cmd12
+ 0003:00013956       nullsub_1
+ 0003:00013958       nullsub_7
+ 0003:00013D40       ad936x_config_get
+ 0003:00013E30       ad936x_config_set
+ 0003:000141E8       tcx_config_80105FA
+ 0003:000146BC       get_transciever_attenuation
+ 0003:000146C8       get_dword_33C0
+ 0003:00014914       tx_sub_16A5C
+ 0003:00014B50       tcx_config_update1
+ 0003:00014DB8       set_transciever_flag_20001A28_E
+ 0003:0001531C       set_transciever_flag_20001A28_D
+ 0003:00015330       set_transciever_attenuation
+ 0003:0001533C       update_tcx_power_zone_flag
+ 0003:000153B4       set_transciever_flag_20001A28_B
+ 0003:000153D8       set_transciever_flag_20001A28_C
+ 0003:00015578       nullsub_4
+ 0003:00015BEE       jpt_15BEA
+ 0003:00015C32       def_15BEA
+ 0003:00015C9E       jpt_15C9A
+ 0003:00015D00       def_15C9A
+ 0003:00016020       nullsub_8
+ 0003:00016318       nullsub_9
+ 0003:00016C24       nullsub_10
+ 0003:000172A0       nullsub_11
+ 0003:00017848       aStickerr
+ 0003:00017854       aFpgaerr
+ 0003:0001785C       aRfmoduleerr
+ 0003:00017868       aF330err
+ 0003:00017870       aGpserr
+ 0003:00017878       aEncrypterr
+ 0003:00017884       aReseterr
+ 0003:00017898       aBattery600mh
+ 0003:0001957C       aSomethingChang
+ 0003:00019590       aNoChange
+ 0003:00019C98       nullsub_14
+ 0003:0001B9B8       aAppPowerManage
+ 0003:0001B9D0       aAppTaskradio
+ 0003:0001B9E4       aAppTaskunpack
+ 0003:0001B9F8       aAppTaskadckey
+ 0003:0001BA0C       aAppTaskledbell
+ 0003:0001C624       aCwbatInit
+ 0003:0001D274       aSha204pSendSla
+ 0003:0001DF28       aIdle
+ 0003:0001F254       jpt_1F250
+ 0003:0001FC1A       jpt_1FC16
+ 0003:0001FFEC       power_zone_fcc_areas
+ 0003:00020196       crc16_tab
+ 0005:02000195       power_zone_auto_selected
+ 0005:020005BE       active_transciever_attenuation
+ 0005:020005BF       transceiver_pwr_mode_unk016C
+ 0005:020005C0       fpga_reg_unkn15_value
+ 0005:02003350       ofdm_receiver_id
+ 0005:0200335C       transceiver_flags_1A28
+ 0005:020033B4       tx_byte_20033B4
+ 0005:020033BC       transciever_attenuation
+ 0005:020033BD       tcx_control_attenuation_by_packet
+ 0005:020033C0       tcx_dword_33C0
+
+Program entry point at 0003:00000000
