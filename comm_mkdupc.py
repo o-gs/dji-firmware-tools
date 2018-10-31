@@ -30,7 +30,6 @@ __license__ = "GPL"
 
 import os
 import sys
-import serial
 import select
 import argparse
 import enum
