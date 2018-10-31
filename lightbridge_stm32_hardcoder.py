@@ -3087,6 +3087,7 @@ loc_label_ret1:
 re_func_update_tcx_power_zone_flag_C1_V01_05_m1400_original = {
 'name': "update_tcx_power_zone_flag-original",
 'version': "C1_FW_V01.05-m1400",
+# Bit 31 (0x1f) of transceiver_flags_1A28 variable is POWER_ZONE_CE.
 're': """
 update_tcx_power_zone_flag:
   ldr	r1, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
