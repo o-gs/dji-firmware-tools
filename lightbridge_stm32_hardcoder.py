@@ -166,9 +166,6 @@ def packet_received_attenuation_override_update(asm_arch, elf_sections, re_list,
     elif var_info['cfunc_ver'] == re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_original['version']:
         re_func_cmd_exec_set09_cmd12_CURR_original = re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_original
         re_func_cmd_exec_set09_cmd12_CURR_constatt = re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_constatt
-    elif var_info['cfunc_ver'] == re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_original['version']:
-        re_func_cmd_exec_set09_cmd12_CURR_original = re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_original
-        re_func_cmd_exec_set09_cmd12_CURR_constatt = re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_constatt
     else:
         raise ValueError("Unrecognized version of 'cmd_exec_set09_cmd12' - internal error.")
     # Note that the value we're modifying is not the one we got in var_info
@@ -367,53 +364,78 @@ re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_original = {
 cmd_exec_set09_cmd12:
   push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,8}), lr}
   ; in C1_FW_V01.04-m1400, the wildcard are lines:
-  ;sub	sp, #0x14
-  ;mov	r5, r0
-  ;add.w	r4, r0, #0xb
+  ;sub	sp, #(?P<loc_frame_len>[0-9a-fx]+)
+  ;mov	(?P<regH>r[0-9]), r0
+  ;add.w	(?P<regE>r[0-9]), r0, #0xb
   ; in C1_FW_V01.06-m1400, the wildcard are lines:
-  ;mov	r5, r0
-  ;add.w	r4, r0, #0xb
-  ;sub	sp, #0x14
+  ;mov	(?P<regH>r[0-9]), r0
+  ;add.w	(?P<regE>r[0-9]), r0, #0xb
+  ;sub	sp, #(?P<loc_frame_len>[0-9a-fx]+)
+  ;movs	r0, #0
+  ; in C1_FW_V01.06-m1401, the wildcard are lines:
+  ;sub	sp, #(?P<loc_frame_len>[0-9a-fx]+)
+  ;mov	r6, r0
+  ;mov	(?P<regH>r[0-9]), r6
+  ;add.w	(?P<regE>r[0-9]), (?P<regH>r[0-9]), #0xb
   ;movs	r0, #0
   dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){2,8})
   bl	#(?P<tcx_config_80105FA>[0-9a-fx]+)
-  ldrb	r0, \[r4\]
-  lsls	r0, r0, #0x18
-  bmi	#(?P<loc_label01>[0-9a-fx]+)
+  ldrb	(?P<regB>r[0-9]), \[(?P<regE>r[0-9])\]
+  (lsls|lsrs)	r0, (?P<regB>r[0-9]), #(?P<bitshift1>[0-9a-fx]+)
+  ; in C1_FW_V01.04-m1400, the wildcard are lines:
+  ;bmi	#(?P<loc_label01>[0-9a-fx]+)
+  ; in C1_FW_V01.06-m1401, the wildcard are lines:
+  ;cbnz	r0, #(?P<loc_label01>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,2})
   movs	r0, #0
   bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
   b	#(?P<loc_label02>[0-9a-fx]+)
 loc_label01:
   movs	r0, #1
   bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
-  ldrb	r0, \[r4\]
-  and	r0, r0, #0x7f
+  ldrb	(?P<regC>r[0-9]), \[(?P<regE>r[0-9])\]
+  and	r0, (?P<regC>r[0-9]), #0x7f
   bl	#(?P<set_transciever_flag_20001A28_D>[0-9a-fx]+)
 loc_label02:
-  ldrb	r0, \[r4, #1\]
-  and	r0, r0, #0x3f
+  ldrb	(?P<regD>r[0-9]), \[(?P<regE>r[0-9]), #1\]
+  and	r0, (?P<regD>r[0-9]), #0x3f
   bl	#(?P<set_transciever_flag_20001A28_B>[0-9a-fx]+)
-  ldrb	r0, \[r4, #2\]
+  ldrb	r0, \[(?P<regE>r[0-9]), #2\]
   bl	#(?P<set_transciever_attenuation>[0-9a-fx]+)
-  ldrb	r0, \[r4, #3\]
+  ldrb	r0, \[(?P<regE>r[0-9]), #3\]
   bl	#(?P<set_transciever_flag_20001A28_C>[0-9a-fx]+)
-  ldrb	r0, \[r5, #8\]
-  ubfx	r1, r0, #5, #2
-  cmp	r1, #2
+  ldrb	(?P<regF>r[0-9]), \[(?P<regH>r[0-9]), #8\]
+  ubfx	(?P<regI>r[0-9]), (?P<regF>r[0-9]), #5, #2
+  cmp	(?P<regI>r[0-9]), #2
   bne	#(?P<loc_retlabel01>[0-9a-fx]+)
-  movs	r1, #0
-  strb.w	r1, \[sp, #0x10\]
-  orr	r0, r0, #0x80
-  strb	r0, \[r5, #8\]
-  mov	r3, sp
+  movs	(?P<regG>r[0-9]), #0
+  ; in C1_FW_V01.04-m1400, the wildcard are lines:
+  ;strb.w	(?P<regG>r[0-9]), \[sp, #(?P<locvar_ptr_01>[0-9a-fx]+)\]
+  ;orr	r0, r0, #0x80
+  ; in C1_FW_V01.06-m1401, the wildcard are lines:
+  ;str	(?P<regG>r[0-9]), \[sp, #(?P<locvar_ptr_01>[0-9a-fx]+)\]
+  ;ldrb	r0, \[(?P<regH>r[0-9]), #8\]
+  ;bic	r0, r0, #0x80
+  ;adds	r0, #0x80
+  dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){2,8})
+  strb	r0, \[(?P<regH>r[0-9]), #8\]
+  ; in C1_FW_V01.04-m1400, the wildcard are lines:
+  ;mov	r3, sp
+  ; in C1_FW_V01.06-m1401, the wildcard are lines:
+  ;add	r3, sp, #4
+  dcw	(?P<undefined_varlen_4>([0-9a-fx]+[, ]*){1,2})
   movs	r2, #1
-  add	r1, sp, #0x10
-  mov	r0, r5
+  add	r1, sp, #(?P<locvar_ptr_01>[0-9a-fx]+)
+  mov	r0, (?P<regH>r[0-9])
   bl	#(?P<packet_prepare_response>[0-9a-fx]+)
-  mov	r0, sp
+  ; in C1_FW_V01.04-m1400, the wildcard are lines:
+  ;mov	r0, sp
+  ; in C1_FW_V01.06-m1401, the wildcard are lines:
+  ;add	r0, sp, #4
+  dcw	(?P<undefined_varlen_5>([0-9a-fx]+[, ]*){1,2})
   bl	#(?P<packet_send>[0-9a-fx]+)
 loc_retlabel01:
-  add	sp, #0x14
+  add	sp, #(?P<loc_frame_len>[0-9a-fx]+)
   pop	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,8}), pc}
 """,
 'vars': {
@@ -426,8 +448,23 @@ loc_retlabel01:
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'setValue': "40",
     'description': "Constant attenuation value used when packet_received_attenuation_override is enabled; unit depends on OFDM board type"},
   'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,8)},
+  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,2)},
+  'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,8)},
+  'undefined_varlen_4':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,2)},
+  'undefined_varlen_5':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,2)},
+  'loc_frame_len':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'locvar_ptr_01':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'bitshift1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
-  'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'regB':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regC':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regD':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regE':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regF':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regG':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regH':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regI':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  #'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_retlabel01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'tcx_config_80105FA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
@@ -448,53 +485,78 @@ re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_constatt = {
 cmd_exec_set09_cmd12:
   push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,8}), lr}
   ; in C1_FW_V01.04-m1400, the wildcard are lines:
-  ;sub	sp, #0x14
-  ;mov	r5, r0
-  ;add.w	r4, r0, #0xb
+  ;sub	sp, #(?P<loc_frame_len>[0-9a-fx]+)
+  ;mov	(?P<regH>r[0-9]), r0
+  ;add.w	(?P<regE>r[0-9]), r0, #0xb
   ; in C1_FW_V01.06-m1400, the wildcard are lines:
-  ;mov	r5, r0
-  ;add.w	r4, r0, #0xb
-  ;sub	sp, #0x14
+  ;mov	(?P<regH>r[0-9]), r0
+  ;add.w	(?P<regE>r[0-9]), r0, #0xb
+  ;sub	sp, #(?P<loc_frame_len>[0-9a-fx]+)
+  ;movs	r0, #0
+  ; in C1_FW_V01.06-m1401, the wildcard are lines:
+  ;sub	sp, #(?P<loc_frame_len>[0-9a-fx]+)
+  ;mov	r6, r0
+  ;mov	(?P<regH>r[0-9]), r6
+  ;add.w	(?P<regE>r[0-9]), (?P<regH>r[0-9]), #0xb
   ;movs	r0, #0
   dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){2,8})
   bl	#(?P<tcx_config_80105FA>[0-9a-fx]+)
-  ldrb	r0, \[r4\]
-  lsls	r0, r0, #0x18
-  bmi	#(?P<loc_label01>[0-9a-fx]+)
+  ldrb	(?P<regB>r[0-9]), \[(?P<regE>r[0-9])\]
+  (lsls|lsrs)	r0, (?P<regB>r[0-9]), #(?P<bitshift1>[0-9a-fx]+)
+  ; in C1_FW_V01.04-m1400, the wildcard are lines:
+  ;bmi	#(?P<loc_label01>[0-9a-fx]+)
+  ; in C1_FW_V01.06-m1401, the wildcard are lines:
+  ;cbnz	r0, #(?P<loc_label01>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,2})
   movs	r0, #0
   bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
   b	#(?P<loc_label02>[0-9a-fx]+)
 loc_label01:
   movs	r0, #1
   bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
-  ldrb	r0, \[r4\]
-  and	r0, r0, #0x7f
+  ldrb	(?P<regC>r[0-9]), \[(?P<regE>r[0-9])\]
+  and	r0, (?P<regC>r[0-9]), #0x7f
   bl	#(?P<set_transciever_flag_20001A28_D>[0-9a-fx]+)
 loc_label02:
-  ldrb	r0, \[r4, #1\]
-  and	r0, r0, #0x3f
+  ldrb	(?P<regD>r[0-9]), \[(?P<regE>r[0-9]), #1\]
+  and	r0, (?P<regD>r[0-9]), #0x3f
   bl	#(?P<set_transciever_flag_20001A28_B>[0-9a-fx]+)
   movs	r0, #(?P<packet_received_attenuation_value>[0-9a-fx]+)
   bl	#(?P<set_transciever_attenuation>[0-9a-fx]+)
-  ldrb	r0, \[r4, #3\]
+  ldrb	r0, \[(?P<regE>r[0-9]), #3\]
   bl	#(?P<set_transciever_flag_20001A28_C>[0-9a-fx]+)
-  ldrb	r0, \[r5, #8\]
-  ubfx	r1, r0, #5, #2
-  cmp	r1, #2
+  ldrb	(?P<regF>r[0-9]), \[(?P<regH>r[0-9]), #8\]
+  ubfx	(?P<regI>r[0-9]), (?P<regF>r[0-9]), #5, #2
+  cmp	(?P<regI>r[0-9]), #2
   bne	#(?P<loc_retlabel01>[0-9a-fx]+)
-  movs	r1, #0
-  strb.w	r1, \[sp, #0x10\]
-  orr	r0, r0, #0x80
-  strb	r0, \[r5, #8\]
-  mov	r3, sp
+  movs	(?P<regG>r[0-9]), #0
+  ; in C1_FW_V01.04-m1400, the wildcard are lines:
+  ;strb.w	(?P<regG>r[0-9]), \[sp, #(?P<locvar_ptr_01>[0-9a-fx]+)\]
+  ;orr	r0, r0, #0x80
+  ; in C1_FW_V01.06-m1401, the wildcard are lines:
+  ;str	(?P<regG>r[0-9]), \[sp, #(?P<locvar_ptr_01>[0-9a-fx]+)\]
+  ;ldrb	r0, \[(?P<regH>r[0-9]), #8\]
+  ;bic	r0, r0, #0x80
+  ;adds	r0, #0x80
+  dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){2,8})
+  strb	r0, \[(?P<regH>r[0-9]), #8\]
+  ; in C1_FW_V01.04-m1400, the wildcard are lines:
+  ;mov	r3, sp
+  ; in C1_FW_V01.06-m1401, the wildcard are lines:
+  ;add	r3, sp, #4
+  dcw	(?P<undefined_varlen_4>([0-9a-fx]+[, ]*){1,2})
   movs	r2, #1
-  add	r1, sp, #0x10
-  mov	r0, r5
+  add	r1, sp, #(?P<locvar_ptr_01>[0-9a-fx]+)
+  mov	r0, (?P<regH>r[0-9])
   bl	#(?P<packet_prepare_response>[0-9a-fx]+)
-  mov	r0, sp
+  ; in C1_FW_V01.04-m1400, the wildcard are lines:
+  ;mov	r0, sp
+  ; in C1_FW_V01.06-m1401, the wildcard are lines:
+  ;add	r0, sp, #4
+  dcw	(?P<undefined_varlen_5>([0-9a-fx]+[, ]*){1,2})
   bl	#(?P<packet_send>[0-9a-fx]+)
 loc_retlabel01:
-  add	sp, #0x14
+  add	sp, #(?P<loc_frame_len>[0-9a-fx]+)
   pop	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,8}), pc}
 """,
 'vars': {
@@ -507,168 +569,23 @@ loc_retlabel01:
     'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255",
     'description': "Constant attenuation value used when packet_received_attenuation_override is enabled; unit depends on OFDM board type"},
   'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,8)},
+  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,2)},
+  'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,8)},
+  'undefined_varlen_4':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,2)},
+  'undefined_varlen_5':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,2)},
+  'loc_frame_len':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'locvar_ptr_01':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'bitshift1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
-  'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_retlabel01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'tcx_config_80105FA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_B':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_D':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_attenuation':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'packet_send':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'packet_prepare_response':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-},
-}
-
-re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_original = {
-'name': "cmd_exec_set09_cmd12-original",
-'version': "C1_FW_V01.06-m1401",
-'re': """
-cmd_exec_set09_cmd12:
-  push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,8}), lr}
-  ; in C1_FW_V01.06-m1401, the wildcard are lines:
-  ;sub	sp, #0x18
-  ;mov	r6, r0
-  ;mov	r4, r6
-  ;add.w	r5, r4, #0xb
-  ;movs	r0, #0
-  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){2,8})
-  bl	#(?P<tcx_config_80105FA>[0-9a-fx]+)
-  ldrb	r0, \[r5\]
-  lsrs	r0, r0, #7
-  cbnz	r0, #(?P<loc_label01>[0-9a-fx]+)
-  movs	r0, #0
-  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
-  b	#(?P<loc_label02>[0-9a-fx]+)
-loc_label01:
-  movs	r0, #1
-  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
-  ldrb	r1, \[r5\]
-  and	r0, r1, #0x7f
-  bl	#(?P<set_transciever_flag_20001A28_D>[0-9a-fx]+)
-loc_label02:
-  ldrb	r1, \[r5, #1\]
-  and	r0, r1, #0x3f
-  bl	#(?P<set_transciever_flag_20001A28_B>[0-9a-fx]+)
-  ldrb	r0, \[r5, #2\]
-  bl	#(?P<set_transciever_attenuation>[0-9a-fx]+)
-  ldrb	r0, \[r5, #3\]
-  bl	#(?P<set_transciever_flag_20001A28_C>[0-9a-fx]+)
-  ldrb	r0, \[r4, #8\]
-  ubfx	r0, r0, #5, #2
-  cmp	r0, #2
-  bne	#(?P<loc_retlabel01>[0-9a-fx]+)
-  movs	r0, #0
-  str	r0, \[sp, #0x14\]
-  ldrb	r0, \[r4, #8\]
-  bic	r0, r0, #0x80
-  adds	r0, #0x80
-  strb	r0, \[r4, #8\]
-  add	r3, sp, #4
-  movs	r2, #1
-  add	r1, sp, #0x14
-  mov	r0, r4
-  bl	#(?P<packet_prepare_response>[0-9a-fx]+)
-  add	r0, sp, #4
-  bl	#(?P<packet_send>[0-9a-fx]+)
-loc_retlabel01:
-  add	sp, #0x18
-  pop	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,8}), pc}
-""",
-'vars': {
-  #'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
-  'packet_received_attenuation_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "0",
-    'custom_params_callback': packet_received_attenuation_override_update,
-    'description': "What to do when received a packet with transceiver power set request; 0 - use the received attenuation value, 1 - override the value with constant one"},
-  'packet_received_attenuation_value':	{'type': VarType.UNUSED_DATA, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255", 'setValue': "40",
-    'description': "Constant attenuation value used when packet_received_attenuation_override is enabled; unit depends on OFDM board type"},
-  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,8)},
-  'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
-  'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_retlabel01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'tcx_config_80105FA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_B':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_D':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_flag_20001A28_E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'set_transciever_attenuation':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'packet_send':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'packet_prepare_response':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-},
-}
-
-re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_constatt = {
-'name': "cmd_exec_set09_cmd12-constatt",
-'version': "C1_FW_V01.06-m1401",
-'re': """
-cmd_exec_set09_cmd12:
-  push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,8}), lr}
-  ; in C1_FW_V01.06-m1401, the wildcard are lines:
-  ;sub	sp, #0x18
-  ;mov	r6, r0
-  ;mov	r4, r6
-  ;add.w	r5, r4, #0xb
-  ;movs	r0, #0
-  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){2,8})
-  bl	#(?P<tcx_config_80105FA>[0-9a-fx]+)
-  ldrb	r0, \[r5\]
-  lsrs	r0, r0, #7
-  cbnz	r0, #(?P<loc_label01>[0-9a-fx]+)
-  movs	r0, #0
-  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
-  b	#(?P<loc_label02>[0-9a-fx]+)
-loc_label01:
-  movs	r0, #1
-  bl	#(?P<set_transciever_flag_20001A28_E>[0-9a-fx]+)
-  ldrb	r1, \[r5\]
-  and	r0, r1, #0x7f
-  bl	#(?P<set_transciever_flag_20001A28_D>[0-9a-fx]+)
-loc_label02:
-  ldrb	r1, \[r5, #1\]
-  and	r0, r1, #0x3f
-  bl	#(?P<set_transciever_flag_20001A28_B>[0-9a-fx]+)
-  movs	r0, #(?P<packet_received_attenuation_value>[0-9a-fx]+)
-  bl	#(?P<set_transciever_attenuation>[0-9a-fx]+)
-  ldrb	r0, \[r5, #3\]
-  bl	#(?P<set_transciever_flag_20001A28_C>[0-9a-fx]+)
-  ldrb	r0, \[r4, #8\]
-  ubfx	r0, r0, #5, #2
-  cmp	r0, #2
-  bne	#(?P<loc_retlabel01>[0-9a-fx]+)
-  movs	r0, #0
-  str	r0, \[sp, #0x14\]
-  ldrb	r0, \[r4, #8\]
-  bic	r0, r0, #0x80
-  adds	r0, #0x80
-  strb	r0, \[r4, #8\]
-  add	r3, sp, #4
-  movs	r2, #1
-  add	r1, sp, #0x14
-  mov	r0, r4
-  bl	#(?P<packet_prepare_response>[0-9a-fx]+)
-  add	r0, sp, #4
-  bl	#(?P<packet_send>[0-9a-fx]+)
-loc_retlabel01:
-  add	sp, #0x18
-  pop	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,8}), pc}
-""",
-'vars': {
-  #'cmd_exec_set09_cmd12':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
-  'packet_received_attenuation_override':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "1", 'defaultValue': "0", 'setValue': "1",
-    'custom_params_callback': packet_received_attenuation_override_update,
-    'description': "What to do when received a packet with transceiver power set request; 0 - use the received attenuation value, 1 - override the value with constant one"},
-  'packet_received_attenuation_value':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
-    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "0", 'maxValue': "255",
-    'description': "Constant attenuation value used when packet_received_attenuation_override is enabled; unit depends on OFDM board type"},
-  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,8)},
-  'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
-  'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'regB':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regC':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regD':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regE':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regF':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regG':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regH':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regI':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  #'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_retlabel01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'tcx_config_80105FA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
@@ -3540,8 +3457,6 @@ loc_15BD0:
   'loc_15BF6':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   #'loc_15BBA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_15BEC':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_15C00':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_15C10':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
 },
 }
 
@@ -4370,8 +4285,6 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_P3X_V01_07_constatt,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_original,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_constatt,},
-  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_original,},
-  {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_06_m1401_constatt,},
   {'sect': ".text", 'func': re_func_init_fpga_config_C1_V01_05_m1400,},
   {'sect': ".text", 'func': re_func_init_fpga_config_C1_V01_05_m1401,},
   {'sect': ".text", 'func': re_func_tcx_config_power_zone_P3X_V01_08,},
