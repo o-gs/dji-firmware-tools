@@ -1,0 +1,125 @@
+﻿
+ Start         Length     Name                   Class
+ 0003:00000000 00000D500H .text                  CODE
+ 0004:00000000 000006884H .data                  DATA
+ 0005:00000000 000005A00H .bss                   BSS
+ 000A:00000000 000006700H .bss2                  BSS
+ 0009:00000000 000005500H .bss3                  BSS
+ 0008:00000000 000002200H .bss4                  BSS
+ 0007:00000000 000000100H .bss5                  BSS
+ 0006:00000000 000000500H .bss6                  BSS
+ 0001:00000000 000000008H EXIDX                  DATA
+
+
+  Address         Publics by Value
+
+ 0003:080081C8       init_sub_80081C8
+ 0003:0800C2DC       SPI_UsrWaitTransferComplete
+ 0003:0800C3E0       spi_fpga_or_tcx_transfer_mark
+ 0003:0800C3F2       spi_fpga_or_tcx_transfer_clear
+ 0003:0800CA16       switch_active_quadrant
+ 0003:0800CB42       memcpy
+ 0003:0800CE38       nullsub_1
+ 0003:0800D0A4       update_board_version
+ 0003:0800D14E       get_board_version
+ 0003:0800D482       log_printf
+ 0003:0800D520       decrypt_payload
+ 0003:0800D55C       ofdm_tx_state_set_flag
+ 0003:0800D65E       spi_fpga_raw_write
+ 0003:0800D680       spi_fpga_raw_read
+ 0003:0800D6A6       ad936x_reg_sync_write
+ 0003:0800D6EA       ad936x_reg_sync_read
+ 0003:0800DBE0       ofdm_init_instruction
+ 0003:0800DBFA       jpt_800DBF6
+ 0003:0800DC10       def_800DBF6
+ 0003:0800E2B8       init_fpga_config
+ 0003:0800E794       aPhantom2x
+ 0003:0800E7A0       aDDDDD
+ 0003:0800E7B4       aVerD
+ 0003:0800E7C0       aFpgaBootD
+ 0003:0800E7D4       aFpgaCfgOk
+ 0003:0800E7E4       aFpgaCfgError
+ 0003:0800FB18       tcx_config_update1
+ 0003:0800FF66       fpga_set_receiver_id
+ 0003:0801074C       a2x2x2x2x2x_0
+ 0003:08010770       aBase2x
+ 0003:08010A90       init_unk800FE7E_config
+ 0003:08010B94       a2x2x2x2x2xD
+ 0003:08010BEC       aId2x2x2x2x2x
+ 0003:08010E54       jpt_8010E50
+ 0003:08010ED4       def_8010E50
+ 0003:08011296       tcx_config_80105FA
+ 0003:080112DE       set_transciever_flag_20001A28_E
+ 0003:08011300       set_transciever_flag_20001A28_D
+ 0003:08011318       set_transciever_flag_20001A28_B
+ 0003:08011330       set_transciever_flag_20001A28_C
+ 0003:08011348       set_transciever_attenuation
+ 0003:08011350       get_transciever_attenuation
+ 0003:08011358       set_transciever_flag_20001A28_A
+ 0003:080113F4       a2x2x2x2x2x
+ 0003:08011BB0       packet_sub_8011BB0
+ 0003:0801206A       nullsub_3
+ 0003:080120B0       packet_sub_80120B0
+ 0003:08012168       packet_send
+ 0003:0801217E       jpt_801217A
+ 0003:08012254       def_801217A
+ 0003:080123FE       jpt_80123FA
+ 0003:080124DC       def_80123FA
+ 0003:080125CE       packet_crc_correct_cb
+ 0003:08012792       packet_make_response
+ 0003:0801283C       compute_buf_crc8
+ 0003:080128B0       compute_buf_crc16
+ 0003:080128DE       packet_crc_correct
+ 0003:0801291A       packet_make_checksum
+ 0003:0801294C       cmd_exec_osd_general
+ 0003:08012A1E       cmd_exec_osd_home
+ 0003:08012A9E       cmd_exec_flyc_unlimit_state
+ 0003:08012AC8       cmd_exec_set09_cmd0E
+ 0003:08012AFC       cmd_exec_set09_cmd0F
+ 0003:08012B72       cmd_exec_set09_cmd04
+ 0003:08012B96       cmd_exec_set09_cmd05
+ 0003:08012BBC       cmd_exec_set09_cmd06
+ 0003:08012C08       cmd_exec_set09_cmd07
+ 0003:08012C58       cmd_exec_set09_cmd12
+ 0003:08012CB2       cmd_exec_set09_cmd13
+ 0003:08012D24       cmd_exec_set00_cmd01b
+ 0003:08012D78       send_func
+ 0003:08012DEC       cmd_exec_set00_cmd07
+ 0003:08012E9A       cmd_exec_set00_cmd08
+ 0003:08012ED2       cmd_exec_set00_cmd0A
+ 0003:08012F22       cmd_exec_set00_cmd0B
+ 0003:08012F5A       cmd_exec_set00_cmd0C
+ 0003:08012FE0       cmd_exec_set00_cmd0D
+ 0003:08013026       cmd_exec_set06_cmd1B
+ 0003:08013042       cmd_exec_set00_cmd01a
+ 0003:08013082       cmd_exec_set00_cmdFF
+ 0003:080130F0       cmd_exec_set00_cmdFE
+ 0003:08013160       aWm32xA4Fpga201
+ 0003:0801317C       packet_sub_801317C
+ 0003:080133C2       memcpy2
+ 0004:080155B0       jpt_80155AC
+ 0004:08015F76       jpt_8015F72
+ 0004:08016B3E       pkt_payload_dec_table
+ 0004:08017260       ofdm_init_list_2
+ 0004:08017A70       ofdm_init_list_3
+ 0004:0801A3AC       ofdm_init_list_4
+ 0004:0801ACC8       ofdm_init_list_1
+ 0004:0801B466       a66666677788888
+ 0004:0801B698       ofdm_exec_commands
+ 0004:0801B771       crc8_tab
+ 0004:0801B872       crc16_tab
+ 0005:200000C4       active_quadrant_state
+ 0005:200000C5       quadrant_state
+ 0005:200000C6       active_quadrant_num
+ 0005:200000C7       quadrant_num
+ 0005:200000D8       ofdm_board_version_flags
+ 0005:2000018C       active_transciever_attenuation
+ 0005:2000018D       transceiver_pwr_mode_unk016C
+ 0005:2000018E       fpga_reg_unkn00_value
+ 0005:20001CD0       ofdm_receiver_id
+ 0005:20001CDC       transceiver_flags_1A28
+ 0005:20001DB9       transciever_attenuation
+ 0005:20001DBA       tcx_control_attenuation_by_packet
+ 0005:20002810       payload_osd_general
+
+Program entry point at 0003:00000000

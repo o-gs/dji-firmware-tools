@@ -56,7 +56,10 @@
  0003:080149CC       jpt_80149C8
  0003:08015392       jpt_801538E
  0005:20000167       active_transciever_attenuation
+ 0005:20000168       transceiver_pwr_mode_unk016C
+ 0005:20001AC0       transceiver_flags_1A28
  0005:20001BCD       tcx_control_attenuation_by_packet
+ 0005:20001BCE       rel_tcx_control_attenuation_by_unkn1
  0005:20001BCF       transciever_attenuation
 
 Program entry point at 0003:00000000

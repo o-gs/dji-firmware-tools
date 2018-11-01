@@ -1,0 +1,62 @@
+﻿
+ Start         Length     Name                   Class
+ 0003:00000000 00000D500H .text                  CODE
+ 0004:00000000 0000036B8H .data                  DATA
+ 0005:00000000 000005A00H .bss                   BSS
+ 000A:00000000 000006700H .bss2                  BSS
+ 0009:00000000 000005500H .bss3                  BSS
+ 0008:00000000 000002200H .bss4                  BSS
+ 0007:00000000 000000100H .bss5                  BSS
+ 0006:00000000 000000500H .bss6                  BSS
+ 0001:00000000 000000008H EXIDX                  DATA
+
+
+  Address         Publics by Value
+
+ 0003:0800C9E4       nullsub_1
+ 0003:0800CCB2       nullsub_2
+ 0003:0800CD8C       ofdm_tx_state_set_flag
+ 0003:0800CE8E       spi_fpga_raw_write
+ 0003:0800CEB0       spi_fpga_raw_read
+ 0003:0800CED6       ad936x_reg_sync_write
+ 0003:0800CF1A       ad936x_reg_sync_read
+ 0003:0800D42A       jpt_800D426
+ 0003:0800D440       def_800D426
+ 0003:0800D874       aPhantom2x
+ 0003:0800D880       aDDDDD
+ 0003:0800D894       aFpgaBootD
+ 0003:0800D8A8       aFpgaCfgOk
+ 0003:0800D8B8       aFpgaCfgError
+ 0003:0800D8D8       nullsub_4
+ 0003:0800D8EA       nullsub_5
+ 0003:0800D8EC       nullsub_6
+ 0003:0800D8EE       nullsub_7
+ 0003:0800E732       tcx_config_update1
+ 0003:0800EFBC       a2x2x2x2x2xD
+ 0003:0800F408       aId2x2x2x2x2x
+ 0003:0800F5B6       tcx_config_80105FA
+ 0003:0800F5FE       set_transciever_flag_20001A28_E
+ 0003:0800F620       set_transciever_flag_20001A28_D
+ 0003:0800F638       set_transciever_flag_20001A28_B
+ 0003:0800F650       set_transciever_flag_20001A28_C
+ 0003:0800F668       set_transciever_attenuation
+ 0003:0800F678       set_transciever_flag_20001A28_A
+ 0003:0800F6CC       a2x2x2x2x2x
+ 0003:0801024E       nullsub_3
+ 0003:0801034C       packet_send
+ 0003:08010362       jpt_801035E
+ 0003:080103CC       def_801035E
+ 0003:08010576       jpt_8010572
+ 0003:08010654       def_8010572
+ 0003:0801090A       packet_make_response
+ 0003:08010D82       cmd_exec_set09_cmd12
+ 0003:08010EF8       send_func
+ 0003:080134CC       jpt_80134C8
+ 0003:08013E92       jpt_8013E8E
+ 0005:20000124       active_transciever_attenuation
+ 0005:20000126       fpga_reg_unkn00_value
+ 0005:20001058       ofdm_receiver_id
+ 0005:20001131       transciever_attenuation
+ 0005:20001132       tcx_control_attenuation_by_packet
+
+Program entry point at 0003:00000000

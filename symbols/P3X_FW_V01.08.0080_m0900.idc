@@ -7521,6 +7521,16 @@ static Bytes_1(void) {
 	create_insn	(x=0X800EBE8);
 	op_plain_offset	(x,	1,	0X2000015C);
 	op_plain_offset	(x,	129,	0X2000015C);
+	create_insn	(x=0X800EBEE);
+	op_enum		(x,	1,	GetEnum("BoardVersion"),0);
+	create_insn	(x=0X800EBF6);
+	op_enum		(x,	1,	GetEnum("BoardVersion"),0);
+	create_insn	(x=0X800EBFE);
+	op_enum		(x,	1,	GetEnum("BoardVersion"),0);
+	create_insn	(x=0X800EC06);
+	op_enum		(x,	1,	GetEnum("BoardVersion"),0);
+	create_insn	(x=0X800EC0E);
+	op_enum		(x,	1,	GetEnum("BoardVersion"),0);
 	create_insn	(0X800EC14);
 	create_insn	(x=0X800EC1A);
 	op_plain_offset	(x,	1,	0X2000015C);
@@ -8208,7 +8218,7 @@ static Bytes_1(void) {
 	set_cmt	(0X800F52C,	"a2",	0);
 	set_cmt	(0X800F52E,	"a2",	0);
 	create_insn	(0X800F54A);
-	set_name	(0X800F54A,	"spipacket_sub_800F54A");
+	set_name	(0X800F54A,	"spipacket_fpga_read_shared_settings");
 	create_insn	(x=0X800F54E);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -9442,12 +9452,14 @@ static Bytes_1(void) {
 	create_insn	(x=0X80102E0);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_name	(0X80102E0,	"get_transciever_flags_20001A28_F");
 	create_insn	(x=0X80102E2);
 	op_plain_offset	(x,	1,	0X20001A1C);
 	op_plain_offset	(x,	129,	0X20001A1C);
 	create_insn	(x=0X80102EA);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_name	(0X80102EA,	"get_transciever_flags_20001A28_G");
 	create_insn	(x=0X80102EC);
 	op_plain_offset	(x,	1,	0X20001A1C);
 	op_plain_offset	(x,	129,	0X20001A1C);
@@ -9455,6 +9467,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X80102FA);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_name	(0X80102FA,	"get_transciever_flags_20001A28_H");
 	create_insn	(x=0X80102FC);
 	op_plain_offset	(x,	1,	0X20001A1C);
 	op_plain_offset	(x,	129,	0X20001A1C);
@@ -9462,6 +9475,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X801030A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_name	(0X801030A,	"get_transciever_flags_20001A28_I");
 	create_insn	(x=0X801030C);
 	op_plain_offset	(x,	1,	0X20001A1C);
 	op_plain_offset	(x,	129,	0X20001A1C);
@@ -10437,10 +10451,12 @@ static Bytes_1(void) {
 	op_stkvar	(x,	1);
 	set_cmt	(0X8010F0E,	"atten_ctrl_type",	0);
 	create_insn	(0X8010F0E);
+	set_cmt	(0X8010F14,	"val",	0);
 	set_cmt	(0X8010F1A,	"val",	0);
 	set_cmt	(0X8010F32,	"atten_ctrl_type",	0);
 	create_insn	(0X8010F32);
 	set_cmt	(0X8010F38,	"a1",	0);
+	set_cmt	(0X8010F44,	"val",	0);
 	set_cmt	(0X8010F50,	"payload_len",	0);
 	set_cmt	(0X8010F52,	"payload",	0);
 	set_cmt	(0X8010F54,	"spkt",	0);
@@ -11267,6 +11283,15 @@ static Bytes_1(void) {
 	create_insn	(x=0X8011CA0);
 	op_hex		(x,	1);
 	set_cmt	(0X8011CA8,	"seqctr",	0);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_2(void) {
+        auto x;
+#define id x
+
 	set_cmt	(0X8011CAA,	"len",	0);
 	set_cmt	(0X8011CAC,	"payload",	0);
 	set_cmt	(0X8011CB2,	"src",	0);
@@ -11295,15 +11320,6 @@ static Bytes_1(void) {
 	create_insn	(x=0X8011D10);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_2(void) {
-        auto x;
-#define id x
-
 	create_insn	(0X8011D18);
 	set_name	(0X8011D18,	"cmd_exec_set09_cmd0F");
 	create_insn	(x=0X8011D1E);
@@ -13527,8 +13543,14 @@ static Bytes_2(void) {
 	MakeStruct	(0X8018F60,	"OfdmInitInstr");
 	make_array	(0X8018F60,	0XE);
 	set_name	(0X8018F60,	"ofdm_init_list_1");
+	create_byte	(0X8018F98);
+	make_array	(0X8018F98,	0X15F);
 	create_byte	(0X80190F7);
 	make_array	(0X80190F7,	0X171);
+	create_byte	(0X801927E);
+	make_array	(0X801927E,	0X240);
+	create_byte	(0X80194BE);
+	make_array	(0X80194BE,	0X240);
 	create_byte	(0X80196FE);
 	make_array	(0X80196FE,	0XFC);
 	set_name	(0X80196FE,	"packet_input_buf_a");
@@ -13564,8 +13586,7 @@ static Bytes_2(void) {
 	make_array	(0X801A128,	0X4);
 	create_qword	(0X801A148);
 	make_array	(0X801A148,	0X4);
-	create_dword	(0X801A1F0);
-	make_array	(0X801A1F4,	0X4);
+	create_qword	(0X801A1F0);
 	create_dword	(x=0X801A2E8);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
@@ -13773,7 +13794,8 @@ static Bytes_2(void) {
 	set_name	(0X20001A1C,	"ofdm_receiver_id");
 	create_dword	(0X20001A21);
 	create_dword	(0X20001A28);
-	set_name	(0X20001A28,	"transciever_flags_20001A28");
+	set_name	(0X20001A28,	"transceiver_flags_1A28");
+	create_word	(0X20001A2C);
 	create_byte	(0X20001A30);
 	make_array	(0X20001A30,	0X56);
 	set_name	(0X20001A30,	"spipacket_buf");
@@ -13781,6 +13803,11 @@ static Bytes_2(void) {
 	toggle_bnot		(x,	0);
 	op_hex		(x,	0);
 	toggle_bnot		(x,	1);
+	create_byte	(0X20001A88);
+	make_array	(0X20001A88,	0X4);
+	create_word	(0X20001AA0);
+	create_byte	(0X20001ABB);
+	make_array	(0X20001ABB,	0X64);
 	create_byte	(0X20001B1F);
 	create_byte	(0X20001B21);
 	create_byte	(0X20001B22);
@@ -14829,6 +14856,7 @@ static Functions_0(void) {
 	set_frame_size(0X800F444, 0X18, 0, 0);
 	add_func    (0X800F54A,0X800F64E);
 	set_func_flags(0X800F54A,0x400);
+	set_func_cmt(0X800F54A,	"Read settings packet from ground side via FPGA", 1);
 	set_frame_size(0X800F54A, 0X58, 0, 0);
 	define_local_var(0X800F54A, 0X800F64E, "[bp-0X58]", "buf_ln");
 	define_local_var(0X800F54A, 0X800F64E, "[bp-0X20]", "buf_sh");
@@ -14855,6 +14883,13 @@ static Functions_0(void) {
 	add_func    (0X800FB70,0X800FC7A);
 	set_func_flags(0X800FB70,0x400);
 	set_frame_size(0X800FB70, 0X8, 0, 0);
+	set_name(0X800FB9C, "locl_label01", SN_LOCAL);
+	set_name(0X800FBB6, "locl_board_ad4_ce", SN_LOCAL);
+	set_name(0X800FBC6, "locl_label03", SN_LOCAL);
+	set_name(0X800FBD4, "locl_board_ad_set_tx2a", SN_LOCAL);
+	set_name(0X800FBD8, "locl_board_ar6_ce", SN_LOCAL);
+	set_name(0X800FBE8, "locl_label06", SN_LOCAL);
+	set_name(0X800FBEC, "locl_label07", SN_LOCAL);
 	add_func    (0X800FC7A,0X800FC7E);
 	set_func_flags(0X800FC7A,0x480);
 	add_func    (0X800FC92,0X800FD34);
@@ -14941,6 +14976,7 @@ static Functions_0(void) {
 	SetType(0X80106C4, "int get_transciever_attenuation(void);");
 	add_func    (0X80106CC,0X80106D8);
 	set_func_flags(0X80106CC,0x400);
+	SetType(0X80106CC, "void __fastcall set_transciever_flag_20001A28_A(int val);");
 	add_func    (0X80106D8,0X80106E2);
 	set_func_flags(0X80106D8,0x400);
 	add_func    (0X80106E2,0X80106F8);
@@ -14988,14 +15024,12 @@ static Functions_0(void) {
 	define_local_var(0X8010AA2, 0X8010B4A, "[bp-0X48]", "cor_4");
 	define_local_var(0X8010AA2, 0X8010B4A, "[bp-0X30]", "a3");
 	define_local_var(0X8010AA2, 0X8010B4A, "[bp+0]", "lat1");
-	define_local_var(0X8010AA2, 0X8010B4A, "[bp+0X4]", "lat2");
 	define_local_var(0X8010AA2, 0X8010B4A, "[bp+0X8]", "lon1");
 	define_local_var(0X8010AA2, 0X8010B4A, "[bp+0XC]", "lon2");
 	add_func    (0X8010B4A,0X8010BC4);
 	set_func_flags(0X8010B4A,0x400);
 	SetType(0X8010B4A, "int __fastcall sub_8010B4A(double a1, double a2);");
 	set_frame_size(0X8010B4A, 0X28, 0, 0);
-	define_local_var(0X8010B4A, 0X8010BC4, "[bp+0XC]", "a2");
 	add_func    (0X8010BC4,0X8010D88);
 	set_func_flags(0X8010BC4,0x400);
 	SetType(0X8010BC4, "void __fastcall recompute_quadrant(uint8_t a1);");
@@ -15352,7 +15386,6 @@ static Functions_0(void) {
 	set_func_flags(0X801299C,0x400);
 	set_frame_size(0X801299C, 0X88, 0, 0);
 	define_local_var(0X801299C, 0X8012CDC, "[bp-0X74]", "a2");
-	define_local_var(0X801299C, 0X8012CDC, "[bp-0X2C]", "a1");
 	add_func    (0X8012D24,0X8012E0A);
 	set_func_flags(0X8012D24,0x400);
 	set_frame_size(0X8012D24, 0X30, 0, 0);

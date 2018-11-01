@@ -982,7 +982,7 @@ static Bytes_0(void) {
         auto x;
 #define id x
 
-	update_extra_cmt		(0X8008000,	E_PREV + 0,	"; File Name   : D:\\source\\python\\phantom-firmware-tools\\ida_projects\\P3X_FW_V01.11.0030_m0900.elf");
+	update_extra_cmt		(0X8008000,	E_PREV + 0,	"; File Name   : P3X_FW_V01.11.0030_m0900.elf");
 	update_extra_cmt		(0X8008000,	E_PREV + 1,	"; Format      : ELF for ARM (Executable)");
 	update_extra_cmt		(0X8008000,	E_PREV + 2,	"; Imagebase   : 8008000");
 	update_extra_cmt		(0X8008000,	E_PREV + 3,	"; ");
@@ -6782,6 +6782,12 @@ static Bytes_0(void) {
 	create_insn	(x=0X800E822);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X800E824);
+	op_plain_offset	(x,	1,	0X20001AB4);
+	op_plain_offset	(x,	129,	0X20001AB4);
+	create_insn	(x=0X800E868);
+	op_plain_offset	(x,	1,	0);
+	op_plain_offset	(x,	129,	0);
 }
 
 //------------------------------------------------------------------------
@@ -6791,12 +6797,6 @@ static Bytes_1(void) {
         auto x;
 #define id x
 
-	create_insn	(x=0X800E824);
-	op_plain_offset	(x,	1,	0X20001AB4);
-	op_plain_offset	(x,	129,	0X20001AB4);
-	create_insn	(x=0X800E868);
-	op_plain_offset	(x,	1,	0);
-	op_plain_offset	(x,	129,	0);
 	create_insn	(x=0X800E86E);
 	op_plain_offset	(x,	1,	0X20001AB4);
 	op_plain_offset	(x,	129,	0X20001AB4);
@@ -12241,6 +12241,11 @@ static Bytes_1(void) {
 	make_array	(0X801A69C,	0X4);
 	create_dword	(0X1FFFF7E8);
 	create_dword	(0X1FFFF7EC);
+	create_dword	(0X1FFFF7F0);
+	make_array	(0X1FFFF7F4,	0XC);
+	create_word	(0X1FFFF800);
+	create_word	(0X1FFFF802);
+	make_array	(0X1FFFF804,	0X4);
 }
 
 //------------------------------------------------------------------------
@@ -12250,11 +12255,6 @@ static Bytes_2(void) {
         auto x;
 #define id x
 
-	create_dword	(0X1FFFF7F0);
-	make_array	(0X1FFFF7F4,	0XC);
-	create_word	(0X1FFFF800);
-	create_word	(0X1FFFF802);
-	make_array	(0X1FFFF804,	0X4);
 	create_word	(0X1FFFF808);
 	create_word	(0X1FFFF80A);
 	create_word	(0X1FFFF80C);
@@ -12343,6 +12343,7 @@ static Bytes_2(void) {
 	create_byte	(0X20000167);
 	set_name	(0X20000167,	"active_transciever_attenuation");
 	create_byte	(0X20000168);
+	set_name	(0X20000168,	"transceiver_pwr_mode_unk016C");
 	create_byte	(0X20000169);
 	create_byte	(0X2000016A);
 	create_byte	(0X2000016B);
@@ -12433,6 +12434,7 @@ static Bytes_2(void) {
 	create_dword	(0X20001AB9);
 	make_array	(0X20001ABD,	0X3);
 	create_dword	(0X20001AC0);
+	set_name	(0X20001AC0,	"transceiver_flags_1A28");
 	create_dword	(0X20001AC4);
 	create_byte	(0X20001B20);
 	make_array	(0X20001B21,	0X3);
@@ -12468,6 +12470,7 @@ static Bytes_2(void) {
 	create_byte	(0X20001BCD);
 	set_name	(0X20001BCD,	"tcx_control_attenuation_by_packet");
 	create_byte	(0X20001BCE);
+	set_name	(0X20001BCE,	"rel_tcx_control_attenuation_by_unkn1");
 	create_byte	(0X20001BCF);
 	set_name	(0X20001BCF,	"transciever_attenuation");
 	create_byte	(0X20001BD0);

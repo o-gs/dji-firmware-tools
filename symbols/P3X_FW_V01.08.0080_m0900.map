@@ -62,7 +62,7 @@
  0001:0800F2C2       fpga_set_receiver_id
  0001:0800F3B4       aErrorAd9363Reg
  0001:0800F3D0       aErrorAr8003Reg
- 0001:0800F54A       spipacket_sub_800F54A
+ 0001:0800F54A       spipacket_fpga_read_shared_settings
  0001:0800F87C       a_2x_2x_2x_2x_0
  0001:0800FB70       tcx_config_power_zone
  0001:0800FC7A       j_ad936x_reg_sync_write
@@ -76,6 +76,10 @@
  0001:08010160       aId_2x_2x_2x_2x
  0001:08010234       jpt_8010230
  0001:08010272       def_8010230
+ 0001:080102E0       get_transciever_flags_20001A28_F
+ 0001:080102EA       get_transciever_flags_20001A28_G
+ 0001:080102FA       get_transciever_flags_20001A28_H
+ 0001:0801030A       get_transciever_flags_20001A28_I
  0001:080105A4       a_2x_2x_2x_2x_2
  0001:080105FA       tcx_config_80105FA
  0001:08010664       set_transciever_flag_20001A28_E
@@ -187,7 +191,7 @@
  0003:200016FD       payload_set03_cmdAA
  0003:20001920       input_buf
  0003:20001A1C       ofdm_receiver_id
- 0003:20001A28       transciever_flags_20001A28
+ 0003:20001A28       transceiver_flags_1A28
  0003:20001A30       spipacket_buf
  0003:20001B2D       tcx_control_attenuation_by_packet
  0003:20001B2E       tcx_control_attenuation_by_unkn1
