@@ -3087,7 +3087,9 @@ loc_label_ret1:
 re_func_update_tcx_power_zone_flag_C1_V01_05_m1400_original = {
 'name': "update_tcx_power_zone_flag-original",
 'version': "C1_FW_V01.05-m1400",
-# Bit 31 (0x1f) of transceiver_flags_1A28 variable is POWER_ZONE_CE.
+# This function is only present in C1_FW, as the air part receives
+# the value set by RC and does not detect the zone by itself.
+# Bit 31 (0x1f) of transceiver_flags_1A28 variable is POWER_ZONE_FCC.
 're': """
 update_tcx_power_zone_flag:
   ldr	r1, \[pc, #(?P<ofdm_receiver_id>[0-9a-fx]+)\]
@@ -3122,7 +3124,7 @@ update_tcx_power_zone_flag:
   lsls	r2, r2, #0x1f
   bne	#(?P<loc_label_ret1>[0-9a-fx]+)
   ldr	r2, \[r1, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
-  bfc	r2, #0x1f, #1
+  orr	r2, r2, #0x80000000
   str	r2, \[r1, #(?P<rel_transceiver_flags_1A28>[0-9a-fx]+)\]
 loc_label_ret1:
   bx	lr
@@ -3142,6 +3144,9 @@ loc_label_ret1:
 re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_original = {
 'name': "update_tcx_power_zone_flag-original",
 'version': "C1_FW_V01.05-m1401",
+# This function is only present in C1_FW, as the air part receives
+# the value set by RC and does not detect the zone by itself.
+# Bit 31 (0x1f) of transceiver_flags_1A28 variable is POWER_ZONE_FCC.
 're': """
 update_tcx_power_zone_flag:
   push	{lr}
@@ -3175,7 +3180,7 @@ re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_setfcc = {
 're': """
 update_tcx_power_zone_flag:
   push	{lr}
-  movs	r1, #0x0
+  movs	r1, #0x1
   bl	#(?P<get_dword_33C0>[0-9a-fx]+)
   and	r0, r0, #1
   cbnz	r0, #(?P<loc_label_ret1>[0-9a-fx]+)
