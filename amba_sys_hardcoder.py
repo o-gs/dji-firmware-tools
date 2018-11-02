@@ -696,6 +696,7 @@ def armfw_elf_generic_objdump(po, elffh, asm_submode=None):
             print("{:s}: Found section {:s}".format(po.elffile,esection.name))
 
         section = {
+              'index' : i,
               'name' : esection.name,
               'addr' : esection['sh_addr'],
               'data' : esection.data(),
@@ -2025,6 +2026,7 @@ def armfw_elf_paramvals_extract_list(po, elffh, re_list, asm_submode=None):
             print("{:s}: Found section {:s} at 0x{:06x}".format(po.elffile,section.name,section['sh_addr']))
 
         elf_sections[section.name] = {
+              'index' : i,
               'name' : section.name,
               'addr' : section['sh_addr'],
               'data' : section.data(),
@@ -2093,13 +2095,40 @@ def armfw_elf_paramvals_extract_list(po, elffh, re_list, asm_submode=None):
     return pub_params_list, glob_params_list, elf_sections, cs, elfobj, asm_arch
 
 
+def armfw_elf_paramvals_export_simple_list(po, params_list, valfile):
+    valfile.write("{:s}\t{:s}\n".format("Name","Value"))
+    for par_name, par_info in params_list.items():
+        valfile.write("{:s}\t{:s}\n".format(par_name,par_info['str_value']))
+    if (po.verbose > 0):
+        print("{:s}: Listed {:d} hardcoded values".format(po.elffile,len(params_list)))
+
 def armfw_elf_ambavals_list(po, elffh):
     params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
     # print list of parameter values
+    armfw_elf_paramvals_export_simple_list(po, params_list, sys.stdout)
+
+
+def armfw_elf_paramvals_export_mapfile(po, params_list, elf_sections, asm_arch, valfile):
+    valfile.write("  {:s}         {:s}\n".format("Address","Publics by Value"))
+    symbols_num = 0
     for par_name, par_info in params_list.items():
-        print("{:s}\t{:s}".format(par_name,par_info['str_value']))
+        if not value_type_is_known_address(par_info['type']):
+            continue
+        if par_info['variety'] in [CodeVariety.CHUNK]:
+            continue
+        var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, par_info['value'])
+        if var_sect is None:
+            eprint("{:s}: Cannot retrieve offset for symbol '{:s}' at 0x{:08x}".format(po.elffile,par_name,par_info['value']))
+            continue
+        var_sect_index = elf_sections[var_sect]['index']
+        valfile.write(" {:04X}:{:08X}       {:s}\n".format(var_sect_index,var_offs,par_info['name']))
+        symbols_num += 1
     if (po.verbose > 0):
-        print("{:s}: Listed {:d} hardcoded values".format(po.elffile,len(params_list)))
+        print("{:s}: Map contains {:d} symbols".format(po.elffile,symbols_num))
+
+def armfw_elf_ambavals_mapfile(po, elffh):
+    _, params_list, elf_sections, _, _, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
+    armfw_elf_paramvals_export_mapfile(po, params_list, elf_sections, asm_arch, sys.stdout)
 
 
 def armfw_elf_paramvals_export_json(po, params_list, valfile):
@@ -2290,6 +2319,9 @@ def main():
     subparser.add_argument("-d", "--objdump", action="store_true",
           help="display asm like slightly primitive objdump")
 
+    subparser.add_argument("--mapfile", action="store_true",
+          help="export known symbols to map file")
+
     subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
             .format(version=__version__,author=__author__),
           help="Display version information and exit")
@@ -2320,6 +2352,17 @@ def main():
         elffh = open(po.elffile, "rb")
 
         armfw_elf_ambavals_list(po, elffh)
+
+        elffh.close();
+
+    elif po.mapfile:
+
+        if (po.verbose > 0):
+            print("{}: Opening for mapfile generation".format(po.elffile))
+
+        elffh = open(po.elffile, "rb")
+
+        armfw_elf_ambavals_mapfile(po, elffh)
 
         elffh.close();
 
