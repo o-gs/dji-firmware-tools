@@ -150,6 +150,7 @@ from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
   armfw_elf_paramvals_get_depend_list, armfw_elf_publicval_update, \
   armfw_elf_paramvals_update_list, armfw_elf_generic_objdump, \
   armfw_asm_search_strings_to_re_list, armfw_elf_paramvals_export_json, \
+  armfw_elf_paramvals_export_simple_list, armfw_elf_paramvals_export_mapfile, \
   VarType, DataVariety, CodeVariety
 
 
@@ -4121,10 +4122,12 @@ re_general_list = [
 def armfw_elf_lbstm32_list(po, elffh):
     params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
     # print list of parameter values
-    for par_name, par_info in params_list.items():
-        print("{:s}\t{:s}".format(par_name,par_info['str_value']))
-    if (po.verbose > 0):
-        print("{:s}: Listed {:d} hardcoded values".format(po.elffile,len(params_list)))
+    armfw_elf_paramvals_export_simple_list(po, params_list, sys.stdout)
+
+
+def armfw_elf_lbstm32_mapfile(po, elffh):
+    _, params_list, elf_sections, _, _, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
+    armfw_elf_paramvals_export_mapfile(po, params_list, elf_sections, asm_arch, sys.stdout)
 
 
 def armfw_elf_lbstm32_extract(po, elffh):
@@ -4198,6 +4201,9 @@ def main():
     subparser.add_argument("-d", "--objdump", action="store_true",
           help="display asm like slightly primitive objdump")
 
+    subparser.add_argument("--mapfile", action="store_true",
+          help="export known symbols to map file")
+
     subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
             .format(version=__version__,author=__author__),
           help="Display version information and exit")
@@ -4228,6 +4234,17 @@ def main():
         elffh = open(po.elffile, "rb")
 
         armfw_elf_lbstm32_list(po, elffh)
+
+        elffh.close();
+
+    elif po.mapfile:
+
+        if (po.verbose > 0):
+            print("{}: Opening for mapfile generation".format(po.elffile))
+
+        elffh = open(po.elffile, "rb")
+
+        armfw_elf_lbstm32_mapfile(po, elffh)
 
         elffh.close();
 
