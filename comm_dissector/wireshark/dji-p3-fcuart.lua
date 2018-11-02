@@ -770,8 +770,8 @@ local HD_LINK_UART_CMD_TEXT = {
     [0x03] = 'HDLnk Push BB Status',
     [0x04] = 'HDLnk Write FPGA',
     [0x05] = 'HDLnk Read FPGA',
-    [0x06] = 'HDLnk Write Transciever Reg', -- Set register in AD9363
-    [0x07] = 'HDLnk Read Transciever Reg', -- Get register from AD9363
+    [0x06] = 'HDLnk Write Hardware Reg', -- Set register in AD9363
+    [0x07] = 'HDLnk Read Hardware Reg', -- Get register from AD9363
     [0x08] = 'HDLnk Push VT Signal Quality', -- Video transmission signal strength
     [0x09] = 'HDLnk Req Freq Energy',
     [0x0a] = 'HDLnk Push Freq Energy', -- Sweep Frequency
@@ -6937,6 +6937,10 @@ local CENTER_BRD_UART_CMD_DISSECT = {
     [0x06] = center_brd_center_battery_common_dissector,
 }
 
+-- Remote Control - Generic fields used in many packets
+
+f.rc_opertation_status_byte = ProtoField.uint8 ("dji_p3.rc_opertation_status_byte", "Operation status", base.HEX, nil, nil, "Returned error code of the operation; 0 means success")
+
 -- Remote Control - RC Push Parameter - 0x05
 
 f.rc_push_param_aileron = ProtoField.uint16 ("dji_p3.rc_push_param_aileron", "Aileron", base.HEX)
@@ -7020,6 +7024,8 @@ f.rc_set_rf_cert_config_field6 = ProtoField.uint8 ("dji_p3.rc_set_rf_cert_config
 f.rc_set_rf_cert_config_field7 = ProtoField.uint8 ("dji_p3.rc_set_rf_cert_config_field7", "Field 7", base.HEX)
 
 local function rc_set_rf_cert_config_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
@@ -7246,24 +7252,70 @@ local DM36X_UART_CMD_DISSECT = {
     [0x0e] = dm36x_get_app_conn_stat_dissector,
 }
 
--- HD Link - HDLnk Write Transciever Register packet - 0x06
+-- HD Link - Generic fields used in many packets
 
-f.hd_link_transciever_reg_addr = ProtoField.uint16 ("dji_p3.hd_link_transciever_reg_set", "Register addr", base.HEX, nil, nil, "AD9363 register address")
-f.hd_link_transciever_reg_val = ProtoField.uint8 ("dji_p3.hd_link_transciever_reg_val", "Register value", base.HEX, nil, nil, "AD9363 register value")
+f.hd_link_opertation_status_byte = ProtoField.uint8 ("dji_p3.hd_link_opertation_status_byte", "Operation status", base.HEX, nil, nil, "Returned error code of the operation; 0 means success")
 
-local function hd_link_write_transciever_reg_dissector(pkt_length, buffer, pinfo, subtree)
+-- HD Link - HDLnk Write Hardware Register packet - 0x06
+
+f.hd_link_hardware_reg_addr = ProtoField.uint16 ("dji_p3.hd_link_hardware_reg_set", "Register addr", base.HEX, nil, nil, "Address within AD9363, FPGA or special value recognized by Lightbridge MCU")
+f.hd_link_hardware_reg_val = ProtoField.uint8 ("dji_p3.hd_link_hardware_reg_val", "Register value", base.HEX, nil, nil, "Value of the hardware register")
+
+local function hd_link_write_hardware_reg_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.hd_link_transciever_reg_addr, payload(offset, 2))
-    offset = offset + 2
+    if pack_type == 0 then -- Request
 
-    subtree:add_le (f.hd_link_transciever_reg_val, payload(offset, 1))
-    offset = offset + 1
+        subtree:add_le (f.hd_link_hardware_reg_addr, payload(offset, 2))
+        offset = offset + 2
 
-    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Write Transciever Reg: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Write Transciever Reg: Payload size different than expected") end
+        subtree:add_le (f.hd_link_hardware_reg_val, payload(offset, 1))
+        offset = offset + 1
+
+        if (offset ~= 3) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Write Hardware Reg: Offset does not match - internal inconsistency") end
+
+    else -- Response
+
+        subtree:add_le (f.hd_link_opertation_status_byte, payload(offset, 1))
+        offset = offset + 1
+
+        if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Read Hardware Reg: Offset does not match - internal inconsistency") end
+
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Write Hardware Reg: Payload size different than expected") end
+end
+
+-- HD Link - HDLnk Read Hardware Register packet - 0x07
+
+local function hd_link_read_hardware_reg_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if pack_type == 0 then -- Request
+
+        subtree:add_le (f.hd_link_hardware_reg_addr, payload(offset, 2))
+        offset = offset + 2
+
+        if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Read Hardware Reg: Offset does not match - internal inconsistency") end
+
+    else -- Response
+
+        subtree:add_le (f.hd_link_hardware_reg_val, payload(offset, 1))
+        offset = offset + 1
+
+        if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Read Hardware Reg: Offset does not match - internal inconsistency") end
+
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Read Hardware Reg: Payload size different than expected") end
 end
 
 -- HD Link - HDLnk Push VT Signal Quality - 0x08
@@ -7787,7 +7839,8 @@ end
 local HD_LINK_UART_CMD_DISSECT = {
     [0x01] = flyc_osd_general_dissector,
     [0x02] = flyc_osd_home_point_dissector,
-    [0x06] = hd_link_write_transciever_reg_dissector,
+    [0x06] = hd_link_write_hardware_reg_dissector,
+    [0x07] = hd_link_read_hardware_reg_dissector,
     [0x08] = hd_link_push_vt_signal_quality_dissector,
     [0x0a] = hd_link_push_freq_energy_dissector,
     [0x0b] = hd_link_push_device_status_dissector,
