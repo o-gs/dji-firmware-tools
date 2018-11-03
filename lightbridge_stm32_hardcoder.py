@@ -1850,7 +1850,7 @@ loc_phase4_s2:
   ;cmp	r0, #0
   ;bne	#(?P<loc_label_ret1>[0-9a-fx]+)
   ;ldr	r0, \[r5, #(?P<rel_byte_r5p024>[0-9a-fx]+)\]
-  dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){1,8})
+  dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){1,16})
   movs	r1, #0xa
   adds	r0, r0, #1
   udiv	r2, r0, r1
@@ -1937,7 +1937,7 @@ loc_label_ret1:
   'tx_sub_800D3E4':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
   'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,16)},
-  'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,8)},
+  'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,16)},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
   'ofdm_receiver_id':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'rel_tcx_control_attenuation_by_packet':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.INT32_T},
