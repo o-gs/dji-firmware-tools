@@ -3736,10 +3736,10 @@ loc_label03:
   beq	#(?P<loc_label05>[0-9a-fx]+)
   b	#(?P<loc_label07>[0-9a-fx]+)
 loc_board_ad:
-  ldr	r0, \[pc, #0x2e4\]
+  ldr	r0, \[pc, #(?P<byte_8016118>[0-9a-fx]+)\]
   b	#(?P<loc_label06>[0-9a-fx]+)
 loc_label05:
-  ldr	r0, \[pc, #0x2e4\]
+  ldr	r0, \[pc, #(?P<byte_8016318>[0-9a-fx]+)\]
 loc_label06:
   add.w	r0, r0, r6, lsl #8
   ldrb	r1, \[r0, r4\]
@@ -3794,12 +3794,12 @@ loc_label12:
   cmp	r0, #5
   bne	#(?P<loc_label15>[0-9a-fx]+)
 loc_label13:
-  ldr	r0, \[pc, #0x274\]
-  ldr	r1, \[pc, #0x274\]
+  ldr	r0, \[pc, #(?P<dword_200000FC>[0-9a-fx]+)\]
+  ldr	r1, \[pc, #(?P<unk_1000910>[0-9a-fx]+)\]
   ldr	r0, \[r0\]
   cmp	r0, r1
   bne	#(?P<loc_label15>[0-9a-fx]+)
-  ldr	r5, \[pc, #0x270\]
+  ldr	r5, \[pc, #(?P<ofdm_init_list_1>[0-9a-fx]+)\]
   movs	r4, #0
 loc_label14:
   adds	r0, r5, r4
@@ -3971,9 +3971,13 @@ loc_label28:
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #2
   beq	#(?P<loc_label31>[0-9a-fx]+)
-  b	#(?P<loc_label33>[0-9a-fx]+)
-loc_label29:
-  b	#(?P<loc_label34>[0-9a-fx]+)
+  ; in P3X_FW_V01.08, the wildcard matches lines:
+  ;b	#(?P<loc_label33>[0-9a-fx]+)
+  ;loc_label29:
+  ;b	#(?P<loc_label34>[0-9a-fx]+)
+  ; in wm330_0900_v04.03.00.00, the wildcard matches lines:
+  ;b	#(?P<loc_label33>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){1,4})
 loc_label30:
   movs	r0, #1
   bl	#(?P<tx_sub_800D3E4>[0-9a-fx]+)
@@ -3986,7 +3990,14 @@ loc_label30:
   movs	r1, #(?P<board_ar7_attenuation_tx1_init>[0-9a-fx]+)
   movs	r0, #0x54 ; AR8003_REG_TX1_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
-  movs	r2, #0
+  ;movs	r2, #0
+  ; in P3X_FW_V01.08, the wildcard matches lines:
+  ;movs	r2, #0
+  ; in wm330_0900_v04.03.00.00, the wildcard matches lines:
+  ;loc_label29:
+  ;b	#(?P<loc_label34>[0-9a-fx]+)
+  ;movs	r2, #0
+  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,4})
   movs	r1, #(?P<board_ar7_attenuation_tx2_init>[0-9a-fx]+)
   movs	r0, #0x5c ; AR8003_REG_TX2_ATTEN_0
   bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
@@ -4033,7 +4044,14 @@ loc_label34:
   'sub_800D414':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'sub_800D7B8':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'sub_800C1E4':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
+  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'byte_8016118':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'byte_8016318':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'dword_200000FC':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'unk_1000910':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'ofdm_init_list_1':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label02':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label03':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -4066,8 +4084,8 @@ loc_label34:
   'loc_label30':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label31':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label32':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label33':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_label34':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'loc_label33':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'loc_label34':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'board_ad4_attenuation_tx1_init':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "board_ad4_attenuation_tx1_fcc", 'getter': (lambda val: val)},
