@@ -837,6 +837,9 @@ def armfw_elf_section_search_varlen_point_mark(search, varlen_delta):
 def armfw_elf_section_search_varlen_point_rewind(search):
     """ Rewinds the search to last varlen entry which may be increased.
     """
+    if search['best_match_lines'] < search['match_lines']:
+        search['best_match_address'] = search['match_address']
+        search['best_match_lines'] = search['match_lines']
     for varlen in reversed(search['varlen_points']):
         if varlen['varlen_delta'] <= 0:
             search['varlen_points'].pop()
