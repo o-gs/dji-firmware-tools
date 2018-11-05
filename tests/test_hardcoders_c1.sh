@@ -63,67 +63,72 @@ function modify_json_value_inplace {
      }' "${JSONFILE}"
 }
 
-function exec_mod_for_m1400 {
-  local FWPKG=$1
-  set -x
-  cp "${FWPKG}_m1400.bin" "${FWPKG}_m1400.orig.bin"
-  ./arm_bin2elf.py -vvv -e -b 0x000a000 --section .ARM.exidx@0x01ce00:0 --section .bss@0xfff6000:0x8000 \
-   --section .bss2@0x3fff6000:0x50000 --section .bss3@0xdfff6000:0x10000 -p "${FWPKG}_m1400.bin"
-  ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWPKG}_m1400.elf"
+function verify_changed_bytes_between_files {
+  MIN_CHANGED="$1"
+  MAX_CHANGED="$2"
+  FILE1="$3"
+  FILE2="$4"
 
-  modify_json_value_inplace "${FWPKG}_m1400.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override" "1"
-  modify_json_value_inplace "${FWPKG}_m1400.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value" "0"
-  modify_json_value_inplace "${FWPKG}_m1400.json" "og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*" "0"
+  local FWDIFF_COUNT=$(cmp -l "${FILE1}" "${FILE2}" | wc -l)
 
-  ./lightbridge_stm32_hardcoder.py -vvv -u -e "${FWPKG}_m1400.elf"
-  arm-none-eabi-objcopy -O binary "${FWPKG}_m1400.elf" "${FWPKG}_m1400.bin"
-
-  # Verify by checking amount of changes within the file
-  local FWDIFF_COUNT=$(cmp -l "${FWPKG}_m1400.orig.bin" "${FWPKG}_m1400.bin" | wc -l)
-  set +x
-
-  if [ "${FWDIFF_COUNT}" -le "1" ] || [ "${FWDIFF_COUNT}" -ge "32" ]; then
-    echo "### FAIL: found ${FWDIFF_COUNT} binary changes which is outside expected range. ###"
+  if [ "${FWDIFF_COUNT}" -lt "${MIN_CHANGED}" ] || [ "${FWDIFF_COUNT}" -gt "${MAX_CHANGED}" ]; then
+    echo "### FAIL: found ${FWDIFF_COUNT} binary changes which is outside expected range (${MIN_CHANGED}..${MAX_CHANGED}). ###"
     exit 2
   fi
-  echo "### SUCCESS: Amount of changes in bin file is reasonable. ###"
+  echo "### OK: Amount of changes in bin file, ${FWDIFF_COUNT}, is reasonable. ###"
+}
+
+function exec_mod_for_m1400 {
+  local FWMODL=$1
+  set -x
+  cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
+  ./arm_bin2elf.py -vvv -e -b 0x000a000 --section .ARM.exidx@0x01ce00:0 --section .bss@0xfff6000:0x8000 \
+   --section .bss2@0x3fff6000:0x50000 --section .bss3@0xdfff6000:0x10000 -p "${FWMODL}.bin"
+  ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWMODL}.elf"
+
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override" "1"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value" "0"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*" "0"
+
+  ./lightbridge_stm32_hardcoder.py -vvv -u -e "${FWMODL}.elf"
+  arm-none-eabi-objcopy -O binary "${FWMODL}.elf" "${FWMODL}.bin"
+
+  # Verify by checking amount of changes within the file
+  set +x
+  verify_changed_bytes_between_files 2 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
 }
 
 function exec_mod_for_m1401 {
-  local FWPKG=$1
+  local FWMODL=$1
   set -x
-  cp "${FWPKG}_m1401.bin" "${FWPKG}_m1401.orig.bin"
+  cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
   ./arm_bin2elf.py -vv -e -b 0x000a000 --section .ARM.exidx@0x019300:0 --section .bss@0x1ff6000:0x4000 \
    --section .bss2@0x1ffe000:0x1000 --section .bss3@0x1bff6000:0x2400 --section .bss4@0x1c01a000:0x2400 \
    --section .bss5@0x40022000:0x50000 --section .bss6@0x400ee000:0x200 --section .bss7@0xe0004000:0x1200 \
-   -p "${FWPKG}_m1401.bin"
-  ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWPKG}_m1401.elf"
+   -p "${FWMODL}.bin"
+  ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWMODL}.elf"
 
-  modify_json_value_inplace "${FWPKG}_m1401.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override" "1"
-  modify_json_value_inplace "${FWPKG}_m1401.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value" "0"
-  modify_json_value_inplace "${FWPKG}_m1401.json" "og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*" "0"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override" "1"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value" "0"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*" "0"
 
-  ./lightbridge_stm32_hardcoder.py -vvv -u -e "${FWPKG}_m1401.elf"
-  arm-none-eabi-objcopy -O binary "${FWPKG}_m1401.elf" "${FWPKG}_m1401.bin"
+  ./lightbridge_stm32_hardcoder.py -vvv -u -e "${FWMODL}.elf"
+  arm-none-eabi-objcopy -O binary "${FWMODL}.elf" "${FWMODL}.bin"
 
   # Verify by checking amount of changes within the file
-  local FWDIFF_COUNT=$(cmp -l "${FWPKG}_m1401.orig.bin" "${FWPKG}_m1401.bin" | wc -l)
   set +x
-
-  if [ "${FWDIFF_COUNT}" -le "1" ] || [ "${FWDIFF_COUNT}" -ge "32" ]; then
-    echo "### FAIL: found ${FWDIFF_COUNT} binary changes which is outside expected range. ###"
-    exit 2
-  fi
-  echo "### SUCCESS: Amount of changes in bin file is reasonable. ###"
+  verify_changed_bytes_between_files 2 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
 }
 
 for FWPKG in "${FWPKG_LIST[@]}"; do
   echo "### TEST of hardcoders with ${FWPKG} ###"
   ./dji_xv4_fwcon.py -vvv -x -p "fw/${FWPKG}.bin"
 
-  exec_mod_for_m1400 "${FWPKG}"
+  exec_mod_for_m1400 "${FWPKG}_m1400"
   if [[ "${FWPKG}" > "C1_FW_V01.04.9999" ]]; then
-    exec_mod_for_m1401 "${FWPKG}"
+    exec_mod_for_m1401 "${FWPKG}_m1401"
   fi
 done
 

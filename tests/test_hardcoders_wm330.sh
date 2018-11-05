@@ -51,6 +51,21 @@ function modify_json_value_inplace {
      }' "${JSONFILE}"
 }
 
+function verify_changed_bytes_between_files {
+  MIN_CHANGED="$1"
+  MAX_CHANGED="$2"
+  FILE1="$3"
+  FILE2="$4"
+
+  local FWDIFF_COUNT=$(cmp -l "${FILE1}" "${FILE2}" | wc -l)
+
+  if [ "${FWDIFF_COUNT}" -lt "${MIN_CHANGED}" ] || [ "${FWDIFF_COUNT}" -gt "${MAX_CHANGED}" ]; then
+    echo "### FAIL: found ${FWDIFF_COUNT} binary changes which is outside expected range (${MIN_CHANGED}..${MAX_CHANGED}). ###"
+    exit 2
+  fi
+  echo "### OK: Amount of changes in bin file, ${FWDIFF_COUNT}, is reasonable. ###"
+}
+
 function exec_mod_for_m0306 {
   local FWMODL=$1
   set -x
@@ -70,14 +85,9 @@ function exec_mod_for_m0306 {
   arm-none-eabi-objcopy -O binary "${FWMODL}.elf" "${FWMODL}.bin"
 
   # Verify by checking amount of changes within the file
-  local FWDIFF_COUNT=$(cmp -l "${FWMODL}.orig.bin" "${FWMODL}.bin" | wc -l)
   set +x
-
-  if [ "${FWDIFF_COUNT}" -le "10" ] || [ "${FWDIFF_COUNT}" -ge "32" ]; then
-    echo "### FAIL: found ${FWDIFF_COUNT} binary changes which is outside expected range. ###"
-    exit 2
-  fi
-  echo "### SUCCESS: Amount of changes in bin file is reasonable. ###"
+  verify_changed_bytes_between_files 8 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
 }
 
 for FWPKG in "${FWPKG_LIST[@]}"; do
