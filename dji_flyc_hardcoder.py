@@ -720,7 +720,7 @@ loc_8064642:
 ; The function continues
 """,
 'vars': {
-  'wp_mission_data_verify:':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'wp_mission_data_verify':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'loc_8064478':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_80643F0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_806440C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -773,6 +773,7 @@ wp_mission_data_verify:
   push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,4}), lr}
   ldr	r4, \[pc, #(?P<byte_20428D08>[0-9a-fx]+)\]
   ; block of code, 51 words in wm220_0306_v03.02.35.05
+  ; block of code, 42 words in wm330_0306_v03.01.10.93
   ; below code example is from WM100
   ;sub	sp, #0x1c
   ;ldrb	r1, \[r0\]
@@ -810,14 +811,14 @@ wp_mission_data_verify:
   ;strh	r1, \[r4, #0x2e\]
   ;ldrh.w	r1, \[r0, #0x27\]
   ;strh	r1, \[r4, #0x30\]
-  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){48,64})
+  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){40,64})
 loc_4AE050:
   adds	r1, r0, r3
   adds	r2, r4, r3
   adds	r3, r3, #1
   ldrb.w	r1, \[r1, #(?P<rel_unkn_val1>[0-9a-fx]+)\]
   uxtb	r3, r3
-  cmp	r3, #0xa
+  cmp	r3, #(?P<var_loop_limit1>[0-9a-fx]+) ; 0xa or 0xf
   strb.w	r1, \[r2, #(?P<rel_unkn_val2>[0-9a-fx]+)\]
   blo	#(?P<loc_4AE050>[0-9a-fx]+)
   ldrb	r0, \[r4, #0xd\]
@@ -904,18 +905,19 @@ loc_4AE12C:
 ; The function continues
 """,
 'vars': {
-  'wp_mission_data_verify:':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'wp_mission_data_verify':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'loc_4AE050':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4AE06C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4AE12C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   #'loc_4AE13E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   #'get_logger':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (48,64)},
+  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (40,64)},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
   'byte_20428D08':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
   'rel_unkn_val1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'rel_unkn_val2':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   #'rel_byte_2042B3B0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'var_loop_limit1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T},
   'max_unkn1_val':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T},
   'max_unkn2_val':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T},
   'dbl_just_pi':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.DOUBLE},
