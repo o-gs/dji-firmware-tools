@@ -679,8 +679,11 @@ loc_806440C:
   vldr	d1, \[pc, #(?P<dbl_pi_half>[0-9a-fx-]+)\]
   vmov	r0, r1, d0
   vmov	r2, r3, d1
-  bl	#(?P<sub_8086F86>[0-9a-fx]+)
-  ; block of code here, 186 words in P3X_FW_V01.07.0060
+  ; block of code, 187 words in P3X_FW_V01.07.0060 starting with:
+  ;bl	#(?P<sub_8086F86>[0-9a-fx]+)
+  ; block of code, 189 words in P3X_FW_V01.10.0090 starting with:
+  ;b	#0x8064a10
+  ;b	#0x8064a6e
   dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){176,200})
   vldr	d0, \[r4, #0x20\]
   vldr	d1, \[pc, #(?P<dbl_minus_pi>[0-9a-fx-]+)\]
