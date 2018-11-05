@@ -768,46 +768,49 @@ loc_8064642:
 re_func_wp_mission_data_verify_WM330_V03_01_10_93 = {
 'name': "wp_mission_data_verify",
 'version': "wm330_0306_v03.01.10.93",
-'re_before': """;TODO add function start to definition
+'re': """
 wp_mission_data_verify:
   push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,4}), lr}
   ldr	r4, \[pc, #(?P<byte_20428D08>[0-9a-fx]+)\]
-  sub	sp, #0x1c
-  ldrb	r1, \[r0\]
-  movs	r3, #0
-  strb	r1, \[r4\]
-  ldr.w	r1, \[r0, #1\]
-  str	r1, \[r4, #4\]
-  ldr.w	r1, \[r0, #5\]
-  str	r1, \[r4, #8\]
-  ldrb	r1, \[r0, #9\]
-  strb	r1, \[r4, #0xc\]
-  ldrb	r1, \[r0, #0xa\]
-  strb	r1, \[r4, #0xd\]
-  ldrb	r1, \[r0, #0xb\]
-  strb	r1, \[r4, #0xe\]
-  ldrb	r1, \[r0, #0xc\]
-  strb	r1, \[r4, #0xf\]
-  ldrb	r1, \[r0, #0xd\]
-  strb	r1, \[r4, #0x10\]
-  ldrb	r1, \[r0, #0xe\]
-  strb	r1, \[r4, #0x11\]
-  ldr.w	r2, \[r0, #0x13\]
-  ldr.w	r1, \[r0, #0xf\]
-  strd	r1, r2, \[r4, #0x18\]
-  ldr.w	r2, \[r0, #0x1b\]
-  ldr.w	r1, \[r0, #0x17\]
-  strd	r1, r2, \[r4, #0x20\]
-  ldr.w	r1, \[r0, #0x1f\]
-  str	r1, \[r4, #0x28\]
-  ldrb.w	r1, \[r0, #0x23\]
-  strb.w	r1, \[r4, #0x2c\]
-  ldrb.w	r1, \[r0, #0x24\]
-  strb.w	r1, \[r4, #0x2d\]
-  ldrh.w	r1, \[r0, #0x25\]
-  strh	r1, \[r4, #0x2e\]
-  ldrh.w	r1, \[r0, #0x27\]
-  strh	r1, \[r4, #0x30\]
+  ; block of code, 51 words in wm220_0306_v03.02.35.05
+  ; below code example is from WM100
+  ;sub	sp, #0x1c
+  ;ldrb	r1, \[r0\]
+  ;movs	r3, #0
+  ;strb	r1, \[r4\]
+  ;ldr.w	r1, \[r0, #1\]
+  ;str	r1, \[r4, #4\]
+  ;ldr.w	r1, \[r0, #5\]
+  ;str	r1, \[r4, #8\]
+  ;ldrb	r1, \[r0, #9\]
+  ;strb	r1, \[r4, #0xc\]
+  ;ldrb	r1, \[r0, #0xa\]
+  ;strb	r1, \[r4, #0xd\]
+  ;ldrb	r1, \[r0, #0xb\]
+  ;strb	r1, \[r4, #0xe\]
+  ;ldrb	r1, \[r0, #0xc\]
+  ;strb	r1, \[r4, #0xf\]
+  ;ldrb	r1, \[r0, #0xd\]
+  ;strb	r1, \[r4, #0x10\]
+  ;ldrb	r1, \[r0, #0xe\]
+  ;strb	r1, \[r4, #0x11\]
+  ;ldr.w	r2, \[r0, #0x13\]
+  ;ldr.w	r1, \[r0, #0xf\]
+  ;strd	r1, r2, \[r4, #0x18\]
+  ;ldr.w	r2, \[r0, #0x1b\]
+  ;ldr.w	r1, \[r0, #0x17\]
+  ;strd	r1, r2, \[r4, #0x20\]
+  ;ldr.w	r1, \[r0, #0x1f\]
+  ;str	r1, \[r4, #0x28\]
+  ;ldrb.w	r1, \[r0, #0x23\]
+  ;strb.w	r1, \[r4, #0x2c\]
+  ;ldrb.w	r1, \[r0, #0x24\]
+  ;strb.w	r1, \[r4, #0x2d\]
+  ;ldrh.w	r1, \[r0, #0x25\]
+  ;strh	r1, \[r4, #0x2e\]
+  ;ldrh.w	r1, \[r0, #0x27\]
+  ;strh	r1, \[r4, #0x30\]
+  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){48,64})
 loc_4AE050:
   adds	r1, r0, r3
   adds	r2, r4, r3
@@ -818,12 +821,9 @@ loc_4AE050:
   strb.w	r1, \[r2, #(?P<rel_unkn_val2>[0-9a-fx]+)\]
   blo	#(?P<loc_4AE050>[0-9a-fx]+)
   ldrb	r0, \[r4, #0xd\]
-  movs	r2, #1
+  movs	(r2|r1), #1
   cbnz	r0, #(?P<loc_4AE06C>[0-9a-fx]+)
-  strb	r2, \[r4, #0xd\]
-""",
-'re': """
-wp_mission_data_verify:
+  strb	(r2|r1), \[r4, #0xd\]
 loc_4AE06C:
   ldrb	r0, \[r4\]
   subs	r0, r0, #2
@@ -905,14 +905,16 @@ loc_4AE12C:
 """,
 'vars': {
   'wp_mission_data_verify:':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  #'loc_4AE050':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  #'loc_4AE06C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4AE050':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4AE06C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4AE12C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   #'loc_4AE13E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   #'get_logger':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (48,64)},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
-  #'rel_unkn_val1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
-  #'rel_unkn_val2':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'byte_20428D08':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'rel_unkn_val1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_unkn_val2':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   #'rel_byte_2042B3B0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'max_unkn1_val':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T},
   'max_unkn2_val':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT8_T},
