@@ -94,7 +94,7 @@ function exec_mod_for_m0100 {
 
   # Verify by checking amount of changes within the file
   set +x
-  verify_changed_bytes_between_files 5 48 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  verify_changed_bytes_between_files 28 48 "${FWMODL}.orig.bin" "${FWMODL}.bin"
   echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
 }
 
@@ -119,7 +119,7 @@ function exec_mod_for_m0800 {
 
   # Verify by checking amount of changes within the file
   set +x
-  verify_changed_bytes_between_files 5 32 "./${FWMODL}-encode_usb.orig.elf" "./${FWMODL}-encode_usb.elf"
+  verify_changed_bytes_between_files 10 32 "./${FWMODL}-encode_usb.orig.elf" "./${FWMODL}-encode_usb.elf"
   echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
 }
 
@@ -143,7 +143,7 @@ function exec_mod_for_m0306 {
 
   # Verify by checking amount of changes within the file
   set +x
-  verify_changed_bytes_between_files 2 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  verify_changed_bytes_between_files 12 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
   echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
 }
 
@@ -165,7 +165,12 @@ function exec_mod_for_m0900 {
 
   # Verify by checking amount of changes within the file
   set +x
-  verify_changed_bytes_between_files 2 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  if [[ "${FWMODL}" < "P3X_FW_V01.04.9999_m0900" ]]; then
+    # TODO - partial support only
+    verify_changed_bytes_between_files 2 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  else
+    verify_changed_bytes_between_files 20 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  fi
   echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
 }
 
