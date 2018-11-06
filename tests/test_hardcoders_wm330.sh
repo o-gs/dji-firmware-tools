@@ -90,14 +90,39 @@ function exec_mod_for_m0306 {
   echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
 }
 
+function exec_mod_for_m0900 {
+  local FWMODL=$1
+  set -x
+  cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
+  ./arm_bin2elf.py -vvv -e -b 0x8008000 --section .ARM.exidx@0x0D500:0 --section .bss@0x17FF7700:0x5A00 \
+   --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x2200 \
+   --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p "${FWMODL}.bin"
+  ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWMODL}.elf"
+
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override" "1"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value" "0"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*" "0"
+
+  ./lightbridge_stm32_hardcoder.py -vvv -u -e "${FWMODL}.elf"
+  arm-none-eabi-objcopy -O binary "${FWMODL}.elf" "${FWMODL}.bin"
+
+  # Verify by checking amount of changes within the file
+  set +x
+  verify_changed_bytes_between_files 20 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
+}
+
 for FWPKG in "${FWPKG_LIST[@]}"; do
   echo "### TEST of modding tools with ${FWPKG} ###"
   FWIMAH_LIST=$(tar -xvf "fw_imah/${FWPKG}")
   FWIMAH_0306=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0306_v.*\)[.]fw[.]sig$/\1/p')
   ./dji_imah_fwsig.py -vv -u -i "${FWIMAH_0306}.fw.sig"
   ./dji_mvfc_fwpak.py dec -i "${FWIMAH_0306}.fw_0306.bin"
+  FWIMAH_0900=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0900_v.*\)[.]fw[.]sig$/\1/p')
+  ./dji_imah_fwsig.py -vv -u -i "${FWIMAH_0900}.fw.sig"
 
   exec_mod_for_m0306 "${FWIMAH_0306}.fw_0306.decrypted"
+  exec_mod_for_m0900 "${FWIMAH_0900}.fw_0900"
 done
 
 echo "### PASS all tests ###"
