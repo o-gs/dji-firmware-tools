@@ -3341,17 +3341,140 @@ loc_15836:
 },
 }
 
-re_func_init_fpga_config_P3X_V01_07 = {
+re_func_init_fpga_config_P3X_V01_01 = {
 'name': "init_fpga_config",
-'version': "P3X_FW_V01.07",
+'version': "P3X_FW_V01.01",
+# Attenuation values were added to this function in P3X_FW_V01.05; this variant is useless, just to remove warnings
 're': """
 init_fpga_config:
   push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,12}), lr}
   mov.w	r8, #0
   movs	r7, #0
-  movs	r5, #0
+  movs	(r4|r5), #0
+  movs	(r5|r6), #0
+  movs	(r6|r4), #0
+  nop	
+  b	#(?P<loc_label35>[0-9a-fx]+)
+loc_label01:
   movs	r6, #0
-  movs	r4, #0
+  b	#(?P<loc_label08>[0-9a-fx]+)
+loc_label03:
+  movw	r0, #0x314c ; sizeof ofdm_init_list_2
+  cmp	r6, r0
+  blo	#(?P<loc_label06>[0-9a-fx]+)
+  b	#(?P<loc_label09>[0-9a-fx]+) ; end for ofdm_init_list_2
+loc_label06:
+  ldr	r0, \[pc, #(?P<ofdm_init_list_2>[0-9a-fx]+)\]
+  add.w	r8, r0, r6
+  adds	r6, r6, #4
+  mov	r0, r8
+  bl	#(?P<ofdm_init_instruction>[0-9a-fx]+)
+loc_label08:
+  b	#(?P<loc_label03>[0-9a-fx]+)
+loc_label09:
+  nop	
+  movs	r2, #0
+  movs	r1, #0x29
+  movs	r0, #0x14 ; AD9363_REG_ENSM_CONFIG_1
+  bl	#(?P<ad936x_reg_sync_write>[0-9a-fx]+)
+  movs	r1, #0
+  movs	r0, #0x17 ; AD9363_REG_STATE
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  mov	r4, r0
+  cmp	r4, #0x1a
+  bne	#(?P<loc_label18>[0-9a-fx]+)
+  movs	r0, #1
+  b	#(?P<loc_label17>[0-9a-fx]+)
+loc_label18:
+  movs	r0, #0
+loc_label17:
+  mov	r5, r0
+  movs	r1, #0
+  movs	r0, #0x5e
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  mov	r4, r0
+  and.w	r5, r5, r4, lsr #7
+  movs	r1, #0
+  movw	r0, #0x247
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  mov	(r4|r5), r0
+  ubfx	r0, (r4|r5), #1, #1
+  ands	r5, r0
+  movs	r1, #0
+  movw	r0, #0x287
+  bl	#(?P<ad936x_reg_sync_read>[0-9a-fx]+)
+  mov	r4, r0
+  ubfx	r0, r4, #1, #1
+  ands	r5, r0
+  cbz	r5, #(?P<loc_label34>[0-9a-fx]+)
+  movs	r0, #0xc8
+  bl	#(?P<sub_800C1E4>[0-9a-fx]+)
+  movs	r0, #1
+  bl	#(?P<tx_sub_800D3E4>[0-9a-fx]+)
+  movs	r0, #0x20 ; FPGA_REG_UNKN_20
+  bl	#(?P<spi_fpga_raw_read>[0-9a-fx]+)
+  orr	sb, r0, #0xc
+  mov	r1, sb
+  movs	r0, #0x20 ; FPGA_REG_UNKN_20
+  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
+  movs	r0, #2
+  bl	#(?P<tx_sub_800D3E4>[0-9a-fx]+)
+  movs	r1, #2
+  movs	r0, #1 ; FPGA_REG_UNKN_01
+  bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
+  bl	#(?P<sub_800D7B8>[0-9a-fx]+)
+  nop	
+  nop	
+  movs	r0, #1
+loc_label_ret1:
+  pop.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,12}), pc}
+loc_label34:
+  nop	
+  nop	
+  adds	r0, r7, #1
+  uxtb	r7, r0
+loc_label35:
+  cmp	r7, #3 ; num of retries
+  blt	#(?P<loc_label01>[0-9a-fx]+)
+  movs	r0, #0
+  b	#(?P<loc_label_ret1>[0-9a-fx]+)
+""",
+'vars': {
+  'init_fpga_config':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'ad936x_reg_sync_write':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'ad936x_reg_sync_read':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'spi_fpga_raw_write':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'spi_fpga_raw_read':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'ofdm_init_instruction':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'tx_sub_800D3E4':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_800D7B8':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_800C1E4':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'ofdm_init_list_2':	{'type': VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, 'variety': DataVariety.UNKNOWN},
+  'loc_label01':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label03':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label06':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label08':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label09':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label17':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label18':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label34':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label35':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_label_ret1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+},
+}
+
+re_func_init_fpga_config_P3X_V01_05 = {
+'name': "init_fpga_config",
+'version': "P3X_FW_V01.05",
+'re': """
+init_fpga_config:
+  push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,12}), lr}
+  mov.w	r8, #0
+  movs	r7, #0
+  movs	(r5|r4), #0
+  movs	(r6|r5), #0
+  movs	(r4|r6), #0
   nop	
   b	#(?P<loc_label35>[0-9a-fx]+)
 loc_label01:
@@ -4119,7 +4242,8 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_P3X_V01_07_constatt,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_original,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_C1_V01_04_m1400_constatt,},
-  {'sect': ".text", 'func': re_func_init_fpga_config_P3X_V01_07,},
+  {'sect': ".text", 'func': re_func_init_fpga_config_P3X_V01_01,},
+  {'sect': ".text", 'func': re_func_init_fpga_config_P3X_V01_05,},
   {'sect': ".text", 'func': re_func_init_fpga_config_P3X_V01_08,},
   {'sect': ".text", 'func': re_func_init_fpga_config_C1_V01_05_m1400,},
   {'sect': ".text", 'func': re_func_init_fpga_config_C1_V01_05_m1401,},
@@ -4136,6 +4260,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_original,},
   {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_setfcc,},
 ]
+
 
 def armfw_elf_lbstm32_list(po, elffh):
     params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
