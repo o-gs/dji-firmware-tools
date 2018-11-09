@@ -1371,55 +1371,57 @@ def find_patterns_diff(patterns_prev, patterns_next):
 
 
 def armfw_asm_is_data_definition(asm_arch, asm_line):
-    """ Recognizes data definition assembly line, without touching data.
+    """ Recognizes data definition assembly line, without fully interpreting data.
 
-    The fat that it doesn 't interpret data means it will work for regex too.
+    The fact that it doesn't interpret data means it will work for regex too
+    (though it might get signedness incorrectly).
     """
     re_isdata = re.search(r'^(dc[bwdq])\t(.*)$', asm_line)
     if re_isdata is None:
-        return None
+        return None, None, None
     elif re_isdata.group(1) == 'dcb':
-        single_len = 1
-    elif re_isdata.group(1) == 'dcw':
-        single_len = 2
-    elif re_isdata.group(1) == 'dcd':
-        single_len = 4
-    elif re_isdata.group(1) == 'dcq':
-        single_len = 8
-    return single_len
-
-def armfw_asm_parse_data_definition(asm_arch, asm_line):
-    """ Recognizes data definition assembly line, returns data as bytes.
-    """
-    re_isdata = re.search(r'^(dc[bwdq])\t(.*)$', asm_line)
-    dt_bytes = b''
-    # The way the variable is displayed - ie. text, hex, dec
-    if re_isdata is None:
-        return None
-    elif re_isdata.group(1) == 'dcb':
-        if '"' in re_isdata.group(2):
+        if re.match(r'".+"', re_isdata.group(2)):
             dt_variety = DataVariety.CHAR
         else:
             dt_variety = DataVariety.UINT8_T
         single_len = 1
     elif re_isdata.group(1) == 'dcw':
-        dt_variety = DataVariety.UINT16_T
+        if re.match(r'-[0-9]+"', re_isdata.group(2)):
+            dt_variety = DataVariety.INT16_T
+        else:
+            dt_variety = DataVariety.UINT16_T
         single_len = 2
     elif re_isdata.group(1) == 'dcd':
-        dt_variety = DataVariety.UINT32_T
+        if re.match(r'[0-9]+[.][0-9]+"', re_isdata.group(2)):
+            dt_variety = DataVariety.FLOAT
+        if re.match(r'-[0-9]+"', re_isdata.group(2)):
+            dt_variety = DataVariety.INT32_T
+        else:
+            dt_variety = DataVariety.UINT32_T
         single_len = 4
     elif re_isdata.group(1) == 'dcq':
-        dt_variety = DataVariety.UINT64_T
+        if re.match(r'[0-9]+[.][0-9]+"', re_isdata.group(2)):
+            dt_variety = DataVariety.DOUBLE
+        if re.match(r'-[0-9]+"', re_isdata.group(2)):
+            dt_variety = DataVariety.INT64_T
+        else:
+            dt_variety = DataVariety.UINT64_T
         single_len = 8
 
-    for dt_item in re_isdata.group(2).split(","):
+    return single_len, dt_variety, re_isdata.group(2)
+
+def armfw_asm_parse_data_definition(asm_arch, asm_line):
+    """ Recognizes data definition assembly line, returns data as bytes.
+    """
+    single_len, dt_variety, data_part = armfw_asm_is_data_definition(asm_arch, asm_line)
+    dt_bytes = b''
+    for dt_item in data_part.split(","):
         dt_sitem = dt_item.strip()
         dt_btitem = None
-        if dt_btitem is None:
-            try:
-                dt_btitem = int(dt_sitem, 0).to_bytes(single_len, byteorder=asm_arch['byteorder'])
-            except ValueError:
-                pass
+        try:
+            dt_btitem = int(dt_sitem, 0).to_bytes(single_len, byteorder=asm_arch['byteorder'])
+        except ValueError:
+            pass
         if dt_btitem is None:
             if dt_sitem.startswith('"') and dt_sitem.endswith('"'):
                 dt_btitem = dt_sitem[1:-1].encode()
@@ -1439,8 +1441,7 @@ def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, v
     """
     whole_size_min = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs, 'short')
     whole_size_max = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs, 'long')
-    curr_data = armfw_asm_parse_data_definition(asm_arch, pat_line)
-    itm_size = curr_data['item_size']
+    itm_size, itm_variety, _ = armfw_asm_is_data_definition(asm_arch, pat_line)
 
     if whole_size_max > whole_size_min:
         whole_size = whole_size_min + itm_size * var_size_inc
@@ -1459,7 +1460,7 @@ def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, v
         mnemonic = 'dcq'
     itm_count = whole_size // itm_size
     op_list = []
-    if curr_data['variety'] == DataVariety.CHAR:
+    if itm_variety == DataVariety.CHAR:
         itm_merge = b""
         for i in range(itm_count):
             curr_bt = bt_data[i*itm_size:(i+1)*itm_size]
@@ -1620,7 +1621,7 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
         sect_limit = sect_offs + block_len
     while sect_offs < sect_limit:
         curr_pattern = armfw_elf_section_search_get_pattern(search)
-        curr_is_data = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
+        curr_is_data, _, _ = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
         if curr_is_data is not None:
             # now matching a data line; get its length
             line_iter = [armfw_elf_data_definition_from_bytes(search['asm_arch'],search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs, curr_pattern, search['var_defs'], search['varlen_inc']),]
@@ -1647,7 +1648,7 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                         break
                     curr_pattern = armfw_elf_section_search_get_pattern(search)
                     sect_offs += size
-                    curr_is_data = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
+                    curr_is_data, _, _ = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
                     if curr_is_data is not None: break
                 else:
                     # Breaking the loop is only expensive for ASM code; for data, we don't really care that much
@@ -1672,7 +1673,7 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                 if re_code is None and search['match_lines'] == 1:
                     search = armfw_elf_section_search_reset(search)
                     curr_pattern = armfw_elf_section_search_get_pattern(search)
-                    curr_is_data = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
+                    curr_is_data, _, _ = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
                     if curr_is_data is not None: break
                     re_code = re.search(curr_pattern, instruction_str)
 
@@ -1691,7 +1692,7 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                         break
                     curr_pattern = armfw_elf_section_search_get_pattern(search)
                     sect_offs += size
-                    curr_is_data = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
+                    curr_is_data, _, _ = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
                     if curr_is_data is not None: break
                 else:
                     # Breaking the loop is expensive; do it only if we had more than one line matched, to search for overlapping areas
