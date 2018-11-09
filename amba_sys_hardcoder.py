@@ -1919,10 +1919,13 @@ def armfw_elf_value_pre_update_call(po, asm_arch, elf_sections, re_list, glob_pa
         # The value was taken directly from code - must be converted to int form
         prop_bytes = armfw_elf_search_value_native_type_to_bytes(asm_arch, glob_var_info, new_var_nativ)
         if len(prop_bytes) > 0:
-            prop_pad = len(prop_bytes) % 4
-            if prop_pad != 0:
-                prop_bytes = prop_bytes + (b"\0" * (4 - prop_pad))
-            new_value = int.from_bytes(prop_bytes, byteorder=asm_arch['byteorder'], signed=False)
+            if (glob_var_info['variety'] in [DataVariety.CHAR]):
+                new_value = prop_bytes.decode("ISO-8859-1")
+            else:
+                prop_pad = len(prop_bytes) % 4
+                if prop_pad != 0:
+                    prop_bytes = prop_bytes + (b"\0" * (4 - prop_pad))
+                new_value = int.from_bytes(prop_bytes, byteorder=asm_arch['byteorder'], signed=False)
         else:
             new_value = None
         if new_value is None:
