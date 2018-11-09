@@ -1116,7 +1116,7 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_long_values(asm_arch, p
             var_limit_max = 0x7F
         # Predict value of each variable which leads to longest code
         if 'maxValue' in var_info:
-            prop_ofs_val = armfw_elf_search_value_string_to_native_type(var_info, var_info['maxValue'])
+            var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['maxValue'])
         elif 'setValue' in var_info:
             var_info['value'] = armfw_elf_search_value_string_to_native_type(var_info, var_info['setValue'])
         elif 'defaultValue' in var_info:
@@ -1393,10 +1393,14 @@ def armfw_asm_parse_data_definition(asm_arch, asm_line):
     """
     re_isdata = re.search(r'^(dc[bwdq])\t(.*)$', asm_line)
     dt_bytes = b''
+    # The way the variable is displayed - ie. text, hex, dec
     if re_isdata is None:
         return None
     elif re_isdata.group(1) == 'dcb':
-        dt_variety = DataVariety.UINT8_T
+        if '"' in re_isdata.group(2):
+            dt_variety = DataVariety.CHAR
+        else:
+            dt_variety = DataVariety.UINT8_T
         single_len = 1
     elif re_isdata.group(1) == 'dcw':
         dt_variety = DataVariety.UINT16_T
@@ -1409,8 +1413,18 @@ def armfw_asm_parse_data_definition(asm_arch, asm_line):
         single_len = 8
 
     for dt_item in re_isdata.group(2).split(","):
-        dt_bytes += int(dt_item.strip(), 0).to_bytes(single_len, byteorder=asm_arch['byteorder'])
-    return {'variety': dt_variety, 'value': dt_bytes }
+        dt_sitem = dt_item.strip()
+        dt_btitem = None
+        if dt_btitem is None:
+            try:
+                dt_btitem = int(dt_sitem, 0).to_bytes(single_len, byteorder=asm_arch['byteorder'])
+            except ValueError:
+                pass
+        if dt_btitem is None:
+            if dt_sitem.startswith('"') and dt_sitem.endswith('"'):
+                dt_btitem = dt_sitem[1:-1].encode()
+        dt_bytes += dt_btitem
+    return {'variety': dt_variety, 'item_size': single_len, 'value': dt_bytes }
 
 
 def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, var_defs, var_size_inc=0):
@@ -1425,7 +1439,8 @@ def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, v
     """
     whole_size_min = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs, 'short')
     whole_size_max = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs, 'long')
-    itm_size = armfw_asm_is_data_definition(asm_arch, pat_line)
+    curr_data = armfw_asm_parse_data_definition(asm_arch, pat_line)
+    itm_size = curr_data['item_size']
 
     if whole_size_max > whole_size_min:
         whole_size = whole_size_min + itm_size * var_size_inc
@@ -1444,9 +1459,31 @@ def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, v
         mnemonic = 'dcq'
     itm_count = whole_size // itm_size
     op_list = []
-    for i in range(itm_count):
-        op_list.append(int.from_bytes(bt_data[i*itm_size:(i+1)*itm_size], byteorder=asm_arch['byteorder'], signed=False))
-    op_list_str = ["0x{:x}".format(itm) for itm in op_list]
+    if curr_data['variety'] == DataVariety.CHAR:
+        itm_merge = b""
+        for i in range(itm_count):
+            curr_bt = bt_data[i*itm_size:(i+1)*itm_size]
+            curr_int = int.from_bytes(curr_bt, byteorder=asm_arch['byteorder'], signed=False)
+            if curr_int >= 32 and curr_int <= 127:
+                itm_merge += curr_bt
+            else:
+                if len(itm_merge) > 0:
+                    op_list.append(itm_merge)
+                    itm_merge = b""
+                op_list.append(curr_int)
+        if len(itm_merge) > 0:
+            op_list.append(itm_merge)
+    else:
+        for i in range(itm_count):
+            op_list.append(int.from_bytes(bt_data[i*itm_size:(i+1)*itm_size], byteorder=asm_arch['byteorder'], signed=False))
+    op_list_str = []
+    for itm in op_list:
+        if isinstance(itm, int):
+            op_list_str.append("0x{:x}".format(itm))
+        elif isinstance(itm, (bytes, bytearray)):
+            op_list_str.append("\"{:s}\"".format(itm.decode()))
+        else:
+            raise ValueError("Unexpected type - internal error.")
     return bt_addr, whole_size, whole_size_max, mnemonic, ", ".join(op_list_str)
 
 
@@ -1491,10 +1528,15 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
         # Get direct int value or offset to value
         if var_info['type'] in (VarType.DIRECT_INT_VALUE,):
             # for direct values, count is used
-            if prop_count <= 1:
-                prop_ofs_val = int(var_val, 0)
+            # we may alco encounter a string
+            if var_info['variety'] in (DataVariety.CHAR,):
+                prop_ofs_val = [ord(sing_var) for sing_var in var_val]
+                #prop_ofs_val = var_val
             else:
-                prop_ofs_val = [int(sing_var.strip(),0) for sing_var in var_val.split(',')]
+                if prop_count <= 1:
+                    prop_ofs_val = int(var_val, 0)
+                else:
+                    prop_ofs_val = [int(sing_var.strip(),0) for sing_var in var_val.split(',')]
         elif var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_OFFSET,):
             prop_ofs_val = int(var_val, 0)
         elif var_info['type'] in (VarType.RELATIVE_PC_ADDR_TO_CODE, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA,):
@@ -1617,7 +1659,7 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                             search = armfw_elf_section_search_reset(search)
                         break
                     else: # search['match_lines'] == 0
-                        sect_offs += size
+                        sect_offs += search['asm_arch']['boundary']
         else:
             # now matching an assembly code line
             for (address, size, mnemonic, op_str) in cs.disasm_lite(search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs):
@@ -1807,26 +1849,38 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
         if (not inaccurate_size) and (var_info['cfunc_name'] != cfunc_name):
             eprint("Warning: Parameter '{:s}' for function '{:s}' matched from other function '{:s}'.".format(var_name,cfunc_name,var_info['cfunc_name']))
 
-        if (var_info['type'] in [VarType.DIRECT_INT_VALUE, VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA]):
+        if (var_info['type'] in [VarType.DIRECT_INT_VALUE, VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA], VarType.RELATIVE_OFFSET):
             prop_ofs_val = var_info['value']
         elif (var_info['type'] in [VarType.RELATIVE_PC_ADDR_TO_CODE, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA]):
             prop_ofs_val = get_arm_offset_val_relative_to_pc_register(asm_arch, address, instr_size, var_info['value'])
+        elif (var_info['type'] in [VarType.DIRECT_OPERAND]):
+            prop_ofs_val = var_info['value']
         else:
             raise NotImplementedError("Unexpected variable type found, '{:s}'.".format(var_info['type'].name))
         if isinstance(prop_ofs_val, int):
+            prop_ofs_val = [ prop_ofs_val ]
+        elif isinstance(prop_ofs_val, str):
             prop_ofs_val = [ prop_ofs_val ]
         var_value = None
         if isinstance(prop_ofs_val, list):
             var_value_list = []
             for val in prop_ofs_val:
-                if (val >= 0):
-                    var_value_list.append("0x{:x}".format(val))
-                else:
-                    var_value_list.append("-0x{:x}".format(-val))
+                if isinstance(val, int):
+                    if (val >= 0):
+                        var_value_list.append("0x{:x}".format(val))
+                    else:
+                        var_value_list.append("-0x{:x}".format(-val))
+                elif isinstance(val, str):
+                    var_value_list.append("{:s}".format(val))
             var_value = ', '.join(var_value_list)
         asm_line = re.sub(r'[(][?]P<'+var_name+r'>[^()]*([(][^()]+[)][^()]*)*[)]', var_value, asm_line)
-    # Remove regex square bracket clauses
-    asm_line = re.sub(r'[^\\]\[(.*)[^\\]\]', r'\1', asm_line)
+    # Remove optional regex square bracket clauses (with '?' after)
+    # TODO we may want to use a different approach when computing MAX length
+    asm_line = re.sub(r'([^\\])\[[^\]]*?[^\\]\][?]', r'\1', asm_line)
+    # Remove regex square bracket clauses with single char within brackets
+    asm_line = re.sub(r'([^\\])\[([^\\])\]', r'\1\2', asm_line)
+    # Remove regex square bracket clauses with multiple chars within brackets
+    asm_line = re.sub(r'([^\\])\[(.)[^\]]*?[^\\]\]', r'\1\2', asm_line)
     # Remove escaping from remaining square brackets
     asm_line = re.sub(r'\\([\[\]])', r'\1', asm_line)
     return asm_line, instr_size
