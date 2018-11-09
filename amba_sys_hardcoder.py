@@ -973,7 +973,7 @@ def armfw_elf_section_search_get_value_size(asm_arch, var_info):
     return var_size, var_count
 
 
-def prepare_simplified_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, pattern_lines):
+def prepare_simplified_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, pattern_lines, variab_size_select):
     """ Given a list of patterns and variables to put inside, produces assembly code.
 
     Removes regex-specific clauses and replaces named groups with values of variables.
@@ -981,7 +981,7 @@ def prepare_simplified_asm_lines_from_pattern_list(asm_arch, glob_params_list, p
     asm_lines = []
     asm_addr_curr = patterns_addr
     for pat_line in pattern_lines:
-        asm_line, code_size = prepare_asm_line_from_pattern(asm_arch, glob_params_list, asm_addr_curr, '', pat_line, inaccurate_size=True)
+        asm_line, code_size = prepare_asm_line_from_pattern(asm_arch, glob_params_list, asm_addr_curr, '', pat_line, variab_size_select=variab_size_select)
         asm_addr_curr += code_size
         asm_lines.append(asm_line)
     return asm_lines, (asm_addr_curr-patterns_addr)
@@ -1026,6 +1026,17 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_best_match(asm_arch, pa
         elif value_type_is_unknown_address(var_info['type']):
             # Relative address must be relatively small ot it might not compile
             var_info['value'] = var_limit_best
+        elif var_info['type'] in (VarType.DIRECT_INT_VALUE,):
+            if variety_is_string(var_info['variety']):
+                # Direct string value - always treat as array
+                prop_ofs_val = "a" * var_count
+            else:
+                # Direct int value - either single value or array
+                if var_count < 2:
+                    prop_ofs_val = var_limit_best
+                else:
+                    prop_ofs_val = [var_limit_best] * var_count
+            var_info['value'] = prop_ofs_val
         else:
             # Anything else - either single value or array
             if var_count < 2:
@@ -1074,6 +1085,17 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_short_values(asm_arch, 
         elif value_type_is_unknown_address(var_info['type']):
             # Relative address must be relatively small ot it might not compile
             var_info['value'] = var_limit_min
+        elif var_info['type'] in (VarType.DIRECT_INT_VALUE,):
+            if variety_is_string(var_info['variety']):
+                # Direct string value - always treat as array
+                prop_ofs_val = "a" * var_count
+            else:
+                # Direct int value - either single value or array
+                if var_count < 2:
+                    prop_ofs_val = var_limit_min
+                else:
+                    prop_ofs_val = [var_limit_min] * var_count
+            var_info['value'] = prop_ofs_val
         else:
             # Anything else - either single value or array
             if var_count < 2:
@@ -1131,6 +1153,17 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_long_values(asm_arch, p
         elif value_type_is_unknown_address(var_info['type']):
             # Relative address must be relatively small ot it might not compile
             var_info['value'] = var_limit_max
+        elif var_info['type'] in (VarType.DIRECT_INT_VALUE,):
+            if variety_is_string(var_info['variety']):
+                # Direct string value - always treat as array
+                prop_ofs_val = "a" * var_count
+            else:
+                # Direct int value - either single value or array
+                if var_count < 2:
+                    prop_ofs_val = var_limit_max
+                else:
+                    prop_ofs_val = [var_limit_max] * var_count
+            var_info['value'] = prop_ofs_val
         else:
             # Anything else - either single value or array
             if var_count < 2:
@@ -1160,7 +1193,7 @@ def armfw_elf_compute_pattern_code_length(asm_arch, patterns_list, pattern_vars,
     else:
         raise ValueError("Unknown variable size param '{:s}' - internal error".format(variab_size_select))
 
-    asm_lines, _ = prepare_simplified_asm_lines_from_pattern_list(asm_arch, dummy_params_list, dummy_patt_base, patterns_list)
+    asm_lines, _ = prepare_simplified_asm_lines_from_pattern_list(asm_arch, dummy_params_list, dummy_patt_base, patterns_list, variab_size_select)
     # Now compile our new code line to get proper length
     #print("Compiling code for len:","; ".join(asm_lines))
     bt_enc_data = armfw_asm_compile_lines(asm_arch, dummy_patt_base, asm_lines)
@@ -1833,9 +1866,10 @@ def variable_info_from_value_name(glob_params_list, cfunc_name, var_name):
                 break
     return var_info
 
-def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_name, pat_line, inaccurate_size=False):
+def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_name, pat_line, variab_size_select=None):
     # List regex parameters used in that line
     vars_used = re.findall(r'[(][?]P<([^>]+)>([^()]*([(][^()]+[)][^()]*)*)[)]', pat_line)
+    inaccurate_size = (variab_size_select is not None)
     if not inaccurate_size:
         instr_size = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], glob_params_list, 'best')
     else:
@@ -1875,9 +1909,16 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
                     var_value_list.append("{:s}".format(val))
             var_value = ', '.join(var_value_list)
         asm_line = re.sub(r'[(][?]P<'+var_name+r'>[^()]*([(][^()]+[)][^()]*)*[)]', var_value, asm_line)
-    # Remove optional regex square bracket clauses (with '?' after)
-    # TODO we may want to use a different approach when computing MAX length
-    asm_line = re.sub(r'([^\\])\[[^\]]*?[^\\]\][?]', r'\1', asm_line)
+    if variab_size_select == 'long':
+        # Make optional square bracket clauses (with '?' after) to no longer be optional
+        # They will be matched again later and replaced by first char from inside
+        asm_line = re.sub(r'([^\\]\[[^\]]*?[^\\]\])[?]', r'\1', asm_line)
+    elif variab_size_select == 'short':
+        # Remove optional regex square bracket clauses (with '?' after)
+        asm_line = re.sub(r'([^\\])\[[^\]]*?[^\\]\][?]', r'\1', asm_line)
+    else:
+        # Make optional square bracket clauses (with '?' after) to no longer be optional
+        asm_line = re.sub(r'([^\\]\[[^\]]*?[^\\]\])[?]', r'\1', asm_line)
     # Remove regex square bracket clauses with single char within brackets
     asm_line = re.sub(r'([^\\])\[([^\\])\]', r'\1\2', asm_line)
     # Remove regex square bracket clauses with multiple chars within brackets
