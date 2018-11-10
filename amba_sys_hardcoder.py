@@ -1447,6 +1447,8 @@ def armfw_asm_parse_data_definition(asm_arch, asm_line):
     """ Recognizes data definition assembly line, returns data as bytes.
     """
     single_len, dt_variety, data_part = armfw_asm_is_data_definition(asm_arch, asm_line)
+    if single_len is None:
+        return None
     dt_bytes = b''
     for dt_item in data_part.split(","):
         dt_sitem = dt_item.strip()
