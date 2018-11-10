@@ -937,11 +937,29 @@ loc_4AE12C:
 },
 }
 
+re_func_firmware_release_marking_WM330_V03_01_10_93 = {
+'name': "firmware_release_marking",
+'version': "wm330_0306_v03.01.10.93",
+'re': """
+  dcb	"(?P<sdk_version>([ ]?SDK-v[1-2][.][0-9]) BETA"
+  dcb	" (?P<product_code>(WM[0-9][0-9][0-9])-"
+  dcb	"(?P<firmware_version>([0-9][0-9][.][0-9][0-9][.][0-9][0-9][.][0-9][0-9])"
+""",
+'vars': {
+  'sdk_version':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.CHAR, 'array': (8,9)},
+  'product_code':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.CHAR, 'array': 5},
+  'firmware_version':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.CHAR, 'array': 11,
+    'public': "og_hardcoded.flyc", 'minValue': "00.00.00.00", 'maxValue': "99.99.99.99",
+    'description': "Firmware version number"},
+},
+}
+
 re_general_list = [
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_P3X_V01_05_0030,},
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_wp_mission_data_verify_P3X_V01_05_0030,},
   {'sect': ".text", 'func': re_func_wp_mission_data_verify_WM330_V03_01_10_93,},
+  #{'sect': ".data", 'func': re_func_firmware_release_marking_WM330_V03_01_10_93,},
 ]
 
 
