@@ -115,12 +115,15 @@ function exec_mod_for_m0900 {
 for FWPKG in "${FWPKG_LIST[@]}"; do
   echo "### TEST of modding tools with ${FWPKG} ###"
   FWIMAH_LIST=$(tar -xvf "fw_imah/${FWPKG}")
+  FWIMAH_0100=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0100_v.*\)[.]fw[.]sig$/\1/p')
+  ./dji_imah_fwsig.py -vv -u -i "${FWIMAH_0100}.fw.sig"
   FWIMAH_0306=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0306_v.*\)[.]fw[.]sig$/\1/p')
   ./dji_imah_fwsig.py -vv -u -i "${FWIMAH_0306}.fw.sig"
   ./dji_mvfc_fwpak.py dec -i "${FWIMAH_0306}.fw_0306.bin"
   FWIMAH_0900=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0900_v.*\)[.]fw[.]sig$/\1/p')
   ./dji_imah_fwsig.py -vv -u -i "${FWIMAH_0900}.fw.sig"
 
+  #exec_mod_for_m0100 "${FWIMAH_0100}.fw_0100"
   exec_mod_for_m0306 "${FWIMAH_0306}.fw_0306.decrypted"
   exec_mod_for_m0900 "${FWIMAH_0900}.fw_0900"
 done
