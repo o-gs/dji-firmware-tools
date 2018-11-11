@@ -808,12 +808,15 @@ def armfw_elf_section_search_reset(search):
     return search
 
 
-def armfw_elf_section_search_varlen_point_mark(search, varlen_delta):
+def armfw_elf_section_search_varlen_point_mark(search, address, varlen_delta):
     """ Add or update variable length point in given search results.
     """
-    # do not change search['varlen_inc'], only the one which will be used if matching current one will fail
+    # do not use search['match_address'], but address from func parameter; this is
+    # because search['match_address'] may not be set if we are matching first line
+    # do not change search['varlen_inc'], only the one which will be used
+    # if matching current one will fail
     for varlen in search['varlen_points']:
-        if varlen['match_address'] != search['match_address']:
+        if varlen['match_address'] != address:
             continue
         if varlen['match_lines'] != search['match_lines']:
             continue
@@ -826,7 +829,7 @@ def armfw_elf_section_search_varlen_point_mark(search, varlen_delta):
         return search
     varlen = {}
     varlen['var_vals'] = search['var_vals'].copy()
-    varlen['match_address'] = search['match_address'] # int value
+    varlen['match_address'] = address # int value
     varlen['re_size'] = search['re_size'].copy()
     varlen['match_lines'] = search['match_lines'] # int value
     varlen['varlen_inc'] = 1 # 0 is already being tested when this is added
@@ -1664,7 +1667,7 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
             line_iter = [armfw_elf_data_definition_from_bytes(search['asm_arch'],search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs, curr_pattern, search['var_defs'], search['varlen_inc']),]
             for (address, size, max_size, mnemonic, op_str) in line_iter:
                 if size < max_size or search['varlen_inc'] > 0:
-                    search = armfw_elf_section_search_varlen_point_mark(search, max_size - size)
+                    search = armfw_elf_section_search_varlen_point_mark(search, address, max_size - size)
                 instruction_str = "{:s}\t{:s}".format(mnemonic, op_str).strip()
                 if (po.verbose > 3) and (search['match_lines'] > 1):
                     print("Current vs pattern {:3d} `{:s}` `{:s}`".format(search['match_lines'],instruction_str,curr_pattern))
