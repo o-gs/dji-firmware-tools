@@ -1024,7 +1024,7 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_best_match(asm_arch, pa
             else:
                 var_info['value'] = dummy_patt_base + var_limit_best
         elif value_type_is_unknown_address(var_info['type']):
-            # Relative address must be relatively small ot it might not compile
+            # Relative address must be relatively small or it might not compile
             var_info['value'] = var_limit_best
         elif var_info['type'] in (VarType.DIRECT_INT_VALUE,):
             if variety_is_string(var_info['variety']):
@@ -1045,6 +1045,7 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_best_match(asm_arch, pa
                 prop_ofs_val = [var_limit_best] * var_count
             var_info['value'] = prop_ofs_val
         dummy_params_list[var_name] = var_info
+
     return dummy_params_list, dummy_patt_base
 
 
@@ -1193,9 +1194,10 @@ def armfw_elf_compute_pattern_code_length(asm_arch, patterns_list, pattern_vars,
     else:
         raise ValueError("Unknown variable size param '{:s}' - internal error".format(variab_size_select))
 
+    #print("Making code from re for len:","; ".join(patterns_list))
     asm_lines, _ = prepare_simplified_asm_lines_from_pattern_list(asm_arch, dummy_params_list, dummy_patt_base, patterns_list, variab_size_select)
     # Now compile our new code line to get proper length
-    #print("Compiling code for len:","; ".join(asm_lines))
+    #print("Compiling code for",variab_size_select,"len:","; ".join(asm_lines))
     bt_enc_data = armfw_asm_compile_lines(asm_arch, dummy_patt_base, asm_lines)
     return len(bt_enc_data)
 
@@ -1845,7 +1847,11 @@ def armfw_asm_compile_lines(asm_arch, asm_addr, asm_lines):
             # Compile any pending asm lines
             if asm_ln_start < asm_ln_curr:
                 asm_addr_curr = asm_addr + len(bt_enc_data)
-                encoding, encoded_num = ks.asm("\n".join(asm_lines[asm_ln_start:asm_ln_curr]), addr=asm_addr_curr)
+                try:
+                    encoding, encoded_num = ks.asm("\n".join(asm_lines[asm_ln_start:asm_ln_curr]), addr=asm_addr_curr)
+                except KsError as e:
+                    encoded_num = e.get_asm_count()
+                    raise ValueError("Cannot compile all assembly lines: {:s}; compiled circa {:d} out of {:d}.".format(e.message, asm_ln_start+encoded_num, len(asm_lines)))
                 if encoded_num != asm_ln_curr-asm_ln_start:
                     raise ValueError("Cannot compile all assembly lines; compiled circa {:d} out of {:d}.".format(asm_ln_start+encoded_num, len(asm_lines)))
                 bt_enc_data += bytes(encoding)
@@ -1886,11 +1892,11 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
         if (not inaccurate_size) and (var_info['cfunc_name'] != cfunc_name):
             eprint("Warning: Parameter '{:s}' for function '{:s}' matched from other function '{:s}'.".format(var_name,cfunc_name,var_info['cfunc_name']))
 
-        if (var_info['type'] in [VarType.DIRECT_INT_VALUE, VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA], VarType.RELATIVE_OFFSET):
+        if (var_info['type'] in (VarType.DIRECT_INT_VALUE, VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_OFFSET,)):
             prop_ofs_val = var_info['value']
-        elif (var_info['type'] in [VarType.RELATIVE_PC_ADDR_TO_CODE, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA]):
+        elif (var_info['type'] in (VarType.RELATIVE_PC_ADDR_TO_CODE, VarType.RELATIVE_PC_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_PC_ADDR_TO_PTR_TO_GLOBAL_DATA,)):
             prop_ofs_val = get_arm_offset_val_relative_to_pc_register(asm_arch, address, instr_size, var_info['value'])
-        elif (var_info['type'] in [VarType.DIRECT_OPERAND]):
+        elif (var_info['type'] in (VarType.DIRECT_OPERAND,)):
             prop_ofs_val = var_info['value']
         else:
             raise NotImplementedError("Unexpected variable type found, '{:s}'.".format(var_info['type'].name))
