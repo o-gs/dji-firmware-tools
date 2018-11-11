@@ -941,9 +941,9 @@ re_func_firmware_release_marking_WM330_V03_01_10_93 = {
 'name': "firmware_release_marking",
 'version': "wm330_0306_v03.01.10.93",
 're': """
-  dcb	"(?P<sdk_version>([ ]?SDK-v[1-2][.][0-9]) BETA"
-  dcb	" (?P<product_code>(WM[0-9][0-9][0-9])-"
-  dcb	"(?P<firmware_version>([0-9][0-9][.][0-9][0-9][.][0-9][0-9][.][0-9][0-9])"
+  dcb	"(?P<sdk_version>[ ]?SDK-v[1-2][.][0-9]) BETA"
+  dcb	" (?P<product_code>WM[0-9][0-9][0-9])-"
+  dcb	"(?P<firmware_version>[0-9][0-9][.][0-9][0-9][.][0-9][0-9][.][0-9][0-9])"
 """,
 'vars': {
   'sdk_version':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.CHAR, 'array': (8,9)},
