@@ -813,6 +813,8 @@ def armfw_elf_section_search_varlen_point_mark(search, address, varlen_delta):
     """
     # do not use search['match_address'], but address from func parameter; this is
     # because search['match_address'] may not be set if we are matching first line
+    if search['match_lines'] < 1:
+        search['match_address'] = address
     # do not change search['varlen_inc'], only the one which will be used
     # if matching current one will fail
     for varlen in search['varlen_points']:
@@ -1692,15 +1694,12 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                     if curr_is_data is not None: break
                 else:
                     # Breaking the loop is only expensive for ASM code; for data, we don't really care that much
-                    if search['match_lines'] > 0:
-                        if armfw_elf_section_search_varlen_point_rewind(search):
-                            sect_offs = search['match_address'] - search['section']['addr'] + sum(search['re_size'])
-                        else:
-                            sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
-                            search = armfw_elf_section_search_reset(search)
-                        break
-                    else: # search['match_lines'] == 0
-                        sect_offs += search['asm_arch']['boundary']
+                    if armfw_elf_section_search_varlen_point_rewind(search):
+                        sect_offs = search['match_address'] - search['section']['addr'] + sum(search['re_size'])
+                    else:
+                        sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
+                        search = armfw_elf_section_search_reset(search)
+                    break
         else:
             # now matching an assembly code line
             for (address, size, mnemonic, op_str) in cs.disasm_lite(search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs):
