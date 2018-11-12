@@ -811,14 +811,14 @@ def armfw_elf_section_search_reset(search):
 def armfw_elf_section_search_varlen_point_mark(search, address, varlen_delta):
     """ Add or update variable length point in given search results.
     """
-    # do not use search['match_address'], but address from func parameter; this is
-    # because search['match_address'] may not be set if we are matching first line
+    # the search['match_address'], might be unset if we are matching first line;
+    # in that case, use address from func parameter
     if search['match_lines'] < 1:
         search['match_address'] = address
     # do not change search['varlen_inc'], only the one which will be used
     # if matching current one will fail
     for varlen in search['varlen_points']:
-        if varlen['match_address'] != address:
+        if varlen['match_address'] != search['match_address']:
             continue
         if varlen['match_lines'] != search['match_lines']:
             continue
@@ -831,7 +831,7 @@ def armfw_elf_section_search_varlen_point_mark(search, address, varlen_delta):
         return search
     varlen = {}
     varlen['var_vals'] = search['var_vals'].copy()
-    varlen['match_address'] = address # int value
+    varlen['match_address'] = search['match_address'] # int value
     varlen['re_size'] = search['re_size'].copy()
     varlen['match_lines'] = search['match_lines'] # int value
     varlen['varlen_inc'] = 1 # 0 is already being tested when this is added
@@ -1707,14 +1707,6 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                 if (po.verbose > 3) and (search['match_lines'] > 1):
                     print("Current vs pattern {:3d} `{:s}` `{:s}`".format(search['match_lines'],instruction_str,curr_pattern))
                 re_code = re.search(curr_pattern, instruction_str)
-                # If matching failed after exactly one line, get back to checking first line without resetting offset
-                # This is a major perforance optimization - fast reset for no match at first line
-                if re_code is None and search['match_lines'] == 1:
-                    search = armfw_elf_section_search_reset(search)
-                    curr_pattern = armfw_elf_section_search_get_pattern(search)
-                    curr_is_data, _, _ = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
-                    if curr_is_data is not None: break
-                    re_code = re.search(curr_pattern, instruction_str)
 
                 match_ok = (re_code is not None)
                 if match_ok:
@@ -1735,13 +1727,22 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                     if curr_is_data is not None: break
                 else:
                     # Breaking the loop is expensive; do it only if we had more than one line matched, to search for overlapping areas
-                    if search['match_lines'] > 0: # this really means > 1 because the value of 1 (fast reset) was handled before
+                    if search['match_lines'] > 0:
                         if armfw_elf_section_search_varlen_point_rewind(search):
                             sect_offs = search['match_address'] - search['section']['addr'] + sum(search['re_size'])
+                            break
                         else:
+                            pev_sect_offs = sect_offs
                             sect_offs = armfw_elf_section_search_get_next_search_pos(search, sect_offs)
                             search = armfw_elf_section_search_reset(search)
-                        break
+                            # Now try optimization - maybe we do not need to break the for() loop
+                            # but this is only possible if the next offset to search matches the offset of next instruction in for()
+                            if sect_offs != pev_sect_offs + size: break
+                            # And if the first line pattern happens to be code, not data
+                            curr_pattern = armfw_elf_section_search_get_pattern(search)
+                            curr_is_data, _, _ = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
+                            if curr_is_data is not None: break
+                            # ok, it should be safe not to break here and start matching next assembly line
                     else: # search['match_lines'] == 0
                         sect_offs += size
             else: # for loop finished by inability to decode next instruction
