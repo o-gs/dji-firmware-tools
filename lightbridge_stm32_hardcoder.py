@@ -3180,7 +3180,7 @@ re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_setfcc = {
 're': """
 update_tcx_power_zone_flag:
   push	{lr}
-  movs	r1, #0x1
+  movs	r1, #1
   bl	#(?P<get_dword_33C0>[0-9a-fx]+)
   and	r0, r0, #1
   cbnz	r0, #(?P<loc_label_ret1>[0-9a-fx]+)
