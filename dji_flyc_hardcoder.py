@@ -1464,7 +1464,7 @@ loc_528066:
   'hal_add_device':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'hal_add_device_with_param':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'hal_add_imu':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'hal_push_mc_version':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_CODE, 'baseaddr': "PC+", 'variety': CodeVariety.FUNCTION},
+  'hal_push_mc_version':	{'type': VarType.RELATIVE_ADDR_TO_CODE, 'baseaddr': "PC-", 'variety': CodeVariety.FUNCTION},
   'snprintf_sd_16':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'memset_zero':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'nullsub_53':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
@@ -1516,7 +1516,7 @@ loc_528066:
   'cstr_link_auto_cali':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_link_manual_cali':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   # this is offset to `cstr_link_manual_cali` but computed by 'sub' function - so offset provided needs to be negated to get address
-  'cstr_link_manual_cali_neg':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
+  'cstr_link_manual_cali_neg':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC-", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_local':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_warn_local_imu_id_error1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_warn_local_imu_id_error2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
