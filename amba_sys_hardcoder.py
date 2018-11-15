@@ -641,7 +641,12 @@ def get_arm_vma_relative_to_pc_register(asm_arch, section, address, size, offset
     # In ARM THUMB mode, alignment is 4
     if (asm_arch['name'] == "arm") and (alignment == 2):
         alignment = 4
-    vma = address + size + asm_arch['boundary'] + int(offset_str, 0)
+    if isinstance(offset_str, int):
+        offset_int = offset_str
+    else:
+        offset_int = int(offset_str, 0)
+    address = address - (address % alignment)
+    vma = address + size + asm_arch['boundary'] + offset_int
     return vma - (vma % alignment)
 
 
@@ -948,19 +953,23 @@ def value_type_is_known_address(var_def):
     if var_def['type'] in (VarType.RELATIVE_ADDR_TO_CODE, VarType.RELATIVE_ADDR_TO_PTR_TO_CODE,
             VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA,):
         if not 'baseaddr' in var_def: return False
-        return var_def['baseaddr'] in ("PC+",)
+        return var_def['baseaddr'] in ("PC+","PC-",)
     return var_def['type'] in (VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA,
         VarType.DIRECT_LINE_OF_CODE,)
 
-def value_type_is_unknown_address(var_type):
+def value_type_is_unknown_address(var_def):
     """ Returns whether given type represents a relative address which cannot be referenced.
 
     Only some addresses can be converted to global addresses by this tool; an address is known
     if it either is global to begin with, or can be converted to global.
     If the address is unknown, property 'value' field will hold offset relative to unknown base.
     """
-    return var_type in (VarType.RELATIVE_OFFSET,)
-
+    if var_def['type'] in (VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA,
+            VarType.DIRECT_LINE_OF_CODE, VarType.RELATIVE_OFFSET,
+            VarType.RELATIVE_ADDR_TO_CODE, VarType.RELATIVE_ADDR_TO_PTR_TO_CODE,
+            VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA,):
+        return (not value_type_is_known_address(var_def))
+    return False
 
 def armfw_elf_section_search_get_value_size(asm_arch, var_info):
     """ Get expected item size and count of the value
@@ -1004,7 +1013,7 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_best_match(asm_arch, pa
         var_info = var_info_orig.copy()
         if value_type_is_known_address(var_info):
             var_count = 1
-        elif value_type_is_unknown_address(var_info['type']):
+        elif value_type_is_unknown_address(var_info):
             var_count = 1
         else:
             var_count = 1
@@ -1033,7 +1042,7 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_best_match(asm_arch, pa
                 var_info['value'] = dummy_patt_base + asm_arch['boundary'] * var_info['line']
             else:
                 var_info['value'] = dummy_patt_base + var_limit_best
-        elif value_type_is_unknown_address(var_info['type']):
+        elif value_type_is_unknown_address(var_info):
             # Relative address must be relatively small or it might not compile
             var_info['value'] = var_limit_best
         elif var_info['type'] in (VarType.DIRECT_INT_VALUE,):
@@ -1066,7 +1075,7 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_short_values(asm_arch, 
         var_info = var_info_orig.copy()
         if value_type_is_known_address(var_info):
             var_count = 1
-        elif value_type_is_unknown_address(var_info['type']):
+        elif value_type_is_unknown_address(var_info):
             var_count = 1
         else:
             var_count = 1
@@ -1093,7 +1102,7 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_short_values(asm_arch, 
                 var_info['value'] = dummy_patt_base + asm_arch['boundary'] * var_info['line']
             else:
                 var_info['value'] = dummy_patt_base + var_limit_min
-        elif value_type_is_unknown_address(var_info['type']):
+        elif value_type_is_unknown_address(var_info):
             # Relative address must be relatively small ot it might not compile
             var_info['value'] = var_limit_min
         elif var_info['type'] in (VarType.DIRECT_INT_VALUE,):
@@ -1126,7 +1135,7 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_long_values(asm_arch, p
         if value_type_is_known_address(var_info):
             var_size = 3
             var_count = 1
-        elif value_type_is_unknown_address(var_info['type']):
+        elif value_type_is_unknown_address(var_info):
             var_size = 1
             var_count = 1
         else:
@@ -1161,7 +1170,7 @@ def armfw_elf_create_dummy_params_list_for_patterns_with_long_values(asm_arch, p
                 var_info['value'] = dummy_patt_base + asm_arch['boundary'] * var_info['line']
             else:
                 var_info['value'] = dummy_patt_base + var_limit_max
-        elif value_type_is_unknown_address(var_info['type']):
+        elif value_type_is_unknown_address(var_info):
             # Relative address must be relatively small ot it might not compile
             var_info['value'] = var_limit_max
         elif var_info['type'] in (VarType.DIRECT_INT_VALUE,):
@@ -1589,9 +1598,11 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
                     prop_ofs_val = [int(sing_var.strip(),0) for sing_var in var_val.split(',')]
         elif var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_OFFSET,):
             prop_ofs_val = int(var_val, 0)
-        elif var_info['type'] in (VarType.RELATIVE_ADDR_TO_CODE, VarType.RELATIVE_ADDR_TO_GLOBAL_DATA,) and var_info['baseaddr'] in ("PC+",):
+        elif var_info['type'] in (VarType.RELATIVE_ADDR_TO_CODE, VarType.RELATIVE_ADDR_TO_GLOBAL_DATA,) and var_info['baseaddr'] in ("PC+","PC-",):
+            if var_info['baseaddr'].endswith('-'): var_val = -int(var_val, 0)
             prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
-        elif var_info['type'] in (VarType.RELATIVE_ADDR_TO_PTR_TO_CODE,VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA,) and var_info['baseaddr'] in ("PC+",):
+        elif var_info['type'] in (VarType.RELATIVE_ADDR_TO_PTR_TO_CODE,VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA,) and var_info['baseaddr'] in ("PC+","PC-",):
+            if var_info['baseaddr'].endswith('-'): var_val = -int(var_val, 0)
             prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
             var_sect, var_offs = get_section_and_offset_from_address(search['asm_arch'], elf_sections, prop_ofs_val)
             if var_sect is not None:
@@ -1788,7 +1799,7 @@ def armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, sect_name, pa
         start_sect_offs = var_info['value'] - search['section']['addr']
         if start_sect_offs < 0: start_sect_offs = 0
         if (po.verbose > 1):
-            print("Found pre-existing offset of {:s}".format(var_name))
+            print("Found pre-existing offset of {:s} at 0x{:06x}".format(var_name,start_sect_offs))
 
     sect_offs = start_sect_offs
     sect_progress_treshold = 0
@@ -1802,8 +1813,8 @@ def armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, sect_name, pa
     # If had offset before search, and found at that exact offset - ignore further matches
     if len(search['full_matches']) > 1 and start_sect_offs > 0:
         first_match = search['full_matches'][0]
-        if first_match['address'] == start_sect_offs:
-            search['full_matches'] = search['full_matches'][0:1]
+        if first_match['address'] == search['section']['addr'] + start_sect_offs:
+            search['full_matches'] = [ first_match ]
 
     if (po.verbose > 0):
         if len(search['full_matches']) == 1:
@@ -1934,8 +1945,9 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
             prop_ofs_val = var_info['value']
         elif (var_info['type'] in (VarType.RELATIVE_ADDR_TO_CODE, VarType.RELATIVE_ADDR_TO_PTR_TO_CODE,
                 VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA,) and
-                var_info['baseaddr'] in ("PC+",)):
+                var_info['baseaddr'] in ("PC+","PC-",)):
             prop_ofs_val = get_arm_offset_val_relative_to_pc_register(asm_arch, address, instr_size, var_info['value'])
+            if var_info['baseaddr'].endswith('-'): prop_ofs_val = -prop_ofs_val
         elif (var_info['type'] in (VarType.DIRECT_OPERAND,)):
             prop_ofs_val = var_info['value']
         else:
