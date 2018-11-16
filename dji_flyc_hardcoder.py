@@ -964,7 +964,7 @@ check_activation_authority:
   beq	#(?P<loc_510806>[0-9a-fx]+)
   bl	#(?P<get_config>[0-9a-fx]+)
   ldr	r1, \[r0, #0xc\]
-  movs	r0, #0x37
+  movs	r0, #(?P<CONFIG_VAR_37a>[0-9a-fx]+)
   blx	r1
   ldrb.w	r0, \[r0, #0x26\]
   cmp	r0, #1
@@ -978,7 +978,13 @@ loc_51080C:
   ldr	r6, \[pc, #(?P<mc_version_1>[0-9a-fx]+)\]
   ldr	r0, \[r4, #8\]
   cmp	r0, r6
-  beq	#(?P<loc_510828>[0-9a-fx]+)
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;beq	#(?P<loc_510828>[0-9a-fx]+)
+  ; block of code, in wm100_0306_v03.02.43.20:
+  ;beq	#(?P<loc_510828>[0-9a-fx]+)
+  ;cmp.w   r0, #0x50505050
+  ;beq	#(?P<loc_510828>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){1,8})
   bl	#(?P<get_logger>[0-9a-fx]+)
   ldr	r5, \[r0, #4\]
   movs	r0, #8
@@ -991,7 +997,7 @@ loc_51080C:
 loc_510828:
   bl	#(?P<get_config>[0-9a-fx]+)
   ldr	r1, \[r0, #0xc\]
-  movs	r0, #0x37
+  movs	r0, #(?P<CONFIG_VAR_37b>[0-9a-fx]+)
   blx	r1
   ldrb.w	r0, \[r0, #0x23\]
   cmp	r0, #1
@@ -1072,7 +1078,14 @@ loc_5108DC:
   mov.w	r0, #3
   b	#(?P<locret_510808>[0-9a-fx]+)
 loc_5108E2:
-  ldr.w	r0, \[r0, #(?P<rel_ctrl_tick>[0-9a-fx]+)\]
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;ldr.w	r0, \[r0, #(?P<rel_ctrl_tick>[0-9a-fx]+)\]
+  ; block of code and data, in wm100_0306_v03.02.43.20:
+  ;b	#(?P<loc_5108E8>[0-9a-fx]+)
+  ;[...] - block of data here
+  ;loc_5108E8:
+  ;ldr.w	r0, \[r0, #(?P<rel_ctrl_tick>[0-9a-fx]+)\]
+  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,204})
   bne	#(?P<loc_5108EC>[0-9a-fx]+)
   str	r0, \[r5, #(?P<rel_dword_20404378>[0-9a-fx]+)\]
   b	#(?P<loc_5108FC>[0-9a-fx]+)
@@ -1121,6 +1134,10 @@ loc_51090C:
   'loc_51090C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'locret_510808':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,8)},
+  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,204)},
+  'CONFIG_VAR_37a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT8_T},
+  'CONFIG_VAR_37b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT8_T},
   'cstr_dji_demo_lala_haha':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_dji_sdk_set_key_val':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_req_real':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
@@ -1153,7 +1170,14 @@ imu_init:
   bl	#(?P<sub_50BF40>[0-9a-fx]+)
   ldr.w	sl, \[pc, #(?P<imu_groups_p4>[0-9a-fx]+)\]
   sub.w	sl, sl, #0xc
-  mov	r4, sl
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;mov	r4, sl
+  ; block of code and data, in wm100_0306_v03.02.43.20:
+  ;mov	r4, sl
+  ;b	#(?P<loc_527BA0>[0-9a-fx]+)
+  ;[...] - block of data here
+  ;loc_527BA0:
+  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){1,280})
   str.w	r0, \[sl, #(?P<rel_dword_20404528>[0-9a-fx]+)\]
   bl	#(?P<getSystemTimerTickRate>[0-9a-fx]+)
   movs	r3, #0
@@ -1171,16 +1195,16 @@ loc_527BC4:
   add.w	r1, r0, r7, lsl #6
   ldr	r0, \[pc, #(?P<imu_groups>[0-9a-fx]+)\]
   add.w	r4, r0, r1, lsl #4
-  ldr.w	r0, \[r4, #0x46c\]
-  b	#(?P<loc_527DDC>[0-9a-fx]+)
-  ; in wm220_0306_v03.02.35.05, this is a data block 259 words long, containing:
+  ; block of code and data, in wm220_0306_v03.02.35.05 260 words long:
+  ;ldr.w	r0, \[r4, #0x46c\]
+  ;b	#(?P<loc_527DDC>[0-9a-fx]+)
   ;dcd	(?P<ptr_unk_5848FC>[0-9a-fx]+)
   ;dcb	"miscali_%d ", 0
   ;dcb	"miscali_init_cfg miscali_%d",0
   ;[...]
   ;dcd	(?P<ptr_printf_s>[0-9a-fx]+)
   ;dcd	(?P<ptr_unkvar_01>[0-9a-fx]+)
-  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){256,264})
+  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,264})
 loc_527DDC:
   cbnz	r0, #(?P<loc_527DEA>[0-9a-fx]+)
   subw	r0, pc, #(?P<cstr_link_manual_cali_neg>[0-9a-fx]+)
@@ -1281,11 +1305,17 @@ loc_527E4A:
   cbz	r0, #(?P<loc_527F00>[0-9a-fx]+)
   strb.w	r5, \[r4, #0xa8\]
 loc_527ED8:
-  adds	r7, r7, #1
-  cmp	r7, #2
-  blo.w	#(?P<loc_527BC4>[0-9a-fx]+)
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;adds	r7, r7, #1
+  ; block of code and data, in wm100_0306_v03.02.43.20:
+  ;adds	r7, r7, #1
+  ;beq.w	#(?P<loc_527BC4>[0-9a-fx]+)
+  ;cmp	r7, #2
+  ;blo.w	#(?P<loc_527BC4>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){1,8})
   ldr.w	sl, \[pc, #(?P<byte_20404E10>[0-9a-fx]+)\]
   movs	r7, #0
+loc_527EE6:
   add.w	r1, r7, r7, lsl #2
   add.w	r4, sl, r1, lsl #4
   movs	r1, #3
@@ -1337,12 +1367,12 @@ loc_527F2A:
   movs	r0, #9
   mov	r1, sb
   bl	#(?P<hal_add_device>[0-9a-fx]+)
-  cbz	r0, #0x527f90
+  cbz	r0, #(?P<loc_527F90>[0-9a-fx]+)
   strb.w	r5, \[r4, #0x4d\]
 loc_527F68:
   adds	r7, r7, #1
-  beq	#0x527ee6
-  ldr.w	sl, \[pc, #0x26c\]
+  beq	#(?P<loc_527EE6>[0-9a-fx]+)
+  ldr.w	sl, \[pc, #(?P<byte_20404E10>[0-9a-fx]+)\]
   movs	r7, #0
   add.w	sl, sl, #0x50
 loc_527F76:
@@ -1353,8 +1383,9 @@ loc_527F76:
   orr	r0, r0, #0x930000
   bl	#(?P<open_device>[0-9a-fx]+)
   str	r0, \[r4, #0x10\]
-  cbnz	r0, #0x527fae
-  b	#0x527fa8
+  cbnz	r0, #(?P<loc_527FAE>[0-9a-fx]+)
+  b	#(?P<loc_527FA8>[0-9a-fx]+)
+loc_527F90:
   movs	r1, #0x32
   mov	r0, sb
   bl	#(?P<sub_524FE2>[0-9a-fx]+)
@@ -1364,9 +1395,11 @@ loc_527F76:
   mov	r1, fp
   bl	#(?P<enable_device>[0-9a-fx]+)
   b	#(?P<loc_527F68>[0-9a-fx]+)
+loc_527FA8:
   ldrb	r0, \[r4, #1\]
   cmp	r0, #0x80
   blo	#(?P<loc_527FEE>[0-9a-fx]+)
+loc_527FAE:
   ldr.w	r3, \[r8\]
   movs	r0, #7
   adr	r1, #(?P<cstr_compass_group_ok1>[0-9a-fx]+)
@@ -1394,8 +1427,12 @@ loc_527F76:
   strb.w	r5, \[r4, #0x4c\]
 loc_527FEE:
   adds	r7, r7, #1
-  cmp	r7, #3
-  blo	#(?P<loc_527F76>[0-9a-fx]+)
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;cmp	r7, #3
+  ;blo	#(?P<loc_527F76>[0-9a-fx]+)
+  ; block of code and data, in wm100_0306_v03.02.43.20:
+  ;beq	#(?P<loc_527F76>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_4>([0-9a-fx]+[, ]*){1,4})
   ldr	r0, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
   movs	r2, #0
   adr	r1, #(?P<cstr_local>[0-9a-fx]+)
@@ -1436,8 +1473,14 @@ loc_528032:
   adds	r1, #0x5c
   sub.w	r0, r1, #0x14
   bl	#(?P<sub_50B8C4>[0-9a-fx]+)
-  ldr	r1, \[pc, #(?P<constval_2FA0000>[0-9a-fx]+)\]
-  ldr	r0, \[pc, #(?P<unk_20404F50>[0-9a-fx]+)\]
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;ldr	r1, \[pc, #(?P<constval_2FA0000>[0-9a-fx]+)\]
+  ;ldr	r0, \[pc, #(?P<unk_20404F50>[0-9a-fx]+)\]
+  ; block of code and data, in wm100_0306_v03.02.43.20:
+  ;ldr	r0, \[pc, #(?P<unk_20404F50>[0-9a-fx]+)\]
+  ;ldr	r1, \[pc, #(?P<constval_2FA0000>[0-9a-fx]+)\]
+  ;adds	r0, #0xa0
+  dcw	(?P<undefined_varlen_5>([0-9a-fx]+[, ]*){2,4})
   bl	#(?P<sub_526C66>[0-9a-fx]+)
   add	sp, #0x64
   pop.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){7,10}), pc}
@@ -1494,15 +1537,24 @@ loc_528066:
   'loc_527E3E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_527E4A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_527ED8':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_527EE6':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_527F00':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_527F24':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_527F2A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_527F68':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_527F76':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_527F90':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_527FA8':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_527FAE':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_527FEE':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_528032':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_528066':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,280)},
+  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,264)},
+  'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,8)},
+  'undefined_varlen_4':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
+  'undefined_varlen_5':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,4)},
   'cstr_baro':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_baro_group_ok1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_baro_group_ok2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
@@ -1521,7 +1573,7 @@ loc_528066:
   'cstr_warn_local_imu_id_error1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_warn_local_imu_id_error2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'byte_20404E10':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT8_T},
-  'constval_2FA0000':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  #'constval_2FA0000':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
   'hal_stru_164C':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
   'imu_groups':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
   # this is the pointer to `imu_groups`, same as above; but it gets misinterpreted by 4 bytes, so we define separate var as workaround:
@@ -1531,8 +1583,7 @@ loc_528066:
   #'ptr_unkvar_01':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UNKNOWN},
   'dword_20404358':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
   'rel_dword_20404528':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
-  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (256,264)},
-  'unk_20404F50':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
+  #'unk_20404F50':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'unkvar_01':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
 },
 }
@@ -1566,7 +1617,7 @@ navi_init:
   movs	r1, #3
   str.w	r0, \[r4, #(?P<rel_navi_version>[0-9a-fx]+)\]
   mov.w	r0, #0x620000
-  addw	r4, r4, #0x91a
+  addw	r4, r4, #(?P<rel_unkn_1>[0-9a-fx]+)
   bl	#(?P<open_device>[0-9a-fx]+)
   ldr	r2, \[pc, #(?P<serial_nb_0>[0-9a-fx]+)\]
   ldr	r1, \[pc, #(?P<unkn_10620005>[0-9a-fx]+)\]
@@ -1598,7 +1649,7 @@ navi_init:
   mov	r1, sp
   adds	r0, #0x54
   bl	#(?P<memcpy_0>[0-9a-fx]+)
-  movs	r0, #0x10
+  movs	r0, #(?P<const_val_1>[0-9a-fx]+)
   strb	r0, \[r4, #(?P<rel_byte_2041971F>[0-9a-fx]+)\]
   pop	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){6,8}), pc}
 """,
@@ -1621,6 +1672,8 @@ navi_init:
   'unkn_10620005':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'rel_byte_2041971F':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'rel_navi_version':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_unkn_1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'const_val_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'mc_version_3a':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
 },
 }
@@ -1639,11 +1692,11 @@ init_config_table_version:
   cmp	r1, r0
   bne	#(?P<loc_5412EE>[0-9a-fx]+)
   ldrb.w	r1, \[sp, #4\]
-  cmp	r1, #0x10
+  cmp	r1, #(?P<const_val_1a>[0-9a-fx]+)
   beq	#(?P<loc_541300>[0-9a-fx]+)
 loc_5412EE:
   str	r0, \[sp\]
-  movs	r0, #0x10
+  movs	r0, #(?P<const_val_1b>[0-9a-fx]+)
   strb.w	r0, \[sp, #4\]
   mov	r0, sp
   bl	#(?P<set_version_4384>[0-9a-fx]+)
@@ -1661,6 +1714,8 @@ loc_541300:
   'loc_5412EE':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_541300':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'const_val_1a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
+  'const_val_1b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'mc_version_3b':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
 },
 }
@@ -1677,8 +1732,8 @@ log_version_info:
   adr	r1, #(?P<cstr_fmt_mc_id>[0-9a-fx]+)
   ldr	r2, \[pc, #(?P<serial_nb_0>[0-9a-fx]+)\]
   blx	r3
-  movs	r1, #5
-  movs	r0, #0x23
+  movs	r1, #(?P<const_val_1>[0-9a-fx]+)
+  movs	r0, #(?P<const_val_2>[0-9a-fx]+)
   strd	r0, r1, \[sp\]
   bl	#(?P<get_logger>[0-9a-fx]+)
   ldr	r4, \[r0, #0xc\]
@@ -1727,6 +1782,8 @@ log_version_info:
   'cstr_repo_revision':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'dword_20405E40':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'rel_battery_version':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'const_val_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
+  'const_val_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'serial_nb_0':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
 },
 }
