@@ -1561,7 +1561,15 @@ def armfw_elf_section_search_add_var(po, search, var_name, var_suffix, var_info,
         var_val = search['var_vals'][var_name+var_suffix]
         if var_val['value'] != prop_ofs_val:
             if (po.verbose > 3):
-                print("Mismatch on var '{:s}' value - is 0x{:x}, now got 0x{:x}".format(var_name+var_suffix,var_val['value'],prop_ofs_val))
+                if isinstance(var_val['value'], int):
+                    old_val = "0x{:0x}".format(var_val['value'])
+                else:
+                    old_val = str(var_val['value'])
+                if isinstance(prop_ofs_val, int):
+                    new_val = "0x{:0x}".format(prop_ofs_val)
+                else:
+                    new_val = str(prop_ofs_val)
+                print("Mismatch on var '{:s}' value - is {:s}, now got {:s}".format(var_name+var_suffix,old_val,new_val))
             return False
         if var_info['type'] in (VarType.DIRECT_INT_VALUE,):
             raise ValueError("Mismatch on var '{:s}' occurences - direct int value can only occur once".format(var_name+var_suffix))
