@@ -1162,41 +1162,46 @@ re_func_imu_init_WM330_V03_01_10_93 = {
 imu_init:
   push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){7,10}), lr}
   sub	sp, #0x64
-  movs	r1, #0x58
-  add	r0, sp, #8
-  bl	#(?P<memset_zero>[0-9a-fx]+)
-  movs	r7, #0
-  bl	#(?P<nullsub_53>[0-9a-fx]+)
-  bl	#(?P<sub_50BF40>[0-9a-fx]+)
-  ldr.w	sl, \[pc, #(?P<imu_groups_p4>[0-9a-fx]+)\]
-  sub.w	sl, sl, #0xc
-  ; block of code, in wm330_0306_v03.01.10.93:
-  ;mov	r4, sl
-  ; block of code and data, in wm100_0306_v03.02.43.20:
-  ;mov	r4, sl
-  ;b	#(?P<loc_527BA0>[0-9a-fx]+)
-  ;[...] - block of data here
-  ;loc_527BA0:
-  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){1,280})
-  str.w	r0, \[sl, #(?P<rel_dword_20404528>[0-9a-fx]+)\]
-  bl	#(?P<getSystemTimerTickRate>[0-9a-fx]+)
-  movs	r3, #0
-  str	r0, \[r4\]
-  mov	r2, r3
-  mov	r1, r3
-  subw	r0, pc, #(?P<sub_526EFA>[0-9a-fx]+) ; or adr.w	r0, (sub_526EFA+1)
-  bl	#(?P<timer_event_enable>[0-9a-fx]+)
-  ldr.w	r8, \[pc, #(?P<printf_s>[0-9a-fx]+)\]
-  movs	r6, #1
-  ldr.w	fp, \[pc, #(?P<unkvar_01>[0-9a-fx]+)\]
-  movs	r5, #0
-loc_527BC4:
-  rsb	r0, r7, r7, lsl #3
-  add.w	r1, r0, r7, lsl #6
-  ldr	r0, \[pc, #(?P<imu_groups>[0-9a-fx]+)\]
-  add.w	r4, r0, r1, lsl #4
-  ; block of code and data, in wm220_0306_v03.02.35.05 260 words long:
-  ;ldr.w	r0, \[r4, #0x46c\]
+  ; block of code, in wm220_0306_v03.02.13.12, 12 words:
+  ;bl	#0x5130f2
+  ;bl	#(?P<nullsub_53>[0-9a-fx]+)
+  ;ldr.w	fp, \[pc, #0x374\]
+  ;movs	r6, #0
+  ;ldr	r5, \[pc, #0x370\]
+  ;mov.w	sb, #1
+  ;mov	r8, r6
+  ;loc_527BC4:
+  ;movs	r0, #0xbb
+  ;muls	r0, r6, r0
+  ;add.w	r4, fp, r0, lsl #3
+  ;ldr.w	r0, \[r4, #(?P<unkstru_r4_field_46C>[0-9a-fx]+)\]
+  ; block of code and data, in wm220_0306_v03.02.35.05, 290 words:
+  ;movs	r1, #0x58
+  ;add	r0, sp, #8
+  ;bl	#(?P<memset_zero>[0-9a-fx]+)
+  ;movs	r7, #0
+  ;bl	#(?P<nullsub_53>[0-9a-fx]+)
+  ;bl	#(?P<sub_50BF40>[0-9a-fx]+)
+  ;ldr.w	sl, \[pc, #(?P<imu_groups_p4>[0-9a-fx]+)\]
+  ;sub.w	sl, sl, #0xc
+  ;str.w	r0, \[sl, #(?P<rel_dword_20404528>[0-9a-fx]+)\]
+  ;bl	#(?P<getSystemTimerTickRate>[0-9a-fx]+)
+  ;movs	r3, #0
+  ;str	r0, \[r4\]
+  ;mov	r2, r3
+  ;mov	r1, r3
+  ;subw	r0, pc, #(?P<sub_526EFA>[0-9a-fx]+) ; or adr.w	r0, (sub_526EFA+1)
+  ;bl	#(?P<timer_event_enable>[0-9a-fx]+)
+  ;ldr.w	r8, \[pc, #(?P<printf_s>[0-9a-fx]+)\]
+  ;movs	r6, #1
+  ;ldr.w	fp, \[pc, #(?P<unkvar_01>[0-9a-fx]+)\]
+  ;movs	r5, #0
+  ;loc_527BC4:
+  ;rsb	r0, r7, r7, lsl #3
+  ;add.w	r1, r0, r7, lsl #6
+  ;ldr	r0, \[pc, #(?P<imu_groups>[0-9a-fx]+)\]
+  ;add.w	r4, r0, r1, lsl #4
+  ;ldr.w	r0, \[r4, #(?P<unkstru_r4_field_46C>[0-9a-fx]+)\]
   ;b	#(?P<loc_527DDC>[0-9a-fx]+)
   ;dcd	(?P<ptr_unk_5848FC>[0-9a-fx]+)
   ;dcb	"miscali_%d ", 0
@@ -1204,77 +1209,119 @@ loc_527BC4:
   ;[...]
   ;dcd	(?P<ptr_printf_s>[0-9a-fx]+)
   ;dcd	(?P<ptr_unkvar_01>[0-9a-fx]+)
-  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,264})
-loc_527DDC:
+  dcw	(?P<undefined_varlen_01>([0-9a-fx]+[, ]*){10,580})
   cbnz	r0, #(?P<loc_527DEA>[0-9a-fx]+)
   subw	r0, pc, #(?P<cstr_link_manual_cali_neg>[0-9a-fx]+)
   bl	#(?P<get_link_by_name>[0-9a-fx]+)
-  str.w	r0, \[r4, #0x46c\]
+  str.w	r0, \[r4, #(?P<unkstru_r4_field_46C>[0-9a-fx]+)\]
 loc_527DEA:
-  mov	r0, r7
-  bl	#(?P<sub_526D10>[0-9a-fx]+)
-  cmp	r0, #0
-  bge	#(?P<loc_527E08>[0-9a-fx]+)
-  ldrb	r0, \[r4, #0x1c\]
-  movs	r1, #3
-  orr	r0, r0, #0x900000
-  bl	#(?P<open_device>[0-9a-fx]+)
-  str	r0, \[r4, #0x64\]
-  strb.w	r5, \[r4, #0x6c\]
-  b	#(?P<loc_527E0E>[0-9a-fx]+)
-loc_527E08:
-  str	r5, \[r4, #0x64\]
-  strb.w	r6, \[r4, #0x6c\]
-loc_527E0E:
-  mov	r0, r7
-  bl	#(?P<sub_526D52>[0-9a-fx]+)
-  cmp	r0, #0
-  bge	#(?P<loc_527E2C>[0-9a-fx]+)
-  ldrb	r0, \[r4, #0x1d\]
-  movs	r1, #3
-  orr	r0, r0, #0x910000
-  bl	#(?P<open_device>[0-9a-fx]+)
-  str	r0, \[r4, #0x68\]
-  strb.w	r5, \[r4, #0x6d\]
-  b	#(?P<loc_527E32>[0-9a-fx]+)
-loc_527E2C:
-  str	r5, \[r4, #0x68\]
-  strb.w	r6, \[r4, #0x6d\]
-loc_527E32:
-  ldr	r0, \[r4, #0x64\]
-  cbnz	r0, #(?P<loc_527E3E>[0-9a-fx]+)
-  ldrb.w	r0, \[r4, #0x6c\]
-  cmp	r0, #0
-  beq	#(?P<loc_527ED8>[0-9a-fx]+)
-loc_527E3E:
-  ldr	r0, \[r4, #0x68\]
-  cbnz	r0, #(?P<loc_527E4A>[0-9a-fx]+)
-  ldrb.w	r0, \[r4, #0x6d\]
-  cmp	r0, #0
-  beq	#(?P<loc_527ED8>[0-9a-fx]+)
-loc_527E4A:
-  ldr.w	r3, \[r8\]
+  ; block of code, in wm220_0306_v03.02.13.12, 37 words:
+  ;movs	r7, #0
+  ;loc_513EDC:
+  ;movs	r3, #1
+  ;rsb	r1, r7, r7, lsl #3
+  ;movs	r2, #0x10
+  ;add.w	r0, r4, r1, lsl #4
+  ;add.w	r1, r0, #0x6c
+  ;adds	r0, #0xac
+  ;bl	#0x426702
+  ;adds	r7, r7, #1
+  ;cmp	r7, #8
+  ;blo	#(?P<loc_513EDC>[0-9a-fx]+)
+  ;movs	r0, #0
+  ;loc_513EFA:
+  ;rsb	r2, r0, r0, lsl #3
+  ;add.w	r1, r4, r2, lsl #4
+  ;ldr	r1, \[r1, #0x68\]
+  ;cbnz	r1, #(?P<loc_513F0A>[0-9a-fx]+)
+  ;cmp	r0, #7
+  ;bne	#(?P<loc_514008>[0-9a-fx]+)
+  ;loc_513F0A:
+  ;adds	r0, r0, #1
+  ;cmp	r0, #8
+  ;blo	#0x513efa
+  ;ldr.w	r0, \[r4, #0x3e8\]
+  ;subs	r0, r0, #1
+  ;cmp.w	r0, #0x1f40
+  ;bhs	#(?P<loc_514008>[0-9a-fx]+)
+  ;ldr.w	ip, \[r5\]
+  ; block of code and data, in wm220_0306_v03.02.35.05:
+  ;mov	r0, r7
+  ;bl	#(?P<sub_526D10>[0-9a-fx]+)
+  ;cmp	r0, #0
+  ;bge	#(?P<loc_527E08>[0-9a-fx]+)
+  ;ldrb	r0, \[r4, #0x1c\]
+  ;movs	r1, #3
+  ;orr	r0, r0, #0x900000
+  ;bl	#(?P<open_device>[0-9a-fx]+)
+  ;str	r0, \[r4, #0x64\]
+  ;strb.w	r5, \[r4, #0x6c\]
+  ;b	#(?P<loc_527E0E>[0-9a-fx]+)
+  ;loc_527E08:
+  ;str	r5, \[r4, #0x64\]
+  ;strb.w	r6, \[r4, #0x6c\]
+  ;loc_527E0E:
+  ;mov	r0, r7
+  ;bl	#(?P<sub_526D52>[0-9a-fx]+)
+  ;cmp	r0, #0
+  ;bge	#(?P<loc_527E2C>[0-9a-fx]+)
+  ;ldrb	r0, \[r4, #0x1d\]
+  ;movs	r1, #3
+  ;orr	r0, r0, #0x910000
+  ;bl	#(?P<open_device>[0-9a-fx]+)
+  ;str	r0, \[r4, #0x68\]
+  ;strb.w	r5, \[r4, #0x6d\]
+  ;b	#(?P<loc_527E32>[0-9a-fx]+)
+  ;loc_527E2C:
+  ;str	r5, \[r4, #0x68\]
+  ;strb.w	r6, \[r4, #0x6d\]
+  ;loc_527E32:
+  ;ldr	r0, \[r4, #0x64\]
+  ;cbnz	r0, #(?P<loc_527E3E>[0-9a-fx]+)
+  ;ldrb.w	r0, \[r4, #0x6c\]
+  ;cmp	r0, #0
+  ;beq	#(?P<loc_527ED8>[0-9a-fx]+)
+  ;loc_527E3E:
+  ;ldr	r0, \[r4, #0x68\]
+  ;cbnz	r0, #(?P<loc_527E4A>[0-9a-fx]+)
+  ;ldrb.w	r0, \[r4, #0x6d\]
+  ;cmp	r0, #0
+  ;beq	#(?P<loc_527ED8>[0-9a-fx]+)
+  ;loc_527E4A:
+  ;ldr.w	r3, \[r8\]
+  dcw	(?P<undefined_varlen_02>([0-9a-fx]+[, ]*){32,64})
   movs	r0, #7
   adr	r1, #(?P<cstr_imu_group_ok1>[0-9a-fx]+)
-  mov	r2, r7
-  blx	r3
+  ; block of code, in wm220_0306_v03.02.13.12:
+  ;ldr.w	r3, \[r4, #0x3e8\]
+  ;mov	r7, r8
+  ;mov	r2, r6
+  ; block of code and data, in wm220_0306_v03.02.35.05:
+  ;mov	r2, r7
+  dcw	(?P<undefined_varlen_03>([0-9a-fx]+[, ]*){1,6})
+  blx	(r3|ip)
   bl	#(?P<get_logger>[0-9a-fx]+)
-  ldr	r3, \[r0, #0xc\]
+  ldr(.w)?	(r3|ip), \[r0, #0xc\]
   movs	r0, #0x39
   adr	r1, #(?P<cstr_imu_group_ok2>[0-9a-fx]+)
-  mov	r2, r7
-  blx	r3
+  ; block of code, in wm220_0306_v03.02.13.12:
+  ;ldr.w	r3, \[r4, #0x3e8\]
+  ;mov	r2, (r7|r6)
+  ; block of code and data, in wm220_0306_v03.02.35.05:
+  ;mov	r2, (r7|r6)
+  dcw	(?P<undefined_varlen_04>([0-9a-fx]+[, ]*){1,4})
+  blx	(r3|ip)
   movs	r1, #0xe0
-  add.w	r0, r4, #0x350
+  add.w	r0, r4, #(?P<unkstru_r4_field_350>[0-9a-fx]+)
   bl	#(?P<memset_zero>[0-9a-fx]+)
-  add.w	r0, r4, #0x70
+  add[.]?w	r0, r4, #(?P<unkstru_r4_field_70>[0-9a-fx]+)
   movs	r1, #0x38
-  mov	sb, r0
+  mov	(sb|sl), r0
   bl	#(?P<memset_zero>[0-9a-fx]+)
-  add.w	r1, r4, #0x20
-  ldr.w	r0, \[sl, #(?P<rel_dword_20404528>[0-9a-fx]+)\]
+  add.w	r1, r4, #(?P<unkstru_r4_field_20>[0-9a-fx]+)
+  ldr.w	r0, \[(sl|r4), #(?P<rel_dword_20404528>[0-9a-fx]+)\]
   movs	r3, #0
-  mov	r2, r7
+  mov	r2, (r7|r6)
   strd	r0, r1, \[sp\]
   adds	r1, r4, #4
   add	r0, sp, #8
@@ -1284,27 +1331,36 @@ loc_527E4A:
   ldr	r0, \[r0\]
   bic	r0, r0, #0xff000000
   orr.w	r0, r0, r1, lsl #29
-  str.w	r0, \[r4, #0x34c\]
+  str.w	r0, \[r4, #(?P<unkstru_r4_field_34Ca>[0-9a-fx]+)\]
   bl	#(?P<get_logger>[0-9a-fx]+)
   ldr.w	ip, \[r0, #0xc\]
   movs	r0, #0xe
   adr	r1, #(?P<cstr_imu_group_sensor_id>[0-9a-fx]+)
-  ldr.w	r3, \[r4, #0x34c\]
-  mov	r2, r7
+  ldr.w	r3, \[r4, #(?P<unkstru_r4_field_34Cb>[0-9a-fx]+)\]
+  mov	r2, (r7|r6)
   blx	ip
-  uxth	r2, r7
-  mov	r0, sb
+  uxth	r2, (r7|r6)
+  mov	r0, (sb|sl)
   adr	r1, #(?P<cstr_gyro_acc>[0-9a-fx]+)
   bl	#(?P<snprintf_sd_16>[0-9a-fx]+)
   ldr	r0, \[pc, #(?P<sub_527570>[0-9a-fx]+)\]
   add	r2, sp, #8
-  mov	r1, sb
-  str.w	r0, \[r4, #0x80\]
+  mov	r1, (sb|sl)
+  str.w	r0, \[r4, #(?P<unkstru_r4_field_80>[0-9a-fx]+)\]
   movs	r0, #8
   bl	#(?P<hal_add_device_with_param>[0-9a-fx]+)
-  cbz	r0, #(?P<loc_527F00>[0-9a-fx]+)
-  strb.w	r5, \[r4, #0xa8\]
+  ; block of code, in wm330_0306_v03.02.13.12:
+  ;cmp	r0, #0
+  ;beq	#(?P<loc_527F00>[0-9a-fx]+)
+  ; block of code and data, in wm220_0306_v03.02.35.05:
+  ;cbz	r0, #(?P<loc_527F00>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_05>([0-9a-fx]+[, ]*){1,4})
+  strb.w	(r5|r7), \[r4, #(?P<unkstru_r4_field_A8>[0-9a-fx]+)\]
 loc_527ED8:
+  ; block of code, in wm330_0306_v03.02.13.12:
+  ;adds	r6, r6, #1
+  ;cmp	r6, #2
+  ;blo	#(?P<loc_527BC4>[0-9a-fx]+)
   ; block of code, in wm330_0306_v03.01.10.93:
   ;adds	r7, r7, #1
   ; block of code and data, in wm100_0306_v03.02.43.20:
@@ -1312,119 +1368,160 @@ loc_527ED8:
   ;beq.w	#(?P<loc_527BC4>[0-9a-fx]+)
   ;cmp	r7, #2
   ;blo.w	#(?P<loc_527BC4>[0-9a-fx]+)
-  dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){1,8})
+  dcw	(?P<undefined_varlen_06>([0-9a-fx]+[, ]*){1,8})
   ldr.w	sl, \[pc, #(?P<byte_20404E10>[0-9a-fx]+)\]
   movs	r7, #0
-loc_527EE6:
-  add.w	r1, r7, r7, lsl #2
-  add.w	r4, sl, r1, lsl #4
-  movs	r1, #3
-  ldrb	r0, \[r4, #1\]
-  orr	r0, r0, #0x920000
-  bl	#(?P<open_device>[0-9a-fx]+)
-  str	r0, \[r4, #0x10\]
-  cbnz	r0, #(?P<loc_527F2A>[0-9a-fx]+)
-  b	#(?P<loc_527F24>[0-9a-fx]+)
-loc_527F00:
-  movs	r1, #0x32
-  mov	r0, sb
-  bl	#(?P<sub_524FE2>[0-9a-fx]+)
-  strb.w	r6, \[r4, #0xa8\]
-  movs	r2, #1
-  ldr	r0, \[r4, #0x64\]
-  mov	sb, fp
-  mov	r1, fp
-  bl	#(?P<enable_device>[0-9a-fx]+)
-  ldr	r0, \[r4, #0x68\]
-  movs	r2, #1
-  mov	r1, sb
-  bl	#(?P<enable_device>[0-9a-fx]+)
-  b	#(?P<loc_527ED8>[0-9a-fx]+)
-loc_527F24:
-  ldrb	r0, \[r4, #1\]
-  cmp	r0, #0x80
-  blo	#(?P<loc_527F68>[0-9a-fx]+)
+  ; block of code, in wm330_0306_v03.02.13.12, 35 words:
+  ;loc_527F76:
+  ;movs	r6, #0
+  ;add.w	r0, r7, r7, lsl #4
+  ;add.w	r1, r0, r7, lsl #5
+  ;add.w	r4, sl, r1, lsl #3
+  ;loc_513FD2:
+  ;rsb	r1, r6, r6, lsl #3
+  ;movs	r3, #1
+  ;add.w	r0, r4, r1, lsl #4
+  ;add.w	r1, r0, #0x10
+  ;movs	r2, #0x10
+  ;adds	r0, #0x50
+  ;bl	#0x426702
+  ;adds	r6, r6, #1
+  ;cmp	r6, #2
+  ;blo	#(?P<loc_513FD2>[0-9a-fx]+)
+  ;ldr	r0, \[r4, #0xc\]
+  ;cmp	r0, #0
+  ;beq	#(?P<loc_5140D6>[0-9a-fx]+)
+  ;ldr	r0, \[r4, #0x7c\]
+  ;cmp	r0, #0
+  ;beq	#(?P<loc_5140D6>[0-9a-fx]+)
+  ;ldr.w	r3, \[r4, #0xec\]
+  ;subs	r0, r3, #1
+  ;cmp.w	r0, #0x320
+  ;bhs	#(?P<loc_5140D6>[0-9a-fx]+)
+  ;b	#(?P<loc_527F2A>[0-9a-fx]+)
+  ;loc_514008:
+  ;b	#(?P<loc_5140A4>[0-9a-fx]+)
+  ; block of code, in wm100_0306_v03.02.43.20:
+  ;loc_527EE6:
+  ;add.w	r1, r7, r7, lsl #2
+  ;add.w	r4, sl, r1, lsl #4
+  ;movs	r1, #3
+  ;ldrb	r0, \[r4, #1\]
+  ;orr	r0, r0, #0x920000
+  ;bl	#(?P<open_device>[0-9a-fx]+)
+  ;str	r0, \[r4, #0x10\]
+  ;cbnz	r0, #(?P<loc_527F2A>[0-9a-fx]+)
+  ;b	#(?P<loc_527F24>[0-9a-fx]+)
+  ;loc_527F00:
+  ;movs	r1, #0x32
+  ;mov	r0, sb
+  ;bl	#(?P<sub_524FE2>[0-9a-fx]+)
+  ;strb.w	r6, \[r4, #0xa8\]
+  ;movs	r2, #1
+  ;ldr	r0, \[r4, #0x64\]
+  ;mov	sb, fp
+  ;mov	r1, fp
+  ;bl	#(?P<enable_device>[0-9a-fx]+)
+  ;ldr	r0, \[r4, #0x68\]
+  ;movs	r2, #1
+  ;mov	r1, sb
+  ;bl	#(?P<enable_device>[0-9a-fx]+)
+  ;b	#(?P<loc_527ED8>[0-9a-fx]+)
+  ;loc_527F24:
+  ;ldrb	r0, \[r4, #1\]
+  ;cmp	r0, #0x80
+  ;blo	#(?P<loc_527F68>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_07>([0-9a-fx]+[, ]*){32,48})
 loc_527F2A:
-  ldr.w	r3, \[r8\]
+  ldr(.w)?	(r3|r6), \[(r8|r5)\]
   movs	r0, #7
   adr	r1, #(?P<cstr_baro_group_ok1>[0-9a-fx]+)
   mov	r2, r7
-  blx	r3
+  blx	(r3|r6)
   bl	#(?P<get_logger>[0-9a-fx]+)
-  ldr	r3, \[r0, #0xc\]
+  ldr	(r3|r6), \[r0, #0xc\]
   movs	r0, #0x39
   adr	r1, #(?P<cstr_baro_group_ok2>[0-9a-fx]+)
-  mov	r2, r7
-  blx	r3
-  add.w	r0, r4, #0x14
+  ; block of code, in wm330_0306_v03.02.13.12:
+  ;ldr.w	r3, \[r4, #0xec\]
+  ;mov	r2, r7
+  ; block of code, in wm100_0306_v03.02.43.20:
+  ;mov	r2, r7
+  dcw	(?P<undefined_varlen_08>([0-9a-fx]+[, ]*){1,4})
+  blx	(r3|r6)
+  add.w	r0, r4, #(?P<unkstru_r4_field_14>[0-9a-fx]+)
   movs	r1, #0x38
-  mov	sb, r0
+  mov	(sb|r6), r0
   bl	#(?P<memset_zero>[0-9a-fx]+)
   movs	r2, #0
-  mov	r0, sb
+  mov	r0, (sb|r6)
   adr	r1, #(?P<cstr_baro>[0-9a-fx]+)
   bl	#(?P<snprintf_sd_16>[0-9a-fx]+)
   movs	r0, #9
-  mov	r1, sb
+  mov	r1, (sb|r6)
   bl	#(?P<hal_add_device>[0-9a-fx]+)
-  cbz	r0, #(?P<loc_527F90>[0-9a-fx]+)
-  strb.w	r5, \[r4, #0x4d\]
-loc_527F68:
-  adds	r7, r7, #1
-  beq	#(?P<loc_527EE6>[0-9a-fx]+)
-  ldr.w	sl, \[pc, #(?P<byte_20404E10>[0-9a-fx]+)\]
-  movs	r7, #0
-  add.w	sl, sl, #0x50
-loc_527F76:
-  add.w	r1, r7, r7, lsl #2
-  add.w	r4, sl, r1, lsl #4
-  movs	r1, #3
-  ldrb	r0, \[r4, #1\]
-  orr	r0, r0, #0x930000
-  bl	#(?P<open_device>[0-9a-fx]+)
-  str	r0, \[r4, #0x10\]
-  cbnz	r0, #(?P<loc_527FAE>[0-9a-fx]+)
-  b	#(?P<loc_527FA8>[0-9a-fx]+)
-loc_527F90:
-  movs	r1, #0x32
-  mov	r0, sb
-  bl	#(?P<sub_524FE2>[0-9a-fx]+)
-  strb.w	r6, \[r4, #0x4d\]
-  movs	r2, #1
-  ldr	r0, \[r4, #0x10\]
-  mov	r1, fp
-  bl	#(?P<enable_device>[0-9a-fx]+)
-  b	#(?P<loc_527F68>[0-9a-fx]+)
-loc_527FA8:
-  ldrb	r0, \[r4, #1\]
-  cmp	r0, #0x80
-  blo	#(?P<loc_527FEE>[0-9a-fx]+)
-loc_527FAE:
-  ldr.w	r3, \[r8\]
-  movs	r0, #7
-  adr	r1, #(?P<cstr_compass_group_ok1>[0-9a-fx]+)
-  mov	r2, r7
-  blx	r3
-  bl	#(?P<get_logger>[0-9a-fx]+)
-  ldr	r3, \[r0, #0xc\]
-  movs	r0, #0x39
-  adr	r1, #(?P<cstr_compass_group_ok2>[0-9a-fx]+)
-  mov	r2, r7
-  blx	r3
-  add.w	r0, r4, #0x14
-  movs	r1, #0x38
-  mov	sb, r0
-  bl	#(?P<memset_zero>[0-9a-fx]+)
-  movs	r2, #0
-  mov	r0, sb
-  adr	r1, #(?P<cstr_compass>[0-9a-fx]+)
-  bl	#(?P<snprintf_sd_16>[0-9a-fx]+)
-  movs	r0, #0xa
-  mov	r1, sb
-  bl	#(?P<hal_add_device>[0-9a-fx]+)
-  cmp	r0, #0
+  ; block of code, in wm330_0306_v03.02.13.12:
+  ;cmp	r0, #0
+  ; block of code, in wm100_0306_v03.02.43.20:
+  ;cbz	r0, #(?P<loc_527F90>[0-9a-fx]+)
+  ;strb.w	r5, \[r4, #0x4d\]
+  ;loc_527F68:
+  ;adds	r7, r7, #1
+  ;beq	#(?P<loc_527EE6>[0-9a-fx]+)
+  ;ldr.w	sl, \[pc, #(?P<byte_20404E10>[0-9a-fx]+)\]
+  ;movs	r7, #0
+  ;add.w	sl, sl, #0x50
+  ;loc_527F76:
+  ;add.w	r1, r7, r7, lsl #2
+  ;add.w	r4, sl, r1, lsl #4
+  ;movs	r1, #3
+  ;ldrb	r0, \[r4, #1\]
+  ;orr	r0, r0, #0x930000
+  ;bl	#(?P<open_device>[0-9a-fx]+)
+  ;str	r0, \[r4, #0x10\]
+  ;cbnz	r0, #(?P<loc_527FAE>[0-9a-fx]+)
+  ;b	#(?P<loc_527FA8>[0-9a-fx]+)
+  ;loc_527F90:
+  ;movs	r1, #0x32
+  ;mov	r0, sb
+  ;bl	#(?P<sub_524FE2>[0-9a-fx]+)
+  ;strb.w	r6, \[r4, #0x4d\]
+  ;movs	r2, #1
+  ;ldr	r0, \[r4, #0x10\]
+  ;mov	r1, fp
+  ;bl	#(?P<enable_device>[0-9a-fx]+)
+  ;b	#(?P<loc_527F68>[0-9a-fx]+)
+  ;loc_527FA8:
+  ;ldrb	r0, \[r4, #1\]
+  ;cmp	r0, #0x80
+  ;blo	#(?P<loc_527FEE>[0-9a-fx]+)
+  ;loc_527FAE:
+  ;ldr.w	r3, \[r8\]
+  ;movs	r0, #7
+  ;adr	r1, #(?P<cstr_compass_group_ok1>[0-9a-fx]+)
+  ;mov	r2, r7
+  ;blx	r3
+  ;bl	#(?P<get_logger>[0-9a-fx]+)
+  ;ldr	r3, \[r0, #0xc\]
+  ;movs	r0, #0x39
+  ;adr	r1, #(?P<cstr_compass_group_ok2>[0-9a-fx]+)
+  ;mov	r2, r7
+  ;blx	r3
+  ;add.w	r0, r4, #0x14
+  ;movs	r1, #0x38
+  ;mov	sb, r0
+  ;bl	#(?P<memset_zero>[0-9a-fx]+)
+  ;movs	r2, #0
+  ;mov	r0, sb
+  ;adr	r1, #(?P<cstr_compass>[0-9a-fx]+)
+  ;bl	#(?P<snprintf_sd_16>[0-9a-fx]+)
+  ;movs	r0, #0xa
+  ;mov	r1, sb
+  ;bl	#(?P<hal_add_device>[0-9a-fx]+)
+  ;cmp	r0, #0
+  dcw	(?P<undefined_varlen_10>([0-9a-fx]+[, ]*){1,72})
   beq	#(?P<loc_528066>[0-9a-fx]+)
-  strb.w	r5, \[r4, #0x4c\]
+  strb.w	(r5|r8), \[r4, #(?P<unkstru_r4_field_4C>[0-9a-fx]+)\]
 loc_527FEE:
   adds	r7, r7, #1
   ; block of code, in wm330_0306_v03.01.10.93:
@@ -1432,7 +1529,9 @@ loc_527FEE:
   ;blo	#(?P<loc_527F76>[0-9a-fx]+)
   ; block of code and data, in wm100_0306_v03.02.43.20:
   ;beq	#(?P<loc_527F76>[0-9a-fx]+)
-  dcw	(?P<undefined_varlen_4>([0-9a-fx]+[, ]*){1,4})
+  ; block of code, in wm220_0306_v03.02.13.12:
+  ;beq	#(?P<loc_527F76>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_11>([0-9a-fx]+[, ]*){1,4})
   ldr	r0, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
   movs	r2, #0
   adr	r1, #(?P<cstr_local>[0-9a-fx]+)
@@ -1446,7 +1545,7 @@ loc_527FEE:
   mov	r0, r4
   bl	#(?P<sub_525CF0>[0-9a-fx]+)
   cbz	r0, #(?P<loc_528032>[0-9a-fx]+)
-  ldr.w	r3, \[r8\]
+  ldr(.w)?	r3, \[(r8|r5)\]
   movs	r0, #7
   ldrb	r2, \[r4, #0x40\]! ; hal_stru_164C.local_imu_id_errno
   adr	r1, #(?P<cstr_warn_local_imu_id_error1>[0-9a-fx]+)
@@ -1458,45 +1557,55 @@ loc_527FEE:
   ldrb	r2, \[r4\]
   blx	r3
 loc_528032:
-  ldr	r2, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
-  adr	r0, #(?P<cstr_link_auto_cali>[0-9a-fx]+)
-  ldr	r1, \[pc, #(?P<link_cali_msg_callback>[0-9a-fx]+)\]
-  adds	r2, #0x44
-  bl	#(?P<link_set_msg_callback>[0-9a-fx]+)
-  ldr	r2, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
-  adr	r0, #(?P<cstr_link_manual_cali>[0-9a-fx]+)
-  ldr	r1, \[pc, #(?P<link_cali_msg_callback>[0-9a-fx]+)\]
-  adds	r2, #0x44
-  bl	#(?P<link_set_msg_callback>[0-9a-fx]+)
-  ldr	r1, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
-  movs	r2, #0xc8
-  adds	r1, #0x5c
-  sub.w	r0, r1, #0x14
-  bl	#(?P<sub_50B8C4>[0-9a-fx]+)
+  ; block of code, in wm330_0306_v03.02.13.12:
+  ;bl	#0x514408
+  ;bl	#0x514610
+  ;ldr	r1, \[pc, #(?P<constval_2FA0000>[0-9a-fx]+)\]
+  ;ldr	r0, \[pc, #(?P<unk_20404F50>[0-9a-fx]+)\]
   ; block of code, in wm330_0306_v03.01.10.93:
+  ;ldr	r2, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
+  ;adr	r0, #(?P<cstr_link_auto_cali>[0-9a-fx]+)
+  ;ldr	r1, \[pc, #(?P<link_cali_msg_callback>[0-9a-fx]+)\]
+  ;adds	r2, #0x44
+  ;bl	#(?P<link_set_msg_callback>[0-9a-fx]+)
+  ;ldr	r2, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
+  ;adr	r0, #(?P<cstr_link_manual_cali>[0-9a-fx]+)
+  ;ldr	r1, \[pc, #(?P<link_cali_msg_callback>[0-9a-fx]+)\]
+  ;adds	r2, #0x44
+  ;bl	#(?P<link_set_msg_callback>[0-9a-fx]+)
+  ;ldr	r1, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
+  ;movs	r2, #0xc8
+  ;adds	r1, #0x5c
+  ;sub.w	r0, r1, #0x14
+  ;bl	#(?P<sub_50B8C4>[0-9a-fx]+)
   ;ldr	r1, \[pc, #(?P<constval_2FA0000>[0-9a-fx]+)\]
   ;ldr	r0, \[pc, #(?P<unk_20404F50>[0-9a-fx]+)\]
   ; block of code and data, in wm100_0306_v03.02.43.20:
+  ;ldr	r2, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
+  ;adr	r0, #(?P<cstr_link_auto_cali>[0-9a-fx]+)
+  ;ldr	r1, \[pc, #(?P<link_cali_msg_callback>[0-9a-fx]+)\]
+  ;adds	r2, #0x44
+  ;bl	#(?P<link_set_msg_callback>[0-9a-fx]+)
+  ;ldr	r2, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
+  ;adr	r0, #(?P<cstr_link_manual_cali>[0-9a-fx]+)
+  ;ldr	r1, \[pc, #(?P<link_cali_msg_callback>[0-9a-fx]+)\]
+  ;adds	r2, #0x44
+  ;bl	#(?P<link_set_msg_callback>[0-9a-fx]+)
+  ;ldr	r1, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
+  ;movs	r2, #0xc8
+  ;adds	r1, #0x5c
+  ;sub.w	r0, r1, #0x14
+  ;bl	#(?P<sub_50B8C4>[0-9a-fx]+)
   ;ldr	r0, \[pc, #(?P<unk_20404F50>[0-9a-fx]+)\]
   ;ldr	r1, \[pc, #(?P<constval_2FA0000>[0-9a-fx]+)\]
   ;adds	r0, #0xa0
-  dcw	(?P<undefined_varlen_5>([0-9a-fx]+[, ]*){2,4})
+  dcw	(?P<undefined_varlen_12>([0-9a-fx]+[, ]*){6,24})
   bl	#(?P<sub_526C66>[0-9a-fx]+)
   add	sp, #0x64
   pop.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){7,10}), pc}
-loc_528066:
-  movs	r1, #0x32
-  mov	r0, sb
-  bl	#(?P<sub_524FE2>[0-9a-fx]+)
-  ldr	r1, \[r4, #0x40\]
-  movs	r2, #1
-  ldrb	r0, \[r4\]
-  strh	r0, \[r1, #0x26\]
-  mov	r1, fp
-  strb.w	r6, \[r4, #0x4c\]
-  ldr	r0, \[r4, #0x10\]
-  bl	#(?P<enable_device>[0-9a-fx]+)
-  b	#(?P<loc_527FEE>[0-9a-fx]+)
+  ; the function continues - there are a few blocks after the pop
+  ; real end is with:
+  ;b	#(?P<loc_527FEE>[0-9a-fx]+)
 """,
 'vars': {
   'imu_init':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
@@ -1527,6 +1636,9 @@ loc_528066:
   'sub_5273E2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'sub_527570':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'timer_event_enable':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'loc_513FD2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_5140A4':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_5140D6':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_527BC4':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_527DDC':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_527DEA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -1550,17 +1662,23 @@ loc_528066:
   'loc_528032':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_528066':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
-  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,280)},
-  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,264)},
-  'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,8)},
-  'undefined_varlen_4':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
-  'undefined_varlen_5':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,4)},
+  'undefined_varlen_01':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (10,580)},
+  'undefined_varlen_02':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (32,64)},
+  'undefined_varlen_03':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,6)},
+  'undefined_varlen_04':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
+  'undefined_varlen_05':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
+  'undefined_varlen_06':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,8)},
+  'undefined_varlen_07':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (32,48)},
+  'undefined_varlen_08':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
+  'undefined_varlen_10':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,72)},
+  'undefined_varlen_11':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
+  'undefined_varlen_12':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (6,24)},
   'cstr_baro':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_baro_group_ok1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_baro_group_ok2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'cstr_compass':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'cstr_compass_group_ok1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'cstr_compass_group_ok2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  #'cstr_compass':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  #'cstr_compass_group_ok1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  #'cstr_compass_group_ok2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_gyro_acc':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_imu_group_ok1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_imu_group_ok2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
@@ -1578,6 +1696,16 @@ loc_528066:
   'imu_groups':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
   # this is the pointer to `imu_groups`, same as above; but it gets misinterpreted by 4 bytes, so we define separate var as workaround:
   'imu_groups_p4':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
+  'unkstru_r4_field_14':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'unkstru_r4_field_20':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'unkstru_r4_field_4C':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'unkstru_r4_field_70':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'unkstru_r4_field_80':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'unkstru_r4_field_A8':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'unkstru_r4_field_34Ca':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'unkstru_r4_field_34Cb':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'unkstru_r4_field_350':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'unkstru_r4_field_46C':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
   #'ptr_printf_s':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UNKNOWN},
   #'ptr_unk_5848FC':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UNKNOWN},
   #'ptr_unkvar_01':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UNKNOWN},
@@ -1685,8 +1813,12 @@ re_func_init_config_table_version_WM330_V03_01_10_93 = {
 init_config_table_version:
   push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,4}), lr}
   mov	r0, sp
-  bl	#(?P<get_version_4384>[0-9a-fx]+)
-  bl	#(?P<set_hw_version>[0-9a-fx]+)
+  ; block of code and data, in wm220_0306_v03.02.35.05 is 4 words long:
+  ;bl	#(?P<get_version_4384>[0-9a-fx]+)
+  ;bl	#(?P<set_hw_version>[0-9a-fx]+)
+  ; block of code and data, in wm220_0306_v03.02.13.12 is 2 words long:
+  ;bl	#(?P<get_version_4384>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){2,8})
   ldr	r0, \[pc, #(?P<mc_version_3b>[0-9a-fx]+)\]
   ldr	r1, \[sp\]
   cmp	r1, r0
@@ -1713,6 +1845,7 @@ loc_541300:
   'set_version_4384':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'loc_5412EE':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_541300':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,8)},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
   'const_val_1a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'const_val_1b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
@@ -1810,7 +1943,7 @@ version_check_sub1:
   strb	r6, \[r5, #(?P<rel_byte_20402ECF>[0-9a-fx]+)\]
 loc_45FE24:
   bl	#(?P<get_fmu_dm>[0-9a-fx]+)
-  ldr.w	r3, \[r0, #0xb4\]
+  ldr.w	r3, \[r0, #(?P<field_dm_callback_B4a>[0-9a-fx]+)\]
   add	r2, sp, #0xc
   mov	r1, sp
   mov	r0, r4
@@ -1832,7 +1965,7 @@ loc_45FE4A:
 loc_45FE52:
   adds	r4, r4, #1
   uxtb	r4, r4
-  cmp	r4, #0x24
+  cmp	r4, #(?P<const_loop_limit_1>[0-9a-fx]+)
   blo	#(?P<loc_45FE24>[0-9a-fx]+)
   movs	r4, #0
   mov	fp, r5
@@ -1845,7 +1978,7 @@ loc_45FE60:
   cmp	r0, #1
   bne	#(?P<loc_45FEDA>[0-9a-fx]+)
   bl	#(?P<get_fmu_dm>[0-9a-fx]+)
-  ldr.w	r3, \[r0, #0xb4\]
+  ldr.w	r3, \[r0, #(?P<field_dm_callback_B4b>[0-9a-fx]+)\]
   add	r2, sp, #0xc
   ldrb.w	r0, \[r7, r5, lsl #2\]
   mov	r1, sp
@@ -1866,7 +1999,7 @@ loc_45FEA0:
   cmp	r0, r1
   blo	#(?P<loc_45FE8C>[0-9a-fx]+)
   bl	#(?P<get_fmu_dm>[0-9a-fx]+)
-  ldr.w	r3, \[r0, #0xb4\]
+  ldr.w	r3, \[r0, #(?P<field_dm_callback_B4c>[0-9a-fx]+)\]
   add	r2, sp, #0xc
   ldrb.w	r0, \[r8, #1\]
   mov	r1, sp
@@ -1910,6 +2043,10 @@ locret_45FEE6:
   'loc_45FEDE':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'locret_45FEE6':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'field_dm_callback_B4a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_dm_callback_B4b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_dm_callback_B4c':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'const_loop_limit_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'byte_20402ECE':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'pvstru_D61C':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'rel_byte_20402ECF':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
@@ -1938,7 +2075,7 @@ version_check:
   strb	r0, \[r5, #2\]
   b	#(?P<loc_4600B2>[0-9a-fx]+)
 loc_45FF4E:
-  movs	r0, #0x25
+  movs	r0, #(?P<const_val_sim_a>[0-9a-fx]+)
   strb	r0, \[r5\]
   strb	r0, \[r5, #1\]
   strb	r4, \[r5, #2\]
@@ -1960,13 +2097,13 @@ loc_45FF58:
   str	r0, \[sp, #0x18\]
   strh.w	r0, \[sp, #0x1c\]
   bl	#(?P<get_fmu_dm>[0-9a-fx]+)
-  ldr.w	r3, \[r0, #0xb4\]
+  ldr.w	r3, \[r0, #(?P<field_dm_callback_B4a>[0-9a-fx]+)\] ; known values: 0xb4 0xb8
   add	r2, sp, #0xc
   ldrb.w	r0, \[r6, r4, lsl #2\]
   mov	r1, sp
   blx	r3
   bl	#(?P<get_fmu_dm>[0-9a-fx]+)
-  ldr.w	r3, \[r0, #0xb4\]
+  ldr.w	r3, \[r0, #(?P<field_dm_callback_B4b>[0-9a-fx]+)\]
   add	r2, sp, #0x1c
   add	r1, sp, #0x10
   ldrb	r0, \[r7, #1\]
@@ -2109,7 +2246,7 @@ loc_4600C2:
   str.w	r8, \[sp, #0x18\]
   strh.w	r8, \[sp, #0xc\]
   bl	#(?P<get_fmu_dm>[0-9a-fx]+)
-  ldr.w	r3, \[r0, #0xb4\]
+  ldr.w	r3, \[r0, #(?P<field_dm_callback_B4c>[0-9a-fx]+)\]
   add	r2, sp, #0xc
   add	r1, sp, #0x10
   uxtb	r0, r6
@@ -2182,12 +2319,12 @@ loc_460170:
 loc_460178:
   adds	r6, r6, #1
   uxth	r6, r6
-  cmp	r6, #0x24
+  cmp	r6, #(?P<const_loop_limit_1>[0-9a-fx]+) ; known values 0x23 0x24
   blo	#(?P<loc_4600C2>[0-9a-fx]+)
   ldrb	r0, \[r5, #2\]
   cmp	r0, #1
   beq	#(?P<loc_460192>[0-9a-fx]+)
-  movs	r0, #0x25
+  movs	r0, #(?P<const_val_sim_b>[0-9a-fx]+) ; known values 0x24 0x25
   strb	r0, \[r5\]
   strb	r0, \[r5, #1\]
   strb.w	r8, \[r5, #2\]
@@ -2261,6 +2398,12 @@ loc_4601B0:
   'cstr_fmt_ver_check_fail':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_fmt_ver_check_pass':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_invalid_version':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'const_val_sim_a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'const_val_sim_b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'field_dm_callback_B4a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_dm_callback_B4b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_dm_callback_B4c':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'const_loop_limit_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'byte_20402ECE':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'pvstru_D61C':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'rel_byte_20402ED0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
@@ -2274,15 +2417,15 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_wp_mission_data_verify_P3X_V01_05_0030,},
   {'sect': ".text", 'func': re_func_wp_mission_data_verify_WM330_V03_01_10_93,},
-  #{'sect': ".data", 'func': re_func_firmware_release_marking_WM330_V03_01_10_93,},
-  #{'sect': ".text", 'func': re_func_check_activation_authority_WM330_V03_01_10_93,},
-  #{'sect': ".text", 'func': re_func_imu_init_WM330_V03_01_10_93,},
-  #{'sect': ".text", 'func': re_func_hal_push_mc_version_WM330_V03_01_10_93,},
-  #{'sect': ".text", 'func': re_func_navi_init_WM330_V03_01_10_93,},
-  #{'sect': ".text", 'func': re_func_init_config_table_version_WM330_V03_01_10_93,},
-  #{'sect': ".text", 'func': re_func_log_version_info_WM330_V03_01_10_93,},
-  #{'sect': ".text", 'func': re_func_version_check_sub1_WM330_V03_01_10_93,},
-  #{'sect': ".text", 'func': re_func_version_check_WM330_V03_01_10_93,},
+  {'sect': ".data", 'func': re_func_firmware_release_marking_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_check_activation_authority_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_imu_init_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_hal_push_mc_version_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_navi_init_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_init_config_table_version_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_log_version_info_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_version_check_sub1_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_version_check_WM330_V03_01_10_93,},
 ]
 
 def armfw_elf_flyc_list(po, elffh):
