@@ -2000,12 +2000,24 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
         # Make optional square bracket clauses (with '?' after) to no longer be optional
         # They will be matched again later and replaced by first char from inside
         asm_line = re.sub(r'([^\\]\[[^\]]*?[^\\]\])[?]', r'\1', asm_line)
+        # Make optional curly bracket clauses (with '?' after) to no longer be optional
+        asm_line = re.sub(r'([^\\]\([^\)]*?[^\\]\))[?]', r'\1', asm_line)
+        # Make optional single bytes (with '?' after) to no longer be optional
+        asm_line = re.sub(r'([^\\\[])[?]', r'\1', asm_line)
     elif variab_size_select == 'short':
         # Remove optional regex square bracket clauses (with '?' after)
         asm_line = re.sub(r'([^\\])\[[^\]]*?[^\\]\][?]', r'\1', asm_line)
+        # Remove optional regex curly bracket clauses (with '?' after)
+        asm_line = re.sub(r'([^\\])\([^\)]*?[^\\]\)[?]', r'\1', asm_line)
+        # Remove optional regex single bytes (with '?' after)
+        asm_line = re.sub(r'([^\\\[])[?]', r'', asm_line)
     else:
         # Make optional square bracket clauses (with '?' after) to no longer be optional
         asm_line = re.sub(r'([^\\]\[[^\]]*?[^\\]\])[?]', r'\1', asm_line)
+        # Make optional curly bracket clauses (with '?' after) to no longer be optional
+        asm_line = re.sub(r'([^\\]\([^\)]*?[^\\]\))[?]', r'\1', asm_line)
+        # Make optional single bytes (with '?' after) to no longer be optional
+        asm_line = re.sub(r'([^\\\[])[?]', r'\1', asm_line)
     # Remove regex square bracket clauses with single char within brackets
     asm_line = re.sub(r'([^\\])\[([^\\])\]', r'\1\2', asm_line)
     # Remove regex square bracket clauses with multiple chars within brackets
