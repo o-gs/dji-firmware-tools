@@ -940,7 +940,7 @@ re_func_firmware_release_marking_WM330_V03_01_10_93 = {
 'name': "firmware_release_marking",
 'version': "wm330_0306_v03.01.10.93",
 're': """
-  dcb	"(?P<sdk_version>[ -z]?SDK-v[1-2][.][0-9]) BETA"
+  dcb	"(?P<sdk_version>.?SDK-v[1-2][.][0-9]) BETA"
   dcb	" (?P<product_code>WM[0-9][0-9][0-9])-"
   dcb	"(?P<firmware_version>[0-9][0-9][.][0-9][0-9][.][0-9][0-9][.][0-9][0-9])"
 """,
@@ -1368,7 +1368,12 @@ imu_init:
   ;dcd	(?P<ptr_unkvar_01>[0-9a-fx]+)
   dcw	(?P<undefined_varlen_01>([0-9a-fx]+[, ]*){10,580})
   cbnz	r0, #(?P<loc_527DEA>[0-9a-fx]+)
-  subw	r0, pc, #(?P<cstr_link_manual_cali_neg>[0-9a-fx]+)
+  ; block of code, in wm220_0306_v03.02.13.12, same as:
+  ; block of code, in wm220_0306_v03.02.35.05, 1 word:
+  ;subw	r0, pc, #(?P<cstr_link_manual_cali_neg>[0-9a-fx]+)
+  ; block of code, in wm220_0306_v03.02.44.07, 1 word:
+  ;adr	r0, #(?P<cstr_link_manual_cali>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_18>([0-9a-fx]+[, ]*){1,2})
   bl	#(?P<get_link_by_name>[0-9a-fx]+)
   str.w	r0, \[r4, #(?P<unkstru_r4_field_46C>[0-9a-fx]+)\]
 loc_527DEA:
@@ -1702,9 +1707,13 @@ loc_527FEE:
   mov	r0, r4
   bl	#(?P<sub_525CF0>[0-9a-fx]+)
   cbz	r0, #(?P<loc_528032>[0-9a-fx]+)
-  ldr(.w)?	r3, \[(r8|r5)\]
-  movs	r0, #7
-  ldrb	r2, \[r4, #0x40\]! ; hal_stru_164C.local_imu_id_errno
+  ; block of code, in wm330_0306_v03.02.13.12, same as:
+  ; block of code, in wm100_0306_v03.02.43.20, 5 words:
+  ;ldr(.w)?	r3, \[(r8|r5)\]
+  ;movs	r0, #7
+  ;ldrb	r2, \[r4, #0x40\]! ; hal_stru_164C.local_imu_id_errno
+  ; block of code and data, in wm220_0306_v03.02.44.07:
+  dcw	(?P<undefined_varlen_19>([0-9a-fx]+[, ]*){5,224})
   adr	r1, #(?P<cstr_warn_local_imu_id_error1>[0-9a-fx]+)
   blx	r3
   bl	#(?P<get_logger>[0-9a-fx]+)
@@ -1830,6 +1839,8 @@ loc_528032:
   'undefined_varlen_10':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,72)},
   'undefined_varlen_11':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
   'undefined_varlen_12':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (6,24)},
+  'undefined_varlen_18':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,2)},
+  'undefined_varlen_19':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (5,224)},
   'cstr_baro':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_baro_group_ok1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_baro_group_ok2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
