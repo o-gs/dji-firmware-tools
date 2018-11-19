@@ -649,6 +649,21 @@ def get_arm_vma_relative_to_pc_register(asm_arch, section, address, size, offset
     vma = address + size + asm_arch['boundary'] + offset_int
     return vma - (vma % alignment)
 
+def get_arm_vma_subtracted_from_pc_register(asm_arch, section, address, size, offset_str):
+    """ Gets Virtual Memory Address associated to offet subtracted from PC reg within an asm instruction.
+    """
+    alignment = asm_arch['boundary']
+    # In ARM THUMB mode, alignment is 4
+    if (asm_arch['name'] == "arm") and (alignment == 2):
+        alignment = 4
+    if isinstance(offset_str, int):
+        offset_int = offset_str
+    else:
+        offset_int = int(offset_str, 0)
+    address = address - (address % alignment)
+    vma = address + size - offset_int
+    return vma - (vma % asm_arch['boundary'])
+
 
 def get_arm_offset_val_relative_to_pc_register(asm_arch, address, size, vma):
     """ Gets offset associated with Virtual Memory Address given to place into asm instruction.
@@ -1607,11 +1622,15 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
         elif var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_OFFSET,):
             prop_ofs_val = int(var_val, 0)
         elif var_info['type'] in (VarType.RELATIVE_ADDR_TO_CODE, VarType.RELATIVE_ADDR_TO_GLOBAL_DATA,) and var_info['baseaddr'] in ("PC+","PC-",):
-            if var_info['baseaddr'].endswith('-'): var_val = -int(var_val, 0)
-            prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
+            if var_info['baseaddr'].endswith('-'):
+                prop_ofs_val = get_arm_vma_subtracted_from_pc_register(search['asm_arch'], search['section'], address, size, var_val)
+            else:
+                prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
         elif var_info['type'] in (VarType.RELATIVE_ADDR_TO_PTR_TO_CODE,VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA,) and var_info['baseaddr'] in ("PC+","PC-",):
-            if var_info['baseaddr'].endswith('-'): var_val = -int(var_val, 0)
-            prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
+            if var_info['baseaddr'].endswith('-'):
+                prop_ofs_val = get_arm_vma_subtracted_from_pc_register(search['asm_arch'], search['section'], address, size, var_val)
+            else:
+                prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
             var_sect, var_offs = get_section_and_offset_from_address(search['asm_arch'], elf_sections, prop_ofs_val)
             if var_sect is not None:
                 var_data = elf_sections[var_sect]['data']
@@ -1807,7 +1826,7 @@ def armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, sect_name, pa
         start_sect_offs = var_info['value'] - search['section']['addr']
         if start_sect_offs < 0: start_sect_offs = 0
         if (po.verbose > 1):
-            print("Found pre-existing offset of {:s} at 0x{:06x}".format(var_name,start_sect_offs))
+            print("Found pre-existing address of {:s} at 0x{:06x}".format(var_name,var_info['value']))
 
     sect_offs = start_sect_offs
     sect_progress_treshold = 0
