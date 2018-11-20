@@ -936,16 +936,19 @@ loc_4AE12C:
 },
 }
 
+
 re_func_firmware_release_marking_WM330_V03_01_10_93 = {
 'name': "firmware_release_marking",
 'version': "wm330_0306_v03.01.10.93",
 're': """
-  dcb	"(?P<sdk_version>.?SDK-v[1-2][.][0-9]) BETA"
+  dcb	(?P<starter_odd_even>([0-9a-fx]+[, ]*){2,3})
+  dcb	"SDK-v(?P<sdk_version>[1-2][.][0-9]) BETA"
   dcb	" (?P<product_code>WM[0-9][0-9][0-9])-"
   dcb	"(?P<firmware_version>[0-9][0-9][.][0-9][0-9][.][0-9][0-9][.][0-9][0-9])"
 """,
 'vars': {
-  'sdk_version':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.CHAR, 'array': (8,9)},
+  'starter_odd_even':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT8_T, 'array': (2,3)},
+  'sdk_version':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.CHAR, 'array': 3},
   'product_code':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.CHAR, 'array': 5},
   'firmware_version':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.CHAR, 'array': 11,
     'public': "og_hardcoded.flyc", 'minValue': "00.00.00.00", 'maxValue': "99.99.99.99",
