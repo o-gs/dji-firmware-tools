@@ -923,7 +923,8 @@ def armfw_elf_section_search_get_next_search_pos(search, sect_offs):
     # We intentionally clean 're_size' only on reset, so that it could be used here even after full match
     asm_arch = search['asm_arch']
     if len(search['re_size']) > 0:
-        return search['match_address'] - search['section']['addr'] + search['re_size'][0]
+        new_offs = search['match_address'] - search['section']['addr'] + min(asm_arch['boundary'],search['re_size'][0])
+        return new_offs
     else:
         new_offs = sect_offs + asm_arch['boundary']
         return new_offs - (new_offs % asm_arch['boundary'])
