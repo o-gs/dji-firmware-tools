@@ -96,6 +96,15 @@ from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
   VarType, DataVariety, CodeVariety, DummyStruct
 
 
+def version_string_to_int_getter(val):
+  ver = re.search(r'^([0-9]+)[.]([0-9]+)[.]([0-9]+)[.]([0-9]+)$', val)
+  ver_major = int(ver.group(1),10)
+  ver_minor = int(ver.group(2),10)
+  ver_mmtnc = int(ver.group(3),10)
+  ver_revsn = int(ver.group(4),10)
+  return (ver_major << 24) + (ver_minor << 16) + (ver_mmtnc << 8) + (ver_revsn)
+
+
 re_func_wp_check_input_mission_validity_P3X_V01_05_0030 = {
 'name': "wp_check_input_mission_validity",
 'version': "P3X_FW_V01.05.0030",
@@ -1311,7 +1320,8 @@ loc_51090C:
   'rel_word_20404352':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'unkval_4350':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'unkval_9DE8':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
-  'mc_version_1':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  'mc_version_1':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': version_string_to_int_getter},
 },
 }
 
@@ -1716,7 +1726,7 @@ loc_527FEE:
   ;movs	r0, #7
   ;ldrb	r2, \[r4, #0x40\]! ; hal_stru_164C.local_imu_id_errno
   ; block of code and data, in wm220_0306_v03.02.44.07:
-  dcw	(?P<undefined_varlen_19>([0-9a-fx]+[, ]*){5,224})
+  dcw	(?P<undefined_varlen_19>([0-9a-fx]+[, ]*){4,224})
   adr	r1, #(?P<cstr_warn_local_imu_id_error1>[0-9a-fx]+)
   blx	r3
   bl	#(?P<get_logger>[0-9a-fx]+)
@@ -1843,7 +1853,7 @@ loc_528032:
   'undefined_varlen_11':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
   'undefined_varlen_12':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (6,24)},
   'undefined_varlen_18':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,2)},
-  'undefined_varlen_19':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (5,224)},
+  'undefined_varlen_19':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (4,224)},
   'cstr_baro':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_baro_group_ok1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_baro_group_ok2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
@@ -1898,7 +1908,8 @@ hal_push_mc_version:
 'vars': {
   'hal_push_mc_version':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'hal_push_version':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'mc_version_2':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  'mc_version_2':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': version_string_to_int_getter},
 },
 }
 
@@ -1973,7 +1984,8 @@ navi_init:
   'rel_navi_version':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'rel_unkn_1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'const_val_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
-  'mc_version_3a':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  'mc_version_3a':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': version_string_to_int_getter},
 },
 }
 
@@ -2020,7 +2032,8 @@ loc_541300:
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
   'const_val_1a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'const_val_1b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
-  'mc_version_3b':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  'mc_version_3b':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': version_string_to_int_getter},
 },
 }
 
