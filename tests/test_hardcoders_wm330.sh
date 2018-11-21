@@ -80,6 +80,7 @@ function exec_mod_for_m0306 {
   modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]max_mission_path_len" "40000.0"
   modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]max_speed_pos" "25.0"
   modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]max_speed_neg" "-25.0"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]firmware_version" "12.34.56.78"
 
   ./dji_flyc_hardcoder.py -vvv -u -e "${FWMODL}.elf"
   arm-none-eabi-objcopy -O binary "${FWMODL}.elf" "${FWMODL}.bin"
