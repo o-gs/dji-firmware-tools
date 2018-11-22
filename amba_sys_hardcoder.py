@@ -1852,6 +1852,22 @@ def armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, sect_name, pa
         else:
             print("{:s}: Pattern of {:s} ver {:s} was not found; closest was {:d} lines at 0x{:x}".format(po.elffile, search['name'], search['version'], search['best_match_lines'], search['best_match_address']))
 
+    # If we have multiple matches, treat them based on a value set within the patterns definition; default is "reject"
+    if len(search['full_matches']) > 1:
+        if 'multiple' not in patterns or patterns['multiple'] == "reject":
+            # do not accept multiple matches
+            return []
+        elif patterns['multiple'] == "depend":
+            # convert public vars from subsequent matches to depend
+            for match in search['full_matches'][1:]:
+                for var_name, var_info in match['vars'].items():
+                    if value_needs_global_name(var_name, var_info):
+                        del match['vars'][var_name]
+                        if 'public' in var_info and 'depend' not in var_info:
+                            var_info['depend'] = var_name
+                        var_name = "{:s}_match{:02d}".format(var_name,i)
+                        match['vars'][var_name] = var_info
+
     return search['full_matches']
 
 
@@ -2249,10 +2265,14 @@ def armfw_elf_paramvals_extract_list(po, elffh, re_list, asm_submode=None):
     found_func_list = []
     for re_item in re_list:
         matches = armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, re_item['sect'], re_item['func'], glob_params_list)
-        if len(matches) == 1:
-            found_func_list.append(re_item['func'])
-            pub_params_list.update(armfw_elf_match_to_public_values(po, matches[0]))
-            glob_params_list.update(armfw_elf_match_to_global_values(po, matches[0], re_item['func']['name']))
+        for i, match in enumerate(matches):
+            if i == 0:
+                found_func_list.append(re_item['func'])
+                func_name = re_item['func']['name']
+            else:
+                func_name = "{:s}_{:02d}".format(re_item['func']['name'],i)
+            pub_params_list.update(armfw_elf_match_to_public_values(po, match))
+            glob_params_list.update(armfw_elf_match_to_global_values(po, match, func_name))
 
     # verify if we've found all the functions we should have founded
     missed_func_list = []
