@@ -70,7 +70,7 @@ function exec_mod_for_m0306 {
   local FWMODL=$1
   set -x
   cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
-  ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x00d0e00:0 --section .bss@0x1ffe0000:0x60100 \
+  ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x0109f00:0 --section .bss@0x1ffe0000:0x60100 \
    --section .bss2@0x3fcc0000:0x2000 -p "${FWMODL}.bin"
   ./dji_flyc_hardcoder.py -vvv -x -e "${FWMODL}.elf"
 
