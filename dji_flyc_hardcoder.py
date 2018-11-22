@@ -949,6 +949,8 @@ loc_4AE12C:
 re_func_firmware_release_marking_WM330_V03_01_10_93 = {
 'name': "firmware_release_marking",
 'version': "wm330_0306_v03.01.10.93",
+# if multiple copies of the pattern are found, make public vars from subsequent ones depend on first
+'multiple': "depend",
 're': """
   dcb	(?P<starter_odd_even>([0-9a-fx]+[, ]*){2,3})
   dcb	"SDK-v(?P<sdk_version>[1-2][.][0-9]) BETA"
@@ -972,7 +974,7 @@ re_func_check_activation_authority_WM220_V03_02_13_12 = {
 'version': "wm220_0306_v03.02.13.12",
 're': """
 check_activation_authority:
-  push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){6,8}), lr}
+  push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){5,8}), lr}
   movs	r4, r0
   beq	#(?P<loc_510806>[0-9a-fx]+)
   ldr	r0, \[pc, #0x1b4\]
@@ -983,7 +985,7 @@ check_activation_authority:
 loc_510806:
   movs	r0, #1
 locret_510808:
-  pop.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){6,8}), pc}
+  pop.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){5,8}), pc}
 loc_51080C:
   ldr	r0, \[r4\]
   sub.w	r1, r0, #0x2700
@@ -1123,9 +1125,9 @@ loc_51090C:
 },
 }
 
-re_func_check_activation_authority_WM330_V03_01_10_93 = {
+re_func_check_activation_authority_WM220_V03_01_10_93 = {
 'name': "check_activation_authority",
-'version': "wm330_0306_v03.01.10.93",
+'version': "wm220_0306_v03.01.10.93",
 're': """
 check_activation_authority:
   push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){6,8}), lr}
@@ -1324,6 +1326,172 @@ loc_51090C:
     'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': version_string_to_int_getter},
 },
 }
+
+re_func_check_activation_authority_WM330_V03_01_10_93 = {
+'name': "check_activation_authority",
+'version': "wm330_0306_v03.01.10.93",
+'re': """
+check_activation_authority:
+  push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){5,8}), lr}
+  movs	r4, r0
+  beq	#(?P<loc_510806>[0-9a-fx]+)
+  ldr	r3, \[pc, #(?P<mc_version_1>[0-9a-fx]+)\]
+  ldr	r2, \[r4, #8\]
+  cmp	r2, r3
+  beq	#(?P<loc_510828>[0-9a-fx]+)
+  movs	r0, #0x70
+  adr	r1, #(?P<cstr_sdk_version_error>[0-9a-fx]+)
+  bl	#(?P<log_printf_debug>[0-9a-fx]+)
+  movs	r0, #8
+locret_510808:
+  pop.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){5,8}), pc}
+loc_510806:
+  movs	r0, #1
+  b	#(?P<locret_510808>[0-9a-fx]+)
+loc_510828:
+  ldr	r0, \[pc, #0x1dc\]
+  ldrb.w	r0, \[r0, #0x5ac\]
+  cmp	r0, #1
+  bne	#(?P<loc_510844>[0-9a-fx]+)
+  ldr	r0, \[r4\]
+  sub.w	r1, r0, #0x2700
+  subs	r1, #0x66
+  beq	#(?P<loc_5108A2>[0-9a-fx]+)
+loc_510844:
+  ldr	r0, \[r4\]
+  bl	#(?P<sub_51078E>[0-9a-fx]+)
+  ldr	r7, \[pc, #(?P<unkval_4350>[0-9a-fx]+)\]
+  movs	r5, #0
+  cmp	r0, #2
+  mov	r3, r0
+  bhs	#(?P<loc_5108B4>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<dword_20430DD0>[0-9a-fx]+)\]
+  add.w	r1, r3, r3, lsl #2
+  add.w	r6, r0, r1, lsl #3
+  ldr	r1, \[r4, #4\]
+  adr	r0, #(?P<cstr_req_real>[0-9a-fx]+)
+  ldr	r2, \[r6, #4\]
+  bl	#(?P<log_printf>[0-9a-fx]+)
+  strh	r5, \[r7\]
+  str	r5, \[r7, #(?P<rel_dword_20404370>[0-9a-fx]+)\]
+  str	r5, \[r7, #(?P<rel_dword_2040436C>[0-9a-fx]+)\]
+  ldr	r0, \[r4, #4\]
+  ldr	r1, \[r6, #4\]
+  cmp	r0, r1
+  bhi	#(?P<loc_5108B0>[0-9a-fx]+)
+  add.w	r0, r6, #8
+  mov	r4, r0
+  bl	#(?P<dji_sdk_set_key>[0-9a-fx]+)
+  adr	r0, #(?P<cstr_dji_sdk_set_key_val>[0-9a-fx]+)
+  mov	r1, r4
+  bl	#(?P<log_printf>[0-9a-fx]+)
+loc_51089E:
+  movs	r0, #0
+  b	#(?P<locret_510808>[0-9a-fx]+)
+loc_5108A2:
+  ldr	r0, \[r4, #4\]
+  cmp	r0, #2
+  bhi	#(?P<loc_5108B0>[0-9a-fx]+)
+  adr	r0, #(?P<cstr_dji_demo_lala_haha>[0-9a-fx]+)
+  bl	#(?P<dji_sdk_set_key>[0-9a-fx]+)
+  b	#(?P<loc_51089E>[0-9a-fx]+)
+loc_5108B0:
+  movs	r0, #7
+  b	#(?P<locret_510808>[0-9a-fx]+)
+loc_5108B4:
+  ldr	r0, \[r4\]
+  ldr	r1, \[r7, #(?P<rel_dword_2040436C>[0-9a-fx]+)\]
+  cmp	r0, r1
+  beq	#(?P<loc_5108C8>[0-9a-fx]+)
+  str	r0, \[r7, #(?P<rel_dword_2040436C>[0-9a-fx]+)\]
+  ldr	r0, \[r4, #4\]
+  str	r0, \[r7, #(?P<rel_dword_20404374>[0-9a-fx]+)\]
+  strh	r5, \[r7\]
+loc_5108C8:
+  ldrh	r0, \[r7\]
+  adds	r0, r0, #1
+  strh	r0, \[r7\]
+  mov	r0, r4
+  bl	#(?P<sub_4DFB70>[0-9a-fx]+)
+  ldrh	r1, \[r7\]
+  ldr	r0, \[pc, #(?P<unkval_9DE8>[0-9a-fx]+)\]
+  cmp	r1, #0xa
+  bhs	#(?P<loc_5108E2>[0-9a-fx]+)
+loc_5108DC:
+  mov.w	r0, #3
+  b	#(?P<locret_510808>[0-9a-fx]+)
+loc_5108E2:
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;ldr.w	r0, \[r0, #(?P<rel_ctrl_tick>[0-9a-fx]+)\]
+  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,204})
+  bne	#(?P<loc_5108EC>[0-9a-fx]+)
+  str	r0, \[r7, #(?P<rel_dword_20404378>[0-9a-fx]+)\]
+  b	#(?P<loc_5108FC>[0-9a-fx]+)
+loc_5108EC:
+  ldr	r1, \[r7, #(?P<rel_dword_20404378>[0-9a-fx]+)\]
+  sub.w	r0, r0, r1
+  cmp.w	r0, #0x1f4 ; #500
+  bls	#(?P<loc_5108FC>[0-9a-fx]+)
+  strh	r5, \[r7\]
+  b	#(?P<loc_5108DC>[0-9a-fx]+)
+loc_5108FC:
+  ldr	r0, \[r7, #(?P<rel_dword_20404370>[0-9a-fx]+)\]
+  cmp	r0, #1
+  beq	#(?P<loc_510908>[0-9a-fx]+)
+  cbz	r0, #(?P<loc_51090C>[0-9a-fx]+)
+  movs	r0, #6
+  b	#(?P<locret_510808>[0-9a-fx]+)
+loc_510908:
+  movs	r0, #5
+  b	#(?P<locret_510808>[0-9a-fx]+)
+loc_51090C:
+  movs	r0, #4
+  b	#(?P<locret_510808>[0-9a-fx]+)
+""",
+'vars': {
+  'check_activation_authority':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'dji_sdk_set_key':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'log_printf_debug':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'log_printf':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4DFB70':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_51078E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'loc_510806':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_510828':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_510844':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_51089E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_5108A2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_5108B0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_5108B4':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_5108C8':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_5108DC':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_5108E2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_5108EC':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_5108FC':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_510908':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_51090C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'locret_510808':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  #'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,8)},
+  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,204)},
+  #'CONFIG_VAR_37a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT8_T},
+  #'CONFIG_VAR_37b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT8_T},
+  'cstr_dji_demo_lala_haha':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'cstr_dji_sdk_set_key_val':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'cstr_req_real':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'cstr_sdk_version_error':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'dword_20430DD0':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  #'rel_ctrl_tick':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_dword_2040436C':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_dword_20404370':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_dword_20404374':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_dword_20404378':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'unkval_4350':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
+  'unkval_9DE8':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
+  'mc_version_1':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': version_string_to_int_getter},
+},
+}
+
 
 re_func_imu_init_WM330_V03_01_10_93 = {
 'name': "imu_init",
@@ -2603,6 +2771,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_wp_mission_data_verify_WM330_V03_01_10_93,},
   {'sect': ".data", 'func': re_func_firmware_release_marking_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_check_activation_authority_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_check_activation_authority_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_check_activation_authority_WM220_V03_02_13_12,},
   {'sect': ".text", 'func': re_func_imu_init_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_hal_push_mc_version_WM330_V03_01_10_93,},
