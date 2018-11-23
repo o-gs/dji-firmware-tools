@@ -1493,9 +1493,9 @@ loc_51090C:
 }
 
 
-re_func_imu_init_WM330_V03_01_10_93 = {
+re_func_imu_init_WM220_V03_01_10_93 = {
 'name': "imu_init",
-'version': "wm330_0306_v03.01.10.93",
+'version': "wm220_0306_v03.01.10.93",
 're': """
 imu_init:
   push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){7,10}), lr}
@@ -2064,6 +2064,339 @@ loc_528032:
   'unkvar_01':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
 },
 }
+
+re_func_imu_init_WM330_V03_01_10_93 = {
+'name': "imu_init",
+'version': "wm330_0306_v03.01.10.93",
+'re': """
+imu_init:
+  push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){7,10}), lr}
+  sub	sp, #0x64
+  bl	#(?P<sub_4E7D9E>[0-9a-fx]+)
+  ldr.w	r8, \[pc, #(?P<dword_20404E48>[0-9a-fx]+)\]
+  movs	r6, #0
+  ldr	r7, \[pc, #(?P<dword_514C70>[0-9a-fx]+)\]
+  mov.w	sl, #1
+  mov	sb, r6
+loc_4E79F0:
+  rsb	r0, r6, r6, lsl #3
+  movs	r5, #0
+  add.w	r1, r0, r0, lsl #2
+  ldr	r0, \[pc, #(?P<byte_204053B4>[0-9a-fx]+)\]
+  add.w	r4, r0, r1, lsl #5
+loc_4E7A00:
+  rsb	r1, r5, r5, lsl #4
+  movs	r3, #4
+  add.w	r0, r4, r1, lsl #2
+  mov	r2, r3
+  add.w	r1, r0, #0x44
+  adds	r0, #0x54
+  bl	#(?P<sub_46EF10>[0-9a-fx]+)
+  adds	r5, r5, #1
+  cmp	r5, #0xa
+  blo	#(?P<loc_4E7A00>[0-9a-fx]+)
+  movs	r0, #0
+  mov	r2, r4
+loc_4E7A20:
+  rsb	r1, r0, r0, lsl #4
+  add.w	r1, r2, r1, lsl #2
+  ldr	r1, \[r1, #0x6c\]
+  b	#(?P<loc_4E7B74>[0-9a-fx]+)
+  ;dcd	(?P<unk_204397A0>[0-9a-fx]+)
+  ;dcb	"temp cali",0
+  ;[...]
+  ;dcd	(?P<dword_20404E48>[0-9a-fx]+)
+  ;dcd	(?P<dword_514C70>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_01>([0-9a-fx]+[, ]*){10,580})
+loc_4E7B74:
+  cbnz	r1, #(?P<loc_4E7BB4>[0-9a-fx]+)
+  cmp	r0, #6
+  beq	#(?P<loc_4E7BB4>[0-9a-fx]+)
+  cmp	r0, #8
+  beq	#(?P<loc_4E7BB4>[0-9a-fx]+)
+  cmp	r0, #9
+  beq	#(?P<loc_4E7BB4>[0-9a-fx]+)
+  ldr.w	r0, \[r8\]
+  mov	r3, r6
+  ldr	r1, \[r7\]
+  udiv	r2, r0, r1
+  mls	r1, r1, r2, r0
+  mov.w	r2, #0x3e8
+  muls	r1, r2, r1
+  ldr	r2, \[r7\]
+  udiv	r2, r1, r2
+  ldr	r1, \[r7\]
+  udiv	r1, r0, r1
+  adr	r0, #(?P<cstr_fmt_imu_group_err1>[0-9a-fx]+)
+  bl	#(?P<sub_4A6BEC>[0-9a-fx]+)
+  adr	r0, #(?P<cstr_fmt_imu_group_err2>[0-9a-fx]+)
+  mov	r1, r6
+  bl	#(?P<sub_4472FC>[0-9a-fx]+)
+  b	#(?P<loc_4E7C46>[0-9a-fx]+)
+loc_4E7BB4:
+  adds	r0, r0, #1
+  cmp	r0, #0xa
+  blo.w	#(?P<loc_4E7A20>[0-9a-fx]+)
+  ldr.w	r0, \[r8\]
+  mov	r5, sb
+  ldr	r1, \[r7\]
+  mov	r3, r6
+  udiv	r2, r0, r1
+  mls	r1, r1, r2, r0
+  mov.w	r2, #0x3e8
+  muls	r1, r2, r1
+  ldr	r2, \[r7\]
+  udiv	r2, r1, r2
+  ldr	r1, \[r7\]
+  udiv	r1, r0, r1
+  adr	r0, #(?P<cstr_fmt_imu_group_ok1>[0-9a-fx]+)
+  bl	#(?P<sub_4A6BEC>[0-9a-fx]+)
+  adr	r0, #(?P<cstr_fmt_imu_group_ok2>[0-9a-fx]+)
+  mov	r1, r6
+  bl	#(?P<sub_4472FC>[0-9a-fx]+)
+  movs	r1, #0xe0
+  add.w	r0, r4, #(?P<unkstru_r4_field_350>[0-9a-fx]+)
+  bl	#(?P<memset_zero>[0-9a-fx]+)
+  add[.]?w	r0, r4, #(?P<unkstru_r4_field_70>[0-9a-fx]+)
+  movs	r1, #0x38
+  mov	fp, r0
+  bl	#(?P<memset_zero>[0-9a-fx]+)
+  movs	r3, #0
+  mov	r2, r6
+  adds	r1, r4, #4
+  mov	r0, sp
+  bl	#(?P<sub_5273E2>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<dword_20404358>[0-9a-fx]+)\]
+  mov.w	r1, #-1
+  str.w	r1, \[r4, #0x380\]
+  uxth	r2, r6
+  adr	r1, #(?P<cstr_gyro_acc>[0-9a-fx]+) ; "gyro_acc"
+  ldr	r0, \[r0\]
+  bfi	r0, r6, #0x18, #8
+  str.w	r0, \[r4, #(?P<unkstru_r4_field_34Ca>[0-9a-fx]+)\]
+  mov	r0, fp
+  bl	#(?P<snprintf_sd_16>[0-9a-fx]+)
+  ldr	r1, \[pc, #(?P<sub_4E7792_p1>[0-9a-fx]+)\]
+  movs	r0, #0xa
+  mov	r2, sp
+  str.w	r1, \[r4, #0x314\]
+  mov	r1, fp
+  bl	#(?P<sub_4E591C>[0-9a-fx]+)
+  cmp	r0, #0
+  beq	#(?P<loc_4E7D40>[0-9a-fx]+)
+  strb.w	r5, \[r4, #0x374\]
+loc_4E7C46:
+  ldr.w	r0, \[r4, #0x1d4\]
+  cmp	r0, #0
+loc_4E7C4C:
+  beq	#(?P<loc_4E7D42>[0-9a-fx]+)
+  ldr.w	r0, \[r4, #0x288\]
+  cmp	r0, #0
+  beq	#(?P<loc_4E7C4C>[0-9a-fx]+)
+  ldr.w	r0, \[r8\]
+  mov	r3, r6
+  ldr	r1, \[r7\]
+  udiv	r2, r0, r1
+  mls	r1, r1, r2, r0
+  mov.w	r2, #0x3e8
+  muls	r1, r2, r1
+  ldr	r2, \[r7\]
+  udiv	r2, r1, r2
+  ldr	r1, \[r7\]
+  udiv	r1, r0, r1
+  adr	r0, #(?P<cstr_fmt_imu_grp_baro_ok1>[0-9a-fx]+)
+  bl	#0x4a6bec
+  adr	r0, #(?P<cstr_fmt_imu_grp_baro_ok2>[0-9a-fx]+)
+  mov	r1, r6
+  bl	#(?P<sub_4472FC>[0-9a-fx]+)
+  add.w	r0, r4, #0x33c
+  movs	r2, #0
+  mov	r5, r0
+  adr	r1, #(?P<cstr_baro>[0-9a-fx]+)
+  bl	#(?P<snprintf_sd_16>[0-9a-fx]+)
+  movs	r0, #0xb
+  mov	r1, r5
+  bl	#(?P<hal_add_device>[0-9a-fx]+)
+  cmp	r0, #0
+  beq	#(?P<loc_4E7D8E>[0-9a-fx]+)
+  strb.w	sb, \[r4, #0x375\]
+loc_4E7CA4:
+  adds	r6, r6, #1
+  cmp	r6, #2
+  blo.w	#(?P<loc_4E79F0>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
+  movs	r2, #0
+  adr	r1, #(?P<cstr_local>[0-9a-fx]+) ; "_local"
+  bl	#(?P<hal_add_imu>[0-9a-fx]+)
+  subw	r0, pc, #(?P<hal_push_mc_version>[0-9a-fx]+)
+  ldr	r4, \[pc, #(?P<hal_stru_164C>[0-9a-fx]+)\]
+  movs	r1, #0
+  str	r0, \[r4, #0x1c\] ; hal_stru_164C.push_version_cb
+  mov	r0, r4
+  bl	#(?P<sub_525DB0>[0-9a-fx]+)
+  mov	r0, r4
+  bl	#(?P<sub_525CF0>[0-9a-fx]+)
+  cbz	r0, #(?P<loc_528032>[0-9a-fx]+)
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ldr.w	r0, \[r8\]
+  ldr	r1, \[r7\]
+  ldrb	r3, \[r4, #(?P<rel_byte_204397E0>[0-9a-fx]+)\]!
+  udiv	r2, r0, r1
+  mls	r1, r1, r2, r0
+  mov.w	r2, #0x3e8
+  muls	r1, r2, r1
+  ldr	r2, \[r7\]
+  udiv	r2, r1, r2
+  ldr	r1, \[r7\]
+  udiv	r1, r0, r1
+  adr	r0, #(?P<cstr_fmt_warn_local_imu_id_errno1>[0-9a-fx]+)
+  bl	#(?P<sub_4A6BEC>[0-9a-fx]+)
+  ldrb	r1, \[r4\]
+  adr	r0, #(?P<cstr_fmt_warn_local_imu_id_errno2>[0-9a-fx]+)
+  bl	#(?P<sub_4472FC>[0-9a-fx]+)
+loc_4E7D00:
+  bl	#(?P<sub_4E7E14>[0-9a-fx]+)
+  ldr	r4, \[pc, #(?P<unk_554B84>[0-9a-fx]+)\]
+  ldrd	r0, r1, \[r4, #0x18\]
+  strd	r0, r1, \[sp, #0x58\]
+  movs	r1, #0
+  add	r0, sp, #0x58
+  bl	#(?P<sub_48E00A>[0-9a-fx]+)
+  ldr	r5, \[pc, #(?P<unk_204397A0>[0-9a-fx]+)\]
+  adds	r5, #0x44
+  mov	r2, r5
+  str	r0, \[r5\]
+  ldrd	r0, r1, \[r4, #0x20\]
+  strd	r0, r1, \[sp, #0x58\]
+  ldr	r1, \[pc, #(?P<sub_4E79A8>[0-9a-fx]+)\]
+  add	r0, sp, #0x58
+  bl	#(?P<sub_48E034>[0-9a-fx]+)
+  movs	r2, #0xc8
+  adds	r0, r5, #4
+  add.w	r1, r5, #0x18
+  bl	#(?P<sub_48C064>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<unk_20405C9C>[0-9a-fx]+)\]
+  movs	r1, #2
+  b	#(?P<loc_4E7D44>[0-9a-fx]+)
+loc_4E7D40:
+  b	#(?P<loc_4E7D4C>[0-9a-fx]+)
+loc_4E7D42:
+  b	#(?P<loc_4E7D5A>[0-9a-fx]+)
+loc_4E7D44:
+  bl	#(?P<sub_4E8656>[0-9a-fx]+)
+  add	sp, #0x64
+  b	#(?P<locret_4E762E>[0-9a-fx]+)
+loc_4E7D4C:
+  movs	r1, #0x32
+  mov	r0, fp
+  bl	#(?P<sub_4E56BA>[0-9a-fx]+)
+  strb.w	sl, \[r4, #0x374\]
+  b	#(?P<loc_4E7C46>[0-9a-fx]+)
+loc_4E7D5A:
+  ldr.w	r0, \[r8\]
+  mov	r3, r6
+  ldr	r1, \[r7\]
+  udiv	r2, r0, r1
+  mls	r1, r1, r2, r0
+  mov.w	r2, #0x3e8
+  muls	r1, r2, r1
+  ldr	r2, \[r7\]
+  udiv	r2, r1, r2
+  ldr	r1, \[r7\]
+  udiv	r1, r0, r1
+  adr	r0, #(?P<cstr_fmt_imu_grp_baro_err1>[0-9a-fx]+)
+  bl	#(?P<sub_4A6BEC>[0-9a-fx]+)
+  adr	r0, #(?P<cstr_fmt_imu_grp_baro_err2>[0-9a-fx]+)
+  mov	r1, r6
+  bl	#(?P<sub_4472FC>[0-9a-fx]+)
+  b	#(?P<loc_4E7CA4>[0-9a-fx]+)
+  b	#(?P<loc_4E7D8E>[0-9a-fx]+)
+loc_4E7D8E:
+  movs	r1, #0x32
+  add.w	r0, r4, #0x33c
+  bl	#(?P<sub_4E56BA>[0-9a-fx]+)
+  strb.w	sl, \[r4, #0x375\]
+  b	#(?P<loc_4E7CA4>[0-9a-fx]+)
+""",
+'vars': {
+  'imu_init':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'snprintf_sd_16':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4472FC':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_46EF10':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_48C064':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_48E00A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_48E034':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4A6BEC':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4E56BA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4E591C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4E7792_p1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4E79A8':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4E7D9E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4E7E14':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4E8656':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_525CF0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_525DB0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_5273E2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'memset_zero':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'hal_add_device':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'hal_add_imu':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'hal_push_mc_version':	{'type': VarType.RELATIVE_ADDR_TO_CODE, 'baseaddr': "PC-", 'variety': CodeVariety.FUNCTION},
+  'loc_4E79F0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7A00':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7A20':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7B74':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7BB4':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7C46':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7C4C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7CA4':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7D40':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7D42':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7D44':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7D4C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7D5A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_4E7D8E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_528032':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'locret_4E762E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'undefined_varlen_01':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (10,580)},
+  'cstr_baro':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "<%d.%03d>imu group%d error**.\r\n"
+  'cstr_fmt_imu_group_err1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "imu group%d error**."
+  'cstr_fmt_imu_group_err2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "<%d.%03d>imu group%d ok**.\r\n"
+  'cstr_fmt_imu_group_ok1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "imu group%d ok**."
+  'cstr_fmt_imu_group_ok2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "<%d.%03d>imu group%d baro error**.\r\n"
+  'cstr_fmt_imu_grp_baro_err1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "imu group%d baro error**."
+  'cstr_fmt_imu_grp_baro_err2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "<%d.%03d>imu group%d baro ok**.\r\n"
+  'cstr_fmt_imu_grp_baro_ok1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "imu group%d baro ok**."
+  'cstr_fmt_imu_grp_baro_ok2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "<%d.%03d>Waring: Local imu ID erro %d!!"...
+  'cstr_fmt_warn_local_imu_id_errno1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "Waring: Local imu ID erro %d!!! \r\n"
+  'cstr_fmt_warn_local_imu_id_errno2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'cstr_gyro_acc':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'cstr_local':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'byte_204053B4':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT8_T},
+  'dword_20404358':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  'dword_20404E48':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  'dword_514C70':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  'hal_stru_164C':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+  'rel_byte_204397E0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UINT8_T},
+  'unk_20405C9C':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  'unk_204397A0':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  'unk_554B84':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  'unkstru_r4_field_34Ca':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'unkstru_r4_field_350':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+  'unkstru_r4_field_70':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
+},
+}
+
 
 re_func_hal_push_mc_version_WM330_V03_01_10_93 = {
 'name': "hal_push_mc_version",
@@ -2774,6 +3107,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_check_activation_authority_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_check_activation_authority_WM220_V03_02_13_12,},
   {'sect': ".text", 'func': re_func_imu_init_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_imu_init_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_hal_push_mc_version_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_navi_init_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_init_config_table_version_WM330_V03_01_10_93,},
