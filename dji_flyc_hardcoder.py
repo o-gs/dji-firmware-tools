@@ -2128,7 +2128,7 @@ loc_4E7B74:
   ldr	r1, \[r7\]
   udiv	r1, r0, r1
   adr	r0, #(?P<cstr_fmt_imu_group_err1>[0-9a-fx]+)
-  bl	#(?P<sub_4A6BEC>[0-9a-fx]+)
+  bl	#(?P<log_printf>[0-9a-fx]+)
   adr	r0, #(?P<cstr_fmt_imu_group_err2>[0-9a-fx]+)
   mov	r1, r6
   bl	#(?P<sub_4472FC>[0-9a-fx]+)
@@ -2150,7 +2150,7 @@ loc_4E7BB4:
   ldr	r1, \[r7\]
   udiv	r1, r0, r1
   adr	r0, #(?P<cstr_fmt_imu_group_ok1>[0-9a-fx]+)
-  bl	#(?P<sub_4A6BEC>[0-9a-fx]+)
+  bl	#(?P<log_printf>[0-9a-fx]+)
   adr	r0, #(?P<cstr_fmt_imu_group_ok2>[0-9a-fx]+)
   mov	r1, r6
   bl	#(?P<sub_4472FC>[0-9a-fx]+)
@@ -2205,7 +2205,7 @@ loc_4E7C4C:
   ldr	r1, \[r7\]
   udiv	r1, r0, r1
   adr	r0, #(?P<cstr_fmt_imu_grp_baro_ok1>[0-9a-fx]+)
-  bl	#0x4a6bec
+  bl	#(?P<log_printf>[0-9a-fx]+)
   adr	r0, #(?P<cstr_fmt_imu_grp_baro_ok2>[0-9a-fx]+)
   mov	r1, r6
   bl	#(?P<sub_4472FC>[0-9a-fx]+)
@@ -2250,7 +2250,7 @@ loc_4E7CA4:
   ldr	r1, \[r7\]
   udiv	r1, r0, r1
   adr	r0, #(?P<cstr_fmt_warn_local_imu_id_errno1>[0-9a-fx]+)
-  bl	#(?P<sub_4A6BEC>[0-9a-fx]+)
+  bl	#(?P<log_printf>[0-9a-fx]+)
   ldrb	r1, \[r4\]
   adr	r0, #(?P<cstr_fmt_warn_local_imu_id_errno2>[0-9a-fx]+)
   bl	#(?P<sub_4472FC>[0-9a-fx]+)
@@ -2305,7 +2305,7 @@ loc_4E7D5A:
   ldr	r1, \[r7\]
   udiv	r1, r0, r1
   adr	r0, #(?P<cstr_fmt_imu_grp_baro_err1>[0-9a-fx]+)
-  bl	#(?P<sub_4A6BEC>[0-9a-fx]+)
+  bl	#(?P<log_printf>[0-9a-fx]+)
   adr	r0, #(?P<cstr_fmt_imu_grp_baro_err2>[0-9a-fx]+)
   mov	r1, r6
   bl	#(?P<sub_4472FC>[0-9a-fx]+)
@@ -2326,7 +2326,7 @@ loc_4E7D8E:
   'sub_48C064':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'sub_48E00A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'sub_48E034':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'sub_4A6BEC':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'log_printf':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'sub_4E56BA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'sub_4E591C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'sub_4E7792_p1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
