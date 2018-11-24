@@ -2490,9 +2490,38 @@ navi_init:
 },
 }
 
+
 re_func_init_config_table_version_WM330_V03_01_10_93 = {
 'name': "init_config_table_version",
 'version': "wm330_0306_v03.01.10.93",
+'re': """
+init_config_table_version:
+  push	{r4, lr}
+  ldr	r4, \[pc, #(?P<mc_version_3b>[0-9a-fx]+)\]
+  bl	#(?P<get_version_4384>[0-9a-fx]+)
+  cmp	r0, r4
+  beq	#(?P<loc_541300>[0-9a-fx]+)
+  mov	r0, r4
+  bl	#(?P<set_version_4384>[0-9a-fx]+)
+  movs	r0, #1
+  pop	{r4, pc}
+loc_541300:
+  movs	r0, #0
+  pop	{r4, pc}
+""",
+'vars': {
+  'init_config_table_version':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'get_version_4384':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'set_version_4384':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'loc_541300':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'mc_version_3b':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': version_string_to_int_getter},
+},
+}
+
+re_func_init_config_table_version_WM220_V03_01_10_93 = {
+'name': "init_config_table_version",
+'version': "wm220_0306_v03.01.10.93",
 're': """
 init_config_table_version:
   push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,4}), lr}
@@ -2538,9 +2567,89 @@ loc_541300:
 },
 }
 
+
 re_func_log_version_info_WM330_V03_01_10_93 = {
 'name': "log_version_info",
 'version': "wm330_0306_v03.01.10.93",
+'re': """
+log_version_info:
+  push	{r0, r1, r2, r3, r4, lr}
+  ldr	r0, \[pc, #(?P<byte_20435FE2>[0-9a-fx]+)\]
+  movs	r1, #0
+  ldr	r2, \[pc, #(?P<cstr_func_name>[0-9a-fx]+)\]
+  adr	r3, #(?P<cstr_fmt_mc_id>[0-9a-fx]+)
+  str	r0, \[sp\]
+  movs	r0, #3
+  bl	#(?P<log_printf_info>[0-9a-fx]+)
+  movs	r3, #0x5d
+  movs	r2, #0xa
+  movs	r1, #1
+  movs	r0, #3
+  stm.w	sp, {r0, r1, r2, r3}
+  ldr	r2, \[pc, #(?P<cstr_func_name>[0-9a-fx]+)\]
+  movs	r1, #0
+  adr	r3, #(?P<cstr_fmt_mc_ver>[0-9a-fx]+)
+  bl	#(?P<log_printf_info>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<dword_20404E98>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_battery_version>[0-9a-fx]+)\]
+  uxtb	r2, r0
+  ubfx	r1, r0, #8, #8
+  ubfx	r3, r0, #0x10, #8
+  lsrs	r0, r0, #0x18
+  strd	r1, r2, \[sp, #8\]
+  strd	r0, r3, \[sp\]
+  ldr	r2, \[pc, #(?P<cstr_func_name>[0-9a-fx]+)\]
+  movs	r1, #0
+  movs	r0, #3
+  adr	r3, #(?P<cstr_fmt_bat_ver>[0-9a-fx]+)
+  bl	#(?P<log_printf_info>[0-9a-fx]+)
+  adr	r0, #(?P<cstr_repo_revision>[0-9a-fx]+)
+  ldr	r2, \[pc, #(?P<cstr_func_name>[0-9a-fx]+)\]
+  movs	r1, #0
+  str	r0, \[sp\]
+  movs	r0, #3
+  adr	r3, #(?P<cstr_fmt_svn_ver>[0-9a-fx]+)
+  bl	#(?P<log_printf_info>[0-9a-fx]+)
+  adr	r0, #(?P<cstr_repo_build_date>[0-9a-fx]+)
+  ldr	r2, \[pc, #(?P<cstr_func_name>[0-9a-fx]+)\]
+  movs	r1, #0
+  str	r0, \[sp\]
+  movs	r0, #3
+  adr	r3, #(?P<cstr_fmt_time>[0-9a-fx]+)
+  bl	#(?P<log_printf_info>[0-9a-fx]+)
+  pop	{r0, r1, r2, r3, r4, pc}
+""",
+'vars': {
+  'log_version_info':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'log_printf_info':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  # "log_system_info"
+  'cstr_func_name':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "Mc  ID  :%s"
+  'cstr_fmt_mc_id':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "Mc  Ver :v%d.%d.%d.%d"
+  'cstr_fmt_mc_ver':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "Bat Ver :v%d.%d.%d.%d"
+  'cstr_fmt_bat_ver':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "svn Ver :%s"
+  'cstr_fmt_svn_ver':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "Time    :%s"
+  'cstr_fmt_time':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # ie. "commit:2016-07-07 16:39:58 /build:2016-07-07 16:41:31 ",0
+  'cstr_repo_build_date':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # ie. "f824fd4656cb8e42128d3450985004f754a3f2f3",0
+  'cstr_repo_revision':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'byte_20435FE2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
+  'dword_20404E98':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
+  'rel_battery_version':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+
+  'const_val_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
+  'const_val_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
+},
+}
+
+re_func_log_version_info_WM220_V03_01_10_93 = {
+'name': "log_version_info",
+'version': "wm220_0306_v03.01.10.93",
 're': """
 log_version_info:
   push	{r2, r3, r4, r5, r6, lr}
@@ -2605,6 +2714,7 @@ log_version_info:
   'serial_nb_0':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
 },
 }
+
 
 re_func_version_check_sub1_WM330_V03_01_10_93 = {
 'name': "version_check_sub1",
@@ -3111,7 +3221,9 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_hal_push_mc_version_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_navi_init_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_init_config_table_version_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_init_config_table_version_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_log_version_info_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_log_version_info_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_version_check_sub1_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_version_check_WM330_V03_01_10_93,},
 ]
