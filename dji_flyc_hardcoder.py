@@ -2414,9 +2414,110 @@ hal_push_mc_version:
 },
 }
 
+
 re_func_navi_init_WM330_V03_01_10_93 = {
 'name': "navi_init",
 'version': "wm330_0306_v03.01.10.93",
+'re': """
+navi_init:
+  push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){6,8}), lr}
+  adr	r0, #(?P<cstr_build_datetime>[0-9a-fx]+)
+  ldr	r4, \[pc, #(?P<unkn_20418DE8>[0-9a-fx]+)\]
+  ldm	r0, {r0, r1, r2, r3}
+  stm.w	sp, {r0, r1, r2, r3}
+  ldr	r0, \[pc, #(?P<mc_version_3a>[0-9a-fx]+)\]
+  movs	r1, #3
+  str.w	r0, \[r4, #(?P<rel_navi_version>[0-9a-fx]+)\]
+  mov.w	r0, #0x620000
+  bl	#(?P<open_device>[0-9a-fx]+)
+  ldr	r1, \[pc, #(?P<unkn_10620005>[0-9a-fx]+)\]
+  add.w	r2, r4, #(?P<rel_serial_nb_0>[0-9a-fx]+)
+  bl	#(?P<enable_device>[0-9a-fx]+)
+  movs	r0, #1
+  strb.w	r0, \[r4, #(?P<byte_20419720>[0-9a-fx]+)\]
+  movs	r0, #0
+  strb.w	r0, \[r4, #(?P<byte_20419721>[0-9a-fx]+)\]
+  add.w	r0, r4, #(?P<rel_serial_nb_1>[0-9a-fx]+)
+  adr	r1, #(?P<cstr_navi>[0-9a-fx]+)
+  mov	r5, r0
+  bl	#(?P<strcpy_1>[0-9a-fx]+)
+  adr	r1, #(?P<cstr_space1>[0-9a-fx]+)
+  mov	r0, r5
+  bl	#(?P<strcat>[0-9a-fx]+)
+  adr	r1, #(?P<cstr_product_model>[0-9a-fx]+)
+  mov	r0, r5
+  bl	#(?P<strcat>[0-9a-fx]+)
+  adr	r1, #(?P<cstr_space1>[0-9a-fx]+)
+  mov	r0, r5
+  bl	#(?P<strcat>[0-9a-fx]+)
+  mov	r1, sp
+  mov	r0, r5
+  bl	#(?P<strcat>[0-9a-fx]+)
+  addw	r0, r4, #(?P<rel_serial_nb_2>[0-9a-fx]+)
+  movs	r1, #0x21
+  mov	r5, r0
+  bl	#(?P<sub_4EB780>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<unk_20413254>[0-9a-fx]+)\]
+  movs	r2, #0x21
+  mov	r1, r5
+  bl	#(?P<sub_4EC598>[0-9a-fx]+)
+  bl	#(?P<sub_44F07E>[0-9a-fx]+)
+  cbnz	r0, #(?P<loc_4B9060>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<word_20437EB4>[0-9a-fx]+)\]
+  ldrb.w	r0, \[r0, #(?P<rel_byte_20437EDA>[0-9a-fx]+)\]
+  cmp	r0, #1
+  bne	#(?P<loc_4B9060>[0-9a-fx]+)
+  ldr.w	r0, \[r4, #(?P<rel_dword_20436038>[0-9a-fx]+)\]
+  orr	r0, r0, #2
+  str.w	r0, \[r4, #(?P<rel_dword_20436038>[0-9a-fx]+)\]
+loc_4B9060:
+  movs	r0, #(?P<const_val_1>[0-9a-fx]+)
+  strb.w	r0, \[r4, #(?P<rel_byte_2041971F>[0-9a-fx]+)\]
+  pop	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){6,8}), pc}
+""",
+'vars': {
+  'navi_init':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'enable_device':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'memcpy_0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'open_device':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'strcat':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'strcpy_1':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4EB780':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_4EC598':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_44F07E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'loc_4B9060':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  # "20160707|163948",0
+  'cstr_build_datetime':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "NAVI"
+  'cstr_navi':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # ie. "wm330v2"
+  'cstr_product_model':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # " "
+  'cstr_space1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'unk_20413254':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
+  'word_20437EB4':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT16_T},
+  'byte_20419720':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'byte_20419721':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_serial_nb_0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_serial_nb_1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_serial_nb_2':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'unkn_20418DE8':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
+  'unkn_10620005':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
+  'rel_byte_2041971F':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_navi_version':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_unkn_1':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_byte_20437EDA':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'rel_dword_20436038':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'const_val_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
+  'mc_version_3a':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': version_string_to_int_getter},
+},
+}
+
+re_func_navi_init_WM220_V03_01_10_93 = {
+'name': "navi_init",
+'version': "wm220_0306_v03.01.10.93",
 're': """
 navi_init:
   push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){6,8}), lr}
@@ -2916,23 +3017,23 @@ loc_45FF58:
 loc_45FFB6:
   ldr	r0, \[sp\]
   movs	r2, #2
-  ldr	r1, \[r0, #0x34\]
+  ldr	r1, \[r0, #(?P<field_var48_ofs34a>[0-9a-fx]+)\]
   ldr.w	r0, \[r6, r4, lsl #2\]
-  ldr	r0, \[r0, #0x34\]
+  ldr	r0, \[r0, #(?P<field_var48_ofs34b>[0-9a-fx]+)\]
   bl	#(?P<sub_45FEEA>[0-9a-fx]+)
   cbnz	r0, #(?P<loc_45FFE8>[0-9a-fx]+)
   ldr.w	r0, \[r6, r4, lsl #2\]
-  ldrb	r0, \[r0, #0xb\]
+  ldrb(.w)?	r0, \[r0, #(?P<field_var48_ofs0Ba>[0-9a-fx]+)\]
   lsls	r0, r0, #0x1e
   bne	#(?P<loc_45FFD6>[0-9a-fx]+)
   strb.w	fp, \[r5, #2\]
 loc_45FFD6:
   ldr.w	r1, \[r6, r4, lsl #2\]
-  ldrb.w	r0, \[r1, #0x3a\]
+  ldrb.w	r0, \[r1, #(?P<field_var48_ofs3Aa>[0-9a-fx]+)\]
   cmp	r0, #0xc8
   bhs	#(?P<loc_45FFE8>[0-9a-fx]+)
   adds	r0, r0, #1
-  strb.w	r0, \[r1, #0x3a\]
+  strb.w	r0, \[r1, #(?P<field_var48_ofs3Ab>[0-9a-fx]+)\]
 loc_45FFE8:
   adds	r4, r4, #1
   uxth	r4, r4
@@ -2947,26 +3048,35 @@ loc_45FFF6:
   mov	r6, sl
   ldrb	r2, \[r7, #2\]
   ldr	r1, \[r7, #4\]
-  ldr	r0, \[r0, #0x34\]
+  ldr	r0, \[r0, #(?P<field_var48_ofs34c>[0-9a-fx]+)\]
   bl	#(?P<sub_45FEEA>[0-9a-fx]+)
   cbnz	r0, #(?P<loc_460028>[0-9a-fx]+)
   ldr.w	r0, \[r6, r4, lsl #2\]
-  ldrb	r0, \[r0, #0xb\]
+  ldrb(.w)?	r0, \[r0, #(?P<field_var48_ofs0Bb>[0-9a-fx]+)\]
   lsls	r0, r0, #0x1e
   bne	#(?P<loc_460016>[0-9a-fx]+)
   strb.w	fp, \[r5, #2\]
 loc_460016:
   ldr.w	r1, \[r6, r4, lsl #2\]
-  ldrb.w	r0, \[r1, #0x3a\]
+  ldrb.w	r0, \[r1, #(?P<field_var48_ofs3Ac>[0-9a-fx]+)\]
   cmp	r0, #0xc8 ; 200
   bhs	#(?P<loc_460028>[0-9a-fx]+)
   adds	r0, r0, #1
-  strb.w	r0, \[r1, #0x3a\]
-loc_460028:
-  adds	r4, r4, #1
-  b	#(?P<loc_46002E>[0-9a-fx]+)
-loc_46002C:
-  b	#(?P<loc_460030>[0-9a-fx]+)
+  ; block of code in wm220_0306_v03.01.10.93:
+  ;strb.w	r0, \[r1, #(?P<field_var48_ofs3Ad>[0-9a-fx]+)\]
+  ;loc_460028:
+  ;adds	r4, r4, #1
+  ;b	#(?P<loc_46002E>[0-9a-fx]+)
+  ;loc_46002C:
+  ;b	#(?P<loc_460030>[0-9a-fx]+)
+  ; block of code in wm330_0306_v03.01.10.93:
+  ;b	#loc_4D8E18
+  ;b	#0x4d8e20
+  ;loc_4D8E18:
+  ;strb.w	r0, \[r1, #(?P<field_var48_ofs3Ad>[0-9a-fx]+)\]
+  ;loc_460028:
+  ;adds	r4, r4, #1
+  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){5,8})
 loc_46002E:
   uxth	r4, r4
 loc_460030:
@@ -2983,34 +3093,34 @@ loc_46003E:
 loc_460042:
   ldr.w	r0, \[r8, r4, lsl #2\]
   ldrb	r2, \[r7, #2\]
-  ldr	r1, \[r0, #0x34\]
+  ldr	r1, \[r0, #(?P<field_var48_ofs34d>[0-9a-fx]+)\]
   ldr.w	r0, \[sl, r6, lsl #2\]
-  ldr	r0, \[r0, #0x34\]
+  ldr	r0, \[r0, #(?P<field_var48_ofs34e>[0-9a-fx]+)\]
   bl	#(?P<sub_45FEEA>[0-9a-fx]+)
   cbnz	r0, #(?P<loc_460092>[0-9a-fx]+)
   ldr.w	r0, \[sl, r6, lsl #2\]
-  ldrb	r0, \[r0, #0xb\]
+  ldrb(.w)?	r0, \[r0, #(?P<field_var48_ofs0Bc>[0-9a-fx]+)\]
   lsls	r0, r0, #0x1e
   bne	#(?P<loc_46006E>[0-9a-fx]+)
   ldr.w	r0, \[r8, r4, lsl #2\]
-  ldrb	r0, \[r0, #0xb\]
+  ldrb(.w)?	r0, \[r0, #(?P<field_var48_ofs0Bd>[0-9a-fx]+)\]
   lsls	r0, r0, #0x1e
   bne	#(?P<loc_46006E>[0-9a-fx]+)
   strb.w	fp, \[r5, #2\]
 loc_46006E:
   ldr.w	r1, \[sl, r6, lsl #2\]
-  ldrb.w	r0, \[r1, #0x3a\]
+  ldrb.w	r0, \[r1, #(?P<field_var48_ofs3Ae>[0-9a-fx]+)\]
   cmp	r0, #0xc8
   bhs	#(?P<loc_460080>[0-9a-fx]+)
   adds	r0, r0, #1
-  strb.w	r0, \[r1, #0x3a\]
+  strb.w	r0, \[r1, #(?P<field_var48_ofs3Af>[0-9a-fx]+)\]
 loc_460080:
   ldr.w	r1, \[r8, r4, lsl #2\]
-  ldrb.w	r0, \[r1, #0x3a\]
+  ldrb.w	r0, \[r1, #(?P<field_var48_ofs3Ag>[0-9a-fx]+)\]
   cmp	r0, #0xc8 ; 200
   bhs	#(?P<loc_460092>[0-9a-fx]+)
   adds	r0, r0, #1
-  strb.w	r0, \[r1, #0x3a\]
+  strb.w	r0, \[r1, #(?P<field_var48_ofs3Ah>[0-9a-fx]+)\]
 loc_460092:
   adds	r4, r4, #1
   uxth	r4, r4
@@ -3051,59 +3161,73 @@ loc_4600C2:
   b	#(?P<loc_460170>[0-9a-fx]+)
 loc_4600E8:
   ldr.w	r0, \[r7, r4, lsl #2\]
-  ldrb.w	r1, \[r0, #0x38\]
+  ldrb.w	r1, \[r0, #(?P<field_var48_ofs38a>[0-9a-fx]+)\]
   cbz	r1, #(?P<loc_460154>[0-9a-fx]+)
-  cmp	r6, #3
+  cmp	r6, #(3|5)
   beq	#(?P<loc_46016C>[0-9a-fx]+)
-  ldrb.w	r1, \[r0, #0x3a\]
+  ldrb.w	r1, \[r0, #(?P<field_var48_ofs3Ai>[0-9a-fx]+)\]
   cbz	r1, #(?P<loc_460132>[0-9a-fx]+)
-  ldr	r1, \[r0, #0x34\]
+  ldr	r1, \[r0, #(?P<field_var48_ofs34f>[0-9a-fx]+)\]
   cbnz	r1, #(?P<loc_460108>[0-9a-fx]+)
-  ldrb.w	r2, \[r0, #0x39\]
+  ldrb.w	r2, \[r0, #(?P<field_var48_ofs39a>[0-9a-fx]+)\]
   cmp	r2, #2
   beq	#(?P<loc_460164>[0-9a-fx]+)
 loc_460108:
-  ldrb.w	r0, \[r0, #0x39\]
+  ldrb.w	r0, \[r0, #(?P<field_var48_ofs39b>[0-9a-fx]+)\]
   cbz	r0, #(?P<loc_460128>[0-9a-fx]+)
   str	r1, \[sp\]
   bl	#(?P<get_logger>[0-9a-fx]+)
   ldr.w	ip, \[r0, #0xc\]
-  adr	r1, #(?P<cstr_fmt_ver_check_fail>[0-9a-fx]+)
-  ldr.w	r0, \[r7, r4, lsl #2\]
-  ldrb	r3, \[r0, #0xa\]
-  ldr.w	r2, \[r0, #2\]
-  movs	r0, #5
+  ; block of code in wm220_0306_v03.01.10.93:
+  ;adr	r1, #(?P<cstr_fmt_ver_check_fail>[0-9a-fx]+)
+  ;ldr.w	r0, \[r7, r4, lsl #2\]
+  ;ldrb	r3, \[r0, #0xa\]
+  ;ldr.w	r2, \[r0, #2\]
+  ;movs	r0, #5
+  ; block of code in wm330_0306_v03.01.10.93:
+  ;ldr.w	r0, \[r7, r4, lsl #2\]
+  ;ldrb.w	r1, [r0, #0x2a]
+  ;ldr.w	r2, [r0, #2]
+  ;movs	r0, #4
+  ;and	r3, r1, #0x7f
+  ;adr	r1, #(?P<cstr_fmt_ver_check_fail>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){8,12})
   blx	ip
 loc_460128:
   ldr.w	r1, \[r7, r4, lsl #2\]
-  strb.w	r8, \[r1, #0x39\]
+  strb.w	r8, \[r1, #(?P<field_var48_ofs39c>[0-9a-fx]+)\]
   b	#(?P<loc_460164>[0-9a-fx]+)
 loc_460132:
-  ldrb.w	r1, \[r0, #0x39\]
+  ldrb.w	r1, \[r0, #(?P<field_var48_ofs39d>[0-9a-fx]+)\]
   cmp	r1, #1
   beq	#(?P<loc_46015C>[0-9a-fx]+)
-  ldr	r0, \[r0, #0x34\]
+  ldr	r0, \[r0, #(?P<field_var48_ofs34g>[0-9a-fx]+)\]
   str	r0, \[sp\]
   bl	#(?P<get_logger>[0-9a-fx]+)
   ldr.w	ip, \[r0, #0xc\]
   ldr.w	r0, \[r7, r4, lsl #2\]
-  ldrb	r3, \[r0, #0xa\]
-  ldr.w	r2, \[r0, #2\]
+  ldrb(.w)?	(r3|r1), \[r0, #(?P<field_var48_ofs0Aa>[0-9a-fx]+)\]
+  ; block of code in wm220_0306_v03.01.10.93:
+  ;ldr.w	r2, \[r0, #2\]
+  ; block of code in wm330_0306_v03.01.10.93:
+  ;ldr.w	r2, \[r0, #2\]
+  ;and	r3, r1, #0x7f
+  dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){2,4})
   b	#(?P<loc_460156>[0-9a-fx]+)
 loc_460152:
   b	#(?P<loc_460178>[0-9a-fx]+)
 loc_460154:
   b	#(?P<loc_46016C>[0-9a-fx]+)
 loc_460156:
-  movs	r0, #5
+  movs	r0, #(5|4)
   adr	r1, #(?P<cstr_fmt_ver_check_pass>[0-9a-fx]+)
   blx	ip
 loc_46015C:
   ldr.w	r1, \[r7, r4, lsl #2\]
-  strb.w	fp, \[r1, #0x39\]
+  strb.w	fp, \[r1, #(?P<field_var48_ofs39e>[0-9a-fx]+)\]
 loc_460164:
   ldr.w	r1, \[r7, r4, lsl #2\]
-  strb.w	r8, \[r1, #0x3a\]
+  strb.w	r8, \[r1, #(?P<field_var48_ofs3Aj>[0-9a-fx]+)\]
 loc_46016C:
   adds	r4, r4, #1
   uxth	r4, r4
@@ -3136,7 +3260,7 @@ loc_4601A0:
   strb.w	r8, \[r1, #(?P<rel_byte_20402ED0>[0-9a-fx]+)\]
   bl	#(?P<get_logger>[0-9a-fx]+)
   ldr	r2, \[r0, #4\]
-  movs	r0, #5
+  movs	r0, #(5|4)
   adr	r1, #(?P<cstr_invalid_version>[0-9a-fx]+)
   blx	r2
 loc_4601B0:
@@ -3161,8 +3285,8 @@ loc_4601B0:
   'loc_460016':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_460028':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_46002C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_46002E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_460030':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'loc_46002E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  #'loc_460030':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_46003A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_46003E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_460042':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -3190,7 +3314,10 @@ loc_4601B0:
   'loc_4601A0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_4601B0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
-  'cstr_fmt_ver_check_fail':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (5,8)},
+  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (8,12)},
+  'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,4)},
+  #'cstr_fmt_ver_check_fail':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_fmt_ver_check_pass':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_invalid_version':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'const_val_sim_a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
@@ -3198,6 +3325,33 @@ loc_4601B0:
   'field_dm_callback_B4a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
   'field_dm_callback_B4b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
   'field_dm_callback_B4c':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs34a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs34b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs34c':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs34d':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs34e':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs34f':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs34g':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs38a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs39a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs39b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs39c':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs39d':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs39e':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs0Aa':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs0Ba':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs0Bb':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs0Bc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs0Bd':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs3Aa':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs3Ab':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs3Ac':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs3Ae':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs3Af':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs3Ag':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs3Ah':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs3Ai':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs3Aj':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
   'const_loop_limit_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'byte_20402ECE':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'pvstru_D61C':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
@@ -3220,6 +3374,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_imu_init_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_hal_push_mc_version_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_navi_init_WM330_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_navi_init_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_init_config_table_version_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_init_config_table_version_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_log_version_info_WM330_V03_01_10_93,},
