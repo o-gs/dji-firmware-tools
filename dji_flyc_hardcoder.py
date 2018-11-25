@@ -3191,7 +3191,7 @@ loc_460108:
   ;movs	r0, #4
   ;and	r3, r1, #0x7f
   ;adr	r1, #(?P<cstr_fmt_ver_check_fail>[0-9a-fx]+)
-  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){8,12})
+  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){7,12})
   blx	ip
 loc_460128:
   ldr.w	r1, \[r7, r4, lsl #2\]
@@ -3315,7 +3315,7 @@ loc_4601B0:
   'loc_4601B0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
   'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (5,8)},
-  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (8,12)},
+  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (7,12)},
   'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,4)},
   #'cstr_fmt_ver_check_fail':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_fmt_ver_check_pass':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
