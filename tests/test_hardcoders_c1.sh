@@ -47,9 +47,9 @@ function modify_json_value_inplace {
   JSONFILE="$1"
   VALNAME="$2"
   VALSET="$3"
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*\([0-9.-]\+\|"[0-9a-zA-Z. #:;_\+-]\+"\),$/{
        $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"'"${VALNAME}"'"\)$/\1'"${VALSET}"'\3/
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9a-zA-Z. #:;_\+"-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"'"${VALNAME}"'"\)$/\1'"${VALSET}"'\3/
                     # now test for a successful substitution, otherwise
                     #+  unpaired "a test" lines would be mis-handled
          t sub-yes  # branch_on_substitute (goto label :sub-yes)

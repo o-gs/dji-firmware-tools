@@ -35,9 +35,9 @@ function modify_json_value_inplace {
   JSONFILE="$1"
   VALNAME="$2"
   VALSET="$3"
-  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*[0-9.-]\+,$/{
+  sed -i '/^[ \t]*"setValue"[ \t]*:[ \t]*\([0-9.-]\+\|"[0-9a-zA-Z. #:;_\+-]\+"\),$/{
        $!{ N        # append the next line when not on the last line
-         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9.-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"'"${VALNAME}"'"\)$/\1'"${VALSET}"'\3/
+         s/^\([ \t]*"setValue"[ \t]*:[ \t]*\)\([0-9a-zA-Z. #:;_\+"-]\+\)\(,\n[ \t]*"name"[ \t]*:[ \t]*"'"${VALNAME}"'"\)$/\1'"${VALSET}"'\3/
                     # now test for a successful substitution, otherwise
                     #+  unpaired "a test" lines would be mis-handled
          t sub-yes  # branch_on_substitute (goto label :sub-yes)
@@ -80,7 +80,7 @@ function exec_mod_for_m0306 {
   modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]max_mission_path_len" "40000.0"
   modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]max_speed_pos" "25.0"
   modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]max_speed_neg" "-25.0"
-  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]firmware_version" "12.34.56.78"
+  modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]firmware_version" "\"12.34.56.78\""
 
   ./dji_flyc_hardcoder.py -vvv -u -e "${FWMODL}.elf"
   arm-none-eabi-objcopy -O binary "${FWMODL}.elf" "${FWMODL}.bin"
