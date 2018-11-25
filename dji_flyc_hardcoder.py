@@ -2853,7 +2853,7 @@ loc_45FE3E:
   ldr.w	r3, \[r2, r1, lsl #2\]
   adds	r1, r1, #1
   uxtb	r1, r1
-  strb.w	r0, \[r3, #0x38\]
+  strb.w	r0, \[r3, #(?P<field_var48_ofs38a>[0-9a-fx]+)\]
 loc_45FE4A:
   ldrh.w	r3, \[sp, #0xc\]
   cmp	r1, r3
@@ -2885,11 +2885,11 @@ loc_45FE60:
   b	#(?P<loc_45FEA0>[0-9a-fx]+)
 loc_45FE8C:
   ldr.w	r1, \[r5, r0, lsl #2\]
-  strb.w	r6, \[r1, #0x38\]
+  strb.w	r6, \[r1, #(?P<field_var48_ofs38b>[0-9a-fx]+)\]
   ldr.w	r1, \[r5, r0, lsl #2\]
   adds	r0, r0, #1
   uxtb	r0, r0
-  strb.w	r7, \[r1, #0x3a\]
+  strb.w	r7, \[r1, #(?P<field_var48_ofs3Aa>[0-9a-fx]+)\]
 loc_45FEA0:
   ldrh.w	r1, \[sp, #0xc\]
   cmp	r0, r1
@@ -2904,11 +2904,11 @@ loc_45FEA0:
   b	#(?P<loc_45FED2>[0-9a-fx]+)
 loc_45FEBE:
   ldr.w	r1, \[r5, r0, lsl #2\]
-  strb.w	r6, \[r1, #0x38\]
+  strb.w	r6, \[r1, #(?P<field_var48_ofs38c>[0-9a-fx]+)\]
   ldr.w	r1, \[r5, r0, lsl #2\]
   adds	r0, r0, #1
   uxtb	r0, r0
-  strb.w	r7, \[r1, #0x3a\]
+  strb.w	r7, \[r1, #(?P<field_var48_ofs3Ab>[0-9a-fx]+)\]
 loc_45FED2:
   ldrh.w	r1, \[sp, #0xc\]
   cmp	r0, r1
@@ -2942,6 +2942,11 @@ locret_45FEE6:
   'field_dm_callback_B4a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
   'field_dm_callback_B4b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
   'field_dm_callback_B4c':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs38a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs38b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs38c':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs3Aa':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
+  'field_var48_ofs3Ab':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T},
   'const_loop_limit_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'byte_20402ECE':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'pvstru_D61C':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
