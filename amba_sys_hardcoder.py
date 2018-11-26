@@ -2129,9 +2129,11 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
         if len(patterns_list) > 0:
             glob_re_size = glob_params_list[var_info['cfunc_name']+'..re_size']['value']
             patterns_addr = var_info['address']
-            var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
             if (po.verbose > 2):
                 print("Making code re:","; ".join(patterns_list))
+            var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
+            if var_sect is None:
+                raise ValueError("Address to uninitialized data found (0x{:06x}) while updating '{:s}'.".format(patterns_addr, var_info['name']))
             asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_list)
             # Now compile our new code line
             if (po.verbose > 2):
@@ -2158,6 +2160,8 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             raise ValueError("Unable to prepare bytes from provided string value.")
 
         var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, var_info['value']) # for "*_ADDR_*" types, value stores address
+        if var_sect is None:
+            raise ValueError("Address to uninitialized data found (0x{:06x}) while updating '{:s}'.".format(var_info['value'], var_info['name']))
         valbt = {}
         valbt['sect'] = var_sect
         section = elf_sections[valbt['sect']]
@@ -2177,9 +2181,11 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
             glob_re_size = glob_params_list[var_info['cfunc_name']+'..re_size']['value']
             # for DETACHED_DATA, 'address' identifies beginning of the whole matched block; add proper amount of instruction sizes to it
             patterns_addr = var_info['address'] + sum(glob_re_size[0:len(patterns_preced)])
-            var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
             if (po.verbose > 2):
                 print("Making code re:","; ".join(patterns_diff))
+            var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
+            if var_sect is None:
+                raise ValueError("Address to uninitialized data found (0x{:06x}) while updating '{:s}'.".format(patterns_addr, var_info['name']))
             asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_diff)
             if len(asm_lines) < 1:
                 raise ValueError("No assembly lines prepared - internal error.")
