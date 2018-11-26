@@ -104,6 +104,10 @@ def version_string_to_int_getter(val):
   ver_revsn = int(ver.group(4),10)
   return (ver_major << 24) + (ver_minor << 16) + (ver_mmtnc << 8) + (ver_revsn)
 
+def version_string_to_parts_getter(val,grp):
+  ver = re.search(r'^([0-9]+)[.]([0-9]+)[.]([0-9]+)[.]([0-9]+)$', val)
+  return int(ver.group(grp),10)
+
 
 re_func_wp_check_input_mission_validity_P3X_V01_05_0030 = {
 'name': "wp_check_input_mission_validity",
@@ -2682,10 +2686,10 @@ log_version_info:
   str	r0, \[sp\]
   movs	r0, #3
   bl	#(?P<log_printf_info>[0-9a-fx]+)
-  movs	r3, #0x5d
-  movs	r2, #0xa
-  movs	r1, #1
-  movs	r0, #3
+  movs	r3, #(?P<mc_ver_revsn>[0-9a-fx]+)
+  movs	r2, #(?P<mc_ver_mmtnc>[0-9a-fx]+)
+  movs	r1, #(?P<mc_ver_minor>[0-9a-fx]+)
+  movs	r0, #(?P<mc_ver_major>[0-9a-fx]+)
   stm.w	sp, {r0, r1, r2, r3}
   ldr	r2, \[pc, #(?P<cstr_func_name>[0-9a-fx]+)\]
   movs	r1, #0
@@ -2742,9 +2746,14 @@ log_version_info:
   'byte_20435FE2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'dword_20404E98':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'rel_battery_version':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
-
-  'const_val_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
-  'const_val_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
+  'mc_ver_major':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': (lambda val: version_string_to_parts_getter(val,1))},
+  'mc_ver_minor':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': (lambda val: version_string_to_parts_getter(val,2))},
+  'mc_ver_mmtnc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': (lambda val: version_string_to_parts_getter(val,3))},
+  'mc_ver_revsn':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': (lambda val: version_string_to_parts_getter(val,4))},
 },
 }
 
@@ -2760,13 +2769,13 @@ log_version_info:
   adr	r1, #(?P<cstr_fmt_mc_id>[0-9a-fx]+)
   ldr	r2, \[pc, #(?P<serial_nb_0>[0-9a-fx]+)\]
   blx	r3
-  movs	r1, #(?P<const_val_1>[0-9a-fx]+)
-  movs	r0, #(?P<const_val_2>[0-9a-fx]+)
+  movs	r1, #(?P<mc_ver_revsn>[0-9a-fx]+)
+  movs	r0, #(?P<mc_ver_mmtnc>[0-9a-fx]+)
   strd	r0, r1, \[sp\]
   bl	#(?P<get_logger>[0-9a-fx]+)
   ldr	r4, \[r0, #0xc\]
-  movs	r3, #2
-  movs	r2, #3
+  movs	r3, #(?P<mc_ver_minor>[0-9a-fx]+)
+  movs	r2, #(?P<mc_ver_major>[0-9a-fx]+)
   movs	r0, #5
   adr	r1, #(?P<cstr_fmt_mc_ver>[0-9a-fx]+)
   blx	r4
@@ -2810,9 +2819,15 @@ log_version_info:
   'cstr_repo_revision':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'dword_20405E40':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'rel_battery_version':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
-  'const_val_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
-  'const_val_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'serial_nb_0':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
+  'mc_ver_major':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': (lambda val: version_string_to_parts_getter(val,1))},
+  'mc_ver_minor':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': (lambda val: version_string_to_parts_getter(val,2))},
+  'mc_ver_mmtnc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': (lambda val: version_string_to_parts_getter(val,3))},
+  'mc_ver_revsn':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': (lambda val: version_string_to_parts_getter(val,4))},
 },
 }
 
@@ -3366,6 +3381,24 @@ loc_4601B0:
 },
 }
 
+re_func_pvstru_D61C_WM330_V03_01_10_93 = {
+'name': "pvstru_D61C",
+'version': "wm330_0306_v03.01.10.93",
+'re': """
+pvstru_D61C:
+  ; array entry 0
+  dcb	(0x5|0x3), (0x5|0x3), 0x2, 0x0
+  dcd	(?P<lpvstru_D61C_0_mc_version>[0-9a-fx]+)
+  dcd	0x1
+""",
+'vars': {
+  'pvstru_D61C':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'pvstru_D61C_0_mc_version':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': version_string_to_int_getter},
+},
+}
+
+
 re_general_list = [
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_P3X_V01_05_0030,},
   {'sect': ".text", 'func': re_func_wp_check_input_mission_validity_WM330_V03_01_10_93,},
@@ -3386,6 +3419,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_log_version_info_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_version_check_sub1_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_version_check_WM330_V03_01_10_93,},
+  #{'sect': ".data", 'func': re_func_pvstru_D61C_WM330_V03_01_10_93,},
 ]
 
 def armfw_elf_flyc_list(po, elffh):
