@@ -3388,12 +3388,12 @@ re_func_pvstru_D61C_WM330_V03_01_10_93 = {
 pvstru_D61C:
   ; array entry 0
   dcb	(0x5|0x3), (0x5|0x3), 0x2, 0x0
-  dcd	(?P<lpvstru_D61C_0_mc_version>[0-9a-fx]+)
+  dcd	(?P<pvstru_D61C_0_mc_version>[0-9a-fx]+)
   dcd	0x1
 """,
 'vars': {
   'pvstru_D61C':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
-  'pvstru_D61C_0_mc_version':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T,
+  'pvstru_D61C_0_mc_version':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
     'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': version_string_to_int_getter},
 },
 }
@@ -3419,7 +3419,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_log_version_info_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_version_check_sub1_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_version_check_WM330_V03_01_10_93,},
-  #{'sect': ".data", 'func': re_func_pvstru_D61C_WM330_V03_01_10_93,},
+  {'sect': ".data", 'func': re_func_pvstru_D61C_WM330_V03_01_10_93,},
 ]
 
 def armfw_elf_flyc_list(po, elffh):
