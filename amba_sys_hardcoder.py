@@ -2123,6 +2123,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
 
     if var_info['type'] in (VarType.DIRECT_INT_VALUE,):
         # We are only changing one line, but use the whole multiline algorithm just for unification
+        #TODO make the possibility of multile lines with one variable
         glob_re = glob_params_list[var_info['cfunc_name']+'..re']['value']
         patterns_list = [glob_re[var_info['line']],]
         if len(patterns_list) > 0:
@@ -2473,6 +2474,10 @@ def armfw_elf_paramvals_update_list(po, asm_arch, re_list, pub_params_list, glob
     for nxpar in update_list_b + update_list_a:
         par_info = pub_params_list[nxpar['name']]
         armfw_elf_value_pre_update_call(po, asm_arch, elf_sections, re_list, glob_params_list, par_info, nxpar['setValue'])
+        if True:
+            depparams_list = armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, nxpar['setValue'])
+            for deppar in depparams_list:
+                armfw_elf_value_pre_update_call(po, asm_arch, elf_sections, re_list, glob_params_list, deppar, deppar['setValue'])
 
     update_count = 0
     # Update the params from priority lists
