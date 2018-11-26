@@ -1499,6 +1499,8 @@ def armfw_asm_parse_data_definition(asm_arch, asm_line):
         if dt_btitem is None:
             if dt_sitem.startswith('"') and dt_sitem.endswith('"'):
                 dt_btitem = dt_sitem[1:-1].encode()
+        if dt_btitem is None:
+            raise ValueError("Cannot convert data def part to bytes: \"{:s}\".".format(dt_item))
         dt_bytes += dt_btitem
     return {'variety': dt_variety, 'item_size': single_len, 'value': dt_bytes }
 
@@ -2037,10 +2039,12 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
         asm_line = re.sub(r'([^\\\[])[?]', r'\1', asm_line)
     # Remove regex square bracket clauses with single char within brackets
     asm_line = re.sub(r'([^\\])\[([^\\])\]', r'\1\2', asm_line)
-    # Remove regex square bracket clauses with multiple chars within brackets
+    # Replace regex square bracket clauses with multiple chars within brackets with first char
     asm_line = re.sub(r'([^\\])\[(.)[^\]]*?[^\\]\]', r'\1\2', asm_line)
     # Remove escaping from remaining square brackets
     asm_line = re.sub(r'\\([\[\]])', r'\1', asm_line)
+    # Replace unnamed curly bracket clauses with alternatives ('|' within brackets) with first choice
+    asm_line = re.sub(r'([^\\])\(([^\|\)\?]*)[^\)]*[^\\]\)', r'\1\2', asm_line)
     return asm_line, instr_size
 
 
@@ -2446,7 +2450,7 @@ def armfw_elf_publicval_update(po, asm_arch, elf_sections, re_list, glob_params_
         if valbt['data'] != old_data:
             update_performed = True
             if (po.verbose > 1):
-                print("Replacing {:s} -> {:s} to set {:s}".format(old_data.hex(),valbt['data'].hex(),par_info['name']))
+                print("At 0x{:06x}, replacing {:s} -> {:s} to set {:s}".format(section['addr']+old_beg,old_data.hex(),valbt['data'].hex(),par_info['name']))
             sect_data = section['data']
             sect_data[old_beg:old_end] = valbt['data']
     return update_performed
