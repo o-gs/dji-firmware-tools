@@ -87,7 +87,7 @@ function exec_mod_for_m0306 {
 
   # Verify by checking amount of changes within the file
   set +x
-  verify_changed_bytes_between_files 11 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  verify_changed_bytes_between_files 36 48 "${FWMODL}.orig.bin" "${FWMODL}.bin"
   echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
 }
 
