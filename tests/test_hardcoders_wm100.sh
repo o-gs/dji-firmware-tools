@@ -91,7 +91,12 @@ function exec_mod_for_m0306 {
 
   # Verify by checking amount of changes within the file
   set +x
-  verify_changed_bytes_between_files 36 48 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  if [[ "${FWMODL}" < "wm100_0306_v03.02.34.99" ]]; then
+    # TODO - partial support only
+    verify_changed_bytes_between_files 12 48 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  else
+    verify_changed_bytes_between_files 32 48 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  fi
   echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
 }
 
