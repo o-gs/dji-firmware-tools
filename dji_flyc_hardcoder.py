@@ -3386,6 +3386,7 @@ loc_4601B0:
 re_func_pvstru_D61C_WM330_V03_01_10_93 = {
 'name': "pvstru_D61C",
 'version': "wm330_0306_v03.01.10.93",
+'no_search': True,
 're': """
 pvstru_D61C:
   ; array entry 0
