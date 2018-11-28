@@ -73,9 +73,18 @@ function exec_mod_for_m0306 {
   local FWMODL=$1
   set -x
   cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
-  ./arm_bin2elf.py -vv -e -b 0x00420000 --section .ARM.exidx@0x0125000:0 --section .bss@0x1ffe0000:0x60000 \
-   --section .bss2@0x3fcc0000:0x1000 --section .bss3@0xdfbe0000:0x10000 \
-   -p "${FWMODL}.bin"
+  if [[ "${FWMODL}" < "wm100_0306_v03.02.34.99" ]]; then
+    # command optimized for  wm100_0306_v03.02.34.02
+    ./arm_bin2elf.py -vv -e -b 0x00420000 --section .ARM.exidx@0x0127e90:0 --section .bss@0x1ffe0000:0x60000 \
+     --section .bss2@0x3fcc0000:0x1000 --section .bss3@0xdfbe0000:0x10000 \
+     -p "${FWMODL}.bin"
+  else
+    # command optimized for  wm100_0306_v03.02.37.55
+    ./arm_bin2elf.py -vv -e -b 0x00420000 --section .ARM.exidx@0x0105a10:0 --section .bss@0x1ffe0000:0x60000 \
+     --section .bss2@0x3fcc0000:0x1000 --section .bss3@0xdfbe0000:0x10000 \
+     -p "${FWMODL}.bin"
+  fi
+
   ./dji_flyc_hardcoder.py -vvv -x -e "${FWMODL}.elf"
 
   modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]min_alt_below_home" "-800.0"
