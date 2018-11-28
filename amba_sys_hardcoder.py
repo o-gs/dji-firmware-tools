@@ -1820,9 +1820,9 @@ def armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, sect_name, pa
         if var_def['line'] != 0:
             continue
         # Check if that variable is in global vars
-        if var_name not in glob_params_list:
+        var_info = variable_info_from_value_name(glob_params_list, search['name'], var_name)
+        if var_info is None:
             continue
-        var_info = glob_params_list[var_name]
         if not value_type_is_known_address(var_info):
             continue
         # Use offset of the found variable
