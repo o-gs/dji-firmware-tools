@@ -1826,10 +1826,24 @@ def armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, sect_name, pa
         if not value_type_is_known_address(var_info):
             continue
         # Use offset of the found variable
-        start_sect_offs = var_info['value'] - search['section']['addr']
-        if start_sect_offs < 0: start_sect_offs = 0
+        next_sect_addr = get_final_address_from_var_info(asm_arch, elf_sections, var_info)
+        if next_sect_addr is None:
+            continue
+        next_sect_name, next_sect_offs = get_section_and_offset_from_address(asm_arch, elf_sections, next_sect_addr)
+        if next_sect_name is None:
+            eprint("Pre-determined address of {:s} is outside of initialized sections (0x{:06x}); ignoring".format(var_name,next_sect_addr))
+            continue
+        if next_sect_name != sect_name:
+            eprint("Pre-determined address of {:s} is in section '{:s}' instead of '{:s}'; ignoring".format(var_name,next_sect_name,sect_name))
+            continue
         if (po.verbose > 1):
-            print("Found pre-existing address of {:s} at 0x{:06x}".format(var_name,var_info['value']))
+            print("Found pre-determined address of {:s} at 0x{:06x}".format(var_name,var_info['value']))
+        start_sect_offs = next_sect_offs
+
+    if 'no_search' in patterns:
+        if patterns['no_search'] and start_sect_offs == 0:
+            eprint("The {:s} requires pre-determined address from previously found functions; no such address exists".format(search['name']))
+            return []
 
     sect_offs = start_sect_offs
     sect_progress_treshold = 0
@@ -2044,7 +2058,7 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
     # Remove escaping from remaining square brackets
     asm_line = re.sub(r'\\([\[\]])', r'\1', asm_line)
     # Replace unnamed curly bracket clauses with alternatives ('|' within brackets) with first choice
-    asm_line = re.sub(r'([^\\])\(([^\|\)\?]*)[^\)]*[^\\]\)', r'\1\2', asm_line)
+    asm_line = re.sub(r'([^\\])\(([^\|\)\?]*)[^\)]*?[^\\]\)', r'\1\2', asm_line)
     return asm_line, instr_size
 
 
@@ -2111,6 +2125,17 @@ def armfw_elf_value_pre_update_call(po, asm_arch, elf_sections, re_list, glob_pa
             if fld_name in ('name',):
                 continue
             var_info[fld_name] = fld_value
+
+
+def get_final_address_from_var_info(asm_arch, elf_sections, var_info):
+    if var_info['type'] in (VarType.DIRECT_INT_VALUE, VarType.DIRECT_LINE_OF_CODE, VarType.DIRECT_OPERAND,):
+        return var_info['address']
+    elif var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_CODE, VarType.RELATIVE_ADDR_TO_CODE,
+      VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_ADDR_TO_GLOBAL_DATA,):
+        return var_info['value']
+    elif var_info['type'] in (VarType.RELATIVE_ADDR_TO_PTR_TO_CODE, VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA,):
+        return var_info['value']
+    return None
 
 
 def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, var_info, new_value_str):
