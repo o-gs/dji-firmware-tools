@@ -72,8 +72,28 @@ function exec_mod_for_m0306 {
   local FWMODL=$1
   set -x
   cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
-  ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x01265E0:0 --section .bss@0x1ffe0000:0x60100 \
-   --section .bss2@0x3fcc0000:0x2000 -p "${FWMODL}.bin"
+  if [[ "${FWMODL}" < "wm220_0306_v03.02.34.99" ]]; then
+    # command optimized for  wm220_0306_v03.02.13.12
+    ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x0116000:0 --section .bss@0x1ffe0000:0x60100 \
+     --section .bss2@0x3fcc0000:0x2000 \
+     -p "${FWMODL}.bin"
+  elif [[ "${FWMODL}" < "wm220_0306_v03.02.35.99" ]]; then
+    # command optimized for wm220_0306_v03.02.35.05
+    ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x01265d8:0 --section .bss@0x1ffe0000:0x60100 \
+     --section .bss2@0x3fcc0000:0x2000 \
+     -p "${FWMODL}.bin"
+  elif [[ "${FWMODL}" < "wm220_0306_v03.02.43.99" ]]; then
+    # command optimized for wm220_0306_v03.02.43.20
+    ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x01077d0:0 --section .bss@0x1ffe0000:0x60100 \
+     --section .bss2@0x3fcc0000:0x2000 \
+     -p "${FWMODL}.bin"
+  else
+    # command optimized for wm220_0306_v03.02.44.07
+    ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x0105300:0 --section .bss@0x1ffe0000:0x60100 \
+     --section .bss2@0x3fcc0000:0x2000 \
+     -p "${FWMODL}.bin"
+  fi
+
   ./dji_flyc_hardcoder.py -vvv -x -e "${FWMODL}.elf"
 
   modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]min_alt_below_home" "-800.0"
