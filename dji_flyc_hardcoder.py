@@ -1339,42 +1339,69 @@ check_activation_authority:
   push.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){5,8}), lr}
   movs	r4, r0
   beq	#(?P<loc_510806>[0-9a-fx]+)
-  ldr	r3, \[pc, #(?P<mc_version_1>[0-9a-fx]+)\]
-  ldr	r2, \[r4, #8\]
-  cmp	r2, r3
+  ldr	(?P<regB>r[0-9]), \[pc, #(?P<mc_version_1>[0-9a-fx]+)\]
+  ldr	(?P<regC>r[0-9]), \[r4, #8\]
+  cmp	(?P<regC>r[0-9]), (?P<regB>r[0-9])
   beq	#(?P<loc_510828>[0-9a-fx]+)
-  movs	r0, #0x70
-  adr	r1, #(?P<cstr_sdk_version_error>[0-9a-fx]+)
-  bl	#(?P<log_printf_debug>[0-9a-fx]+)
-  movs	r0, #8
+  ; block of code, in P3X_FW_V01.07.0060_m0306:
+  ;movs	r0, #8
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;movs	r0, #0x70
+  ;adr	r1, #(?P<cstr_sdk_version_error>[0-9a-fx]+)
+  ;bl	#(?P<log_printf_debug>[0-9a-fx]+)
+  ;movs	r0, #8
+  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){1,8})
 locret_510808:
   pop.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){5,8}), pc}
 loc_510806:
   movs	r0, #1
   b	#(?P<locret_510808>[0-9a-fx]+)
 loc_510828:
-  ldr	r0, \[pc, #0x1dc\]
-  ldrb.w	r0, \[r0, #0x5ac\]
+  ldr	r0, \[pc, #(?P<g_real__aircraft_status>[0-9a-fx]+)\]
+  ldrb.w	r0, \[r0, #(?P<rel_g_real__config__api_entry_cfg__cheat_backdoor>[0-9a-fx]+)\]
   cmp	r0, #1
   bne	#(?P<loc_510844>[0-9a-fx]+)
   ldr	r0, \[r4\]
   sub.w	r1, r0, #0x2700
   subs	r1, #0x66
-  beq	#(?P<loc_5108A2>[0-9a-fx]+)
+  ; block of code, in P3X_FW_V01.07.0060_m0306:
+  ;bne	#(?P<loc_510844>[0-9a-fx]+)
+  ;ldr	r0, \[r4, #4\]
+  ;cmp	r0, #2
+  ;bhi	#(?P<loc_5108B0>[0-9a-fx]+)
+  ;adr	r0, #(?P<cstr_dji_demo_lala_haha>[0-9a-fx]+)
+  ;bl	#(?P<dji_sdk_set_key>[0-9a-fx]+)
+  ;b	#(?P<loc_51089E>[0-9a-fx]+)
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;beq	#(?P<loc_5108A2>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,12})
 loc_510844:
   ldr	r0, \[r4\]
   bl	#(?P<sub_51078E>[0-9a-fx]+)
-  ldr	r7, \[pc, #(?P<unkval_4350>[0-9a-fx]+)\]
-  movs	r5, #0
-  cmp	r0, #2
-  mov	r3, r0
+  ; block of code, in P3X_FW_V01.07.0060_m0306:
+  ;movs	r5, #0
+  ;ldr	r7, \[pc, #(?P<unkval_4350>[0-9a-fx]+)\]
+  ;mov	r3, r0
+  ;cmp	r0, #2
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;ldr	r7, \[pc, #(?P<unkval_4350>[0-9a-fx]+)\]
+  ;movs	r5, #0
+  ;cmp	r0, #2
+  ;mov	r3, r0
+  dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){1,6})
   bhs	#(?P<loc_5108B4>[0-9a-fx]+)
   ldr	r0, \[pc, #(?P<dword_20430DD0>[0-9a-fx]+)\]
   add.w	r1, r3, r3, lsl #2
   add.w	r6, r0, r1, lsl #3
-  ldr	r1, \[r4, #4\]
-  adr	r0, #(?P<cstr_req_real>[0-9a-fx]+)
-  ldr	r2, \[r6, #4\]
+  ; block of code, in P3X_FW_V01.07.0060_m0306:
+  ;adr	r0, #(?P<cstr_req_real>[0-9a-fx]+)
+  ;ldr	r2, \[r6, #4\]
+  ;ldr	r1, \[r4, #4\]
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;ldr	r1, \[r4, #4\]
+  ;adr	r0, #(?P<cstr_req_real>[0-9a-fx]+)
+  ;ldr	r2, \[r6, #4\]
+  dcw	(?P<undefined_varlen_4>([0-9a-fx]+[, ]*){3,4})
   bl	#(?P<log_printf>[0-9a-fx]+)
   strh	r5, \[r7\]
   str	r5, \[r7, #(?P<rel_dword_20404370>[0-9a-fx]+)\]
@@ -1386,19 +1413,28 @@ loc_510844:
   add.w	r0, r6, #8
   mov	r4, r0
   bl	#(?P<dji_sdk_set_key>[0-9a-fx]+)
-  adr	r0, #(?P<cstr_dji_sdk_set_key_val>[0-9a-fx]+)
-  mov	r1, r4
+  ; block of code, in P3X_FW_V01.07.0060_m0306:
+  ;mov	r1, r4
+  ;adr	r0, #(?P<cstr_dji_sdk_set_key_val>[0-9a-fx]+)
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;adr	r0, #(?P<cstr_dji_sdk_set_key_val>[0-9a-fx]+)
+  ;mov	r1, r4
+  dcw	(?P<undefined_varlen_5>([0-9a-fx]+[, ]*){2,4})
   bl	#(?P<log_printf>[0-9a-fx]+)
 loc_51089E:
   movs	r0, #0
-  b	#(?P<locret_510808>[0-9a-fx]+)
-loc_5108A2:
-  ldr	r0, \[r4, #4\]
-  cmp	r0, #2
-  bhi	#(?P<loc_5108B0>[0-9a-fx]+)
-  adr	r0, #(?P<cstr_dji_demo_lala_haha>[0-9a-fx]+)
-  bl	#(?P<dji_sdk_set_key>[0-9a-fx]+)
-  b	#(?P<loc_51089E>[0-9a-fx]+)
+  ; block of code, in P3X_FW_V01.07.0060_m0306:
+  ;b	#(?P<locret_510808>[0-9a-fx]+)
+  ; block of code, in wm330_0306_v03.01.10.93:
+  ;b	#(?P<locret_510808>[0-9a-fx]+)
+  ;loc_5108A2:
+  ;ldr	r0, \[r4, #4\]
+  ;cmp	r0, #2
+  ;bhi	#(?P<loc_5108B0>[0-9a-fx]+)
+  ;adr	r0, #(?P<cstr_dji_demo_lala_haha>[0-9a-fx]+)
+  ;bl	#(?P<dji_sdk_set_key>[0-9a-fx]+)
+  ;b	#(?P<loc_51089E>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_6>([0-9a-fx]+[, ]*){1,16})
 loc_5108B0:
   movs	r0, #7
   b	#(?P<locret_510808>[0-9a-fx]+)
@@ -1425,9 +1461,11 @@ loc_5108DC:
   mov.w	r0, #3
   b	#(?P<locret_510808>[0-9a-fx]+)
 loc_5108E2:
+  ; block of code, in P3X_FW_V01.07.0060_m0306:
+  ;ldr	r0, \[r0\]
   ; block of code, in wm330_0306_v03.01.10.93:
   ;ldr.w	r0, \[r0, #(?P<rel_ctrl_tick>[0-9a-fx]+)\]
-  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,204})
+  dcw	(?P<undefined_varlen_7>([0-9a-fx]+[, ]*){1,204})
   bne	#(?P<loc_5108EC>[0-9a-fx]+)
   str	r0, \[r7, #(?P<rel_dword_20404378>[0-9a-fx]+)\]
   b	#(?P<loc_5108FC>[0-9a-fx]+)
@@ -1475,8 +1513,15 @@ loc_51090C:
   'loc_51090C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'locret_510808':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
-  #'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,8)},
-  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,204)},
+  'regB':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'regC':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,8)},
+  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,12)},
+  'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,6)},
+  'undefined_varlen_4':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (3,4)},
+  'undefined_varlen_5':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (2,4)},
+  'undefined_varlen_6':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,16)},
+  'undefined_varlen_7':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,204)},
   #'CONFIG_VAR_37a':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT8_T},
   #'CONFIG_VAR_37b':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT8_T},
   'cstr_dji_demo_lala_haha':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
