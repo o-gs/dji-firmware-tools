@@ -1643,7 +1643,7 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
         elif var_info['type'] in (VarType.DIRECT_OPERAND,):
             prop_ofs_val = var_val
         else:
-            raise NotImplementedError("Unexpected variable type found.")
+            raise NotImplementedError("Unexpected variable type found while processing vars, '{:s}'.".format(var_info['type'].name))
 
         # Either convert the direct value to bytes, or get bytes from offset
         if (var_info['type'] == VarType.DIRECT_INT_VALUE):
@@ -2011,7 +2011,7 @@ def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_nam
         elif (var_info['type'] in (VarType.DIRECT_OPERAND,)):
             prop_ofs_val = var_info['value']
         else:
-            raise NotImplementedError("Unexpected variable type found, '{:s}'.".format(var_info['type'].name))
+            raise NotImplementedError("Unexpected variable type found while preparimg ASM from pattern, '{:s}'.".format(var_info['type'].name))
         if isinstance(prop_ofs_val, int):
             prop_ofs_val = [ prop_ofs_val ]
         elif isinstance(prop_ofs_val, str):
@@ -2233,7 +2233,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
         # No binary change needed in regard to that variable
         pass
     else:
-        raise NotImplementedError("Unexpected variable type found.")
+        raise NotImplementedError("Unexpected variable type found while getting update bytes from it, '{:s}'.".format(var_info['type'].name))
 
     for valbt in valbts:
         section = elf_sections[valbt['sect']]
