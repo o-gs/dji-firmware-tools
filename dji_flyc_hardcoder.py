@@ -958,13 +958,13 @@ re_func_firmware_release_marking_WM330_V03_01_10_93 = {
 're': """
   dcb	(?P<starter_odd_even>([0-9a-fx]+[, ]*){2,3})
   dcb	"SDK-v(?P<sdk_version>[1-2][.][0-9]) BETA"
-  dcb	" (?P<product_code>WM[0-9][0-9][0-9])-"
+  dcb	" (?P<product_code>[A-Z][A-Z]?[0-9][0-9][0-9])-"
   dcb	"(?P<firmware_version>[0-9][0-9][.][0-9][0-9][.][0-9][0-9][.][0-9][0-9])"
 """,
 'vars': {
   'starter_odd_even':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT8_T, 'array': (2,3)},
   'sdk_version':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.CHAR, 'array': 3},
-  'product_code':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.CHAR, 'array': 5},
+  'product_code':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.CHAR, 'array': (4,5)},
   'firmware_version':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.CHAR, 'array': 11,
     'public': "og_hardcoded.flyc", 'minValue': "00.00.00.00", 'maxValue': "99.99.99.99",
     'description': "Firmware version number"},
@@ -1529,6 +1529,8 @@ loc_51090C:
   'cstr_req_real':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_sdk_version_error':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'dword_20430DD0':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
+  'g_real__aircraft_status':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+  'rel_g_real__config__api_entry_cfg__cheat_backdoor':	{'type': VarType.RELATIVE_OFFSET, 'baseaddr': "g_real__aircraft_status+", 'variety': DataVariety.UNKNOWN},
   #'rel_ctrl_tick':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'rel_dword_2040436C':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'rel_dword_20404370':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
@@ -2676,10 +2678,10 @@ re_func_init_config_table_version_WM220_V03_01_10_93 = {
 init_config_table_version:
   push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){2,4}), lr}
   mov	r0, sp
-  ; block of code and data, in wm220_0306_v03.02.35.05 is 4 words long:
+  ; block of code, in wm220_0306_v03.02.35.05 is 4 words long:
   ;bl	#(?P<get_version_4384>[0-9a-fx]+)
   ;bl	#(?P<set_hw_version>[0-9a-fx]+)
-  ; block of code and data, in wm220_0306_v03.02.13.12 is 2 words long:
+  ; block of code, in wm220_0306_v03.02.13.12 is 2 words long:
   ;bl	#(?P<get_version_4384>[0-9a-fx]+)
   dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){2,8})
   ldr	r0, \[pc, #(?P<mc_version_3b>[0-9a-fx]+)\]
@@ -2717,6 +2719,45 @@ loc_541300:
 },
 }
 
+
+re_func_log_version_info_P3X_FW_V01_07_0060 = {
+'name': "log_version_info",
+'version': "P3X_FW_V01.07.0060",
+'re': """
+log_version_info:
+""",
+'vars': {
+  'log_version_info':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'log_printf_info':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  # "log_system_info"
+  'cstr_func_name':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "Mc  ID  :%s"
+  'cstr_fmt_mc_id':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "Mc  Ver :v%d.%d.%d.%d"
+  'cstr_fmt_mc_ver':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "Bat Ver :v%d.%d.%d.%d"
+  'cstr_fmt_bat_ver':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "svn Ver :%s"
+  'cstr_fmt_svn_ver':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # "Time    :%s"
+  'cstr_fmt_time':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # ie. "commit:2016-07-07 16:39:58 /build:2016-07-07 16:41:31 ",0
+  'cstr_repo_build_date':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  # ie. "f824fd4656cb8e42128d3450985004f754a3f2f3",0
+  'cstr_repo_revision':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'byte_20435FE2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
+  'dword_20404E98':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
+  'rel_battery_version':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
+  'mc_ver_major':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': (lambda val: version_string_to_parts_getter(val,1))},
+  'mc_ver_minor':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': (lambda val: version_string_to_parts_getter(val,2))},
+  'mc_ver_mmtnc':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': (lambda val: version_string_to_parts_getter(val,3))},
+  'mc_ver_revsn':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': (lambda val: version_string_to_parts_getter(val,4))},
+},
+}
 
 re_func_log_version_info_WM330_V03_01_10_93 = {
 'name': "log_version_info",
