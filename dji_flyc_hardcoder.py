@@ -1544,8 +1544,55 @@ loc_51090C:
 }
 
 
+re_func_system_init_P3X_FW_V01_07_0060 = {
+'name': "system_init",
+'alt_name': "imu_init",
+'version': "P3X_FW_V01.07.0060",
+'re': """
+system_init:
+  push	{r4, lr}
+  bl	#(?P<hal_push_mc_version>[0-9a-fx]+)
+  bl	#(?P<init_sub_7E88>[0-9a-fx]+)
+  bl	#(?P<init_sub_CB9A>[0-9a-fx]+)
+  bl	#(?P<init_sub_185C>[0-9a-fx]+)
+  bl	#(?P<init_sub_61CA>[0-9a-fx]+)
+  bl	#(?P<init_led>[0-9a-fx]+)
+  bl	#(?P<init_fitler>[0-9a-fx]+)
+  bl	#(?P<init_sub_CC58>[0-9a-fx]+)
+  bl	#(?P<init_sub_17C4>[0-9a-fx]+)
+  bl	#(?P<init_sub_142A>[0-9a-fx]+)
+  bl	#(?P<init_sub_2E3E>[0-9a-fx]+)
+  bl	#(?P<init_sub_9580>[0-9a-fx]+)
+  bl	#(?P<request_esc_real_states>[0-9a-fx]+)
+  bl	#(?P<init_temp_cali>[0-9a-fx]+)
+  bl	#(?P<init_sub_FE48>[0-9a-fx]+)
+  pop.w	{r4, lr}
+  b.w	#(?P<init_sub_2052>[0-9a-fx]+)
+""",
+'vars': {
+  'system_init':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'hal_push_mc_version':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_sub_7E88':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_sub_CB9A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_sub_185C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_sub_61CA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_led':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_fitler':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_sub_CC58':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_sub_17C4':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_sub_142A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_sub_2E3E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_sub_9580':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'request_esc_real_states':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_temp_cali':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_sub_FE48':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'init_sub_2052':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+},
+}
+
 re_func_imu_init_WM220_V03_01_10_93 = {
 'name': "imu_init",
+'alt_name': "system_init",
 'version': "wm220_0306_v03.01.10.93",
 're': """
 imu_init:
@@ -2118,6 +2165,7 @@ loc_528032:
 
 re_func_imu_init_WM330_V03_01_10_93 = {
 'name': "imu_init",
+'alt_name': "system_init",
 'version': "wm330_0306_v03.01.10.93",
 're': """
 imu_init:
@@ -2449,9 +2497,31 @@ loc_4E7D8E:
 }
 
 
+re_func_hal_push_mc_version_P3X_FW_V01_07_0060 = {
+'name': "hal_push_mc_version",
+'version': "P3X_FW_V01.07.0060",
+'no_search': True,
+'re': """
+hal_push_mc_version:
+  ldr	r1, \[pc, #(?P<dword_2001C99C>[0-9a-fx]+)\]
+  ldr	r0, \[pc, #(?P<mc_version_2>[0-9a-fx]+)\]
+  str	r0, \[r1, #(?P<rel_mc_version>[0-9a-fx]+)\]
+  bx	lr
+""",
+'vars': {
+  'dword_2001C99C':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+  'hal_push_mc_version':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'hal_push_version':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'rel_mc_version':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UINT32_T},
+  'mc_version_2':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T,
+    'public': "og_hardcoded.flyc", 'depend': "firmware_version", 'getter': version_string_to_int_getter},
+},
+}
+
 re_func_hal_push_mc_version_WM330_V03_01_10_93 = {
 'name': "hal_push_mc_version",
 'version': "wm330_0306_v03.01.10.93",
+'no_search': True,
 're': """
 hal_push_mc_version:
   ldr	r1, \[pc, #(?P<mc_version_2>[0-9a-fx]+)\]
@@ -2725,12 +2795,47 @@ re_func_log_version_info_P3X_FW_V01_07_0060 = {
 'version': "P3X_FW_V01.07.0060",
 're': """
 log_version_info:
+  push	{lr}
+  sub	sp, #0x14
+  add	r0, sp, #8
+  bl	#(?P<get_mc_ident>[0-9a-fx]+)
+  add	r2, sp, #8
+  adr	r1, #(?P<cstr_fmt_mc_id>[0-9a-fx]+)
+  movs	r0, #0xfe
+  bl	#(?P<log_printf_info>[0-9a-fx]+)
+  movs	r1, #(?P<mc_ver_revsn>[0-9a-fx]+)
+  movs	r0, #(?P<mc_ver_mmtnc>[0-9a-fx]+)
+  strd	r0, r1, \[sp\]
+  movs	r3, #(?P<mc_ver_minor>[0-9a-fx]+)
+  movs	r2, #(?P<mc_ver_major>[0-9a-fx]+)
+  adr	r1, #(?P<cstr_fmt_mc_ver>[0-9a-fx]+)
+  movs	r0, #0xfe
+  bl	#(?P<log_printf_info>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<dword_20404E98>[0-9a-fx]+)\]
+  ldr	r0, \[r0, #(?P<rel_battery_version>[0-9a-fx]+)\]
+  uxtb	r2, r0
+  ubfx	r1, r0, #8, #8
+  strd	r1, r2, \[sp\]
+  lsrs	r2, r0, #0x18
+  ubfx	r3, r0, #0x10, #8
+  adr	r1, #(?P<cstr_fmt_bat_ver>[0-9a-fx]+)
+  movs	r0, #0xfe
+  bl	#(?P<log_printf_info>[0-9a-fx]+)
+  adr	r2, #(?P<cstr_repo_revision>[0-9a-fx]+)
+  adr	r1, #(?P<cstr_fmt_svn_ver>[0-9a-fx]+)
+  movs	r0, #0xfe
+  bl	#(?P<log_printf_info>[0-9a-fx]+)
+  adr	r2, #(?P<cstr_repo_build_date>[0-9a-fx]+)
+  adr	r1, #(?P<cstr_fmt_time>[0-9a-fx]+)
+  movs	r0, #0xfe
+  bl	#(?P<log_printf_info>[0-9a-fx]+)
+  add	sp, #0x14
+  pop	{pc}
 """,
 'vars': {
   'log_version_info':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'log_printf_info':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  # "log_system_info"
-  'cstr_func_name':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
+  'get_mc_ident':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   # "Mc  ID  :%s"
   'cstr_fmt_mc_id':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   # "Mc  Ver :v%d.%d.%d.%d"
@@ -3497,13 +3602,16 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_check_activation_authority_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_check_activation_authority_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_check_activation_authority_WM220_V03_02_13_12,},
+  {'sect': ".text", 'func': re_func_system_init_P3X_FW_V01_07_0060,},
   {'sect': ".text", 'func': re_func_imu_init_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_imu_init_WM220_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_hal_push_mc_version_P3X_FW_V01_07_0060,},
   {'sect': ".text", 'func': re_func_hal_push_mc_version_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_navi_init_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_navi_init_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_init_config_table_version_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_init_config_table_version_WM220_V03_01_10_93,},
+  {'sect': ".text", 'func': re_func_log_version_info_P3X_FW_V01_07_0060,},
   {'sect': ".text", 'func': re_func_log_version_info_WM330_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_log_version_info_WM220_V03_01_10_93,},
   {'sect': ".text", 'func': re_func_version_check_sub1_WM330_V03_01_10_93,},
