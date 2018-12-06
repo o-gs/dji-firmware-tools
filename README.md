@@ -151,6 +151,8 @@ Optimized examples for specific firmwares:
 
 ```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x01077d0:0 --section .bss@0x1ffe0000:0x60000 --section .bss2@0x3fcc0000:0x1000 --section .bss3@0xdfbe0000:0x10000 -p wm100_0306_v03.02.43.20_20170920.pro.fw_0306.decrypted.bin```
 
+```./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x01265d8:0 --section .bss@0x1ffe0000:0x60100 --section .bss2@0x3fcc0000:0x2000 -p wm220_0306_v03.02.35.05_20170525.pro.fw_0306.decrypted.bin```
+
 This tool supports only conversion in direction of bin-to-elf. To convert an ELF
 file back to BIN (ie. after modifications), use `objcopy` utility for the
 specific architecture. The `objcopy` tool is a part of GNU Binary Utilities
