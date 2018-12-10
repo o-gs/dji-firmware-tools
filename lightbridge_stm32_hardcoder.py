@@ -198,6 +198,15 @@ def packet_received_attenuation_override_update(asm_arch, elf_sections, re_list,
             glob_var_info['type'] = re_var_info['type']
 
 
+def version_string_to_int_getter(val):
+  ver = re.search(r'^([0-9]+)[.]([0-9]+)[.]([0-9]+)[.]([0-9]+)$', val)
+  ver_major = int(ver.group(1),10)
+  ver_minor = int(ver.group(2),10)
+  ver_mmtnc = int(ver.group(3),10)
+  ver_revsn = int(ver.group(4),10)
+  return (ver_major << 24) + (ver_minor << 16) + (ver_mmtnc << 8) + (ver_revsn)
+
+
 re_func_cmd_exec_set09_cmd12_P3X_V01_07_original = {
 'name': "cmd_exec_set09_cmd12-original",
 'version': "P3X_FW_V01.07",
@@ -4237,6 +4246,98 @@ loc_label34:
 },
 }
 
+
+re_func_cmd_exec_set00_cmd01b_P3X_V01_08 = {
+'name': "cmd_exec_set00_cmd01b",
+'version': "P3X_FW_V01.08",
+'re': """
+cmd_exec_set00_cmd01b:
+  push	{r4, r5, r6, lr}
+  mov	r5, r0
+  movs	r6, #0
+  add.w	r4, r0, #0xb
+  adds	r0, r6, #1
+  strb	r0, \[r4, #1\]
+  movs	r1, #0x10
+  adds	r0, r4, #2
+  bl	#(?P<sub_8012360>[0-9a-fx]+)
+  ldrb	r0, \[r5, #5\]
+  and	r0, r0, #0x1f
+  cmp	r0, #9
+  beq	#(?P<loc_8011F26>[0-9a-fx]+)
+  cmp	r0, #0x13
+  beq	#(?P<loc_8011F32>[0-9a-fx]+)
+  b	#(?P<loc_8011F76>[0-9a-fx]+)
+loc_8011F26:
+  bl	#(?P<sub_8012372>[0-9a-fx]+)
+  str.w	r0, \[r4, #0x12\]
+  ldr	r0, \[pc, #(?P<lb_mcu_version_1>[0-9a-fx]+)\]
+  b	#(?P<loc_8011F72>[0-9a-fx]+)
+loc_8011F32:
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #4
+  beq	#(?P<loc_8011F5C>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #5
+  beq	#(?P<loc_8011F5C>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #6
+  beq	#(?P<loc_8011F6A>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #7
+  beq	#(?P<loc_8011F6A>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cmp	r0, #2
+  beq	#(?P<loc_8011F6A>[0-9a-fx]+)
+  b	#(?P<loc_8011F76>[0-9a-fx]+)
+loc_8011F5C:
+  ldr	r0, \[pc, #(?P<dword_200000F8>[0-9a-fx]+)\]
+  ldr	r0, \[r0\]
+  str.w	r0, \[r4, #0x12\]
+  ldr	r0, \[pc, #(?P<dword_200000FC>[0-9a-fx]+)\]
+  ldr	r0, \[r0\]
+  b	#(?P<loc_8011F72>[0-9a-fx]+)
+loc_8011F6A:
+  mvn	r0, #1
+  str.w	r0, \[r4, #0x12\]
+loc_8011F72:
+  str.w	r0, \[r4, #0x16\]
+loc_8011F76:
+  movs	r0, #1
+  str.w	r0, \[r4, #0x1a\]
+  strb	r6, \[r4\]
+  mov	r2, r4
+  mov	r1, r5
+  pop.w	{r4, r5, r6, lr}
+  movs	r3, #0x1e ; payload_len
+  ldr	r0, \[pc, #(?P<packet_send>[0-9a-fx]+)\]
+  b.w	#(?P<packet_make_response>[0-9a-fx]+)
+""",
+'vars': {
+  'cmd_exec_set00_cmd01b':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_8012360':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_8012372':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'get_board_version':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_make_response':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_send':	{'type': VarType.RELATIVE_ADDR_TO_CODE, 'baseaddr': "PC+", 'variety': CodeVariety.FUNCTION},
+  'loc_8011F26':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_8011F32':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_8011F5C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_8011F6A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_8011F72':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_8011F76':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'dword_200000F8':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T},
+  'dword_200000FC':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T},
+  'lb_mcu_version_1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "mcu_firmware_version", 'getter': version_string_to_int_getter},
+#  'mcu_firmware_version':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.CHAR, 'array': 11,
+#    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "00.00.00.00", 'maxValue': "99.99.99.99",
+#    'depend': "mcu_firmware_version", 'getter': version_int_to_string_getter,
+#    'description': "Firmware version number"},
+},
+}
+
+
 re_general_list = [
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_P3X_V01_07_original,},
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_P3X_V01_07_constatt,},
@@ -4259,8 +4360,8 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1400_setfcc,},
   {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_original,},
   {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_setfcc,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set00_cmd01b_P3X_V01_08,},
 ]
-
 
 def armfw_elf_lbstm32_list(po, elffh):
     params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
