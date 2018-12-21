@@ -207,6 +207,18 @@ def version_string_to_int_getter(val):
   return (ver_major << 24) + (ver_minor << 16) + (ver_mmtnc << 8) + (ver_revsn)
 
 
+def version_int_to_string_getter(val):
+  if isinstance(val, str):
+      ver = int(val,10)
+  else:
+      ver = int(val)
+  ver_major = (ver >> 24) & 0xff
+  ver_minor = (ver >> 16) & 0xff
+  ver_mmtnc = (ver >>  8) & 0xff
+  ver_revsn = (ver      ) & 0xff
+  return "{:02d}.{:02d}.{:02d}.{:02d}".format(ver_major, ver_minor, ver_mmtnc, ver_revsn)
+
+
 re_func_cmd_exec_set09_cmd12_P3X_V01_07_original = {
 'name': "cmd_exec_set09_cmd12-original",
 'version': "P3X_FW_V01.07",
@@ -4332,7 +4344,7 @@ loc_8011F76:
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "mcu_firmware_version", 'getter': version_string_to_int_getter},
 #  'mcu_firmware_version':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.CHAR, 'array': 11,
 #    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "00.00.00.00", 'maxValue': "99.99.99.99",
-#    'depend': "mcu_firmware_version", 'getter': version_int_to_string_getter,
+#    'depend': "lb_mcu_version_1", 'getter': version_int_to_string_getter, 'forceVisible': True,
 #    'description': "Firmware version number"},
 },
 }
