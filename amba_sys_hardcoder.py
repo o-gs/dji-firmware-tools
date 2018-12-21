@@ -1704,13 +1704,23 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
             if not armfw_elf_section_search_add_var(po, search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
                 return False
         # Add variables detached from data (per-regex constants) or unused (used in different variant of the regex code)
-        if var_info['type'] in (VarType.DETACHED_DATA, VarType.UNUSED_DATA,) and search['match_lines'] == 0:
-            # Get expected length of the value
-            prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
-            prop_ofs_val = 0
-            prop_str = var_info['setValue']
-            if not armfw_elf_section_search_add_var(po, search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
-                return False
+        if var_info['type'] in (VarType.DETACHED_DATA, VarType.UNUSED_DATA,):
+            # DETACHED_DATA with 'setValue' can be added on first line
+            if 'depend' not in var_info and search['match_lines'] == 0:
+                # Get expected length of the value
+                prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
+                prop_ofs_val = 0
+                prop_str = var_info['setValue']
+                if not armfw_elf_section_search_add_var(po, search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
+                    return False
+            # DETACHED_DATA which 'depend' on others must wait until all others are known - to last line
+            if 'depend' in var_info and search['match_lines']+1 == len(search['re']):
+                # Get expected length of the value
+                prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
+                prop_ofs_val = 0
+                prop_str = armfw_elf_paramvals_get_depend_value(search['var_vals'], var_info)
+                if not armfw_elf_section_search_add_var(po, search, var_name, "", var_info, prop_ofs_val, prop_str, address, size):
+                    return False
 
     return True
 
@@ -1905,7 +1915,8 @@ def armfw_elf_match_to_public_values(po, match):
     for var_name, var_info in match['vars'].items():
         if 'public' in var_info:
             if 'depend' in var_info:
-                continue
+                if 'forceVisible' not in var_info or not var_info['forceVisible']:
+                    continue
             par_name = var_info['public']+'.'+var_name
             par_info = var_info.copy()
             par_info['name'] = var_name
@@ -2331,7 +2342,7 @@ def armfw_elf_paramvals_extract_list(po, elffh, re_list, asm_submode=None):
             continue
         # skip function variants identified by DETACHED_DATA variable
         detached_var_found = False
-        detached_var_name = get_matching_variable_from_patterns(re_item['func'], var_type=VarType.DETACHED_DATA)
+        detached_var_name = get_matching_variable_from_patterns(re_item['func'], var_type=VarType.DETACHED_DATA, var_depend=False)
         if detached_var_name is not None:
             for re_func in found_func_list:
                 detached_match_name = get_matching_variable_from_patterns(re_func, var_type=VarType.DETACHED_DATA, var_name=detached_var_name)
@@ -2454,6 +2465,23 @@ def armfw_elf_ambavals_extract(po, elffh):
         valfile = io.StringIO()
     armfw_elf_paramvals_export_json(po, params_list, valfile)
     valfile.close()
+
+
+def armfw_elf_paramvals_get_depend_value(glob_params_list, deppar_info):
+    par_nxvalue = None
+    for var_name_iter, var_info_iter in glob_params_list.items():
+        if deppar_info['depend'] != var_name_iter:
+            continue
+        if deppar_info['public'] != var_info_iter['public']:
+            continue
+        par_nxvalue = var_info_iter['value']
+        break
+    if par_nxvalue is None:
+        return None
+    if 'getter' not in deppar_info:
+        return None
+    get_value_from_depend_value = deppar_info['getter']
+    return get_value_from_depend_value(par_nxvalue)
 
 
 def armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, par_nxvalue):
