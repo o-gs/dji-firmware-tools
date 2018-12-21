@@ -2473,8 +2473,8 @@ def armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, par_nxvalue)
         #deppar_name = var_info_iter['public']+'.'+var_name_iter
         deppar_info = var_info_iter.copy()
         #deppar_info['name'] = deppar_name
-        if 'getter' in var_info_iter:
-            get_value_from_depend_value = var_info_iter['getter']
+        if 'getter' in deppar_info:
+            get_value_from_depend_value = deppar_info['getter']
             deppar_info['setValue'] = get_value_from_depend_value(par_nxvalue)
         if 'setValue' not in deppar_info:
             raise ValueError("No 'setValue' and no 'getter' in '{:s}'.".format(deppar_info['name']))
@@ -2502,20 +2502,32 @@ def armfw_elf_publicval_update(po, asm_arch, elf_sections, re_list, glob_params_
 
 
 def armfw_elf_paramvals_update_list(po, asm_arch, re_list, pub_params_list, glob_params_list, elf_sections, nxparams_list):
-    update_list_a = [] # Most parameters are updated as part of this list
-    update_list_b = [] # Some parameters have multiline changes and should be updated at end
+    update_list_a = [] # Params which others use ag 'getters' should be updated first
+    update_list_b = [] # Most parameters are updated as part of this list
+    update_list_c = [] # Some parameters have multiline changes and should be updated at end
+
+    # Get names of all variables which other depend on
+    depend_names_list = []
+    for par_info in glob_params_list:
+        if 'depend' in par_info:
+            if 'public' in par_info:
+                depend_names_list.append(par_info['public']+'.'+par_info['depend'])
+            else:
+                depend_names_list.append(par_info['depend'])
 
     for nxpar in nxparams_list:
         if not nxpar['name'] in pub_params_list:
             eprint("{:s}: Value '{:s}' not found in ELF file.".format(po.elffile,nxpar['name']))
             continue
         par_info = pub_params_list[nxpar['name']]
-        if par_info['type'] in (VarType.DETACHED_DATA,):
-            update_list_b.append(nxpar)
-        else:
+        if par_info['name'] in depend_names_list:
             update_list_a.append(nxpar)
+        elif par_info['type'] in (VarType.DETACHED_DATA,):
+            update_list_c.append(nxpar)
+        else:
+            update_list_b.append(nxpar)
 
-    for nxpar in update_list_b + update_list_a:
+    for nxpar in update_list_a + update_list_b + update_list_c:
         par_info = pub_params_list[nxpar['name']]
         armfw_elf_value_pre_update_call(po, asm_arch, elf_sections, re_list, glob_params_list, par_info, nxpar['setValue'])
         if True:
@@ -2525,7 +2537,7 @@ def armfw_elf_paramvals_update_list(po, asm_arch, re_list, pub_params_list, glob
 
     update_count = 0
     # Update the params from priority lists
-    for nxpar in update_list_a + update_list_b:
+    for nxpar in update_list_a + update_list_b + update_list_c:
         par_info = pub_params_list[nxpar['name']]
         update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_list, glob_params_list, par_info, nxpar['setValue'])
         if update_performed:
