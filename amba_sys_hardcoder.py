@@ -1367,7 +1367,7 @@ def armfw_elf_search_value_string_to_native_type(var_info, var_str):
     return var_nativ
 
 
-def get_matching_variable_from_patterns(patterns, var_type=None, var_variety=None, var_name=None, var_size=None, var_setValue=None):
+def get_matching_variable_from_patterns(patterns, var_type=None, var_variety=None, var_name=None, var_size=None, var_setValue=None, var_depend=None):
     for v_name, var_info in patterns['vars'].items():
         if var_type is not None and var_info['type'] != var_type:
             continue
@@ -1377,6 +1377,19 @@ def get_matching_variable_from_patterns(patterns, var_type=None, var_variety=Non
             continue
         if var_size is not None and var_info['size'] != var_size:
             continue
+        if var_depend is not None:
+            if 'depend' in var_info:
+                # True means - any value, but must be set
+                if var_depend == True:
+                    pass
+                elif var_info['depend'] != var_depend:
+                    continue
+            else:
+                # False means - must not be set
+                if var_depend == False:
+                    pass
+                else:
+                    continue
         if var_setValue is not None:
             if 'setValue' not in var_info:
                 # if we cannot check setValue, consider this loose match
@@ -1392,7 +1405,7 @@ def get_matching_variable_from_patterns(patterns, var_type=None, var_variety=Non
     return None
 
 
-def find_patterns_containing_variable(re_list, cfunc_ver=None, var_type=None, var_variety=None, var_sect=None, var_name=None, var_size=None, var_setValue=None):
+def find_patterns_containing_variable(re_list, cfunc_ver=None, var_type=None, var_variety=None, var_sect=None, var_name=None, var_size=None, var_setValue=None, var_depend=None):
     loose_matched_patts = None
     for re_item in re_list:
         if var_sect is not None and re_item['sect'] != var_sect:
@@ -1400,7 +1413,7 @@ def find_patterns_containing_variable(re_list, cfunc_ver=None, var_type=None, va
         patterns = re_item['func']
         if cfunc_ver is not None and patterns['version'] != cfunc_ver:
             continue
-        v_name = get_matching_variable_from_patterns(patterns, var_type, var_variety, var_name, var_size, var_setValue)
+        v_name = get_matching_variable_from_patterns(patterns, var_type, var_variety, var_name, var_size, var_setValue, var_depend)
         if v_name is not None:
             return patterns
     return loose_matched_patts
