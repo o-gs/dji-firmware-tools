@@ -1615,6 +1615,32 @@ def armfw_elf_section_search_add_var(po, search, var_name, var_suffix, var_info,
     return True
 
 
+def armfw_elf_offset_or_value_to_value_bytes(asm_arch, elf_sections, var_info, prop_ofs_val):
+    """ Either convert the direct value to bytes, or get bytes from offset.
+    """
+    # Get expected length of the value
+    prop_size, prop_count = armfw_elf_section_search_get_value_size(asm_arch, var_info)
+    if (var_info['type'] == VarType.DIRECT_INT_VALUE):
+        # Convert the direct value to bytes
+        if not isinstance(prop_ofs_val, list):
+            prop_ofs_val = [prop_ofs_val]
+        prop_bytes = b""
+        for prop_var in prop_ofs_val:
+            prop_bytes += (prop_var).to_bytes(prop_size, byteorder=asm_arch['byteorder'])
+    elif (var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_ADDR_TO_GLOBAL_DATA,
+      VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA,)):
+        # Get bytes from offset
+        var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, prop_ofs_val)
+        if var_sect is not None:
+            var_data = elf_sections[var_sect]['data']
+            prop_bytes = var_data[var_offs:var_offs+prop_size*prop_count]
+        else:
+            prop_bytes = b""
+    else:
+        prop_bytes = b""
+    return prop_bytes
+
+
 def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, address, size, re_code):
     """ Process variable values from a code line and add them to search results.
     """
@@ -1659,23 +1685,8 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
             raise NotImplementedError("Unexpected variable type found while processing vars, '{:s}'.".format(var_info['type'].name))
 
         # Either convert the direct value to bytes, or get bytes from offset
-        if (var_info['type'] == VarType.DIRECT_INT_VALUE):
-            if not isinstance(prop_ofs_val, list):
-                prop_ofs_val = [prop_ofs_val]
-            prop_bytes = b""
-            for prop_var in prop_ofs_val:
-                prop_bytes += (prop_var).to_bytes(prop_size, byteorder=search['asm_arch']['byteorder'])
-        elif (var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_ADDR_TO_GLOBAL_DATA,
-          VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA,)):
-            var_sect, var_offs = get_section_and_offset_from_address(search['asm_arch'], elf_sections, prop_ofs_val)
-            if var_sect is not None:
-                var_data = elf_sections[var_sect]['data']
-                prop_bytes = var_data[var_offs:var_offs+prop_size*prop_count]
-            else:
-                prop_bytes = b""
-        else:
-            prop_bytes = b""
-
+        prop_bytes = armfw_elf_offset_or_value_to_value_bytes(search['asm_arch'], elf_sections, var_info, prop_ofs_val)
+        # And convert further, to native type value
         var_nativ = armfw_elf_search_value_bytes_to_native_type(search['asm_arch'], var_info, prop_bytes)
         prop_str = armfw_elf_search_value_native_type_to_string(var_nativ)
         if isinstance(prop_str, str):
@@ -2132,14 +2143,19 @@ def armfw_elf_value_pre_update_call(po, asm_arch, elf_sections, re_list, glob_pa
         # Set new value of the global variable and generate the code with it
         glob_var_info['value'] = new_value
     elif glob_var_info['type'] in (VarType.DETACHED_DATA,):
-        glob_re_var = glob_params_list[glob_var_info['cfunc_name']+'..re']
-        # For detached data, we need to find an assembly pattern with matching value, and then patch the asm code to look like it
-        patterns_next = find_patterns_containing_variable(re_list, cfunc_ver=glob_var_info['cfunc_ver'], var_name=glob_var_info['name'], var_setValue=str(new_var_nativ))
-        if patterns_next is None:
-            raise ValueError("Cannot find function modification which would allow to set the value of {:s}={:s}.".format(glob_var_info['name'],str(new_var_nativ)))
-        re_lines, re_labels = armfw_asm_search_strings_to_re_list(patterns_next['re'])
-        glob_re_var['value'] = re_lines
-        #for lab_name, lab_line in re_labels.items(): #TODO - update line numbers in label variables if this will be needed
+        if 'depend' in glob_var_info:
+            # there is no action to take here
+            pass
+        else:
+            # DETACHED_DATA with no dependency should store constant setValue, and that alue is used to select variant of cfunc
+            glob_re_var = glob_params_list[glob_var_info['cfunc_name']+'..re']
+            # For detached data, we need to find an assembly pattern with matching value, and then patch the asm code to look like it
+            patterns_next = find_patterns_containing_variable(re_list, cfunc_ver=glob_var_info['cfunc_ver'], var_name=glob_var_info['name'], var_setValue=str(new_var_nativ))
+            if patterns_next is None:
+                raise ValueError("Cannot find function modification which would allow to set the value of {:s}={:s}.".format(glob_var_info['name'],str(new_var_nativ)))
+            re_lines, re_labels = armfw_asm_search_strings_to_re_list(patterns_next['re'])
+            glob_re_var['value'] = re_lines
+            #for lab_name, lab_line in re_labels.items(): #TODO - update line numbers in label variables if this will be needed
     else:
         # No pre-update glob_var_info modifications needed for other types
         pass
@@ -2162,17 +2178,59 @@ def get_final_address_from_var_info(asm_arch, elf_sections, var_info):
     return None
 
 
-def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, var_info, new_value_str):
+def armfw_elf_get_value_switching_patterns_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, var_info, new_var_nativ):
+    """ Finds an assembly pattern with matching value, and then returns a binary patching which makes the asm code to look like it
+    """
+    patterns_next = find_patterns_containing_variable(re_list, cfunc_ver=var_info['cfunc_ver'], var_name=var_info['name'], var_setValue=str(new_var_nativ))
+    patterns_prev = find_patterns_containing_variable(re_list, cfunc_ver=var_info['cfunc_ver'], var_type=var_info['type'], var_name=var_info['name'], var_setValue=var_info['setValue'])
+    # Get part of the pattern which is different between the current one and the one we want
+    patterns_diff = []
+    if patterns_prev != patterns_next:
+        patterns_diff, patterns_preced, patterns_diff_prev = find_patterns_diff(patterns_prev, patterns_next)
+    valbts = []
+    if len(patterns_diff) < 1:
+        return valbts
+    # From patterns preceding the diff, compute offset where the diff starts
+    glob_re_size = glob_params_list[var_info['cfunc_name']+'..re_size']['value']
+    # for DETACHED_DATA, 'address' identifies beginning of the whole matched block; add proper amount of instruction sizes to it
+    patterns_addr = var_info['address'] + sum(glob_re_size[0:len(patterns_preced)])
+    if (po.verbose > 2):
+        print("Making code re:","; ".join(patterns_diff))
+    var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
+    if var_sect is None:
+        raise ValueError("Address to uninitialized data found (0x{:06x}) while updating '{:s}'.".format(patterns_addr, var_info['name']))
+    asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_diff)
+    if len(asm_lines) < 1:
+        raise ValueError("No assembly lines prepared - internal error.")
+    # Now compile our new code line
+    if (po.verbose > 2):
+        print("Compiling code:","; ".join(asm_lines))
+    bt_enc_data = armfw_asm_compile_lines(asm_arch, patterns_addr, asm_lines)
+    if len(bt_enc_data) != bt_size_predict:
+        raise ValueError("Compiled code size different than expected (got {:d} instead of {:d} bytes) - internal error.".format(len(bt_enc_data),bt_size_predict))
+    bt_size_previous = sum(glob_re_size[len(patterns_preced):len(patterns_preced)+len(patterns_diff_prev)])
+    if len(bt_enc_data) != bt_size_previous:
+        raise ValueError("Compiled code size different than previous (got {:d} instead of {:d} bytes) - internal error.".format(len(bt_enc_data),bt_size_previous))
+    valbt = {}
+    valbt['sect'] = var_sect
+    section = elf_sections[valbt['sect']]
+    valbt['offs'] = var_offs
+    valbt['data'] = bt_enc_data
+    valbts.append(valbt)
+    return valbts
+
+
+def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, var_info, par_strvalue_nx):
     valbts = []
     # Get expected length of the value
     prop_size, prop_count = armfw_elf_section_search_get_value_size(asm_arch, var_info)
-    new_var_nativ = armfw_elf_search_value_string_to_native_type(var_info, new_value_str)
+    new_var_nativ = armfw_elf_search_value_string_to_native_type(var_info, par_strvalue_nx)
 
     # not calling 'custom_params_callback' here - it should have been called before
 
     if var_info['type'] in (VarType.DIRECT_INT_VALUE,):
         # We are only changing one line, but use the whole multiline algorithm just for unification
-        #TODO make the possibility of multile lines with one variable
+        #TODO make the possibility of multiple lines with one variable
         glob_re = glob_params_list[var_info['cfunc_name']+'..re']['value']
         patterns_list = [glob_re[var_info['line']],]
         if len(patterns_list) > 0:
@@ -2218,41 +2276,13 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
         valbt['data'] = bytes(bt_enc_data)
         valbts.append(valbt)
     elif var_info['type'] in (VarType.DETACHED_DATA,):
-        # For detached data, we need to find an assembly pattern with matching value, and then patch the asm code to look like it
-        patterns_next = find_patterns_containing_variable(re_list, cfunc_ver=var_info['cfunc_ver'], var_name=var_info['name'], var_setValue=str(new_var_nativ))
-        patterns_prev = find_patterns_containing_variable(re_list, cfunc_ver=var_info['cfunc_ver'], var_type=var_info['type'], var_name=var_info['name'], var_setValue=var_info['setValue'])
-        # Get part of the pattern which is different between the current one and the one we want
-        patterns_diff = []
-        if patterns_prev != patterns_next:
-            patterns_diff, patterns_preced, patterns_diff_prev = find_patterns_diff(patterns_prev, patterns_next)
-        if len(patterns_diff) > 0:
-            # From patterns preceding the diff, compute offset where the diff starts
-            glob_re_size = glob_params_list[var_info['cfunc_name']+'..re_size']['value']
-            # for DETACHED_DATA, 'address' identifies beginning of the whole matched block; add proper amount of instruction sizes to it
-            patterns_addr = var_info['address'] + sum(glob_re_size[0:len(patterns_preced)])
-            if (po.verbose > 2):
-                print("Making code re:","; ".join(patterns_diff))
-            var_sect, var_offs = get_section_and_offset_from_address(asm_arch, elf_sections, patterns_addr)
-            if var_sect is None:
-                raise ValueError("Address to uninitialized data found (0x{:06x}) while updating '{:s}'.".format(patterns_addr, var_info['name']))
-            asm_lines, bt_size_predict = prepare_asm_lines_from_pattern_list(asm_arch, glob_params_list, patterns_addr, var_info['cfunc_name'], patterns_diff)
-            if len(asm_lines) < 1:
-                raise ValueError("No assembly lines prepared - internal error.")
-            # Now compile our new code line
-            if (po.verbose > 2):
-                print("Compiling code:","; ".join(asm_lines))
-            bt_enc_data = armfw_asm_compile_lines(asm_arch, patterns_addr, asm_lines)
-            if len(bt_enc_data) != bt_size_predict:
-                raise ValueError("Compiled code size different than expected (got {:d} instead of {:d} bytes) - internal error.".format(len(bt_enc_data),bt_size_predict))
-            bt_size_previous = sum(glob_re_size[len(patterns_preced):len(patterns_preced)+len(patterns_diff_prev)])
-            if len(bt_enc_data) != bt_size_previous:
-                raise ValueError("Compiled code size different than previous (got {:d} instead of {:d} bytes) - internal error.".format(len(bt_enc_data),bt_size_previous))
-            valbt = {}
-            valbt['sect'] = var_sect
-            section = elf_sections[valbt['sect']]
-            valbt['offs'] = var_offs
-            valbt['data'] = bt_enc_data
-            valbts.append(valbt)
+        if 'depend' in var_info:
+            # DETACHED_DATA which depends on other variables only has relation to code
+            # by other variables depending on it; this function should never be called for such veriable
+            raise ValueError("Unable to prepare bytes for '{:s}' because it represents detached data with dependants.".format(var_info['name']))
+        else:
+            # For detached data, we need to find an assembly pattern with matching value, and then patch the asm code to look like it
+            valbts += armfw_elf_get_value_switching_patterns_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, var_info, new_var_nativ)
     elif var_info['type'] in (VarType.UNUSED_DATA,):
         # No binary change needed in regard to that variable
         pass
@@ -2468,23 +2498,23 @@ def armfw_elf_ambavals_extract(po, elffh):
 
 
 def armfw_elf_paramvals_get_depend_value(glob_params_list, deppar_info):
-    par_nxvalue = None
+    par_strvalue_nx = None
     for var_name_iter, var_info_iter in glob_params_list.items():
         if deppar_info['depend'] != var_name_iter:
             continue
         if deppar_info['public'] != var_info_iter['public']:
             continue
-        par_nxvalue = var_info_iter['value']
+        par_strvalue_nx = var_info_iter['str_value']
         break
-    if par_nxvalue is None:
+    if par_strvalue_nx is None:
         return None
     if 'getter' not in deppar_info:
         return None
     get_value_from_depend_value = deppar_info['getter']
-    return get_value_from_depend_value(par_nxvalue)
+    return get_value_from_depend_value(par_strvalue_nx)
 
 
-def armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, par_nxvalue):
+def armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, par_strvalue_nx):
     """ Gets a list of depending values which should be updated if specific public param changed value.
 
     Emulates the list format we get from JSON, so that the same update functions can be used as for
@@ -2503,17 +2533,20 @@ def armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, par_nxvalue)
         #deppar_info['name'] = deppar_name
         if 'getter' in deppar_info:
             get_value_from_depend_value = deppar_info['getter']
-            deppar_info['setValue'] = get_value_from_depend_value(par_nxvalue)
+            deppar_info['setValue'] = get_value_from_depend_value(par_strvalue_nx)
         if 'setValue' not in deppar_info:
             raise ValueError("No 'setValue' and no 'getter' in '{:s}'.".format(deppar_info['name']))
         depend_list.append(deppar_info)
     return depend_list
 
 
-def armfw_elf_publicval_update(po, asm_arch, elf_sections, re_list, glob_params_list, par_info, par_nxvalue):
+def armfw_elf_publicval_update(po, asm_arch, elf_sections, re_list, glob_params_list, par_info, par_strvalue_nx):
     """ Updates given hardcoded value in ELF section data.
     """
-    valbts = armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, par_info, par_nxvalue)
+    if par_info['type'] in (VarType.DETACHED_DATA,) and 'depend' in par_info:
+        # Special case - a variable which has no directly associated data, only updates binary data by dependants
+        return True
+    valbts = armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, par_info, par_strvalue_nx)
     update_performed = False
     for valbt in valbts:
         section = elf_sections[valbt['sect']]
