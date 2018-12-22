@@ -4340,12 +4340,12 @@ loc_8011F76:
   'loc_8011F76':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'dword_200000F8':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T},
   'dword_200000FC':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T},
-  'lb_mcu_version_1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T,
+  'lb_mcu_version_1':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T,
     'public': "og_hardcoded.lightbridge_stm32", 'depend': "mcu_firmware_version", 'getter': version_string_to_int_getter},
-#  'mcu_firmware_version':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.CHAR, 'array': 11,
-#    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "00.00.00.00", 'maxValue': "99.99.99.99",
-#    'depend': "lb_mcu_version_1", 'getter': version_int_to_string_getter, 'forceVisible': True,
-#    'description': "Firmware version number"},
+  'mcu_firmware_version':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.CHAR, 'array': 11,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "00.00.00.00", 'maxValue': "99.99.99.99",
+    'depend': "lb_mcu_version_1", 'getter': version_int_to_string_getter, 'forceVisible': True,
+    'description': "Firmware version number"},
 },
 }
 
