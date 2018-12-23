@@ -4508,9 +4508,9 @@ loc_8011F76:
 },
 }
 
-re_func_cmd_exec_set00_cmd01_C1_V01_04 = {
+re_func_cmd_exec_set00_cmd01_C1_V01_04_m1400 = {
 'name': "cmd_exec_set00_cmd01",
-'version': "C1_FW_V01.04",
+'version': "C1_FW_V01.04-m1400",
 'alt_name': "cmd_exec_set00_cmd01b",
 're': """
 cmd_exec_set00_cmd01:
@@ -4526,14 +4526,14 @@ cmd_exec_set00_cmd01:
   orr	r0, r0, #0x80
   strb	r0, \[r4, #8\]
   movs	r6, #0
-  strb.w	r6, \[sp\]
-  ldrb.w	r0, \[sp, #1\] ; struct offset PktPayload_VersionInquiry.field_1
+  strb.w	r6, \[sp\] ; payload_buf + struct offset PktPayload_VersionInquiry.field_0
+  ldrb.w	r0, \[sp, #1\] ; payload_buf + struct offset PktPayload_VersionInquiry.field_1
   movs	r1, #0x10
   bic	r0, r0, #0xf0
   adds	r0, #0x10
   bic	r0, r0, #0xf
-  strb.w	r0, \[sp, #1\] ; struct offset PktPayload_VersionInquiry.field_1
-  add.w	r0, sp, #2 ; struct offset PktPayload_VersionInquiry.hw_version
+  strb.w	r0, \[sp, #1\] ; payload_buf + struct offset PktPayload_VersionInquiry.field_1
+  add.w	r0, sp, #2 ; payload_buf + struct offset PktPayload_VersionInquiry.hw_version
   bl	#(?P<sub_1F904>[0-9a-fx]+)
   ldrb	r0, \[r4, #5\]
   and	r0, r0, #0x1f
@@ -4543,25 +4543,25 @@ cmd_exec_set00_cmd01:
   mvns	r1, r5
   subs	r0, r0, #4
   ldr	r0, \[r0\]
-  str.w	r0, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  str.w	r0, \[sp, #0x12\] ; payload_buf + struct offset PktPayload_VersionInquiry.ldr_version
   cmp	r0, r1
   beq	#(?P<loc_F368>[0-9a-fx]+)
-  str.w	r6, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  str.w	r6, \[sp, #0x12\] ; payload_buf + struct offset PktPayload_VersionInquiry.ldr_version
   b	#(?P<loc_F390>[0-9a-fx]+)
 loc_F346:
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cbz	r0, #(?P<loc_F35E>[0-9a-fx]+)
   ldr	r0, \[pc, #(?P<dword_10000344>[0-9a-fx]+)\]
   ldr	r0, \[r0\]
-  str.w	r0, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  str.w	r0, \[sp, #0x12\] ; payload_buf + struct offset PktPayload_VersionInquiry.ldr_version
   ldr	r0, \[pc, #(?P<dword_10000348>[0-9a-fx]+)\]
   ldr	r0, \[r0\]
 loc_F358:
-  str.w	r0, \[sp, #0x16\] ; struct offset PktPayload_VersionInquiry.app_version
+  str.w	r0, \[sp, #0x16\] ; payload_buf + struct offset PktPayload_VersionInquiry.app_version
   b	#(?P<loc_F39C>[0-9a-fx]+)
 loc_F35E:
   mvn	r0, #1
-  str.w	r0, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  str.w	r0, \[sp, #0x12\] ; payload_buf + struct offset PktPayload_VersionInquiry.ldr_version
   b	#(?P<loc_F358>[0-9a-fx]+)
 loc_F368:
   ldr	r0, \[pc, #(?P<byte_10000000>[0-9a-fx]+)\]
@@ -4573,22 +4573,22 @@ loc_F368:
   beq	#(?P<loc_F3BA>[0-9a-fx]+)
 loc_F376:
   ldr	r2, \[pc, #(?P<byte_10000008>[0-9a-fx]+)\]
-  ldr.w	r1, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  ldr.w	r1, \[sp, #0x12\] ; payload_buf + struct offset PktPayload_VersionInquiry.ldr_version
   ldrb	r0, \[r0\]
   ldrb	r2, \[r2\]
   and	r1, r1, #0xff00ff
   orr.w	r1, r1, r2, lsl #24
   orr.w	r0, r1, r0, lsl #8
 loc_F38C:
-  str.w	r0, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  str.w	r0, \[sp, #0x12\] ; payload_buf + struct offset PktPayload_VersionInquiry.ldr_version
 loc_F390:
   ldr	r0, \[pc, #(?P<lb_mcu_version_1>[0-9a-fx]+)\]
-  str.w	r0, \[sp, #0x16\] ; struct offset PktPayload_VersionInquiry.app_version
+  str.w	r0, \[sp, #0x16\] ; payload_buf + struct offset PktPayload_VersionInquiry.app_version
   movs	r0, #1
-  strb.w	r0, \[sp, #0x1e\] ; struct offset PktPayload_VersionInquiry.field_1E
+  strb.w	r0, \[sp, #0x1e\] ; payload_buf + struct offset PktPayload_VersionInquiry.field_1E
 loc_F39C:
   movw	r0, #0x243
-  str.w	r0, \[sp, #0x1a\] ; struct offset PktPayload_VersionInquiry.field_1A
+  str.w	r0, \[sp, #0x1a\] ; payload_buf + struct offset PktPayload_VersionInquiry.field_1A
   add	r3, sp, #0x20
   movs	r2, #(?P<packet_payload_len>[0-9a-fx]+) ; sizeof(PktPayload_VersionInquiry)
   mov	r1, sp
@@ -4600,7 +4600,7 @@ loc_F3B6:
   add	sp, #0x50
   pop	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,5}), pc}
 loc_F3BA:
-  ldr.w	r0, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  ldr.w	r0, \[sp, #0x12\] ; payload_buf + struct offset PktPayload_VersionInquiry.ldr_version
   and	r0, r0, #0xff00ff
   orr	r0, r0, #0x3000300
   b	#(?P<loc_F38C>[0-9a-fx]+)
@@ -4638,6 +4638,111 @@ loc_F3BA:
 },
 }
 
+re_func_cmd_exec_set00_cmd01_C1_V01_04_m1401 = {
+'name': "cmd_exec_set00_cmd01",
+'version': "C1_FW_V01.04-m1401",
+'alt_name': "cmd_exec_set00_cmd01b",
+'re': """
+cmd_exec_set00_cmd01:
+  push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,5}), lr}
+  sub	sp, #0x50
+  mov	r5, r0
+  ldr	r0, \[pc, #(?P<dword_10007F74>[0-9a-fx]+)\]
+  ldr	r6, \[r0\]
+  mov	r4, r5
+  ldrb	r0, \[r4, #8\]
+  ubfx	r0, r0, #5, #2
+  cmp	r0, #2
+  bne	#(?P<loc_F3B6>[0-9a-fx]+)
+  ldrb	r0, \[r4, #8\]
+  bic	r0, r0, #0x80
+  adds	r0, #0x80
+  strb	r0, \[r4, #8\]
+  movs	r0, #0
+  strb.w	r0, \[sp, #0x30\] ; payload_buf + struct offset PktPayload_VersionInquiry.field_0
+  ldrb.w	r0, \[sp, #0x31\] ; payload_buf + struct offset PktPayload_VersionInquiry.field_1
+  bic	r0, r0, #0xf0
+  adds	r0, #0x10
+  strb.w	r0, \[sp, #0x31\] ; payload_buf + struct offset PktPayload_VersionInquiry.field_1
+  ldrb.w	r0, \[sp, #0x31\] ; payload_buf + struct offset PktPayload_VersionInquiry.field_1
+  bic	r0, r0, #0xf
+  strb.w	r0, \[sp, #0x31\] ; payload_buf + struct offset PktPayload_VersionInquiry.field_1
+  movs	r1, #0x10
+  add.w	r0, sp, #0x32 ; payload_buf + struct offset PktPayload_VersionInquiry.hw_version
+  bl	#(?P<sub_1F904>[0-9a-fx]+)
+  ldrb	r0, \[r4, #5\]
+  and	r0, r0, #0x1f
+  cmp	r0, #0x14
+  bne	#(?P<loc_F376>[0-9a-fx]+)
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cbnz	r0, #(?P<loc_F346>[0-9a-fx]+)
+  mvn	r0, #1
+  str.w	r0, \[sp, #0x42\] ; payload_buf + struct offset PktPayload_VersionInquiry.ldr_version
+  str.w	r0, \[sp, #0x46\] ; payload_buf + struct offset PktPayload_VersionInquiry.app_version
+  b	#(?P<loc_F39C>[0-9a-fx]+)
+loc_F346:
+  ldr	r0, \[pc, #(?P<dword_10000344>[0-9a-fx]+)\]
+  ldr	r0, \[r0\]
+  str.w	r0, \[sp, #0x42\] ; payload_buf + struct offset PktPayload_VersionInquiry.ldr_version
+  ldr	r0, \[pc, #(?P<dword_10000348>[0-9a-fx]+)\]
+  ldr	r0, \[r0\]
+  str.w	r0, \[sp, #0x46\] ; payload_buf + struct offset PktPayload_VersionInquiry.app_version
+  b	#(?P<loc_F39C>[0-9a-fx]+)
+loc_F376:
+  ldr	r0, \[pc, #(?P<dword_10007F74>[0-9a-fx]+)\]
+  subs	r0, r0, #4
+  ldr	r0, \[r0\]
+  str.w	r0, \[sp, #0x42\] ; payload_buf + struct offset PktPayload_VersionInquiry.ldr_version
+  ldr.w	r0, \[sp, #0x42\] ; payload_buf + struct offset PktPayload_VersionInquiry.ldr_version
+  mvns	r1, r6
+  cmp	r0, r1
+  beq	#(?P<loc_F390>[0-9a-fx]+)
+  movs	r0, #0
+  str.w	r0, \[sp, #0x42\] ; payload_buf + struct offset PktPayload_VersionInquiry.ldr_version
+loc_F390:
+  ldr	r0, \[pc, #(?P<lb_mcu_version_1>[0-9a-fx]+)\]
+  str.w	r0, \[sp, #0x46\] ; payload_buf + struct offset PktPayload_VersionInquiry.app_version
+  movs	r0, #1
+  strb.w	r0, \[sp, #0x4e\] ; payload_buf + struct offset PktPayload_VersionInquiry.field_1E
+loc_F39C:
+  movw	r0, #0x243
+  str.w	r0, \[sp, #0x4a\] ; payload_buf + struct offset PktPayload_VersionInquiry.field_1A
+  add	r3, sp, #4 ; local resp_pkt
+  movs	r2, #(?P<packet_payload_len>[0-9a-fx]+) ; sizeof(PktPayload_VersionInquiry)
+  add	r1, sp, #0x30 ; payload_buf
+  mov	r0, r4
+  bl	#(?P<packet_prepare_response>[0-9a-fx]+)
+  add	r0, sp, #4 ; local resp_pkt
+  bl	#(?P<packet_send>[0-9a-fx]+)
+loc_F3B6:
+  add	sp, #0x50
+  pop	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,5}), pc}
+""",
+'vars': {
+  'cmd_exec_set00_cmd01':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_1F904':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'get_board_version':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_prepare_response':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_send':	{'type': VarType.RELATIVE_ADDR_TO_CODE, 'baseaddr': "PC+", 'variety': CodeVariety.FUNCTION},
+  'packet_payload_len':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T,},
+  'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'loc_F346':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F376':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F390':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F39C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F3B6':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'dword_10007F74':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T},
+  'dword_10000344':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T},
+  'dword_10000348':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T},
+  'lb_mcu_version_1':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "mcu_firmware_version", 'getter': version_string_to_int_getter},
+  'mcu_firmware_version':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.CHAR, 'array': 11,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "00.00.00.00", 'maxValue': "99.99.99.99",
+    'depend': "lb_mcu_version_1", 'getter': version_int_to_string_getter, 'forceVisible': True,
+    'description': "Firmware version number"},
+},
+}
+
 
 re_general_list = [
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_P3X_V01_07_original,},
@@ -4663,7 +4768,8 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_setfcc,},
   {'sect': ".text", 'func': re_func_cmd_exec_set00_cmd01b_P3X_V01_04,},
   {'sect': ".text", 'func': re_func_cmd_exec_set00_cmd01b_P3X_V01_08,},
-  {'sect': ".text", 'func': re_func_cmd_exec_set00_cmd01_C1_V01_04,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set00_cmd01_C1_V01_04_m1400,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set00_cmd01_C1_V01_04_m1401,},
 ]
 
 def armfw_elf_lbstm32_list(po, elffh):
