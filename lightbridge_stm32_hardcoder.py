@@ -4342,7 +4342,7 @@ loc_8011F5C:
   ;mvn	r0, #1
   ;str.w	r0, \[r4, #0x12\]
   ;str.w	r0, \[r4, #0x16\]
-  dcw	(?P<undefined_varlen_5>([0-9a-fx]+[, ]*){1,18})
+  dcw	(?P<undefined_varlen_5>([0-9a-fx]+[, ]*){1,24})
 loc_8011F72:
   movs	r0, #1
   str.w	r0, \[r4, #0x1a\]
@@ -4369,7 +4369,7 @@ loc_8011F72:
   'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,10)},
   'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,16)},
   'undefined_varlen_4':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,16)},
-  'undefined_varlen_5':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,18)},
+  'undefined_varlen_5':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,24)},
   'loc_8011F5C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_8011F72':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_8012D84':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -4409,7 +4409,13 @@ cmd_exec_set00_cmd01b:
   dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){3,20})
   adds	r0, (?P<regC>r[0-9]), #1
   strb	r0, \[r4, #1\]
-  movs	r1, #0x10
+  ; in P3X_FW_V01.07, the wildcard matches lines:
+  ;movs	r1, #0x10
+  ; in P3X_FW_V01.11, the wildcard matches lines:
+  ;movs r7, #1
+  ;str.w r7, \[r4, #0x1e\]
+  ;movs	r1, #0x10
+  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,6})
   adds	r0, r4, #2
   bl	#(?P<sub_8012360>[0-9a-fx]+)
   ldrb	r0, \[(?P<regD>r[0-9]), #5\] ; regD is r5 or r6
@@ -4454,13 +4460,17 @@ loc_8011F6A:
 loc_8011F72:
   str.w	r0, \[r4, #0x16\]
 loc_8011F76:
-  movs	r0, #1
-  str.w	r0, \[r4, #0x1a\]
+  ; in P3X_FW_V01.07, the wildcard matches lines:
+  ;movs	r0, #1
+  ;str.w	r0, \[r4, #0x1a\]
+  ; in P3X_FW_V01.11, the wildcard matches lines:
+  ;str.w	r0, \[r4, #0x1a\]
+  dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){1,4})
   strb	r6, \[r4\]
   mov	r2, r4
   mov	r1, r5
   pop.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,5}), lr}
-  movs	r3, #0x1e ; payload_len
+  movs	r3, #(?P<packet_payload_len>[0-9a-fx]+) ; payload_len is 0x1e in v01.07 and 0x22 in v01.11
   ldr	r0, \[pc, #(?P<packet_send>[0-9a-fx]+)\]
   b.w	#(?P<packet_make_response>[0-9a-fx]+)
 """,
@@ -4471,11 +4481,14 @@ loc_8011F76:
   'get_board_version':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'packet_make_response':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'packet_send':	{'type': VarType.RELATIVE_ADDR_TO_CODE, 'baseaddr': "PC+", 'variety': CodeVariety.FUNCTION},
+  'packet_payload_len':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T,},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
   'regB':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
   'regC':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
   'regD':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
   'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (3,20)},
+  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,6)},
+  'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
   'loc_8011F26':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_8011F32':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_8011F5C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
