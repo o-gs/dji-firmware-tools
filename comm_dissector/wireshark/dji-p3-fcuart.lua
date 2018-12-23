@@ -939,7 +939,8 @@ f.general_version_inquiry_hw_version = ProtoField.string ("dji_p3.general_versio
 f.general_version_inquiry_ldr_version = ProtoField.string ("dji_p3.general_version_inquiry_ldr_version", "Firmware Loader Version", base.NONE, nil, nil, "On Ph3 DM36x, hard coded to 0x2000000")
 f.general_version_inquiry_app_version = ProtoField.string ("dji_p3.general_version_inquiry_app_version", "Firmware App Version", base.NONE, nil, nil, "Standard 4-byte version number")
 f.general_version_inquiry_unknown1A = ProtoField.uint32 ("dji_p3.general_version_inquiry_unknown1A", "Unknown1A", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 0x3FF; bit 31=isProduction, 30=isSupportSafeUpgrade")
-f.general_version_inquiry_unknown1E = ProtoField.uint8 ("dji_p3.general_version_inquiry_unknown1E", "Unknown1E", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 1")
+f.general_version_inquiry_unknown1E_bt = ProtoField.uint8 ("dji_p3.general_version_inquiry_unknown1E", "Unknown1E", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 1")
+f.general_version_inquiry_unknown1E_dw = ProtoField.uint32 ("dji_p3.general_version_inquiry_unknown1E", "Unknown1E", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 1")
 
 local function general_version_inquiry_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -977,12 +978,17 @@ local function general_version_inquiry_dissector(pkt_length, buffer, pinfo, subt
         subtree:add_le (f.general_version_inquiry_unknown1A, payload(offset, 4))
         offset = offset + 4
 
-        subtree:add_le (f.general_version_inquiry_unknown1E, payload(offset, 1))
-        offset = offset + 1
+        if (payload:len() >= 34) then -- 34-byte packet spotted on P3X_FW_V01.11
+            subtree:add_le (f.general_version_inquiry_unknown1E_dw, payload(offset, 4))
+            offset = offset + 4
+        else -- 31-byte packet exists on P3X_FW_V01.08 and all older versions
+            subtree:add_le (f.general_version_inquiry_unknown1E_bt, payload(offset, 1))
+            offset = offset + 1
+        end
 
     end
 
-    if (offset ~= 0) and (offset ~= 31) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Version Inquiry: Offset does not match - internal inconsistency") end
+    if (offset ~= 0) and (offset ~= 31) and (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Version Inquiry: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Version Inquiry: Payload size different than expected") end
 end
 
