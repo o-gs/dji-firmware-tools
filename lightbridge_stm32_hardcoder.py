@@ -4259,9 +4259,9 @@ loc_label34:
 }
 
 
-re_func_cmd_exec_set00_cmd01b_P3X_V01_07 = {
+re_func_cmd_exec_set00_cmd01b_P3X_V01_04 = {
 'name': "cmd_exec_set00_cmd01b",
-'version': "P3X_FW_V01.07",
+'version': "P3X_FW_V01.04",
 're': """
 cmd_exec_set00_cmd01b:
   (push|push.w)	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,5}), lr}
@@ -4296,42 +4296,53 @@ cmd_exec_set00_cmd01b:
   str.w	r0, \[r4, #0x12\]
   ldr	r0, \[pc, #(?P<lb_mcu_version_1>[0-9a-fx]+)\]
   str.w	r0, \[r4, #0x16\]
-  b	#(?P<loc_8011F72>[0-9a-fx]+)
-  ; data block:
-  dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){10,16})
+  ; in P3X_FW_V01.04, the wildcard matches 1 line only:
+  ;b	#(?P<loc_8011F72>[0-9a-fx]+)
+  ; in P3X_FW_V01.07, the wildcard matches 1 line plus data block:
+  ;b	#(?P<loc_8011F72>[0-9a-fx]+)
+  ;dcd ... (x7)
+  dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){1,16})
 loc_8012D84:
   ldrb	r0, \[r6, #5\]
   and	r0, r0, #0x1f
   cmp	r0, #0x13
-  bne	#(?P<loc_8011F72>[0-9a-fx]+)
-  bl	#(?P<get_board_version>[0-9a-fx]+)
-  cmp	r0, #4
-  beq	#(?P<loc_8011F5C>[0-9a-fx]+)
-  bl	#(?P<get_board_version>[0-9a-fx]+)
-  cmp	r0, #5
-  bne	#(?P<loc_8012DB0>[0-9a-fx]+)
+  ; in P3X_FW_V01.04, the wildcard matches lines:
+  ;bne	#(?P<loc_8011F72>[0-9a-fx]+)
+  ; in P3X_FW_V01.07, the wildcard matches lines:
+  ;bne	#(?P<loc_8011F72>[0-9a-fx]+)
+  ;bl	#(?P<get_board_version>[0-9a-fx]+)
+  ;cmp	r0, #4
+  ;beq	#(?P<loc_8011F5C>[0-9a-fx]+)
+  ;bl	#(?P<get_board_version>[0-9a-fx]+)
+  ;cmp	r0, #5
+  ;bne	#(?P<loc_8012DB0>[0-9a-fx]+)
+  dcw	(?P<undefined_varlen_4>([0-9a-fx]+[, ]*){1,16})
 loc_8011F5C:
   ldr	r0, \[pc, #(?P<dword_200000F8>[0-9a-fx]+)\]
   ldr	r0, \[r0\]
   str.w	r0, \[r4, #0x12\]
   ldr	r0, \[pc, #(?P<dword_200000FC>[0-9a-fx]+)\]
   ldr	r0, \[r0\]
-  str.w	r0, \[r4, #0x16\]
-  b	#(?P<loc_8011F72>[0-9a-fx]+)
-loc_8012DB0:
-  bl	#(?P<get_board_version>[0-9a-fx]+)
-  cmp	r0, #6
-  beq	#(?P<loc_8012DC8>[0-9a-fx]+)
-  bl	#(?P<get_board_version>[0-9a-fx]+)
-  cmp	r0, #7
-  beq	#(?P<loc_8012DC8>[0-9a-fx]+)
-  bl	#(?P<get_board_version>[0-9a-fx]+)
-  cmp	r0, #2
-  bne	#(?P<loc_8011F72>[0-9a-fx]+)
-loc_8012DC8:
-  mvn	r0, #1
-  str.w	r0, \[r4, #0x12\]
-  str.w	r0, \[r4, #0x16\]
+  ; in P3X_FW_V01.04, the wildcard matches lines:
+  ;str.w	r0, \[r4, #0x16\]
+  ; in P3X_FW_V01.07, the wildcard matches lines:
+  ;str.w	r0, \[r4, #0x16\]
+  ;b	#(?P<loc_8011F72>[0-9a-fx]+)
+  ;loc_8012DB0:
+  ;bl	#(?P<get_board_version>[0-9a-fx]+)
+  ;cmp	r0, #6
+  ;beq	#(?P<loc_8012DC8>[0-9a-fx]+)
+  ;bl	#(?P<get_board_version>[0-9a-fx]+)
+  ;cmp	r0, #7
+  ;beq	#(?P<loc_8012DC8>[0-9a-fx]+)
+  ;bl	#(?P<get_board_version>[0-9a-fx]+)
+  ;cmp	r0, #2
+  ;bne	#(?P<loc_8011F72>[0-9a-fx]+)
+  ;loc_8012DC8:
+  ;mvn	r0, #1
+  ;str.w	r0, \[r4, #0x12\]
+  ;str.w	r0, \[r4, #0x16\]
+  dcw	(?P<undefined_varlen_5>([0-9a-fx]+[, ]*){1,18})
 loc_8011F72:
   movs	r0, #1
   str.w	r0, \[r4, #0x1a\]
@@ -4356,7 +4367,9 @@ loc_8011F72:
   'regD':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
   'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
   'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,10)},
-  'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (10,16)},
+  'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,16)},
+  'undefined_varlen_4':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,16)},
+  'undefined_varlen_5':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,18)},
   'loc_8011F5C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_8011F72':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_8012D84':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -4384,11 +4397,7 @@ cmd_exec_set00_cmd01b:
   ;mov	r8, r1
   ;movs	r7, #0
   ;mov	r6, r5
-  ; in P3X_FW_V01.08, the wildcard matches lines:
-  ;movs	r6, #0
-  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){1,8})
-  add.w	r4, (?P<regB>r[0-9]), #0xb
-  ; in P3X_FW_V01.07, the wildcard matches lines:
+  ;add.w	r4, (?P<regB>r[0-9]), #0xb
   ;ldrb	r0, [r4, #1]
   ;bic	r0, r0, #0xf0
   ;strb	r0, [r4, #1]
@@ -4396,7 +4405,8 @@ cmd_exec_set00_cmd01b:
   ;bic	r0, r0, #0xf
   ; in P3X_FW_V01.08, the wildcard matches lines:
   ;movs	(?P<regC>r[0-9]), #0 ; regC is r6
-  dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,10})
+  ;add.w	r4, (?P<regB>r[0-9]), #0xb
+  dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){3,20})
   adds	r0, (?P<regC>r[0-9]), #1
   strb	r0, \[r4, #1\]
   movs	r1, #0x10
@@ -4465,8 +4475,7 @@ loc_8011F76:
   'regB':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
   'regC':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
   'regD':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
-  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,4)},
-  'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (1,10)},
+  'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (3,20)},
   'loc_8011F26':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_8011F32':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_8011F5C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
@@ -4507,7 +4516,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1400_setfcc,},
   {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_original,},
   {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_setfcc,},
-  {'sect': ".text", 'func': re_func_cmd_exec_set00_cmd01b_P3X_V01_07,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set00_cmd01b_P3X_V01_04,},
   {'sect': ".text", 'func': re_func_cmd_exec_set00_cmd01b_P3X_V01_08,},
 ]
 
