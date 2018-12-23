@@ -4262,6 +4262,7 @@ loc_label34:
 re_func_cmd_exec_set00_cmd01b_P3X_V01_04 = {
 'name': "cmd_exec_set00_cmd01b",
 'version': "P3X_FW_V01.04",
+'alt_name': "cmd_exec_set00_cmd01",
 're': """
 cmd_exec_set00_cmd01b:
   (push|push.w)	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,5}), lr}
@@ -4389,6 +4390,7 @@ loc_8011F72:
 re_func_cmd_exec_set00_cmd01b_P3X_V01_08 = {
 'name': "cmd_exec_set00_cmd01b",
 'version': "P3X_FW_V01.08",
+'alt_name': "cmd_exec_set00_cmd01",
 're': """
 cmd_exec_set00_cmd01b:
   (push|push.w)	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,5}), lr}
@@ -4408,12 +4410,12 @@ cmd_exec_set00_cmd01b:
   ;add.w	r4, (?P<regB>r[0-9]), #0xb
   dcw	(?P<undefined_varlen_1>([0-9a-fx]+[, ]*){3,20})
   adds	r0, (?P<regC>r[0-9]), #1
-  strb	r0, \[r4, #1\]
+  strb	r0, \[r4, #1\] ; struct offset PktPayload_VersionInquiry.field_0
   ; in P3X_FW_V01.07, the wildcard matches lines:
   ;movs	r1, #0x10
   ; in P3X_FW_V01.11, the wildcard matches lines:
   ;movs r7, #1
-  ;str.w r7, \[r4, #0x1e\]
+  ;str.w r7, \[r4, #0x1e\] ; struct offset PktPayload_VersionInquiry.field_1E
   ;movs	r1, #0x10
   dcw	(?P<undefined_varlen_2>([0-9a-fx]+[, ]*){1,6})
   adds	r0, r4, #2
@@ -4427,7 +4429,7 @@ cmd_exec_set00_cmd01b:
   b	#(?P<loc_8011F76>[0-9a-fx]+)
 loc_8011F26:
   bl	#(?P<sub_8012372>[0-9a-fx]+)
-  str.w	r0, \[r4, #0x12\]
+  str.w	r0, \[r4, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
   ldr	r0, \[pc, #(?P<lb_mcu_version_1>[0-9a-fx]+)\]
   b	#(?P<loc_8011F72>[0-9a-fx]+)
 loc_8011F32:
@@ -4450,23 +4452,23 @@ loc_8011F32:
 loc_8011F5C:
   ldr	r0, \[pc, #(?P<dword_200000F8>[0-9a-fx]+)\]
   ldr	r0, \[r0\]
-  str.w	r0, \[r4, #0x12\]
+  str.w	r0, \[r4, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
   ldr	r0, \[pc, #(?P<dword_200000FC>[0-9a-fx]+)\]
   ldr	r0, \[r0\]
   b	#(?P<loc_8011F72>[0-9a-fx]+)
 loc_8011F6A:
   mvn	r0, #1
-  str.w	r0, \[r4, #0x12\]
+  str.w	r0, \[r4, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
 loc_8011F72:
-  str.w	r0, \[r4, #0x16\]
+  str.w	r0, \[r4, #0x16\] ; struct offset PktPayload_VersionInquiry.app_version
 loc_8011F76:
   ; in P3X_FW_V01.07, the wildcard matches lines:
   ;movs	r0, #1
   ;str.w	r0, \[r4, #0x1a\]
   ; in P3X_FW_V01.11, the wildcard matches lines:
-  ;str.w	r0, \[r4, #0x1a\]
+  ;str.w	r0, \[r4, #0x1a\] ; struct offset PktPayload_VersionInquiry.field_1A
   dcw	(?P<undefined_varlen_3>([0-9a-fx]+[, ]*){1,4})
-  strb	r6, \[r4\]
+  strb	r6, \[r4\] ; struct offset PktPayload_VersionInquiry.field_0
   mov	r2, r4
   mov	r1, r5
   pop.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,5}), lr}
@@ -4506,6 +4508,136 @@ loc_8011F76:
 },
 }
 
+re_func_cmd_exec_set00_cmd01_C1_V01_04 = {
+'name': "cmd_exec_set00_cmd01",
+'version': "C1_FW_V01.04",
+'alt_name': "cmd_exec_set00_cmd01b",
+'re': """
+cmd_exec_set00_cmd01:
+  push	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,5}), lr}
+  ldr	r1, \[pc, #(?P<dword_10007F74>[0-9a-fx]+)\]
+  mov	r4, r0
+  ldrb	r0, \[r0, #8\]
+  ldr	r5, \[r1\]
+  ubfx	r1, r0, #5, #2
+  sub	sp, #0x50
+  cmp	r1, #2
+  bne	#(?P<loc_F3B6>[0-9a-fx]+)
+  orr	r0, r0, #0x80
+  strb	r0, \[r4, #8\]
+  movs	r6, #0
+  strb.w	r6, \[sp\]
+  ldrb.w	r0, \[sp, #1\] ; struct offset PktPayload_VersionInquiry.field_1
+  movs	r1, #0x10
+  bic	r0, r0, #0xf0
+  adds	r0, #0x10
+  bic	r0, r0, #0xf
+  strb.w	r0, \[sp, #1\] ; struct offset PktPayload_VersionInquiry.field_1
+  add.w	r0, sp, #2 ; struct offset PktPayload_VersionInquiry.hw_version
+  bl	#(?P<sub_1F904>[0-9a-fx]+)
+  ldrb	r0, \[r4, #5\]
+  and	r0, r0, #0x1f
+  cmp	r0, #0x14
+  beq	#(?P<loc_F346>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<dword_10007F74>[0-9a-fx]+)\]
+  mvns	r1, r5
+  subs	r0, r0, #4
+  ldr	r0, \[r0\]
+  str.w	r0, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  cmp	r0, r1
+  beq	#(?P<loc_F368>[0-9a-fx]+)
+  str.w	r6, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  b	#(?P<loc_F390>[0-9a-fx]+)
+loc_F346:
+  bl	#(?P<get_board_version>[0-9a-fx]+)
+  cbz	r0, #(?P<loc_F35E>[0-9a-fx]+)
+  ldr	r0, \[pc, #(?P<dword_10000344>[0-9a-fx]+)\]
+  ldr	r0, \[r0\]
+  str.w	r0, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  ldr	r0, \[pc, #(?P<dword_10000348>[0-9a-fx]+)\]
+  ldr	r0, \[r0\]
+loc_F358:
+  str.w	r0, \[sp, #0x16\] ; struct offset PktPayload_VersionInquiry.app_version
+  b	#(?P<loc_F39C>[0-9a-fx]+)
+loc_F35E:
+  mvn	r0, #1
+  str.w	r0, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  b	#(?P<loc_F358>[0-9a-fx]+)
+loc_F368:
+  ldr	r0, \[pc, #(?P<byte_10000000>[0-9a-fx]+)\]
+  ldrb	r1, \[r0\]
+  ldr	r0, \[pc, #(?P<byte_10000006>[0-9a-fx]+)\]
+  cbz	r1, #(?P<loc_F376>[0-9a-fx]+)
+  ldrb	r1, \[r0\]
+  cmp	r1, #3
+  beq	#(?P<loc_F3BA>[0-9a-fx]+)
+loc_F376:
+  ldr	r2, \[pc, #(?P<byte_10000008>[0-9a-fx]+)\]
+  ldr.w	r1, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  ldrb	r0, \[r0\]
+  ldrb	r2, \[r2\]
+  and	r1, r1, #0xff00ff
+  orr.w	r1, r1, r2, lsl #24
+  orr.w	r0, r1, r0, lsl #8
+loc_F38C:
+  str.w	r0, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+loc_F390:
+  ldr	r0, \[pc, #(?P<lb_mcu_version_1>[0-9a-fx]+)\]
+  str.w	r0, \[sp, #0x16\] ; struct offset PktPayload_VersionInquiry.app_version
+  movs	r0, #1
+  strb.w	r0, \[sp, #0x1e\] ; struct offset PktPayload_VersionInquiry.field_1E
+loc_F39C:
+  movw	r0, #0x243
+  str.w	r0, \[sp, #0x1a\] ; struct offset PktPayload_VersionInquiry.field_1A
+  add	r3, sp, #0x20
+  movs	r2, #(?P<packet_payload_len>[0-9a-fx]+) ; sizeof(PktPayload_VersionInquiry)
+  mov	r1, sp
+  mov	r0, r4
+  bl	#(?P<packet_prepare_response>[0-9a-fx]+)
+  add	r0, sp, #0x20
+  bl	#(?P<packet_send>[0-9a-fx]+)
+loc_F3B6:
+  add	sp, #0x50
+  pop	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,5}), pc}
+loc_F3BA:
+  ldr.w	r0, \[sp, #0x12\] ; struct offset PktPayload_VersionInquiry.ldr_version
+  and	r0, r0, #0xff00ff
+  orr	r0, r0, #0x3000300
+  b	#(?P<loc_F38C>[0-9a-fx]+)
+""",
+'vars': {
+  'cmd_exec_set00_cmd01':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
+  'sub_1F904':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'get_board_version':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_prepare_response':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
+  'packet_send':	{'type': VarType.RELATIVE_ADDR_TO_CODE, 'baseaddr': "PC+", 'variety': CodeVariety.FUNCTION},
+  'packet_payload_len':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T,},
+  'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
+  'loc_F346':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F358':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F35E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F368':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F376':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F38C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F390':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F39C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F3B6':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_F3BA':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'dword_10007F74':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T},
+  'dword_10000344':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T},
+  'dword_10000348':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T},
+  'byte_10000000':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT8_T},
+  'byte_10000006':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT8_T},
+  'byte_10000008':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT8_T},
+  'lb_mcu_version_1':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.INT32_T,
+    'public': "og_hardcoded.lightbridge_stm32", 'depend': "mcu_firmware_version", 'getter': version_string_to_int_getter},
+  'mcu_firmware_version':	{'type': VarType.DETACHED_DATA, 'variety': DataVariety.CHAR, 'array': 11,
+    'public': "og_hardcoded.lightbridge_stm32", 'minValue': "00.00.00.00", 'maxValue': "99.99.99.99",
+    'depend': "lb_mcu_version_1", 'getter': version_int_to_string_getter, 'forceVisible': True,
+    'description': "Firmware version number"},
+},
+}
+
 
 re_general_list = [
   {'sect': ".text", 'func': re_func_cmd_exec_set09_cmd12_P3X_V01_07_original,},
@@ -4531,6 +4663,7 @@ re_general_list = [
   {'sect': ".text", 'func': re_func_update_tcx_power_zone_flag_C1_V01_05_m1401_setfcc,},
   {'sect': ".text", 'func': re_func_cmd_exec_set00_cmd01b_P3X_V01_04,},
   {'sect': ".text", 'func': re_func_cmd_exec_set00_cmd01b_P3X_V01_08,},
+  {'sect': ".text", 'func': re_func_cmd_exec_set00_cmd01_C1_V01_04,},
 ]
 
 def armfw_elf_lbstm32_list(po, elffh):
