@@ -2,11 +2,13 @@
 DJI_P3_PROTO = Proto ("dji_p3", "DJI_P3", "Dji Ph3 protocols aggregate")
 
 local f = DJI_P3_PROTO.fields
+
 -- [0]  Start of Pkt, always 0x55
 f.delimiter = ProtoField.uint8 ("dji_p3.delimiter", "Delimiter", base.HEX)
 
 -- The protocol dissector itself
 function DJI_P3_PROTO.dissector (buffer, pinfo, tree)
+
     local subtree = tree:add (DJI_P3_PROTO, buffer())
 
     -- The Pkt start byte (0x55 or 0xAB determines the pkt type)

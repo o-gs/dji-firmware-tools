@@ -1,4 +1,8 @@
-local f = DJI_SPARK_PROTO.fields
+-- Create a new dissector
+DJI_SPARK_FLYREC_PROTO = Proto ("dji_spark_flyrec", "DJI_SPARK_FLYREC", "Dji Spark Flight Record file format")
+
+local f = DJI_SPARK_FLYREC_PROTO.fields
+local enums = {}
 
 DJI_SPARK_FLIGHT_RECORD_ENTRY_TYPE = {
     [0x03e8] = 'Controller',
@@ -176,6 +180,14 @@ DJI_SPARK_FLIGHT_RECORD_ENTRY_TYPE = {
     [0xcddf] = 'Uart Monitor',
     [0xcdde] = 'Can Monitor',
 }
+
+local function bytearray_to_hexstr(bytes)
+  s = {}
+  for i = 0, bytes:len() - 1 do
+    s[i+1] = string.format("%02X",bytes:get_index(i))
+  end
+  return table.concat(s," ")
+end
 
 -- Flight log - Controller - 0x03e8
 
@@ -9905,7 +9917,7 @@ local function flightrec_system_monitor_dissector(payload, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"System Monitor: Payload size different than expected") end
 end
 
--- Flight log - Uart Monitor - 0xcddf
+-- Flight log - UART Monitor - 0xcddf
 
 f.rec_uart_monitor_uart0_tx = ProtoField.uint32 ("dji_spark.rec_uart_monitor_uart0_tx", "Uart0 Tx", base.HEX)
 f.rec_uart_monitor_uart0_txlost = ProtoField.uint32 ("dji_spark.rec_uart_monitor_uart0_txlost", "Uart0 Txlost", base.HEX)
@@ -10231,8 +10243,8 @@ local function flightrec_uart_monitor_dissector(payload, pinfo, subtree)
     subtree:add_le (f.rec_uart_monitor_uart179_dbg5, payload(offset, 2))
     offset = offset + 2
 
-    if (offset ~= 224) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Uart Monitor: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Uart Monitor: Payload size different than expected") end
+    if (offset ~= 224) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"UART Monitor: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"UART Monitor: Payload size different than expected") end
 end
 
 -- Flight log - Can Monitor - 0xcdde
@@ -10501,3 +10513,115 @@ DJI_SPARK_FLIGHT_RECORD_DISSECT = {
     [0xcddf] = flightrec_uart_monitor_dissector,
     [0xcdde] = flightrec_can_monitor_dissector,
 }
+
+-- [0]  Start of Pkt, always 0x55
+f.delimiter = ProtoField.uint8 ("dji_spark_flyrec.delimiter", "Delimiter", base.HEX)
+-- [1]  Length of Pkt 
+f.length = ProtoField.uint16 ("dji_spark_flyrec.length", "Length", base.HEX, nil, 0x3FF)
+-- [2]  Protocol version
+f.protocol_version = ProtoField.uint16 ("dji_spark_flyrec.protover", "Protocol Version", base.HEX, nil, 0xFC00)
+-- [3]  Data Type
+f.datatype = ProtoField.uint8 ("dji_spark_flyrec.hdr_crc", "Header CRC", base.HEX)
+
+-- Fields for ProtoVer = 0 (Flight Record)
+
+-- [4-5]  Log Entry Type
+f.etype = ProtoField.uint16 ("dji_spark_flyrec.etype", "Log Entry Type", base.HEX, DJI_SPARK_FLIGHT_RECORD_ENTRY_TYPE)
+-- [6-9]  Sequence Ctr
+f.seqctr = ProtoField.uint16 ("dji_spark_flyrec.seqctr", "Seq Counter", base.DEC)
+-- [B] Payload (optional)
+f.payload = ProtoField.bytes ("dji_spark_flyrec.payload", "Payload", base.SPACE)
+
+-- [B+Payload] CRC
+f.crc = ProtoField.uint16 ("dji_spark_flyrec.crc", "CRC", base.HEX)
+
+local function flightrec_decrypt_payload(pkt_length, buffer)
+    local offset = 6
+    local seqctr = buffer(offset,4):le_uint()
+
+    offset = 10
+    local payload = buffer(offset, pkt_length - offset - 2):bytes()
+
+    for i = 0, (payload:len() - 1) do
+      payload:set_index( i, bit.bxor(payload:get_index(i), bit32.band(seqctr, 0xFF) ) )
+    end
+
+    return payload
+end
+
+-- Dissector top level function; is called within this dissector, but can also be called from outsude
+function dji_spark_flyrec_main_dissector(buffer, pinfo, subtree)
+    local offset = 1
+
+    -- [1-2] The Pkt length | protocol version
+    local pkt_length = buffer(offset,2):le_uint()
+    local pkt_protover = pkt_length
+    -- bit32 lib requires LUA 5.2
+    pkt_length = bit32.band(pkt_length, 0x03FF)
+    pkt_protover = bit32.rshift(bit32.band(pkt_protover, 0xFC00), 10)
+
+    subtree:add_le (f.length, buffer(offset, 2))
+    subtree:add_le (f.protocol_version, buffer(offset, 2))
+    offset = offset + 2
+
+    -- [3] Header Checksum
+    subtree:add (f.datatype, buffer(offset, 1))
+    offset = offset + 1
+
+    if pkt_protover == 0 then
+
+        -- [4] Log entry type
+        local etype = buffer(offset,2):le_uint()
+        subtree:add_le (f.etype, buffer(offset, 2))
+        offset = offset + 2
+
+        -- [6] Sequence Counter
+        subtree:add_le (f.seqctr, buffer(offset, 4))
+        offset = offset + 4
+
+        assert(offset == 10, "Offset shifted - dissector internal inconsistency")
+
+        -- [A] Payload    
+        if pkt_length > offset+2 then
+            local payload_buf = flightrec_decrypt_payload(pkt_length, buffer)
+            local payload_tree = subtree:add(f.payload, buffer(offset, pkt_length - offset - 2))
+            payload_tree:set_text("Payload: " .. bytearray_to_hexstr(payload_buf));
+            local payload_tvb = ByteArray.tvb(payload_buf, "Payload")
+
+            -- If we have a dissector for this kind of command, run it
+            local dissector = DJI_SPARK_FLIGHT_RECORD_DISSECT[etype]
+
+            if dissector ~= nil then
+                dissector(payload_tvb, pinfo, payload_tree)
+            end
+
+        end
+
+    end
+
+    -- CRC
+    subtree:add_le(f.crc, buffer(pkt_length - 2, 2))
+    offset = offset + 2
+end
+
+-- The protocol dissector itself
+function DJI_SPARK_FLYREC_PROTO.dissector (buffer, pinfo, tree)
+
+    local subtree = tree:add (DJI_SPARK_FLYREC_PROTO, buffer())
+
+    -- The Pkt start byte
+    local offset = 0
+
+    local pkt_type = buffer(offset,1):uint()
+    subtree:add (f.delimiter, buffer(offset, 1))
+    offset = offset + 1
+
+    if pkt_type == 0x55 then
+        dji_spark_flyrec_main_dissector(buffer, pinfo, subtree)
+    end
+
+end
+
+-- A initialization routine
+function DJI_SPARK_FLYREC_PROTO.init ()
+end

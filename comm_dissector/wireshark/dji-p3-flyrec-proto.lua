@@ -8691,7 +8691,7 @@ end
 -- The protocol dissector itself
 function DJI_P3_FLYREC_PROTO.dissector (buffer, pinfo, tree)
 
-    local subtree = tree:add (DJI_P3_BATT_PROTO, buffer())
+    local subtree = tree:add (DJI_P3_FLYREC_PROTO, buffer())
 
     -- The Pkt start byte
     local offset = 0
