@@ -455,7 +455,7 @@ local FLYC_UART_CMD_TEXT = {
     [0x3e] = 'FlyC Request Limit Update',
     [0x3f] = 'Set NoFly Zone Data', -- Set Fly Forbid Area Data
     [0x41] = 'Upload Unlimit Areas', -- Set Whitelist Cmd
-    [0x42] = 'FlyC Unlimit State', -- Push Unlimit Areas / Push UAV Posture
+    [0x42] = 'FlyC Unlimit State / UAV Posture', -- Push Unlimit Areas / Push UAV Posture
     [0x43] = 'OSD General Data Get',
     [0x44] = 'OSD Home Point Get',
     [0x45] = 'FlyC GPS SNR Get',
@@ -1740,6 +1740,7 @@ local GENERAL_UART_CMD_DISSECT = {
 }
 
 -- Special - Old Special App Control - 0x01
+-- Supported in: P3X_FW_V01.11.0030_m0400
 
 f.special_old_special_app_control_unknown0 = ProtoField.uint8 ("dji_dumlv1.special_old_special_app_control_unknown0", "Unknown0", base.HEX)
 f.special_old_special_app_control_unknown1 = ProtoField.uint8 ("dji_dumlv1.special_old_special_app_control_unknown1", "Unknown1", base.HEX)
@@ -1751,33 +1752,34 @@ f.special_old_special_app_control_unknown7 = ProtoField.uint8 ("dji_dumlv1.speci
 f.special_old_special_app_control_checksum = ProtoField.uint8 ("dji_dumlv1.special_old_special_app_control_checksum", "Checksum", base.HEX, nil, nil, "Previous payload bytes xor'ed together with initial seed 0.")
 
 local function special_old_special_app_control_dissector(pkt_length, buffer, pinfo, subtree)
+
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.special_old_special_app_control_unknown0, payload(offset, 1))
-    offset = offset + 1
+        subtree:add_le (f.special_old_special_app_control_unknown0, payload(offset, 1))
+        offset = offset + 1
 
-    subtree:add_le (f.special_old_special_app_control_unknown1, payload(offset, 1))
-    offset = offset + 1
+        subtree:add_le (f.special_old_special_app_control_unknown1, payload(offset, 1))
+        offset = offset + 1
 
-    subtree:add_le (f.special_old_special_app_control_unknown2, payload(offset, 2))
-    offset = offset + 2
+        subtree:add_le (f.special_old_special_app_control_unknown2, payload(offset, 2))
+        offset = offset + 2
 
-    subtree:add_le (f.special_old_special_app_control_unknown4, payload(offset, 1))
-    offset = offset + 1
+        subtree:add_le (f.special_old_special_app_control_unknown4, payload(offset, 1))
+        offset = offset + 1
 
-    subtree:add_le (f.special_old_special_app_control_unknown5, payload(offset, 1))
-    offset = offset + 1
+        subtree:add_le (f.special_old_special_app_control_unknown5, payload(offset, 1))
+        offset = offset + 1
 
-    subtree:add_le (f.special_old_special_app_control_unknown6, payload(offset, 1))
-    offset = offset + 1
+        subtree:add_le (f.special_old_special_app_control_unknown6, payload(offset, 1))
+        offset = offset + 1
 
-    subtree:add_le (f.special_old_special_app_control_unknown7, payload(offset, 2))
-    offset = offset + 2
+        subtree:add_le (f.special_old_special_app_control_unknown7, payload(offset, 2))
+        offset = offset + 2
 
-    subtree:add_le (f.special_old_special_app_control_checksum, payload(offset, 1))
-    offset = offset + 1
+        subtree:add_le (f.special_old_special_app_control_checksum, payload(offset, 1))
+        offset = offset + 1
 
     if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Old Special App Control: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Old Special App Control: Payload size different than expected") end
@@ -3534,32 +3536,81 @@ local function flyc_set_nofly_zone_data_dissector(pkt_length, buffer, pinfo, sub
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set NoFly Zone Data: Payload size different than expected") end
 end
 
--- Flight Controller - FlyC Unlimit State - 0x42
+-- Flight Controller - FlyC Unlimit State / UAV Posture - 0x42
+-- Supported in: P3X_FW_V01.11.0030_m0400 (UAV Posture)
 
 f.flyc_flyc_unlimit_state_is_in_unlimit_area = ProtoField.uint8 ("dji_dumlv1.flyc_flyc_unlimit_state_is_in_unlimit_area", "Is In Unlimit Area", base.HEX)
 f.flyc_flyc_unlimit_state_unlimit_areas_action = ProtoField.uint8 ("dji_dumlv1.flyc_flyc_unlimit_state_unlimit_areas_action", "Unlimit Areas Action", base.HEX)
 f.flyc_flyc_unlimit_state_unlimit_areas_size = ProtoField.uint8 ("dji_dumlv1.flyc_flyc_unlimit_state_unlimit_areas_size", "Unlimit Areas Size", base.HEX)
 f.flyc_flyc_unlimit_state_unlimit_areas_enabled = ProtoField.uint8 ("dji_dumlv1.flyc_flyc_unlimit_state_unlimit_areas_enabled", "Unlimit Areas Enabled", base.HEX)
 
+f.flyc_uav_posture_param0 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param0", "Param0", base.DEC)
+f.flyc_uav_posture_param1 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param1", "Param1", base.DEC)
+f.flyc_uav_posture_param2 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param2", "Param2", base.DEC)
+f.flyc_uav_posture_param3 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param3", "Param3", base.DEC)
+f.flyc_uav_posture_param4 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param4", "Param4", base.DEC)
+f.flyc_uav_posture_param5 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param5", "Param5", base.DEC)
+f.flyc_uav_posture_param6 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param6", "Param6", base.DEC)
+f.flyc_uav_posture_param7 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param7", "Param7", base.DEC)
+f.flyc_uav_posture_has8 = ProtoField.uint8 ("dji_dumlv1.flyc_uav_posture_has8", "Has8-unknown", base.HEX)
+f.flyc_uav_posture_unkn21 = ProtoField.uint16 ("dji_dumlv1.flyc_uav_posture_unkn21", "Unknown21", base.HEX)
+
 local function flyc_flyc_unlimit_state_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.flyc_flyc_unlimit_state_is_in_unlimit_area, payload(offset, 1))
-    offset = offset + 1
+    if (payload:len() >= 35) then -- UAV Posture
 
-    subtree:add_le (f.flyc_flyc_unlimit_state_unlimit_areas_action, payload(offset, 1))
-    offset = offset + 1
+        subtree:add_le (f.flyc_uav_posture_param0, payload(offset, 4))
+        offset = offset + 4
 
-    subtree:add_le (f.flyc_flyc_unlimit_state_unlimit_areas_size, payload(offset, 1))
-    offset = offset + 1
+        subtree:add_le (f.flyc_uav_posture_param1, payload(offset, 4))
+        offset = offset + 4
 
-    subtree:add_le (f.flyc_flyc_unlimit_state_unlimit_areas_enabled, payload(offset, 1))
-    offset = offset + 1
+        subtree:add_le (f.flyc_uav_posture_param2, payload(offset, 4))
+        offset = offset + 4
 
-    if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Unlimit State: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Unlimit State: Payload size different than expected") end
+        subtree:add_le (f.flyc_uav_posture_param3, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.flyc_uav_posture_param4, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.flyc_uav_posture_param5, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.flyc_uav_posture_param6, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.flyc_uav_posture_param7, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.flyc_uav_posture_has8, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_uav_posture_unkn21, payload(offset, 2))
+        offset = offset + 2
+
+        if (offset ~= 35) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"UAV Posture: Offset does not match - internal inconsistency") end
+    else -- FlyC Unlimit State
+
+        subtree:add_le (f.flyc_flyc_unlimit_state_is_in_unlimit_area, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_unlimit_state_unlimit_areas_action, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_unlimit_state_unlimit_areas_size, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_flyc_unlimit_state_unlimit_areas_enabled, payload(offset, 1))
+        offset = offset + 1
+
+        if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Unlimit State: Offset does not match - internal inconsistency") end
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Unlimit/Posture: Payload size different than expected") end
 end
 
 -- Flight Controller - OSD General Data - 0x43, identical to flight recorder packet 0x000c
@@ -6476,6 +6527,38 @@ local FLYC_UART_CMD_DISSECT = {
     [0xfb] = flyc_config_table_read_params_by_hash_dissector,
 }
 
+-- Gimbal - Gimbal Control - 0x01
+-- Supported in: P3X_FW_V01.11.0030_m0400
+
+f.gimbal_control_unkn0 = ProtoField.uint16 ("dji_dumlv1.gimbal_control_unkn0", "Unknown0", base.DEC, nil, nil, "Accepted values 363..1685")
+f.gimbal_control_unkn1 = ProtoField.uint16 ("dji_dumlv1.gimbal_control_unkn1", "Unknown1", base.DEC, nil, nil, "Accepted values 363..1685")
+f.gimbal_control_unkn2 = ProtoField.uint16 ("dji_dumlv1.gimbal_control_unkn2", "Unknown2", base.DEC, nil, nil, "Accepted values 363..1685")
+f.gimbal_control_padding = ProtoField.bytes ("dji_dumlv1.gimbal_control_padding", "Padding", base.SPACE, nil, nil, "Unused")
+
+local function gimbal_control_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+        subtree:add_le (f.gimbal_control_unkn0, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.gimbal_control_unkn1, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.gimbal_control_unkn2, payload(offset, 2))
+        offset = offset + 2
+
+        -- Padding will be used in encrypted payloads
+        if (payload:len() >= 8) then
+            subtree:add_le (f.gimbal_control_padding, payload(offset, 2))
+            offset = offset + 2
+        end
+
+    if (offset ~= 6) and (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Control: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Control: Payload size different than expected") end
+end
+
 -- Gimbal - Gimbal Params - 0x05
 
 enums.GIMBAL_PARAMS_MODE_ENUM = {
@@ -6554,6 +6637,35 @@ local function gimbal_params_dissector(pkt_length, buffer, pinfo, subtree)
 
     if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Params: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Params: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Push AETR - 0x06
+-- Supported in: P3X_FW_V01.11.0030_m0400
+
+f.gimbal_push_aetr_unkn0 = ProtoField.uint16 ("dji_dumlv1.gimbal_push_aetr_unkn0", "Unknown0", base.DEC, nil, nil, "Accepted values are 364..1684")
+f.gimbal_push_aetr_unkn1 = ProtoField.uint16 ("dji_dumlv1.gimbal_push_aetr_unkn1", "Unknown1", base.DEC, nil, nil, "Accepted values are 364..1684")
+f.gimbal_push_aetr_unkn2 = ProtoField.uint16 ("dji_dumlv1.gimbal_push_aetr_unkn2", "Unknown2", base.DEC, nil, nil, "Accepted values are 364..1684")
+f.gimbal_push_aetr_unkn3 = ProtoField.uint16 ("dji_dumlv1.gimbal_push_aetr_unkn3", "Unknown3", base.DEC, nil, nil, "Accepted values are 364..1684")
+
+local function gimbal_push_aetr_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+        subtree:add_le (f.gimbal_push_aetr_unkn0, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.gimbal_push_aetr_unkn1, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.gimbal_push_aetr_unkn2, payload(offset, 2))
+        offset = offset + 2
+
+        subtree:add_le (f.gimbal_push_aetr_unkn3, payload(offset, 2))
+        offset = offset + 2
+
+    if (offset ~= 8) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Push AETR: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Push AETR: Payload size different than expected") end
 end
 
 -- Gimbal - Gimbal Calibration - 0x08
@@ -7027,7 +7139,9 @@ local function gimbal_set_mode_dissector(pkt_length, buffer, pinfo, subtree)
 end
 
 local GIMBAL_UART_CMD_DISSECT = {
+    [0x01] = gimbal_control_dissector,
     [0x05] = gimbal_params_dissector,
+    [0x06] = gimbal_push_aetr_dissector,
     [0x08] = gimbal_calibrate_dissector,
     [0x15] = gimbal_move_dissector,
     [0x1c] = gimbal_type_dissector,
