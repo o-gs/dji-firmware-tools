@@ -455,7 +455,7 @@ local FLYC_UART_CMD_TEXT = {
     [0x3e] = 'FlyC Request Limit Update',
     [0x3f] = 'Set NoFly Zone Data', -- Set Fly Forbid Area Data
     [0x41] = 'Upload Unlimit Areas', -- Set Whitelist Cmd
-    [0x42] = 'FlyC Unlimit State / UAV Posture', -- Push Unlimit Areas / Push UAV Posture
+    [0x42] = 'FlyC Unlimit State / UAV Posture', -- Push Unlimit Areas (WM220) / Push UAV Posture (P3X)
     [0x43] = 'OSD General Data Get',
     [0x44] = 'OSD Home Point Get',
     [0x45] = 'FlyC GPS SNR Get',
@@ -607,7 +607,7 @@ local GIMBAL_UART_CMD_TEXT = {
     [0x0A] = 'Gimbal Ext Ctrl Degree', -- Rotate/Angle Set
     [0x0B] = 'Gimbal Get Ext Ctrl Status', -- Get State
     [0x0C] = 'Gimbal Ext Ctrl Accel', -- Speed Control
-    [0x0D] = 'Gimbal Suspend Resume', -- Set On Or Off
+    [0x0D] = 'Gimbal Suspend/Resume', -- Set On Or Off
     [0x0E] = 'Gimbal Thirdp Magn',
     [0x0F] = 'Gimbal Set User Params',
     [0x10] = 'Gimbal Get User Params',
@@ -1195,22 +1195,61 @@ end
 -- General - Set Device Version - 0x0d
 
 f.general_set_device_version_unknown0 = ProtoField.uint8 ("dji_dumlv1.general_set_device_version_unknown0", "Unknown0", base.HEX)
-f.general_set_device_version_version = ProtoField.bytes ("dji_dumlv1.general_set_device_version_version", "Version", base.SPACE)
+f.general_set_device_version_hw_ver = ProtoField.bytes ("dji_dumlv1.general_set_device_version_hw_ver", "HW Version", base.SPACE)
+f.general_set_device_version_ldr_ver = ProtoField.bytes ("dji_dumlv1.general_set_device_version_ldr_ver", "Loader Version", base.SPACE)
+f.general_set_device_version_app_ver = ProtoField.bytes ("dji_dumlv1.general_set_device_version_app_ver", "App Version", base.SPACE)
+f.general_set_device_version_unk4_ver = ProtoField.bytes ("dji_dumlv1.general_set_device_version_unk4_ver", "Unk4 Version", base.SPACE)
+
+f.general_set_device_version_status = ProtoField.uint8 ("dji_dumlv1.general_set_device_version_status", "Status", base.HEX)
+f.general_set_device_version_flags1 = ProtoField.uint8 ("dji_dumlv1.general_set_device_version_flags1", "Flags1", base.HEX)
+f.general_set_device_version_unknown2 = ProtoField.bytes ("dji_dumlv1.general_set_device_version_unknown2", "Unknown2", base.SPACE)
 
 local function general_set_device_version_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    -- Details from DM36x could be decoded using func Dec_Serial_Set_Device_Version from `usbclient` binary
+    if pack_type == 0 then -- Request
 
-    subtree:add_le (f.general_set_device_version_unknown0, payload(offset, 1))
-    offset = offset + 1
+        -- Details from DM36x could be decoded using func Dec_Serial_Set_Device_Version from `usbclient` binary
+        -- Checked with P3X_FW_V01.11.0030_m0400
 
-    subtree:add_le (f.general_set_device_version_version, payload(offset, 4))
-    offset = offset + 4
+        subtree:add_le (f.general_set_device_version_unknown0, payload(offset, 1))
+        offset = offset + 1
 
-    if (offset ~= 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set Device Version: Offset does not match - internal inconsistency") end
+        subtree:add_le (f.general_set_device_version_hw_ver, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.general_set_device_version_ldr_ver, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.general_set_device_version_app_ver, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.general_set_device_version_unk4_ver, payload(offset, 4))
+        offset = offset + 4
+
+        if (offset ~= 17) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set Device Version: Offset does not match - internal inconsistency") end
+    else -- Response
+
+        -- Details from DM36x could be decoded using func Dec_Serial_Set_Device_Version from `usbclient` binary
+        -- Checked with P3X_FW_V01.11.0030_m0400
+
+        subtree:add_le (f.general_set_device_version_status, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.general_set_device_version_flags1, payload(offset, 1))
+        offset = offset + 1
+
+        -- This may be either chip state (10 bytes) or 4 versions (16 bytes).. strange - maybe a mistake in m0400 firmware
+        subtree:add_le (f.general_set_device_version_unknown2, payload(offset, 16))
+        offset = offset + 16
+
+        if (offset ~= 18) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set Device Version: Offset does not match - internal inconsistency") end
+    end
+
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set Device Version: Payload size different than expected") end
 end
 
@@ -3544,7 +3583,7 @@ f.flyc_flyc_unlimit_state_unlimit_areas_action = ProtoField.uint8 ("dji_dumlv1.f
 f.flyc_flyc_unlimit_state_unlimit_areas_size = ProtoField.uint8 ("dji_dumlv1.flyc_flyc_unlimit_state_unlimit_areas_size", "Unlimit Areas Size", base.HEX)
 f.flyc_flyc_unlimit_state_unlimit_areas_enabled = ProtoField.uint8 ("dji_dumlv1.flyc_flyc_unlimit_state_unlimit_areas_enabled", "Unlimit Areas Enabled", base.HEX)
 
-f.flyc_uav_posture_param0 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param0", "Param0", base.DEC)
+f.flyc_uav_posture_param0 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param0", "Param0", base.DEC, nil, nil, "Sum of squares of params 0..3 must give 1.0 for the values to be accepted")
 f.flyc_uav_posture_param1 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param1", "Param1", base.DEC)
 f.flyc_uav_posture_param2 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param2", "Param2", base.DEC)
 f.flyc_uav_posture_param3 = ProtoField.float ("dji_dumlv1.flyc_uav_posture_param3", "Param3", base.DEC)
@@ -6640,6 +6679,7 @@ local function gimbal_params_dissector(pkt_length, buffer, pinfo, subtree)
 end
 
 -- Gimbal - Gimbal Push AETR - 0x06
+-- Sets Aileron, Elevator, Throttle and Rudder.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
 f.gimbal_push_aetr_unkn0 = ProtoField.uint16 ("dji_dumlv1.gimbal_push_aetr_unkn0", "Unknown0", base.DEC, nil, nil, "Accepted values are 364..1684")
@@ -6668,7 +6708,25 @@ local function gimbal_push_aetr_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Push AETR: Payload size different than expected") end
 end
 
+-- Gimbal - Gimbal Adjust Roll / Roll Finetune - 0x07
+-- Supported in: P3X_FW_V01.11.0030_m0400
+
+f.gimbal_adjust_roll_adjustment_val = ProtoField.int8 ("dji_dumlv1.gimbal_adjust_roll_adjustment_val", "Adjustment Value", base.DEC, nil, nil)
+
+local function gimbal_adjust_roll_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+        subtree:add_le (f.gimbal_adjust_roll_adjustment_val, payload(offset, 1))
+        offset = offset + 1
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Adjust Roll: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Adjust Roll: Payload size different than expected") end
+end
+
 -- Gimbal - Gimbal Calibration - 0x08
+-- Supported in: P3X_FW_V01.11.0030_m0400 (with no cmd selection)
 
 enums.GIMBAL_CALIBRATE_CMD_ENUM = {
     [0x00] = 'JointCoarse',
@@ -6701,6 +6759,154 @@ local function gimbal_calibrate_dissector(pkt_length, buffer, pinfo, subtree)
     end
 
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Calibration: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Ext Ctrl Degree / Rotate/Angle Set - 0x0a
+
+f.gimbal_ext_ctrl_degree_unknown0 = ProtoField.int16 ("dji_dumlv1.gimbal_ext_ctrl_degree_unknown0", "Unknown0", base.DEC, nil, nil, "angle in degrees * 10, range -1800..1800")
+f.gimbal_ext_ctrl_degree_unknown2 = ProtoField.int16 ("dji_dumlv1.gimbal_ext_ctrl_degree_unknown2", "Unknown2", base.DEC, nil, nil, "angle in degrees * 10, range -1800..1800")
+f.gimbal_ext_ctrl_degree_unknown4 = ProtoField.int16 ("dji_dumlv1.gimbal_ext_ctrl_degree_unknown4", "Unknown4", base.DEC, nil, nil, "angle in degrees * 10, range -1800..1800")
+f.gimbal_ext_ctrl_degree_unknown6 = ProtoField.int16 ("dji_dumlv1.gimbal_ext_ctrl_degree_unknown6", "Unknown6", base.DEC, nil, nil, "unknown unit * 100")
+f.gimbal_ext_ctrl_degree_unknown8 = ProtoField.uint8 ("dji_dumlv1.gimbal_ext_ctrl_degree_unknown8", "Unknown8", base.HEX, nil, nil, "flag fields")
+f.gimbal_ext_ctrl_degree_unknown9 = ProtoField.uint8 ("dji_dumlv1.gimbal_ext_ctrl_degree_unknown9", "Unknown9", base.HEX, nil, nil, "unknown unit / 2000, range 1..10")
+
+local function gimbal_ext_ctrl_degree_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.gimbal_ext_ctrl_degree_unknown0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_ext_ctrl_degree_unknown2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_ext_ctrl_degree_unknown4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_ext_ctrl_degree_unknown6, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_ext_ctrl_degree_unknown8, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.gimbal_ext_ctrl_degree_unknown9, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 7) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Ext Ctrl Degree: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Ext Ctrl Degree: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Ext Ctrl Status - 0x0b
+-- Supported in: P3X_FW_V01.11.0030_m0400
+
+f.gimbal_ext_ctrl_status_status = ProtoField.uint8 ("dji_dumlv1.gimbal_ext_ctrl_status_status", "Status", base.HEX, nil, nil, "Always 0")
+f.gimbal_ext_ctrl_status_flags = ProtoField.uint8 ("dji_dumlv1.gimbal_ext_ctrl_status_flags", "Flags", base.HEX, nil, nil, "Only the top bit is meaningful, the rest is garbage")
+f.gimbal_ext_ctrl_status_unknown2 = ProtoField.int16 ("dji_dumlv1.gimbal_ext_ctrl_status_unknown2", "Unknown2", base.DEC, nil, nil)
+
+local function gimbal_ext_ctrl_status_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if pack_type == 0 then -- Request
+
+        -- No payload needed
+
+        if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Ext Ctrl Status: Offset does not match - internal inconsistency") end
+    else -- Response
+
+        subtree:add_le (f.gimbal_ext_ctrl_status_status, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.gimbal_ext_ctrl_status_flags, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.gimbal_ext_ctrl_status_unknown2, payload(offset, 2))
+        offset = offset + 2
+
+        if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Ext Ctrl Status: Offset does not match - internal inconsistency") end
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Ext Ctrl Status: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Ext Ctrl Accel / Speed Control - 0x0c
+-- Supported in: P3X_FW_V01.11.0030_m0400
+
+f.gimbal_ext_ctrl_accel_unknown0 = ProtoField.int16 ("dji_dumlv1.gimbal_ext_ctrl_accel_unknown0", "Unknown0", base.DEC, nil, nil, "angle in degrees * 10, range -1800..1800")
+f.gimbal_ext_ctrl_accel_unknown2 = ProtoField.int16 ("dji_dumlv1.gimbal_ext_ctrl_accel_unknown2", "Unknown2", base.DEC, nil, nil, "angle in degrees * 10, range -1800..1800")
+f.gimbal_ext_ctrl_accel_unknown4 = ProtoField.int16 ("dji_dumlv1.gimbal_ext_ctrl_accel_unknown4", "Unknown4", base.DEC, nil, nil, "angle in degrees * 10, range -1800..1800")
+f.gimbal_ext_ctrl_accel_unknown6 = ProtoField.uint8 ("dji_dumlv1.gimbal_ext_ctrl_accel_unknown6", "Unknown6", base.HEX, nil, nil, "flag fields")
+
+local function gimbal_ext_ctrl_accel_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.gimbal_ext_ctrl_accel_unknown0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_ext_ctrl_accel_unknown2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_ext_ctrl_accel_unknown4, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_ext_ctrl_accel_unknown6, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 7) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Ext Ctrl Accel: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Ext Ctrl Accel: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Suspend/Resume / Set On Or Off - 0x0d
+-- Supported in: P3X_FW_V01.11.0030_m0400
+
+enums.GIMBAL_SUSPEND_RESUME_CMD_ENUM = {
+    [0x2AB5]="Resume",
+    [0x7EF2]="Suspend",
+}
+
+f.gimbal_suspend_resume_cmd = ProtoField.uint16 ("dji_dumlv1.gimbal_suspend_resume_cmd", "Command", base.HEX, enums.GIMBAL_SUSPEND_RESUME_CMD_ENUM, nil)
+
+local function gimbal_suspend_resume_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.gimbal_suspend_resume_cmd, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Suspend/Resume: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Suspend/Resume: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Thirdp Magn - 0x0e
+-- Supported in: P3X_FW_V01.11.0030_m0400
+
+f.gimbal_thirdp_magn_unknown0 = ProtoField.int16 ("dji_dumlv1.gimbal_thirdp_magn_unknown0", "Unknown0", base.DEC, nil, nil)
+f.gimbal_thirdp_magn_unknown2 = ProtoField.int16 ("dji_dumlv1.gimbal_thirdp_magn_unknown2", "Unknown2", base.DEC, nil, nil)
+f.gimbal_thirdp_magn_unknown4 = ProtoField.int16 ("dji_dumlv1.gimbal_thirdp_magn_unknown4", "Unknown4", base.DEC, nil, nil)
+
+local function gimbal_thirdp_magn_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.gimbal_thirdp_magn_unknown0, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_thirdp_magn_unknown2, payload(offset, 2))
+    offset = offset + 2
+
+    subtree:add_le (f.gimbal_thirdp_magn_unknown4, payload(offset, 2))
+    offset = offset + 2
+
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Thirdp Magn: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Thirdp Magn: Payload size different than expected") end
 end
 
 -- Gimbal - Gimbal Movement - 0x15
@@ -6788,6 +6994,48 @@ local function gimbal_type_dissector(pkt_length, buffer, pinfo, subtree)
 
     if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Type: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Type: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal TBD 20 - 0x20
+-- Supported in: P3X_FW_V01.11.0030_m0400
+
+f.gimbal_tbd_20_unknown0 = ProtoField.int32 ("dji_dumlv1gimbal_tbd_20_unknown0", "Unknown0", base.DEC, nil, nil)
+f.gimbal_tbd_20_unknown4 = ProtoField.uint8 ("dji_dumlv1gimbal_tbd_20_unknown0", "Unknown4", base.DEC, nil, nil)
+f.gimbal_tbd_20_unknown5 = ProtoField.uint8 ("dji_dumlv1gimbal_tbd_20_unknown0", "Unknown5", base.DEC, nil, nil)
+
+local function gimbal_tbd_20_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.gimbal_tbd_20_unknown0, payload(offset, 4))
+    offset = offset + 4
+
+    subtree:add_le (f.gimbal_tbd_20_unknown4, payload(offset, 1))
+    offset = offset + 1
+
+    subtree:add_le (f.gimbal_tbd_20_unknown5, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal TBD 20: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal TBD 20: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal TBD 21 - 0x21
+-- Supported in: P3X_FW_V01.11.0030_m0400
+
+f.gimbal_tbd_21_unknown0 = ProtoField.int8 ("dji_dumlv1gimbal_tbd_21_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_tbd_21_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    subtree:add_le (f.gimbal_tbd_21_unknown0, payload(offset, 1))
+    offset = offset + 1
+
+    if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal TBD 21: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal TBD 21: Payload size different than expected") end
 end
 
 -- Gimbal - Gimbal User Params - 0x24
@@ -7142,9 +7390,17 @@ local GIMBAL_UART_CMD_DISSECT = {
     [0x01] = gimbal_control_dissector,
     [0x05] = gimbal_params_dissector,
     [0x06] = gimbal_push_aetr_dissector,
+    [0x07] = gimbal_adjust_roll_dissector,
     [0x08] = gimbal_calibrate_dissector,
+    [0x0a] = gimbal_ext_ctrl_degree_dissector,
+    [0x0b] = gimbal_ext_ctrl_status_dissector,
+    [0x0c] = gimbal_ext_ctrl_accel_dissector,
+    [0x0d] = gimbal_suspend_resume_dissector,
+    [0x0e] = gimbal_thirdp_magn_dissector,
     [0x15] = gimbal_move_dissector,
     [0x1c] = gimbal_type_dissector,
+    [0x20] = gimbal_tbd_20_dissector,
+    [0x21] = gimbal_tbd_21_dissector,
     [0x24] = gimbal_user_params_dissector,
     [0x27] = gimbal_abnormal_status_dissector,
     [0x2b] = gimbal_tutorial_status_dissector,
