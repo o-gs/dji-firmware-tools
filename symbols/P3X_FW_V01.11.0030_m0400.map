@@ -13,12 +13,26 @@
   Address         Publics by Value
 
  0003:08008190       start
+ 0003:080081A4       inf_loop_01
+ 0003:080081A6       inf_loop_02
+ 0003:080081A8       inf_loop_03
+ 0003:080081AA       inf_loop_04
+ 0003:080081AC       inf_loop_05
+ 0003:080081AE       inf_loop_06
+ 0003:080081B0       inf_loop_07
+ 0003:080081B2       inf_loop_08
+ 0003:080081B4       inf_loop_09
+ 0003:080081B6       inf_loop_0A
  0003:08008ADC       memcpy
+ 0003:08008B00       memset_nonstd
+ 0003:08008B0E       memset_zero
+ 0003:08008B12       memset
  0003:08008B24       strcmp
+ 0003:0800938C       normalize_angle
  0003:080093E4       recompute_packet_crc16
  0003:08009410       recompute_packet_crc8
  0003:080095B8       init_sub_80095B8
- 0003:08009900       source
+ 0003:08009900       srcbuf
  0003:08009910       destination
  0003:08009A20       init_sub_8009A20
  0003:08009BA8       packet_recv_sub_8009BA8
@@ -26,8 +40,13 @@
  0003:08009D08       init_sub_8009D08
  0003:08009DD4       packet_recv_sub_8009DD4
  0003:08009E0C       init_sub_8009E0C
+ 0003:08009F58       smstru_unk1
+ 0003:08009F60       thirdp_magnetom_func1
+ 0003:0800A040       unkbigstru1
  0003:0800A36C       init_sub_800A36C
  0003:0800AA00       tick_gimbal_mode
+ 0003:0800BDCC       angle
+ 0003:0800C9F0       gimb_user_param_value_fix
  0003:0800CA4C       jpt_800CA48
  0003:0800CB36       def_800CA48
  0003:0800CCF8       jpt_800CCF4
@@ -35,6 +54,7 @@
  0003:0800D42A       init_sub_800D42A
  0003:0800D828       persist_set_dword_40023C0C
  0003:0800D834       persist_sub_800D834
+ 0003:0800D8BC       store_boot_loader
  0003:0800D948       persist_set_dword_40023C10_flag_80000000
  0003:0800D9A8       persist_sub_800D9A8
  0003:0800D9F8       persist_set_dword_40023C04
@@ -44,16 +64,30 @@
  0003:0800DE9C       persist_get_location_length
  0003:0800DF80       compute_crc16
  0003:0800DFB4       compute_crc8
+ 0003:0800DFD8       store_persist_unk2_data
  0003:0800E0E4       init_sub_800E0E4
  0003:0800FFB4       init_sub_800FFB4
  0003:0801005C       init_sub_801005C
  0003:08010070       init_sub_8010070
  0003:08010084       reboot
+ 0003:08010434       gimb_user_param_0434
+ 0003:0801046C       reset_field_3C
+ 0003:08010488       reset_field_3A
+ 0003:080105A4       reset_field_A
+ 0003:080105C0       reset_field_8
+ 0003:080105DC       reset_field_10
+ 0003:080105F8       reset_field_E
+ 0003:08010614       reset_field_CE
+ 0003:08010634       reset_field_D6
+ 0003:08010654       gimb_user_param_0654
+ 0003:08010CB4       set_field_3820_flag
  0003:08010DFC       persist_encrypt_set_dword_50060800_flag0004
  0003:08010E20       persist_encrypt_check_dword_50060804_flag
  0003:08010E38       persist_encrypt_get_dword_50060808
  0003:0801130C       encrypt_config_store
  0003:080113A4       storebuf
+ 0003:080113AC       gimb_user_param_all_restore_defaults
+ 0003:080113C4       gimb_user_param_restore_default
  0003:0801141A       jpt_8011416
  0003:080114BC       def_8011416
  0003:08011670       packet_recv_ch2_sub_8011670
@@ -74,15 +108,18 @@
  0003:08013F78       persist_encrypt_memread
  0003:08013FCC       packet_exec_gener_encrypt_config
  0003:08014036       persist_encrypt_memstore
+ 0003:08014214       tick_calibration2
  0003:08014228       jpt_8014224
  0003:0801431E       def_8014224
  0003:080148B4       init_sub_80148B4
+ 0003:08014A0C       persdata2
  0003:08014BF0       outbuf
  0003:08014C10       main_thread_loop
  0003:08014EF4       tick_calibration
  0003:08014F02       jpt_8014EFE
  0003:08014FFC       def_8014EFE
  0003:0801546C       inbuf
+ 0003:080154A8       update_gimbal_calib_persistent_data
  0003:08015824       packet_receive_channel1
  0003:0801584A       jpt_8015846
  0003:08015944       def_8015846
@@ -124,9 +161,13 @@
  0003:080173BC       def_80172BE
  0003:08018A64       perptr
  0003:08018C54       packet_recv_sub_8018C54
+ 0003:08018FD0       unkbuf1
+ 0003:08018FE8       unkstru9
+ 0003:08019138       decrypt_self_def_algorithm
  0003:08019636       jpt_8019632
  0003:080196CC       def_8019632
  0003:08019B3C       check_device_version_trigger_values
+ 0003:08019C2C       decrypt_self_def_algorithm2
  0003:08019C90       store_new_device_version
  0003:08019F04       main_startup
  0003:0801A7BC       packet_receive_channel0
@@ -149,26 +190,67 @@
  0004:0801D46C       receive_commands
  0005:20000020       pkt_recv_ch2_len
  0005:20000022       pkt_recv_ch2_parse_pos
+ 0005:2000019C       gimb_calib_val1
+ 0005:2000019E       gimb_calib_val2
+ 0005:200001A0       gimb_calib_val3
+ 0005:200001CC       gimb_control_2
+ 0005:200001CE       gimb_control_1
+ 0005:200001D0       gimb_control_3
+ 0005:20000258       posture_unk_val1
+ 0005:2000025C       posture_unk_val2
+ 0005:20000260       posture_unk_val3
+ 0005:20000264       posture_unk_val4
  0005:200002E8       is_dword_200048A8_below_zero
+ 0005:2000032C       gimbal_work_flags
+ 0005:20000334       pkt_cmd20_val0
+ 0005:20000338       pkt_cmd20_val4
+ 0005:20000339       pkt_cmd20_val5
  0005:20000344       params_stuck_count
  0005:20000354       gimbal_params_mode
+ 0005:2000035C       spec_app_ctrl_flag1
  0005:20000374       pkt_gimbal_params_seqctr
+ 0005:200003EC       gimbal_user_params
+ 0005:20000690       device_state
  0005:20000694       packet_recv_ch0_state
  0005:20000695       packet_recv_ch1_state
  0005:200006B1       packet_recv_ch2_state
- 0005:200047A4       pos_real_roll
- 0005:200047A8       pos_real_pitch
- 0005:200047AC       pos_real_yaw
+ 0005:200007F0       g_smstru_unk1
+ 0005:200047A4       pos_real_roll_pitch_yaw
+ 0005:2000481C       thirdp_magnetom_unkval1
+ 0005:20004864       angle_rad_fld0to2
+ 0005:200048DC       gimbal_calib
+ 0005:20004AB4       mvmnt_val_flt6to7
+ 0005:20004AD0       angle_rad_fld3to5
  0005:20004B1C       yaw_angle
  0005:20004B20       yaw_angle_2
  0005:20004B58       yaw_angle_limit_1
  0005:20004B5C       yaw_angle_limit_2
  0005:20004B74       cali_state
+ 0005:20004B80       gimb_calib_reslt2
+ 0005:20004BAC       gimb_calib_reslt1
  0005:20004BFC       gimbal_params_mode_prev
  0005:20004C04       auto_calibration_result
- 0005:20005041       roll_adjust
+ 0005:20004C49       cmd21_unkval1
+ 0005:20004C4C       g_unkstru10
+ 0005:20004C68       enter_gimbal_mode4
+ 0005:20004C6C       ctrl_accel_curr_source
+ 0005:20004C78       ext_ctrl_unkn2
+ 0005:20004C7C       ext_ctrl_unkn3
+ 0005:20004C7D       ext_ctrl_flag1
+ 0005:20004C7E       ext_ctrl_flag2
+ 0005:20004C7F       ext_ctrl_flag3
+ 0005:20004C80       ext_ctrl_flag4
+ 0005:20004C90       ext_ctrl_unkn1
+ 0005:20004C94       ext_ctrl_arm_angle_vals
+ 0005:20004CB0       ctrl_accel_unkvar1
+ 0005:20004CB4       ctrl_accel_unkvar2
+ 0005:20004CB8       ctrl_accel_unkvar3
+ 0005:20004CCC       spec_app_control_payload
+ 0005:20004F68       g_perschunk2
+ 0005:20005040       g_persdata2
  0005:2000548C       component_state_pkt
  0005:20005497       component_state_pkt_payload
+ 0005:2000B4A0       g_unkstru9
  0005:2000BB1C       resp_chip_state_1
  0005:2000BB3C       resp_chip_state_2
  0005:2000BB57       resp_chip_state_3
@@ -178,5 +260,7 @@
  0005:2000BB74       module_state_rq_byte_2000BB74
  0005:2000BB75       module_state_rq_byte_2000BB75
  0005:2000BB76       module_state_rq_word_2000BB76
+ 0009:40006400       g_unkbigstru1
+ 0007:40023820       flag_field_3820
 
 Program entry point at 0003:00000000

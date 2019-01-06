@@ -145,7 +145,7 @@ static Enums_0(id) {
 	add_enum_member(id,"GMode_YawFollow",	0X2,	-1);
 	add_enum_member(id,"GMode_AutoCalibrate",	0X3,	-1);
 	add_enum_member(id,"GMode_4",	0X4,	-1);
-	add_enum_member(id,"GMode_5",	0X5,	-1);
+	add_enum_member(id,"GMode_Calibrate2",	0X5,	-1);
 	add_enum_member(id,"GMode_6",	0X6,	-1);
 	add_enum_member(id,"GMode_7",	0X7,	-1);
 	id = add_enum(-1,"GimbalCalibState",0x1100000);
@@ -195,6 +195,29 @@ static Enums(void) {
 static ApplyStrucTInfos_0(void) {
         auto id;
 	id = get_struc_id("DjiPacketHead");
+	id = get_struc_id("GimbalUnknBigSt1Chunk1");
+	id = get_struc_id("GimbalUnknBigStruct1");
+	SetType(get_member_id(id, 0x180), "struct GimbalUnknBigSt1Chunk1[8]");
+	id = get_struc_id("GimbalUnknSmStruct1");
+	SetType(get_member_id(id, 0x11), "uint16_t");
+	id = get_struc_id("GimbalCalibrateData");
+	SetType(get_member_id(id, 0x8), "float");
+	SetType(get_member_id(id, 0xC), "float");
+	SetType(get_member_id(id, 0x10), "float");
+	SetType(get_member_id(id, 0x14), "float[9]");
+	SetType(get_member_id(id, 0x38), "float");
+	SetType(get_member_id(id, 0x3C), "float");
+	id = get_struc_id("CfgUserVarEntry");
+	SetType(get_member_id(id, 0x30), "void (*)(void)");
+	id = get_struc_id("GimbalPersistUnk1Data");
+	id = get_struc_id("GimbalPersistUnk2Data");
+	SetType(get_member_id(id, 0x0), "uint8_t");
+	SetType(get_member_id(id, 0x1), "int8_t");
+	id = get_struc_id("GimbalPersistUnk2Chunk2");
+	SetType(get_member_id(id, 0x42), "uint16_t");
+	SetType(get_member_id(id, 0xCA), "uint16_t");
+	id = get_struc_id("UnkStruct9");
+	id = get_struc_id("UnkStruct10");
 	id = get_struc_id("DjiPacket");
 	id = get_struc_id("PacketPayloadGimbalParams");
 	id = get_struc_id("PacketPayloadGimbalMovement");
@@ -216,6 +239,16 @@ static Structures_0(id) {
         auto mid;
 
 	id = add_struc(-1,"DjiPacketHead",0);
+	id = add_struc(-1,"GimbalUnknBigSt1Chunk1",0);
+	id = add_struc(-1,"GimbalUnknBigStruct1",0);
+	id = add_struc(-1,"GimbalUnknSmStruct1",0);
+	id = add_struc(-1,"GimbalCalibrateData",0);
+	id = add_struc(-1,"CfgUserVarEntry",0);
+	id = add_struc(-1,"GimbalPersistUnk1Data",0);
+	id = add_struc(-1,"GimbalPersistUnk2Data",0);
+	id = add_struc(-1,"GimbalPersistUnk2Chunk2",0);
+	id = add_struc(-1,"UnkStruct9",0);
+	id = add_struc(-1,"UnkStruct10",0);
 	id = add_struc(-1,"DjiPacket",0);
 	id = add_struc(-1,"PacketPayloadGimbalParams",0);
 	id = add_struc(-1,"PacketPayloadGimbalMovement",0);
@@ -233,6 +266,127 @@ static Structures_0(id) {
 	mid = add_struc_member(id,"ack",	0X8,	0x000400,	-1,	1);
 	mid = add_struc_member(id,"cmdset",	0X9,	0x000400,	-1,	1);
 	mid = add_struc_member(id,"cmd",	0XA,	0x000400,	-1,	1);
+	
+	id = get_struc_id("GimbalUnknBigSt1Chunk1");
+	mid = add_struc_member(id,"field_0",	0,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_4",	0X4,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_8",	0X8,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_C",	0XC,	0x20000400,	-1,	4);
+	
+	id = get_struc_id("GimbalUnknBigStruct1");
+	mid = add_struc_member(id,"flags_0",	0,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_4",	0X4,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_8",	0X8,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_C",	0XC,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_10",	0X10,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_14",	0X14,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_18",	0X18,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_1C",	0X1C,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_20",	0X20,	0x000400,	-1,	352);
+	mid = add_struc_member(id,"field_180",	0X180,	0x60000400,	get_struc_id("GimbalUnknBigSt1Chunk1"),	128);
+	
+	id = get_struc_id("GimbalUnknSmStruct1");
+	mid = add_struc_member(id,"field_0",	0,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_4",	0X4,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_8",	0X8,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"field_9",	0X9,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"field_A",	0XA,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"field_B",	0XB,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_F",	0XF,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"mode_sel_magic_val",	0X11,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_13",	0X13,	0x000400,	-1,	1);
+	
+	id = get_struc_id("GimbalCalibrateData");
+	mid = add_struc_member(id,"field_0",	0,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_2",	0X2,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_4",	0X4,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_6",	0X6,	0x000400,	-1,	2);
+	mid = add_struc_member(id,"field_8",	0X8,	0x80000400,	-1,	4);
+	mid = add_struc_member(id,"field_C",	0XC,	0x80000400,	-1,	4);
+	mid = add_struc_member(id,"field_10",	0X10,	0x80000400,	-1,	4);
+	mid = add_struc_member(id,"field_14",	0X14,	0x80000400,	-1,	36);
+	mid = add_struc_member(id,"field_38",	0X38,	0x80000400,	-1,	4);
+	mid = add_struc_member(id,"field_3C",	0X3C,	0x80000400,	-1,	4);
+	mid = add_struc_member(id,"field_40",	0X40,	0x000400,	-1,	4);
+	
+	id = get_struc_id("CfgUserVarEntry");
+	mid = add_struc_member(id,"type_id",	0,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"val_size",	0X1,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"field_2",	0X2,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"field_3",	0X3,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"value_ptr",	0X4,	0x20500400,	0,	4,	0XFFFFFFFF,	0,	0x000002);
+	mid = add_struc_member(id,"value_idx",	0X8,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"limit_f__min",	0XC,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"limit_f__max",	0X10,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"limit_f__def",	0X14,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"limit_i__min",	0X18,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"limit_i__max",	0X1C,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"limit_i__def",	0X20,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"limit_u__min",	0X24,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"limit_u__max",	0X28,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"limit_u__def",	0X2C,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"callback",	0X30,	0x25500400,	0XFFFFFFFF,	4,	0XFFFFFFFF,	0,	0x000002);
+	
+	id = get_struc_id("GimbalPersistUnk1Data");
+	mid = add_struc_member(id,"unk1_version",	0,	0x000400,	-1,	4);
+	mid = add_struc_member(id,"ldr_version",	0X4,	0x000400,	-1,	4);
+	mid = add_struc_member(id,"unk3_version",	0X8,	0x000400,	-1,	4);
+	mid = add_struc_member(id,"unk4_version",	0XC,	0x000400,	-1,	4);
+	mid = add_struc_member(id,"field_10",	0X10,	0x000400,	-1,	32);
+	mid = add_struc_member(id,"gimb_cal_field_0",	0X30,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"gimb_cal_field_2",	0X32,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"gimb_cal_field_4",	0X34,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_36",	0X36,	0x000400,	-1,	60);
+	mid = add_struc_member(id,"field_72",	0X72,	0x000400,	-1,	2);
+	
+	id = get_struc_id("GimbalPersistUnk2Data");
+	mid = add_struc_member(id,"active_slot",	0,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"roll_adjust",	0X1,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"padding2",	0X2,	0x000400,	-1,	2);
+	mid = add_struc_member(id,"field_4",	0X4,	0x20100400,	-1,	4);
+	mid = add_struc_member(id,"field_8",	0X8,	0x000400,	-1,	204);
+	mid = add_struc_member(id,"field_D4",	0XD4,	0x000400,	-1,	768);
+	mid = add_struc_member(id,"field_3D4",	0X3D4,	0x000400,	-1,	36);
+	mid = add_struc_member(id,"field_3F8",	0X3F8,	0x20000400,	-1,	4);
+	
+	id = get_struc_id("GimbalPersistUnk2Chunk2");
+	mid = add_struc_member(id,"field_0",	0,	0x000400,	-1,	8);
+	mid = add_struc_member(id,"field_8",	0X8,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_A",	0XA,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_C",	0XC,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_E",	0XE,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_10",	0X10,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_12",	0X12,	0x000400,	-1,	40);
+	mid = add_struc_member(id,"field_3A",	0X3A,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_3C",	0X3C,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_3E",	0X3E,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_40",	0X40,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_42",	0X42,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_44",	0X44,	0x000400,	-1,	134);
+	mid = add_struc_member(id,"field_CA",	0XCA,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_CC",	0XCC,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_CE",	0XCE,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"field_CF",	0XCF,	0x000400,	-1,	5);
+	mid = add_struc_member(id,"field_D4",	0XD4,	0x000400,	-1,	2);
+	mid = add_struc_member(id,"field_D6",	0XD6,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"field_D7",	0XD7,	0x000400,	-1,	1);
+	
+	id = get_struc_id("UnkStruct9");
+	mid = add_struc_member(id,"field_0",	0,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_2",	0X2,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"field_3",	0X3,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"field_4",	0X4,	0x20500400,	0,	4,	0XFFFFFFFF,	0,	0x000002);
+	mid = add_struc_member(id,"field_8",	0X8,	0x20500400,	0,	4,	0XFFFFFFFF,	0,	0x000002);
+	mid = add_struc_member(id,"field_C",	0XC,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_E",	0XE,	0x10000400,	-1,	2);
+	mid = add_struc_member(id,"field_10",	0X10,	0x20500400,	0,	4,	0XFFFFFFFF,	0,	0x000002);
+	
+	id = get_struc_id("UnkStruct10");
+	mid = add_struc_member(id,"field_0",	0,	0x20000400,	-1,	4);
+	mid = add_struc_member(id,"field_4",	0X4,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"field_5",	0X5,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"field_6",	0X6,	0x000400,	-1,	1);
+	mid = add_struc_member(id,"field_7",	0X7,	0x000400,	-1,	1);
 	
 	id = get_struc_id("DjiPacket");
 	mid = add_struc_member(id,"delimiter",	0,	0x000400,	-1,	1);
@@ -334,8 +488,7 @@ static Bytes_0(void) {
 	make_array	(x,	0X61);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
-	create_dword	(0X8008188);
-	create_dword	(0X800818C);
+	create_insn	(0X8008188);
 	create_insn	(x=0X8008190);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -343,11 +496,35 @@ static Bytes_0(void) {
 	create_dword	(x=0X8008194);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
-	create_dword	(0X8008198);
-	create_dword	(0X800819C);
-	create_dword	(0X80081A0);
-	create_dword	(0X80081A4);
-	make_array	(0X80081A4,	0X5);
+	create_dword	(x=0X8008198);
+	op_plain_offset	(x,	0,	0);
+	op_plain_offset	(x,	128,	0);
+	create_insn	(x=0X800819C);
+	op_plain_offset	(x,	1,	0);
+	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X80081A0);
+	op_plain_offset	(x,	1,	0);
+	op_plain_offset	(x,	129,	0);
+	create_insn	(0X80081A4);
+	set_name	(0X80081A4,	"inf_loop_01");
+	create_insn	(0X80081A6);
+	set_name	(0X80081A6,	"inf_loop_02");
+	create_insn	(0X80081A8);
+	set_name	(0X80081A8,	"inf_loop_03");
+	create_insn	(0X80081AA);
+	set_name	(0X80081AA,	"inf_loop_04");
+	create_insn	(0X80081AC);
+	set_name	(0X80081AC,	"inf_loop_05");
+	create_insn	(0X80081AE);
+	set_name	(0X80081AE,	"inf_loop_06");
+	create_insn	(0X80081B0);
+	set_name	(0X80081B0,	"inf_loop_07");
+	create_insn	(0X80081B2);
+	set_name	(0X80081B2,	"inf_loop_08");
+	create_insn	(0X80081B4);
+	set_name	(0X80081B4,	"inf_loop_09");
+	create_insn	(0X80081B6);
+	set_name	(0X80081B6,	"inf_loop_0A");
 	create_dword	(x=0X80081B8);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
@@ -369,7 +546,12 @@ static Bytes_0(void) {
 	create_insn	(0X80088D4);
 	create_insn	(0X80088D6);
 	create_insn	(0X8008A08);
+	set_cmt	(0X8008A10,	"a2",	0);
+	set_cmt	(0X8008A12,	"a4",	0);
+	set_cmt	(0X8008A14,	"bigbuf1",	0);
+	set_cmt	(0X8008A1A,	"a1",	0);
 	create_insn	(0X8008A36);
+	set_cmt	(0X8008A3A,	"a1",	0);
 	make_array	(0X8008A42,	0X2);
 	create_insn	(0X8008A44);
 	create_insn	(x=0X8008A48);
@@ -415,9 +597,15 @@ static Bytes_0(void) {
 	create_insn	(0X8008AE6);
 	create_insn	(0X8008AF2);
 	create_insn	(0X8008B00);
+	set_name	(0X8008B00,	"memset_nonstd");
 	create_insn	(0X8008B04);
+	set_cmt	(0X8008B0E,	"val",	0);
 	create_insn	(0X8008B0E);
+	set_name	(0X8008B0E,	"memset_zero");
 	create_insn	(0X8008B12);
+	set_name	(0X8008B12,	"memset");
+	set_cmt	(0X8008B16,	"val",	0);
+	set_cmt	(0X8008B1A,	"buflen",	0);
 	create_insn	(0X8008B24);
 	set_name	(0X8008B24,	"strcmp");
 	create_insn	(0X8008B2A);
@@ -539,8 +727,15 @@ static Bytes_0(void) {
 	op_hex		(x,	1);
 	create_insn	(0X800908A);
 	create_insn	(0X8009092);
-	create_dword	(0X80090B4);
-	make_array	(0X80090B4,	0X7);
+	create_insn	(x=0X80090B4);
+	op_plain_offset	(x,	1,	0);
+	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X80090B6);
+	op_plain_offset	(x,	1,	0);
+	op_plain_offset	(x,	129,	0);
+	create_insn	(0X80090BA);
+	create_insn	(x=0X80090BC);
+	op_hex		(x,	1);
 	create_dword	(x=0X80090D0);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
@@ -606,6 +801,7 @@ static Bytes_0(void) {
 	create_insn	(0X8009376);
 	make_array	(0X800938A,	0X2);
 	create_insn	(0X800938C);
+	set_name	(0X800938C,	"normalize_angle");
 	create_insn	(0X800938E);
 	create_insn	(0X80093B2);
 	make_array	(0X80093D6,	0X2);
@@ -774,8 +970,10 @@ static Bytes_0(void) {
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8009648);
 	op_stkvar	(x,	1);
+	set_cmt	(0X800964C,	"a2",	0);
 	create_insn	(x=0X800964C);
 	op_stkvar	(x,	1);
+	set_cmt	(0X800964E,	"unkbigstru1",	0);
 	create_insn	(x=0X800964E);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -812,6 +1010,9 @@ static Bytes_0(void) {
 	create_insn	(x=0X800969E);
 	op_plain_offset	(x,	1,	0X200007DC);
 	op_plain_offset	(x,	129,	0X200007DC);
+	set_cmt	(0X80096A4,	"a3",	0);
+	set_cmt	(0X80096A6,	"a2",	0);
+	set_cmt	(0X80096A8,	"unkbigstru1",	0);
 	create_insn	(x=0X80096A8);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -1057,12 +1258,14 @@ static Bytes_0(void) {
 	create_insn	(x=0X80098D6);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X80098DE,	"srcbuf",	0);
 	create_insn	(x=0X80098DE);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
 	create_insn	(x=0X80098E0);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X80098E2,	"unkbigstru1",	0);
 	set_cmt	(0X80098EC,	"num",	0);
 	create_insn	(0X80098EC);
 	set_cmt	(0X80098EE,	"source",	0);
@@ -1079,7 +1282,7 @@ static Bytes_0(void) {
 	create_dword	(x=0X8009900);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
-	set_name	(0X8009900,	"source");
+	set_name	(0X8009900,	"srcbuf");
 	create_dword	(x=0X8009904);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
@@ -1139,12 +1342,14 @@ static Bytes_0(void) {
 	create_insn	(x=0X8009972);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X800997A,	"srcbuf",	0);
 	create_insn	(x=0X800997A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
 	create_insn	(x=0X800997C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X800997E,	"unkbigstru1",	0);
 	create_insn	(x=0X8009988);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -1686,25 +1891,33 @@ static Bytes_0(void) {
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X8009F3C);
+	set_cmt	(0X8009F3E,	"smstru_unk1",	0);
 	create_insn	(x=0X8009F3E);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8009F40,	"a2",	0);
+	set_cmt	(0X8009F42,	"unkbigstru1",	0);
 	create_insn	(x=0X8009F42);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8009F48,	"smstru_unk1",	0);
 	create_insn	(x=0X8009F48);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8009F4E,	"a2",	0);
+	set_cmt	(0X8009F50,	"unkbigstru1",	0);
 	create_insn	(x=0X8009F50);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
 	create_dword	(x=0X8009F58);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
+	set_name	(0X8009F58,	"smstru_unk1");
 	create_dword	(x=0X8009F5C);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X8009F60);
+	set_name	(0X8009F60,	"thirdp_magnetom_func1");
 	create_insn	(x=0X8009F6E);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8009F74);
@@ -1765,9 +1978,11 @@ static Bytes_0(void) {
 	create_insn	(x=0X8009FF2);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8009FF6,	"srcbuf",	0);
 	create_insn	(x=0X8009FF6);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8009FF8,	"unkbigstru1",	0);
 	create_insn	(x=0X8009FF8);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -1783,6 +1998,8 @@ static Bytes_0(void) {
 	create_insn	(x=0X800A014);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X800A016,	"srcbuf",	0);
+	set_cmt	(0X800A01A,	"unkbigstru1",	0);
 	create_insn	(x=0X800A01A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -1792,6 +2009,8 @@ static Bytes_0(void) {
 	create_insn	(x=0X800A028);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X800A02C,	"a2",	0);
+	set_cmt	(0X800A02E,	"unkbigstru1",	0);
 	create_insn	(x=0X800A02E);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -1805,6 +2024,7 @@ static Bytes_0(void) {
 	create_dword	(x=0X800A040);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
+	set_name	(0X800A040,	"unkbigstru1");
 	create_dword	(x=0X800A044);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
@@ -1837,7 +2057,13 @@ static Bytes_0(void) {
 	create_insn	(x=0X800A0FC);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X800A102,	"enable",	0);
+	set_cmt	(0X800A10A,	"enable",	0);
+	set_cmt	(0X800A10C,	"mask",	0);
+	set_cmt	(0X800A116,	"enable",	0);
 	create_insn	(0X800A116);
+	set_cmt	(0X800A11E,	"enable",	0);
+	set_cmt	(0X800A120,	"mask",	0);
 	make_array	(0X800A12A,	0X2);
 	create_dword	(x=0X800A12C);
 	op_plain_offset	(x,	0,	0);
@@ -2241,6 +2467,8 @@ static Bytes_0(void) {
 	create_insn	(x=0X800AA08);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X800AA0E);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X800AA10);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -2268,6 +2496,10 @@ static Bytes_0(void) {
 	create_insn	(x=0X800AA4C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X800AA54);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
+	create_insn	(x=0X800AA56);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X800AA5A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -2832,6 +3064,8 @@ static Bytes_0(void) {
 	create_insn	(x=0X800B37C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X800B3A0);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X800B3A4);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -2864,6 +3098,8 @@ static Bytes_0(void) {
 	create_insn	(x=0X800B44A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X800B450);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X800B454);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -2937,6 +3173,8 @@ static Bytes_0(void) {
 	create_insn	(x=0X800B56C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X800B572);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X800B57A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -2961,6 +3199,8 @@ static Bytes_0(void) {
 	create_insn	(x=0X800B5AC);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X800B5B2);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X800B5BA);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -2995,6 +3235,8 @@ static Bytes_0(void) {
 	create_insn	(x=0X800B5FE);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X800B604);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X800B60C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -3013,6 +3255,10 @@ static Bytes_0(void) {
 	create_insn	(x=0X800B636);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X800B63C);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
+	create_insn	(x=0X800B644);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X800B64C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -3091,10 +3337,13 @@ static Bytes_0(void) {
 	op_stkvar	(x,	1);
 	create_insn	(x=0X800B732);
 	op_stkvar	(x,	1);
+	set_cmt	(0X800B736,	"angle",	0);
 	create_insn	(x=0X800B736);
 	op_stkvar	(x,	1);
+	set_cmt	(0X800B73C,	"angle",	0);
 	create_insn	(x=0X800B73C);
 	op_stkvar	(x,	1);
+	set_cmt	(0X800B742,	"angle",	0);
 	create_insn	(x=0X800B742);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X800B748);
@@ -3325,12 +3574,15 @@ static Bytes_0(void) {
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
 	create_insn	(0X800BB84);
+	set_cmt	(0X800BB88,	"angle",	0);
 	create_insn	(x=0X800BB88);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X800BB8E,	"angle",	0);
 	create_insn	(x=0X800BB8E);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X800BB94,	"angle",	0);
 	create_insn	(x=0X800BB94);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -3405,6 +3657,8 @@ static Bytes_0(void) {
 	create_insn	(x=0X800BCDA);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X800BCDE);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X800BCE2);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -3494,6 +3748,7 @@ static Bytes_0(void) {
 	create_dword	(x=0X800BDCC);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
+	set_name	(0X800BDCC,	"angle");
 	create_dword	(x=0X800BDD0);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
@@ -4408,10 +4663,13 @@ static Bytes_0(void) {
 	op_stkvar	(x,	1);
 	create_insn	(x=0X800C726);
 	op_stkvar	(x,	1);
+	set_cmt	(0X800C72A,	"angle",	0);
 	create_insn	(x=0X800C72A);
 	op_stkvar	(x,	1);
+	set_cmt	(0X800C730,	"angle",	0);
 	create_insn	(x=0X800C730);
 	op_stkvar	(x,	1);
+	set_cmt	(0X800C736,	"angle",	0);
 	create_insn	(x=0X800C736);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X800C73C);
@@ -4529,8 +4787,11 @@ static Bytes_0(void) {
 	create_double	(0X800C9C8);
 	create_double	(0X800C9D0);
 	create_insn	(0X800C9D8);
+	set_cmt	(0X800C9DE,	"fix_method",	0);
 	create_insn	(0X800C9DE);
+	set_cmt	(0X800C9E0,	"param_idx",	0);
 	create_insn	(0X800C9F0);
+	set_name	(0X800C9F0,	"gimb_user_param_value_fix");
 	create_insn	(x=0X800C9FC);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -5222,6 +5483,8 @@ static Bytes_0(void) {
 	create_insn	(x=0X800D48A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X800D48E);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X800D496);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -5488,6 +5751,7 @@ static Bytes_0(void) {
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X800D8BC);
+	set_name	(0X800D8BC,	"store_boot_loader");
 	set_cmt	(0X800D8C6,	"nval",	0);
 	create_insn	(0X800D8D0);
 	set_cmt	(0X800D8D4,	"a2",	0);
@@ -5834,6 +6098,15 @@ static Bytes_0(void) {
 	create_insn	(x=0X800DDDE);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_1(void) {
+        auto x;
+#define id x
+
 	create_insn	(x=0X800DDF8);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -5916,6 +6189,7 @@ static Bytes_0(void) {
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X800DFD8);
+	set_name	(0X800DFD8,	"store_persist_unk2_data");
 	set_cmt	(0X800E000,	"nval",	0);
 	set_cmt	(0X800E006,	"a2",	0);
 	set_cmt	(0X800E008,	"a1",	0);
@@ -5941,6 +6215,8 @@ static Bytes_0(void) {
 	op_stkvar	(x,	1);
 	set_cmt	(0X800E09A,	"source",	0);
 	set_cmt	(0X800E09C,	"num",	0);
+	create_insn	(x=0X800E09C);
+	op_stroff	(x,	1,	GetStrucIdByName("GimbalPersistUnk2Data"),	0);
 	set_cmt	(0X800E0A0,	"destination",	0);
 	make_array	(0X800E0AA,	0X2);
 	create_dword	(0X800E0AC);
@@ -6015,15 +6291,6 @@ static Bytes_0(void) {
 	create_insn	(x=0X800E204);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_1(void) {
-        auto x;
-#define id x
-
 	create_insn	(x=0X800E210);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -7869,6 +8136,7 @@ static Bytes_1(void) {
 	create_float	(0X801042C);
 	create_float	(0X8010430);
 	create_insn	(0X8010434);
+	set_name	(0X8010434,	"gimb_user_param_0434");
 	create_insn	(0X801043A);
 	create_insn	(x=0X8010442);
 	op_plain_offset	(x,	1,	0);
@@ -7882,6 +8150,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X801046C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_name	(0X801046C,	"reset_field_3C");
 	create_insn	(x=0X8010478);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -7898,6 +8167,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X8010488);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_name	(0X8010488,	"reset_field_3A");
 	create_insn	(x=0X8010494);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -7976,6 +8246,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X80105A4);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_name	(0X80105A4,	"reset_field_A");
 	create_insn	(x=0X80105B0);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -7992,6 +8263,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X80105C0);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_name	(0X80105C0,	"reset_field_8");
 	create_insn	(x=0X80105CC);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -8008,6 +8280,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X80105DC);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_name	(0X80105DC,	"reset_field_10");
 	create_insn	(x=0X80105E8);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -8024,6 +8297,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X80105F8);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_name	(0X80105F8,	"reset_field_E");
 	create_insn	(x=0X8010604);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -8040,6 +8314,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X8010614);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_name	(0X8010614,	"reset_field_CE");
 	create_insn	(x=0X8010622);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -8056,6 +8331,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X8010634);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_name	(0X8010634,	"reset_field_D6");
 	create_insn	(x=0X8010642);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -8070,6 +8346,7 @@ static Bytes_1(void) {
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X8010654);
+	set_name	(0X8010654,	"gimb_user_param_0654");
 	create_insn	(0X801065E);
 	create_insn	(x=0X8010666);
 	op_plain_offset	(x,	1,	0);
@@ -8210,6 +8487,7 @@ static Bytes_1(void) {
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X8010CB4);
+	set_name	(0X8010CB4,	"set_field_3820_flag");
 	create_insn	(x=0X8010CB6);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -8773,9 +9051,12 @@ static Bytes_1(void) {
 	set_name	(0X80113A4,	"storebuf");
 	create_dword	(0X80113A8);
 	create_insn	(0X80113AC);
+	set_name	(0X80113AC,	"gimb_user_param_all_restore_defaults");
+	set_cmt	(0X80113B2,	"a1",	0);
 	create_insn	(0X80113B2);
 	make_array	(0X80113C2,	0X2);
 	create_insn	(0X80113C4);
+	set_name	(0X80113C4,	"gimb_user_param_restore_default");
 	create_insn	(x=0X80113CE);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -10920,6 +11201,7 @@ static Bytes_1(void) {
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X8014214);
+	set_name	(0X8014214,	"tick_calibration2");
 	create_insn	(x=0X801421C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -11171,6 +11453,8 @@ static Bytes_1(void) {
 	create_insn	(x=0X8014720);
 	op_plain_offset	(x,	1,	0X20004C08);
 	op_plain_offset	(x,	129,	0X20004C08);
+	create_insn	(x=0X8014722);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X8014724);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -11235,6 +11519,8 @@ static Bytes_1(void) {
 	create_insn	(x=0X801486E);
 	op_plain_offset	(x,	1,	0X20004C08);
 	op_plain_offset	(x,	129,	0X20004C08);
+	create_insn	(x=0X8014870);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X8014872);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -11292,6 +11578,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X801492A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X801493C,	"a2",	0);
 	create_insn	(x=0X801493C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -11301,6 +11588,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X8014946);
 	op_plain_offset	(x,	1,	0X20000334);
 	op_plain_offset	(x,	129,	0X20000334);
+	set_cmt	(0X8014948,	"persdata2",	0);
 	create_insn	(x=0X8014948);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -11343,6 +11631,7 @@ static Bytes_1(void) {
 	create_insn	(x=0X801499E);
 	op_plain_offset	(x,	1,	0X20005040);
 	op_plain_offset	(x,	129,	0X20005040);
+	set_cmt	(0X80149A0,	"persdata2",	0);
 	create_insn	(0X80149AA);
 	create_insn	(x=0X80149B2);
 	op_plain_offset	(x,	1,	0);
@@ -11385,6 +11674,7 @@ static Bytes_1(void) {
 	create_dword	(x=0X8014A0C);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
+	set_name	(0X8014A0C,	"persdata2");
 	create_dword	(x=0X8014A10);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
@@ -11474,6 +11764,15 @@ static Bytes_1(void) {
 	create_insn	(x=0X8014AC8);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_2(void) {
+        auto x;
+#define id x
+
 	create_insn	(x=0X8014ACC);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8014AE2);
@@ -11534,6 +11833,8 @@ static Bytes_1(void) {
 	create_insn	(x=0X8014BBE);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8014BE4,	"a2",	0);
+	set_cmt	(0X8014BE6,	"a1",	0);
 	create_dword	(x=0X8014BF0);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
@@ -11729,15 +12030,6 @@ static Bytes_1(void) {
 	create_insn	(x=0X8014E10);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_2(void) {
-        auto x;
-#define id x
-
 	create_insn	(x=0X8014E16);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -12525,7 +12817,8 @@ static Bytes_2(void) {
 	create_insn	(x=0X8015386);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
-	create_insn	(0X801538C);
+	create_insn	(x=0X801538C);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X801538E);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -12591,7 +12884,8 @@ static Bytes_2(void) {
 	create_insn	(x=0X8015414);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
-	create_insn	(0X801541A);
+	create_insn	(x=0X801541A);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X801541C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -12648,6 +12942,7 @@ static Bytes_2(void) {
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X80154A8);
+	set_name	(0X80154A8,	"update_gimbal_calib_persistent_data");
 	create_insn	(x=0X80154AE);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -12778,13 +13073,11 @@ static Bytes_2(void) {
 	create_insn	(0X80155A4);
 	create_insn	(0X8015610);
 	create_insn	(x=0X801561A);
-	op_plain_offset	(x,	1,	0);
-	op_plain_offset	(x,	129,	0);
+	op_dec		(x,	1);
 	make_array	(0X80156BA,	0X2);
 	create_float	(0X80156BC);
 	create_dword	(x=0X80156C0);
-	op_plain_offset	(x,	0,	0);
-	op_plain_offset	(x,	128,	0);
+	op_dec		(x,	0);
 	create_float	(0X80156C4);
 	create_float	(0X80156C8);
 	create_insn	(0X80156CC);
@@ -13106,6 +13399,10 @@ static Bytes_2(void) {
 	op_hex		(x,	1);
 	create_insn	(x=0X8015BBE);
 	op_stkvar	(x,	1);
+	create_insn	(x=0X8015BC2);
+	op_stkvar	(x,	1);
+	create_insn	(x=0X8015BCC);
+	op_stkvar	(x,	1);
 	create_insn	(x=0X8015BD0);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8015BD4);
@@ -13155,6 +13452,8 @@ static Bytes_2(void) {
 	create_insn	(x=0X8015C42);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8015C48);
+	op_stkvar	(x,	1);
+	create_insn	(x=0X8015C4C);
 	op_stkvar	(x,	1);
 	set_cmt	(0X8015C54,	"channel",	0);
 	set_cmt	(0X8015C56,	"pkt",	0);
@@ -13251,6 +13550,10 @@ static Bytes_2(void) {
 	op_hex		(x,	1);
 	create_insn	(x=0X8015DFE);
 	op_stkvar	(x,	1);
+	create_insn	(x=0X8015E02);
+	op_stkvar	(x,	1);
+	create_insn	(x=0X8015E0C);
+	op_stkvar	(x,	1);
 	create_insn	(x=0X8015E10);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8015E14);
@@ -13301,6 +13604,8 @@ static Bytes_2(void) {
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8015E88);
 	op_stkvar	(x,	1);
+	create_insn	(x=0X8015E8C);
+	op_stkvar	(x,	1);
 	set_cmt	(0X8015E94,	"channel",	0);
 	set_cmt	(0X8015E96,	"pkt",	0);
 	create_dword	(x=0X8015EA0);
@@ -13320,6 +13625,10 @@ static Bytes_2(void) {
 	create_insn	(x=0X8015ED6);
 	op_hex		(x,	1);
 	create_insn	(x=0X8015EDC);
+	op_stkvar	(x,	1);
+	create_insn	(x=0X8015EE0);
+	op_stkvar	(x,	1);
+	create_insn	(x=0X8015EEA);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8015EEE);
 	op_stkvar	(x,	1);
@@ -13396,6 +13705,8 @@ static Bytes_2(void) {
 	op_plain_offset	(x,	129,	0);
 	create_insn	(x=0X8015FBA);
 	op_stkvar	(x,	1);
+	create_insn	(x=0X8015FBE);
+	op_stkvar	(x,	1);
 	set_cmt	(0X8015FC6,	"channel",	0);
 	set_cmt	(0X8015FC8,	"pkt",	0);
 	make_array	(0X8015FD2,	0X2);
@@ -13414,8 +13725,11 @@ static Bytes_2(void) {
 	op_stkvar	(x,	1);
 	create_insn	(x=0X801604C);
 	op_stkvar	(x,	1);
+	set_cmt	(0X8016072,	"angle",	0);
 	create_insn	(x=0X8016072);
 	op_stkvar	(x,	1);
+	set_cmt	(0X8016078,	"angle",	0);
+	set_cmt	(0X801607E,	"angle",	0);
 	create_insn	(x=0X801607E);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8016088);
@@ -13436,6 +13750,7 @@ static Bytes_2(void) {
 	op_stkvar	(x,	1);
 	create_insn	(x=0X80160C4);
 	op_stkvar	(x,	1);
+	set_cmt	(0X80160C8,	"angle",	0);
 	create_insn	(x=0X80160C8);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X80160CE);
@@ -13450,6 +13765,7 @@ static Bytes_2(void) {
 	op_stkvar	(x,	1);
 	create_insn	(x=0X80160EA);
 	op_stkvar	(x,	1);
+	set_cmt	(0X80160EE,	"angle",	0);
 	create_insn	(x=0X80160F4);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X80160FC);
@@ -13462,6 +13778,7 @@ static Bytes_2(void) {
 	op_stkvar	(x,	1);
 	create_insn	(x=0X8016110);
 	op_stkvar	(x,	1);
+	set_cmt	(0X8016114,	"angle",	0);
 	create_insn	(x=0X8016114);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X801611A);
@@ -13569,7 +13886,8 @@ static Bytes_2(void) {
 	create_insn	(x=0X8016398);
 	op_stkvar	(x,	1);
 	make_array	(0X80163BE,	0X2);
-	create_dword	(0X80163C0);
+	create_dword	(x=0X80163C0);
+	op_dec		(x,	0);
 	create_insn	(0X80163C4);
 	set_name	(0X80163C4,	"packet_exec_gimb_get_user_param");
 	create_insn	(x=0X80163D4);
@@ -13878,6 +14196,7 @@ static Bytes_2(void) {
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X8016930);
 	set_name	(0X8016930,	"packet_exec_gimb_save_user_param");
+	set_cmt	(0X8016940,	"persdata2",	0);
 	create_insn	(x=0X8016940);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -13924,6 +14243,8 @@ static Bytes_2(void) {
 	create_insn	(x=0X80169A6);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X80169B2);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X80169B4);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -14065,6 +14386,8 @@ static Bytes_2(void) {
 	op_plain_offset	(x,	129,	0);
 	create_insn	(x=0X8016B80);
 	op_stkvar	(x,	1);
+	set_cmt	(0X8016B82,	"fix_method",	0);
+	set_cmt	(0X8016B84,	"param_idx",	0);
 	create_insn	(x=0X8016B92);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -14118,6 +14441,8 @@ static Bytes_2(void) {
 	create_insn	(x=0X8016C7C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X8016C80);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(0X8016C86);
 	create_insn	(x=0X8016C92);
 	op_plain_offset	(x,	1,	0);
@@ -16928,6 +17253,15 @@ static Bytes_2(void) {
 	op_plain_offset	(x,	129,	0X200002EC);
 	create_insn	(x=0X8018746);
 	op_stkvar	(x,	1);
+}
+
+//------------------------------------------------------------------------
+// Information about bytes
+
+static Bytes_3(void) {
+        auto x;
+#define id x
+
 	create_insn	(x=0X801874A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -17227,15 +17561,6 @@ static Bytes_2(void) {
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
 	set_cmt	(0X80189CE,	"a1",	0);
-}
-
-//------------------------------------------------------------------------
-// Information about bytes
-
-static Bytes_3(void) {
-        auto x;
-#define id x
-
 	create_insn	(x=0X80189D6);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -17482,12 +17807,15 @@ static Bytes_3(void) {
 	create_insn	(x=0X8018DCE);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8018DD0,	"a4",	0);
 	create_insn	(x=0X8018DD2);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8018DD4,	"a3",	0);
 	create_insn	(x=0X8018DD6);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8018DDC,	"unkstru9",	0);
 	create_insn	(x=0X8018DDC);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -17497,9 +17825,11 @@ static Bytes_3(void) {
 	create_insn	(x=0X8018DE8);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8018DF4,	"unkbuf1",	0);
 	create_insn	(x=0X8018DF4);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8018DF6,	"unkstru9",	0);
 	create_insn	(x=0X8018DF6);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -17521,12 +17851,15 @@ static Bytes_3(void) {
 	create_insn	(x=0X8018E24);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8018E26,	"a4",	0);
 	create_insn	(x=0X8018E28);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8018E2A,	"a3",	0);
 	create_insn	(x=0X8018E2C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8018E32,	"unkstru9",	0);
 	create_insn	(x=0X8018E32);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -17536,9 +17869,11 @@ static Bytes_3(void) {
 	create_insn	(x=0X8018E3E);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8018E4A,	"unkbuf1",	0);
 	create_insn	(x=0X8018E4A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8018E4C,	"unkstru9",	0);
 	create_insn	(x=0X8018E4C);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -17599,6 +17934,7 @@ static Bytes_3(void) {
 	create_dword	(x=0X8018FD0);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
+	set_name	(0X8018FD0,	"unkbuf1");
 	create_float	(0X8018FD4);
 	create_dword	(x=0X8018FD8);
 	op_plain_offset	(x,	0,	0);
@@ -17615,6 +17951,7 @@ static Bytes_3(void) {
 	create_dword	(x=0X8018FE8);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
+	set_name	(0X8018FE8,	"unkstru9");
 	create_dword	(x=0X8018FEC);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
@@ -17727,6 +18064,7 @@ static Bytes_3(void) {
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
 	create_insn	(0X8019138);
+	set_name	(0X8019138,	"decrypt_self_def_algorithm");
 	create_insn	(0X801914A);
 	create_insn	(x=0X801914C);
 	op_plain_offset	(x,	1,	0);
@@ -18071,6 +18409,7 @@ static Bytes_3(void) {
 	create_insn	(0X801963C);
 	create_insn	(0X801964C);
 	create_insn	(0X8019658);
+	set_cmt	(0X8019664,	"a1",	0);
 	create_insn	(x=0X801966A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -18079,6 +18418,8 @@ static Bytes_3(void) {
 	create_insn	(x=0X8019672);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X8019682);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X8019684);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -18136,6 +18477,8 @@ static Bytes_3(void) {
 	create_insn	(0X8019702);
 	create_insn	(0X8019704);
 	create_insn	(0X8019706);
+	create_insn	(x=0X8019722);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X8019724);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -18154,6 +18497,8 @@ static Bytes_3(void) {
 	create_insn	(x=0X8019746);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X8019756);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X8019758);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -18166,6 +18511,8 @@ static Bytes_3(void) {
 	create_insn	(x=0X80197A4);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X80197B4);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X80197B6);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -18200,6 +18547,7 @@ static Bytes_3(void) {
 	create_insn	(x=0X8019808);
 	op_plain_offset	(x,	1,	0X200001AC);
 	op_plain_offset	(x,	129,	0X200001AC);
+	set_cmt	(0X8019812,	"a1",	0);
 	create_insn	(x=0X801981A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -18238,6 +18586,7 @@ static Bytes_3(void) {
 	create_insn	(x=0X801984A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8019856,	"a1",	0);
 	create_insn	(x=0X801985E);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -18272,6 +18621,7 @@ static Bytes_3(void) {
 	create_insn	(x=0X8019884);
 	op_plain_offset	(x,	1,	0X200001AC);
 	op_plain_offset	(x,	129,	0X200001AC);
+	set_cmt	(0X801988E,	"a1",	0);
 	create_insn	(x=0X8019896);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -18530,6 +18880,7 @@ static Bytes_3(void) {
 	create_insn	(x=0X8019B62);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X8019B6A,	"a1",	0);
 	create_insn	(x=0X8019B70);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -18606,6 +18957,7 @@ static Bytes_3(void) {
 	op_plain_offset	(x,	128,	0);
 	create_dword	(0X8019C28);
 	create_insn	(0X8019C2C);
+	set_name	(0X8019C2C,	"decrypt_self_def_algorithm2");
 	create_insn	(0X8019C3A);
 	create_insn	(x=0X8019C3C);
 	op_plain_offset	(x,	1,	0);
@@ -18620,6 +18972,7 @@ static Bytes_3(void) {
 	op_stkvar	(x,	1);
 	set_cmt	(0X8019C5E,	"len_in_dw",	0);
 	set_cmt	(0X8019C60,	"storebuf",	0);
+	set_cmt	(0X8019C66,	"outbuf",	0);
 	create_insn	(x=0X8019C7A);
 	op_stkvar	(x,	1);
 	make_array	(0X8019C8A,	0X2);
@@ -19570,6 +19923,8 @@ static Bytes_3(void) {
 	create_insn	(x=0X801AA98);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	create_insn	(x=0X801AA9C);
+	op_enum		(x,	1,	GetEnum("GimbalMode"),0);
 	create_insn	(x=0X801AAA0);
 	op_stkvar	(x,	1);
 	create_insn	(x=0X801AAA4);
@@ -20297,6 +20652,7 @@ static Bytes_3(void) {
 	create_insn	(x=0X801B12A);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
+	set_cmt	(0X801B134,	"persdata2",	0);
 	create_insn	(x=0X801B134);
 	op_plain_offset	(x,	1,	0);
 	op_plain_offset	(x,	129,	0);
@@ -20561,6 +20917,10 @@ static Bytes_3(void) {
 	create_dword	(x=0X801B9D8);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
+	create_float	(0X801BA14);
+	make_array	(0X801BA14,	0X104);
+	create_float	(0X801BE24);
+	make_array	(0X801BE24,	0X103);
 	create_strlit	(0X801C230,	0X801C23B);
 	set_name	(0X801C230,	"aMotorStop");
 	create_strlit	(0X801C23B,	0X801C246);
@@ -20584,6 +20944,8 @@ static Bytes_3(void) {
 	MakeStruct	(0X801D46C,	"DjiPacketExecCallback");
 	make_array	(0X801D46C,	0X1C);
 	set_name	(0X801D46C,	"receive_commands");
+	create_dword	(0X801D54C);
+	make_array	(0X801D54C,	0X800);
 	create_qword	(0X801F750);
 	make_array	(0X801F750,	0X2);
 	create_qword	(0X801F760);
@@ -20594,6 +20956,8 @@ static Bytes_3(void) {
 	make_array	(0X801F7D8,	0X4);
 	create_qword	(0X801F7F8);
 	make_array	(0X801F7F8,	0X4);
+	create_byte	(0X801F818);
+	make_array	(0X801F818,	0X28);
 	create_dword	(0X801F878);
 	make_array	(0X801F878,	0X8);
 	create_dword	(x=0X801F898);
@@ -20602,6 +20966,7 @@ static Bytes_3(void) {
 	create_dword	(x=0X801F89C);
 	op_plain_offset	(x,	0,	0);
 	op_plain_offset	(x,	128,	0);
+	create_dword	(0X801F8A4);
 	create_byte	(0X1FFFF700);
 	make_array	(0X1FFFF700,	0X880);
 	create_byte	(0X1FFFFF80);
@@ -20655,8 +21020,11 @@ static Bytes_3(void) {
 	create_byte	(0X20000199);
 	create_byte	(0X2000019A);
 	create_word	(0X2000019C);
+	set_name	(0X2000019C,	"gimb_calib_val1");
 	create_word	(0X2000019E);
+	set_name	(0X2000019E,	"gimb_calib_val2");
 	create_word	(0X200001A0);
+	set_name	(0X200001A0,	"gimb_calib_val3");
 	make_array	(0X200001A2,	0X2);
 	create_word	(0X200001A4);
 	create_word	(0X200001A6);
@@ -20673,8 +21041,11 @@ static Bytes_3(void) {
 	create_word	(0X200001C4);
 	make_array	(0X200001C4,	0X4);
 	create_word	(0X200001CC);
+	set_name	(0X200001CC,	"gimb_control_2");
 	create_word	(0X200001CE);
+	set_name	(0X200001CE,	"gimb_control_1");
 	create_word	(0X200001D0);
+	set_name	(0X200001D0,	"gimb_control_3");
 	make_array	(0X200001D2,	0X2);
 	create_dword	(0X200001D4);
 	create_float	(0X200001D8);
@@ -20698,9 +21069,13 @@ static Bytes_3(void) {
 	create_float	(0X2000024C);
 	make_array	(0X2000024C,	0X3);
 	create_dword	(0X20000258);
+	set_name	(0X20000258,	"posture_unk_val1");
 	create_dword	(0X2000025C);
+	set_name	(0X2000025C,	"posture_unk_val2");
 	create_dword	(0X20000260);
+	set_name	(0X20000260,	"posture_unk_val3");
 	create_dword	(0X20000264);
+	set_name	(0X20000264,	"posture_unk_val4");
 	create_dword	(0X20000288);
 	create_dword	(0X2000028C);
 	create_float	(0X200002E0);
@@ -20734,10 +21109,14 @@ static Bytes_3(void) {
 	create_byte	(0X20000328);
 	make_array	(0X20000329,	0X3);
 	create_dword	(0X2000032C);
+	set_name	(0X2000032C,	"gimbal_work_flags");
 	create_dword	(0X20000330);
 	create_dword	(0X20000334);
+	set_name	(0X20000334,	"pkt_cmd20_val0");
 	create_byte	(0X20000338);
+	set_name	(0X20000338,	"pkt_cmd20_val4");
 	create_byte	(0X20000339);
+	set_name	(0X20000339,	"pkt_cmd20_val5");
 	make_array	(0X2000033A,	0X2);
 	create_dword	(0X2000033C);
 	create_dword	(0X20000344);
@@ -20749,6 +21128,7 @@ static Bytes_3(void) {
 	set_name	(0X20000354,	"gimbal_params_mode");
 	create_dword	(0X20000358);
 	create_dword	(0X2000035C);
+	set_name	(0X2000035C,	"spec_app_ctrl_flag1");
 	create_dword	(0X20000360);
 	make_array	(0X20000364,	0X4);
 	create_word	(0X2000036C);
@@ -20761,6 +21141,9 @@ static Bytes_3(void) {
 	create_dword	(0X2000039C);
 	create_dword	(0X200003A0);
 	create_dword	(0X200003A4);
+	create_float	(0X200003A8);
+	create_float	(0X200003AC);
+	create_float	(0X200003B0);
 	create_dword	(0X200003B4);
 	create_dword	(0X200003BC);
 	create_byte	(0X200003C0);
@@ -20782,8 +21165,9 @@ static Bytes_3(void) {
 	create_dword	(0X200003E0);
 	create_dword	(0X200003E4);
 	create_dword	(0X200003E8);
-	create_dword	(0X200003EC);
-	make_array	(0X200003EC,	0X9C);
+	MakeStruct	(0X200003EC,	"CfgUserVarEntry");
+	make_array	(0X200003EC,	0XC);
+	set_name	(0X200003EC,	"gimbal_user_params");
 	create_dword	(0X2000065C);
 	create_byte	(0X20000660);
 	make_array	(0X20000661,	0X3);
@@ -20794,6 +21178,7 @@ static Bytes_3(void) {
 	create_dword	(0X20000674);
 	create_dword	(0X20000678);
 	create_dword	(0X20000690);
+	set_name	(0X20000690,	"device_state");
 	create_byte	(0X20000694);
 	set_name	(0X20000694,	"packet_recv_ch0_state");
 	create_byte	(0X20000695);
@@ -20817,7 +21202,10 @@ static Bytes_3(void) {
 	create_byte	(0X200007E4);
 	create_byte	(0X200007E5);
 	create_byte	(0X200007E6);
+	create_byte	(0X200007E7);
 	make_array	(0X200007E7,	0X9);
+	MakeStruct	(0X200007F0,	"GimbalUnknSmStruct1");
+	set_name	(0X200007F0,	"g_smstru_unk1");
 	create_byte	(0X20000804);
 	make_array	(0X20000804,	0X73C);
 	create_byte	(0X20000F40);
@@ -20864,7 +21252,9 @@ static Bytes_3(void) {
 	create_word	(0X2000425A);
 	create_dword	(0X2000425C);
 	create_byte	(0X20004260);
-	make_array	(0X20004260,	0X34);
+	make_array	(0X20004260,	0XC);
+	create_dword	(0X2000426C);
+	make_array	(0X2000426C,	0XA);
 	create_byte	(0X20004295);
 	create_byte	(0X20004296);
 	create_byte	(0X20004297);
@@ -20973,13 +21363,11 @@ static Bytes_3(void) {
 	create_dword	(0X2000479C);
 	create_dword	(0X200047A0);
 	create_dword	(0X200047A4);
-	set_name	(0X200047A4,	"pos_real_roll");
-	create_dword	(0X200047A8);
-	set_name	(0X200047A8,	"pos_real_pitch");
-	create_dword	(0X200047AC);
-	set_name	(0X200047AC,	"pos_real_yaw");
+	make_array	(0X200047A4,	0X3);
+	set_name	(0X200047A4,	"pos_real_roll_pitch_yaw");
 	create_float	(0X20004804);
 	make_array	(0X20004804,	0X3);
+	set_name	(0X2000481C,	"thirdp_magnetom_unkval1");
 	create_float	(0X20004828);
 	make_array	(0X20004828,	0X3);
 	create_float	(0X20004834);
@@ -20992,6 +21380,8 @@ static Bytes_3(void) {
 	make_array	(0X2000484C,	0X3);
 	create_float	(0X20004858);
 	create_float	(0X20004864);
+	make_array	(0X20004864,	0X3);
+	set_name	(0X20004864,	"angle_rad_fld0to2");
 	create_float	(0X20004870);
 	make_array	(0X20004870,	0X3);
 	create_float	(0X2000487C);
@@ -21008,10 +21398,8 @@ static Bytes_3(void) {
 	create_dword	(0X200048CC);
 	create_dword	(0X200048D0);
 	create_dword	(0X200048D4);
-	create_word	(0X200048DC);
-	create_word	(0X200048DE);
-	create_word	(0X200048E0);
-	make_array	(0X200048E2,	0XE);
+	MakeStruct	(0X200048DC,	"GimbalCalibrateData");
+	set_name	(0X200048DC,	"gimbal_calib");
 	create_byte	(0X20004921);
 	create_byte	(0X20004922);
 	create_byte	(0X20004923);
@@ -21025,9 +21413,13 @@ static Bytes_3(void) {
 	create_byte	(0X2000492D);
 	create_byte	(0X2000492E);
 	create_dword	(0X20004930);
+	create_float	(0X20004934);
 	create_dword	(0X2000493C);
 	create_float	(0X20004948);
-	make_array	(0X20004948,	0X1F);
+	make_array	(0X20004948,	0X15);
+	create_dword	(0X2000499C);
+	create_dword	(0X200049A0);
+	make_array	(0X200049A0,	0X9);
 	create_dword	(0X200049C4);
 	create_dword	(0X200049C8);
 	create_dword	(0X200049CC);
@@ -21038,6 +21430,9 @@ static Bytes_3(void) {
 	make_array	(0X200049E8,	0X3);
 	create_float	(0X200049F4);
 	create_dword	(0X20004A00);
+	create_float	(0X20004A04);
+	create_float	(0X20004A08);
+	create_float	(0X20004A0C);
 	create_float	(0X20004A28);
 	make_array	(0X20004A28,	0X6);
 	create_dword	(0X20004A40);
@@ -21052,8 +21447,10 @@ static Bytes_3(void) {
 	create_dword	(0X20004AB0);
 	create_float	(0X20004AB4);
 	make_array	(0X20004AB4,	0X7);
+	set_name	(0X20004AB4,	"mvmnt_val_flt6to7");
 	create_float	(0X20004AD0);
 	make_array	(0X20004AD0,	0X7);
+	set_name	(0X20004AD0,	"angle_rad_fld3to5");
 	create_dword	(0X20004AEC);
 	create_dword	(0X20004AF0);
 	create_dword	(0X20004AF4);
@@ -21080,6 +21477,7 @@ static Bytes_3(void) {
 	create_dword	(0X20004B78);
 	create_dword	(0X20004B7C);
 	create_dword	(0X20004B80);
+	set_name	(0X20004B80,	"gimb_calib_reslt2");
 	create_dword	(0X20004B84);
 	make_array	(0X20004B88,	0X8);
 	create_dword	(0X20004B90);
@@ -21087,6 +21485,7 @@ static Bytes_3(void) {
 	create_dword	(0X20004BA0);
 	make_array	(0X20004BA0,	0X3);
 	create_dword	(0X20004BAC);
+	set_name	(0X20004BAC,	"gimb_calib_reslt1");
 	create_dword	(0X20004BB0);
 	create_dword	(0X20004BBC);
 	create_dword	(0X20004BC8);
@@ -21104,60 +21503,66 @@ static Bytes_3(void) {
 	create_float	(0X20004C10);
 	make_array	(0X20004C10,	0XE);
 	create_byte	(0X20004C49);
+	set_name	(0X20004C49,	"cmd21_unkval1");
+	MakeStruct	(0X20004C4C,	"UnkStruct10");
+	make_array	(0X20004C4C,	0X3);
+	set_name	(0X20004C4C,	"g_unkstru10");
 	create_dword	(0X20004C64);
 	create_dword	(0X20004C68);
+	set_name	(0X20004C68,	"enter_gimbal_mode4");
+	set_cmt	(0X20004C6C,	"Source component which controls acceleration (only one can do it at a time)",	1);
 	create_byte	(0X20004C6C);
+	set_name	(0X20004C6C,	"ctrl_accel_curr_source");
 	make_array	(0X20004C6D,	0X3);
 	create_dword	(0X20004C70);
 	create_dword	(0X20004C74);
 	create_dword	(0X20004C78);
+	set_name	(0X20004C78,	"ext_ctrl_unkn2");
 	create_byte	(0X20004C7C);
+	set_name	(0X20004C7C,	"ext_ctrl_unkn3");
 	create_byte	(0X20004C7D);
+	set_name	(0X20004C7D,	"ext_ctrl_flag1");
 	create_byte	(0X20004C7E);
+	set_name	(0X20004C7E,	"ext_ctrl_flag2");
 	create_byte	(0X20004C7F);
+	set_name	(0X20004C7F,	"ext_ctrl_flag3");
 	create_byte	(0X20004C80);
+	set_name	(0X20004C80,	"ext_ctrl_flag4");
+	create_float	(0X20004C90);
+	set_name	(0X20004C90,	"ext_ctrl_unkn1");
 	create_float	(0X20004C94);
+	make_array	(0X20004C94,	0X3);
+	set_name	(0X20004C94,	"ext_ctrl_arm_angle_vals");
 	create_float	(0X20004CA0);
 	make_array	(0X20004CA0,	0X3);
 	create_dword	(0X20004CAC);
 	create_float	(0X20004CB0);
+	set_name	(0X20004CB0,	"ctrl_accel_unkvar1");
 	create_float	(0X20004CB4);
+	set_name	(0X20004CB4,	"ctrl_accel_unkvar2");
 	create_float	(0X20004CB8);
+	set_name	(0X20004CB8,	"ctrl_accel_unkvar3");
 	create_float	(0X20004CBC);
 	create_float	(0X20004CC0);
 	create_float	(0X20004CC4);
 	create_dword	(0X20004CC8);
-	create_dword	(0X20004CCC);
-	create_dword	(0X20004CD0);
-	create_word	(0X20004CD4);
-	make_array	(0X20004CD6,	0X2);
+	create_byte	(0X20004CCC);
+	make_array	(0X20004CCC,	0XA);
+	set_name	(0X20004CCC,	"spec_app_control_payload");
+	create_byte	(0X20004CD8);
+	make_array	(0X20004CD8,	0X30);
 	create_float	(0X20004D08);
 	make_array	(0X20004D08,	0X12);
 	create_float	(0X20004D50);
 	make_array	(0X20004D50,	0X3);
 	create_float	(0X20004D5C);
 	make_array	(0X20004D5C,	0X3);
-	create_word	(0X20004F70);
-	create_word	(0X20004F72);
-	create_word	(0X20004F76);
-	create_word	(0X20004F78);
-	create_word	(0X20004FA2);
-	create_word	(0X20004FA4);
-	make_array	(0X20004FA6,	0X2);
-	create_word	(0X20004FA8);
-	create_word	(0X20004FAA);
-	create_word	(0X20005032);
-	create_byte	(0X20005036);
-	create_byte	(0X2000503E);
-	create_byte	(0X20005040);
-	create_byte	(0X20005041);
-	set_name	(0X20005041,	"roll_adjust");
-	make_array	(0X20005042,	0X2);
-	create_dword	(0X20005044);
-	create_byte	(0X20005048);
-	make_array	(0X20005048,	0XB8);
-	create_word	(0X2000513C);
-	make_array	(0X2000513C,	0X180);
+	create_dword	(0X20004D68);
+	make_array	(0X20004D68,	0X80);
+	MakeStruct	(0X20004F68,	"GimbalPersistUnk2Chunk2");
+	set_name	(0X20004F68,	"g_perschunk2");
+	MakeStruct	(0X20005040,	"GimbalPersistUnk2Data");
+	set_name	(0X20005040,	"g_persdata2");
 	create_dword	(0X2000543C);
 	create_dword	(0X20005440);
 	create_dword	(0X20005444);
@@ -21179,8 +21584,8 @@ static Bytes_3(void) {
 	make_array	(0X200094A0,	0X1000);
 	create_byte	(0X2000A4A0);
 	make_array	(0X2000A4A0,	0X1000);
-	create_byte	(0X2000B4A0);
-	make_array	(0X2000B4A0,	0X14);
+	MakeStruct	(0X2000B4A0,	"UnkStruct9");
+	set_name	(0X2000B4A0,	"g_unkstru9");
 	create_byte	(0X2000B4B4);
 	make_array	(0X2000B4B4,	0X200);
 	create_byte	(0X2000B6B4);
@@ -21248,10 +21653,9 @@ static Bytes_3(void) {
 	make_array	(0X40004C00,	0X2);
 	create_word	(0X40004C04);
 	make_array	(0X40004C04,	0XBFE);
-	create_dword	(0X40006408);
-	make_array	(0X4000640C,	0X1F4);
+	MakeStruct	(0X40006400,	"GimbalUnknBigStruct1");
+	set_name	(0X40006400,	"g_unkbigstru1");
 	create_dword	(0X40006600);
-	create_dword	(0X40006604);
 	create_dword	(0X4000660C);
 	create_dword	(0X40006614);
 	create_dword	(0X4000661C);
@@ -21302,6 +21706,7 @@ static Bytes_3(void) {
 	create_dword	(0X4002380C);
 	make_array	(0X40023810,	0X10);
 	create_dword	(0X40023820);
+	set_name	(0X40023820,	"flag_field_3820");
 	create_dword	(0X40023824);
 	make_array	(0X40023828,	0X8);
 	create_dword	(0X40023830);
@@ -21336,8 +21741,32 @@ static Bytes_3(void) {
 
 static Functions_0(void) {
 
+	add_func    (0X8008188,0X8008190);
+	set_func_flags(0X8008188,0x400);
 	add_func    (0X8008190,0X8008194);
 	set_func_flags(0X8008190,0x400);
+	add_func    (0X800819C,0X80081A4);
+	set_func_flags(0X800819C,0x400);
+	add_func    (0X80081A4,0X80081A6);
+	set_func_flags(0X80081A4,0x401);
+	add_func    (0X80081A6,0X80081A8);
+	set_func_flags(0X80081A6,0x401);
+	add_func    (0X80081A8,0X80081AA);
+	set_func_flags(0X80081A8,0x401);
+	add_func    (0X80081AA,0X80081AC);
+	set_func_flags(0X80081AA,0x401);
+	add_func    (0X80081AC,0X80081AE);
+	set_func_flags(0X80081AC,0x401);
+	add_func    (0X80081AE,0X80081B0);
+	set_func_flags(0X80081AE,0x401);
+	add_func    (0X80081B0,0X80081B2);
+	set_func_flags(0X80081B0,0x401);
+	add_func    (0X80081B2,0X80081B4);
+	set_func_flags(0X80081B2,0x401);
+	add_func    (0X80081B4,0X80081B6);
+	set_func_flags(0X80081B4,0x401);
+	add_func    (0X80081B6,0X80081B8);
+	set_func_flags(0X80081B6,0x401);
 	add_func    (0X80081C0,0X80082AC);
 	set_func_flags(0X80081C0,0x400);
 	add_func    (0X80082B0,0X8008360);
@@ -21345,26 +21774,33 @@ static Functions_0(void) {
 	set_frame_size(0X80082B0, 0X14, 0, 0);
 	add_func    (0X8008360,0X80086A4);
 	set_func_flags(0X8008360,0x400);
+	SetType(0X8008360, "void __fastcall sub_8008360(uint8_t *a1, unsigned int a2, uint8_t *bigbuf1, int a4);");
 	set_frame_size(0X8008360, 0X24, 0, 0);
 	add_func    (0X80086A4,0X8008A08);
 	set_func_flags(0X80086A4,0x400);
+	SetType(0X80086A4, "void __fastcall sub_80086A4(uint8_t *a1, unsigned int a2, uint8_t *bigbuf1, int a4);");
 	set_frame_size(0X80086A4, 0X24, 0, 0);
 	add_func    (0X8008A08,0X8008A42);
 	set_func_flags(0X8008A08,0x400);
+	SetType(0X8008A08, "int __fastcall sub_8008A08(struct UnkStruct9 *unkstru9, uint8_t *unkbuf1);");
 	set_frame_size(0X8008A08, 0XC, 0, 0);
 	add_func    (0X8008A44,0X8008AB8);
 	set_func_flags(0X8008A44,0x400);
+	SetType(0X8008A44, "signed int __fastcall sub_8008A44(struct UnkStruct9 *unkstru9, int a2, char a3, char a4);");
 	set_frame_size(0X8008A44, 0X4, 0, 0);
 	add_func    (0X8008ADC,0X8008B00);
 	set_func_flags(0X8008ADC,0x404);
 	SetType(0X8008ADC, "void *__cdecl memcpy(void *destination, const void *source, size_t num);");
 	set_frame_size(0X8008ADC, 0, 0, 0);
 	add_func    (0X8008B00,0X8008B0E);
-	set_func_flags(0X8008B00,0x400);
+	set_func_flags(0X8008B00,0x404);
+	SetType(0X8008B00, "void __fastcall memset_nonstd(uint8_t *buf, unsigned int buflen, uint8_t val);");
+	set_frame_size(0X8008B00, 0, 0, 0);
 	add_func    (0X8008B0E,0X8008B12);
-	set_func_flags(0X8008B0E,0x400);
+	set_func_flags(0X8008B0E,0x404);
+	set_frame_size(0X8008B0E, 0, 0, 0);
 	add_func    (0X8008B12,0X8008B24);
-	set_func_flags(0X8008B12,0x400);
+	set_func_flags(0X8008B12,0x404);
 	set_frame_size(0X8008B12, 0X8, 0, 0);
 	add_func    (0X8008B24,0X8008B40);
 	set_func_flags(0X8008B24,0x404);
@@ -21409,6 +21845,8 @@ static Functions_0(void) {
 	add_func    (0X8009092,0X80090B4);
 	set_func_flags(0X8009092,0x400);
 	set_frame_size(0X8009092, 0X10, 0, 0);
+	add_func    (0X80090B4,0X80090D0);
+	set_func_flags(0X80090B4,0x400);
 	add_func    (0X80090D8,0X80090F8);
 	set_func_flags(0X80090D8,0x400);
 	add_func    (0X80090F8,0X800919A);
@@ -21439,6 +21877,7 @@ static Functions_0(void) {
 	set_func_flags(0X8009376,0x400);
 	add_func    (0X800938C,0X80093D6);
 	set_func_flags(0X800938C,0x400);
+	SetType(0X800938C, "void __fastcall normalize_angle(float *angle);");
 	add_func    (0X80093E4,0X8009410);
 	set_func_flags(0X80093E4,0x400);
 	SetType(0X80093E4, "void __fastcall recompute_packet_crc16(uint8_t *pkt, unsigned int len);");
@@ -21452,6 +21891,7 @@ static Functions_0(void) {
 	add_func    (0X80095B8,0X80096B2);
 	set_func_flags(0X80095B8,0x400);
 	set_frame_size(0X80095B8, 0X28, 0, 0);
+	define_local_var(0X80095B8, 0X80096B2, "[bp-0X18]", "a2");
 	add_func    (0X80096C0,0X80096EE);
 	set_func_flags(0X80096C0,0x400);
 	set_frame_size(0X80096C0, 0X8, 0, 0);
@@ -21498,6 +21938,7 @@ static Functions_0(void) {
 	add_func    (0X8009F60,0X8009FD2);
 	set_func_flags(0X8009F60,0x400);
 	set_frame_size(0X8009F60, 0X30, 0, 0);
+	define_local_var(0X8009F60, 0X8009FD2, "[bp-0X20]", "payload_buf");
 	add_func    (0X8009FD2,0X8009FE6);
 	set_func_flags(0X8009FD2,0x400);
 	set_frame_size(0X8009FD2, 0X10, 0, 0);
@@ -21506,6 +21947,7 @@ static Functions_0(void) {
 	set_frame_size(0X8009FE8, 0X8, 0, 0);
 	add_func    (0X800A050,0X800A0F2);
 	set_func_flags(0X800A050,0x400);
+	SetType(0X800A050, "void __fastcall sub_800A050(struct GimbalUnknBigStruct1 *unkbigstru1, signed int a2);");
 	add_func    (0X800A0F8,0X800A12A);
 	set_func_flags(0X800A0F8,0x400);
 	set_frame_size(0X800A0F8, 0X8, 0, 0);
@@ -21514,8 +21956,10 @@ static Functions_0(void) {
 	set_frame_size(0X800A130, 0X8, 0, 0);
 	add_func    (0X800A238,0X800A24A);
 	set_func_flags(0X800A238,0x400);
+	SetType(0X800A238, "void __fastcall sub_800A238(struct GimbalUnknBigStruct1 *unkbigstru1, int a2, int a3);");
 	add_func    (0X800A24A,0X800A35E);
 	set_func_flags(0X800A24A,0x400);
+	SetType(0X800A24A, "bool __fastcall sub_800A24A(struct GimbalUnknBigStruct1 *unkbigstru1, uint8_t *a2);");
 	set_frame_size(0X800A24A, 0XC, 0, 0);
 	add_func    (0X800A35E,0X800A36C);
 	set_func_flags(0X800A35E,0x400);
@@ -21528,11 +21972,13 @@ static Functions_0(void) {
 	set_frame_size(0X800A3CC, 0X10, 0, 0);
 	add_func    (0X800A40E,0X800A4FE);
 	set_func_flags(0X800A40E,0x400);
+	SetType(0X800A40E, "void __fastcall sub_800A40E(struct GimbalUnknBigStruct1 *unkbigstru1, int a2, struct GimbalUnknSmStruct1 *smstru_unk1);");
 	set_frame_size(0X800A40E, 0X8, 0, 0);
 	add_func    (0X800A4FE,0X800A51E);
 	set_func_flags(0X800A4FE,0x400);
 	add_func    (0X800A51E,0X800A644);
 	set_func_flags(0X800A51E,0x400);
+	SetType(0X800A51E, "void __fastcall sub_800A51E(struct GimbalUnknBigStruct1 *unkbigstru1, uint8_t *srcbuf);");
 	set_frame_size(0X800A51E, 0X8, 0, 0);
 	add_func    (0X800A644,0X800A6FA);
 	set_func_flags(0X800A644,0x400);
@@ -21549,6 +21995,8 @@ static Functions_0(void) {
 	add_func    (0X800B70C,0X800B870);
 	set_func_flags(0X800B70C,0x400);
 	set_frame_size(0X800B70C, 0X60, 0, 0);
+	define_local_var(0X800B70C, 0X800B870, "[bp-0XC]", "angle");
+	define_local_var(0X800B70C, 0X800B870, "[bp-0X8]", "result");
 	add_func    (0X800B880,0X800B980);
 	set_func_flags(0X800B880,0x400);
 	set_frame_size(0X800B880, 0X30, 0, 0);
@@ -21558,6 +22006,8 @@ static Functions_0(void) {
 	add_func    (0X800C70C,0X800C820);
 	set_func_flags(0X800C70C,0x400);
 	set_frame_size(0X800C70C, 0X50, 0, 0);
+	define_local_var(0X800C70C, 0X800C820, "[bp-0XC]", "angle");
+	define_local_var(0X800C70C, 0X800C820, "[bp-0X8]", "result");
 	add_func    (0X800C830,0X800C9B6);
 	set_func_flags(0X800C830,0x400);
 	set_frame_size(0X800C830, 0X20, 0, 0);
@@ -21566,6 +22016,7 @@ static Functions_0(void) {
 	set_frame_size(0X800C9D8, 0X8, 0, 0);
 	add_func    (0X800C9F0,0X800CF98);
 	set_func_flags(0X800C9F0,0x400);
+	SetType(0X800C9F0, "void __fastcall gimb_user_param_value_fix(int param_idx, int fix_method);");
 	set_frame_size(0X800C9F0, 0XC, 0, 0);
 	add_func    (0X800CF9C,0X800D114);
 	set_func_flags(0X800CF9C,0x400);
@@ -21663,6 +22114,7 @@ static Functions_0(void) {
 	set_func_flags(0X800DC2C,0x400);
 	add_func    (0X800DCB4,0X800DCE0);
 	set_func_flags(0X800DCB4,0x400);
+	SetType(0X800DCB4, "int __fastcall sub_800DCB4(uint8_t *a1);");
 	set_frame_size(0X800DCB4, 0X18, 0, 0);
 	add_func    (0X800DCE0,0X800DE94);
 	set_func_flags(0X800DCE0,0x400);
@@ -21678,9 +22130,11 @@ static Functions_0(void) {
 	set_frame_size(0X800DFB4, 0XC, 0, 0);
 	add_func    (0X800DFD8,0X800E076);
 	set_func_flags(0X800DFD8,0x400);
+	SetType(0X800DFD8, "int __fastcall store_persist_unk2_data(struct GimbalPersistUnk2Data *persdata2);");
 	set_frame_size(0X800DFD8, 0X28, 0, 0);
 	add_func    (0X800E07C,0X800E0AA);
 	set_func_flags(0X800E07C,0x400);
+	SetType(0X800E07C, "signed int __fastcall sub_800E07C(struct GimbalPersistUnk2Data *persdata2);");
 	set_frame_size(0X800E07C, 0X18, 0, 0);
 	add_func    (0X800E0B0,0X800E0E2);
 	set_func_flags(0X800E0B0,0x400);
@@ -21737,6 +22191,7 @@ static Functions_0(void) {
 	set_frame_size(0X800F304, 0X10, 0, 0);
 	add_func    (0X800F334,0X800F380);
 	set_func_flags(0X800F334,0x400);
+	SetType(0X800F334, "void __fastcall sub_800F334(uint8_t *a1, int a2);");
 	set_frame_size(0X800F334, 0X8, 0, 0);
 	add_func    (0X800F384,0X800FF28);
 	set_func_flags(0X800F384,0x400);
@@ -21767,12 +22222,14 @@ static Functions_0(void) {
 	set_func_flags(0X8010200,0x400);
 	set_frame_size(0X8010200, 0X10, 0, 0);
 	add_func    (0X8010434,0X8010468);
-	set_func_flags(0X8010434,0x400);
+	set_func_flags(0X8010434,0);
 	set_frame_size(0X8010434, 0X8, 0, 0);
 	add_func    (0X801046C,0X801047E);
 	set_func_flags(0X801046C,0x400);
+	SetType(0X801046C, "void reset_field_3C(void);");
 	add_func    (0X8010488,0X801049A);
 	set_func_flags(0X8010488,0x400);
+	SetType(0X8010488, "void reset_field_3A(void);");
 	add_func    (0X80104A4,0X8010506);
 	set_func_flags(0X80104A4,0x400);
 	set_frame_size(0X80104A4, 0X20, 0, 0);
@@ -21781,16 +22238,22 @@ static Functions_0(void) {
 	set_frame_size(0X8010524, 0X20, 0, 0);
 	add_func    (0X80105A4,0X80105B6);
 	set_func_flags(0X80105A4,0x400);
+	SetType(0X80105A4, "void reset_field_A(void);");
 	add_func    (0X80105C0,0X80105D2);
 	set_func_flags(0X80105C0,0x400);
+	SetType(0X80105C0, "void reset_field_8(void);");
 	add_func    (0X80105DC,0X80105EE);
 	set_func_flags(0X80105DC,0x400);
+	SetType(0X80105DC, "void reset_field_10(void);");
 	add_func    (0X80105F8,0X801060A);
 	set_func_flags(0X80105F8,0x400);
+	SetType(0X80105F8, "uint8_t reset_field_E(void);");
 	add_func    (0X8010614,0X801062A);
 	set_func_flags(0X8010614,0x400);
+	SetType(0X8010614, "uint8_t reset_field_CE(void);");
 	add_func    (0X8010634,0X801064A);
 	set_func_flags(0X8010634,0x400);
+	SetType(0X8010634, "void reset_field_D6(void);");
 	add_func    (0X8010654,0X801068C);
 	set_func_flags(0X8010654,0x400);
 	set_frame_size(0X8010654, 0X8, 0, 0);
@@ -21826,6 +22289,7 @@ static Functions_0(void) {
 	set_func_flags(0X8010C94,0x400);
 	add_func    (0X8010CB4,0X8010CCE);
 	set_func_flags(0X8010CB4,0x400);
+	SetType(0X8010CB4, "void __fastcall set_field_3820_flag(uint32_t mask, int enable);");
 	add_func    (0X8010CD4,0X8010CEE);
 	set_func_flags(0X8010CD4,0x400);
 	add_func    (0X8010CF4,0X8010D0E);
@@ -21877,9 +22341,11 @@ static Functions_0(void) {
 	define_local_var(0X801130C, 0X80113A4, "[bp-0X84]", "buf");
 	add_func    (0X80113AC,0X80113C2);
 	set_func_flags(0X80113AC,0x400);
+	SetType(0X80113AC, "void gimb_user_param_all_restore_defaults(void);");
 	set_frame_size(0X80113AC, 0X8, 0, 0);
 	add_func    (0X80113C4,0X80114C2);
 	set_func_flags(0X80113C4,0x400);
+	SetType(0X80113C4, "void __fastcall gimb_user_param_restore_default(int a1);");
 	set_frame_size(0X80113C4, 0X8, 0, 0);
 	add_func    (0X80114CC,0X8011524);
 	set_func_flags(0X80114CC,0x400);
@@ -22045,6 +22511,7 @@ static Functions_0(void) {
 	set_frame_size(0X8013C8C, 0X10, 0, 0);
 	add_func    (0X8013CB8,0X8013CE8);
 	set_func_flags(0X8013CB8,0x400);
+	SetType(0X8013CB8, "void __fastcall sub_8013CB8(uint8_t *outbuf);");
 	add_func    (0X8013CEC,0X8013F60);
 	set_func_flags(0X8013CEC,0x400);
 	SetType(0X8013CEC, "void encrypt_module_state_verify(void);");
@@ -22065,14 +22532,17 @@ static Functions_0(void) {
 	set_frame_size(0X80140E8, 0X10, 0, 0);
 	add_func    (0X8014214,0X8014884);
 	set_func_flags(0X8014214,0x400);
+	SetType(0X8014214, "void tick_calibration2(void);");
 	set_frame_size(0X8014214, 0X40, 0, 0);
 	add_func    (0X80148B4,0X80149D6);
 	set_func_flags(0X80148B4,0x400);
+	SetType(0X80148B4, "void __cdecl init_sub_80148B4();");
 	set_frame_size(0X80148B4, 0X10, 0, 0);
 	add_func    (0X8014A14,0X8014BF0);
 	set_func_flags(0X8014A14,0x400);
+	SetType(0X8014A14, "void sub_8014A14(void);");
 	set_frame_size(0X8014A14, 0X80, 0, 0);
-	define_local_var(0X8014A14, 0X8014BF0, "[bp-0X7C]", "outbuf");
+	define_local_var(0X8014A14, 0X8014BF0, "[bp-0X7C]", "pers_unk1");
 	add_func    (0X8014C10,0X8014E6E);
 	set_func_flags(0X8014C10,0x401);
 	add_func    (0X8014EF4,0X801546A);
@@ -22083,8 +22553,9 @@ static Functions_0(void) {
 	set_func_flags(0X8015498,0x400);
 	add_func    (0X80154A8,0X8015584);
 	set_func_flags(0X80154A8,0x400);
+	SetType(0X80154A8, "void __fastcall update_gimbal_calib_persistent_data(uint32_t a1);");
 	set_frame_size(0X80154A8, 0X80, 0, 0);
-	define_local_var(0X80154A8, 0X8015584, "[bp-0X7C]", "outbuf");
+	define_local_var(0X80154A8, 0X8015584, "[bp-0X7C]", "pers_unk1");
 	add_func    (0X80155A4,0X80156BA);
 	set_func_flags(0X80155A4,0x400);
 	set_frame_size(0X80155A4, 0X20, 0, 0);
@@ -22108,18 +22579,25 @@ static Functions_0(void) {
 	set_func_flags(0X8015A50,0x400);
 	SetType(0X8015A50, "void __fastcall packet_exec_gimb_ext_ctrl_degree(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8015A50, 0X28, 0, 0);
+	define_local_var(0X8015A50, 0X8015C6A, "[bp-0X28]", "resp_pkt");
 	add_func    (0X8015C88,0X8015EA0);
 	set_func_flags(0X8015C88,0x400);
 	SetType(0X8015C88, "void __fastcall packet_exec_gimb_ext_ctrl_accel(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8015C88, 0X28, 0, 0);
+	define_local_var(0X8015C88, 0X8015EA0, "[bp-0X28]", "resp_pkt");
 	add_func    (0X8015EB4,0X8015FD2);
 	set_func_flags(0X8015EB4,0x400);
 	SetType(0X8015EB4, "void __fastcall packet_exec_gimb_get_ext_ctrl_status(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8015EB4, 0X28, 0, 0);
+	define_local_var(0X8015EB4, 0X8015FD2, "[bp-0X28]", "resp_pkt");
+	define_local_var(0X8015EB4, 0X8015FD2, "[bp-0X1D]", "resp_pkt_payload");
 	add_func    (0X8015FE0,0X8016170);
 	set_func_flags(0X8015FE0,0x400);
 	SetType(0X8015FE0, "void __fastcall packet_exec_gimb_cmd14(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8015FE0, 0X28, 0, 0);
+	define_local_var(0X8015FE0, 0X8016170, "[bp-0X28]", "angle2");
+	define_local_var(0X8015FE0, 0X8016170, "[bp-0X24]", "angle3");
+	define_local_var(0X8015FE0, 0X8016170, "[bp-0X20]", "angle1");
 	add_func    (0X8016188,0X80161E6);
 	set_func_flags(0X8016188,0x400);
 	SetType(0X8016188, "void __fastcall packet_exec_gener_update_transmit(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
@@ -22132,6 +22610,7 @@ static Functions_0(void) {
 	set_func_flags(0X8016254,0x400);
 	SetType(0X8016254, "void __fastcall packet_exec_gener_version_inquiry(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
 	set_frame_size(0X8016254, 0X28, 0, 0);
+	define_local_var(0X8016254, 0X80162E0, "[bp-0X28]", "device_version");
 	add_func    (0X80162E4,0X8016336);
 	set_func_flags(0X80162E4,0x400);
 	SetType(0X80162E4, "void __fastcall packet_exec_gener_update_finish(struct DjiPacket *pkt, unsigned int pkt_len, int channel);");
@@ -22234,6 +22713,7 @@ static Functions_0(void) {
 	set_frame_size(0X8016FF4, 0X20, 0, 0);
 	add_func    (0X80170AC,0X801715C);
 	set_func_flags(0X80170AC,0x400);
+	SetType(0X80170AC, "void sub_80170AC(void);");
 	add_func    (0X801716C,0X80172A6);
 	set_func_flags(0X801716C,0x400);
 	add_func    (0X80172B0,0X8018A4A);
@@ -22277,25 +22757,26 @@ static Functions_0(void) {
 	set_frame_size(0X80192F0, 0X18, 0, 0);
 	add_func    (0X80195B8,0X8019B2E);
 	set_func_flags(0X80195B8,0x400);
+	SetType(0X80195B8, "void __fastcall sub_80195B8(struct GimbalUnknSmStruct1 *smstru_unk1);");
 	set_frame_size(0X80195B8, 0X18, 0, 0);
 	add_func    (0X8019B3C,0X8019BF6);
 	set_func_flags(0X8019B3C,0x400);
 	SetType(0X8019B3C, "int __cdecl check_device_version_trigger_values(char *str);");
 	set_frame_size(0X8019B3C, 0X88, 0, 0);
-	define_local_var(0X8019B3C, 0X8019BF6, "[bp-0X84]", "outbuf");
+	define_local_var(0X8019B3C, 0X8019BF6, "[bp-0X84]", "pers_unk1");
 	add_func    (0X8019C2C,0X8019C4E);
 	set_func_flags(0X8019C2C,0x400);
 	set_frame_size(0X8019C2C, 0X8, 0, 0);
 	add_func    (0X8019C54,0X8019C8A);
 	set_func_flags(0X8019C54,0x400);
-	SetType(0X8019C54, "int __fastcall sub_8019C54(int outbuf, unsigned int len);");
+	SetType(0X8019C54, "void __fastcall sub_8019C54(uint8_t *outbuf, unsigned int len);");
 	set_frame_size(0X8019C54, 0X88, 0, 0);
-	define_local_var(0X8019C54, 0X8019C8A, "[bp-0X84]", "outbuf");
+	define_local_var(0X8019C54, 0X8019C8A, "[bp-0X84]", "pers_unk1");
 	add_func    (0X8019C90,0X8019CCC);
 	set_func_flags(0X8019C90,0x400);
-	SetType(0X8019C90, "signed int __fastcall store_new_device_version(int nver, unsigned int nver_len);");
+	SetType(0X8019C90, "signed int __fastcall store_new_device_version(char *nver, unsigned int nver_len);");
 	set_frame_size(0X8019C90, 0X88, 0, 0);
-	define_local_var(0X8019C90, 0X8019CCC, "[bp-0X84]", "outbuf");
+	define_local_var(0X8019C90, 0X8019CCC, "[bp-0X84]", "pers_unk1");
 	add_func    (0X8019CD0,0X8019CE8);
 	set_func_flags(0X8019CD0,0x400);
 	add_func    (0X8019CE8,0X8019E70);
@@ -22412,7 +22893,18 @@ static Functions(void) {
 
 static SegRegs(void) {
 	split_sreg_range(0X8008000,"T",0,3);
+	split_sreg_range(0X8008188,"T",0X1,3);
 	split_sreg_range(0X8008190,"T",0X1,3);
+	split_sreg_range(0X80081A4,"T",0X1,3);
+	split_sreg_range(0X80081A6,"T",0X1,3);
+	split_sreg_range(0X80081A8,"T",0X1,3);
+	split_sreg_range(0X80081AA,"T",0X1,3);
+	split_sreg_range(0X80081AC,"T",0X1,3);
+	split_sreg_range(0X80081AE,"T",0X1,3);
+	split_sreg_range(0X80081B0,"T",0X1,3);
+	split_sreg_range(0X80081B2,"T",0X1,3);
+	split_sreg_range(0X80081B4,"T",0X1,3);
+	split_sreg_range(0X80081B6,"T",0X1,3);
 	split_sreg_range(0X80081C0,"T",0X1,3);
 	split_sreg_range(0X80081CC,"T",0X1,3);
 	split_sreg_range(0X8008272,"T",0X1,3);
@@ -22526,6 +23018,7 @@ static SegRegs(void) {
 	split_sreg_range(0X8009088,"T",0X1,3);
 	split_sreg_range(0X800908A,"T",0X1,3);
 	split_sreg_range(0X8009092,"T",0X1,3);
+	split_sreg_range(0X80090B4,"T",0X1,3);
 	split_sreg_range(0X80090BA,"T",0X1,3);
 	split_sreg_range(0X80090C8,"T",0X1,3);
 	split_sreg_range(0X80090D8,"T",0X1,3);
