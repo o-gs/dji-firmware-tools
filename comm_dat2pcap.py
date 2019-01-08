@@ -51,7 +51,7 @@ class StateId(enum.Enum):
     IN_BODY = 2
     IN_TRAIL = 3
     READY = 4
-    DAMAGED = 5
+    DAMAGED = 5 # No longer used - packet is damaged when done_packet is set
     FINISH = 6
 
 class PktInfo:
@@ -63,6 +63,7 @@ class PktInfo:
 class PktState:
     id = StateId.NO_PACKET
     packet = bytearray()
+    done_packet = None
     verbose = 0
     pname = "2pcap"
 
@@ -213,7 +214,7 @@ def is_packet_ready(state):
 def is_packet_damaged(state):
     """ Returns whether a packet within the state is ready but damaged.
     """
-    return (state.id == StateId.DAMAGED) and (len(state.packet) > 0);
+    return (state.done_packet is not None)
 
 def is_packet_at_finish(state):
     """ Returns whether the state informs processing should finish.
@@ -226,14 +227,17 @@ def store_packet(out, state):
         This function can be called when packet stored within the state
         is ready. The packet is written to stream and removed from the state.
     """
-    state.id = StateId.NO_PACKET
+    if state.done_packet is None:
+        state.done_packet = state.packet
+        state.id = StateId.NO_PACKET
+        state.packet = bytearray()
     try:
-        out.write_packet(state.packet)
+        out.write_packet(state.done_packet)
     except OSError as e:
         # SIGPIPE indicates the fifo was closed
         if e.errno == errno.SIGPIPE:
             state.id = StateId.FINISH
-    state.packet = bytearray()
+    state.done_packet = None
     return state
 
 def drop_packet(state):
@@ -242,8 +246,11 @@ def drop_packet(state):
         This function can be called when packet stored within the state
         should be removed.
     """
-    state.id = StateId.NO_PACKET
-    state.packet = bytearray()
+    if state.done_packet is None:
+        state.id = StateId.NO_PACKET
+        state.packet = bytearray()
+    else:
+        state.done_packet = None
     return state
 
 def do_packetise_byte(byte, state, info):
@@ -263,7 +270,8 @@ def do_packetise_byte(byte, state, info):
               info.count_bad += 1
               info.bytes_bad += len(state.packet)
               if (state.verbose > 1):
-                  print("{}: Packet type {:02X} dropped - no data recognized; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
+                  print("{}: Packet type {:02X} damaged - no data recognized; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
+              state.done_packet = state.packet
           state.packet = bytearray()
           state.packet.append(byte)
           state.id = StateId.IN_HEAD
@@ -274,7 +282,8 @@ def do_packetise_byte(byte, state, info):
               info.count_bad += 1
               info.bytes_bad += len(state.packet)
               if (state.verbose > 1):
-                  print("{}: Packet type {:02X} dropped - no data recognized; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
+                  print("{}: Packet type {:02X} damaged - no data recognized; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
+              state.done_packet = state.packet
               state.packet = bytearray()
 
   elif state.id == StateId.IN_HEAD:
@@ -322,7 +331,9 @@ def do_packetise_byte(byte, state, info):
               info.bytes_bad += len(state.packet)
               if (state.verbose > 1):
                   print("{}: Packet type {:02X} damaged - bad crc; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
-              state.id = StateId.DAMAGED
+              state.done_packet = state.packet
+              state.packet = bytearray()
+              state.id = StateId.NO_PACKET
       elif state.packet[0] == 0xAB:
           ccrc = calc_pktAB_checksum(7, state.packet, len(state.packet) - 1)
           crc_pkt = struct.unpack("B", state.packet[-1:])[0]
@@ -335,7 +346,9 @@ def do_packetise_byte(byte, state, info):
               info.bytes_bad += len(state.packet)
               if (state.verbose > 1):
                   print("{}: Packet type {:02X} damaged - bad crc; {} bytes".format(state.pname,state.packet[0],len(state.packet)))
-              state.id = StateId.DAMAGED
+              state.done_packet = state.packet
+              state.packet = bytearray()
+              state.id = StateId.NO_PACKET
 
   else:
       print("{}: Invalid packetise state {}".format(state.pname,state.id))
@@ -379,11 +392,11 @@ def do_dat2pcap(po, datfile, pcapfile):
       if (is_packet_at_finish(state)):
           break;
       if (po.verbose > 2) and (count & 0xffff) == 0:
-          print("{}: Captured {:d} packets ({:d}b), dropped {:d} fragments ({:d}b)".format(
+          print("{}: Packets encountered: {:d} valid ({:d}b), {:d} damaged ({:d}b)".format(
               state.pname, info.count_ok, info.bytes_ok, info.count_bad, info.bytes_bad))
 
   if (po.verbose > 0):
-      print("{}: Captured {:d} packets ({:d}b), dropped {:d} fragments ({:d}b)".format(
+      print("{}: Packets encountered: {:d} valid ({:d}b), {:d} damaged ({:d}b)".format(
           state.pname, info.count_ok, info.bytes_ok, info.count_bad, info.bytes_bad))
 
 def main():
