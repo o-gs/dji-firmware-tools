@@ -313,6 +313,76 @@ class DJIPayload_General_ChipRebootRe(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
              ]
 
+class DJIPayload_General_EncryptCmd(DecoratedEnum):
+    GetChipState = 1
+    GetModuleState = 2
+    Config = 3
+    DoEncrypt = 4
+
+class DJIPayload_General_EncryptOperType(DecoratedEnum):
+    WriteTarget = 0
+    WriteSH204 = 1
+    WriteAll = 2
+
+class DJIPayload_General_EncryptGetStateRq(DJIPayload_Base):
+  # Matches both GetChipState and GetModuleState
+  _fields_ = [('command', c_ubyte),
+             ]
+
+class DJIPayload_General_EncryptConfigRq(DJIPayload_Base):
+  # Matches only Config command
+  _fields_ = [('command', c_ubyte),
+              ('oper_type', c_ubyte),
+              ('config_magic', c_ubyte * 8),
+              ('mod_type', c_ubyte),
+              ('board_sn', c_ubyte * 10),
+              ('key', c_ubyte * 32),
+              ('secure_num', c_ubyte * 16),
+             ]
+
+class DJIPayload_General_EncryptConfig3Rq(DJIPayload_Base):
+  # Matches only Config command
+  _fields_ = [('command', c_ubyte),
+              ('oper_type', c_ubyte),
+              ('config_magic', c_ubyte * 8),
+              ('m01_mod_type', c_ubyte),
+              ('m01_board_sn', c_ubyte * 10),
+              ('m01_key', c_ubyte * 32),
+              ('m01_secure_num', c_ubyte * 16),
+              ('m04_mod_type', c_ubyte),
+              ('m04_board_sn', c_ubyte * 10),
+              ('m04_key', c_ubyte * 32),
+              ('m04_secure_num', c_ubyte * 16),
+              ('m08_mod_type', c_ubyte),
+              ('m08_board_sn', c_ubyte * 10),
+              ('m08_key', c_ubyte * 32),
+              ('m08_secure_num', c_ubyte * 16),
+             ]
+
+class DJIPayload_General_EncryptDoEncryptRq(DJIPayload_Base):
+  # Matches only DoEncrypt command
+  _fields_ = [('command', c_ubyte),
+              ('mod_type', c_ubyte),
+              ('data', c_ubyte * 32),
+             ]
+
+class DJIPayload_General_EncryptGetChipStateRe(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
+              ('state_flags', c_ubyte),
+              ('m01_boardsn', c_ubyte * 10),
+              ('m04_boardsn', c_ubyte * 10),
+              ('m08_boardsn', c_ubyte * 10),
+             ]
+
+class DJIPayload_General_EncryptGetModuleStateRe(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
+              ('state_flags', c_ubyte),
+             ]
+
+class DJIPayload_General_EncryptConfigRe(DJIPayload_Base):
+  _fields_ = [('status', c_ubyte),
+             ]
+
 
 class DJIPayload_FlyController_AssistantUnlockRq(DJIPayload_Base):
   _fields_ = [('lock_state', c_uint),
@@ -574,73 +644,12 @@ class DJIPayload_Gimbal_CalibRe(DJIPayload_Base):
              ]
 
 
-class DJIPayload_General_EncryptCmd(DecoratedEnum):
-    GetChipState = 1
-    GetModuleState = 2
-    Config = 3
-    DoEncrypt = 4
-
-class DJIPayload_General_EncryptOperType(DecoratedEnum):
-    WriteTarget = 0
-    WriteSH204 = 1
-    WriteAll = 2
-
-class DJIPayload_General_EncryptGetStateRq(DJIPayload_Base):
-  # Matches both GetChipState and GetModuleState
-  _fields_ = [('command', c_ubyte),
+class DJIPayload_HDLink_WriteHardwareRegisterRq(DJIPayload_Base):
+  _fields_ = [('reg_address', c_ushort),
+              ('reg_value', c_ubyte),
              ]
 
-class DJIPayload_General_EncryptConfigRq(DJIPayload_Base):
-  # Matches only Config command
-  _fields_ = [('command', c_ubyte),
-              ('oper_type', c_ubyte),
-              ('config_magic', c_ubyte * 8),
-              ('mod_type', c_ubyte),
-              ('board_sn', c_ubyte * 10),
-              ('key', c_ubyte * 32),
-              ('secure_num', c_ubyte * 16),
-             ]
-
-class DJIPayload_General_EncryptConfig3Rq(DJIPayload_Base):
-  # Matches only Config command
-  _fields_ = [('command', c_ubyte),
-              ('oper_type', c_ubyte),
-              ('config_magic', c_ubyte * 8),
-              ('m01_mod_type', c_ubyte),
-              ('m01_board_sn', c_ubyte * 10),
-              ('m01_key', c_ubyte * 32),
-              ('m01_secure_num', c_ubyte * 16),
-              ('m04_mod_type', c_ubyte),
-              ('m04_board_sn', c_ubyte * 10),
-              ('m04_key', c_ubyte * 32),
-              ('m04_secure_num', c_ubyte * 16),
-              ('m08_mod_type', c_ubyte),
-              ('m08_board_sn', c_ubyte * 10),
-              ('m08_key', c_ubyte * 32),
-              ('m08_secure_num', c_ubyte * 16),
-             ]
-
-class DJIPayload_General_EncryptDoEncryptRq(DJIPayload_Base):
-  # Matches only DoEncrypt command
-  _fields_ = [('command', c_ubyte),
-              ('mod_type', c_ubyte),
-              ('data', c_ubyte * 32),
-             ]
-
-class DJIPayload_General_EncryptGetChipStateRe(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-              ('state_flags', c_ubyte),
-              ('m01_boardsn', c_ubyte * 10),
-              ('m04_boardsn', c_ubyte * 10),
-              ('m08_boardsn', c_ubyte * 10),
-             ]
-
-class DJIPayload_General_EncryptGetModuleStateRe(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-              ('state_flags', c_ubyte),
-             ]
-
-class DJIPayload_General_EncryptConfigRe(DJIPayload_Base):
+class DJIPayload_HDLink_WriteHardwareRegisterRe(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
              ]
 
@@ -702,7 +711,7 @@ def encode_command_packet_en(sender_type, sender_index, receiver_type, receiver_
       seq_num, pack_type.value, ack_type.value, encrypt_type.value, cmd_set.value, cmd_id, payload)
 
 def get_known_payload(pkthead, payload):
-    if pkthead.cmd_set == CMD_SET_TYPE.FLYCONTROLLER.value and pkthead.packet_type == 0:
+    if pkthead.cmd_set == CMD_SET_TYPE.GENERAL.value and pkthead.packet_type == 0:
         if (pkthead.cmd_id == 0x30):
             if len(payload) >= sizeof(DJIPayload_General_EncryptConfig3Rq):
                 return DJIPayload_General_EncryptConfig3Rq.from_buffer_copy(payload)
@@ -828,6 +837,16 @@ def get_known_payload(pkthead, payload):
         if (pkthead.cmd_id == 0x08):
             if len(payload) >= sizeof(DJIPayload_Gimbal_CalibRe):
                 return DJIPayload_Gimbal_CalibRe.from_buffer_copy(payload)
+
+    if pkthead.cmd_set == CMD_SET_TYPE.OFDM.value and pkthead.packet_type == 0:
+        if (pkthead.cmd_id == 0x06):
+            if len(payload) >= sizeof(DJIPayload_HDLink_WriteHardwareRegisterRq):
+                return DJIPayload_HDLink_WriteHardwareRegisterRq.from_buffer_copy(payload)
+
+    if pkthead.cmd_set == CMD_SET_TYPE.OFDM.value and pkthead.packet_type == 1:
+        if (pkthead.cmd_id == 0x06):
+            if len(payload) >= sizeof(DJIPayload_HDLink_WriteHardwareRegisterRe):
+                return DJIPayload_HDLink_WriteHardwareRegisterRe.from_buffer_copy(payload)
 
     return None
 
