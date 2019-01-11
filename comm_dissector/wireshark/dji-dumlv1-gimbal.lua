@@ -26,12 +26,12 @@ GIMBAL_UART_CMD_TEXT = {
     [0x10] = 'Gimbal User Params Get',
     [0x11] = 'Gimbal User Params Save',
     [0x13] = 'Gimbal User Params Reset Default', -- Resume Default Param
-    [0x14] = 'Gimbal Abs Angle Control', -- seen in P3X_FW_V01.11.0030_m0400
+    [0x14] = 'Gimbal Abs Angle Control',
     [0x15] = 'Gimbal Movement',
     [0x1C] = 'Gimbal Type Get',
     [0x1E] = 'Gimbal Degree Info Subscription',
-    [0x20] = 'Gimbal TBD 20', -- seen in P3X_FW_V01.11.0030_m0400
-    [0x21] = 'Gimbal TBD 21', -- seen in P3X_FW_V01.11.0030_m0400
+    [0x20] = 'Gimbal TBD 20',
+    [0x21] = 'Gimbal TBD 21',
     [0x24] = 'Gimbal User Params Get',
     [0x27] = 'Gimbal Abnormal Status Get',
     [0x2b] = 'Gimbal Tutorial Status Get',
@@ -47,7 +47,7 @@ GIMBAL_UART_CMD_TEXT = {
     [0x39] = 'Gimbal Lock',
     [0x3A] = 'Gimbal Rotate Camera X Axis',
     [0x45] = 'Gimbal Get Temp',
-    [0x47] = 'Gimbal TBD 47', -- seen in P3X_FW_V01.11.0030_m0400
+    [0x47] = 'Gimbal TBD 47',
     [0x4c] = 'Gimbal Reset And Set Mode',
     [0x56] = 'Gimbal NotiFy Camera Id',
     [0x57] = 'Handheld Stick State Get/Push',
@@ -55,7 +55,7 @@ GIMBAL_UART_CMD_TEXT = {
 }
 
 -- Gimbal - Gimbal Control - 0x01
--- Sets 3 values from packet within gimbal RAM, each in range 363..1685. On P3X, no ACK possible.
+-- Description: Sets 3 values from packet within gimbal RAM, each in range 363..1685. On P3X, no ACK possible.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
 f.gimbal_control_unkn0 = ProtoField.uint16 ("dji_dumlv1.gimbal_control_unkn0", "Unknown0", base.DEC, nil, nil, "Accepted values 363..1685")
@@ -87,13 +87,70 @@ local function gimbal_control_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Control: Payload size different than expected") end
 end
 
+-- Gimbal - Gimbal Get Position - 0x02
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_get_position_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_get_position_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_get_position_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_get_position_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Get Position: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Get Position: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Set Param - 0x03
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_set_param_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_set_param_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_set_param_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_set_param_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Set Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Set Param: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Get Param - 0x04
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_get_param_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_get_param_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_get_param_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_get_param_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Get Param: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Get Param: Payload size different than expected") end
+end
+
 -- Gimbal - Gimbal Params Get / Push Position - 0x05
+-- Description: TODO.
+-- Supported in: UNKNOWN
 
 enums.GIMBAL_PARAMS_MODE_ENUM = {
     [0x00] = 'YawNoFollow',
     [0x01] = 'FPV',
     [0x02] = 'YawFollow',
     [0x03] = 'AutoCalibrate',
+    -- In P3X, higher modes are not visible due to mask applied to the value
     [0x64] = 'OTHER',
 }
 
@@ -168,7 +225,7 @@ local function gimbal_params_dissector(pkt_length, buffer, pinfo, subtree)
 end
 
 -- Gimbal - Gimbal Push AETR - 0x06
--- Sets Aileron, Elevator, Throttle and Rudder, each in range 364..1684. On P3X, no ACK possible.
+-- Description: Sets Aileron, Elevator, Throttle and Rudder, each in range 364..1684. On P3X, no ACK possible.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
 f.gimbal_push_aetr_unkn0 = ProtoField.uint16 ("dji_dumlv1.gimbal_push_aetr_unkn0", "Unknown0", base.DEC, nil, nil, "Accepted values are 364..1684")
@@ -198,7 +255,7 @@ local function gimbal_push_aetr_dissector(pkt_length, buffer, pinfo, subtree)
 end
 
 -- Gimbal - Gimbal Adjust Roll / Roll Finetune - 0x07
--- Receives a value from packet and shifts internal roll adjustment by it. The adjustment is not saved into persistent storage.
+-- Description: Receives a value from packet and shifts internal roll adjustment by it. The adjustment is not saved into persistent storage.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
 f.gimbal_adjust_roll_adjustment_val = ProtoField.int8 ("dji_dumlv1.gimbal_adjust_roll_adjustment_val", "Adjustment Value", base.DEC, nil, nil)
@@ -216,7 +273,7 @@ local function gimbal_adjust_roll_dissector(pkt_length, buffer, pinfo, subtree)
 end
 
 -- Gimbal - Gimbal Calibration - 0x08
--- On Ph3 starts auto-calibration, the same which can be triggered by mobile app; calibrates only 2 axes.
+-- Description: On Ph3 starts auto-calibration, the same which can be triggered by mobile app; calibrates only 2 axes.
 -- On Spark starts one of given calibration routines.
 -- Supported in: P3X_FW_V01.11.0030_m0400 (with no cmd selection)
 
@@ -253,8 +310,26 @@ local function gimbal_calibrate_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Calibration: Payload size different than expected") end
 end
 
+-- Gimbal - Gimbal Reserved2 - 0x09
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_reserved2_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_reserved2_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_reserved2_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_reserved2_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Reserved2: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Reserved2: Payload size different than expected") end
+end
+
 -- Gimbal - Gimbal Ext Ctrl Degree / Rotate/Angle Set - 0x0a
--- Sets 3 angular values and 3 additional values from packet within gimbal RAM. In P3X, resets values from packet 0x20 to 1 if ACK was requested.
+-- Description: Sets 3 angular values and 3 additional values from packet within gimbal RAM. In P3X, resets values from packet 0x20 to 1 if ACK was requested.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
 f.gimbal_ext_ctrl_degree_unknown0 = ProtoField.int16 ("dji_dumlv1.gimbal_ext_ctrl_degree_unknown0", "Unknown0", base.DEC, nil, nil, "angle in degrees * 10, range -1800..1800")
@@ -292,7 +367,7 @@ local function gimbal_ext_ctrl_degree_dissector(pkt_length, buffer, pinfo, subtr
 end
 
 -- Gimbal - Gimbal Ext Ctrl Status - 0x0b
--- In response to this request, gimbal returns a flag field and int value representing current ctrl status.
+-- Description: In response to this request, gimbal returns a flag field and int value representing current ctrl status.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
 f.gimbal_ext_ctrl_status_status = ProtoField.uint8 ("dji_dumlv1.gimbal_ext_ctrl_status_status", "Status", base.HEX, nil, nil, "Request processing status; always 0.")
@@ -329,7 +404,7 @@ local function gimbal_ext_ctrl_status_dissector(pkt_length, buffer, pinfo, subtr
 end
 
 -- Gimbal - Gimbal Ext Ctrl Accel / Speed Control - 0x0c
--- Sets angular accelerations of each gimbal axis.
+-- Description: Sets angular accelerations of each gimbal axis.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
 f.gimbal_ext_ctrl_accel_unknown0 = ProtoField.int16 ("dji_dumlv1.gimbal_ext_ctrl_accel_unknown0", "Unknown0", base.DEC, nil, nil, "angle in degrees * 10, range -1800..1800")
@@ -359,7 +434,7 @@ local function gimbal_ext_ctrl_accel_dissector(pkt_length, buffer, pinfo, subtre
 end
 
 -- Gimbal - Gimbal Suspend/Resume / Set On Or Off - 0x0d
--- Allows to suspend or resume gimbal motion when correct magic value is provided as payload. Sets a single flag in RAM. No ACK possible.
+-- Description: Allows to suspend or resume gimbal motion when correct magic value is provided as payload. Sets a single flag in RAM. No ACK possible.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
 enums.GIMBAL_SUSPEND_RESUME_CMD_ENUM = {
@@ -382,7 +457,7 @@ local function gimbal_suspend_resume_dissector(pkt_length, buffer, pinfo, subtre
 end
 
 -- Gimbal - Gimbal Thirdp Magn - 0x0e
--- Sets 3 values from packet; does some processing on the values, influences many values stored in RAM.
+-- Description: Sets 3 values from packet; does some processing on the values, influences many values stored in RAM.
 -- Maybe calibrates the gimbal for work with third party magnetometer?
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
@@ -409,7 +484,7 @@ local function gimbal_thirdp_magn_dissector(pkt_length, buffer, pinfo, subtree)
 end
 
 -- Gimbal - Gimbal User Params Set - 0x0f
--- Allows to set new values of gimbal user params. Index and size of each param must be provided. On Ph3, also resets values from packet 0x20 to 1.
+-- Description: Allows to set new values of gimbal user params. Index and size of each param must be provided. On Ph3, also resets values from packet 0x20 to 1.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
 f.gimbal_user_params_set_resp_status = ProtoField.uint8 ("dji_dumlv1.gimbal_user_params_set_resp_status", "Status", base.DEC, nil, nil, "Request processing status; non-zero value means error.")
@@ -462,7 +537,7 @@ local function gimbal_user_params_set_dissector(pkt_length, buffer, pinfo, subtr
 end
 
 -- Gimbal - Gimbal User Params Get - 0x10
--- Given indexes of gimbal user params, returns a list of their values. Values have different size depending on their type.
+-- Description: Given indexes of gimbal user params, returns a list of their values. Values have different size depending on their type.
 -- On Ph3, there are 12 gimbal user params defined in firmware.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
@@ -534,7 +609,7 @@ local function gimbal_user_params_get_dissector(pkt_length, buffer, pinfo, subtr
 end
 
 -- Gimbal - Gimbal User Params Save - 0x11
--- Stores values from user_param list, and additional values like the roll adjustment, to persistent storage.
+-- Description: Stores values from user_param list, and additional values like the roll adjustment, to persistent storage.
 -- On Ph3, requires one byte payload to send an ACK. Also on Ph3, besides returning status code, sets values from packet 0x20 to different numbers on success and on failure.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
@@ -565,7 +640,7 @@ local function gimbal_user_params_save_dissector(pkt_length, buffer, pinfo, subt
 end
 
 -- Gimbal - Gimbal User Params Reset Default / Resume Default Param - 0x13
--- Restores values of all user params to defaults from persistent storage. On Ph3, resets values from packet 0x20 to 1.
+-- Description: Restores values of all user params to defaults from persistent storage. On Ph3, resets values from packet 0x20 to 1.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
 f.gimbal_user_params_reset_def_resp_status = ProtoField.uint8 ("dji_dumlv1.gimbal_user_params_reset_def_resp_status", "Status", base.DEC, nil, nil, "Request processing status; non-zero value means error.")
@@ -591,41 +666,43 @@ local function gimbal_user_params_reset_def_dissector(pkt_length, buffer, pinfo,
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal User Params Reset Default: Payload size different than expected") end
 end
 
--- Gimbal - Gimbal TBD 14 - 0x14
--- Sets 3 angular values and 1 additional value from packet within gimbal RAM. Also contains flags field which influences which fields are set. No ACK possible.
+-- Gimbal - Gimbal Abs Angle Control - 0x14
+-- Description: Sets 3 angular values and 1 additional value from packet within gimbal RAM. Also contains flags field which influences which fields are set. No ACK possible.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
-f.gimbal_tbd_14_angle1 = ProtoField.int16 ("dji_dumlv1.gimbal_tbd_14_angle1", "Angle1", base.DEC, nil, nil, "in degrees * 10")
-f.gimbal_tbd_14_angle2 = ProtoField.int16 ("dji_dumlv1.gimbal_tbd_14_angle2", "Angle2", base.DEC, nil, nil, "in degrees * 10")
-f.gimbal_tbd_14_angle3 = ProtoField.int16 ("dji_dumlv1.gimbal_tbd_14_angle3", "Angle3", base.DEC, nil, nil, "in degrees * 10")
-f.gimbal_tbd_14_flags = ProtoField.uint8 ("dji_dumlv1.gimbal_tbd_14_flags", "Flags", base.HEX, nil, nil)
-f.gimbal_tbd_14_field7 = ProtoField.uint8 ("dji_dumlv1.gimbal_tbd_14_field6", "Field6", base.DEC, nil, nil)
+f.gimbal_abs_angle_control_angle1 = ProtoField.int16 ("dji_dumlv1.gimbal_abs_angle_control_angle1", "Angle1", base.DEC, nil, nil, "in degrees * 10")
+f.gimbal_abs_angle_control_angle2 = ProtoField.int16 ("dji_dumlv1.gimbal_abs_angle_control_angle2", "Angle2", base.DEC, nil, nil, "in degrees * 10")
+f.gimbal_abs_angle_control_angle3 = ProtoField.int16 ("dji_dumlv1.gimbal_abs_angle_control_angle3", "Angle3", base.DEC, nil, nil, "in degrees * 10")
+f.gimbal_abs_angle_control_flags = ProtoField.uint8 ("dji_dumlv1.gimbal_abs_angle_control_flags", "Flags", base.HEX, nil, nil)
+f.gimbal_abs_angle_control_field7 = ProtoField.uint8 ("dji_dumlv1.gimbal_abs_angle_control_field6", "Field6", base.DEC, nil, nil)
 
-local function gimbal_tbd_14_dissector(pkt_length, buffer, pinfo, subtree)
+local function gimbal_abs_angle_control_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    subtree:add_le (f.gimbal_tbd_14_angle1, payload(offset, 2))
+    subtree:add_le (f.gimbal_abs_angle_control_angle1, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_tbd_14_angle2, payload(offset, 2))
+    subtree:add_le (f.gimbal_abs_angle_control_angle2, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_tbd_14_angle3, payload(offset, 2))
+    subtree:add_le (f.gimbal_abs_angle_control_angle3, payload(offset, 2))
     offset = offset + 2
 
-    subtree:add_le (f.gimbal_tbd_14_flags, payload(offset, 1))
+    subtree:add_le (f.gimbal_abs_angle_control_flags, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.gimbal_tbd_14_field7, payload(offset, 1))
+    subtree:add_le (f.gimbal_abs_angle_control_field7, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal TBD 14: Offset does not match - internal inconsistency") end
-    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal TBD 14: Payload size different than expected") end
+    if (offset ~= 20) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Abs Angle Control: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Abs Angle Control: Payload size different than expected") end
 end
 
 -- Gimbal - Gimbal Movement - 0x15
+-- Description: TODO.
+-- Supported in: UNKNOWN
 
 f.gimbal_move_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_move_unknown0", "Unknown0", base.DEC, nil, nil, "0.04 degree")
 f.gimbal_move_unknown1 = ProtoField.int8 ("dji_dumlv1.gimbal_move_unknown1", "Unknown1", base.DEC, nil, nil, "0.04 degree")
@@ -678,6 +755,8 @@ local function gimbal_move_dissector(pkt_length, buffer, pinfo, subtree)
 end
 
 -- Gimbal - Gimbal Type - 0x1c
+-- Description: TODO.
+-- Supported in: UNKNOWN
 
 enums.GIMBAL_TYPE_TYPE_DJI_GIMBAL_TYPE_ENUM = {
     [0x00] = 'TIMEOUT',
@@ -712,8 +791,26 @@ local function gimbal_type_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Type: Payload size different than expected") end
 end
 
+-- Gimbal - Gimbal Degree Info Subscription - 0x1e
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_degree_info_subscription_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_degree_info_subscription_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_degree_info_subscription_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_degree_info_subscription_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Degree Info Subscription: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Degree Info Subscription: Payload size different than expected") end
+end
+
 -- Gimbal - Gimbal TBD 20 - 0x20
--- Sets 3 values from packet within gimbal RAM. No ACK possible.
+-- Description: Sets 3 values from packet within gimbal RAM. No ACK possible.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
 f.gimbal_tbd_20_unknown0 = ProtoField.int32 ("dji_dumlv1gimbal_tbd_20_unknown0", "Unknown0", base.DEC, nil, nil)
@@ -739,7 +836,7 @@ local function gimbal_tbd_20_dissector(pkt_length, buffer, pinfo, subtree)
 end
 
 -- Gimbal - Gimbal TBD 21 - 0x21
--- Sets values of unknown 3-element list within RAM. Each list entry consists of 3 integers. No ACK possible.
+-- Description: Sets values of unknown 3-element list within RAM. Each list entry consists of 3 integers. No ACK possible.
 -- Supported in: P3X_FW_V01.11.0030_m0400
 
 f.gimbal_tbd_21_dry_run = ProtoField.int8 ("dji_dumlv1.gimbal_tbd_21_dry_run", "Dry Run", base.DEC, nil, nil, "When not zero, the packet will have no effect")
@@ -797,6 +894,8 @@ local function gimbal_tbd_21_dissector(pkt_length, buffer, pinfo, subtree)
 end
 
 -- Gimbal - Gimbal User Params - 0x24
+-- Description: TODO.
+-- Supported in: UNKNOWN
 
 f.gimbal_user_params_unknown00 = ProtoField.bytes ("dji_dumlv1.gimbal_user_params_unknown00", "Unknown00", base.SPACE)
 f.gimbal_user_params_preset_id = ProtoField.uint8 ("dji_dumlv1.gimbal_user_params_preset_id", "Preset Id", base.HEX)
@@ -945,6 +1044,8 @@ local function gimbal_user_params_dissector(pkt_length, buffer, pinfo, subtree)
 end
 
 -- Gimbal - Gimbal Abnormal Status - 0x27
+-- Description: TODO.
+-- Supported in: UNKNOWN
 
 f.gimbal_abnormal_status_masked00 = ProtoField.uint8 ("dji_dumlv1.gimbal_abnormal_status_masked00", "Masked00", base.HEX)
   f.gimbal_abnormal_status_roll_locked = ProtoField.uint8 ("dji_dumlv1.gimbal_abnormal_status_roll_locked", "Roll Locked", base.HEX, nil, 0x01, nil)
@@ -1019,6 +1120,8 @@ local function gimbal_abnormal_status_dissector(pkt_length, buffer, pinfo, subtr
 end
 
 -- Gimbal - Gimbal Tutorial Status - 0x2b
+-- Description: TODO.
+-- Supported in: UNKNOWN
 
 enums.GIMBAL_TUTORIAL_STATUS_CUR_STEP_TUTORIAL_STATUS_ENUM = {
     [0x00] = 'STEP_FINISH',
@@ -1070,7 +1173,27 @@ local function gimbal_tutorial_status_dissector(pkt_length, buffer, pinfo, subtr
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Tutorial Status: Payload size different than expected") end
 end
 
+-- Gimbal - Gimbal Tutorial Step Set - 0x2c
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_tutorial_step_set_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_tutorial_step_set_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_tutorial_step_set_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_tutorial_step_set_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Tutorial Step Set: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Tutorial Step Set: Payload size different than expected") end
+end
+
 -- Gimbal - Gimbal Auto Calibration Status - 0x30
+-- Description: TODO.
+-- Supported in: UNKNOWN
 
 f.gimbal_auto_calibration_status_progress = ProtoField.uint8 ("dji_dumlv1.gimbal_auto_calibration_status_progress", "Progress", base.HEX)
 f.gimbal_auto_calibration_status_status = ProtoField.uint8 ("dji_dumlv1.gimbal_auto_calibration_status_status", "Status", base.HEX)
@@ -1090,7 +1213,45 @@ local function gimbal_auto_calibration_status_dissector(pkt_length, buffer, pinf
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Auto Calibration Status: Payload size different than expected") end
 end
 
--- Gimbal - Gimbal Battery Info - 0x33
+-- Gimbal - Robin Params Set - 0x31
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_robin_params_set_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_robin_params_set_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_robin_params_set_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_robin_params_set_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Robin Params Set: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Robin Params Set: Payload size different than expected") end
+end
+
+-- Gimbal - Robin Params Get - 0x32
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_robin_params_get_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_robin_params_get_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_robin_params_get_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_robin_params_get_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Robin Params Get: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Robin Params Get: Payload size different than expected") end
+end
+
+-- Gimbal - Robin Battery Info Push / Gimbal Battery Info - 0x33
+-- Description: TODO.
+-- Supported in: UNKNOWN
 
 f.gimbal_battery_info_a = ProtoField.uint8 ("dji_dumlv1.gimbal_battery_info_a", "A", base.HEX)
 
@@ -1106,7 +1267,63 @@ local function gimbal_battery_info_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Battery Info: Payload size different than expected") end
 end
 
+-- Gimbal - Gimbal Handle Params Set - 0x34
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_handle_params_set_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_handle_params_set_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_handle_params_set_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_handle_params_set_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Handle Params Set: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Handle Params Set: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Handle Params Get - 0x36
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_handle_params_get_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_handle_params_get_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_handle_params_get_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_handle_params_get_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Handle Params Get: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Handle Params Get: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Timelapse Params Set - 0x37
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_timelapse_params_set_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_timelapse_params_set_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_timelapse_params_set_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_timelapse_params_set_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Timelapse Params Set: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Timelapse Params Set: Payload size different than expected") end
+end
+
 -- Gimbal - Gimbal Timelapse Status - 0x38
+-- Description: TODO.
+-- Supported in: UNKNOWN
 
 f.gimbal_timelapse_status_masked00 = ProtoField.uint8 ("dji_dumlv1.gimbal_timelapse_status_masked00", "Masked00", base.HEX)
   f.gimbal_timelapse_status_timelapse_status = ProtoField.uint8 ("dji_dumlv1.gimbal_timelapse_status_timelapse_status", "Timelapse Status", base.HEX, nil, 0x03, nil)
@@ -1124,7 +1341,81 @@ local function gimbal_timelapse_status_dissector(pkt_length, buffer, pinfo, subt
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Timelapse Status: Payload size different than expected") end
 end
 
--- Gimbal - Gimbal Set Mode - 0x4C
+-- Gimbal - Gimbal Lock - 0x39
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_lock_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_lock_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_lock_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_lock_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Lock: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Lock: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Rotate Camera X Axis - 0x3a
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_rotate_camera_x_axis_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_rotate_camera_x_axis_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_rotate_camera_x_axis_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_rotate_camera_x_axis_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Rotate Camera X Axis: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Rotate Camera X Axis: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Get Temp - 0x45
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_get_temp_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_get_temp_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_get_temp_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_get_temp_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Get Temp: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Get Temp: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal TBD 47 - 0x47
+-- Description: TODO.
+-- Supported in: P3X_FW_V01.11.0030_m0400
+
+f.gimbal_tbd_47_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_tbd_47_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_tbd_47_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_tbd_47_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal TBD 47: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal TBD 47: Payload size different than expected") end
+end
+
+-- Gimbal - Gimbal Reset And Set Mode - 0x4c
+-- Description: TODO.
+-- Supported in: UNKNOWN
 
 f.gimbal_set_mode_mode = ProtoField.uint8 ("dji_dumlv1.gimbal_set_mode_mode", "Mode", base.HEX)
 f.gimbal_set_mode_cmd = ProtoField.uint8 ("dji_dumlv1.gimbal_set_mode_cmd", "Cmd", base.HEX)
@@ -1144,12 +1435,70 @@ local function gimbal_set_mode_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Set Mode: Payload size different than expected") end
 end
 
+-- Gimbal - Gimbal NotiFy Camera Id - 0x56
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_notify_camera_id_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_notify_camera_id_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_notify_camera_id_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_notify_camera_id_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal NotiFy Camera Id: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal NotiFy Camera Id: Payload size different than expected") end
+end
+
+-- Gimbal - Handheld Stick State Get/Push - 0x57
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_handheld_stick_state_get_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_handheld_stick_state_get_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_handheld_stick_state_get_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_handheld_stick_state_get_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Handheld Stick State Get/Push: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Handheld Stick State Get/Push: Payload size different than expected") end
+end
+
+-- Gimbal - Handheld Stick Control Set / Handheld Stick Control Enable - 0x58
+-- Description: TODO.
+-- Supported in: UNKNOWN
+
+f.gimbal_handheld_stick_control_set_unknown0 = ProtoField.int8 ("dji_dumlv1.gimbal_handheld_stick_control_set_unknown0", "Unknown0", base.DEC, nil, nil)
+
+local function gimbal_handheld_stick_control_set_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    --subtree:add_le (f.gimbal_handheld_stick_control_set_unknown0, payload(offset, 1))
+    --offset = offset + 1
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Handheld Stick Control Set: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Handheld Stick Control Set: Payload size different than expected") end
+end
+
 GIMBAL_UART_CMD_DISSECT = {
     [0x01] = gimbal_control_dissector,
+    [0x02] = gimbal_get_position_dissector,
+    [0x03] = gimbal_set_param_dissector,
+    [0x04] = gimbal_get_param_dissector,
     [0x05] = gimbal_params_dissector,
     [0x06] = gimbal_push_aetr_dissector,
     [0x07] = gimbal_adjust_roll_dissector,
     [0x08] = gimbal_calibrate_dissector,
+    [0x09] = gimbal_reserved2_dissector,
     [0x0a] = gimbal_ext_ctrl_degree_dissector,
     [0x0b] = gimbal_ext_ctrl_status_dissector,
     [0x0c] = gimbal_ext_ctrl_accel_dissector,
@@ -1159,16 +1508,30 @@ GIMBAL_UART_CMD_DISSECT = {
     [0x10] = gimbal_user_params_get_dissector,
     [0x11] = gimbal_user_params_save_dissector,
     [0x13] = gimbal_user_params_reset_def_dissector,
-    [0x14] = gimbal_tbd_14_dissector,
+    [0x14] = gimbal_abs_angle_control_dissector,
     [0x15] = gimbal_move_dissector,
     [0x1c] = gimbal_type_dissector,
+    [0x1e] = gimbal_degree_info_subscription_dissector,
     [0x20] = gimbal_tbd_20_dissector,
     [0x21] = gimbal_tbd_21_dissector,
     [0x24] = gimbal_user_params_dissector,
     [0x27] = gimbal_abnormal_status_dissector,
     [0x2b] = gimbal_tutorial_status_dissector,
+    [0x2c] = gimbal_tutorial_step_set_dissector,
     [0x30] = gimbal_auto_calibration_status_dissector,
+    [0x31] = gimbal_robin_params_set_dissector,
+    [0x32] = gimbal_robin_params_get_dissector,
     [0x33] = gimbal_battery_info_dissector,
+    [0x34] = gimbal_handle_params_set_dissector,
+    [0x36] = gimbal_handle_params_get_dissector,
+    [0x37] = gimbal_timelapse_params_set_dissector,
     [0x38] = gimbal_timelapse_status_dissector,
-    [0x4C] = gimbal_set_mode_dissector,
+    [0x39] = gimbal_lock_dissector,
+    [0x3a] = gimbal_rotate_camera_x_axis_dissector,
+    [0x45] = gimbal_get_temp_dissector,
+    [0x47] = gimbal_tbd_47_dissector,
+    [0x4c] = gimbal_set_mode_dissector,
+    [0x56] = gimbal_notify_camera_id_dissector,
+    [0x57] = gimbal_handheld_stick_state_get_dissector,
+    [0x58] = gimbal_handheld_stick_control_set_dissector,
 }
