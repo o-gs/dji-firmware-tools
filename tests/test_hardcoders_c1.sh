@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 declare -a FWPKG_LIST=(
+P3X_FW_V01.03.0020
 C1_FW_V01.04.0030
 C1_FW_V01.05.0070
 C1_FW_V01.05.0080
@@ -95,7 +96,12 @@ function exec_mod_for_m1400 {
 
   # Verify by checking amount of changes within the file
   set +x
-  verify_changed_bytes_between_files 9 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  if [[ "${FWMODL}" == "P3X_FW_V"* ]]; then
+    # Old firmware, less attenuation values to modify
+    verify_changed_bytes_between_files 6 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  else
+    verify_changed_bytes_between_files 9 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  fi
   echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
 }
 
@@ -127,7 +133,7 @@ for FWPKG in "${FWPKG_LIST[@]}"; do
   ./dji_xv4_fwcon.py -vvv -x -p "fw/${FWPKG}.bin"
 
   exec_mod_for_m1400 "${FWPKG}_m1400"
-  if [[ "${FWPKG}" > "C1_FW_V01.04.9999" ]]; then
+  if [[ "${FWPKG}" > "C1_FW_V01.04.9999" ]] && [[ "${FWPKG}" != "P3X_FW_V"* ]]; then
     exec_mod_for_m1401 "${FWPKG}_m1401"
   fi
 done
