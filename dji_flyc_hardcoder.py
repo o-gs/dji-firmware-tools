@@ -81,9 +81,6 @@ import json
 from ctypes import *
 from capstone import *
 from keystone import *
-sys.path.insert(0, '../pyelftools')
-from elftools.elf.elffile import ELFFile
-from elftools.elf.constants import SH_FLAGS
 
 sys.path.insert(0, './')
 from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
@@ -94,6 +91,11 @@ from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
   armfw_asm_search_strings_to_re_list, armfw_elf_paramvals_export_json, \
   armfw_elf_paramvals_export_simple_list, armfw_elf_paramvals_export_mapfile, \
   VarType, DataVariety, CodeVariety, DummyStruct
+
+# needs to be below amba_sys_hardcoder, as there is a warning in case of missing or wrong version
+sys.path.insert(0, '../pyelftools')
+from elftools.elf.elffile import ELFFile
+from elftools.elf.constants import SH_FLAGS
 
 
 def version_string_to_int_getter(val):
