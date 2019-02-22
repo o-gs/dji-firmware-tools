@@ -87,6 +87,7 @@ except ImportError:
     print("Try `arm_bin2elf.py` for details.")
     raise
 
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
