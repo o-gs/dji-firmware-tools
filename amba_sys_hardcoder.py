@@ -74,6 +74,7 @@ import json
 from ctypes import *
 from capstone import *
 from keystone import *
+from keystone.keystone_const import *
 
 sys.path.insert(0, '../pyelftools')
 try:
