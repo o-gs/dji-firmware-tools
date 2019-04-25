@@ -1189,7 +1189,7 @@ def do_gimbal_calib_request_p3x_autocal(po, ser):
     rplpayload, pktreq = gimbal_calib_request_p3x(po, ser)
 
     print("Calibration process started; do not touch the drone for 15 seconds.")
-    sleep(5)
+    time.sleep(5)
     print("Monitoring the progress is only possibe from a mobile app, so exiting.")
 
 def do_gimbal_calib_request(po):
