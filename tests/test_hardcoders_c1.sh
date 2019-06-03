@@ -79,6 +79,34 @@ function verify_changed_bytes_between_files {
   echo "### OK: Amount of changes in bin file, ${FWDIFF_COUNT}, is reasonable. ###"
 }
 
+function exec_mod_for_m1300 {
+  local FWMODL=$1
+  set -x
+  openssl des3 -md md5 -d -k Dji123456 -in "${FWMODL}.bin"  -out "${FWMODL}_decrypted.tar.gz"
+  # Symlinks creation will fail on Windows
+  set +e
+  tar -zxf "${FWMODL}_decrypted.tar.gz"
+  set -e
+  #cp ./dji/bin/usbclient "./${FWMODL}-usbclient.elf"
+  #cp "./${FWMODL}-usbclient.elf" "./${FWMODL}-usbclient.orig.elf"
+  #./dm3xx_encode_usb_hardcoder.py -vv -x -e "${FWMODL}-usbclient.elf"
+
+  # now modify the generated JSON file
+
+  #modify_json_value_inplace "${FWMODL}-usbclient.json" "og_hardcoded[.]p3x_dm3xx[.]startup_encrypt_check_always_pass" "1"
+
+  #./dm3xx_encode_usb_hardcoder.py -vv -u -e "${FWMODL}-usbclient.elf"
+  #cp -f "./${FWMODL}-usbclient.elf" ./dji/bin/usbclient
+  #tar -zcf "${FWMODL}_decrypted.tar.gz" ./dji
+  rm -rf ./dji
+  openssl des3 -md md5 -e -k Dji123456 -in "${FWMODL}_decrypted.tar.gz"  -out "${FWMODL}.bin"
+
+  # Verify by checking amount of changes within the file
+  set +x
+  #verify_changed_bytes_between_files 10 32 "./${FWMODL}-encode_usb.orig.elf" "./${FWMODL}-encode_usb.elf"
+  echo "### SUCCESS: Binary file changes are within acceptable limits. ###"
+}
+
 function exec_mod_for_m1400 {
   local FWMODL=$1
   set -x
@@ -132,6 +160,7 @@ for FWPKG in "${FWPKG_LIST[@]}"; do
   echo "### TEST of hardcoders with ${FWPKG} ###"
   ./dji_xv4_fwcon.py -vvv -x -p "fw/${FWPKG}.bin"
 
+  #exec_mod_for_m1300 "${FWPKG}_m1300"
   exec_mod_for_m1400 "${FWPKG}_m1400"
   if [[ "${FWPKG}" > "C1_FW_V01.04.9999" ]] && [[ "${FWPKG}" != "P3X_FW_V"* ]]; then
     exec_mod_for_m1401 "${FWPKG}_m1401"
