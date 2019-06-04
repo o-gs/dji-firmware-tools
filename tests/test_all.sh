@@ -32,6 +32,7 @@ if [ ! -f "supported_firmwares.csv" ]; then
 fi
 
 EXEC_FLAG=0x04
+#EXEC_FLAG=0x02 # use to download and test all firmwares instead of selected few
 
 mkdir -p fw
 
