@@ -19,8 +19,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Note that very old P3X and WM610 firmwares contain both RC and AC modules;
+# these were separated in later firmwares.
 declare -a FWPKG_LIST=(
 P3X_FW_V01.03.0020
+WM610_FW_V01.02.01.03
+WM610_FW_V01.02.01.06
+WM610_FW_V01.03.00.00
 C1_FW_V01.04.0030
 C1_FW_V01.05.0070
 C1_FW_V01.05.0080
@@ -87,8 +92,8 @@ function exec_mod_for_m1300 {
   set +e
   tar -zxf "${FWMODL}_decrypted.tar.gz"
   set -e
-  #cp ./dji/bin/usbclient "./${FWMODL}-usbclient.elf"
-  #cp "./${FWMODL}-usbclient.elf" "./${FWMODL}-usbclient.orig.elf"
+  cp ./dji/bin/usbclient "./${FWMODL}-usbclient.elf"
+  cp "./${FWMODL}-usbclient.elf" "./${FWMODL}-usbclient.orig.elf"
   #./dm3xx_encode_usb_hardcoder.py -vv -x -e "${FWMODL}-usbclient.elf"
 
   # now modify the generated JSON file
@@ -124,7 +129,10 @@ function exec_mod_for_m1400 {
 
   # Verify by checking amount of changes within the file
   set +x
-  if [[ "${FWMODL}" == "P3X_FW_V"* ]]; then
+  if [[ "${FWPKG}" == "WM610_FW_V"* ]]; then
+    # Old Inspire firmware, not fully suported
+    verify_changed_bytes_between_files 2 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
+  elif [[ "${FWMODL}" == "P3X_FW_V"* ]]; then
     # Old firmware, less attenuation values to modify
     verify_changed_bytes_between_files 6 32 "${FWMODL}.orig.bin" "${FWMODL}.bin"
   else
@@ -160,9 +168,9 @@ for FWPKG in "${FWPKG_LIST[@]}"; do
   echo "### TEST of hardcoders with ${FWPKG} ###"
   ./dji_xv4_fwcon.py -vvv -x -p "fw/${FWPKG}.bin"
 
-  #exec_mod_for_m1300 "${FWPKG}_m1300"
+  exec_mod_for_m1300 "${FWPKG}_m1300"
   exec_mod_for_m1400 "${FWPKG}_m1400"
-  if [[ "${FWPKG}" > "C1_FW_V01.04.9999" ]] && [[ "${FWPKG}" != "P3X_FW_V"* ]]; then
+  if [[ "${FWPKG}" > "C1_FW_V01.04.9999" ]] && [[ "${FWPKG}" != "P3X_FW_V"* ]] && [[ "${FWPKG}" != "WM610_FW_V"* ]]; then
     exec_mod_for_m1401 "${FWPKG}_m1401"
   fi
 done
