@@ -92,7 +92,8 @@ dji_targets = [
     DjiModuleTarget(15,-1, "TXUSBC",  "transmitter usb controller"),
     DjiModuleTarget(15, 0, "TX68013", "transmitter usb 'IG810 LB2_68013_TX'"), # P3X
     DjiModuleTarget(16,-1, "RXUSBCG", "receiver usb controller"),
-    DjiModuleTarget(16, 0, "RX68013", "receiver usb 'IG810 LB2_68013_RX ground'"),
+    DjiModuleTarget(16, 0, "RX68013", "receiver usb 'IG810 LB2_68013_RX ground'"), # GL300a
+    DjiModuleTarget(16, 1, "RXCY2014","receiver usb 'IG810 LB2_CY2014_RX ground'"), # GL300b+
     DjiModuleTarget(17,-1, "MVOM",    "visual positioning"),
     DjiModuleTarget(17, 0, "MVOMC4",  "visual positioning module 'camera'"), # P3X
     DjiModuleTarget(17, 1, "MVOMS0",  "visual positioning module 'sonar'"), # P3X
