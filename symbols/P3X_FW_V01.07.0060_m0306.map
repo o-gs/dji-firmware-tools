@@ -9,10 +9,13 @@
 
   Address         Publics by Value
 
+ 0001:08020000       __vector_table
+ 0001:080201AC       __iar_program_start
  0001:0802023A       start
  0001:080203C4       aStartupD_D
  0001:080203D4       aWm320v2
  0001:080203DC       aBoardS
+ 0001:080203F4       system_init
  0001:080209C8       a5607_a
  0001:080209D4       a5607_c
  0001:080209E0       a5607_w
@@ -47,10 +50,22 @@
  0001:08021722       nullsub_18
  0001:0802179C       aRealToRawDD
  0001:080217C2       nullsub_31
+ 0001:080217C4       init_sub_17C4
+ 0001:0802185C       init_sub_185C
+ 0001:080218B0       Reset_Handler
+ 0001:080218B8       NMI_Handler
+ 0001:080218BA       HardFault_Handler
+ 0001:080218DE       MemManage_Handler
+ 0001:080218E0       BusFault_Handler
+ 0001:080218E2       UsageFault_Handler
+ 0001:080218E4       SVC_Handler
+ 0001:080218E6       DebugMon_Handler
+ 0001:080218EC       UnHandled_Vector
  0001:08021B32       packet_send_s00_c0E
  0001:08021E28       aNull
  0001:08021E38       aErrorInvalid_4
  0001:08021E64       aErrorNullAddre
+ 0001:08022052       init_sub_2052
  0001:080222A0       nullsub_6
  0001:080222A2       nullsub_42
  0001:080222A4       iwdg_set_swdg_time_out
@@ -59,7 +74,9 @@
  0001:0802246C       aSCallSwd_handl
  0001:080224A0       aSBeforSetSwdg_
  0001:080224C4       aResetByWatchdo
- 0001:0802295E       nullsub_1
+ 0001:080224D8       SetSysClock
+ 0001:08022596       SystemInit
+ 0001:0802295E       SystemInit_nullsub_1
  0001:08022A68       hardfault_sim
  0001:08022B44       aHardfaultUsage
  0001:08022B74       aHardfaultUndef
@@ -118,6 +135,7 @@
  0001:08023590       aHardfaultNmi_f
  0001:080235CC       aHardfaultKey_f
  0001:08023608       aHardfaultFault
+ 0001:080236B6       hardfault
  0001:08023A24       aHardfaultSyste
  0001:08023A68       aHardfaultFindF
  0001:08023B06       __hard_fault1
@@ -144,6 +162,7 @@
  0001:08024000       aHardfaultLast_
  0001:0802402C       aHardfaultFaile
  0001:0802404C       aHardfaultDebug
+ 0001:08024258       p_task
  0001:0802469C       pkt
  0001:080246C8       aRefuseToStartS
  0001:080246F4       aSimulatorAgree
@@ -236,6 +255,7 @@
  0001:0802740E       packet_sub_802740E
  0001:0802748C       cb
  0001:080274A6       packet_encrypt_head
+ 0001:08027E2E       init_fitler
  0001:08028170       aFitlerAngular_
  0001:0802819C       aFcFHzDelayFMs
  0001:080281C4       aFitlerAngula_0
@@ -244,21 +264,37 @@
  0001:080288AA       temperature_cali_done
  0001:08028C02       OS_StatTaskInit
  0001:08028CD4       aUcOsIiiStatTas
+ 0001:08028CE8       p_tcb
  0001:08028F08       hal_compass_add
  0001:0802915C       aCompass
  0001:08029170       str
  0001:08029184       check_bit_field_u64
+ 0001:08029580       init_sub_9580
  0001:08029654       jpt_8029650
  0001:08029688       def_8029650
+ 0001:08029B74       j_CPU_CntLeadZeros
  0001:08029C60       OSCfg_Init
  0001:08029C62       OS_Dbg_Init
  0001:0802A06C       aFlag
+ 0001:0802A11A       OS_FlagTaskRdy
  0001:0802A136       jpt_802A132
  0001:0802A150       def_802A132
+ 0001:0802A29C       OS_UNKN1lInit
  0001:0802A6D4       aSem
+ 0001:0802A75C       OS_UNKN2lInit
+ 0001:0802A77C       OSIdleTaskHook
+ 0001:0802A788       OSInitHook
+ 0001:0802A79E       OSStatTaskHook
+ 0001:0802A7AA       OSTaskCreateHook
+ 0001:0802A7B6       OSTaskDelHook
+ 0001:0802A7C2       OSTaskReturnHook
+ 0001:0802A7CE       OSTaskStkInit
+ 0001:0802A862       OSTimeTickHook
+ 0001:0802A86E       OS_CPU_SysTickHandler
  0001:0802ABA6       jpt_802ABA2
  0001:0802ABE6       def_802ABA2
  0001:0802AFFC       aSigabrtAbnorma
+ 0001:0802B07E       PendSV_Handler
  0001:0802B48E       jpt_802B48A
  0001:0802B4A6       def_802B48A
  0001:0802BA30       jpt_802BA2C
@@ -290,6 +326,7 @@
  0001:0802C0B0       set_led_error
  0001:0802C0D4       set_led_status
  0001:0802C1D6       update_led_indication
+ 0001:0802C224       init_led
  0001:0802C2CC       state_arr
  0001:0802C2D0       aLedChangedS
  0001:0802C2EC       copy_led_status
@@ -299,6 +336,7 @@
  0001:0802D976       flight_rec_store_CFF5
  0001:0802D97E       store_raw_gps_snr
  0001:0802D9C4       flight_rec_store_CFFx
+ 0001:0802DED6       comm_imu_init
  0001:0802E1B4       aComm_imu_initC
  0001:0802E2DC       nullsub_43
  0001:0802E318       nullsub_19
@@ -323,6 +361,7 @@
  0001:0802FA06       def_802F9C0
  0001:0802FB58       aBoard_calD
  0001:0802FF98       aReadBoard_numX
+ 0001:0802FFF0       init_temp_cali
  0001:080302D0       aTempCali
  0001:080302E4       aAppTempCali
  0001:08030724       aImuDirError
@@ -336,8 +375,11 @@
  0001:08030B84       aImuErrStatusX
  0001:08031600       nullsub_4
  0001:08031814       aSystemIrq
+ 0001:08031C92       CPU_TS_TmrRd
+ 0001:08031CC0       CPU_REG_DWT_CYCCNT_ptr
  0001:08032100       aUartDOreSrX
  0001:08032118       aUartDBugRxDmaE
+ 0001:08032564       isr
  0001:08033064       aInfoDI2c_softw
  0001:08033094       aInfoDBugI2cLoc
  0001:080330BC       aInfoDWriteTime
@@ -349,11 +391,20 @@
  0001:08033734       aInfoDUnkownEve
  0001:0803375C       aInfoDBugTxAdd_
  0001:08033784       aInfoDBugRxAdd_
+ 0001:08034A64       OS_PrioInit
+ 0001:08034A76       OS_PrioGetHighest
+ 0001:08034A96       OS_PrioInsert
+ 0001:08034AB2       OS_PrioRemove
+ 0001:08034AD4       OSTaskChangePrio
  0001:08034B0E       jpt_8034B0A
  0001:08034B54       jpt_8034B50
  0001:08034B6A       def_8034B50
  0001:08034B7A       def_8034B0A
+ 0001:08034B86       OS_TaskDbgListAdd
+ 0001:08034BA4       OS_TaskInitTCB
  0001:08034C46       OSTaskCreate
+ 0001:08034D84       OS_TaskDbgListRemove
+ 0001:08034DB8       OSTaskDel
  0001:08034DF8       jpt_8034DF4
  0001:08034E22       jpt_8034E1E
  0001:08034E30       def_8034E1E
@@ -363,16 +414,30 @@
  0001:0803510E       def_80350BC
  0001:080351F8       jpt_80351F4
  0001:08035276       def_80351F4
+ 0001:08035464       OS_TaskSemPost
  0001:08035492       jpt_803548E
  0001:080354E6       def_803548E
+ 0001:080354F8       OSTaskSemPost
+ 0001:08035524       OSTaskSemSet
+ 0001:08035558       OSTaskStkChk
  0001:0803561C       jpt_8035618
  0001:08035662       def_8035618
+ 0001:0803568C       OS_TaskInit
+ 0001:0803569E       OS_TaskReturn
+ 0001:080356D0       OS_TickListRemove
  0001:08035750       jpt_803574C
  0001:080357EE       def_803574C
  0001:08035856       OS_TickTaskInit
+ 0001:080358C8       OS_TickListInsert
  0001:080359D8       aUcOsIiiTickTas
+ 0001:080359F0       OSTimeDly
+ 0001:08035A70       OSTimeDlyHMSM
+ 0001:08035B7C       OSTimeDlyResume
  0001:08035BC2       jpt_8035BBE
  0001:08035C08       def_8035BBE
+ 0001:08035C14       OSTimeGet
+ 0001:08035C2C       OSTimeSet
+ 0001:08035C44       OSTimeTick
  0001:08036060       jpt_803605C
  0001:080360AA       jpt_80360A6
  0001:08036116       def_80360A6
@@ -387,6 +452,22 @@
  0001:08038490       aFdiGyroDEventT
  0001:08038740       aFdiBaroDEventT
  0001:080397DA       j_nullsub_4
+ 0001:08039874       BSP_IntVectSet
+ 0001:080398F0       BSP_IntHandlerEXTI0
+ 0001:080398F6       BSP_IntHandlerEXTI1
+ 0001:080398FC       BSP_IntHandlerEXTI2
+ 0001:08039902       BSP_IntHandlerEXTI3
+ 0001:08039908       BSP_IntHandlerEXTI4
+ 0001:08039920       BSP_IntHandlerDMA1_CH0
+ 0001:08039926       BSP_IntHandlerDMA1_CH1
+ 0001:0803992C       BSP_IntHandlerDMA1_CH2
+ 0001:08039932       BSP_IntHandlerDMA1_CH3
+ 0001:08039938       BSP_IntHandlerDMA1_CH4
+ 0001:08039FE8       OS_MsgPoolClear
+ 0001:0803A016       OS_MsgPoolInit
+ 0001:0803A050       OS_MsgQFreeAll
+ 0001:0803A080       OS_MsgQInit
+ 0001:0803DF48       BSP_IntHandler
  0001:0803E0C0       set_motor_status
  0001:0803E1C0       aArmStopCmd
  0001:0803E1D0       aRxNotConnect
@@ -562,6 +643,7 @@
  0001:080438BC       aVarIsRepeatSS
  0001:080438D4       aVarIsEepromBut
  0001:080438FC       aVarAddrIsNullB
+ 0001:08043968       j_log_version_info
  0001:0804396C       cfg_var_table_log
  0001:080439D4       a13sS
  0001:08043D14       aFdiAccDEventTu
@@ -611,7 +693,12 @@
  0001:08045B84       packet_send_s05_c06
  0001:08045BB4       aMissionFinishe
  0001:08045BE8       aWaypointDReach
- 0001:08045FD0       flight_rec_store_version_info_entries
+ 0001:08045FA2       hal_get_unk1_version
+ 0001:08045FAE       hal_get_unk2_version
+ 0001:08045FC0       hal_get_battery_version
+ 0001:08045FC6       hal_get_mc_version
+ 0001:08045FD0       log_version_info
+ 0001:0804602C       hal_push_mc_version
  0001:08046038       aBatVersionV_8x
  0001:0804604C       aMcIdS
  0001:08046058       aMcVerVD_D_D_D
@@ -620,8 +707,10 @@
  0001:08046090       aSvnVerS
  0001:0804609C       a201603041118
  0001:080460B0       aTimeS
+ 0001:080460BC       mc_version_2
  0001:0804616E       jpt_804616A
  0001:0804617C       def_804616A
+ 0001:080461CA       init_sub_61CA
  0001:08046220       jpt_804621C
  0001:08046258       def_804621C
  0001:08046312       cmd_exec_fc_F4
@@ -644,8 +733,12 @@
  0001:080472EC       aCompassCalibra
  0001:08047B4A       packet_sub_8047B4A
  0001:08047C2C       is_prod_activated
+ 0001:08047D5E       check_activation_authority
+ 0001:08047E3C       get_mc_ident
+ 0001:08047E88       init_sub_7E88
  0001:08047F08       aEepromAsyncWri
  0001:08047F28       aChooseANameFor
+ 0001:08047F4C       mc_version_1
  0001:08047F54       aDjiDemoAes256K
  0001:08047F78       aReqDRealDD
  0001:08047F8C       aSdkUserSdk_set
@@ -708,9 +801,11 @@
  0001:0804BD0E       fill_imu_atti_gb
  0001:0804BD2C       flightrec_prepare_imu_ex
  0001:0804BE9C       printf_sub_804BE9C
+ 0001:0804C060       p_arg
  0001:0804C06C       aWorkqueue_hi_t
  0001:0804CA72       flight_rec_store_imu_raw
  0001:0804CA84       flight_rec_store_0062
+ 0001:0804CB9A       init_sub_CB9A
  0001:0804CCC8       jpt_804CCC4
  0001:0804CD04       def_804CCC4
  0001:0804CD54       snprintf_va
@@ -976,6 +1071,7 @@
  0001:08056D70       aNoReadyWaypoin
  0001:08056D8C       aApp_mission_no
  0001:08056DAC       aReadyToHandleA
+ 0001:08056DDC       BSP_IntDisAll
  0001:08058294       nullsub_49
  0001:080586DC       nullsub_35
  0001:0805906C       aMisSDPendBecau
@@ -1011,7 +1107,7 @@
  0001:0805A3E8       aFlyModeCanTExe
  0001:0805A804       aD0xX
  0001:0805A938       app_pre_malloc_ack
- 0001:0805A964       store_200270EC_msg
+ 0001:0805A964       dji_sdk_set_key
  0001:0805AAB0       aPleaseSetHwF_0
  0001:0805AAD0       aPleaseSetHwFun
  0001:0805C838       aNoNameFat
@@ -1108,12 +1204,18 @@
  0001:08064010       aApp_mission_re
  0001:08064038       aPa4_3f4_3fPb4_
  0001:08064058       aPa2_8f2_8fPb2_
+ 0001:080640CA       wp_check_input_mission_validity
+ 0001:0806438E       wp_mission_data_verify
  0001:08064484       aDLlh2_8f2_8f4_
+ 0001:080644C8       min_alt_below_home
+ 0001:080644CC       max_alt_above_home
  0001:080644D0       aWpDataValidity
  0001:080644F0       aWpDistanceInva
+ 0001:08064514       max_wp_dist_to_home
  0001:08064518       aWpDistanceIn_0
  0001:08064544       aWpDampingDisCh
  0001:08064564       aWpDampingDis_0
+ 0001:08064590       max_mission_path_len
  0001:08064598       aWpFlyLimitChec
  0001:080645B4       aWpWp_indexDAct
  0001:08064A04       aWpMissionInfor
@@ -1133,14 +1235,29 @@
  0001:08065D44       aFollow_meMis_0
  0001:08065E38       OS_IdleTask
  0001:08065E56       OS_IdleTaskInit
+ 0001:08065E94       OS_RdyListInit
  0001:08065EB2       OSInit
+ 0001:08065F90       OSIntExit
+ 0001:08065FF4       OSSched
  0001:0806604A       OSSchedLock
  0001:0806608A       OSSchedUnlock
+ 0001:08066124       OS_PendDbgNameAdd
+ 0001:08066152       OS_PendListInsertPrio
+ 0001:080661AC       OS_PendDataInit
+ 0001:080661D2       OS_RdyListRemove
  0001:08066234       aUcOsIiiIdleTas
  0001:080662A4       aTaskQ
  0001:080662AC       aTaskSem
+ 0001:080662BC       OS_TaskBlock
+ 0001:080662E6       OS_Pend
+ 0001:0806632E       OS_PendListRemove1
+ 0001:08066364       OS_PendListRemove
+ 0001:080663AA       OS_RdyListInsertHead
+ 0001:080663DE       OS_RdyListInsertTail
+ 0001:0806640E       OS_RdyListInsert
  0001:0806646A       jpt_8066466
  0001:080664CC       def_806657A
+ 0001:080664EA       OS_PendListChangePrio
  0001:0806657E       jpt_806657A
  0001:0806661A       jpt_8066616
  0001:0806668C       def_8066616
@@ -1156,6 +1273,7 @@
  0001:0806BFAE       jpt_806BFAA
  0001:0806BFF0       def_806BFAA
  0001:0806CB2C       copy_16_bytes
+ 0001:0806CC58       init_sub_CC58
  0001:0806CF82       get_gps_signal_levels
  0001:0806CF8A       check_gps_ctrl_levels
  0001:0806D2A4       get_horiz_vel_sensor_id
@@ -1169,8 +1287,15 @@
  0001:0806D930       aSys_dji
  0001:0806DD2E       flight_rec_store_textmsg
  0001:0806DD68       aDjiFlyLog
- 0001:0806DF28       CPU_IntDisMeasStart
- 0001:0806DF30       CPU_IntDisMeasStop
+ 0001:0806DF20       CPU_IntDis
+ 0001:0806DF24       CPU_IntEn
+ 0001:0806DF28       CPU_SR_Save
+ 0001:0806DF30       CPU_SR_Restore
+ 0001:0806DF36       CPU_WaitForInt
+ 0001:0806DF3A       CPU_WaitForExcept
+ 0001:0806DF3E       CPU_CntLeadZeros
+ 0001:0806DF44       CPU_CntTrailZeros
+ 0001:0806DF4E       CPU_RevBits
  0001:0806DFC6       printf_send_c0E_sub_806DFC6
  0001:0806E08A       flight_rec_printf_send_c0E
  0001:0806E0F6       packet_send_s00_c0Fa
@@ -1203,6 +1328,7 @@
  0001:0806FA0C       aErrorNullLengt
  0001:0806FA4C       aErrorInvalidTa
  0001:0806FA8C       aErrorNullDevWh
+ 0001:0806FE48       init_sub_FE48
  0001:0806FE80       aErrorNullPoolI
  0001:0806FEC0       aErrorNullDev_1
  0001:0806FF10       aStd_unknown_de
@@ -1222,6 +1348,7 @@
  0001:080709B4       get_esc_val_80709B4
  0001:080713FE       jpt_80713FA
  0001:08071414       def_80713FA
+ 0001:0807142A       init_sub_142A
  0001:08071458       aCraftModelInfo
  0001:0807146C       aIxFIyFIzF
  0001:0807153C       jpt_8071538
@@ -1283,6 +1410,7 @@
  0001:0807AA84       aReqLimitData
  0001:0807AA9C       aAirportLimitDa
  0001:0807AAC8       aAirportLimit_1
+ 0001:0807AC7A       get_airport_limit_app_list
  0001:0807B3AC       aAirportLimitPo
  0001:0807B3D8       aAirportLimitFl
  0001:0807BB6C       aDDDDDD
@@ -1317,11 +1445,11 @@
  0001:0807CA44       aToogleWhitel_2
  0001:0807CA6C       aInit_0
  0001:0807CAA0       cmd_exec_fc_80
- 0001:0807CB68       cmd_exec_fc_82
+ 0001:0807CB68       cmd_mission_waypoint_init_rcv
  0001:0807CBCE       cmd_exec_fc_84
- 0001:0807CC44       cmd_exec_fc_86
- 0001:0807CCCE       cmd_wp_mission_pause_rcv
- 0001:0807CD36       cmd_exec_fc_9C
+ 0001:0807CC44       cmd_mission_waypoint_gostop_rcv
+ 0001:0807CCCE       cmd_mission_waypoint_pause_rcv
+ 0001:0807CD36       cmd_mission_waypoint_idle_vel_rcv
  0001:0807CDAC       cmd_exec_fc_9D
  0001:0807CE08       cmd_exec_fc_83
  0001:0807CE58       cmd_exec_fc_85
@@ -1438,6 +1566,7 @@
  0001:0807FEDE       jpt_807FEDA
  0001:0807FFD2       def_807FEDA
  0001:0808001E       packet_payload_encrypt
+ 0001:08080CF4       aRc
  0001:08080D08       aVision
  0001:08080D10       aNavi
  0001:08080D54       kctrl_init_go_home
@@ -1448,6 +1577,7 @@
  0001:080813E6       get_go_home_state
  0001:08082252       jpt_808224E
  0001:0808226E       def_808224E
+ 0001:08082E3E       init_sub_2E3E
  0001:08083028       aWFLiftF
  0001:08083054       aCraftConfigura
  0001:08083102       nullsub_87
@@ -1730,6 +1860,7 @@
  0001:0809D1DA       def_809D150
  0001:0809D23A       jpt_809D236
  0001:0809D2AC       def_809D236
+ 0001:0809D3D4       __iar_program_start_sub1
  0001:0809D480       ctrl_atti
  0001:0809D558       kctrl_init_atti
  0001:0809D564       kctrl_init_atti_cl
@@ -1947,9 +2078,14 @@
  0002:080D4FB8       aHardfaultCheck
  0002:080D5000       aHardfaultChe_0
  0002:080D5061       aDjiDataLog2_00
+ 0002:080D51D2       OSCfg_MsgPoolSize
  0002:080D51D8       OSCfg_IdleTaskStkBasePtr
  0002:080D51DC       OSCfg_IdleTaskStkLimit
  0002:080D51E0       OSCfg_IdleTaskStkSize
+ 0002:080D51E8       OSCfg_ISRStkBasePtr
+ 0002:080D51EC       OSCfg_ISRStkSize
+ 0002:080D51F8       OSCfg_MsgPoolBasePtr
+ 0002:080D5214       OSCfg_TickRate_Hz
  0002:080D529C       aErrorNoSuchD_0
  0002:080D52E0       aErrorNoSuchD_1
  0002:080D5324       aErrorNoSuchD_2
@@ -3040,6 +3176,7 @@
  0002:080DF930       aTemp_z
  0002:080DFB1C       a123456
  0002:080DFB28       aSdkV1_0BetaM10
+ 0002:080E098A       aBattery
  0005:20000084       api_vert_ctrl_mode
  0005:20000085       api_vert_ctrl_cmd_id
  0005:20000086       api_horiz_ctrl_mode
@@ -3058,7 +3195,12 @@
  0005:2000049C       compass_mag_z
  0005:20000AC8       esc_is_stall
  0005:20000ACC       esc_is_empty
+ 0005:20000DA4       OS_AppTaskReturnHookPtr
+ 0005:20000DB0       OSPrioCur
  0005:20000DB1       OSSchedLockNestingCtr
+ 0005:20000DB8       OSTaskCtxSwCtr
+ 0005:20000DBC       OSTaskQty
+ 0005:20000DC4       OS_CPU_ExceptStkBase
  0005:200010E8       g_config__unknown0
  0005:200010FC       g_config__device
  0005:20001100       g_config__system_command
@@ -3194,6 +3336,7 @@
  0005:20015DD8       gps_byte_20015DD8
  0005:2001620C       rec_pt3_gps_snr
  0005:20016784       esc_real_state
+ 0005:20016D20       BSP_IntVectTbl
  0005:20018760       OSIdleTaskTCB
  0005:20019758       battery_info
  0005:2001A7CC       debugr
@@ -3207,7 +3350,14 @@
  0005:2001C2B2       imu_check_status.check_flag
  0005:2001C2B3       imu_check_status.status
  0005:2001C784       g_swdg_timeout_max
+ 0005:2001C900       OSPrioTbl
+ 0005:2001C908       OS_AppTaskCreateHookPtr
+ 0005:2001C90C       OS_AppIdleTaskHookPtr
+ 0005:2001C910       OS_AppTimeTickHookPtr
  0005:2001C914       OSIntNestingCtr
+ 0005:2001C915       OSPrioHighRdy
+ 0005:2001C924       OSTaskDbgListPtr
+ 0005:2001C928       OSTCBCurPtr
  0005:2001C948       default_gps_svn
  0005:2001C960       initial_lati
  0005:2001C968       initial_longti
@@ -3216,7 +3366,10 @@
  0005:2001C990       wall_dis_right
  0005:2001C994       wall_dis_back
  0005:2001C998       wall_dis_left
+ 0005:2001C99C       unk1_version
+ 0005:2001C9A0       unk2_version
  0005:2001C9A4       battery_version
+ 0005:2001C9A8       mc_version
  0005:2001CAA8       follow_me_mission_status
  0005:2001CAD0       follow_me_dist_phone2phone
  0005:2001CAD4       follow_me_dist_drone2drone
@@ -3260,6 +3413,7 @@
  0005:2001E148       pkt_data_6bhead_imu
  0005:2001E210       temp_ctl_data
  0005:2001E234       imu_temp
+ 0005:2001EB00       OSTickTaskTCB
  0005:20020011       motor_start_error_code
  0005:20020054       curr_follow_me_mission
  0005:200200B4       gimbal_type
@@ -3274,7 +3428,14 @@
  0005:20020B76       imu_m1_z
  0005:20020CD4       check_comm_state
  0005:20021514       g_hardfault_info
+ 0005:20021588       OS_AppTaskDelHookPtr
+ 0005:2002158C       OS_AppStatTaskHookPtr
+ 0005:20021590       OSIdleTaskCtr
  0005:20021594       OSRunning
+ 0005:20021598       OSPrioSaved
+ 0005:2002159C       OSStatTaskCtr
+ 0005:200215A8       OSTickCtr
+ 0005:200215AC       OSTCBHighRdyPtr
  0005:20021659       smatr_batt_cfg_l1
  0005:2002165A       smatr_batt_cfg_l2
  0005:20021664       g_filter_vol
@@ -3305,6 +3466,9 @@
  0005:20023148       airport_limit_dt0
  0005:20023168       airport_limit_dt1
  0005:20023188       airport_limit_dt2
+ 0005:20023228       airport_limit_app
+ 0005:200238CC       airport_limit_app_trans_buf
+ 0005:20023F72       airport_limit_trans_idx
  0005:20023F94       airport_limit_flash_key_20023F94
  0005:200248B0       acc_or_count
  0005:20026D98       pkt_input_buf
@@ -3313,7 +3477,15 @@
  0005:2002792C       imu_offset_y
  0005:20027930       imu_offset_z
  0005:20027AA0       imu_app_temp_cali
+ 0005:20029700       OSMsgPool_NextPtr
+ 0005:20029704       OSMsgPool_NbrFree
+ 0005:20029706       OSMsgPool_NbrUsed
+ 0005:20029708       OSMsgPool_NbrUsedMax
+ 0005:2002970C       OSRdyList
  0005:2002A44C       wind_speed
  0005:2002B984       rec_imu_raw
+ 0005:2002FF00       __CSTACK_start
+ 0004:40023800       RCC
+ 0004:40023C00       FLASH
 
 Program entry point at 0001:00000000
