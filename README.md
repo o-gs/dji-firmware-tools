@@ -234,6 +234,22 @@ Example of importing values from JSON file back to ELF:
 
 ```./lightbridge_stm32_hardcoder.py -vv -u --elffile P3X_FW_V01.07.0060_m0900.elf```
 
+### dji_flyc_hardcoder.py
+
+Dji Flight Controller firmware binary hard-coded values editor.
+
+The tool can parse Flight Controller firmware converted to ELF.
+It finds certain hard-coded values in the binary data, and allows
+exporting or importing them.
+
+Example of exporting hard-coded values to JSON file:
+
+```./dji_flyc_hardcoder.py -vvv -x -e P3X_FW_V01.07.0060_m0306.elf```
+
+Example of importing values from JSON file back to ELF:
+
+```./dji_flyc_hardcoder.py -vvv -u -e P3X_FW_V01.07.0060_m0306.elf```
+
 ### dji_flyc_param_ed.py
 
 Flight Controller Firmware Parameters Array Editor finds an array of flight
