@@ -281,7 +281,7 @@ More examples, for other products:
 
 DJI Universal Packet Container stream pareser with pcap output format.
 
-The script parses Raw DUPC stream (ie. flight log files ```FLY???.DAT```) and wraps
+The script parses Raw DUML stream (ie. flight log files ```FLY???.DAT```) and wraps
 single packets with PCap headers. Packets CRC is checked before the data is passed.
 Any tool with PCap format support can then be used to analyse the data (ie. Wireshark).
 
@@ -291,9 +291,9 @@ Example of converting flight log file:
 
 ### comm_serial2pcap.py
 
-DJI serial bus sniffer with DUPC packetizer and PCap output format.
+DJI serial bus sniffer with DUML packetizer and PCap output format.
 
-The script captures data from two UARTs and wraps single DUPC packets with PCap headers.
+The script captures data from two UARTs and wraps single DUML packets with PCap headers.
 Packets CRC is checked before the data is passed to the PCap file or FIFO pipe.
 Any tool with pcap format support can then be used to analyse the data (ie. Wireshark).
 
@@ -306,9 +306,9 @@ Example of starting the capture from two UART-to-TTL (aka FTDI) converters:
 
 ### comm_mkdupc.py
 
-DUPC Packet Builder with hex string output.
+DUML Packet Builder with hex string output.
 
-This tool can build a proper DUPC packet containing given header fields and payload.
+This tool can build a proper DUML packet containing given header fields and payload.
 The packet will be outputed in hexadecimal form. List of known commands and the look
 of expected payloads can be found in Wireshark dissectors described below.
 
@@ -318,11 +318,14 @@ Example of generating a packet to ask Spark camera module for its Sensor ID:
 
 ### comm_serialtalk.py
 
-DUPC Builder which sends packet to DJI product and receives a response.
+DUML Builder which sends packet to DJI product and receives a response.
 
-This tool builds a proper DUPC packet containing given header fields and payload.
+This tool builds a proper DUML packet containing given header fields and payload.
 Then it sends it via given serial port and waits for response. It shows the
 returning packet upon receiving it.
+
+It can be considered an alternative to `dji_mb_ctrl` binary which can be found
+in some drones. Parameter names are different between these two tools though.
 
 Example of asking Flight Controller for hardware and firmware version data (tested on Ph3):
 
