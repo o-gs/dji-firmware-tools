@@ -26,7 +26,7 @@ if [ ! -f "tests/test_dji_xv4_fwcon_rebin1.sh" ]; then
   exit 4
 fi
 
-if [ ! -f "supported_firmwares.csv" ]; then
+if [ ! -f "supported_firmwares_xv4.csv" ]; then
   echo '### SUITE fw list not found; executed from wrong directory? ###'
   exit 4
 fi
@@ -77,7 +77,7 @@ do
   fi
 
   i=$((i+1))
-done < supported_firmwares.csv
+done < supported_firmwares_xv4.csv
 
 NUMFAILS=0
 NUMSKIPS=0
