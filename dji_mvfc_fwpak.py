@@ -23,7 +23,7 @@ in Mavic and newer drones.
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 __author__ = "Jan Dumon, Freek van Tienen @ Original Gangsters"
 __license__ = "GPL"
 
@@ -87,12 +87,12 @@ class EncHeader(LittleEndianStructure):
         return (time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.time)))
 
     def __str__(self):
-        s =  'Target:     ' + self.getTarget() + '\n'
-        s += 'Version:    ' + self.getVersion() + '\n'
-        s += 'Time:       ' + self.getTime() + '\n'
-        s += 'Size:       ' + str(self.size) + '\n'
-        s += 'Data MD5:   ' + str(binascii.hexlify(self.md5)) + '\n'
-        s += 'Header CRC: %04x' % self.crc16
+        s =  "Target:     {:s}\n".format(self.getTarget())
+        s += "Version:    {:s}\n".format(self.getVersion())
+        s += "Time:       {:s}\n".format(self.getTime())
+        s += "Size:       {:d}\n".format(self.size)
+        s += "Data MD5:   {}\n".format(binascii.hexlify(self.md5))
+        s += "Header CRC: {:04x}".format(self.crc16)
         return s
 
 
@@ -128,9 +128,13 @@ def unpack(args):
 
     print(header)
 
-    if (header.crc16 != calc_checksum(bytes(header), 39)):
-        print('ERROR: CRC of the header doesn\'t match!')
-        return -1
+    if (header.crc16 == calc_checksum(bytes(header), 39)):
+        if (args.verbose > 0):
+            print("{}: CRC of the header verified.".format(args.input.name))
+    elif (not args.force_continue):
+        raise ValueError("CRC of the header doesn't match!")
+    else:
+        eprint("Warning: CRC of the header doesn't match!")
 
     data = args.input.read(((header.size + 255) // 256) * 256)
 
@@ -142,15 +146,21 @@ def unpack(args):
     md5_read = args.input.read(16)
 
     if md5_calc == md5_read:
-        print('File MD5 matches.')
+        if (args.verbose > 0):
+            print("{}: File MD5 matches.".format(args.input.name))
+    elif (not args.force_continue):
+        raise ValueError("File MD5 doesn't match!")
     else:
-        print('ERROR: File MD5 doesn\'t match!')
-        return -1
+        eprint("Warning: File MD5 doesn't match!")
 
     remaining = args.input.read()
-    if len(remaining) != 0:
-        print('ERROR: Trailing bytes!')
-        return -1
+    if len(remaining) == 0:
+        if (args.verbose > 0):
+            print("{}: Trailing bytes verified.".format(args.input.name))
+    elif (not args.force_continue):
+        raise ValueError("Expected no trailing bytes, got {:d}!".format(len(remaining)))
+    else:
+        eprint("{}: Warning: Expected no trailing bytes, got {:d}!".format(args.input.name,len(remaining)))
 
     dec_buffer = bytes()
     for i in range((header.size + 255) // 256):
@@ -161,23 +171,21 @@ def unpack(args):
     md5_data = hashlib.md5()
     md5_data.update(dec_buffer)
     md5_calc = md5_data.digest()
+    if (args.verbose > 0):
+        print("{}: Data MD5:   {}".format(args.input.name,binascii.hexlify(md5_calc)))
 
     if md5_calc == bytes(header.md5):
-        print('Data MD5 matches.')
+        if (args.verbose > 0):
+            print("{}: Data MD5 matches.".format(args.input.name))
+    elif (not args.force_continue):
+        raise ValueError("Data MD5 doesn't match!")
     else:
-        print('ERROR: Data MD5 doesn\'t match!')
-        print('Data MD5:   ' + str(binascii.hexlify(md5_calc)))
-        return -1
+        eprint("{}: Warning: Data MD5 doesn't match!".format(args.input.name))
 
     if args.cmd == 'dec':
-        if args.output == None:
-            file_out = os.path.splitext(basename(args.input.name))[0] + '.decrypted.bin'
-            args.output = open(file_out, "wb")
-        else:
-            file_out = args.output.name
         args.output.write(dec_buffer[:header.size])
         args.output.close()
-        print("Decrypted file to " + file_out)
+        print("{}: Decrypted file to '{}'".format(args.input.name,args.output.name))
 
     return
 
@@ -196,8 +204,7 @@ def pack(args):
     elif args.target == '0306':
         header.target = 0xc3
     else:
-        print('ERROR: Unknown target: ' + args.target)
-        return -1
+        raise ValueError("Unknown target: '{}'".format(args.target))
 
     # Timestamp
     if args.time == None:
@@ -208,16 +215,14 @@ def pack(args):
         else:
             t = time.strptime(args.time, '%Y-%m-%d %H:%M:%S')
             if t == None:
-                print('ERROR: Wrong format for time: ' + args.time)
-                return -1
+                raise ValueError("Wrong format for time: '{}'".format(args.time))
             t = int(time.mktime(t))
 
         header.time = t
 
     ver = re.search('^v(\d+).(\d+).(\d+).(\d+)$', args.version)
     if ver == None:
-        print('ERROR: Wrong version string format (vAA.BB.CC.DD): ' + args.version)
-        return -1
+        raise ValueError("Wrong version string format (vAA.BB.CC.DD): '{}'".format(args.version))
 
     # Version
     header.version[3] = int(ver.group(1), 10)
@@ -237,12 +242,6 @@ def pack(args):
         cipher = AES.new(encrypt_key, AES.MODE_CBC, encrypt_iv)
         enc_buffer += cipher.encrypt(dec_buffer)
 
-    if args.output == None:
-        file_out = os.path.splitext(basename(args.input.name))[0] + '.encrypted.bin'
-        args.output = open(file_out, "wb")
-    else:
-        file_out = args.output.name
-
     args.output.write(header)
     args.output.write(enc_buffer)
 
@@ -254,7 +253,7 @@ def pack(args):
 
     args.output.close()
 
-    print("Encrypted file to " + file_out)
+    print("{}: Encrypted file to '{}'".format(args.input.name,args.output.name))
 
 def main():
     """ Main executable function.
@@ -266,17 +265,22 @@ def main():
 
     subparsers = parser.add_subparsers(dest='cmd')
 
+    parser.add_argument("--verbose", action="count", default=0,
+            help="increases verbosity level")
+    parser.add_argument("-f", "--force-continue", action="store_true",
+            help="force continuing execution despite warning signs of issues")
+
     parser_dec = subparsers.add_parser('dec', help='Decrypt')
     parser_dec.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'),
-            help='input file')
+            help='name of the input encrypted FC firmware file')
     parser_dec.add_argument('-o', '--output', type=argparse.FileType('wb'),
-            help='output file')
+            help='name of the output decrypted firmware file')
 
     parser_enc = subparsers.add_parser('enc', help='Encrypt')
     parser_enc.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'),
-            help='input file')
+            help='name of the input unencrypted FC firmware file')
     parser_enc.add_argument('-o', '--output', type=argparse.FileType('wb'),
-            help='output file')
+            help='name of the output encrypted firmware file')
     parser_enc.add_argument('-T', '--time',
             help='Timestamp. If omitted the current time will be used. The timestamp ' + \
              'is either a number (seconds since epoch) or in the following format: ' + \
@@ -292,12 +296,37 @@ def main():
             help='input file')
     args = parser.parse_args()
 
-    if (args.cmd == 'info') or (args.cmd == 'dec'):
+    if args.cmd == 'info':
+        if (args.verbose > 0):
+            print("{}: Opening for info display".format(args.input.name))
+        unpack(args)
+    elif args.cmd == 'dec':
+        if (args.verbose > 0):
+            print("{}: Opening for decryption".format(args.input.name))
+        if args.output == None:
+            if ".encrypted." in basename(args.input.name):
+                file_out = basename(args.input.name).replace(".encrypted", "")
+            else:
+                file_out = os.path.splitext(basename(args.input.name))[0] + '.decrypted.bin'
+            args.output = open(file_out, "wb")
         unpack(args)
     elif args.cmd == 'enc':
+        if (args.verbose > 0):
+            print("{}: Opening for encryption".format(args.input.name))
+        if args.output == None:
+            if ".decrypted." in basename(args.input.name):
+                file_out = basename(args.input.name).replace(".decrypted", "")
+            else:
+                file_out = os.path.splitext(basename(args.input.name))[0] + '.encrypted.bin'
+            args.output = open(file_out, "wb")
         pack(args)
     else:
-        print("Unknown command: %s" % args.cmd)
+        raise NotImplementedError("Unknown command: '{}'.".format(args.cmd))
 
 if __name__ == "__main__":
-     main()
+    try:
+        main()
+    except Exception as ex:
+        eprint("Error: "+str(ex))
+        #raise
+        sys.exit(10)
