@@ -1009,4 +1009,9 @@ def main():
     raise NotImplementedError('Unsupported command.')
 
 if __name__ == "__main__":
-   main()
+    try:
+        main()
+    except Exception as ex:
+        eprint("Error: "+str(ex))
+        #raise
+        sys.exit(10)

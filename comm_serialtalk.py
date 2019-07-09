@@ -41,6 +41,7 @@ from comm_dat2pcap import (
   do_packetise_byte, store_packet, drop_packet,
   is_packet_ready, is_packet_damaged, is_packet_at_finish,
   Formatter, PktInfo, PktState,
+  eprint,
 )
 from comm_mkdupc import (
   parse_module_ident, parse_module_type, parse_ack_type,
@@ -331,4 +332,9 @@ def main():
     do_send_request_receive_reply(po)
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as ex:
+        eprint("Error: "+str(ex))
+        #raise
+        sys.exit(10)

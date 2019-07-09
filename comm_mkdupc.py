@@ -40,6 +40,7 @@ from collections import OrderedDict
 sys.path.insert(0, './')
 from comm_dat2pcap import (
   calc_pkt55_hdr_checksum, calc_pkt55_checksum,
+  eprint,
 )
 
 class DecoratedEnum(enum.Enum):
@@ -1014,4 +1015,9 @@ def main():
     do_build_packet(options)
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as ex:
+        eprint("Error: "+str(ex))
+        #raise
+        sys.exit(10)

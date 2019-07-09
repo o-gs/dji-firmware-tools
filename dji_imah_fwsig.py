@@ -815,6 +815,6 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as ex:
-        print("Error: "+str(ex))
+        eprint("Error: "+str(ex))
         #raise
         sys.exit(10)

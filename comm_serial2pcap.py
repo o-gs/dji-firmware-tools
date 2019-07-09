@@ -63,6 +63,7 @@ from comm_dat2pcap import (
   do_packetise_byte, store_packet, drop_packet,
   is_packet_ready, is_packet_damaged, is_packet_at_finish,
   PcapFormatter, HumanFormatter, PktInfo, PktState,
+  eprint,
 )
 
 def open_fifo(options, name):
@@ -219,4 +220,9 @@ def main():
         pass
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as ex:
+        eprint("Error: "+str(ex))
+        #raise
+        sys.exit(10)
