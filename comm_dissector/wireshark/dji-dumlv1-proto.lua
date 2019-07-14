@@ -2799,7 +2799,7 @@ f.battery_barcode_data_unk1 = ProtoField.bytes ("dji_dumlv1.battery_barcode_data
 f.battery_barcode_data_length = ProtoField.uint8 ("dji_dumlv1.battery_barcode_data_length", "Data Length", base.DEC)
 f.battery_barcode_data_string = ProtoField.string ("dji_dumlv1.battery_barcode_data_string", "Barcode String", base.ASCII)
 
-local function bat_barcode_data_dissector(pkt_length, buffer, pinfo, subtree)
+local function battery_barcode_data_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
