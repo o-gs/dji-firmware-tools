@@ -1236,7 +1236,8 @@ local function camera_camera_timelapse_parms_dissector(pkt_length, buffer, pinfo
     offset = offset + 1
 
     local i = 0
-    repeat
+    while i < point_count do
+        i = i + 1
 
         subtree:add_le (f.camera_camera_timelapse_parms_interval, payload(offset, 2))
         offset = offset + 2
@@ -1253,11 +1254,9 @@ local function camera_camera_timelapse_parms_dissector(pkt_length, buffer, pinfo
         subtree:add_le (f.camera_camera_timelapse_parms_pitch, payload(offset, 2))
         offset = offset + 2
 
-        i = i + 1
+    end
 
-    until i >= point_count
-
-    if (offset ~= 12 * point_count + 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Timelapse Parms: Offset does not match - internal inconsistency") end
+    if (offset ~= 1 + 12 * point_count) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera Timelapse Parms: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Timelapse Parms: Payload size different than expected") end
 end
 

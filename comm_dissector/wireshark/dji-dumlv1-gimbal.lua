@@ -501,7 +501,9 @@ local function gimbal_user_params_set_dissector(pkt_length, buffer, pinfo, subtr
 
     if pack_type == 0 then -- Request
 
+        local i = 0
         while offset < payload:len() do
+        i = i + 1
 
             subtree:add_le (f.gimbal_user_params_set_param_idx, payload(offset, 1))
             offset = offset + 1
@@ -556,7 +558,9 @@ local function gimbal_user_params_get_dissector(pkt_length, buffer, pinfo, subtr
 
     if pack_type == 0 then -- Request
 
+        local i = 0
         while offset < payload:len() do
+        i = i + 1
 
             subtree:add_le (f.gimbal_user_params_get_param_idx, payload(offset, 1))
             offset = offset + 1
@@ -568,7 +572,9 @@ local function gimbal_user_params_get_dissector(pkt_length, buffer, pinfo, subtr
         subtree:add_le (f.gimbal_user_params_get_resp_status, payload(offset, 1))
         offset = offset + 1
 
+        local i = 0
         while offset < payload:len() do
+        i = i + 1
 
             local param_idx = payload(offset, 1):int()
             if param_idx >= 0 then -- Proper index means parameter retrieved successfully

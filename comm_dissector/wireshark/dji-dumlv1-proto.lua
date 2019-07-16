@@ -921,9 +921,11 @@ local function dm36x_send_gnd_ctrl_info_dissector(pkt_length, buffer, pinfo, sub
     offset = 0
 
     -- Decoded using func Dec_Serial_Set_GS_Ctrl from `usbclient` binary
-    local nparam = 0
-    while payload:len() >= offset+3 do
-        nparam = nparam + 1
+    local num_entries = math.floor(payload:len() / 3)
+
+    local i = 0
+    while i < num_entries do
+        i = i + 1
 
         subtree:add_le (f.dm36x_gnd_ctrl_info_param_id, payload(offset, 1))
         offset = offset + 1
@@ -935,9 +937,10 @@ local function dm36x_send_gnd_ctrl_info_dissector(pkt_length, buffer, pinfo, sub
         --if (param_len == 1) then -- only support one param_len
         subtree:add_le (f.dm36x_gnd_ctrl_info_param_val8, payload(offset, 1))
         offset = offset + param_len
-   end
 
-    if (offset ~= 3*nparam) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"DM36x Send Gnd Ctrl Info: Offset does not match - internal inconsistency") end
+    end
+
+    if (offset ~= 3 * num_entries) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"DM36x Send Gnd Ctrl Info: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"DM36x Send Gnd Ctrl Info: Payload size different than expected") end
 end
 
@@ -949,15 +952,18 @@ local function dm36x_recv_gnd_ctrl_info_dissector(pkt_length, buffer, pinfo, sub
     offset = 0
 
     -- Decoded using func Dec_Serial_Get_GS_Ctrl from `usbclient` binary
-    local nparam = 0
-    while payload:len() >= offset+1 do
-        nparam = nparam + 1
+    local num_entries = math.floor(payload:len() / 1)
+
+    local i = 0
+    while i < num_entries do
+        i = i + 1
 
         subtree:add_le (f.dm36x_gnd_ctrl_info_param_id, payload(offset, 1))
         offset = offset + 1
-   end
 
-    if (offset ~= 1*nparam) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"DM36x Recv Gnd Ctrl Info: Offset does not match - internal inconsistency") end
+    end
+
+    if (offset ~= 1 * num_entries) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"DM36x Recv Gnd Ctrl Info: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"DM36x Recv Gnd Ctrl Info: Payload size different than expected") end
 end
 
@@ -1136,7 +1142,8 @@ local function hd_link_push_device_status_dissector(pkt_length, buffer, pinfo, s
     local num_entries = math.floor(payload:len() / 5)
 
     local i = 0
-    repeat
+    while i < num_entries do
+        i = i + 1
 
         subtree:add_le (f.hd_link_push_device_status_unknown0, payload(offset, 1))
         offset = offset + 1
@@ -1144,11 +1151,9 @@ local function hd_link_push_device_status_dissector(pkt_length, buffer, pinfo, s
         subtree:add_le (f.hd_link_push_device_status_unknown1, payload(offset, 4))
         offset = offset + 4
 
-        i = i + 1
+    end
 
-    until i >= num_entries
-
-    if (offset ~= num_entries * 5) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push Device Status: Offset does not match - internal inconsistency") end
+    if (offset ~= 5 * num_entries) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push Device Status: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push Device Status: Payload size different than expected") end
 end
 
@@ -1347,7 +1352,8 @@ local function hd_link_push_sdr_rt_status_dissector(pkt_length, buffer, pinfo, s
     local num_entries = math.floor(payload:len() / 12)
 
     local i = 0
-    repeat
+    while i < num_entries do
+        i = i + 1
 
         subtree:add_le (f.hd_link_push_sdr_rt_status_name, payload(offset, 8))
         offset = offset + 8
@@ -1355,11 +1361,9 @@ local function hd_link_push_sdr_rt_status_dissector(pkt_length, buffer, pinfo, s
         subtree:add_le (f.hd_link_push_sdr_rt_status_value, payload(offset, 4))
         offset = offset + 4
 
-        i = i + 1
+    end
 
-    until i >= num_entries
-
-    if (offset ~= num_entries * 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push SDR Rt Status: Offset does not match - internal inconsistency") end
+    if (offset ~= 12 * num_entries) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"HDLnk Push SDR Rt Status: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"HDLnk Push SDR Rt Status: Payload size different than expected") end
 end
 

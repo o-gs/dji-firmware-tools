@@ -399,8 +399,12 @@ local function flyc_set_nofly_zone_data_dissector(pkt_length, buffer, pinfo, sub
     subtree:add_le (f.flyc_set_nofly_zone_data_reserved2, payload(offset, 3))
     offset = offset + 3
 
+    local num_entries = math.floor((payload:len() - 5) / 17)
 
-    while payload:len() >= offset+17 do
+    local i = 0
+    while i < num_entries do
+        i = i + 1
+
         subtree:add_le (f.flyc_nofly_zone_entry_latitude, payload(offset, 4))
         offset = offset + 4
 
@@ -421,7 +425,7 @@ local function flyc_set_nofly_zone_data_dissector(pkt_length, buffer, pinfo, sub
 
    end
 
-    if (offset ~= 5 + num_entries*17) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set NoFly Zone Data: Offset does not match - internal inconsistency") end
+    if (offset ~= 5 + 17 * num_entries) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Set NoFly Zone Data: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Set NoFly Zone Data: Payload size different than expected") end
 end
 
