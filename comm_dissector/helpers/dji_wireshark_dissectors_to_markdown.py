@@ -58,19 +58,25 @@ class ValueSim(enum.Enum):
     ArraySlice = 10 # Part sliced from any array; 3 params: array,start,size
     ArraySliceConv = 11 # Part sliced from any array, then converted using a standard function; 4 params: array,start,size,conv_func_name
     # TODO we really need these?
-    ArrayPktWhole = 12 # Whole input packet, no params
-    ArrayPktPayload = 13 # Payload part of the input packet, no params
-    LenPktWhole = 14 # Length of the whole input packet, no params
-    LenPktPayload = 15 # Length of the payload part of input packet, no params
-    ObjTreeItem = 16 # Wireshark TreeItem object, no params (TODO maybe place items inside?)
-    ObjPInfo = 17 # Wireshark PInfo object, no params
+    ArrayPktWhole = 12 # Slice from whole input packet; 3 params: start,size,conv_func
+    ArrayPktPayload = 13 # Slice from payload part of the input packet; 3 params: start,size,conv_func
+    LenPktWhole = 15 # Length of the whole input packet, no params
+    LenPktPayload = 16 # Length of the payload part of input packet, no params
+    ObjTreeItem = 20 # Wireshark TreeItem object, no params (TODO maybe place items inside?)
+    ObjPInfo = 21 # Wireshark PInfo object, no params
+    RShift = 41
+    Floor = 43
+    BAnd = 45
 
+class ValueConv(enum.Enum):
+    No = 1 # No conversion func
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
 
 def lua_get_assign_st_full_name(assign_st, lua_fname):
     leaf_expr = assign_st
+    lua_line = lua_get_file_line(leaf_expr)
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)) or (expr1[0].name != 'var_list'):
             continue
@@ -96,13 +102,14 @@ def lua_get_assign_st_full_name(assign_st, lua_fname):
             continue
         leaf_name += str(expr4[1])
     if (len(leaf_name) < 1):
-        eprint("{:s}: Warning: Could not get full name in assign statement".format(lua_fname))
+        eprint("{:s}:{:d}: Warning: Could not get full name in assign statement".format(lua_fname,lua_line))
         for expr1 in assign_st:
             print(expr1)
     return leaf_name
 
 def lua_exp_to_integer(expr, lua_fname, ignore_fail=False):
     leaf_expr = expr
+    lua_line = lua_get_file_line(leaf_expr)
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)) or (expr1[0].name != 'number'):
             continue
@@ -117,16 +124,17 @@ def lua_exp_to_integer(expr, lua_fname, ignore_fail=False):
             leaf_val = expr1[1]
     if not isinstance(leaf_val, str):
         if not ignore_fail:
-            eprint("{:s}: Warning: While getting numeric param, expected final leaf to be string".format(lua_fname))
+            eprint("{:s}:{:d}: Warning: While getting numeric param, expected final leaf to be string".format(lua_fname,lua_line))
         return None
     elif (len(leaf_val) < 1):
         if not ignore_fail:
-            eprint("{:s}: Warning: While getting numeric param, could not get final leaf string".format(lua_fname))
+            eprint("{:s}:{:d}: Warning: While getting numeric param, could not get final leaf string".format(lua_fname,lua_line))
         return None
     return int(leaf_val,0)
 
 def lua_exp_variable_ref_to_string(expr, lua_fname, ignore_fail=False):
     leaf_expr = expr
+    lua_line = lua_get_file_line(leaf_expr)
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)) or (expr1[0].name != 'prefix_exp'):
             continue
@@ -147,12 +155,13 @@ def lua_exp_variable_ref_to_string(expr, lua_fname, ignore_fail=False):
             leaf_val = expr1[1]
     if not isinstance(leaf_val, str):
         if not ignore_fail:
-            eprint("{:s}: Warning: Could not get to variable ref name".format(lua_fname))
+            eprint("{:s}:{:d}: Warning: Could not get to variable ref name".format(lua_fname,lua_line))
         return None
     return leaf_val
 
 def lua_exp_textname_to_string(expr, lua_fname):
     leaf_expr = expr
+    lua_line = lua_get_file_line(leaf_expr)
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)) or (expr1[0].name != 'prefix_exp'):
             continue
@@ -169,16 +178,29 @@ def lua_exp_textname_to_string(expr, lua_fname):
             leaf_val = expr1[1]
 
     if not isinstance(leaf_val, str):
-        eprint("{:s}: Warning: Could not get to text name in list assignment".format(lua_fname))
+        eprint("{:s}:{:d}: Warning: Could not get to text name in list assignment".format(lua_fname,lua_line))
     leaf_val = str(leaf_val)
     if (leaf_val.startswith('"') or leaf_val.startswith("'")) and \
        (leaf_val.endswith('"')   or leaf_val.endswith("'")):
         leaf_val = leaf_val[1:-1]
     return leaf_val
 
+def lua_get_file_line(expr):
+    if (isinstance(expr[0], lrparsing.Token)):
+        return expr[3]
+    lua_line = -1
+    for expr1 in expr:
+        if (not isinstance(expr1, tuple)):
+            continue
+        lua_line = lua_get_file_line(expr1)
+        if lua_line >= 0:
+            break
+    return lua_line
+
 # Returns flat math expression list from given tree
 def lua_exp_to_math_expr(expr, body_locals, lua_fname, ignore_fail=False):
     leaf_expr = expr
+    lua_line = lua_get_file_line(leaf_expr)
     leaf_val = [ ]
     if (expr[0].name == 'exp'):
         leaf_val += lua_exp_to_math_expr(expr[1], body_locals, lua_fname, ignore_fail)
@@ -188,7 +210,7 @@ def lua_exp_to_math_expr(expr, body_locals, lua_fname, ignore_fail=False):
             elif (expr1[0].name == 'exp'):
                 leaf_val += lua_exp_to_math_expr(expr1, body_locals, lua_fname, ignore_fail)
             else:
-                eprint("{:s}: Warning: Member of 'exp' in math expression was not recognized".format(lua_fname))
+                eprint("{:s}:{:d}: Warning: Member of 'exp' in math expression was not recognized".format(lua_fname,lua_line))
                 #print("pp "+str(expr1[0]))
         pass
     elif (expr[0].name == 'prefix_exp'):
@@ -210,7 +232,7 @@ def lua_exp_to_math_expr(expr, body_locals, lua_fname, ignore_fail=False):
         if isinstance(var_out, numbers.Number):
             leaf_val += [ var_out ]
     else:
-        eprint("{:s}: Warning: Operand in math expression was not recognized".format(lua_fname))
+        eprint("{:s}:{:d}: Warning: Operand in math expression was not recognized".format(lua_fname,lua_line))
         #print("oo "+str(expr)+" "+str(type(expr[0])))
     return leaf_val
 
@@ -278,9 +300,10 @@ def lua_get_assign_st_val_enum_list(assign_st, lua_fname, expect_text=False):
         leaf_list[field_val] = field_name if len(field_name) > 0 else 'Unknown'
     return leaf_list
 
-def lua_get_function_decl_st_name(expr):
+def lua_get_function_decl_st_name(expr, lua_fname):
     leaf_name = ''
     leaf_expr = expr
+    lua_line = lua_get_file_line(leaf_expr)
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)):
             continue
@@ -316,10 +339,10 @@ def lua_get_function_decl_st_name(expr):
         elif (expr1[0].name == 'function_body'):
             break
         else:
-            eprint("Warning: Unexpected expression in function declaration name: '{:s}'".format(expr1[0].name))
+            eprint("{:s}:{:d}: Warning: Unexpected expression in function declaration name: '{:s}'".format(lua_fname,lua_line,expr1[0].name))
     return leaf_name
 
-def lua_get_function_decl_st_args(expr):
+def lua_get_function_decl_st_args(expr, lua_fname):
     leaf_list = []
     leaf_expr = expr
     for expr1 in leaf_expr:
@@ -342,7 +365,7 @@ def lua_get_function_decl_st_args(expr):
         leaf_list.append(expr1[1])
     return leaf_list
 
-def lua_get_function_decl_st_body(expr):
+def lua_get_function_decl_st_body(expr, lua_fname):
     leaf_expr = expr
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)):
@@ -363,6 +386,7 @@ def lua_get_function_decl_st_body(expr):
 def lua_get_function_call_name(expr, lua_fname):
     leaf_name = ''
     leaf_expr = expr
+    lua_line = lua_get_file_line(leaf_expr)
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)):
             continue
@@ -385,7 +409,7 @@ def lua_get_function_call_name(expr, lua_fname):
                 leaf_expr = expr1
                 break
             else:
-                eprint("{:s}: Warning: Unexpected expression near prefix_exp: {:s}".format(lua_fname, expr1[0].name))
+                eprint("{:s}:{:d}: Warning: Unexpected expression near prefix_exp: {:s}".format(lua_fname, lua_line, expr1[0].name))
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)):
             continue
@@ -393,7 +417,7 @@ def lua_get_function_call_name(expr, lua_fname):
             leaf_expr = expr1
             break
         else:
-            eprint("{:s}: Warning: Unexpected expression near var: {:s}".format(lua_fname, expr1[0].name))
+            eprint("{:s}:{:d}: Warning: Unexpected expression near var: {:s}".format(lua_fname, lua_line, expr1[0].name))
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)) or (expr1[0].name != 'variable_ref'):
             continue
@@ -405,7 +429,7 @@ def lua_get_function_call_name(expr, lua_fname):
         if (expr1[0].name == 'T.name'):
             leaf_val = expr1[1]
     if not isinstance(leaf_val, str):
-        eprint("{:s}: Warning: Could not get to variable ref name".format(lua_fname))
+        eprint("{:s}:{:d}: Warning: Could not get to variable ref name".format(lua_fname, lua_line))
     leaf_val = str(leaf_val)
     return leaf_val
 
@@ -535,6 +559,8 @@ def lua_get_function_param(arg_expr, body_locals, lua_fname):
             var_out = simplify_math_expr(var_out, lua_fname)
             if len(var_out) == 1 and isinstance(var_out[0], ValueSim):
                 return var_out
+            if len(var_out) == 1 and isinstance(var_out[0], numbers.Number):
+                return [ValueSim.Number] + var_out
             return [ValueSim.MathExpr] + var_out
         eprint("{:s}: Error: Content of 'exp' not recognized".format(lua_fname))
         #print("nn "+str(arg_expr[1]))
@@ -560,6 +586,7 @@ def lua_get_assign_st_value_sim(local_name, assign_st, body_locals, lua_fname):
     val_func = None
     val_func_args = None
     val_func_conv = None
+    lua_line = lua_get_file_line(expr1)
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)):
             continue
@@ -567,7 +594,7 @@ def lua_get_assign_st_value_sim(local_name, assign_st, body_locals, lua_fname):
             if val_number is None:
                 val_number = lua_exp_to_integer(expr1, lua_fname)
             else:
-                eprint("{:s}: Error: too comlex, already got 'number' when 'number' came".format(lua_fname))
+                eprint("{:s}:{:d}: Error: too comlex, already got 'number' when 'number' came".format(lua_fname,lua_line))
         elif (expr1[0].name == 'prefix_exp'):
             for expr2 in expr1:
                 if (not isinstance(expr2, tuple)):
@@ -584,7 +611,7 @@ def lua_get_assign_st_value_sim(local_name, assign_st, body_locals, lua_fname):
                     for arg_expr in val_func_args_exp:
                         val_func_args.append(lua_get_function_param(arg_expr, body_locals, lua_fname))
                 else:
-                    eprint("{:s}: Error: Call without args '{:s}'".format(lua_fname,val_func))
+                    eprint("{:s}:{:d}: Error: Call without args '{:s}'".format(lua_fname,lua_line,val_func))
                 #print(val_func+": "+str(val_func_args)[:64] + ": " + str(val_func_conv))
         else:
             #print(str(expr1)[:1000])
@@ -592,34 +619,60 @@ def lua_get_assign_st_value_sim(local_name, assign_st, body_locals, lua_fname):
     if val_func is not None:
         # Now recognize known items
         if val_func in body_locals:
-            val_array_start = None
-            val_array_size = None
-            if body_locals[val_func][0] in [ValueSim.ArrayPktWhole, ValueSim.ArrayPktPayload, ValueSim.ArraySlice]:
-                for arg_expr in val_func_args:
-                    print("XXX !!! " + val_func + str(arg_expr))
-                    pass # TODO - convert to ArraySlice
-            else:
-                eprint("{:s}: Warning: Unexpected local used, '{:s}'".format(lua_fname,val_func))
+            val_local = body_locals[val_func]
+            val_local_type = val_local[0]
+            if (val_local_type in [ValueSim.ArrayPktWhole, ValueSim.ArrayPktPayload, ValueSim.ArraySlice]) and (len(val_func_args) >= 2):
+                # We have an array to cut slice from
+                val_array_start = val_func_args[0]
+                val_array_size = val_func_args[1]
+                # Check if we should switch from whole packet to payload part
+                if val_local_type == ValueSim.ArrayPktWhole and val_array_start[0] == ValueSim.Number and isinstance(val_local[1], numbers.Number) and val_local[1] + val_array_start[1] >= 11:
+                    val_local_type == ValueSim.ArrayPktPayload
+                    val_array_start = val_local[1] + val_array_start[1] - 11
+                elif val_array_start[0] == ValueSim.Number and isinstance(val_local[1], numbers.Number):
+                    val_array_start = val_local[1] + val_array_start[1]
+                else:
+                    eprint("{:s}:{:d}: Warning: Unexpected array start in '{:s}'".format(lua_fname,lua_line,val_func))
+                    val_array_start = val_local[1]
+                # Find out the length
+                if val_array_size[0] == ValueSim.Number and isinstance(val_local[2], numbers.Number):
+                    val_array_size = val_local[2] + val_array_size[1]
+                elif val_array_size[0] == ValueSim.Number and val_local[2] in [ ValueSim.LenPktPayload, ValueSim.LenPktWhole ]:
+                    val_array_size = val_array_size[1]
+                elif val_array_size[0] == ValueSim.LenPktPayload and val_local[2] in [ ValueSim.LenPktPayload, ValueSim.LenPktWhole ]:
+                    val_array_size = val_array_size[0]
+                elif val_array_size[0] == ValueSim.LenPktWhole and val_local[2] in [ ValueSim.LenPktPayload, ValueSim.LenPktWhole ]:
+                    val_array_size = val_local[2]
+                else:
+                    #print("XXX !!! " + val_func + " " + str(val_local[2]) + " " + str(val_array_size))
+                    eprint("{:s}:{:d}: Warning: Unexpected array size in '{:s}'".format(lua_fname,lua_line,val_func))
+                    val_array_size = val_local[2]
+                if len(val_func_args) >= 3:
+                    val_array_conv = val_func_args[1]
+                    if (isinstance(val_array_conv[0], ValueConv)):
+                        val_array_conv = val_array_conv[0]
+                    else:
+                        eprint("{:s}:{:d}: Warning: Unexpected conversion in '{:s}'".format(lua_fname,lua_line,val_func))
+                else:
+                    val_array_conv = val_local[3]
 
-            if len(val_func_args) == 2:
-                #print(str(val_func_args[0]) + " " + str(val_func_args[1]))
-                #for expr3 in val_func_args[0]:
-                #    print(expr3)
-                #TODO
-                val_array_start = 1
-                val_array_size = 1
-            else:
-                eprint("{:s}: Error: Array args size {:d} is not supported".format(lua_fname,len(val_func_args)))
-
-            if (val_array_start is not None) and (val_array_size is not None):
-                value_sim[0] = ValueSim.ArraySlice
-                value_sim.append(val_func)
+                value_sim[0] = val_local_type
                 value_sim.append(val_array_start)
                 value_sim.append(val_array_size)
+                value_sim.append(val_array_conv)
             else:
-                eprint("{:s}: Error: Array args not recognized for '{:s}'".format(lua_fname,val_func))
+                eprint("{:s}:{:d}: Warning: Unexpected local used, '{:s}'".format(lua_fname,lua_line,val_func))
+        elif val_func == "rshift":
+            #eprint("{:s}: Error: Call '{}' UNFINNISHED".format(lua_fname,val_func))#TODO
+            value_sim[0] = ValueSim.RShift
+        elif val_func == "floor":
+            #eprint("{:s}: Error: Call '{}' UNFINNISHED".format(lua_fname,val_func))#TODO
+            value_sim[0] = ValueSim.Floor
+        elif val_func == "band":
+            #eprint("{:s}: Error: Call '{}' UNFINNISHED".format(lua_fname,val_func))#TODO
+            value_sim[0] = ValueSim.BAnd
         else:
-            eprint("{:s}: Error: Function call expected to be local array slice".format(lua_fname))
+            eprint("{:s}:{:d}: Error: Call '{}' is not known function or local array slice".format(lua_fname,lua_line,val_func))
     #TODO
     elif val_number is not None:
         value_sim[0] = ValueSim.Number
@@ -630,6 +683,7 @@ def lua_get_assign_st_value_sim(local_name, assign_st, body_locals, lua_fname):
 def lua_function_call_dofile_to_string(expr, lua_fname):
     leaf_expr = expr
     is_dofile_call = False
+    lua_line = lua_get_file_line(leaf_expr)
     call_name = lua_get_function_call_name(leaf_expr, lua_fname)
     if (call_name == 'dofile'):
         is_dofile_call = True
@@ -639,7 +693,7 @@ def lua_function_call_dofile_to_string(expr, lua_fname):
     if not is_dofile_call:
         return ''
     if len(leaf_expr) != 1:
-        eprint("{:s}: Warning: Expected dofile() to have exactly one argument".format(lua_fname))
+        eprint("{:s}:{:d}: Warning: Expected dofile() to have exactly one argument".format(lua_fname,lua_line))
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)) or (expr1[0].name != 'exp'):
             continue
@@ -656,7 +710,7 @@ def lua_function_call_dofile_to_string(expr, lua_fname):
             leaf_val = expr1[1]
     #print(leaf_val)
     if not isinstance(leaf_val, str):
-        eprint("{:s}: Warning: Could not get to string file name in dofile() call".format(lua_fname))
+        eprint("{:s}:{:d}: Warning: Could not get to string file name in dofile() call".format(lua_fname,lua_line))
     leaf_val = str(leaf_val)
     if (leaf_val.startswith('"') or leaf_val.startswith("'")) and \
        (leaf_val.endswith('"')   or leaf_val.endswith("'")):
@@ -664,13 +718,15 @@ def lua_function_call_dofile_to_string(expr, lua_fname):
     return leaf_val
 
 def lua_function_body_get_conditional_statements(func):
+    lua_fname = func['fname']
+    lua_line = func['fline']
     body_locals = {}
     if len(func['args']) != 4:
-        eprint("Warning: Unexpected dissector function params count: {:d} instead of 4".format(len(func['args'])))
+        eprint("{:s}:{:d}: Warning: Unexpected dissector function params count: {:d} instead of 4".format(lua_fname,lua_line,len(func['args'])))
     var_name = func['args'][0] # 'pkt_length'
     body_locals[var_name] = [ ValueSim.LenPktWhole ]
     var_name = func['args'][1] # 'buffer'
-    body_locals[var_name] = [ ValueSim.ArrayPktWhole ]
+    body_locals[var_name] = [ ValueSim.ArrayPktWhole, 0, ValueSim.LenPktWhole, ValueConv.No ]
     var_name = func['args'][2] # 'pinfo'
     body_locals[var_name] = [ ValueSim.ObjPInfo ]
     var_name = func['args'][3] # 'subtree'
@@ -685,6 +741,7 @@ def lua_function_body_get_conditional_statements(func):
         for expr2 in expr1:
             if (not isinstance(expr2, tuple)):
                 continue
+            lua_line = lua_get_file_line(expr2)
             if (expr2[0].name == 'function_call_st'):
                 for expr3 in expr2:
                      if (not isinstance(expr3, tuple)) or (expr3[0].name != 'function_call'):
@@ -700,7 +757,7 @@ def lua_function_body_get_conditional_statements(func):
             elif (expr2[0].name == 'while_st'):
                 continue #TODO
             else:
-                eprint("Warning: Unexpected expression in function body: '{:s}'".format(expr2[0].name))
+                eprint("{:s}:{:d}: Warning: Unexpected expression in function body: '{:s}'".format(lua_fname,lua_line,expr2[0].name))
                 #print(str(expr2)[:200])
     return {}
 
@@ -890,9 +947,10 @@ def lua_parse_main(po, lua_main):
     for function_decl_st in lua_function_decl_st:
         func = {}
         func['fname'] = function_decl_st[-1]
-        func['name'] = lua_get_function_decl_st_name(function_decl_st)
-        func['args'] = lua_get_function_decl_st_args(function_decl_st)
-        func['body'] = lua_get_function_decl_st_body(function_decl_st)
+        func['fline'] = lua_get_file_line(function_decl_st)
+        func['name'] = lua_get_function_decl_st_name(function_decl_st, func['fname'])
+        func['args'] = lua_get_function_decl_st_args(function_decl_st, func['fname'])
+        func['body'] = lua_get_function_decl_st_body(function_decl_st, func['fname'])
         func_is_dissector = False
         for cmdset, cmd_enum_list in duml_spec['DJI_DUMLv1_CMD_DISSECT_LIST'].items():
             for cmd, dissect_func_name in cmd_enum_list.items():
@@ -902,7 +960,7 @@ def lua_parse_main(po, lua_main):
             func_cond = lua_function_body_get_conditional_statements(func)
             #TODO
         else:
-            print("{:s}: Info: Function marked as not dissector: {:s}".format(func['fname'],func['name']))
+            print("{:s}:{:d}: Info: Function marked as not dissector: {:s}".format(func['fname'],func['fline'],func['name']))
             #print(function_decl_st[:100])
         #print(func['name'] + "(" + str(func['args'])+ ")")
         #print(func['body'])
@@ -949,7 +1007,7 @@ def main():
     subparser = parser.add_mutually_exclusive_group(required=True)
 
     subparser.add_argument("-l", "--lua", type=argparse.FileType('r'),
-          help="name of the input LUA file")
+          help="name of the input LUA file, 'dji-dumlv1-proto.lua'")
 
     subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
             .format(version=__version__,author=__author__),
