@@ -57,7 +57,6 @@ class ValueSim(enum.Enum):
     # Complex types - after second analysis
     ArraySlice = 10 # Part sliced from any array; 3 params: array,start,size
     ArraySliceConv = 11 # Part sliced from any array, then converted using a standard function; 4 params: array,start,size,conv_func_name
-    # TODO we really need these?
     ArrayPktWhole = 12 # Slice from whole input packet; 3 params: start,size,conv_func
     ArrayPktPayload = 13 # Slice from payload part of the input packet; 3 params: start,size,conv_func
     LenPktWhole = 15 # Length of the whole input packet, no params
@@ -75,6 +74,8 @@ class ValueConv(enum.Enum):
     UInt = 4
     LE_Int = 5
     LE_UInt = 6
+
+ValueSimCompoundList = [ValueSim.ArrayPktWhole, ValueSim.ArrayPktPayload, ValueSim.ArraySlice]
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
@@ -252,16 +253,23 @@ def lua_exp_to_math_expr(expr, body_locals, lua_fname, ignore_fail=False):
             leaf_val += [ var_out ]
     else:
         eprint("{:s}:{:d}: Warning: Operand in math expression was not recognized".format(lua_fname,lua_line))
-
-    if lua_line in [1795]: #TODO local log_text = payload(offset, payload:len() - offset)
-        print("pp "+str(leaf_val))
     return leaf_val
 
 def simplify_math_expr(val_list, lua_fname):
     out_list = [ ]
     number_op = None
     number_val = 0
+    within_calls = 0
     for var_out in val_list:
+        # Ignore statements which are part of compound calls (where argument position matters)
+        if var_out in ValueSimCompoundList:
+            within_calls += 1
+        if isinstance(var_out, ValueConv):
+            within_calls -= 1
+        if within_calls > 0:
+            out_list += [ var_out ]
+            continue
+        # Do the processing
         if isinstance(var_out, str) and (var_out in [ "'+'", '-' ]):
             number_op = var_out
         elif isinstance(var_out, numbers.Number):
@@ -283,6 +291,22 @@ def simplify_math_expr(val_list, lua_fname):
     if out_list == [ ValueSim.LenPktWhole, '-', 13 ]:
         return [ ValueSim.LenPktPayload ]
     return out_list
+
+def first_expr_length(val_list, lua_fname):
+    expr_len = 0
+    within_calls = 0
+    for var_out in val_list:
+        # Ignore statements which are part of compound calls (where argument position matters)
+        if var_out in ValueSimCompoundList:
+            within_calls += 1
+        if isinstance(var_out, ValueConv):
+            within_calls -= 1
+        if within_calls > 0:
+            expr_len += 1
+            continue
+        # Add one to include the ValueConv
+        return expr_len + 1
+    return 0
 
 def lua_get_assign_st_val_enum_list(assign_st, lua_fname, expect_text=False):
     leaf_list = {}
@@ -468,7 +492,7 @@ def lua_get_function_call_name(expr, lua_fname):
 # Gets function args list from given function_call expression.
 # If there is a method call after the main function call, it is ignored.
 # Ie for "payload(offset,1):le_uint()" - this only analyses the part before ":".
-def lua_get_function_call_args(expr, lua_fname):
+def lua_get_function_call_args(call_name, expr, lua_fname):
     leaf_list = []
     leaf_expr = expr
     # simplified tree structure visible in lua_get_function_call_name()
@@ -502,14 +526,11 @@ def lua_get_function_call_args(expr, lua_fname):
         elif (expr1[0].name == 'prefix_exp'):
             pass # ignore prefix_exp at this level as it leads to name
         elif (expr1[0].name == 'variable_ref'):
-            return None # if we have only variable_ref at this point, then this is really just a variable reference, without args; ie. "payload:len()"
+            return None # if we have only variable_ref at this point, then this is really just a variable reference, without args; ie. "payload"
+        elif (expr1[0].name == "':'"):
+            return None # if we have ':' at this point, then this is a variable reference with no args but with conversion; ie. "payload:len()"
         else:
-            #if leaf_check is not None:
-            #    for expr9 in leaf_check:
-            #        print("xx "+str(expr9)[:1000])
-            #for expr9 in expr:
-            #    print("yy "+str(expr9)[:1000])
-            eprint("{:s}:{:d}: Warning: Unexpected {:s} near 'function_args' when getting call args".format(lua_fname, lua_line, expr1[0].name))
+            eprint("{:s}:{:d}: Warning: Unexpected {:s} near 'function_args' when getting '{:s}' call args".format(lua_fname, lua_line, expr1[0].name, call_name))
     # Lets support enum/table declaration in the same call; it only differs in having 'table_constructor'
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)):
@@ -527,14 +548,7 @@ def lua_get_function_call_args(expr, lua_fname):
         elif (expr1[0].name == "'('") or (expr1[0].name == "')'"):
             pass
         else:
-            #if leaf_check is not None:
-            #    for expr9 in leaf_check:
-            #        print("tt "+str(expr9)[:1000])
-            #for expr9 in expr:
-            #    print("uu "+str(expr9)[:1000])
-            eprint("{:s}:{:d}: Warning: Unexpected expression near exp_list: {:s}".format(lua_fname, lua_line, expr1[0].name))
-            #for expr1 in expr:
-            #    print(str(expr1)[:1000])
+            eprint("{:s}:{:d}: Warning: Unexpected {:s} near 'exp_list' when getting '{:s}' call args".format(lua_fname, lua_line, expr1[0].name, call_name))
     for expr1 in leaf_expr:
         if (not isinstance(expr1, tuple)):
             continue
@@ -543,9 +557,7 @@ def lua_get_function_call_args(expr, lua_fname):
         elif (expr1[0].name == "','"):
             pass
         else:
-            eprint("{:s}:{:d}: Warning: Unexpected expression near exp: {:s}".format(lua_fname, lua_line, expr1[0].name))
-    #for expr1 in leaf_list:
-    #    print("X "+str(len(expr1))+" "+str(expr1))
+            eprint("{:s}:{:d}: Warning: Unexpected {:s} near 'exp' when getting '{:s}' call args".format(lua_fname, lua_line, expr1[0].name, call_name))
     return leaf_list
 
 # Gets function call finishing converter name - the method name after ":", if any.
@@ -619,12 +631,23 @@ def lua_get_function_param(arg_expr, body_locals, lua_fname):
                 return var_out
             if len(var_out) == 1 and isinstance(var_out[0], numbers.Number):
                 return [ValueSim.Number] + var_out
+            if len(var_out) > 0 and first_expr_length(var_out, lua_fname) == len(var_out):
+                return var_out
             return [ValueSim.MathExpr] + var_out
         eprint("{:s}: Error: Content of 'exp' not recognized".format(lua_fname))
         #print("nn "+str(arg_expr[1]))
     else:
         eprint("{:s}: Error: param not recognized".format(lua_fname))
     return None
+
+# Converts one argument of a function call to ValueSim, optimizing it
+def lua_get_function_param_opt(arg_expr, body_locals, lua_fname):
+    var_out = lua_get_function_param(arg_expr, body_locals, lua_fname)
+    if var_out == [ ValueSim.ArrayPktWhole, 0, ValueSim.LenPktWhole, ValueConv.Len ]:
+        var_out = [ ValueSim.LenPktWhole ]
+    elif var_out == [ ValueSim.ArrayPktPayload, 0, ValueSim.LenPktPayload, ValueConv.Len ]:
+        var_out = [ ValueSim.LenPktPayload ]
+    return var_out
 
 def lua_func_convert_recognize(val_func_conv,val_func):
     if val_func_conv == "len":
@@ -665,14 +688,14 @@ def lua_get_function_call_sim(expr, body_locals, lua_fname):
 
     # assumed structure: call_name(call_args):convert_name()
     val_func = lua_get_function_call_name(expr, lua_fname)
-    val_func_args_exp = lua_get_function_call_args(expr, lua_fname)
+    val_func_args_exp = lua_get_function_call_args(val_func, expr, lua_fname)
     val_func_conv = lua_get_function_call_conv_name(expr, lua_fname)
 
     # Convert args to a simpler form
     val_func_args = []
     if (val_func_args_exp is not None):
         for arg_expr in val_func_args_exp:
-            val_func_args.append(lua_get_function_param(arg_expr, body_locals, lua_fname))
+            val_func_args.append(lua_get_function_param_opt(arg_expr, body_locals, lua_fname))
     elif (val_func_conv is not None):
         print("{:s}:{:d}: Info: Call to '{:s}' with convert only ('{:s}')".format(lua_fname,lua_line,val_func,val_func_conv))
         pass
@@ -686,7 +709,7 @@ def lua_get_function_call_sim(expr, body_locals, lua_fname):
             val_local = body_locals[val_func]
             val_local_type = val_local[0]
 
-            if (val_local_type in [ValueSim.ArrayPktWhole, ValueSim.ArrayPktPayload, ValueSim.ArraySlice]) and (len(val_func_args) >= 2):
+            if (val_local_type in ValueSimCompoundList) and (len(val_func_args) >= 2):
                 if val_local[3] != ValueConv.No:
                     eprint("{:s}:{:d}: Warning: Array slice after convertion in '{:s}'".format(lua_fname,lua_line,val_func))
                 # We have an array to cut slice from
@@ -711,7 +734,7 @@ def lua_get_function_call_sim(expr, body_locals, lua_fname):
                 elif val_array_size[0] == ValueSim.LenPktWhole and val_local[2] in [ ValueSim.LenPktPayload, ValueSim.LenPktWhole ]:
                     val_array_size = val_local[2]
                 else:
-                    print("XXX !!! " + val_func + " " + str(val_local[2]) + " " + str(val_array_size))
+                    print("XXX !!! " + val_func + " " + str(val_local[2]) + " " + str(val_array_size))#TODO
                     eprint("{:s}:{:d}: Warning: Unexpected array size in '{:s}'".format(lua_fname,lua_line,val_func))
                     val_array_size = val_local[2]
                 if len(val_func_args) >= 3:
@@ -726,7 +749,7 @@ def lua_get_function_call_sim(expr, body_locals, lua_fname):
                 value_sim.append(val_array_start)
                 value_sim.append(val_array_size)
                 value_sim.append(val_array_conv)
-            elif (val_local_type in [ValueSim.ArrayPktWhole, ValueSim.ArrayPktPayload, ValueSim.ArraySlice]) and (len(val_func_args) == 0):
+            elif (val_local_type in ValueSimCompoundList) and (len(val_func_args) == 0):
                 val_array_start = val_local[1]
                 val_array_size = val_local[2]
                 val_array_conv = lua_func_convert_recognize(val_func_conv,val_func)
@@ -740,7 +763,6 @@ def lua_get_function_call_sim(expr, body_locals, lua_fname):
                 value_sim.append(val_array_conv)
             else:
                 eprint("{:s}:{:d}: Warning: Unexpected local used, '{:s}'".format(lua_fname,lua_line,val_func))
-                eprint("!! "+str(val_local_type)+" "+str(len(val_func_args)))#TODO
         elif val_func == "rshift":
             #eprint("{:s}: Error: Call '{}' UNFINNISHED".format(lua_fname,val_func))#TODO
             value_sim[0] = ValueSim.RShift
@@ -797,7 +819,6 @@ def lua_get_assign_st_value_sim(local_name, assign_st, body_locals, lua_fname):
             value_sim = val_func
         else:
             eprint("{:s}:{:d}: Error: Call is not known function or local array slice".format(lua_fname,lua_line))
-    #TODO
     elif val_number is not None:
         value_sim[0] = ValueSim.Number
         value_sim.append(val_number)
@@ -811,7 +832,7 @@ def lua_function_call_dofile_to_string(expr, lua_fname):
     call_name = lua_get_function_call_name(leaf_expr, lua_fname)
     if (call_name == 'dofile'):
         is_dofile_call = True
-        leaf_expr = lua_get_function_call_args(leaf_expr, lua_fname)
+        leaf_expr = lua_get_function_call_args(call_name, leaf_expr, lua_fname)
         #print(leaf_expr)
     # For confirmed "dofile" call, return first parameter (which is file name)
     if not is_dofile_call:
