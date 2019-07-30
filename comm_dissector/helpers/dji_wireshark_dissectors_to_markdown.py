@@ -734,7 +734,7 @@ def lua_get_function_call_sim(expr, body_locals, lua_fname):
                 elif val_array_size[0] == ValueSim.LenPktWhole and val_local[2] in [ ValueSim.LenPktPayload, ValueSim.LenPktWhole ]:
                     val_array_size = val_local[2]
                 else:
-                    print("XXX !!! " + val_func + " " + str(val_local[2]) + " " + str(val_array_size))#TODO
+                    print("XXX !!! " + val_func + " " + str(val_local[2]) + " " + str(val_array_size))#TODO debug
                     eprint("{:s}:{:d}: Warning: Unexpected array size in '{:s}'".format(lua_fname,lua_line,val_func))
                     val_array_size = val_local[2]
                 if len(val_func_args) >= 3:
@@ -764,13 +764,13 @@ def lua_get_function_call_sim(expr, body_locals, lua_fname):
             else:
                 eprint("{:s}:{:d}: Warning: Unexpected local used, '{:s}'".format(lua_fname,lua_line,val_func))
         elif val_func == "rshift":
-            #eprint("{:s}: Error: Call '{}' UNFINNISHED".format(lua_fname,val_func))#TODO
+            #eprint("{:s}: Error: Call '{}' UNFINNISHED".format(lua_fname,val_func))#TODO debug
             value_sim[0] = ValueSim.RShift
         elif val_func == "floor":
-            #eprint("{:s}: Error: Call '{}' UNFINNISHED".format(lua_fname,val_func))#TODO
+            #eprint("{:s}: Error: Call '{}' UNFINNISHED".format(lua_fname,val_func))#TODO debug
             value_sim[0] = ValueSim.Floor
         elif val_func == "band":
-            #eprint("{:s}: Error: Call '{}' UNFINNISHED".format(lua_fname,val_func))#TODO
+            #eprint("{:s}: Error: Call '{}' UNFINNISHED".format(lua_fname,val_func))#TODO debug
             value_sim[0] = ValueSim.BAnd
         else:
             eprint("{:s}:{:d}: Error: Call '{}' is not known function or local array slice".format(lua_fname,lua_line,val_func))
@@ -862,6 +862,7 @@ def lua_function_call_dofile_to_string(expr, lua_fname):
         leaf_val = leaf_val[1:-1]
     return leaf_val
 
+# Parses dissector and returns flag information on its content, like what conditional statements are inside
 def lua_function_body_get_conditional_statements(func):
     lua_fname = func['fname']
     lua_line = func['fline']
@@ -887,20 +888,25 @@ def lua_function_body_get_conditional_statements(func):
             if (not isinstance(expr2, tuple)):
                 continue
             lua_line = lua_get_file_line(expr2)
+            # Simulate every command in the dissector, make note of things for which we have flags
+            #TODO define flags, when simulation works
             if (expr2[0].name == 'function_call_st'):
+                # Function calls don't have conditional clauses in our dissectors, and no need to simulate them - skip
                 for expr3 in expr2:
                      if (not isinstance(expr3, tuple)) or (expr3[0].name != 'function_call'):
                         continue
-                continue #TODO
+                continue #TODO check which 'continue' means what, add proper message if one means error
             elif (expr2[0].name == 'assign_st') or (expr2[0].name == 'local_assign_st'):
+                # Assignment statements don't have conditional clauses in our dissectors, so just simulate them
                 local_name = lua_get_assign_st_full_name(expr2, func['fname'])
                 local_val = lua_get_assign_st_value_sim(local_name, expr2, body_locals, func['fname'])
                 body_locals[local_name] = local_val
-                continue #TODO
+                #TODO maybe we should make note of using values from packet header? We might not care if they're nit use in conditionals, though..
+                continue
             elif (expr2[0].name == 'if_st'):
-                continue #TODO
+                continue #TODO implement 'if'
             elif (expr2[0].name == 'while_st'):
-                continue #TODO
+                continue #TODO implement 'while'
             else:
                 eprint("{:s}:{:d}: Warning: Unexpected expression in function body: '{:s}'".format(lua_fname,lua_line,expr2[0].name))
                 #print(str(expr2)[:200])
@@ -979,7 +985,7 @@ def markdown_print_duml_cmdid(po, duml_spec, cmdset, cmd):
     fh = open(md_cmd_file, 'w')
 
     #print(md_cmd_file)
-    #TODO
+    #TODO make printing the packet structure
 
     fh.close()
     return
@@ -1103,7 +1109,8 @@ def lua_parse_main(po, lua_main):
                     func_is_dissector = True
         if (func_is_dissector):
             func_cond = lua_function_body_get_conditional_statements(func)
-            #TODO
+            #TODO make main program flow; after conditionals are recognized, we should simulate the dissector with all condition combinations
+            #TODO if results are different, we should include variants in the output
         else:
             print("{:s}:{:d}: Info: Function marked as not dissector: {:s}".format(func['fname'],func['fline'],func['name']))
             #print(function_decl_st[:100])
