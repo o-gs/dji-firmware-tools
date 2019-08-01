@@ -53,7 +53,7 @@ class ValueSim(enum.Enum):
     Number = 3 # Just a specific numeric value; 1 param: the value
     VariableRef = 4 # A reference to a variable; 1 param: name of the variable
     String = 5 # A text string; 1 param: the character string
-    MathExpr = 6 # Math expression; each param is either operation/sign or name/value (if str then treated as variable ref or operator/sign, if number then as number)
+    MathExpr = 6 # Math expression; each param is either operation/sign or name/value (if str then treated as variable ref or operator/sign, if number then as number); ends with ValueConv.No
     # Complex types - after second analysis
     ArraySlice = 10 # Part sliced from any array; 3 params: array,start,size
     ArraySliceConv = 11 # Part sliced from any array, then converted using a standard function; 4 params: array,start,size,conv_func_name
@@ -76,6 +76,7 @@ class ValueConv(enum.Enum):
     LE_UInt = 6
 
 ValueSimCompoundList = [ValueSim.ArrayPktWhole, ValueSim.ArrayPktPayload, ValueSim.ArraySlice]
+ValueSimCompoundExpr = [ValueSim.MathExpr]
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
@@ -203,16 +204,36 @@ def lua_get_file_line(expr):
             break
     return lua_line
 
+def lua_adjusted_exp_to_math_expr(expr, body_locals, lua_fname, ignore_fail=False):
+    leaf_expr = expr
+    lua_line = lua_get_file_line(leaf_expr)
+    for expr1 in leaf_expr:
+        if (not isinstance(expr1, tuple)) or (expr1[0].name != 'prefix_exp'):
+            continue
+        leaf_expr = expr1
+    for expr1 in leaf_expr:
+        if (not isinstance(expr1, tuple)) or (expr1[0].name != 'adjusted_exp'):
+            continue
+        leaf_expr = expr1
+    # There should be one 'exp' inside, wraped with '(' ')'
+    for expr1 in leaf_expr:
+        if (not isinstance(expr1, tuple)) or (expr1[0].name != 'exp'):
+            continue
+        return lua_exp_to_math_expr(expr1, body_locals, lua_fname, ignore_fail)
+    if not ignore_fail:
+        eprint("{:s}:{:d}: Warning: No 'exp' found in given leaf".format(lua_fname,lua_line))
+    return None
+
 # Returns flat math expression list from given tree
 def lua_exp_to_math_expr(expr, body_locals, lua_fname, ignore_fail=False):
     leaf_expr = expr
     lua_line = lua_get_file_line(leaf_expr)
     leaf_val = [ ]
-
     if (expr[0].name == 'exp'):
         leaf_val += lua_exp_to_math_expr(expr[1], body_locals, lua_fname, ignore_fail)
         for expr1 in expr[2:]:
             if (isinstance(expr1[0], lrparsing.Token)):
+                # here we catch '-' but also '/'
                 leaf_val.append(expr1[1])
             elif (expr1[0].name == 'exp'):
                 leaf_val += lua_exp_to_math_expr(expr1, body_locals, lua_fname, ignore_fail)
@@ -223,11 +244,18 @@ def lua_exp_to_math_expr(expr, body_locals, lua_fname, ignore_fail=False):
     elif (expr[0].name == 'prefix_exp'):
         var_found = False
         if not var_found:
-            var_out = lua_exp_variable_ref_to_string(expr, lua_fname, ignore_fail=True)
+            var_out = lua_adjusted_exp_to_math_expr(expr, body_locals, lua_fname, ignore_fail)
+            if var_out is not None:
+                leaf_val += var_out
+                var_found = True
+        if not var_found:
+            var_out = lua_exp_variable_ref_to_string(expr, lua_fname, ignore_fail)
             if len(var_out) > 0:
                 if var_out not in body_locals:
                     leaf_val += [ var_out ]
-                elif body_locals[var_out][0] in [ ValueSim.Number, ValueSim.MathExpr ]:
+                elif body_locals[var_out][0] in [ ValueSim.MathExpr ]:
+                    leaf_val += body_locals[var_out][1:-1]
+                elif body_locals[var_out][0] in [ ValueSim.Number ]:
                     leaf_val += body_locals[var_out][1:]
                 elif body_locals[var_out][0] in [ ValueSim.LenPktWhole, ValueSim.LenPktPayload ]:
                     leaf_val += [ body_locals[var_out][0] ]
@@ -262,7 +290,7 @@ def simplify_math_expr(val_list, lua_fname):
     within_calls = 0
     for var_out in val_list:
         # Ignore statements which are part of compound calls (where argument position matters)
-        if var_out in ValueSimCompoundList:
+        if var_out in ValueSimCompoundList or var_out in ValueSimCompoundExpr:
             within_calls += 1
         if isinstance(var_out, ValueConv):
             within_calls -= 1
@@ -297,7 +325,7 @@ def first_expr_length(val_list, lua_fname):
     within_calls = 0
     for var_out in val_list:
         # Ignore statements which are part of compound calls (where argument position matters)
-        if var_out in ValueSimCompoundList:
+        if var_out in ValueSimCompoundList or var_out in ValueSimCompoundExpr:
             within_calls += 1
         if isinstance(var_out, ValueConv):
             within_calls -= 1
@@ -633,7 +661,7 @@ def lua_get_function_param(arg_expr, body_locals, lua_fname):
                 return [ValueSim.Number] + var_out
             if len(var_out) > 0 and first_expr_length(var_out, lua_fname) == len(var_out):
                 return var_out
-            return [ValueSim.MathExpr] + var_out
+            return [ValueSim.MathExpr] + var_out + [ValueConv.No]
         eprint("{:s}: Error: Content of 'exp' not recognized".format(lua_fname))
         #print("nn "+str(arg_expr[1]))
     else:
