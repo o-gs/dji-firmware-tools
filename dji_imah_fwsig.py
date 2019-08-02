@@ -184,6 +184,8 @@ class ImgPkgHeader(LittleEndianStructure):
             return 2016
         elif self.header_version == 0x0001:
             return 2017
+        elif self.header_version == 0x0002:
+            return 2018
         else:
             return 0
 
@@ -194,6 +196,9 @@ class ImgPkgHeader(LittleEndianStructure):
         elif ver == 2017:
             self.magic = bytes("IM*H", "utf-8")
             self.header_version = 0x0001
+        elif ver == 2018:
+            self.magic = bytes("IM*H", "utf-8")
+            self.header_version = 0x0002
         else:
             raise ValueError("Unsupported image format version.")
 
@@ -465,7 +470,7 @@ def imah_read_fwsig_head(po):
             crypt_key_enc = cipher.encrypt(pkghead.scram_key)
             pkghead.scram_key = (c_ubyte * 16)(*list(crypt_key_enc))
 
-    return (pkghead, minames)
+    return (pkghead, minames, pkgformat)
 
 def imah_write_fwentry_head(po, i, e, miname):
     fname = "{:s}_{:s}.ini".format(po.mdprefix,miname)
@@ -504,6 +509,8 @@ def imah_unsign(po, fwsigfile):
         if (not po.force_continue):
             raise ValueError("Unexpected magic value in main header; input file is not a signed image.")
         eprint("{}: Warning: Unexpected magic value in main header; will try to extract anyway.".format(fwsigfile.name))
+    if pkgformat == 2018:
+        eprint("{}: Warning: The 2018 format is not fully supported.".format(fwsigfile.name))
 
     if pkghead.size != pkghead.target_size:
         eprint("{}: Warning: Header field 'size' is different that 'target_size'; the tool is not designed to handle this.".format(fwsigfile.name))
@@ -646,7 +653,9 @@ def imah_unsign(po, fwsigfile):
 
 def imah_sign(po, fwsigfile):
     # Read headers from INI files
-    (pkghead, minames) = imah_read_fwsig_head(po)
+    (pkghead, minames, pkgformat) = imah_read_fwsig_head(po)
+    if pkgformat == 2018:
+        eprint("{}: Warning: The 2018 format is not fully supported.".format(fwsigfile.name))
     chunks = []
     # Create header entry for each chunk
     for i, miname in enumerate(minames):
