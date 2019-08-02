@@ -167,7 +167,7 @@ class ImgPkgHeader(LittleEndianStructure):
                 ('enc_key', c_char * 4),            #44
                 ('scram_key', c_ubyte * 16),        #48
                 ('name', c_char * 32),              #64
-                ('type', c_uint),                   #96
+                ('type', c_char * 4),               #96
                 ('version', c_uint),                #100
                 ('date', c_uint),                   #104
                 ('reserved2', c_ubyte * 20),        #108
@@ -218,6 +218,8 @@ class ImgPkgHeader(LittleEndianStructure):
         d[varkey] = d[varkey].decode("utf-8")
         varkey = 'enc_key'
         d[varkey] = d[varkey].decode("utf-8")
+        varkey = 'type'
+        d[varkey] = d[varkey].decode("utf-8")
         return d
 
     def ini_export(self, fp):
@@ -247,7 +249,7 @@ class ImgPkgHeader(LittleEndianStructure):
         varkey = 'compression'
         fp.write("{:s}={:d}\n".format(varkey,d[varkey]))
         varkey = 'type'
-        fp.write("{:s}={:d}\n".format(varkey,d[varkey]))
+        fp.write("{:s}={:s}\n".format(varkey,d[varkey]))
         varkey = 'userdata'
         fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8"))) # not sure if string or binary
         varkey = 'entry'
@@ -414,7 +416,7 @@ def imah_read_fwsig_head(po):
     pkghead.os = int(parser.get("asection", "os"))
     pkghead.arch = int(parser.get("asection", "arch"))
     pkghead.compression = int(parser.get("asection", "compression"))
-    pkghead.type = int(parser.get("asection", "type"))
+    pkghead.type = bytes(parser.get("asection", "type"), "utf-8")
     entry_bt = bytes.fromhex(parser.get("asection", "entry"))
     pkghead.entry = (c_ubyte * len(entry_bt)).from_buffer_copy(entry_bt)
 
