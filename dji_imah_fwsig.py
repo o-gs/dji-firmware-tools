@@ -542,8 +542,13 @@ def imah_unsign(po, fwsigfile):
         raise EOFError("Could not read signature of signed image file head.")
 
     auth_key = imah_get_auth_params(po, pkghead)
-    header_signer = PKCS1_v1_5.new(auth_key)
-    if header_signer.verify(header_digest, head_signature):
+    try:
+        header_signer = PKCS1_v1_5.new(auth_key)
+        signature_match = header_signer.verify(header_digest, head_signature)
+    except Exception as ex:
+        print("{}: Warning: Image file head signature verification caused cryptographic exception: {}".format(fwsigfile.name,str(ex)))
+        signature_match = False
+    if signature_match:
         if (po.verbose > 1):
             print("{}: Image file head signature verification passed.".format(fwsigfile.name))
     else:
