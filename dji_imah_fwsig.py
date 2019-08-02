@@ -41,6 +41,7 @@ from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from ctypes import *
+from collections import OrderedDict
 from time import gmtime, strftime, strptime
 from calendar import timegm
 from os.path import basename
@@ -202,7 +203,7 @@ class ImgPkgHeader(LittleEndianStructure):
         self.size = self.target_size
 
     def dict_export(self):
-        d = dict()
+        d = OrderedDict()
         for (varkey, vartype) in self._fields_:
             if varkey.startswith('unk'):
                 continue
@@ -257,7 +258,7 @@ class ImgPkgHeader(LittleEndianStructure):
     def __repr__(self):
         d = self.dict_export()
         from pprint import pformat
-        return pformat(d, indent=4, width=1)
+        return pformat(d, indent=0, width=160)
 
 class ImgChunkHeader(LittleEndianStructure):
     _pack_ = 1
@@ -269,7 +270,7 @@ class ImgChunkHeader(LittleEndianStructure):
                 ('reserved', c_ubyte * 8)]   #24 end is 32
 
     def dict_export(self):
-        d = dict()
+        d = OrderedDict()
         for (varkey, vartype) in self._fields_:
             if varkey.startswith('unk'):
                 continue
@@ -298,7 +299,7 @@ class ImgChunkHeader(LittleEndianStructure):
     def __repr__(self):
         d = self.dict_export()
         from pprint import pformat
-        return pformat(d, indent=4, width=1)
+        return pformat(d, indent=0, width=160)
 
 
 class ImgRSAPublicKey(LittleEndianStructure):
