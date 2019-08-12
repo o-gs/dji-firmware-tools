@@ -3098,7 +3098,7 @@ f.crc = ProtoField.uint16 ("dji_dumlv1.crc", "CRC", base.HEX)
 function dji_dumlv1_main_dissector(buffer, pinfo, subtree)
     local offset = 1
 
-    -- [1-2] The Pkt length | protocol version?
+    -- [1-2] The Pkt length | protocol version
     local pkt_length = buffer(offset,2):le_uint()
     local pkt_protover = pkt_length
     -- bit32 lib requires LUA 5.2
@@ -3189,6 +3189,39 @@ function DJI_DUMLv1_PROTO.dissector (buffer, pinfo, tree)
 
 end
 
+-- Heuritstic version, checks if packet is correct
+local function heuristic_dissector(buffer, pinfo, tree)
+
+    -- The Pkt start byte
+    local offset = 0
+    if (buffer:len() < 0xa) then return false end
+
+    local pkt_type = buffer(offset,1):uint()
+    if (pkt_type ~= 0x55) then return false end
+
+    -- [1-2] The Pkt length | protocol version
+    local pkt_length = buffer(offset+1,2):le_uint()
+    local pkt_protover = pkt_length
+    -- bit32 lib requires LUA 5.2
+    pkt_length = bit32.band(pkt_length, 0x03FF)
+    pkt_protover = bit32.rshift(bit32.band(pkt_protover, 0xFC00), 10)
+
+    if (pkt_length > buffer:len()) then return false end
+    if (pkt_protover > 2) then return false end
+
+    local subtree = tree:add (DJI_DUMLv1_PROTO, buffer())
+    subtree:add (f.delimiter, buffer(offset, 1))
+    offset = offset + 1
+
+    dji_dumlv1_main_dissector(buffer, pinfo, subtree)
+    return true
+end
+
+
 -- A initialization routine
 function DJI_DUMLv1_PROTO.init ()
+    -- Non-heuristic USB dissector registration would look like this
+    --DissectorTable.get("usb.bulk"):add(0xffff, DJI_DUMLv1_PROTO)
 end
+
+DJI_DUMLv1_PROTO:register_heuristic("usb.bulk", heuristic_dissector)
