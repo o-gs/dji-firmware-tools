@@ -509,6 +509,8 @@ end
 
 -- Flight Controller - OSD General Data - 0x43, identical to flight recorder packet 0x000c
 -- HD Link - OSD General Data - 0x01 is a second use of the same packet
+-- Description: TODO.
+-- Supported in: WM620_FW_01.02.0300
 
 enums.FLYC_OSD_GENERAL_FLYC_STATE_ENUM = {
     [0x00] = 'Manual',
@@ -871,10 +873,11 @@ f.flyc_osd_general_bat_alarm2 = ProtoField.uint8 ("dji_dumlv1.flyc_osd_general_b
 f.flyc_osd_general_version_match = ProtoField.uint8 ("dji_dumlv1.flyc_osd_general_version_match", "Version Match", base.HEX, nil, nil, "Flight Controller version")
 f.flyc_osd_general_product_type = ProtoField.uint8 ("dji_dumlv1.flyc_osd_general_product_type", "Product Type", base.HEX, enums.FLYC_OSD_GENERAL_PRODUCT_TYPE_ENUM)
 f.flyc_osd_general_imu_init_fail_reson = ProtoField.int8 ("dji_dumlv1.flyc_osd_general_imu_init_fail_reson", "IMU init Fail Reason", base.DEC, enums.FLYC_OSD_GENERAL_IMU_INIT_FAIL_RESON_ENUM)
--- Non existing in P3 packets - next gen only?
---f.flyc_osd_common_motor_fail_reason = ProtoField.uint8 ("dji_dumlv1.flyc_osd_common_motor_fail_reason", "Motor Fail Reason", base.HEX, enums.FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM, nil, nil)
---f.flyc_osd_common_motor_start_cause_no_start_action = ProtoField.uint8 ("dji_dumlv1.flyc_osd_common_motor_start_cause_no_start_action", "Motor Start Cause No Start Action", base.HEX, enums.FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM)
---f.flyc_osd_common_sdk_ctrl_device = ProtoField.uint8 ("dji_dumlv1.flyc_osd_common_sdk_ctrl_device", "Sdk Ctrl Device", base.HEX, enums.FLYC_OSD_GENERAL_SDK_CTRL_DEVICE_ENUM, nil, nil)
+-- Non existing in P3 packets, exist in WM620_FW_01.02.0300
+f.flyc_osd_common_motor_fail_reason = ProtoField.uint8 ("dji_dumlv1.flyc_osd_common_motor_fail_reason", "Motor Fail Reason", base.HEX, enums.FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM, nil, nil)
+f.flyc_osd_common_motor_start_cause_no_start_action = ProtoField.uint8 ("dji_dumlv1.flyc_osd_common_motor_start_cause_no_start_action", "Motor Start Cause No Start Action", base.HEX, enums.FLYC_OSD_GENERAL_START_FAIL_REASON_ENUM)
+f.flyc_osd_common_sdk_ctrl_device = ProtoField.uint8 ("dji_dumlv1.flyc_osd_common_sdk_ctrl_device", "Sdk Ctrl Device", base.HEX, enums.FLYC_OSD_GENERAL_SDK_CTRL_DEVICE_ENUM, nil, nil)
+f.flyc_osd_common_unknown35 = ProtoField.uint16 ("dji_dumlv1.flyc_osd_common_unknown35", "Unknown35", base.HEX, nil, nil, nil)
 
 local function flyc_osd_general_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -990,7 +993,25 @@ local function flyc_osd_general_dissector(pkt_length, buffer, pinfo, subtree)
     subtree:add_le (f.flyc_osd_general_imu_init_fail_reson, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 50) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"OSD General Data: Offset does not match - internal inconsistency") end
+    -- On P3X, packet ends here
+    -- On WM620, there are additional 5 bytes
+    if (payload:len() >= offset + 5) then
+
+        subtree:add_le (f.flyc_osd_common_motor_fail_reason, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_osd_common_motor_start_cause_no_start_action, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_osd_common_sdk_ctrl_device, payload(offset, 1))
+        offset = offset + 1
+
+        subtree:add_le (f.flyc_osd_common_unknown35, payload(offset, 2))
+        offset = offset + 2
+
+    end
+
+    if (offset ~= 50) and (offset ~= 55) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"OSD General Data: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"OSD General Data: Payload size different than expected") end
 end
 

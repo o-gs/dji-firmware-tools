@@ -143,7 +143,7 @@ end
 
 -- Gimbal - Gimbal Params Get / Push Position - 0x05
 -- Description: TODO.
--- Supported in: UNKNOWN
+-- Supported in: WM620_FW_01.02.0300
 
 enums.GIMBAL_PARAMS_MODE_ENUM = {
     [0x00] = 'YawNoFollow',
@@ -176,6 +176,9 @@ f.gimbal_params_masked0b = ProtoField.uint8 ("dji_dumlv1.gimbal_params_masked0b"
   f.gimbal_params_double_click = ProtoField.uint8 ("dji_dumlv1.gimbal_params_double_click", "Double Click", base.HEX, nil, 0x20, nil)
   f.gimbal_params_triple_click = ProtoField.uint8 ("dji_dumlv1.gimbal_params_triple_click", "Triple Click", base.HEX, nil, 0x40, nil)
   f.gimbal_params_single_click = ProtoField.uint8 ("dji_dumlv1.gimbal_params_single_click", "Single Click", base.HEX, nil, 0x80, nil)
+f.gimbal_params_unkn0c = ProtoField.uint32 ("dji_dumlv1.gimbal_params_unkn0c", "Unknown0c", base.HEX)
+f.gimbal_params_unkn10 = ProtoField.uint32 ("dji_dumlv1.gimbal_params_unkn10", "Unknown10", base.HEX)
+f.gimbal_params_unkn14 = ProtoField.uint32 ("dji_dumlv1.gimbal_params_unkn14", "Unknown14", base.HEX)
 
 local function gimbal_params_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -220,7 +223,21 @@ local function gimbal_params_dissector(pkt_length, buffer, pinfo, subtree)
     subtree:add_le (f.gimbal_params_single_click, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 12) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Params: Offset does not match - internal inconsistency") end
+    -- Found additional 12 bytes in packet from WM620
+    if (payload:len() >= offset + 12) then
+
+        subtree:add_le (f.gimbal_params_unkn0c, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.gimbal_params_unkn10, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.gimbal_params_unkn14, payload(offset, 4))
+        offset = offset + 4
+
+    end
+
+    if (offset ~= 12) and (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Gimbal Params: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Gimbal Params: Payload size different than expected") end
 end
 
