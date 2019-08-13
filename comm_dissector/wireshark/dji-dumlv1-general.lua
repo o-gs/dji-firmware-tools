@@ -466,12 +466,14 @@ enums.COMMON_FILETRANS_GENERAL_TRANS_PHASE_ENUM = {
 }
 
 f.general_filetrans_general_trans_phase = ProtoField.uint8 ("dji_dumlv1.general_filetrans_general_trans_phase", "Transfer Phase", base.DEC, enums.COMMON_FILETRANS_GENERAL_TRANS_PHASE_ENUM, nil, nil)
+f.general_filetrans_general_trans_datalen = ProtoField.uint32 ("dji_dumlv1.general_filetrans_general_trans_datalen", "Total Length", base.DEC, nil, nil, "File size in bytes")
 f.general_filetrans_general_trans_partno = ProtoField.uint32 ("dji_dumlv1.general_filetrans_general_trans_partno", "Part No", base.DEC)
-f.general_filetrans_general_trans_unknown1 = ProtoField.bytes ("dji_dumlv1.general_filetrans_general_trans_unknown1", "Unknown1", base.SPACE)
+f.general_filetrans_general_trans_unknown1 = ProtoField.bytes ("dji_dumlv1.general_filetrans_general_trans_unknown1", "Unknown1", base.SPACE, nil, nil, "After file transfer, 16 bytes? MD5?")
 f.general_filetrans_general_trans_data = ProtoField.bytes ("dji_dumlv1.general_filetrans_general_trans_data", "Data", base.SPACE)
 f.general_filetrans_general_trans_fname_len = ProtoField.uint8 ("dji_dumlv1.general_filetrans_general_trans_fname", "File Name Length", base.DEC)
 f.general_filetrans_general_trans_fname = ProtoField.string ("dji_dumlv1.general_filetrans_general_trans_fname", "File Name", base.NONE, nil, nil)
 
+f.general_filetrans_general_trans_resp_phase = ProtoField.uint8 ("dji_dumlv1.general_filetrans_general_trans_resp_phase", "Response for Transfer Phase", base.DEC, enums.COMMON_FILETRANS_GENERAL_TRANS_PHASE_ENUM, nil, nil)
 f.general_filetrans_general_trans_status = ProtoField.uint8 ("dji_dumlv1.general_filetrans_general_trans_status", "Status", base.HEX)
 f.general_filetrans_general_trans_res_unknown0 = ProtoField.bytes ("dji_dumlv1.general_filetrans_general_trans_res_unknown0", "RespUnknown0", base.SPACE)
 
@@ -490,7 +492,7 @@ local function general_filetrans_general_trans_dissector(pkt_length, buffer, pin
 
         if phase == 1 then
 
-            subtree:add_le (f.general_filetrans_general_trans_unknown1, payload(offset, 4))
+            subtree:add_le (f.general_filetrans_general_trans_datalen, payload(offset, 4))
             offset = offset + 4
 
             local fname_len = payload(offset,1):le_uint()
@@ -511,30 +513,44 @@ local function general_filetrans_general_trans_dissector(pkt_length, buffer, pin
 
         elseif phase == 3 then
 
-            subtree:add_le (f.general_filetrans_general_trans_unknown1, payload(offset, 1))
-            offset = offset + 1
+            subtree:add_le (f.general_filetrans_general_trans_unknown1, payload(offset, 16))
+            offset = offset + 16
 
         end
 
         --if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FileTrans General Trans: Offset does not match - internal inconsistency") end
     else -- Response
 
-        subtree:add_le (f.general_filetrans_general_trans_status, payload(offset, 1))
-        offset = offset + 1
-
         if (payload:len() >= 6) then
+
+            subtree:add_le (f.general_filetrans_general_trans_resp_phase, 1) -- Add response type detached, without related byte within packet (type is recognized by size, not by field)
+
+            subtree:add_le (f.general_filetrans_general_trans_status, payload(offset, 1))
+            offset = offset + 1
 
             subtree:add_le (f.general_filetrans_general_trans_res_unknown0, payload(offset, 5))
             offset = offset + 5
 
         elseif (payload:len() >= 5) then
 
+            subtree:add_le (f.general_filetrans_general_trans_resp_phase, 2)
+
+            subtree:add_le (f.general_filetrans_general_trans_status, payload(offset, 1))
+            offset = offset + 1
+
             subtree:add_le (f.general_filetrans_general_trans_partno, payload(offset, 4))
             offset = offset + 4
 
+        else
+
+            subtree:add_le (f.general_filetrans_general_trans_resp_phase, 3)
+
+            subtree:add_le (f.general_filetrans_general_trans_status, payload(offset, 1))
+            offset = offset + 1
+
         end
 
-        if (offset ~= 5) and (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FileTrans General Trans: Offset does not match - internal inconsistency") end
+        if (offset ~= 1) and (offset ~= 5) and (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FileTrans General Trans: Offset does not match - internal inconsistency") end
     end
 
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FileTrans General Trans: Payload size different than expected") end
@@ -641,7 +657,7 @@ local function general_encrypt_config_dissector(pkt_length, buffer, pinfo, subtr
         offset = offset + 1
 
         if (payload:len() >= 59) then
-            subtree:add_le (f.general_encrypt_config_resp_type, 4) -- Add response type without related byte within packet (type is recognized by size, not by field)
+            subtree:add_le (f.general_encrypt_config_resp_type, 4) -- Add response type detached, without related byte within packet (type is recognized by size, not by field)
 
             subtree:add_le (f.general_encrypt_config_resp_mac, payload(offset, 32))
             offset = offset + 32
