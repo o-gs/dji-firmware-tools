@@ -354,6 +354,7 @@ f.camera_camera_state_info_masked20 = ProtoField.uint8 ("dji_dumlv1.camera_camer
 f.camera_camera_state_info_camera_type = ProtoField.uint8 ("dji_dumlv1.camera_camera_state_info_camera_type", "Camera Type", base.HEX, enums.CAMERA_STATE_INFO_CAMERA_TYPE_ENUM, nil, nil)
 f.camera_camera_state_info_unknown22 = ProtoField.bytes ("dji_dumlv1.camera_camera_state_info_unknown22", "Unknown22", base.SPACE)
 f.camera_camera_state_info_version = ProtoField.uint8 ("dji_dumlv1.camera_camera_state_info_version", "Version", base.DEC)
+f.camera_camera_state_info_padding = ProtoField.bytes ("dji_dumlv1.camera_camera_state_info_padding", "Padding", base.SPACE)
 
 local function camera_camera_state_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -443,7 +444,14 @@ local function camera_camera_state_info_dissector(pkt_length, buffer, pinfo, sub
     subtree:add_le (f.camera_camera_state_info_version, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 37) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera State Info: Offset does not match - internal inconsistency") end
+    if (payload:len() >= offset + 2) then -- On some platforms, packet ends with 2 byte padding
+
+        subtree:add_le (f.camera_camera_state_info_padding, payload(offset, 2))
+        offset = offset + 2
+
+    end
+
+    if (offset ~= 37) and (offset ~= 39) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera State Info: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera State Info: Payload size different than expected") end
 end
 

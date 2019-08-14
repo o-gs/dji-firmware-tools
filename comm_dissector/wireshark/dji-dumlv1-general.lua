@@ -775,7 +775,11 @@ local function general_activation_actn_dissector(pkt_length, buffer, pinfo, subt
             subtree:add_le (f.general_activation_actn_mc_serial_len, payload(offset, 1))
             offset = offset + 1
 
-            --if (offset + mc_serial_len > payload:len()) then  mc_serial_len = payload:len() - offset end -- DEBUG code - the sn length seem to sometimes be wrong?
+            if (offset + mc_serial_len > payload:len()) then -- the sn length seem to sometimes be wrong?
+                subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Activation Action: SN length exceeds payload size")
+                mc_serial_len = payload:len() - offset
+            end
+
             subtree:add (f.general_activation_actn_mc_serial, payload(offset, mc_serial_len))
             offset = offset + mc_serial_len
         end

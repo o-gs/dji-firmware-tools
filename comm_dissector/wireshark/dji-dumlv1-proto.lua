@@ -513,7 +513,9 @@ DJI_DUMLv1_CMD_TEXT = {
 }
 
 local function set_info(cmd, pinfo, valuestring)
-    pinfo.cols.info = ""
+    if tostring(pinfo.cols.info) ~= "" then
+        pinfo.cols.info:append(", ")
+    end
     if valuestring[cmd] == nil then
         pinfo.cols.info:append(string.format("%s (0x%02X)", "Unknown", cmd))
     else

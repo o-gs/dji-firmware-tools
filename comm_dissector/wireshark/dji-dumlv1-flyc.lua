@@ -1558,7 +1558,9 @@ f.flyc_flyc_rtk_location_data_latitude = ProtoField.double ("dji_dumlv1.flyc_fly
 f.flyc_flyc_rtk_location_data_height = ProtoField.float ("dji_dumlv1.flyc_flyc_rtk_location_data_height", "Height", base.DEC)
 f.flyc_flyc_rtk_location_data_heading = ProtoField.uint16 ("dji_dumlv1.flyc_flyc_rtk_location_data_heading", "Heading", base.HEX)
 f.flyc_flyc_rtk_location_data_rtk_connected = ProtoField.uint8 ("dji_dumlv1.flyc_flyc_rtk_location_data_rtk_connected", "Rtk Connected", base.HEX)
-f.flyc_flyc_rtk_location_data_rtk_canbe_used = ProtoField.uint8 ("dji_dumlv1.flyc_flyc_rtk_location_data_rtk_canbe_used", "Rtk Canbe Used", base.HEX)
+f.flyc_flyc_rtk_location_data_rtk_canbe_used = ProtoField.uint8 ("dji_dumlv1.flyc_flyc_rtk_location_data_rtk_canbe_used", "Rtk Can be Used", base.HEX)
+f.flyc_flyc_rtk_location_data_unknown18 = ProtoField.uint32 ("dji_dumlv1.flyc_flyc_rtk_location_data_unknown18", "Unknown18", base.HEX)
+f.flyc_flyc_rtk_location_data_unknown1C = ProtoField.uint32 ("dji_dumlv1.flyc_flyc_rtk_location_data_unknown1C", "Unknown1C", base.HEX)
 
 local function flyc_flyc_rtk_location_data_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -1583,7 +1585,17 @@ local function flyc_flyc_rtk_location_data_dissector(pkt_length, buffer, pinfo, 
     subtree:add_le (f.flyc_flyc_rtk_location_data_rtk_canbe_used, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 24) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Rtk Location Data: Offset does not match - internal inconsistency") end
+    if (payload:len() >= offset + 8) then -- Not sure if packets in all platforms have these additional 8 bytes
+
+        subtree:add_le (f.flyc_flyc_rtk_location_data_unknown18, payload(offset, 4))
+        offset = offset + 4
+
+        subtree:add_le (f.flyc_flyc_rtk_location_data_unknown1C, payload(offset, 4))
+        offset = offset + 4
+
+    end
+
+    if (offset ~= 24) and (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FlyC Rtk Location Data: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FlyC Rtk Location Data: Payload size different than expected") end
 end
 
@@ -3306,6 +3318,8 @@ f.flyc_config_table_read_param_by_hash_status = ProtoField.uint8 ("dji_dumlv1.fl
 f.flyc_config_table_read_param_by_hash_name_hash = ProtoField.uint32 ("dji_dumlv1.flyc_config_table_read_param_by_hash_name_hash", "Param Name Hash", base.HEX, enums.FLYC_PARAMETER_BY_HASH_ENUM, nil, "Hash of a flight controller parameter name string")
 f.flyc_config_table_read_param_by_hash_value = ProtoField.bytes ("dji_dumlv1.flyc_config_table_read_param_by_hash_value", "Param Value", base.SPACE, nil, nil, "Flight controller parameter value; size and type depends on parameter")
 
+f.flyc_config_table_read_param_by_hash_rq_num = ProtoField.uint8 ("dji_dumlv1.flyc_config_table_read_param_by_hash_rq_num", "Request Number", base.DEC, nil, nil)
+
 local function flyc_config_table_read_param_by_hash_dissector(pkt_length, buffer, pinfo, subtree)
     local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
 
@@ -3314,17 +3328,29 @@ local function flyc_config_table_read_param_by_hash_dissector(pkt_length, buffer
     offset = 0
 
     if pack_type == 0 then -- Request
-        subtree:add_le (f.flyc_config_table_read_param_by_hash_name_hash, payload(offset, 4))
-        offset = offset + 4
 
-        if (offset ~= 4) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Read Param By Hash: Offset does not match - internal inconsistency") end
+        local num_entries = math.floor((payload:len() - offset) / 4)
+
+        local i = 0
+        while i < num_entries do
+            i = i + 1
+
+            subtree:add_le (f.flyc_config_table_read_param_by_hash_rq_num, i) -- Add request number detached, without related byte within packet (it is just index of the value)
+
+            subtree:add_le (f.flyc_config_table_read_param_by_hash_name_hash, payload(offset, 4))
+            offset = offset + 4
+        end
+
+        if (offset ~= 4 * i) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Table Read Param By Hash: Offset does not match - internal inconsistency") end
     else -- Response
+
         subtree:add_le (f.flyc_config_table_read_param_by_hash_status, payload(offset, 1))
         offset = offset + 1
 
         -- There can be multiple values in the packet; but without knowing size for each hash, we have no way of knowing where first value ends
-        -- This is why everything beyond the firsh hash is thrown to one value
-        if (payload:len() - offset >= 5) then
+        -- This is why everything beyond the first hash is thrown to one value
+        if (payload:len() >= offset + 5) then
+
             subtree:add_le (f.flyc_config_table_read_param_by_hash_name_hash, payload(offset, 4))
             offset = offset + 4
 
