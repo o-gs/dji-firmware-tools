@@ -483,6 +483,9 @@ local RTK_UART_CMD_TEXT = {
 local AUTO_UART_CMD_TEXT = {
 }
 
+local ADSB_UART_CMD_TEXT = {
+}
+
 dofile('dji-dumlv1-general.lua')
 dofile('dji-dumlv1-camera.lua')
 dofile('dji-dumlv1-flyc.lua')
@@ -506,6 +509,7 @@ DJI_DUMLv1_CMD_TEXT = {
     [0x0e] = DATA_LOG_UART_CMD_TEXT,
     [0x0f] = RTK_UART_CMD_TEXT,
     [0x10] = AUTO_UART_CMD_TEXT,
+    [0x11] = ADSB_UART_CMD_TEXT,
 }
 
 local function set_info(cmd, pinfo, valuestring)
@@ -529,11 +533,16 @@ f.special_old_special_app_control_unknown6 = ProtoField.uint8 ("dji_dumlv1.speci
 f.special_old_special_app_control_unknown7 = ProtoField.uint8 ("dji_dumlv1.special_old_special_app_control_unknown7", "Unknown7", base.HEX)
 f.special_old_special_app_control_checksum = ProtoField.uint8 ("dji_dumlv1.special_old_special_app_control_checksum", "Checksum", base.HEX, nil, nil, "Previous payload bytes xor'ed together with initial seed 0.")
 
+f.special_old_special_app_control_status = ProtoField.uint8 ("dji_dumlv1.special_old_special_app_control_status", "Status", base.HEX)
+
 local function special_old_special_app_control_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
 
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
+
+    if pack_type == 0 then -- Request
 
         subtree:add_le (f.special_old_special_app_control_unknown0, payload(offset, 1))
         offset = offset + 1
@@ -559,7 +568,15 @@ local function special_old_special_app_control_dissector(pkt_length, buffer, pin
         subtree:add_le (f.special_old_special_app_control_checksum, payload(offset, 1))
         offset = offset + 1
 
-    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Old Special App Control: Offset does not match - internal inconsistency") end
+        if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Old Special App Control: Offset does not match - internal inconsistency") end
+    else -- Response
+
+        subtree:add_le (f.special_old_special_app_control_status, payload(offset, 1))
+        offset = offset + 1
+
+        if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Old Special App Control: Offset does not match - internal inconsistency") end
+    end
+
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Old Special App Control: Payload size different than expected") end
 end
 
@@ -751,10 +768,14 @@ local function rc_push_param_dissector(pkt_length, buffer, pinfo, subtree)
     subtree:add_le (f.rc_push_param_record_status, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rc_push_param_band_width, payload(offset, 1))
-    offset = offset + 1
+    if (payload:len() >= offset+1) then -- only exists on some platforms
 
-    if (offset ~= 14) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"RC Push Parameter: Offset does not match - internal inconsistency") end
+        subtree:add_le (f.rc_push_param_band_width, payload(offset, 1))
+        offset = offset + 1
+
+    end
+
+    if (offset ~= 13) and (offset ~= 14) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"RC Push Parameter: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"RC Push Parameter: Payload size different than expected") end
 end
 
@@ -3193,28 +3214,37 @@ end
 local function heuristic_dissector(buffer, pinfo, tree)
 
     -- The Pkt start byte
+    local num_packets = 0
     local offset = 0
-    if (buffer:len() < 0xa) then return false end
 
-    local pkt_type = buffer(offset,1):uint()
-    if (pkt_type ~= 0x55) then return false end
+    local i = 0
+    while (buffer:len() > offset) do
 
-    -- [1-2] The Pkt length | protocol version
-    local pkt_length = buffer(offset+1,2):le_uint()
-    local pkt_protover = pkt_length
-    -- bit32 lib requires LUA 5.2
-    pkt_length = bit32.band(pkt_length, 0x03FF)
-    pkt_protover = bit32.rshift(bit32.band(pkt_protover, 0xFC00), 10)
+        if (buffer:len() < 0xa) then break end
 
-    if (pkt_length > buffer:len()) then return false end
-    if (pkt_protover > 2) then return false end
+        local pkt_type = buffer(offset,1):uint()
+        if (pkt_type ~= 0x55) then break end
 
-    local subtree = tree:add (DJI_DUMLv1_PROTO, buffer())
-    subtree:add (f.delimiter, buffer(offset, 1))
-    offset = offset + 1
+        -- [1-2] The Pkt length | protocol version
+        local pkt_length = buffer(offset+1,2):le_uint()
+        local pkt_protover = pkt_length
+        -- bit32 lib requires LUA 5.2
+        pkt_length = bit32.band(pkt_length, 0x03FF)
+        pkt_protover = bit32.rshift(bit32.band(pkt_protover, 0xFC00), 10)
 
-    dji_dumlv1_main_dissector(buffer, pinfo, subtree)
-    return true
+        if (pkt_length > buffer:len()) then break end
+        if (pkt_protover > 2) then break end
+
+        num_packets = num_packets + 1
+        local subtree = tree:add (DJI_DUMLv1_PROTO, buffer())
+        subtree:add (f.delimiter, buffer(offset, 1))
+
+        dji_dumlv1_main_dissector(buffer(offset,pkt_length), pinfo, subtree)
+        offset = offset + pkt_length
+
+    end
+
+    return (num_packets > 0)
 end
 
 
@@ -3225,3 +3255,4 @@ function DJI_DUMLv1_PROTO.init ()
 end
 
 DJI_DUMLv1_PROTO:register_heuristic("usb.bulk", heuristic_dissector)
+DJI_DUMLv1_PROTO:register_heuristic("tcp", heuristic_dissector)
