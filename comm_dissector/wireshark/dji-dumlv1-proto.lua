@@ -2711,10 +2711,10 @@ local function battery_dynamic_data_dissector(pkt_length, buffer, pinfo, subtree
 
     if (payload:len() >= 30) then -- full packet
 
-        if (payload:len() >= 32) then
+        if (payload:len() == 32) then -- Two bytes before voltage; is this real? on which platform? this shifts all later fields.
             subtree:add (f.battery_dynamic_data_unk1, payload(offset, 2))
             offset = offset + 2
-        else
+        else -- One byte before voltage; seen in the capture "Startup-FCCswitch" where payload len is 38, origin unknown
             subtree:add_le (f.battery_dynamic_data_index, payload(offset, 1))
             subtree:add_le (f.battery_dynamic_data_result, payload(offset, 1))
             offset = offset + 1
@@ -2744,7 +2744,10 @@ local function battery_dynamic_data_dissector(pkt_length, buffer, pinfo, subtree
         subtree:add_le (f.battery_dynamic_data_status, payload(offset, 8))
         offset = offset + 8
 
-        if (payload:len() >= 31) then
+        if (payload:len() >= 37) then -- seen in the capture "Startup-FCCswitch"
+            subtree:add (f.battery_dynamic_data_unk2, payload(offset, 9))
+            offset = offset + 9
+        elseif (payload:len() >= 31) then
             subtree:add (f.battery_dynamic_data_unk2, payload(offset, 2))
             offset = offset + 2
         else
@@ -2752,7 +2755,7 @@ local function battery_dynamic_data_dissector(pkt_length, buffer, pinfo, subtree
             offset = offset + 1
         end
 
-        if (offset ~= 30) and (offset ~= 31) and (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Dynamic Data: Offset does not match - internal inconsistency") end
+        if (offset ~= 30) and (offset ~= 31) and (offset ~= 32) and (offset ~= 38) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Dynamic Data: Offset does not match - internal inconsistency") end
     else -- status only
 
         if (payload:len() >= 2) then
