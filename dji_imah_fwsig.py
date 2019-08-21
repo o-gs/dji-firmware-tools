@@ -155,7 +155,7 @@ class ImgPkgHeader(LittleEndianStructure):
                 ('size', c_uint),                   #8
                 ('reserved', c_ubyte * 4),          #12
                 ('header_size', c_uint),            #16
-                ('signature_size', c_uint),         #20
+                ('signature_size', c_uint),         #20 RSA signature size
                 ('payload_size', c_uint),           #24
                 ('target_size', c_uint),            #28
                 ('os', c_ubyte),                    #32
@@ -163,11 +163,11 @@ class ImgPkgHeader(LittleEndianStructure):
                 ('compression', c_ubyte),           #34
                 ('anti_version', c_ubyte),          #35
                 ('auth_alg', c_uint),               #36
-                ('auth_key', c_char * 4),           #40
-                ('enc_key', c_char * 4),            #44
-                ('scram_key', c_ubyte * 16),        #48
-                ('name', c_char * 32),              #64
-                ('type', c_char * 4),               #96
+                ('auth_key', c_char * 4),           #40 Auth key identifier
+                ('enc_key', c_char * 4),            #44 Encryption key identifier
+                ('scram_key', c_ubyte * 16),        #48 Encrypted Scramble key; used in versions > 0
+                ('name', c_char * 32),              #64 Target Module name
+                ('type', c_char * 4),               #96 Target Module type identifier; used in versions > 1
                 ('version', c_uint),                #100
                 ('date', c_uint),                   #104
                 ('reserved2', c_ubyte * 20),        #108
@@ -175,7 +175,8 @@ class ImgPkgHeader(LittleEndianStructure):
                 ('entry', c_ubyte * 8),             #144
                 ('reserved3', c_ubyte * 4),         #152
                 ('chunk_num', c_uint),              #156
-                ('payload_digest', c_ubyte * 32)]   #160 end is 192
+                ('payload_digest', c_ubyte * 32),   #160 SHA256 of the payload
+               ]                                    #192 is the end
 
     def get_format_version(self):
         if self.magic != bytes("IM*H", "utf-8"):
