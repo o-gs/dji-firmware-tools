@@ -72,6 +72,8 @@
  0001:004216C0       add_calender_set_rtc
  0001:00421724       time_diff_ns
  0001:004217D8       get_time
+ 0001:004217FA       ms_to_time
+ 0001:004218E0       divisor
  0001:004218F8       aSSelectDhzDbit
  0001:0042194C       usleep
  0001:00421B3E       enable_sys_tick_timer
@@ -128,7 +130,12 @@
  0001:004241FC       aUartDRxDmaConf
  0001:00424220       aUartDTxDmaConf
  0001:00424240       HSMCI_Handler
+ 0001:00424246       sd_card_init_handler
+ 0001:0042425C       sd_card_send_cmd_handler
+ 0001:004242C4       sd_card_set_ios_handler
+ 0001:00424318       sd_card_init
  0001:00424376       samv7_sdmmc_init
+ 0001:00424404       sd_power_on
  0001:00424490       aSetSdMmcClockT
  0001:004244BC       aSetSdMmcBus_wi
  0001:00424500       aSd_card_initMm
@@ -151,17 +158,33 @@
  0001:0042493E       OSInit
  0001:00424A8C       OSSched
  0001:00424B76       OSStart
+ 0001:00424BBE       OS_PendDbgNameAdd
+ 0001:00424BEC       OS_PendListInsertPrio
+ 0001:00424C46       OS_PendDataInit
  0001:00424C94       aUcOsIiiIdleTas
  0001:00424CA8       p_tcb
+ 0001:00424CFC       aTaskQ
+ 0001:00424D04       aTaskSem
  0001:00424D10       OS_RdyListRemove
+ 0001:00424D5E       OS_TaskBlock
+ 0001:00424D88       OS_Pend
+ 0001:00424DD0       OS_PendListRemove1
  0001:00424E06       OS_PendListRemove
+ 0001:00424E2C       OS_PendAbort1
+ 0001:00424E4C       OS_RdyListInsertHead
  0001:00424E80       OS_RdyListInsertTail
+ 0001:00424EB0       OS_RdyListInsert
  0001:00424ED6       OS_TaskRdy
+ 0001:00424EF0       OS_PendAbort
  0001:00424F0C       jpt_424F08
  0001:00424F74       def_424F08
+ 0001:00424F78       OS_PendDbgNameRemove
+ 0001:00424F8E       OS_PendListChangePrio
  0001:00424FC0       OS_PendListInit
  0001:0042500A       OS_PendObjDel
  0001:00425022       jpt_42501E
+ 0001:00425088       OS_Post1
+ 0001:004250AE       OS_Post
  0001:004250C4       jpt_4250C0
  0001:00425148       def_4250C0
  0001:0042518A       nullsub_2
@@ -170,36 +193,71 @@
  0001:004251FC       OS_FlagClr
  0001:0042520E       OS_FlagDbgListRemove
  0001:00425232       OSFlagDel
+ 0001:00425312       OS_FlagBlock
+ 0001:00425332       OSFlagPend
+ 0001:0042554C       OSSemPendAbort
+ 0001:00425590       aFlag_0
+ 0001:00425598       aNoneFlag
+ 0001:0042559C       aFlag
+ 0001:0042564A       OS_FlagTaskRdy
  0001:0042566A       jpt_425666
  0001:00425684       def_425666
+ 0001:0042568E       OS_FlagPost
+ 0001:0042577E       OSFlagPost
  0001:004257D0       OS_FlagInit
+ 0001:004257E0       OS_OBJ_TYPE_FLAG_1
  0001:004257F4       OS_MutexDbgListAdd
  0001:0042580E       OSMutexCreate
+ 0001:0042586C       OSMutexPend
  0001:0042594E       jpt_42594A
  0001:004259B6       def_42594A
+ 0001:004259FA       OSMutexPost
+ 0001:00425B0C       OS_MutexClr
+ 0001:00425B2A       OS_MutexDbgListRemove
  0001:00425B4E       OS_MutexInit
+ 0001:00425B68       OS_OBJ_TYPE_MUTEX_1
+ 0001:00425B7C       aNoneMutex
+ 0001:00425B80       aMutex
  0001:00425B88       OS_QDbgListAdd
  0001:00425BA2       OSQCreate
+ 0001:00425C06       OSQPend
+ 0001:00425D44       OS_QPost
+ 0001:00425DC4       OSQPost
  0001:00425E38       OS_QClr
+ 0001:00425E60       OS_QDbgListRemove
  0001:00425E84       OS_QInit
+ 0001:00425EA0       OS_OBJ_TYPE_Q_1
+ 0001:00425EB0       OS_OBJ_TYPE_NONE_1
  0001:00425EB4       aQ
+ 0001:00425EB8       OS_SemDbgListAdd
+ 0001:00425ED2       OSSemCreate
+ 0001:00425F28       OSSemPend
+ 0001:0042604C       OS_SemPost
+ 0001:0042611E       OS_SemClr
+ 0001:00426132       OS_SemDbgListRemove
  0001:00426156       OS_SemInit
+ 0001:00426170       OS_OBJ_TYPE_SEM_1
+ 0001:00426180       OS_OBJ_TYPE_NONE_2
+ 0001:00426184       aSem
  0001:0042618C       OSStatReset
  0001:00426214       OSStatTaskCPUUsageInit
  0001:00426276       OS_StatTask
  0001:00426432       OS_StatTaskInit
  0001:00426508       aUcOsIiiStatTas
+ 0001:00426520       TRACE_INFO
  0001:00426538       memset_zero_1
  0001:004265A8       OSStartHighRdy
  0001:004265EA       PendSV_Handler
  0001:00426974       aFlashEraseErro
  0001:00426994       aFlashWriteErro
+ 0001:004269B8       gpiochip_add
  0001:00426C80       aGpiochip_addFa
  0001:00426CA0       aGpiochip_add_0
  0001:00426CC0       aGpiochip_add_1
  0001:00426CEC       aGpioDIllegalMa
  0001:00426D10       aGpioDBusy
  0001:00426D20       aGpioDNotRegist
+ 0001:00426D38       at24_request_i2c_adapter
  0001:00426DA8       set_handler
  0001:00426FE0       asr_host_timer_init
  0001:004273F2       iwdt_timeout_check
@@ -215,12 +273,25 @@
  0001:004275F4       aInfoResetBySof
  0001:0042760C       aInfoResetByOth
  0001:00427624       aInfoWatchdogEn
+ 0001:0042763C       mmc_send_cmd
+ 0001:00427644       mmc_send_status
+ 0001:004276E6       mmc_set_blocklen
+ 0001:0042770C       mmc_read_blocks
+ 0001:0042778E       mmc_write_blocks
+ 0001:0042781E       mmc_go_idle
+ 0001:00427852       mmc_send_op_cond_iter
+ 0001:00427894       mmc_send_ext_csd
+ 0001:004278BE       mmc_switch
+ 0001:004278F0       sd_switch
+ 0001:0042792E       sd_change_freq
+ 0001:00427A36       mmc_set_clock
  0001:00427A58       aTimeoutWaiting
  0001:00427A74       aStatusMmc_stat
  0001:00427A9C       aStatusError0x0
  0001:00427AB8       aSMmcCmdFailed
  0001:00427AD0       aMmcFailToSendS
  0001:00427AEC       aSMmcCmdFailedR
+ 0001:00427B24       mmc_startup
  0001:00427BE0       jpt_427BDC
  0001:00427BE6       def_427BDC
  0001:00427D72       jpt_427D6E
@@ -228,8 +299,14 @@
  0001:00427F74       jpt_427F70
  0001:00427FA6       def_427F70
  0001:00427FD8       aMmcSet_dsrFail
- 0001:00428194       find_mmc_dev
+ 0001:00428130       mmc_add
+ 0001:00428194       find_mmc_device
+ 0001:004281D4       mmc_start_init
  0001:004282A6       mmc_init
+ 0001:00428392       mmc_change_freq
+ 0001:0042840E       mmc_set_ios
+ 0001:0042841C       mmc_set_bus_width
+ 0001:00428420       mmc_complete_init
  0001:00428444       aMmcCmdDErrorD
  0001:00428478       aMmc_add0xXIdD
  0001:0042849C       aCardDidNotResp
@@ -246,9 +323,14 @@
  0001:0042991E       rstc_get_reset_cause
  0001:00429958       aInfoResetByS
  0001:00429970       aInfoResetByUnk
+ 0001:00429C20       XDMAIF_Get_ChannelNumber
+ 0001:00429C5C       XDMAIF_IsValidatedPeripherOnDma
  0001:00429D4A       allocate_xdma_channel
  0001:00429DA4       jpt_429DA0
  0001:00429DB2       def_429DA0
+ 0001:00429F06       XDMAD_ConfigureTransfer
+ 0001:0042A03E       XDMAD_AllocateXdmacChannel
+ 0001:0042A0D0       OS_TaskChangePrio
  0001:0042A10A       jpt_42A106
  0001:0042A14E       jpt_42A14A
  0001:0042A164       def_42A14A
@@ -262,13 +344,28 @@
  0001:0042A422       jpt_42A41E
  0001:0042A430       def_42A41E
  0001:0042A46A       def_42A3F4
+ 0001:0042A478       OSTaskQFlush
+ 0001:0042A4C8       aTask_1
+ 0001:0042A4E4       OSTaskQPend
+ 0001:0042A618       OSTaskQPendAbort
+ 0001:0042A696       OS_TaskQPost
  0001:0042A6C2       jpt_42A6BE
  0001:0042A710       def_42A6BE
+ 0001:0042A720       OSTaskQPost
+ 0001:0042A762       OSTaskRegGet
+ 0001:0042A78C       OSTaskRegGetID
+ 0001:0042A7B6       OSTaskRegSet
+ 0001:0042A7DE       OS_TaskResume
  0001:0042A7FA       jpt_42A7F6
  0001:0042A878       def_42A7F6
+ 0001:0042A886       OSTaskResume
  0001:0042A8C2       OSTaskSemPend
+ 0001:0042A9E8       OSTaskSemPendAbort
+ 0001:0042AA6A       OS_TaskSemPost
  0001:0042AA98       jpt_42AA94
  0001:0042AAEC       def_42AA94
+ 0001:0042AAFE       OSTaskSemPost
+ 0001:0042AB2A       OSTaskSemSet
  0001:0042AB5E       OSTaskStkChk
  0001:0042AC26       jpt_42AC22
  0001:0042AC6A       def_42AC22
@@ -281,6 +378,8 @@
  0001:0042AE2A       OS_TickTask
  0001:0042AE4E       OS_TickListInit
  0001:0042AE70       OS_TickTaskInit
+ 0001:0042AEE2       OS_TickListInsert
+ 0001:0042AFAC       OS_TickListResetPeak
  0001:0042AFF4       aUcOsIiiTickTas
  0001:0042B00C       OSTimeDly
  0001:0042B1DC       jpt_42B1D8
@@ -292,6 +391,8 @@
  0001:0042B3C0       cqueue_read_from
  0001:0042B3FE       cqueue_read
  0001:0042B458       cqueue_read_safe
+ 0001:0042B4FA       lldiv
+ 0001:0042B5E8       printf_sub03
  0001:0042B61C       device_send
  0001:0042B688       enable_device
  0001:0042B69C       open_device
@@ -301,9 +402,12 @@
  0001:0042BC32       OS_MsgPoolInit
  0001:0042BC6C       OS_MsgQFreeAll
  0001:0042BC9C       OS_MsgQInit
+ 0001:0042BCAA       OS_MsgQGet
+ 0001:0042BCFC       OS_MsgQPut
  0001:0042BD88       OS_PrioInit
  0001:0042BD9A       OS_PrioGetHighest
  0001:0042BDBA       OS_PrioInsert
+ 0001:0042BDD6       OS_PrioRemove
  0001:0042BDFA       bit_shift_left
  0001:0042BE20       abort
  0001:0042BE5C       nullsub_3
@@ -313,13 +417,21 @@
  0001:0042C07C       aNull_1
  0001:0042C084       aDumpSD
  0001:0042C094       a02x
+ 0001:0042C118       printf_sub01
  0001:0042C2BC       aSigabrtAbnorma
  0001:0042C310       sprintf
  0001:0042C33C       strcmp
+ 0001:0042C3AE       printf_sub02
+ 0001:0042C420       isdigit
  0001:0042D78C       BusFault_Handler_0
  0001:0042D824       NMI_Handler
  0001:0042DF64       device
- 0001:0042DF7D       aWrite
+ 0001:0042DF74       aCanCoreWrite
+ 0001:0042DFB6       spi_queue_start
+ 0001:0042E03E       complete_work
+ 0001:0042E096       spi_engine_transfer_one_message
+ 0001:0042E124       spi_sync_xfer
+ 0001:0042E1AA       spi_engine_init
  0001:0042E26C       aCriticalErrorS
  0001:0042E294       aCriticalErro_0
  0001:0042E2CC       aSpiDSyncXferFa
@@ -331,19 +443,168 @@
  0001:0042E3BE       def_42E36E
  0001:0042E3F2       jpt_42E3EE
  0001:0042E448       def_42E3EE
- 0001:0042E6E4       MEDSdusb_init
+ 0001:0042E6E4       MEDSdcard_Initialize
+ 0001:0042E742       MEDSdcard_EraseAll
+ 0001:0042E78E       MEDSdcard_EraseBlock
  0001:0042E7D0       aMedsdusbInit
  0001:0042E7E8       aMedsdcardErase
  0001:0042E804       aFFailedToErase
  0001:0042E82C       aFFailedToWrite
+ 0001:0042E858       CDCLineCoding_Initialize
+ 0001:0042E868       UDPHS_EndOfTransfer
+ 0001:0042E8DA       UDPHS_EndpointHandler
+ 0001:0042EB7C       UDPHS_DmaSingle
+ 0001:0042EBB6       UDPHS_DmaHandler
  0001:0042EC94       USBHS_Handler
- 0001:0042F3A6       nullsub_4
+ 0001:0042EDB8       USBD_HAL_ResetEPs
+ 0001:0042EE16       USBD_HAL_CancelIo
+ 0001:0042EE44       USBD_HAL_ConfigureEP
+ 0001:0042F028       USBD_HAL_SetTransferCallback
+ 0001:0042F046       USBD_HAL_SetupMblTransfer
+ 0001:0042F0B0       USBD_HAL_Write
+ 0001:0042F2AE       USBD_HAL_Read
+ 0001:0042F31E       USBD_HAL_Connect
+ 0001:0042F34E       USBD_HAL_Disconnect
+ 0001:0042F374       USBD_HAL_RemoteWakeUp
+ 0001:0042F386       USBD_HAL_SetAddress
+ 0001:0042F3A6       USBD_HAL_SetConfiguration
+ 0001:0042F3A8       USBD_HAL_Init
+ 0001:0042F416       USBD_HAL_Stall
+ 0001:0042F43C       USBD_HAL_Halt
+ 0001:0042F4B8       pUsbhs
+ 0001:0042F548       USBD_HAL_IsHighSpeed
+ 0001:0042F554       USBD_HAL_Suspend
+ 0001:0042F564       USBD_HAL_Activate
+ 0001:0042F574       USBD_HAL_Disable
+ 0001:0042F58E       USBD_HAL_Test
  0001:0042F5B2       jpt_42F5AE
  0001:0042F612       def_42F5AE
+ 0001:0042F63E       NVIC_ClearPendingIRQ
+ 0001:0042F654       SCB_CleanInvalidateDCache
+ 0001:0042F672       USBHS_UsbEnable
+ 0001:0042F68A       USBHS_DetachUsb
+ 0001:0042F69E       USBHS_EnableHighSpeed
+ 0001:0042F6B4       USBHS_EnableIntEP
+ 0001:0042F6C2       USBHS_EnableDMAIntEP
+ 0001:0042F6DA       USBHS_EnableEP
+ 0001:0042F6EC       USBHS_AutoSwitchBankEnable
+ 0001:0042F706       USBHS_EnableEPIntType
+ 0001:0042F716       USBHS_DisableEPIntType
+ 0001:0042F726       USBHS_AckEpInterrupt
+ 0001:0042F736       USBHS_IsBankFree
+ 0001:0042F74C       UDPHS_AddWr
+ 0001:0042F830       UDPHS_MblWriteFifo
+ 0001:0042F8CE       UDPHS_MblUpdate
+ 0001:0042F93C       USBGenericDescriptor_GetLength
+ 0001:0042F940       USBGenericDescriptor_GetType
+ 0001:0042F944       USBGenericDescriptor_GetNextDescriptor
+ 0001:0042F94A       USBGenericDescriptor_Parse
+ 0001:0042F978       USBEndpointDescriptor_GetNumber
+ 0001:0042F980       USBEndpointDescriptor_GetDirection
+ 0001:0042F98E       USBEndpointDescriptor_GetType
+ 0001:0042F996       USBEndpointDescriptor_GetMaxPacketSize
+ 0001:0042F99A       USBEndpointDescriptor_GetInterval
+ 0001:0042F99E       USBConfigurationDescriptor_GetTotalLength
+ 0001:0042F9A2       USBConfigurationDescriptor_GetNumInterfaces
+ 0001:0042F9A6       USBConfigurationDescriptor_IsSelfPowered
+ 0001:0042F9B4       USBConfigurationDescriptor_Parse
+ 0001:0042F9F8       USBGenericRequest_GetType
+ 0001:0042FA00       USBGenericRequest_GetRequest
+ 0001:0042FA04       USBGenericRequest_GetValue
+ 0001:0042FA08       USBGenericRequest_GetIndex
+ 0001:0042FA0C       USBGenericRequest_GetLength
+ 0001:0042FA10       USBGenericRequest_GetEndpointNumber
+ 0001:0042FA18       USBGenericRequest_GetRecipient
+ 0001:0042FA20       USBGenericRequest_GetDirection
+ 0001:0042FA2E       USBGetDescriptorRequest_GetDescriptorType
+ 0001:0042FA34       USBGetDescriptorRequest_GetDescriptorIndex
+ 0001:0042FA38       USBSetAddressRequest_GetAddress
+ 0001:0042FA40       USBSetConfigurationRequest_GetConfiguration
+ 0001:0042FA44       USBInterfaceRequest_GetInterface
+ 0001:0042FA48       USBInterfaceRequest_GetAlternateSetting
+ 0001:0042FA4C       USBFeatureRequest_GetFeatureSelector
+ 0001:0042FA50       USBFeatureRequest_GetTestSelector
+ 0001:0042FA58       CDCDSerial_EventHandler
+ 0001:0042FA80       CDCDSerial_Initialize
+ 0001:0042FA98       CDCDSerial_ConfigureFunction
+ 0001:0042FAA4       CDCDSerial_RequestHandler
+ 0001:0042FAAC       CDCDSerial_Read
+ 0001:0042FAC0       CDCDSerial_Write
+ 0001:0042FAD4       CDCDSerial_GetControlLineState
+ 0001:0042FADA       CDCDSerial_GetLineCoding
+ 0001:0042FAE2       CDCDSerial_GetSerialState
+ 0001:0042FAE8       CDCDSerial_SetSerialState
+ 0001:0042FAF0       CDCDSerial_UnkHalt
+ 0001:0042FAF8       pCdcd
+ 0001:0042FAFC       fEventHandler
+ 0001:0042FB00       CDCDSerialDriver_Initialize
+ 0001:0042FB22       CDCDSerialDriver_ConfigurationChangedHandler
+ 0001:0042FB40       CDCDSerialDriver_RequestHandler
+ 0001:0042FB68       CDCD_Interfaces_Parse
+ 0001:0042FBFC       CDCD_SetLineCodingCallback
+ 0001:0042FC3A       CDCDSerialPort_Initialize
+ 0001:0042FC68       CDCDSerialPort_ParseInterfaces
+ 0001:0042FC82       CDCDSerialPort_RequestHandler
+ 0001:0042FCFE       CDCDSerialPort_Read
+ 0001:0042FD12       CDCDSerialPort_Write
+ 0001:0042FD26       CDCDSerialPort_GetControlLineState
+ 0001:0042FD2A       CDCDSerialPort_GetLineCoding
+ 0001:0042FD40       CDCDSerialPort_GetSerialState
+ 0001:0042FD44       CDCDSerialPort_SetSerialState
+ 0001:0042FD70       CDCDSerialPort_UnkHalt
+ 0001:0042FD90       parseFunction
+ 0001:0042FD98       USBD_SuspendHandler
+ 0001:0042FDB6       USBD_ResumeHandler
+ 0001:0042FDD6       USBD_ConfigureEndpoint
+ 0001:0042FDDA       USBD_ResetHandler
+ 0001:0042FDFE       USBD_RequestHandler
+ 0001:0042FE0A       USBD_Write
+ 0001:0042FE28       USBD_Read
+ 0001:0042FE46       USBD_Halt
+ 0001:0042FE4C       USBD_Unhalt
+ 0001:0042FE52       USBD_IsHalted
+ 0001:0042FE58       USBD_IsHighSpeed
+ 0001:0042FE5C       USBD_Stall
+ 0001:0042FE60       USBD_SetAddress
+ 0001:0042FE76       USBD_SetConfiguration
+ 0001:0042FE9A       USBD_RemoteWakeUp
+ 0001:0042FEB2       USBD_Connect
+ 0001:0042FEB6       USBD_Disconnect
+ 0001:0042FED2       USBD_Init
+ 0001:0042FEEA       USBD_GetState
+ 0001:0042FEF0       USBD_Test
+ 0001:0042FF00       USBDCallbacks_Initialized
+ 0001:0042FF02       USBDCallbacks_Reset
+ 0001:0042FF04       USBDCallbacks_Suspended_0
+ 0001:0042FF06       USBDCallbacks_Resumed_0
+ 0001:0042FF08       USBDCallbacks_RequestReceived
+ 0001:0042FF1C       TerminateCtrlInWithNull
+ 0001:0042FF2E       USBD_GetDescriptor
  0001:0042FF76       jpt_42FF72
  0001:00430060       def_42FF72
+ 0001:0043006C       USBD_GetDriver
+ 0001:00430070       USBDDriver_Initialize
+ 0001:0043007C       USBDDriver_GetCfgDescriptors
+ 0001:00430090       USBDDriver_RequestHandler
  0001:004300AA       jpt_4300A6
  0001:0043014E       def_4300A6
+ 0001:00430314       pData
+ 0001:00430318       USBDDriverCallbacks_ConfigurationChanged
+ 0001:0043031A       USBDDriverCallbacks_InterfaceSettingChanged
+ 0001:0043031C       MSDDriver_Initialize
+ 0001:00430348       MSDDriver_ConfigurationChangeHandler
+ 0001:00430366       MSDDriver_RequestHandler
+ 0001:00430388       MSDDriver_Callback
+ 0001:00430398       MSDD_PreProcessCommand
+ 0001:00430486       MSDD_StateMachine
+ 0001:004305BE       MSDD_ProcessCommand
+ 0001:0043068C       fCallback
+ 0001:00430698       MSDFunction_Parse
+ 0001:00430704       MSDFunction_Initialize
+ 0001:00430736       MSDFunction_Configure
+ 0001:0043075C       MSDFunction_RequestHandler
+ 0001:004307FA       MSDFunction_StateMachine
+ 0001:00430810       MSDFunction_Reset
  0001:00430B58       jpt_430B54
  0001:00430C46       def_430B54
  0001:00430C62       jpt_430C5E
@@ -399,18 +660,24 @@
  0001:00431CF0       USART2_Handler
  0001:00431D3E       samv7_sys_ctrl_init
  0001:00431D80       addr
+ 0001:00431DC8       USBDCallbacks_Suspended
+ 0001:00431DE8       USBDCallbacks_Resumed
  0001:00431EB4       samv7_usb_init
  0001:00431EF8       aNullReq
  0001:00431F04       aUsbDisconnect
  0001:00431F18       aUsbConnect
  0001:00431F44       aVcpDisconnect_
+ 0001:0043205C       media
  0001:00432064       aCanTAllocMsdbu
+ 0001:00432206       j_CDCDSerial_UnkHalt
+ 0001:004322D4       callback
  0001:004322E0       aVcpIsLockedWhe
  0001:004322FC       aVcpEnable
  0001:0043230C       aVcpDisableLine
  0001:00432328       aVcpDisableSusp
  0001:00432340       aVcpDisableMann
  0001:00432358       aVcpTimeout_
+ 0001:00432378       pDescriptors
  0001:00432380       aVcpInitDX
  0001:004323D4       nullsub_93
  0001:00432462       samv7_adc_set_periph
@@ -472,6 +739,7 @@
  0001:004340A2       calc_crc32
  0001:004340C8       calc_crc16_3692
  0001:004340EA       calc_crc8_77
+ 0001:004340F0       calc_crc8_77b
  0001:004340F6       xtime
  0001:00434108       aes_subbytes
  0001:0043411C       aes_inv_subbytes
@@ -513,6 +781,7 @@
  0001:00435004       aInfoErrSProtoc
  0001:00435424       aInfoLinkSLenDD
  0001:00435460       aInfoSTx_errorD
+ 0001:004356E4       link_send_wrap
  0001:00435786       link_init
  0001:00435844       link_obj_init
  0001:004358AC       aInfoLib_route_
@@ -526,6 +795,10 @@
  0001:00435F1A       sdk_aes_decrypt
  0001:0043603A       dji_sdk_set_key
  0001:004360B8       aInfoLengthIs_0
+ 0001:00436234       packet_create_hdr6b_436234
+ 0001:004362C8       packet_proto_head_valid
+ 0001:00436318       packet_create_436318
+ 0001:00436472       packet_proto_head_valid2
  0001:004364B4       aInfoLengthIs_1
  0001:0043655C       aInfoLengthIs_2
  0001:0043664E       device_host_send
@@ -553,6 +826,13 @@
  0001:00436CF8       aInfoErrUnsuppo
  0001:00436D1C       aInfoLib_rout_2
  0001:00436D58       aInfoRoute_matc
+ 0001:00436D98       panic_usage_fault
+ 0001:00436DFC       panic_bus_fault
+ 0001:00436E68       panic_mem_manage_fault
+ 0001:00436ED2       panic_hardfault_sim
+ 0001:00436F18       panic_regs
+ 0001:00436F48       panic_task_tcb
+ 0001:00436F8E       panic_stk_null
  0001:00436FE4       aInfoPanicUsage
  0001:0043701C       aInfoPanicUndef
  0001:00437038       aInfoPanicInvst
@@ -580,6 +860,12 @@
  0001:004372D0       aInfoPanicR120x
  0001:0043730C       aInfoPanicTask_
  0001:0043734C       aInfoPanicPsp0x
+ 0001:0043743E       panic_spec_reg_info
+ 0001:00437488       panic_nvic_active_info
+ 0001:004374AC       panic_contex_info
+ 0001:004374F8       panic_irq_trace
+ 0001:004375AC       panic_task_trace
+ 0001:00437648       panic_task_info
  0001:00437668       aInfoPanicS
  0001:0043767C       a0x08x
  0001:00437688       a08x
@@ -603,7 +889,9 @@
  0001:0043796C       aInfoPanicUTask
  0001:004379A0       aInfoPanicUCurr
  0001:004379E0       aInfoPanicUNext
- 0001:00437B6A       panic
+ 0001:00437A96       panic_hard_fault
+ 0001:00437B0A       panic_find_fault
+ 0001:00437B6A       panic_check_fault
  0001:00437C08       cpu_exception_init
  0001:00437D68       aInfoPanicAllTa
  0001:00437DB8       aInfoPanicHard_
@@ -788,6 +1076,7 @@
  0001:004400BC       simulator_get_mag_data
  0001:004400C2       simulator_get_gyro_acc_data
  0001:004400E2       simulator_get_press_data
+ 0001:004402C8       autotest_sim_gps
  0001:0044043E       jpt_44043A
  0001:0044047C       def_44043A
  0001:00440480       aReadParameterS
@@ -829,6 +1118,12 @@
  0001:00441BFC       fmu_api_get_additional_info
  0001:00441CD0       fmu_api_get_additional_info_ack
  0001:00441DF0       aIndexDData_ind
+ 0001:00441E20       fmu_api_app_set_100km_db_cmd
+ 0001:00441F80       fmu_api_app_set_100km_db_cmd_ack
+ 0001:00441F84       fmu_api_app_set_whitelist_cmd
+ 0001:00441F88       fmu_api_app_set_whitelist_cmd_ack
+ 0001:00441F8C       fmu_api_app_whitelist_app_switch
+ 0001:00441F90       fmu_api_app_whitelist_app_switch_ack
  0001:00441FF8       fmu_api_get_db_info
  0001:0044200A       fmu_api_get_db_info_ack
  0001:0044200E       fmu_app_set_wl_license
@@ -1030,13 +1325,20 @@
  0001:004456BC       aSetBatteryGoHo
  0001:004456F4       aFailedToSetHom
  0001:004457F0       set_homepoint_ack
+ 0001:004457F4       set_rkt_homepoint
+ 0001:00445A66       set_rkt_homepoint_ack
+ 0001:00445A6A       exec_fc_basic_function
  0001:00445B30       aSetAircraftHom
  0001:00445B54       aSetRcHomepoint
  0001:00445B80       aSetAppHomepoin
  0001:00445BB4       aGet_id_index_b
  0001:00445BE0       aExec_fc_basic_
  0001:00445C00       aDoNotHaveThisC
+ 0001:00445C4C       exec_fc_basic_function_ack
+ 0001:00445C50       exec_fc_special_function
+ 0001:00445D10       exec_fc_special_function_ack
  0001:00445D14       exec_fc_v2_special_function
+ 0001:00445E54       exec_fc_v2_special_function_ack
  0001:00445E58       basic_cmd_table_err
  0001:00445EC0       cmd_handler_rc_key_status
  0001:00445FDA       cmd_handler_rc_key_status_ack
@@ -1063,6 +1365,12 @@
  0001:004462E8       aNeedReqButNotR
  0001:00446304       aReqR0x08xN0x08
  0001:00446324       aNeedConfirmBut
+ 0001:00446366       sdk_ctrl_camera_shot_ctrl
+ 0001:004463B0       sdk_ctrl_camera_shot_ctrl_ack
+ 0001:004463B4       sdk_ctrl_camera_start_video_ctrl
+ 0001:004463FC       sdk_ctrl_camera_start_video_ctrl_ack
+ 0001:00446400       sdk_ctrl_camera_stop_video_ctrl
+ 0001:00446448       sdk_ctrl_camera_stop_video_ctrl_ack
  0001:0044644C       aCameraCameraRe
  0001:00446474       aCameraCameraSh
  0001:00446494       aCameraSendSimp
@@ -1162,7 +1470,21 @@
  0001:00447DE8       fmu_api_get_fc_config_group_ack
  0001:00447EA0       aAssistantVersi
  0001:00447EBC       aUnlockErrLengt
+ 0001:00447EEA       app_joystick_data
+ 0001:004481EE       app_joystick_data_ack
  0001:004482E0       dest
+ 0001:004482E8       sdk_ctrl_mode_emergency_brake
+ 0001:00448370       sdk_ctrl_mode_emergency_brake_ack
+ 0001:00448374       sdk_ctrl_mode_arm_disarm
+ 0001:0044844A       sdk_ctrl_mode_arm_disarm_ack
+ 0001:0044844E       sdk_ctrl_open_close_virtual_rc
+ 0001:004484E8       sdk_ctrl_open_close_virtual_rc_ack
+ 0001:004484EC       sdk_ctrl_virtual_rc_data
+ 0001:00448550       sdk_ctrl_virtual_rc_data_ack
+ 0001:00448554       app_ctrl_mission_yaw_rate
+ 0001:00448598       app_ctrl_mission_yaw_rate_ack
+ 0001:0044859C       app_ctrl_fly_sweep_ctrl
+ 0001:00448650       app_ctrl_fly_sweep_ctrl_ack
  0001:00448654       aUserApi_ctrl_m
  0001:00448684       aDisableEmergen
  0001:004486B8       aEnableEmergenc
@@ -1173,6 +1495,15 @@
  0001:00448764       aUserRcOnOffDIs
  0001:00448784       aUserDataLength
  0001:004487A0       aLenSizeofSweep
+ 0001:004487C8       enable_gps_snr_send
+ 0001:004487F8       enable_gps_snr_send_ack
+ 0001:004487FC       ctrl_atti_data_send
+ 0001:004488E4       ctrl_atti_data_send_ack
+ 0001:004488E8       ctrl_taillock_data_send
+ 0001:00448950       ctrl_taillock_data_send_ack
+ 0001:00448954       subscription_version_match
+ 0001:00448A22       subscription_version_match_ack
+ 0001:00448A26       subscription_add_bag
  0001:00448B58       aInvalidCmdDFro
  0001:00448B98       aEnableInternal
  0001:00448BC0       aDisableInterna
@@ -1193,6 +1524,17 @@
  0001:00448E60       aErrorAddbagReq
  0001:00448E84       aInfoAddbagIdUF
  0001:00448EC4       aErrorAddbagDev
+ 0001:00448F00       subscription_add_bag_ack
+ 0001:00448F04       subscription_reset
+ 0001:00448F8E       subscription_reset_ack
+ 0001:00448F92       subscription_remove_bag
+ 0001:00449046       subscription_remove_bag_ack
+ 0001:0044904A       subscription_update_bag_freq
+ 0001:0044911E       subscription_update_bag_freq_ack
+ 0001:00449122       subscription_pause_resume
+ 0001:004491EE       subscription_pause_resume_ack
+ 0001:004491F2       subscription_get_config
+ 0001:004492D0       subscription_get_config_ack
  0001:004492D8       aInfoResetDev_i
  0001:004492F4       aErrorResetDevU
  0001:00449328       aInfoResetAckUD
@@ -1212,8 +1554,13 @@
  0001:004495E8       aErrorGetconfDe
  0001:00449624       fit_set_parameter
  0001:00449666       fit_set_parameter_ack
+ 0001:004496CA       autotest_fit
  0001:00449708       aFitData_length
  0001:00449720       aFit
+ 0001:0044972C       sdk_ctrl_gimbal_speed_ctrl
+ 0001:004497AE       sdk_ctrl_gimbal_speed_ctrl_ack
+ 0001:004497B2       sdk_ctrl_gimbal_angle_ctrl
+ 0001:00449868       sdk_ctrl_gimbal_angle_ctrl_ack
  0001:0044986C       get_open_led_info
  0001:004498BE       get_open_led_info_ack
  0001:004498DA       register_open_led
@@ -1224,6 +1571,7 @@
  0001:00449B8C       set_open_led_action_status_ack
  0001:00449B90       set_forearm_led_status
  0001:00449BEE       set_forearm_led_status_ack
+ 0001:00449C02       check_open_led_action
  0001:00449C80       aGenerate_led_r
  0001:00449CA8       aLed_requester_
  0001:00449CC4       aFill_open_led_
@@ -1394,8 +1742,17 @@
  0001:0044C44E       rns_get_state_ack
  0001:0044C460       handle_app_to_rtk_pack
  0001:0044C46C       handle_app_to_rtk_pack_ack
+ 0001:0044C4B0       sdk_activation_with_app_comm
+ 0001:0044C4E6       sdk_activation_with_app_comm_ack
+ 0001:0044C4EA       sdk_pure_transfer_from_app_to_mc
+ 0001:0044C52C       sdk_pure_transfer_from_app_to_mc_ack
+ 0001:0044C530       get_sdk_version
+ 0001:0044C656       get_sdk_version_ack
  0001:0044C65A       sdk_api_reg_user_activation
  0001:0044C7E6       sdk_api_reg_user_activation_ack
+ 0001:0044C7EA       get_sdk_info_query
+ 0001:0044C81C       get_sdk_info_query_ack
+ 0001:0044C836       set_sdk_std_msgs_frequency
  0001:0044C8EC       aRecvTransferD
  0001:0044C900       aUserGet_sdk_ve
  0001:0044C918       aUserDataX
@@ -1410,6 +1767,15 @@
  0001:0044CA20       aUserReg_info_q
  0001:0044CA38       aUserSdk_valida
  0001:0044CA54       aUserSet_std_ms
+ 0001:0044CB48       set_sdk_std_msgs_frequency_ack
+ 0001:0044CB52       sdk_autotest_error_inject
+ 0001:0044CB5E       sdk_autotest_error_inject_ack
+ 0001:0044CB62       sdk_pure_transfer_from_mc_to_app
+ 0001:0044CB76       sdk_pure_transfer_from_mc_to_app_ack
+ 0001:0044CB7A       sdk_ctrl_mode_open_close_nav
+ 0001:0044CCC2       sdk_ctrl_mode_open_close_nav_ack
+ 0001:0044CCC6       sdk_ctrl_sync_trigger
+ 0001:0044CD5A       sdk_ctrl_sync_trigger_ack
  0001:0044CD64       sdk_ctrl_set_api_sub_mode
  0001:0044CDF0       sdk_ctrl_set_api_sub_mode_ack
  0001:0044CE4C       aUserSetFrequen
@@ -1429,7 +1795,24 @@
  0001:0044D05C       aCallSdk_ctrl_0
  0001:0044D07C       aAppApiSub_mode
  0001:0044D094       aUserSendAck0x0
+ 0001:0044D0B0       sdk_ctrl_set_avoid_obstacle_enable
+ 0001:0044D0EE       sdk_ctrl_set_avoid_obstacle_enable_ack
+ 0001:0044D0F2       sdk_request_pwm_control
+ 0001:0044D0F6       sdk_request_pwm_control_ack
+ 0001:0044D0FA       sdk_command_pwm_output
+ 0001:0044D0FE       sdk_command_pwm_output_ack
+ 0001:0044D102       fmu_api_sdk_config_f_chl
+ 0001:0044D176       fmu_api_sdk_config_f_chl_ack
+ 0001:0044D17A       fmu_api_sdk_set_f_chl
+ 0001:0044D1B0       fmu_api_sdk_set_f_chl_ack
+ 0001:0044D1B4       fmu_api_sdk_get_f_chl
+ 0001:0044D1E6       fmu_api_sdk_get_f_chl_ack
  0001:0044D1F0       aSetSdkPortDMod
+ 0001:0044D224       sim_heart_beat_handler
+ 0001:0044D24A       sim_heart_beat_handler_ack
+ 0001:0044D24E       sim_request_para
+ 0001:0044D2B8       sim_request_para_ack
+ 0001:0044D2C6       sim_command_handler
  0001:0044D670       aSimInvalidComm
  0001:0044D684       aSubscribeInval
  0001:0044D69C       aTheSimulator_0
@@ -1449,6 +1832,11 @@
  0001:0044D804       aFailedToStop
  0001:0044D814       aSimulatorsto_0
  0001:0044D824       aAgreeToStop_0
+ 0001:0044D834       sim_command_handler_ack
+ 0001:0044D838       sim_set_wind_handler
+ 0001:0044D946       sim_set_wind_handler_ack
+ 0001:0044D94A       sim_get_support_status_handler
+ 0001:0044DA22       sim_get_support_status_handler_ack
  0001:0044DA38       aTryToSetDefa_7
  0001:0044DA64       aDoNotSupportTo
  0001:0044DA84       get_fc_device_info
@@ -1539,6 +1927,7 @@
  0001:0044F06C       handler_monitor_cmdset_ack
  0001:0044F070       fmu_api_setget_real_name_info
  0001:0044F172       fmu_api_setget_real_name_info_ack
+ 0001:0044F1D6       autotest_system_info
  0001:0044F218       aGetUuidFailedR
  0001:0044F230       aGetUuidLenFail
  0001:0044F248       aGetAllUserIdFa
@@ -1552,9 +1941,13 @@
  0001:0044F334       aSetRealNameCrc
  0001:0044F360       aSUnknownErr
  0001:0044F374       aSystem_info
+ 0001:0044F436       autotest_error_obse
+ 0001:0044F478       autotest_flight_obse
+ 0001:0044F4BA       autotest_hf_obse
  0001:0044F504       aError_obse
  0001:0044F518       aFlight_obse
  0001:0044F528       aHf_obse
+ 0001:0044F5A0       autotest_calculator
  0001:0044F5E8       aCalculator
  0001:0044F622       read_imu_propeller
  0001:0044F6C8       motor_sweep_test
@@ -1777,6 +2170,7 @@
  0001:00458EB8       aFirst_Lati10_7
  0001:00458EE8       aUpdateRtk_La_0
  0001:0045911C       init_home_situation
+ 0001:00459218       autotest_set_gohome_height
  0001:00459294       aUpdate_Lati1_0
  0001:004592F4       aUpdateHomepoin
  0001:00459338       aG_config_go_ho
@@ -2025,6 +2419,7 @@
  0001:00463BEC       aHandle_wrist_0
  0001:00463D2C       init_DFT_single_detect
  0001:00463E68       aInit_dft_singl
+ 0001:00463E94       autotest_fl_obse
  0001:00463EE8       aFl_obse
  0001:00464058       aOffsetDAllD
  0001:004642C8       aErrLocalDbSize
@@ -2308,6 +2703,7 @@
  0001:00473674       aImuDCaliVerOkX
  0001:00473698       aGyro_acc
  0001:004736B0       aAutoTestImu_in
+ 0001:004737D6       autotest_d_gyro_acc
  0001:00473A9C       aAuto_test_imu_
  0001:00473AD4       aAuto_test_im_0
  0001:00473B0C       aAuto_test_im_1
@@ -2462,6 +2858,7 @@
  0001:00479A3C       aSSdk_data_rese
  0001:00479A68       aFmu_cfg_get_10
  0001:00479ECC       aSdk_default_ac
+ 0001:0047A55C       sdk_demo_ack_callback
  0001:0047A7AC       aSdk_demo_ack_c
  0001:0047A7D4       aFmu_cfg_getC_2
  0001:0047A810       aUserInit_dji_a
@@ -2480,6 +2877,7 @@
  0001:0047AD44       aSwitchToUart
  0001:0047AD54       aUsbUplinkReini
  0001:0047AD74       aSend_msg_seria
+ 0001:0047AE68       autotest_sdk
  0001:0047B24C       aCmdDStateDSpee
  0001:0047B274       aSys_init
  0001:0047B3F8       aGet_fmu_dmL_14
@@ -2516,6 +2914,7 @@
  0001:0047D11C       jpt_47D118
  0001:0047D12A       def_47D118
  0001:0047D27C       aFmu_cfg_get_12
+ 0001:0047D2CA       autotest_rc_input
  0001:0047D388       aRc_input
  0001:0047DA90       aResetAllMissio
  0001:0047DF78       aExitSearchMode
@@ -3201,6 +3600,7 @@
  0001:0049A748       def_49A6CC
  0001:0049B26C       aUsingVtolModeH
  0001:0049B290       aUsingVtolModeF
+ 0001:0049B856       app_mission_hotpoint_stop
  0001:0049B870       aSdkReset_all_e
  0001:0049B8B8       aNaviMissionReq
  0001:0049B8E0       aCtrl_dev_chang
@@ -3216,6 +3616,8 @@
  0001:0049BB4C       jpt_49BB48
  0001:0049BBF2       def_49BB48
  0001:0049BC38       def_49BB3A
+ 0001:0049BCCA       app_mission_follow_stop
+ 0001:0049BD62       cam_mission_request_off
  0001:0049BDEC       aApp_mission_ho
  0001:0049BE14       aHotpointMiss_0
  0001:0049BE40       aApp_mission_re
@@ -3281,6 +3683,7 @@
  0001:0049EF9C       aCtrlRcPauseWay
  0001:0049EFC0       aCtrlRcResumeHo
  0001:0049EFE0       aCtrlRcPauseHot
+ 0001:0049F1C2       autotest_mission
  0001:0049F228       aCtrlRcStopFoll
  0001:0049F248       aCtrlRcResumePa
  0001:0049F26C       aCtrlRcResume_0
@@ -3322,41 +3725,68 @@
  0001:004B0144       action_data_err
  0001:004B017C       get_act_act_id
  0001:004B0184       get_act_req_id
+ 0001:004B02CC       autotest_auto_takeoff_land
+ 0001:004B0320       autotest_emergency_brake
+ 0001:004B0374       autotest_mode_degeneration
  0001:004B03F4       aAutoTakeOffLan
  0001:004B0418       aCanTExecAutoLa
  0001:004B044C       aNull_6
  0001:004B0454       aAuto_takeoff_l
  0001:004B0470       aEmergency_brak
  0001:004B0484       aMode_degenerat
- 0001:004B0498       move_window_dw
+ 0001:004B0498       sync_window
  0001:004B04E6       move_window
- 0001:004B0516       sync
+ 0001:004B0516       sync_fs
+ 0001:004B05EC       clust2sect
+ 0001:004B0604       get_fat
+ 0001:004B06C0       put_fat
  0001:004B07B4       remove_chain
  0001:004B0852       create_chain
  0001:004B08FC       dir_sdi
+ 0001:004B0976       dir_next
+ 0001:004B0A58       dir_alloc
  0001:004B0A9A       dir_read
  0001:004B0AF6       dir_register
  0001:004B0B2E       dir_remove
+ 0001:004B0B62       get_fileinfo
+ 0001:004B0BC4       create_name
  0001:004B0CE8       follow_path
- 0001:004B0D86       LD2PD
- 0001:004B0E1A       chk_mounted
+ 0001:004B0D86       get_ldnumber
+ 0001:004B0DC2       check_fs
+ 0001:004B0E1A       find_volume
+ 0001:004B106C       validate
  0001:004B108E       f_mount
  0001:004B10D6       f_open
+ 0001:004B120E       f_read
  0001:004B1342       f_write
- 0001:004B14FC       validate
+ 0001:004B14FC       f_sync
  0001:004B1592       f_close
  0001:004B15AE       f_lseek
- 0001:004B16D6       f_stat
+ 0001:004B16D6       f_opendir
+ 0001:004B1736       f_closedir
+ 0001:004B1748       f_readdir
+ 0001:004B1796       f_stat
+ 0001:004B17D2       f_getfree
+ 0001:004B1890       f_truncate
  0001:004B193E       f_unlink
  0001:004B19D2       f_mkdir
  0001:004B1B36       f_chmod
+ 0001:004B1B80       f_rename
+ 0001:004B1C72       f_utime
+ 0001:004B1CC2       f_getlabel
+ 0001:004B1D4E       f_setlabel
  0001:004B1EB8       f_mkfs
- 0001:004B21F0       aNoNameFat
- 0001:004B25BE       recorder_get_total_size
+ 0001:004B21CC       f_setlabel_chk
+ 0001:004B21F0       f_mkfs_fat16str
+ 0001:004B2430       recorder_space_calculate
+ 0001:004B24F0       recorder_find_filesize
+ 0001:004B25BE       recorder_get_total_clusters
  0001:004B25C4       mem_cpy
  0001:004B25D4       mem_set
- 0001:004B260A       LD_CLUST
- 0001:004B261C       ST_CLUST
+ 0001:004B25E2       mem_cmp
+ 0001:004B25FA       chk_chr
+ 0001:004B260A       ld_clust
+ 0001:004B261C       st_clust
  0001:004B2664       aNoNameFat32
  0001:004B267C       aFinfo_fsizeDFi
  0001:004B26A4       aFinfo_fsizeD
@@ -3513,8 +3943,10 @@
  0001:004C1BFC       aCqueue_initErr
  0001:004C1C10       aCanTAllocRecor
  0001:004C1CF4       r_adv_recorder
+ 0001:004C1D3C       autotest_sdcard
  0001:004C1DEE       strcpy
  0001:004C1EEC       aRecorderDataBu
+ 0001:004C1F14       fs
  0001:004C1F18       aRecorderCouldN
  0001:004C1F40       aRecorderDiskIn
  0001:004C1F5C       aRecorderTotalC
@@ -3643,6 +4075,7 @@
  0001:004C72DC       aErrorNoSuchD_3
  0001:004C744C       get_fmu_dm
  0001:004C750C       aErrorFailToIni
+ 0001:004C75D0       pdm
  0001:004C760C       strlen
  0001:004C764C       snprintf
  0001:004C768C       CPU_CRITICAL_ENTER
@@ -6256,6 +6689,8 @@
  0001:00507CE2       nullsub_48
  0001:00507D00       comm_sdk_init
  0001:00507D44       aSdk_1
+ 0001:00507D5C       packet_prep_s00_cmd10
+ 0001:00507E58       packet_prep_and_send_to_pc_s00_cmd10
  0001:00508130       aJ
  0001:00508132       aY_1
  0001:00508134       aInfoProtocol_t
@@ -6407,6 +6842,9 @@
  0001:0050D31C       aRandNumber_2x
  0001:0050D3BC       drv_fan_init
  0001:0050D918       init_aes132
+ 0001:0050D94C       at24_write
+ 0001:0050DABE       autotest_eeprom_enc
+ 0001:0050DB02       at24_read
  0001:0050DBA0       aAt24RequestI2c
  0001:0050DBCC       aBugSNestedD_3
  0001:0050DBE8       aEeprom_enc
@@ -6504,6 +6942,7 @@
  0001:00510EF8       aImu_propelle_3
  0001:00510F20       aImu_propellerR
  0001:00510F50       aImu_propellerT
+ 0001:00510FAA       autotest_activation
  0001:00510FE8       get_real_name_info
  0001:0051101E       set_real_name_info
  0001:005110FC       chip_flash_lock_check
@@ -6518,6 +6957,8 @@
  0001:00511400       aAssistantConne
  0001:00511434       aLockAssistant
  0001:00511474       eeprom_err
+ 0001:005116CE       eeprom_load_5116CE
+ 0001:00511752       eeprom_write_511752
  0001:0051184C       aBlockSizeTooLa
  0001:0051186C       aBlockAddrError
  0001:00511898       aSSS_D
@@ -6540,6 +6981,7 @@
  0001:00512A34       aG_config_rc__3
  0001:00512A5C       aG_config_rc__4
  0001:00512A84       aG_config_rc__5
+ 0001:005140E0       autotest_config
  0001:00514140       aCfg_groupChang
  0001:00514160       aG_config_mode_
  0001:00514190       aG_config_contr
@@ -6698,6 +7140,7 @@
  0001:005171E8       aCallS_1
  0001:005171FC       aG_config_imu_d
  0001:0051750A       cmd_rc_freq_bind_req
+ 0001:00517562       cmd_rc_frequency_bind_cmd
  0001:00517592       cmd_inject_propulsion_fault
  0001:005175C4       cmd_inject_esc_fault
  0001:005175E4       cmd_escl_cali_start
@@ -6770,7 +7213,7 @@
  0001:005253CC       hal_early_init
  0001:00525404       aHalSDDeviceEna
  0001:00525420       aHalSDDeviceDis
- 0001:00525444       a3
+ 0001:00525444       pkt
  0001:00525448       aDevIsNull
  0001:00525454       aSet_device_ver
  0001:0052548C       aHalSDAddToFmuF
@@ -6979,6 +7422,9 @@
  0001:0052D860       aResetTempCfg
  0001:0052D940       aTempCtrlCoreIn
  0001:0052DC34       aUnknownSlope_t
+ 0001:0052DC48       imu_start_upgrade_handler
+ 0001:0052DD74       imu_upgrade_package
+ 0001:0052DE88       imu_upgrade_end
  0001:0052DFC0       imu_api_cali_handler
  0001:0052E012       imu_api_cali_handler_ack
  0001:0052E040       aImuStartUpgrad
@@ -7089,6 +7535,7 @@
  0001:0053A454       aMovePtrDSizeDP
  0001:0053A474       aNewFlyDataCrea
  0001:0053A4A0       aParam_log_init
+ 0001:0053A522       packet_fill_header_and_send_to_pc_s00_cmd03
  0001:0053A6D2       rpc_recorder_init
  0001:0053A6FC       aLink_pc_0
  0001:0053A75A       recorder0_write
@@ -7115,6 +7562,7 @@
  0001:0053AAD8       aMmc_initErrorD
  0001:0053AAEC       aDisk_initializ
  0001:0053AB18       aDisk_statusCan
+ 0001:0053AE9E       esc_bus_init
  0001:0053AF2C       aEscNonperiodSl
  0001:0053AF50       aEscNonperoidCm
  0001:0053AF70       aEscPeriodLenEr
@@ -7149,6 +7597,7 @@
  0001:0053BED8       aStartPpmShortT
  0001:0053BEF4       aEscmBugTooMuch
  0001:0053BF20       aEscm_initMotor
+ 0001:0053BFC6       autotest_esc_obse
  0001:0053C150       aEscm_initCommP
  0001:0053C184       aEscmOpenLogDev
  0001:0053C1B4       aEsc_obse
@@ -7229,9 +7678,12 @@
  0002:0054662C       aWdg_set_swdg_t
  0002:00546642       aIwdt_timeout_c
  0002:00546655       aIwdg_set_time_
+ 0002:00546668       mmc_fbase
+ 0002:00546678       mmc_multipliers
  0002:005466B8       aMmc_read_block
  0002:005466C8       aMmc_write_bloc
  0002:005466DC       aR_1
+ 0002:005466EC       USBD_HAL_test_packet_buffer
  0002:00546853       aDjiVcpserial
  0002:0054693A       aDjiDjiBlackBox
  0002:00546960       a0123456789abTT
@@ -7276,6 +7728,7 @@
  0002:00546D2C       aWatchdog
  0002:00546D36       aSoft
  0002:00546D40       aUser
+ 0002:00546D5C       xdmaHwIf
  0002:00546F78       crc16_table
  0002:00547178       crc32_table
  0002:00547578       crc16_table_i
@@ -7323,6 +7776,7 @@
  0002:00548554       aSave_a3_config
  0002:00548563       aSave_global_si
  0002:00548838       a_map_dm_tbl
+ 0002:0054892C       fmu_db_table
  0002:00548DC0       aDgb
  0002:00548DC5       aYx
  0002:00548EE0       aSimulator_send
@@ -7331,7 +7785,7 @@
  0002:0054969C       duml_cmds
  0002:0054A45C       aFmu_app_set_li
  0002:0054A477       aFmu_wl_query_a
- 0002:0054A48C       aCd
+ 0002:0054A48C       autotest_table
  0002:0054A4E4       basic_cmd_table
  0002:0054A6B0       aExec_fc_v2_spe
  0002:0054A6CC       aCmd_handler_em
@@ -7343,6 +7797,8 @@
  0002:0054B3C2       aReset_cfg_it_0
  0002:0054B3DF       aFmu_set_fc_con
  0002:0054B3F7       aFmu_get_fc_con
+ 0002:0054B458       tests_fit
+ 0002:0054B668       aCheckOpenLedAc
  0002:0054B67E       aLogout_open_le
  0002:0054B695       aSet_open_led_0
  0002:0054B6B0       aSet_forearm_le
@@ -7358,10 +7814,12 @@
  0002:0054B888       aGet_fc_device_
  0002:0054B89B       aOver_temperatu
  0002:0054B8B4       aSet_get_real_n
- 0002:0054B8CC       aCaX
- 0002:0054BCF0       aGaXX
- 0002:0054C0D8       a0Test1
- 0002:0054C124       a1WhitelistCircle
+ 0002:0054B8CC       tests_err_obse
+ 0002:0054BCF0       tests_flight_obse
+ 0002:0054BF20       tests_hf_obse
+ 0002:0054BF38       tests_calc
+ 0002:0054C088       tests_unk2
+ 0002:0054C0D8       tests_unk1
  0002:0054C2A0       aWl_get_license
  0002:0054C33C       err_check_tables
  0002:0054C5D0       aSet_gohome_hei
@@ -7465,6 +7923,7 @@
  0002:00571BCC       links
  0002:00572150       aCalender_time_
  0002:00572164       aCalender_set_t
+ 0002:005724E8       aAt24Read
  0002:005724F4       a__at24_write
  0002:00572504       task_imu
  0002:00572524       task_ctrl
@@ -9999,7 +10458,7 @@
  0002:00597BD0       aG_config_ho_16
  0002:00597BF0       aG_status_rc__2
  0002:00597C0C       aG_status_de_20
- 0002:00597C34       aStatus
+ 0002:00597C2C       aSdkFlyStatus
  0002:00597C3C       aG_status_de_21
  0002:00597C78       aG_status_de_22
  0002:00597CB4       aG_status_de_23
@@ -10363,7 +10822,20 @@
  0002:0059A940       aExample
  0002:0059AD90       aSdkV11BetaWm22
  0003:20400554       g_wdg_timout_hook
+ 0003:20400558       ext_csd
+ 0003:2040055C       sd_scr
+ 0003:20400560       sd_switch_status
+ 0003:20400564       mmc_devs_ptr
+ 0003:2040056C       ext_csd_bits
+ 0003:20400580       mmc_widths
+ 0003:204005AC       deviceState
+ 0003:204005AD       previousDeviceState
  0003:2040062C       SystemCoreClock
+ 0003:2040163C       usb_connected
+ 0003:20401648       USBDCallbacks_Suspended_cb
+ 0003:2040164C       USBDCallbacks_Resumed_cb
+ 0003:20401650       sd_bus_width
+ 0003:20401654       sd_clock
  0003:20401808       pwm_banks
  0003:204019B8       rswdt_mode
  0003:204019BC       dyn_map_mem_initted
@@ -10396,6 +10868,7 @@
  0003:20401C48       OSTaskCtxSwCtr
  0003:20401C4C       OSTaskDbgListPtr
  0003:20401C50       OSTaskQty
+ 0003:20401C52       OSTaskRegNextAvailID
  0003:20401C54       OSTickCtr
  0003:20401C58       OSTickTaskTimeMax
  0003:20401C5C       OSTCBCurPtr
@@ -10403,6 +10876,7 @@
  0003:20402BDC       printf_s
  0003:20402BF0       system_ticks
  0003:20402BF4       system_timer_tickrate
+ 0003:20402C1C       fmu_db_index
  0003:20402C38       data_table_size
  0003:20402C3C       new_api_errs
  0003:20402C4C       v0_api_num
@@ -10436,6 +10910,9 @@
  0003:204036EC       new_get_cur_ns
  0003:204036F0       get_cur_tick
  0003:204036F4       printf
+ 0003:2040371A       dm_set_sender__err_count
+ 0003:20403721       dm_set_direct_sender__err_count
+ 0003:20403739       init_dm__err_count
  0003:2040373A       dm_initted
  0003:20403764       dm_sender
  0003:20403768       dm_direct_sender
@@ -10462,6 +10939,7 @@
  0003:20403E2E       recorder_cfg_log_start
  0003:20403E2F       debug_module_printed_head
  0003:20403F74       cfg_func_cnt
+ 0003:20403F98       linkobj_pc
  0003:20404024       link_idx_0
  0003:20404040       calender_time_check_err_cnt
  0003:20404044       calender_name
@@ -10483,10 +10961,26 @@
  0003:20405388       recorder_log_nb
  0003:204053DC       recorder_level0_status
  0003:204053E0       recorder_level0_header_len
- 0003:204054AC       recorder_total_size
+ 0003:204054A4       mmc_dev0
+ 0003:204054A8       Fsid
+ 0003:204054AC       recorder_total_clusters
+ 0003:204054B0       FatFs
  0003:20405E44       battery_version
  0003:2040A718       irq_handlers
+ 0003:2040AB78       ext_to_hostcaps
+ 0003:2040AB7C       mmc_unk_AB7C
+ 0003:2040AB80       mmc_unk_AB80
+ 0003:2040AB8C       mmc_unk_AB8C
+ 0003:2040AB90       mmc_unk_AB90
  0003:2040AB94       devices
+ 0003:2040ACA0       USBD_HAL_endpoints
+ 0003:2040AE60       cdcdSerial
+ 0003:2040AE7C       usbdDriver
+ 0003:2040AEA0       msdFunction
+ 0003:2040F97C       mmc_unk_dev
+ 0003:2040FC08       sd_card
+ 0003:2040FCD8       sd_card_config
+ 0003:2040FCF8       sd_card_ops
  0003:20410330       dyn_map_mem
  0003:20410C80       link_objects
  0003:20412380       sdk_aes_key
@@ -10494,7 +10988,7 @@
  0003:204123CC       lib_route
  0003:20412F40       OSCfg_TickWheel
  0003:20412FC0       OSIdleTaskTCB
- 0003:2041308C       OSRdyList
+ 0003:20413084       OSMsgPool
  0003:2041338C       OSStatTaskTCB
  0003:2041383C       task_root_arg
  0003:2041388C       task_args
@@ -10564,6 +11058,7 @@
  0003:2041A6B8       fc_roll
  0003:2041A9E4       gps_sig_level
  0003:2041A9E5       ctrl_level
+ 0003:2041ABF1       g_status.mag_adv_cali_status[0].process
  0003:2041AC18       ctrl_tick
  0003:2041B660       gear_mode
  0003:2041B669       auto_pack_mode
@@ -10572,56 +11067,85 @@
  0003:204246EC       config
  0003:20424710       db
  0003:204247B4       logger
+ 0003:20424A50       fmu_dm
  0003:204274EC       ctrl_horiz_ang_vel_debug
- 0003:204284EF       rc_type_when_modify
- 0003:204284F0       map_0
- 0003:204284F1       map_1
- 0003:204284F2       map_2
- 0003:204284F3       map_3
- 0003:204284F4       map_4
- 0003:204284F5       map_5
- 0003:204284F6       map_6
- 0003:204284F7       map_7
- 0003:204284F8       map_8
- 0003:204284F9       map_9
- 0003:204284FA       map_10
- 0003:204284FB       map_11
- 0003:204284FC       map_12
- 0003:204284FD       map_13
- 0003:204284FE       map_14
- 0003:204284FF       map_15
- 0003:20428500       map_16
- 0003:20428501       map_17
- 0003:20428502       map_18
- 0003:20428503       map_19
- 0003:20428504       map_20
- 0003:20428505       map_21
- 0003:20428506       map_22
- 0003:20428507       map_23
- 0003:20428508       map_24
- 0003:20428509       map_25
- 0003:2042850A       map_26
- 0003:2042850B       map_27
- 0003:2042850C       map_28
- 0003:2042850D       map_29
- 0003:2042850E       R_RC_A
- 0003:2042850F       R_RC_E
- 0003:204288AE       gps0_x
- 0003:204288B0       gps0_y
- 0003:204288B2       gps0_z
- 0003:20428A66       g_config.flying_limit.driver_license_limit_enable
- 0003:20428A67       g_config.flying_limit.viechle_license_limit_enable
- 0003:20428A72       fly_limit_distance
- 0003:20428A74       fly_limit_height
- 0003:20428DCC       sdk_baud
- 0003:20428DD2       g_config.api_entry_cfg.hw_port
- 0003:20428DD3       sdk_enable
- 0003:20428DEF       sdk_enable_1860
- 0003:20428E0C       g_config.airport_limit_cfg.cfg_disable_airport_fly_limit
- 0003:20428E10       g_config.airport_limit_cfg.cfg_limit_data
- 0003:20428E14       sim_enable_fly_limit
- 0003:20428E15       sim_disable_fly_limit
- 0003:20428E4A       g_config.misc_cfg.gps_signature_valid_check
+ 0003:20428350       g_cfg_debug
+ 0003:20428498       g_config
+ 0003:2042849C       g_config.rc_cfg
+ 0003:20428682       g_config.receiver.stick_mode
+ 0003:20428684       g_config.mr_craft.rotor_4_cfg
+ 0003:2042869C       g_config.mr_craft.rotor_6_cfg
+ 0003:204286B4       g_config.mr_craft.rotor_8_cfg
+ 0003:204286CC       g_config.mr_craft.multi_mixer_type
+ 0003:204286CD       g_config.mr_craft.mass_offset_dir
+ 0003:204286D0       g_config.mr_ctrl
+ 0003:204288A8       g_config.imu_gps_0
+ 0003:204288C8       g_config.imu_gps_1
+ 0003:204288E8       g_config.imu_gps_2
+ 0003:20428908       g_config.control
+ 0003:20428974       g_config.sweep_test
+ 0003:20428A30       g_config.engine
+ 0003:20428A3C       g_config.fail_safe
+ 0003:20428A40       g_config.go_home
+ 0003:20428A5C       g_config.intelligence_orientation
+ 0003:20428A64       g_config.flying_limit
+ 0003:20428A90       g_config.actuator
+ 0003:20428B28       g_config.fdi_open
+ 0003:20428B5C       g_config.fdi_inject
+ 0003:20428B7C       g_config.fdi_fit_rc
+ 0003:20428B84       g_config.fdi_switch
+ 0003:20428BA4       g_config.fdi_sensor[0]
+ 0003:20428BB4       g_config.fdi_sensor[1]
+ 0003:20428BC4       g_config.fdi_sensor[2]
+ 0003:20428BD4       g_config.imu_para_cfg
+ 0003:20428C34       g_config.mag_cfg
+ 0003:20428C4C       g_config.gyr_acc_cfg
+ 0003:20428C4E       g_config.baro_cfg
+ 0003:20428C4F       g_config.gps_cfg
+ 0003:20428C50       g_config.mode_novice_cfg
+ 0003:20428C5C       g_config.mode_tripod_en_cfg
+ 0003:20428C64       CM_brake_sensitive
+ 0003:20428C68       g_config.mode_wifi_rc_cfg
+ 0003:20428C7C       g_config.mode_gentle_cfg
+ 0003:20428CA8       g_config.mode_normal_cfg
+ 0003:20428CD4       g_config.mode_sport_cfg
+ 0003:20428D00       g_config.mode_tripod_cfg
+ 0003:20428D2C       g_config.mode_cinematic_cfg
+ 0003:20428D58       g_config.mode_manual_cfg
+ 0003:20428D6C       g_config.gps_signal_level_cfg
+ 0003:20428D8C       g_config.gear_cfg
+ 0003:20428D9E       g_config.esc_cfg
+ 0003:20428DC8       g_config.api_entry_cfg
+ 0003:20428DF0       g_config.airport_limit_cfg
+ 0003:20428E2D       g_config.whitelist_cfg
+ 0003:20428E30       g_config.avoid_obstacle_limit_cfg
+ 0003:20428E44       g_config.misc_cfg
+ 0003:20428E68       g_config.takeoff
+ 0003:20428E8C       g_config.landing
+ 0003:20428EAC       g_config.hotpoint
+ 0003:20428EEC       g_config.home_lock
+ 0003:20428EF4       g_config.followme
+ 0003:20428F04       g_config.waypoint_cfg
+ 0003:20428F30       fctrl_mode
+ 0003:20428F31       g_config.miss_rtk
+ 0003:20428F3C       g_config.stop_motor
+ 0003:20428F40       g_config.farm
+ 0003:20428FD8       g_config.sim
+ 0003:20428FEC       g_config.air_est
+ 0003:2042902C       g_config.bat_config
+ 0003:204290BC       g_config.ahrs_debug_in
+ 0003:204290D0       g_config.iosd_cfg
+ 0003:204290D2       g_config.factory_test_cfg
+ 0003:2042914C       g_config.rc_lost_search
+ 0003:20429158       g_config.zenmuse_cfg
+ 0003:20429178       g_config.pitot_config
+ 0003:2042917C       g_config.fw_cfg
+ 0003:2042918C       g_config.cali_switch
+ 0003:20429190       g_config.wristband_cfg
+ 0003:204291A4       g_config.ctrldev_cfg
+ 0003:204291B4       g_config.avoid_cfg
+ 0003:204291C4       mass_est_net_mass
+ 0003:204291CD       mass_est_cali_start
  0003:204291D0       cfg_list_idx_dest
  0003:2042CE9C       task_c_arg
  0003:2042CEE0       task_d_arg
@@ -10665,10 +11189,8 @@
  0003:20431E38       high_freq_gyro_data_2
  0003:204420A8       recorder_cqueue
  0003:204420BC       recorder_vol
- 0003:204420CC       recorder_bytes_used
  0003:204420F0       recorder_file
- 0003:204420FC       recorder_file_size
- 0003:20442118       recorder_sys_fp
+ 0003:20442118       recorder_sys_fil
  0003:20442140       recorder_speed
  0003:20442144       recorder_log_buf_write_cnt
  0003:20442148       recorder_data_written
@@ -10682,30 +11204,70 @@
  0003:2044215D       recorder_cmd_set
  0003:2044215E       recorder_cmd_format
  0003:2044215F       recorder_filename
- 0003:20442218       param_log_fp
- 0003:20442224       param_file_size
- 0003:2044223C       param_file_buf
+ 0003:20442218       param_log_fil
  0003:20442240       param_log_buf
  0003:20442244       param_cqueue
+ 0003:2044225C       pkt_225C
  0003:20442684       recorder_level0_buf
  0003:20442E84       cqueue_recorder0
  0003:20443278       escm_cqueue
  0003:20457BAC       simulator_param
  0003:20457CE8       hw_version
  0003:2045D870       _estack
+ 0004:40000000       HSMCI
+ 0004:40004000       SSC
+ 0004:40008000       SPI0
+ 0004:4000C000       TC0
+ 0004:40010000       TC1
+ 0004:40014000       TC2
+ 0004:40018000       TWIHS0
+ 0004:4001C000       TWIHS1
+ 0004:40020000       PWM0
+ 0004:40024000       USART0
+ 0004:40028000       USART1
+ 0004:4002C000       USART2
+ 0004:40030000       MCAN0
+ 0004:40034000       MCAN1
  0004:40038000       USBHS
+ 0004:4003C000       AFEC0
+ 0004:40040000       DACC
+ 0004:40044000       ACC
+ 0004:40048000       ICM
+ 0004:4004C000       ISI
+ 0004:40050000       GMAC
+ 0004:40054000       TC3
+ 0004:40058000       SPI1
+ 0004:4005C000       PWM1
+ 0004:4005C400       TWIHS2
+ 0004:40064000       AFEC1
+ 0004:40068000       MLB
  0004:4006C000       AES
+ 0004:40070000       TRNG
  0004:40078000       XDMAC
+ 0004:4007C000       QSPI
+ 0004:40080000       SMC
+ 0004:40084000       SDRAMC
+ 0004:40088000       MATRIX
+ 0004:400E0400       UTMI
  0004:400E0600       PMC
+ 0004:400E0800       UART0
+ 0004:400E0940       CHIPID
+ 0004:400E0A00       UART1
  0004:400E0C00       EFC
  0004:400E0E00       PIOA
  0004:400E1000       PIOB
  0004:400E1200       PIOC
  0004:400E1400       PIOD
+ 0004:400E1600       PIOE
  0004:400E1800       RSTC
  0004:400E1810       SUPC
  0004:400E1830       RTT
+ 0004:400E1840       WDT
+ 0004:400E1860       RTC
  0004:400E1890       GPBR
  0004:400E1900       RSWDT
+ 0004:400E190C       UART2
+ 0004:400E1C00       UART3
+ 0004:400E1E00       UART4
 
 Program entry point at 0001:00000000
