@@ -43,6 +43,7 @@
  0001:00420DC4       bsp_early_init
  0001:00420DF8       bsp_init
  0001:00420E40       aCpuDHzDivD
+ 0001:00420E60       pXdmad
  0001:00420E7C       aBspInitDone_
  0001:00420EA0       j_OS_TS_GET
  0001:00420ED8       j_CPU_CntLeadZeros
@@ -93,6 +94,7 @@
  0001:004221E4       aExtiAddBusy_
  0001:00422208       aExti
  0001:00422210       aExtiRequestGpi
+ 0001:00422420       dwMCk
  0001:00422428       aSectorEraseErr
  0001:00422448       aUnlockErrX
  0001:0042245C       aWriteFlashErrX
@@ -135,10 +137,14 @@
  0001:004242C4       sd_card_set_ios_handler
  0001:00424318       sd_card_init
  0001:00424376       samv7_sdmmc_init
+ 0001:00424400       mmc_unk2_dev_get
  0001:00424404       sd_power_on
+ 0001:00424480       pMcid
+ 0001:00424484       dev
  0001:00424490       aSetSdMmcClockT
  0001:004244BC       aSetSdMmcBus_wi
  0001:00424500       aSd_card_initMm
+ 0001:00424524       dwMck
  0001:0042452C       aSdMmcCardIniti
  0001:00424558       aSd_power_on
  0001:00424568       aSd_power_onDon
@@ -265,6 +271,8 @@
  0001:00427474       iwdg_time_out_4090
  0001:0042748A       log_reset_reason
  0001:004274C8       watchdog_enable
+ 0001:0042750E       wdg_set_unkn1_hook
+ 0001:00427518       wdg_set_timout_hook
  0001:0042752C       aInfoSTime_outU
  0001:00427564       aInfoSCallSwd_h
  0001:004275A0       aInfoSTime_out0
@@ -301,8 +309,14 @@
  0001:00427FD8       aMmcSet_dsrFail
  0001:00428130       mmc_add
  0001:00428194       find_mmc_device
+ 0001:004281A8       mmc_status
+ 0001:004281B6       mmc_ctrl_trim
+ 0001:004281BA       mmc_sector_count
+ 0001:004281CA       mmc_sector_size
+ 0001:004281CE       mmc_block_size
  0001:004281D4       mmc_start_init
  0001:004282A6       mmc_init
+ 0001:004282F4       sd_send_op_cond
  0001:00428392       mmc_change_freq
  0001:0042840E       mmc_set_ios
  0001:0042841C       mmc_set_bus_width
@@ -313,22 +327,82 @@
  0001:004284C8       aSdMmcCardIni_0
  0001:004284F4       aCardSizeLldMbB
  0001:0042858C       aMmc_complete_i
+ 0001:004285B0       ComputeLockRange
+ 0001:00428618       FLASHD_Initialize
+ 0001:00428628       FLASHD_Erase
+ 0001:00428646       FLASHD_EraseSector
+ 0001:00428666       FLASHD_ErasePages
+ 0001:004286D2       FLASHD_Write
+ 0001:004287E0       FLASHD_Lock
+ 0001:00428844       FLASHD_Unlock
+ 0001:004288A6       FLASHD_IsLocked
+ 0001:0042894E       FLASHD_IsGPNVMSet
+ 0001:00428980       FLASHD_SetGPNVM
+ 0001:004289A8       FLASHD_ClearGPNVM
+ 0001:004289D0       efc
+ 0001:004289E0       Mci_Rd_Cb
+ 0001:00428A0A       _MciDMAPrepare
+ 0001:00428A56       MciResetDMAChn
+ 0001:00428AB4       _MciDMA
+ 0001:00428CF2       MCID_FinishCmd
+ 0001:00428D34       MCID_SetSlot
+ 0001:00428D38       MCID_Init
+ 0001:00428DCA       MCID_Lock
  0001:00428DE4       aMciresetdmachn
  0001:00428E24       aCmdDCanTFreeCh
+ 0001:00428E72       MCID_Release
+ 0001:00428E8C       MCID_Handler
+ 0001:00428FBC       MCID_IsCmdCompleted
+ 0001:00428FDC       MCID_SendCmd_nodma
+ 0001:00429034       MCID_SendCmd
+ 0001:004291EC       MCID_CancelCmd
+ 0001:00429214       MCID_Reset
+ 0001:00429258       MCID_IOCtrl
  0001:004292A0       aSdmmc_error_bu
- 0001:00429370       set_peripheral
+ 0001:0042932E       mmc_unk_dev_create2
+ 0001:00429334       SCB_CleanInvalidateDCache_0
+ 0001:00429352       MCI_Reset
+ 0001:00429370       PIO_Configure
  0001:00429382       jpt_42937E
  0001:0042946A       def_42937E
+ 0001:004294EC       _PMC_SwitchMck2MainClock
+ 0001:0042950E       PMC_EnablePeripheral
+ 0001:0042954A       PMC_DisablePeripheral
+ 0001:00429586       PMC_EnableAllPeripherals
+ 0001:004295B6       PMC_DisableAllPeripherals
+ 0001:004295DA       PMC_IsPeriphEnabled
+ 0001:00429602       PMC_EnableExtOsc
+ 0001:00429636       PMC_DisableExtOsc
+ 0001:00429652       PMC_DisableIntRC4_8_12MHz
+ 0001:0042966E       PMC_SelectExtOsc
+ 0001:004296A2       PMC_SelectExtBypassOsc
+ 0001:004296E2       PMC_EnableIntRC4_8_12MHz
+ 0001:00429728       PMC_SetPllaClock
+ 0001:00429756       PMC_SetMckSelection
+ 0001:00429796       PMC_DisableAllClocks
+ 0001:004297CC       PMC_ConfigureMckWithPlla
+ 0001:004297F4       PMC_EnableXT32KFME
+ 0001:00429802       PMC_ConfigurePCK2
  0001:004298F0       log_reset_by
  0001:0042991E       rstc_get_reset_cause
  0001:00429958       aInfoResetByS
  0001:00429970       aInfoResetByUnk
  0001:00429C20       XDMAIF_Get_ChannelNumber
  0001:00429C5C       XDMAIF_IsValidatedPeripherOnDma
- 0001:00429D4A       allocate_xdma_channel
+ 0001:00429C98       XMAD_mutex_lock
+ 0001:00429CD2       XDMAD_Initialize
+ 0001:00429D4A       XDMAD_AllocateChannel
+ 0001:00429D7C       XDMAD_FreeChannel
  0001:00429DA4       jpt_429DA0
  0001:00429DB2       def_429DA0
+ 0001:00429DB6       XDMAD_SetCallback
+ 0001:00429DEA       XDMAD_PrepareChannel
+ 0001:00429E54       XDMAD_Handler
+ 0001:00429ED4       XDMAD_IsTransferDone
  0001:00429F06       XDMAD_ConfigureTransfer
+ 0001:00429FB8       XDMAD_StartTransfer
+ 0001:00429FE6       XDMAD_StopTransfer
+ 0001:0042A01A       XMAD_mutex_unlock
  0001:0042A03E       XDMAD_AllocateXdmacChannel
  0001:0042A0D0       OS_TaskChangePrio
  0001:0042A10A       jpt_42A106
@@ -398,6 +472,52 @@
  0001:0042B69C       open_device
  0001:0042B7EA       device_register
  0001:0042B830       aWarningReopenD
+ 0001:0042B868       mmc_unk_dev_create
+ 0001:0042B914       EFC_EnableFrdyIt
+ 0001:0042B920       EFC_DisableFrdyIt
+ 0001:0042B92A       EFC_SetWaitState
+ 0001:0042B93E       EFC_GetStatus
+ 0001:0042B942       EFC_GetResult
+ 0001:0042B946       EFC_TranslateAddress
+ 0001:0042B974       EFC_ComputeAddress
+ 0001:0042B998       EFC_PerformCommand
+ 0001:0042B9D6       EFC_SetFlashAccessMode
+ 0001:0042B9E4       HSMCI_Enable
+ 0001:0042B9EA       HSMCI_Disable
+ 0001:0042B9F0       HSMCI_Reset
+ 0001:0042BA16       HSMCI_Select
+ 0001:0042BA34       HSMCI_SetSlot
+ 0001:0042BA44       HSMCI_SetBusWidth
+ 0001:0042BA68       HSMCI_GetBusWidth
+ 0001:0042BA88       HSMCI_ConfigureMode
+ 0001:0042BA8C       HSMCI_GetMode
+ 0001:0042BA90       HSMCI_ProofEnable
+ 0001:0042BAAE       HSMCI_PadvCtl
+ 0001:0042BAC2       HSMCI_FByteEnable
+ 0001:0042BAD6       HSMCI_IsFByteEnabled
+ 0001:0042BADE       HSMCI_DivCtrl
+ 0001:0042BB0A       HSMCI_EnableIt
+ 0001:0042BB0E       HSMCI_DisableIt
+ 0001:0042BB12       HSMCI_GetItMask
+ 0001:0042BB16       HSMCI_ConfigureTransfer
+ 0001:0042BB1E       HSMCI_SetBlockLen
+ 0001:0042BB24       HSMCI_SetBlockCount
+ 0001:0042BB2C       HSMCI_ConfigureCompletionTO
+ 0001:0042BB30       HSMCI_ConfigureDataTO
+ 0001:0042BB34       HSMCI_SendCmd
+ 0001:0042BB3A       HSMCI_GetResponse
+ 0001:0042BB3E       HSMCI_Read
+ 0001:0042BB42       HSMCI_ReadFifo
+ 0001:0042BB7C       HSMCI_Write
+ 0001:0042BB80       HSMCI_WriteFifo
+ 0001:0042BBBA       HSMCI_GetStatus
+ 0001:0042BBBE       HSMCI_ConfigureDma
+ 0001:0042BBC2       HSMCI_EnableDma
+ 0001:0042BBD6       HSMCI_Configure
+ 0001:0042BBDA       HSMCI_HsEnable
+ 0001:0042BBEE       HSMCI_IsHsEnabled
+ 0001:0042BBF6       HSMCI_ConfigureWP
+ 0001:0042BBFC       HSMCI_GetWPStatus
  0001:0042BC04       OS_MsgPoolCreate
  0001:0042BC32       OS_MsgPoolInit
  0001:0042BC6C       OS_MsgQFreeAll
@@ -725,6 +845,7 @@
  0001:004337D0       aInfoSamv7_back
  0001:00433818       src
  0001:00433820       aInfoCpu_except
+ 0001:00433848       hook
  0001:00433D90       pwm_clocks_generate
  0001:00433DDE       pwm_set_channel_mode
  0001:00433E96       pwm_init
@@ -7553,7 +7674,7 @@
  0001:0053A964       aRecorderLeve_2
  0001:0053A994       disk_initialize
  0001:0053A9C2       disk_status
- 0001:0053A9EC       move_window_dr
+ 0001:0053A9EC       disk_read
  0001:0053AA04       disk_write
  0001:0053AA24       disk_ioctl
  0001:0053AA36       jpt_53AA32
@@ -8008,7 +8129,6 @@
  0002:00585D50       a0123456789ab_1
  0002:00586344       aInfoSG_swdg_timeout_max0x0
  0002:00586388       aInfoPanicResetByWatchdog
- 0002:00586398       aResetByWatchdo
  0002:005863CC       aDyn_map_mem
  0002:005863D8       aLink_del_timeo
  0002:005863F0       aLink_resend_pa
@@ -10821,6 +10941,8 @@
  0002:0059A921       aAtmelMassStora
  0002:0059A940       aExample
  0002:0059AD90       aSdkV11BetaWm22
+ 0003:20400540       g_swdg_timeout_max
+ 0003:20400550       g_wdg_unkn1_hook
  0003:20400554       g_wdg_timout_hook
  0003:20400558       ext_csd
  0003:2040055C       sd_scr
@@ -10837,7 +10959,10 @@
  0003:20401650       sd_bus_width
  0003:20401654       sd_clock
  0003:20401808       pwm_banks
+ 0003:204018AC       _dwUseIAP
+ 0003:204019A4       MCID_dwMsk
  0003:204019B8       rswdt_mode
+ 0003:204019BA       xDmad_Initialized
  0003:204019BC       dyn_map_mem_initted
  0003:204019BE       link_idx
  0003:20401B9E       lib_route_initted
@@ -10978,9 +11103,11 @@
  0003:2040AE7C       usbdDriver
  0003:2040AEA0       msdFunction
  0003:2040F97C       mmc_unk_dev
+ 0003:2040FBE8       mci_dev
  0003:2040FC08       sd_card
  0003:2040FCD8       sd_card_config
  0003:2040FCF8       sd_card_ops
+ 0003:2040FF30       xdmadRxCfg
  0003:20410330       dyn_map_mem
  0003:20410C80       link_objects
  0003:20412380       sdk_aes_key
