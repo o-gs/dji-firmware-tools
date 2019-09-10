@@ -1179,6 +1179,11 @@ def gimbal_calib_request_p3x(po, ser):
 def do_gimbal_calib_request_p3x_autocal(po, ser):
     """ Initiates Phantom 3 Gimbal Automatic Calibration.
 
+        In Ph3, this only calibrates yaw axis, which uses magnetic sensors.
+        Pitch and roll have resistive sensors, and these are not affected;
+        if there is misalignment in them, that usually means damaged potentiometer
+        or bent aluminium arm, not something you can solve with calibration.
+
         Tested on the following platforms and FW versions:
         None
     """
