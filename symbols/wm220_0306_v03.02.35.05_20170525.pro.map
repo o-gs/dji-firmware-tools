@@ -7971,7 +7971,10 @@
  0002:0056DEE0       aV_0
  0002:0056DEE4       aL_0
  0002:0056DEE8       aL_1
+ 0002:0056DFEC       aWriteDataToCam
  0002:0056E1E4       aWrite_data_t_1
+ 0002:0056E2F4       aWriteDataToEsc
+ 0002:0056E390       aWriteDataToGim
  0002:0056E3A5       aReset_gimbal_d
  0002:0056E3D0       aLsv
  0002:0056E840       aWrite_data_t_2
