@@ -900,6 +900,7 @@ local function wifi_ap_push_chan_noise_dissector(pkt_length, buffer, pinfo, subt
 end
 
 -- Wi-Fi - WiFi Ap Set Country Code - 0x30
+-- Used by Mobile App to set country code on RC; for country "US", RC then enters FCC mode and asks the AC to change mode as well.
 
 f.wifi_set_country_code_str1 = ProtoField.string ("dji_spark.wifi_set_country_code_str1", "Region Str1", base.NONE)
 f.wifi_set_country_code_str2 = ProtoField.string ("dji_spark.wifi_set_country_code_str2", "Region Str2", base.NONE)
