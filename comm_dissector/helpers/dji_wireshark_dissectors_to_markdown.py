@@ -51,9 +51,10 @@ class ValueSim(enum.Enum):
     Nop = 1
     Unknown = 2
     Number = 3 # Just a specific numeric value; 1 param: the value
-    VariableRef = 4 # A reference to a variable; 1 param: name of the variable
-    String = 5 # A text string; 1 param: the character string
-    MathExpr = 6 # Math expression; each param is either operation/sign or name/value (if str then treated as variable ref or operator/sign, if number then as number); ends with ValueConv.No
+    Logic = 4 # A specific logic value; 1 param: true or false
+    VariableRef = 5 # A reference to a variable; 1 param: name of the variable
+    String = 6 # A text string; 1 param: the character string
+    MathExpr = 7 # Math expression; each param is either operation/sign or name/value (if str then treated as variable ref or operator/sign, if number then as number); ends with ValueConv.No
     # Complex types - after second analysis
     ArraySlice = 10 # Part sliced from any array; 3 params: array,start,size
     ArraySliceConv = 11 # Part sliced from any array, then converted using a standard function; 4 params: array,start,size,conv_func_name
@@ -78,6 +79,8 @@ class ValueConv(enum.Enum):
 
 ValueSimCompoundList = [ValueSim.ArrayPktWhole, ValueSim.ArrayPktPayload, ValueSim.ArraySlice]
 ValueSimCompoundExpr = [ValueSim.MathExpr]
+ValueSimLogicOperator = ['==', '~=', 'and', 'or']
+ValueSimLogicTrueFalse = ['true', 'false']
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
@@ -111,7 +114,7 @@ def lua_get_assign_st_full_name(assign_st, lua_fname):
         leaf_name += str(expr4[1])
     if (len(leaf_name) < 1):
         eprint("{:s}:{:d}: Warning: Could not get full name in assign statement".format(lua_fname,lua_line))
-        for expr1 in assign_st:
+        for expr1 in assign_st: #!!!!!!!!!!!!!!!!
             print(expr1)
     return leaf_name
 
@@ -139,6 +142,27 @@ def lua_exp_to_integer(expr, lua_fname, ignore_fail=False):
             eprint("{:s}:{:d}: Warning: While getting numeric param, could not get final leaf string".format(lua_fname,lua_line))
         return None
     return int(leaf_val,0)
+
+def lua_exp_to_truefalse(expr, lua_fname, ignore_fail=False):
+    leaf_expr = expr
+    lua_line = lua_get_file_line(leaf_expr)
+    for expr1 in leaf_expr:
+        if (not isinstance(expr1, tuple)) or (expr1[0].name != 'constant'):
+            continue
+        leaf_expr = expr1
+    leaf_val = ''
+    for expr1 in leaf_expr:
+        if (not isinstance(expr1, tuple)):
+            continue
+        if (expr1[0].name == 'true'):
+            leaf_val = True
+        if (expr1[0].name == 'false'):
+            leaf_val = False
+    if not isinstance(leaf_val, bool):
+        if not ignore_fail:
+            eprint("{:s}:{:d}: Warning: While getting bool param, expected final leaf to be 'true' or 'false'".format(lua_fname,lua_line))
+        return None
+    return leaf_val
 
 def lua_exp_variable_ref_to_string(expr, lua_fname, ignore_fail=False):
     leaf_expr = expr
@@ -281,8 +305,15 @@ def lua_exp_to_math_expr(expr, body_locals, lua_fname, ignore_fail=False):
         var_out = lua_exp_to_integer(expr, lua_fname, ignore_fail=True)
         if isinstance(var_out, numbers.Number):
             leaf_val += [ var_out ]
+
+    elif (expr[0].name == 'constant'):
+        var_out = lua_exp_to_truefalse(expr, lua_fname, ignore_fail=True)
+        if isinstance(var_out, bool):
+            leaf_val += [ var_out ]
+
     else:
         eprint("{:s}:{:d}: Warning: Operand in math expression was not recognized".format(lua_fname,lua_line))
+        print(expr)#!!!!!!!!!!
     return leaf_val
 
 def simplify_math_expr(val_list, lua_fname):
@@ -290,6 +321,7 @@ def simplify_math_expr(val_list, lua_fname):
     number_op = None
     number_val = 0
     within_calls = 0
+    out_math_chunks = 0
     for var_out in val_list:
         # Ignore statements which are part of compound calls (where argument position matters)
         if var_out in ValueSimCompoundList or var_out in ValueSimCompoundExpr:
@@ -298,6 +330,7 @@ def simplify_math_expr(val_list, lua_fname):
             within_calls -= 1
         if within_calls > 0:
             out_list += [ var_out ]
+            out_math_chunks += 1
             continue
         # Do the processing
         if isinstance(var_out, str) and (var_out in [ "'+'", '-' ]):
@@ -308,15 +341,30 @@ def simplify_math_expr(val_list, lua_fname):
             else:
                 number_val += var_out
             number_op = None
+        elif var_out in ValueSimLogicOperator:
+            # logic operator should end the simplification
+            if (number_val > 0) and (out_math_chunks > 0):
+                out_list += [ "'+'", number_val ]
+            elif (number_val < 0):
+                out_list += [ '-', -number_val ]
+            elif (out_math_chunks <= 0):
+                out_list += [ 0 ]
+            out_math_chunks = 0
+            out_list += [ var_out ]
+            continue
         else:
             if number_op is not None:
                 out_list += [ number_op ]
+                out_math_chunks += 1
                 number_op = None
             out_list += [ var_out ]
-    if (number_val > 0):
+            out_math_chunks += 1
+    if (number_val > 0) and (out_math_chunks > 0):
         out_list += [ "'+'", number_val ]
     elif (number_val < 0):
         out_list += [ '-', -number_val ]
+    elif (out_math_chunks <= 0):
+        out_list += [ 0 ]
     # Now check for known expessions
     if out_list == [ ValueSim.LenPktWhole, '-', 13 ]:
         return [ ValueSim.LenPktPayload ]
@@ -643,22 +691,28 @@ def lua_get_function_call_conv_name(expr, lua_fname):
     leaf_val = str(leaf_val)
     return leaf_val
 
-def lua_get_exp_value(exp_block, body_locals, lua_fname):
+def lua_get_exp_value(local_name, exp_block, body_locals, lua_fname):
     """ Converts one 'exp' tag subtree to ValueSim
     """
     lua_line = lua_get_file_line(exp_block)
     if exp_block[0].name == 'exp':
-        # Check for simple string type
-        var_out = lua_exp_variable_ref_to_string(exp_block[1], lua_fname, ignore_fail=True)
-        if len(var_out) > 0:
-            if var_out not in body_locals:
-                return [ValueSim.VariableRef, var_out]
-            else:
-                return body_locals[var_out]
-        var_out = lua_exp_to_integer(exp_block[1], lua_fname, ignore_fail=True)
-        # Check for simple numeric type
-        if isinstance(var_out, numbers.Number):
-            return [ValueSim.Number, var_out]
+        # If there is only one operand in 'exp', then it might be a simple type
+        if len(exp_block) == 2:
+            # Check for simple string type
+            var_out = lua_exp_variable_ref_to_string(exp_block[1], lua_fname, ignore_fail=True)
+            if len(var_out) > 0:
+                if var_out not in body_locals:
+                    return [ValueSim.VariableRef, var_out]
+                else:
+                    return body_locals[var_out]
+            var_out = lua_exp_to_integer(exp_block[1], lua_fname, ignore_fail=True)
+            # Check for simple numeric type
+            if isinstance(var_out, numbers.Number):
+                return [ValueSim.Number, var_out]
+            var_out = lua_exp_to_truefalse(exp_block[1], lua_fname, ignore_fail=True)
+            # Check for simple numeric type
+            if isinstance(var_out, bool):
+                return [ValueSim.Logic, var_out]
         # If this is not a simple type, check if it is math equation
         var_out = lua_exp_to_math_expr(exp_block, body_locals, lua_fname, ignore_fail=True)
         if isinstance(var_out, list):
@@ -676,27 +730,28 @@ def lua_get_exp_value(exp_block, body_locals, lua_fname):
         eprint("{:s}:{:d}: Error: Expected 'exp' to get value, got '{:s}'".format(lua_fname,lua_line,exp_block[0].name))
     return None
 
-def lua_get_exp_value_opt(exp_block, body_locals, lua_fname):
+def lua_get_exp_value_opt(local_name, exp_block, body_locals, lua_fname):
     """ Converts any 'exp' to ValueSim, optimizing it
     """
-    var_out = lua_get_exp_value(exp_block, body_locals, lua_fname)
+    var_out = lua_get_exp_value(local_name, exp_block, body_locals, lua_fname)
+
     if var_out == [ ValueSim.ArrayPktWhole, 0, ValueSim.LenPktWhole, ValueConv.Len ]:
         var_out = [ ValueSim.LenPktWhole ]
     elif var_out == [ ValueSim.ArrayPktPayload, 0, ValueSim.LenPktPayload, ValueConv.Len ]:
         var_out = [ ValueSim.LenPktPayload ]
     return var_out
 
-def lua_get_function_param_opt(arg_expr, body_locals, lua_fname):
+def lua_get_function_param_opt(func_name, arg_expr, body_locals, lua_fname):
     """ Converts one argument of a function call to ValueSim, optimizing it
     """
-    value_sim = lua_get_exp_value_opt(arg_expr, body_locals, lua_fname)
+    value_sim = lua_get_exp_value_opt("call:"+func_name, arg_expr, body_locals, lua_fname)
     return value_sim
 
 def lua_get_exp_value_sim(local_name, exp_block, body_locals, lua_fname):
     """ Simulates value within 'exp' tag.
     """
     lua_line = lua_get_file_line(exp_block)
-    value_sim = lua_get_exp_value_opt(exp_block, body_locals, lua_fname)
+    value_sim = lua_get_exp_value_opt(local_name, exp_block, body_locals, lua_fname)
     if (value_sim is None):
         eprint("{:s}:{:d}: Error: could not recognize '{:s}' value for simulation".format(lua_fname,lua_line,exp_block[0].name))
         value_sim = [ ValueSim.Nop ]
@@ -748,7 +803,7 @@ def lua_get_function_call_sim(expr, body_locals, lua_fname):
     val_func_args = []
     if (val_func_args_exp is not None):
         for arg_expr in val_func_args_exp:
-            val_func_args.append(lua_get_function_param_opt(arg_expr, body_locals, lua_fname))
+            val_func_args.append(lua_get_function_param_opt(val_func, arg_expr, body_locals, lua_fname))
     elif (val_func_conv is not None):
         if (val_func_conv != 'len'):
             # Having a call which does only conversion is only usual for 'len' converter; other ones would be suspicious
@@ -872,6 +927,7 @@ def lua_get_if_st_condition(if_st, body_locals, lua_fname):
     else:
         eprint("{:s}:{:d}: Warning: Expected 'if_st' to be passed for getting condition".format(lua_fname,lua_line))
     value_sim = lua_get_exp_value_sim("if_statement", expr1, body_locals, lua_fname)
+    #print("{:s}:{:d}: Debug: Condition in 'if_st' is: {:s}".format(lua_fname,lua_line,str(value_sim)))
     return value_sim
 
 def lua_function_call_dofile_to_string(expr, lua_fname):
@@ -912,7 +968,7 @@ def lua_function_call_dofile_to_string(expr, lua_fname):
     return leaf_val
 
 def lua_block_body_get_conditional_statements(block_expr,body_locals,lua_fname):
-    condition_list = {}
+    condition_list = []
     for expr2 in block_expr:
         if (not isinstance(expr2, tuple)):
             continue
@@ -947,7 +1003,8 @@ def lua_block_body_get_conditional_statements(block_expr,body_locals,lua_fname):
                 # Our block body should only have statements
                 if (not isinstance(expr4, tuple)) or (expr4[0].name != 'statement'):
                     continue
-                lua_block_body_get_conditional_statements(expr4,subblock_locals,lua_fname)
+                lua_block_body_get_conditional_statements(expr4,subblock_locals,lua_fname) # recurrence
+            condition_list += [ local_cond ]
             #TODO implement conditions storing, here or below
             continue
         elif (expr2[0].name == 'while_st'):
