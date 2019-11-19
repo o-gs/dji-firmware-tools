@@ -47,7 +47,7 @@ from comm_mkdupc import (
   parse_module_ident, parse_module_type, parse_ack_type,
   parse_encrypt_type, parse_packet_type, parse_cmd_set, 
   encode_command_packet_en, get_known_payload,
-  DJICmdV1Header, PACKET_TYPE,
+  DJICmdV1Header, PACKET_TYPE, COMM_DEV_TYPE,
 )
 
 class ListFormatter():
