@@ -201,6 +201,7 @@ CAMERA_UART_CMD_TEXT = {
     [0xD0] = 'Mechanical Shutter Get',
     [0xD1] = 'Cam DCF Abstract Push', -- Push DFC Info Get
     [0xD2] = 'Dust Reduction State Set',
+    [0xD3] = 'Camera UnknownD3',
     [0xDD] = 'ND Filter Set',
     [0xDE] = 'Raw New Param Set',
     [0xDF] = 'Raw New Param Get',
@@ -353,6 +354,7 @@ f.camera_camera_state_info_masked20 = ProtoField.uint8 ("dji_dumlv1.camera_camer
 f.camera_camera_state_info_camera_type = ProtoField.uint8 ("dji_dumlv1.camera_camera_state_info_camera_type", "Camera Type", base.HEX, enums.CAMERA_STATE_INFO_CAMERA_TYPE_ENUM, nil, nil)
 f.camera_camera_state_info_unknown22 = ProtoField.bytes ("dji_dumlv1.camera_camera_state_info_unknown22", "Unknown22", base.SPACE)
 f.camera_camera_state_info_version = ProtoField.uint8 ("dji_dumlv1.camera_camera_state_info_version", "Version", base.DEC)
+f.camera_camera_state_info_padding = ProtoField.bytes ("dji_dumlv1.camera_camera_state_info_padding", "Padding", base.SPACE)
 
 local function camera_camera_state_info_dissector(pkt_length, buffer, pinfo, subtree)
     local offset = 11
@@ -442,7 +444,14 @@ local function camera_camera_state_info_dissector(pkt_length, buffer, pinfo, sub
     subtree:add_le (f.camera_camera_state_info_version, payload(offset, 1))
     offset = offset + 1
 
-    if (offset ~= 37) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera State Info: Offset does not match - internal inconsistency") end
+    if (payload:len() >= offset + 2) then -- On some platforms, packet ends with 2 byte padding
+
+        subtree:add_le (f.camera_camera_state_info_padding, payload(offset, 2))
+        offset = offset + 2
+
+    end
+
+    if (offset ~= 37) and (offset ~= 39) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera State Info: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera State Info: Payload size different than expected") end
 end
 
@@ -1404,6 +1413,31 @@ local function camera_camera_tap_zoom_state_info_dissector(pkt_length, buffer, p
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera Tap Zoom State Info: Payload size different than expected") end
 end
 
+-- Camera - Camera UnknownD3 - 0xd3
+
+f.camera_camera_camera_unknownD3_field0 = ProtoField.bytes ("dji_dumlv1.camera_camera_camera_unknownD3_field0", "Field0", base.SPACE)
+
+local function camera_camera_unknownD3_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if pack_type == 0 then -- Request
+
+        if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera UnknownD3: Offset does not match - internal inconsistency") end
+    else -- Response
+
+        subtree:add_le (f.camera_camera_camera_unknownD3_field0, payload(offset, 67))
+        offset = offset + 67
+
+        if (offset ~= 67) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera UnknownD3: Offset does not match - internal inconsistency") end
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera UnknownD3: Payload size different than expected") end
+end
+
 -- Camera - Camera Tau Param - 0xf2
 
 enums.CAMERA_TAU_PARAM_ZOOM_MODE_ENUM = {
@@ -1720,5 +1754,6 @@ CAMERA_UART_CMD_DISSECT = {
     [0xb4] = camera_camera_prepare_open_fan_dissector,
     [0xb8] = camera_camera_optics_zoom_mode_dissector,
     [0xc7] = camera_camera_tap_zoom_state_info_dissector,
+    [0xd3] = camera_camera_unknownD3_dissector,
     [0xf2] = camera_camera_tau_param_dissector,
 }

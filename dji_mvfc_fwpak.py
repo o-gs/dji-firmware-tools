@@ -23,7 +23,7 @@ in Mavic and newer drones.
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 __author__ = "Jan Dumon, Freek van Tienen @ Original Gangsters"
 __license__ = "GPL"
 
@@ -172,15 +172,15 @@ def unpack(args):
     md5_data.update(dec_buffer)
     md5_calc = md5_data.digest()
     if (args.verbose > 0):
-        print("{}: Data MD5:   {}".format(args.input.name,binascii.hexlify(md5_calc)))
+        print("{}: Decrypted data MD5:   {}".format(args.input.name,binascii.hexlify(md5_calc)))
 
     if md5_calc == bytes(header.md5):
         if (args.verbose > 0):
-            print("{}: Data MD5 matches.".format(args.input.name))
+            print("{}: Decrypted data MD5 matches.".format(args.input.name))
     elif (not args.force_continue):
-        raise ValueError("Data MD5 doesn't match!")
+        raise ValueError("Decrypted data MD5 does not match!")
     else:
-        eprint("{}: Warning: Data MD5 doesn't match!".format(args.input.name))
+        eprint("{}: Warning: Decrypted data MD5 does not match!".format(args.input.name))
 
     if args.cmd == 'dec':
         args.output.write(dec_buffer[:header.size])
@@ -220,9 +220,9 @@ def pack(args):
 
         header.time = t
 
-    ver = re.search('^v(\d+).(\d+).(\d+).(\d+)$', args.version)
+    ver = re.search('^v(\d+).(\d+).(\d+).(\d+)$', args.fwver)
     if ver == None:
-        raise ValueError("Wrong version string format (vAA.BB.CC.DD): '{}'".format(args.version))
+        raise ValueError("Wrong firmware version string format (vAA.BB.CC.DD): '{}'".format(args.fwver))
 
     # Version
     header.version[3] = int(ver.group(1), 10)
@@ -285,8 +285,8 @@ def main():
             help='Timestamp. If omitted the current time will be used. The timestamp ' + \
              'is either a number (seconds since epoch) or in the following format: ' + \
              '"year-month-day hour:min:sec"' )
-    parser_enc.add_argument('-v', '--version', required=True,
-            help='version string in the form "vAA.BB.CC.DD"')
+    parser_enc.add_argument('-V', '--fwver', required=True,
+            help='firmware version string in the form "vAA.BB.CC.DD"')
     parser_enc.add_argument('-t', '--target', required=True,
             help='either 0305 or 0306')
 

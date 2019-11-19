@@ -87,7 +87,9 @@ GENERAL_UART_CMD_TEXT = {
 
 -- General - Version Inquiry - 0x01
 -- When a component receives this request, it responds with a packet containing hardware and software versions.
--- Supported in: P3X_FW_V01.11.0030_m0400
+-- Supported in: P3X_FW_V01.11.0030_m0400, WM620_FW_01.02.0300_m0800
+
+f.general_version_inquiry_rq_unknown0 = ProtoField.uint8 ("dji_dumlv1.general_version_inquiry_rq_unknown0", "RqUnknown0", base.HEX, nil, nil, "Some kind of request type/flags?")
 
 f.general_version_inquiry_unknown0 = ProtoField.uint8 ("dji_dumlv1.general_version_inquiry_unknown0", "Unknown0", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 0")
 f.general_version_inquiry_unknown1 = ProtoField.uint8 ("dji_dumlv1.general_version_inquiry_unknown1", "Unknown1", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 0")
@@ -99,11 +101,24 @@ f.general_version_inquiry_unknown1E_bt = ProtoField.uint8 ("dji_dumlv1.general_v
 f.general_version_inquiry_unknown1E_dw = ProtoField.uint32 ("dji_dumlv1.general_version_inquiry_unknown1E", "Unknown1E", base.HEX, nil, nil, "On Ph3 DM36x, hard coded to 1")
 
 local function general_version_inquiry_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    if (payload:len() >= 31) then
+    if pack_type == 0 then -- Request
+
+        if (payload:len() >= 1) then
+
+            subtree:add_le (f.general_version_inquiry_rq_unknown0, payload(offset, 1))
+            offset = offset + 1
+
+        end
+
+        if (offset ~= 0) and (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Version Inquiry: Offset does not match - internal inconsistency") end
+    else -- Response
+
         -- Written based on DM36x module and its Update_Fill_Version() function used by `usbclient` binary
 
         subtree:add_le (f.general_version_inquiry_unknown0, payload(offset, 1))
@@ -137,14 +152,14 @@ local function general_version_inquiry_dissector(pkt_length, buffer, pinfo, subt
         if (payload:len() >= 34) then -- 34-byte packet spotted on P3X_FW_V01.11
             subtree:add_le (f.general_version_inquiry_unknown1E_dw, payload(offset, 4))
             offset = offset + 4
-        else -- 31-byte packet exists on P3X_FW_V01.08 and all older versions
+        elseif (payload:len() >= 31) then -- 31-byte packet exists on P3X_FW_V01.08 and all older versions
             subtree:add_le (f.general_version_inquiry_unknown1E_bt, payload(offset, 1))
             offset = offset + 1
-        end
+        end -- 30-byte version exists on WM620_FW_01.02
 
+        if (offset ~= 30) and (offset ~= 31) and (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Version Inquiry: Offset does not match - internal inconsistency") end
     end
 
-    if (offset ~= 0) and (offset ~= 31) and (offset ~= 34) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Version Inquiry: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Version Inquiry: Payload size different than expected") end
 end
 
@@ -352,8 +367,10 @@ local function general_set_device_version_dissector(pkt_length, buffer, pinfo, s
 end
 
 -- General - Heartbeat/Log Message - 0x0e
--- It can transmit text messages from FC, but is usually empty
--- Text message seen on P3X_FW_V01.07.0060 when trying to read non-existing flyc_param (cmd=0xf8)
+-- Description: It can transmit text messages from FC (when sent as Request by FC), but is usually empty (when Requested by PC, or answering to such request).
+--   Text message seen on P3X_FW_V01.07.0060 when trying to read non-existing flyc_param (cmd=0xf8).
+--   Text message also seen on WM620_FW_01.02.0300 when capturing FC startup.
+-- Supported in: P3X, WM620
 
 f.general_heartbeat_log_message_group = ProtoField.uint8 ("dji_dumlv1.general_heartbeat_log_message_group", "Group", base.DEC, nil, nil)
 f.general_heartbeat_log_message_text = ProtoField.string ("dji_dumlv1.general_heartbeat_log_message_text", "Text", base.ASCII)
@@ -363,13 +380,21 @@ local function general_heartbeat_log_message_dissector(pkt_length, buffer, pinfo
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
 
-    if (payload:len() > 1) then
+    -- Group is not present in Heartbeat requests
+    if (payload:len() > 0) then
+
         subtree:add_le (f.general_heartbeat_log_message_group, payload(offset, 1))
         offset = offset + 1
+
+    end
+
+    -- Log message is not present in responses to Heartbeat requests
+    if (payload:len() > 1) then
 
         local log_text = payload(offset, payload:len() - offset)
         subtree:add (f.general_heartbeat_log_message_text, log_text)
         offset = payload:len()
+
     end
 
     --if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Heartbeat Log Message: Offset does not match - internal inconsistency") end
@@ -428,6 +453,107 @@ local function general_camera_file_dissector(pkt_length, buffer, pinfo, subtree)
 
     if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Camera File: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Camera File: Payload size different than expected") end
+end
+
+-- General - FileTrans General Trans - 0x2a
+-- Description: Used to transfer files from PC to m0801, ie. Inspire software licenses.
+-- Supported in: WM620_FW_01.02.0300_m0800
+
+enums.COMMON_FILETRANS_GENERAL_TRANS_PHASE_ENUM = {
+    [1]="Begin transfer",
+    [2]="Data part",
+    [3]="Finish transfer",
+}
+
+f.general_filetrans_general_trans_phase = ProtoField.uint8 ("dji_dumlv1.general_filetrans_general_trans_phase", "Transfer Phase", base.DEC, enums.COMMON_FILETRANS_GENERAL_TRANS_PHASE_ENUM, nil, nil)
+f.general_filetrans_general_trans_datalen = ProtoField.uint32 ("dji_dumlv1.general_filetrans_general_trans_datalen", "Total Length", base.DEC, nil, nil, "File size in bytes")
+f.general_filetrans_general_trans_partno = ProtoField.uint32 ("dji_dumlv1.general_filetrans_general_trans_partno", "Part No", base.DEC)
+f.general_filetrans_general_trans_unknown1 = ProtoField.bytes ("dji_dumlv1.general_filetrans_general_trans_unknown1", "Unknown1", base.SPACE, nil, nil, "After file transfer, 16 bytes? MD5?")
+f.general_filetrans_general_trans_data = ProtoField.bytes ("dji_dumlv1.general_filetrans_general_trans_data", "Data", base.SPACE)
+f.general_filetrans_general_trans_fname_len = ProtoField.uint8 ("dji_dumlv1.general_filetrans_general_trans_fname", "File Name Length", base.DEC)
+f.general_filetrans_general_trans_fname = ProtoField.string ("dji_dumlv1.general_filetrans_general_trans_fname", "File Name", base.NONE, nil, nil)
+
+f.general_filetrans_general_trans_resp_phase = ProtoField.uint8 ("dji_dumlv1.general_filetrans_general_trans_resp_phase", "Response for Transfer Phase", base.DEC, enums.COMMON_FILETRANS_GENERAL_TRANS_PHASE_ENUM, nil, nil)
+f.general_filetrans_general_trans_status = ProtoField.uint8 ("dji_dumlv1.general_filetrans_general_trans_status", "Status", base.HEX)
+f.general_filetrans_general_trans_res_unknown0 = ProtoField.bytes ("dji_dumlv1.general_filetrans_general_trans_res_unknown0", "RespUnknown0", base.SPACE)
+
+local function general_filetrans_general_trans_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
+
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    if pack_type == 0 then -- Request
+
+        local phase = payload(offset,1):le_uint()
+        subtree:add_le (f.general_filetrans_general_trans_phase, payload(offset, 1))
+        offset = offset + 1
+
+        if phase == 1 then
+
+            subtree:add_le (f.general_filetrans_general_trans_datalen, payload(offset, 4))
+            offset = offset + 4
+
+            local fname_len = payload(offset,1):le_uint()
+            subtree:add_le (f.general_filetrans_general_trans_fname_len, payload(offset, 1))
+            offset = offset + 1
+
+            subtree:add_le (f.general_filetrans_general_trans_fname, payload(offset, fname_len))
+            offset = offset + fname_len
+
+        elseif phase == 2 then
+
+            subtree:add_le (f.general_filetrans_general_trans_partno, payload(offset, 4))
+            offset = offset + 4
+
+            local data_len = payload:len() - offset
+            subtree:add_le (f.general_filetrans_general_trans_data, payload(offset, data_len))
+            offset = offset + data_len
+
+        elseif phase == 3 then
+
+            subtree:add_le (f.general_filetrans_general_trans_unknown1, payload(offset, 16))
+            offset = offset + 16
+
+        end
+
+        --if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FileTrans General Trans: Offset does not match - internal inconsistency") end
+    else -- Response
+
+        if (payload:len() >= 6) then
+
+            subtree:add_le (f.general_filetrans_general_trans_resp_phase, 1) -- Add response type detached, without related byte within packet (type is recognized by size, not by field)
+
+            subtree:add_le (f.general_filetrans_general_trans_status, payload(offset, 1))
+            offset = offset + 1
+
+            subtree:add_le (f.general_filetrans_general_trans_res_unknown0, payload(offset, 5))
+            offset = offset + 5
+
+        elseif (payload:len() >= 5) then
+
+            subtree:add_le (f.general_filetrans_general_trans_resp_phase, 2)
+
+            subtree:add_le (f.general_filetrans_general_trans_status, payload(offset, 1))
+            offset = offset + 1
+
+            subtree:add_le (f.general_filetrans_general_trans_partno, payload(offset, 4))
+            offset = offset + 4
+
+        else
+
+            subtree:add_le (f.general_filetrans_general_trans_resp_phase, 3)
+
+            subtree:add_le (f.general_filetrans_general_trans_status, payload(offset, 1))
+            offset = offset + 1
+
+        end
+
+        if (offset ~= 1) and (offset ~= 5) and (offset ~= 6) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"FileTrans General Trans: Offset does not match - internal inconsistency") end
+    end
+
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"FileTrans General Trans: Payload size different than expected") end
 end
 
 -- General - Encrypt Config - 0x30
@@ -531,7 +657,7 @@ local function general_encrypt_config_dissector(pkt_length, buffer, pinfo, subtr
         offset = offset + 1
 
         if (payload:len() >= 59) then
-            subtree:add_le (f.general_encrypt_config_resp_type, 4) -- Add response type without related byte within packet (type is recognized by size, not by field)
+            subtree:add_le (f.general_encrypt_config_resp_type, 4) -- Add response type detached, without related byte within packet (type is recognized by size, not by field)
 
             subtree:add_le (f.general_encrypt_config_resp_mac, payload(offset, 32))
             offset = offset + 32
@@ -648,6 +774,11 @@ local function general_activation_actn_dissector(pkt_length, buffer, pinfo, subt
             mc_serial_len = payload(offset,1):uint()
             subtree:add_le (f.general_activation_actn_mc_serial_len, payload(offset, 1))
             offset = offset + 1
+
+            if (offset + mc_serial_len > payload:len()) then -- the sn length seem to sometimes be wrong?
+                subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Activation Action: SN length exceeds payload size")
+                mc_serial_len = payload:len() - offset
+            end
 
             subtree:add (f.general_activation_actn_mc_serial, payload(offset, mc_serial_len))
             offset = offset + mc_serial_len
@@ -872,6 +1003,7 @@ GENERAL_UART_CMD_DISSECT = {
     [0x0f] = general_upgrade_self_request_dissector,
     [0x24] = general_file_sending_dissector,
     [0x27] = general_camera_file_dissector,
+    [0x2a] = general_filetrans_general_trans_dissector,
     [0x30] = general_encrypt_config_dissector,
     [0x32] = general_activation_actn_dissector,
     [0x33] = general_mfi_cert_dissector,

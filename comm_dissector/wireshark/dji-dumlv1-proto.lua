@@ -483,6 +483,9 @@ local RTK_UART_CMD_TEXT = {
 local AUTO_UART_CMD_TEXT = {
 }
 
+local ADSB_UART_CMD_TEXT = {
+}
+
 dofile('dji-dumlv1-general.lua')
 dofile('dji-dumlv1-camera.lua')
 dofile('dji-dumlv1-flyc.lua')
@@ -506,10 +509,13 @@ DJI_DUMLv1_CMD_TEXT = {
     [0x0e] = DATA_LOG_UART_CMD_TEXT,
     [0x0f] = RTK_UART_CMD_TEXT,
     [0x10] = AUTO_UART_CMD_TEXT,
+    [0x11] = ADSB_UART_CMD_TEXT,
 }
 
 local function set_info(cmd, pinfo, valuestring)
-    pinfo.cols.info = ""
+    if tostring(pinfo.cols.info) ~= "" then
+        pinfo.cols.info:append(", ")
+    end
     if valuestring[cmd] == nil then
         pinfo.cols.info:append(string.format("%s (0x%02X)", "Unknown", cmd))
     else
@@ -529,11 +535,16 @@ f.special_old_special_app_control_unknown6 = ProtoField.uint8 ("dji_dumlv1.speci
 f.special_old_special_app_control_unknown7 = ProtoField.uint8 ("dji_dumlv1.special_old_special_app_control_unknown7", "Unknown7", base.HEX)
 f.special_old_special_app_control_checksum = ProtoField.uint8 ("dji_dumlv1.special_old_special_app_control_checksum", "Checksum", base.HEX, nil, nil, "Previous payload bytes xor'ed together with initial seed 0.")
 
+f.special_old_special_app_control_status = ProtoField.uint8 ("dji_dumlv1.special_old_special_app_control_status", "Status", base.HEX)
+
 local function special_old_special_app_control_dissector(pkt_length, buffer, pinfo, subtree)
+    local pack_type = bit32.rshift(bit32.band(buffer(8,1):uint(), 0x80), 7)
 
     local offset = 11
     local payload = buffer(offset, pkt_length - offset - 2)
     offset = 0
+
+    if pack_type == 0 then -- Request
 
         subtree:add_le (f.special_old_special_app_control_unknown0, payload(offset, 1))
         offset = offset + 1
@@ -559,7 +570,15 @@ local function special_old_special_app_control_dissector(pkt_length, buffer, pin
         subtree:add_le (f.special_old_special_app_control_checksum, payload(offset, 1))
         offset = offset + 1
 
-    if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Old Special App Control: Offset does not match - internal inconsistency") end
+        if (offset ~= 10) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Old Special App Control: Offset does not match - internal inconsistency") end
+    else -- Response
+
+        subtree:add_le (f.special_old_special_app_control_status, payload(offset, 1))
+        offset = offset + 1
+
+        if (offset ~= 1) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Old Special App Control: Offset does not match - internal inconsistency") end
+    end
+
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Old Special App Control: Payload size different than expected") end
 end
 
@@ -751,10 +770,14 @@ local function rc_push_param_dissector(pkt_length, buffer, pinfo, subtree)
     subtree:add_le (f.rc_push_param_record_status, payload(offset, 1))
     offset = offset + 1
 
-    subtree:add_le (f.rc_push_param_band_width, payload(offset, 1))
-    offset = offset + 1
+    if (payload:len() >= offset+1) then -- only exists on some platforms
 
-    if (offset ~= 14) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"RC Push Parameter: Offset does not match - internal inconsistency") end
+        subtree:add_le (f.rc_push_param_band_width, payload(offset, 1))
+        offset = offset + 1
+
+    end
+
+    if (offset ~= 13) and (offset ~= 14) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"RC Push Parameter: Offset does not match - internal inconsistency") end
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"RC Push Parameter: Payload size different than expected") end
 end
 
@@ -877,6 +900,7 @@ local function wifi_ap_push_chan_noise_dissector(pkt_length, buffer, pinfo, subt
 end
 
 -- Wi-Fi - WiFi Ap Set Country Code - 0x30
+-- Used by Mobile App to set country code on RC; for country "US", RC then enters FCC mode and asks the AC to change mode as well.
 
 f.wifi_set_country_code_str1 = ProtoField.string ("dji_spark.wifi_set_country_code_str1", "Region Str1", base.NONE)
 f.wifi_set_country_code_str2 = ProtoField.string ("dji_spark.wifi_set_country_code_str2", "Region Str2", base.NONE)
@@ -2688,10 +2712,10 @@ local function battery_dynamic_data_dissector(pkt_length, buffer, pinfo, subtree
 
     if (payload:len() >= 30) then -- full packet
 
-        if (payload:len() >= 32) then
+        if (payload:len() == 32) then -- Two bytes before voltage; is this real? on which platform? this shifts all later fields.
             subtree:add (f.battery_dynamic_data_unk1, payload(offset, 2))
             offset = offset + 2
-        else
+        else -- One byte before voltage; seen in the capture "Startup-FCCswitch" where payload len is 38, origin unknown
             subtree:add_le (f.battery_dynamic_data_index, payload(offset, 1))
             subtree:add_le (f.battery_dynamic_data_result, payload(offset, 1))
             offset = offset + 1
@@ -2721,7 +2745,10 @@ local function battery_dynamic_data_dissector(pkt_length, buffer, pinfo, subtree
         subtree:add_le (f.battery_dynamic_data_status, payload(offset, 8))
         offset = offset + 8
 
-        if (payload:len() >= 31) then
+        if (payload:len() >= 37) then -- seen in the capture "Startup-FCCswitch"
+            subtree:add (f.battery_dynamic_data_unk2, payload(offset, 9))
+            offset = offset + 9
+        elseif (payload:len() >= 31) then
             subtree:add (f.battery_dynamic_data_unk2, payload(offset, 2))
             offset = offset + 2
         else
@@ -2729,7 +2756,7 @@ local function battery_dynamic_data_dissector(pkt_length, buffer, pinfo, subtree
             offset = offset + 1
         end
 
-        if (offset ~= 30) and (offset ~= 31) and (offset ~= 32) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Dynamic Data: Offset does not match - internal inconsistency") end
+        if (offset ~= 30) and (offset ~= 31) and (offset ~= 32) and (offset ~= 38) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Battery Dynamic Data: Offset does not match - internal inconsistency") end
     else -- status only
 
         if (payload:len() >= 2) then
@@ -3098,7 +3125,7 @@ f.crc = ProtoField.uint16 ("dji_dumlv1.crc", "CRC", base.HEX)
 function dji_dumlv1_main_dissector(buffer, pinfo, subtree)
     local offset = 1
 
-    -- [1-2] The Pkt length | protocol version?
+    -- [1-2] The Pkt length | protocol version
     local pkt_length = buffer(offset,2):le_uint()
     local pkt_protover = pkt_length
     -- bit32 lib requires LUA 5.2
@@ -3189,6 +3216,49 @@ function DJI_DUMLv1_PROTO.dissector (buffer, pinfo, tree)
 
 end
 
+-- Heuritstic version, checks if packet is correct
+local function heuristic_dissector(buffer, pinfo, tree)
+
+    -- The Pkt start byte
+    local num_packets = 0
+    local offset = 0
+
+    local i = 0
+    while (buffer:len() > offset) do
+
+        if (buffer:len() < 0xa) then break end
+
+        local pkt_type = buffer(offset,1):uint()
+        if (pkt_type ~= 0x55) then break end
+
+        -- [1-2] The Pkt length | protocol version
+        local pkt_length = buffer(offset+1,2):le_uint()
+        local pkt_protover = pkt_length
+        -- bit32 lib requires LUA 5.2
+        pkt_length = bit32.band(pkt_length, 0x03FF)
+        pkt_protover = bit32.rshift(bit32.band(pkt_protover, 0xFC00), 10)
+
+        if (pkt_length > buffer:len()) then break end
+        if (pkt_protover > 2) then break end
+
+        num_packets = num_packets + 1
+        local subtree = tree:add (DJI_DUMLv1_PROTO, buffer())
+        subtree:add (f.delimiter, buffer(offset, 1))
+
+        dji_dumlv1_main_dissector(buffer(offset,pkt_length), pinfo, subtree)
+        offset = offset + pkt_length
+
+    end
+
+    return (num_packets > 0)
+end
+
+
 -- A initialization routine
 function DJI_DUMLv1_PROTO.init ()
+    -- Non-heuristic USB dissector registration would look like this
+    --DissectorTable.get("usb.bulk"):add(0xffff, DJI_DUMLv1_PROTO)
 end
+
+DJI_DUMLv1_PROTO:register_heuristic("usb.bulk", heuristic_dissector)
+DJI_DUMLv1_PROTO:register_heuristic("tcp", heuristic_dissector)

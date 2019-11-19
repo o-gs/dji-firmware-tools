@@ -1179,6 +1179,11 @@ def gimbal_calib_request_p3x(po, ser):
 def do_gimbal_calib_request_p3x_autocal(po, ser):
     """ Initiates Phantom 3 Gimbal Automatic Calibration.
 
+        In Ph3, this only calibrates yaw axis, which uses magnetic sensors.
+        Pitch and roll have resistive sensors, and these are not affected;
+        if there is misalignment in them, that usually means damaged potentiometer
+        or bent aluminium arm, not something you can solve with calibration.
+
         Tested on the following platforms and FW versions:
         None
     """
@@ -1451,7 +1456,7 @@ def do_camera_calib_request_p3x_encryptpair(po, ser):
         if rplpayload.status != 0:
             raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.GIMBAL.name,COMM_DEV_TYPE.GIMBAL.name))
 
-    if False: # Do NOT send EncryptConfig to gimbal - camera should have sent it
+    if False: # Do NOT send EncryptConfig to DaVinci - camera should have sent it
         rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.LB_DM3XX_SKY, COMM_DEV_TYPE.LB_DM3XX_SKY, chipstate.m08_boardsn, po.pairkey)
         if rplpayload.status != 0:
             raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.LB_DM3XX_SKY.name,COMM_DEV_TYPE.LB_DM3XX_SKY.name))
