@@ -534,7 +534,7 @@ class DJIPayload_FlyController_WriteParamValByIndex2017Re(DJIPayload_Base):
 
 class DJIPayload_FlyController_WriteParamVal1ByHash2015Rq(DJIPayload_Base):
   _fields_ = [('param_hash', c_uint),
-              ('param_value', c_char),
+              ('param_value', c_ubyte * 1),
              ]
 
 class DJIPayload_FlyController_WriteParamVal2ByHash2015Rq(DJIPayload_Base):
