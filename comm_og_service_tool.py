@@ -60,7 +60,7 @@ class PRODUCT_CODE(DecoratedEnum):
     MAT100 =  8 # Released 2015-06-08 Matrice 100
     P3C    =  9 # Released 2015-08-04 Phantom 3 Standard
     MG1    = 10 # Released 2015-11-27 Agras MG-1
-    P3XW   = 11 # Released 2016-01-05 Phantom 3 4K
+    WM325  = 11 # Released 2016-01-05 Phantom 3 4K
     WM330  = 12 # Released 2016-03-02 Phantom 4 (now referenced as Phantom 4 Standard)
     MAT600 = 13 # Released 2016-04-17 Matrice 600
     WM220  = 14 # Released 2016-09-28 Mavic Pro (also includes Released 2017-08-24 Mavic Pro Platinum)
@@ -72,6 +72,10 @@ class PRODUCT_CODE(DecoratedEnum):
     WM100  = 20 # Released 2017-05-24 Spark
     WM230  = 21 # Released 2018-01-23 Mavic Air
     WM335  = 22 # Released 2018-05-08 Phantom 4 Pro V2
+    WM240  = 23 # Released 2018-08-23 Mavic 2 Pro/Zoom
+    WM245  = 24 # Released 2018-10-29 Mavic 2 Enterprise
+    WM246  = 25 # Released 2018-12-20 Mavic 2 Enterprise Dual
+    WM160  = 26 # Released 2019-10-30 Mavic Mini
 
 ALT_PRODUCT_CODE = {
     'S800': 'A2', # Released 2012-07-25 Hexacopter frame, often sold with Dji A2 Flight Controller
@@ -80,6 +84,7 @@ ALT_PRODUCT_CODE = {
     'PH3PRO': 'P3X',
     'PH3ADV': 'P3S',
     'PH3STD': 'P3C',
+    'P3XW': 'WM325',
     'P4': 'WM330',
     'PH4': 'WM330',
     'PH4PRO': 'WM331',
@@ -87,6 +92,11 @@ ALT_PRODUCT_CODE = {
     'SPARK': 'WM100',
     'MAVIC': 'WM220',
     'MAVAIR': 'WM230',
+    'M2P': 'WM240',
+    'M2Z': 'WM240',
+    'M2E': 'WM245',
+    'M2ED': 'WM246',
+    'MMINI': 'WM160',
 }
 
 class SERVICE_CMD(DecoratedEnum):
@@ -842,7 +852,7 @@ def do_flyc_param_request_2015_set(po, ser):
     flyc_param_request_2015_print_response(po, None, paraminfo, rplpayload)
 
 def do_flyc_param_request_2017_list(po, ser):
-    """ List flyc parameters on platforms multiple parameter tables.
+    """ List flyc parameters on platforms with multiple parameter tables.
 
         Tested on the following platforms and FW versions:
         WM100_FW_V01.00.0900 (2018-07-23)
@@ -875,7 +885,7 @@ def do_flyc_param_request_2017_list(po, ser):
             idx += 1
 
 def do_flyc_param_request_2017_get(po, ser):
-    """ Get flyc parameter value on platforms multiple parameter tables.
+    """ Get flyc parameter value on platforms with multiple parameter tables.
 
         Tested on the following platforms and FW versions:
         WM100_FW_V01.00.0900 (2018-07-23)
@@ -914,7 +924,7 @@ def flyc_param_request_2017_get_param_info_by_name_search(po, ser, param_name):
     return None # unreachble
 
 def do_flyc_param_request_2017_get_alt(po, ser):
-    """ Get flyc parameter value on platforms multiple parameter tables, alternative way.
+    """ Get flyc parameter value on platforms with multiple parameter tables, alternative way.
 
         Tested on the following platforms and FW versions:
         WM100_FW_V01.00.0900 (2018-07-26)
@@ -929,7 +939,7 @@ def do_flyc_param_request_2017_get_alt(po, ser):
     flyc_param_request_2017_print_response(po, None, paraminfo, rplpayload)
 
 def do_flyc_param_request_2017_set(po, ser):
-    """ Set new value of flyc parameter on platforms multiple parameter tables.
+    """ Set new value of flyc parameter on platforms with multiple parameter tables.
 
         Tested on the following platforms and FW versions:
         WM100_FW_V01.00.0900 (2018-07-23)
@@ -945,7 +955,7 @@ def do_flyc_param_request_2017_set(po, ser):
     flyc_param_request_2015_print_response(po, None, paraminfo, rplpayload)
 
 def do_flyc_param_request_2017_set_alt(po, ser):
-    """ Set new value of flyc parameter on platforms multiple parameter tables, alternative way.
+    """ Set new value of flyc parameter on platforms with multiple parameter tables, alternative way.
 
         Tested on the following platforms and FW versions:
         WM100_FW_V01.00.0900 (2018-07-27)
