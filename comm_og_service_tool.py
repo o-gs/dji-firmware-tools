@@ -1122,6 +1122,7 @@ def do_gimbal_calib_request_spark_joint_coarse(po, ser):
         Tested on the following platforms and FW versions:
         WM100_FW_V01.00.0900 (2018-07-27)
         WM230_FW_unknown (2019-03-31, report from bunchofbradys@github)
+        WM240_FW_V01.00.0200 (2020-02-28, report from Andris8888@slack)
     """
 
     print("\nInfo: The Gimbal will move through its boundary positions, then it will fine-tune its central position. It will take around 15 seconds.\n")
