@@ -76,6 +76,7 @@ class PRODUCT_CODE(DecoratedEnum):
     WM245  = 24 # Released 2018-10-29 Mavic 2 Enterprise
     WM246  = 25 # Released 2018-12-20 Mavic 2 Enterprise Dual
     WM160  = 26 # Released 2019-10-30 Mavic Mini
+    WM231  = 27 # Released 2020-04-28 Mavic Air 2
 
 ALT_PRODUCT_CODE = {
     'S800': 'A2', # Released 2012-07-25 Hexacopter frame, often sold with Dji A2 Flight Controller
@@ -97,6 +98,7 @@ ALT_PRODUCT_CODE = {
     'M2E': 'WM245',
     'M2ED': 'WM246',
     'MMINI': 'WM160',
+    'MAVAIR2': 'WM231',
 }
 
 class SERVICE_CMD(DecoratedEnum):
