@@ -499,7 +499,11 @@ def flyc_param_request_2017_write_param_value_by_index(po, ser, table_no, param_
     payload.table_no = table_no
     payload.unknown1 = 1
     payload.param_index = param_idx
-    payload.param_value = (c_ubyte * sizeof(payload.param_value)).from_buffer_copy(param_val)
+    
+    if len(param_val) > 1:
+        payload.param_value = (c_ubyte * sizeof(payload.param_value)).from_buffer_copy(param_val)
+    else:
+        payload.param_value = (c_ubyte).from_buffer_copy(param_val)
 
     if (po.verbose > 2):
         print("Prepared request - {:s}:".format(type(payload).__name__))
