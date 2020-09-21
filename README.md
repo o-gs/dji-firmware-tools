@@ -137,21 +137,23 @@ binary is loaded at a bit higher base address.
 
 Optimized examples for specific firmwares:
 
-```./arm_bin2elf.py -vv -e -b 0x8020000 --section .ARM.exidx@0x085d34:0  --section .bss@0x07fe0000:0xA000 --section .bss2@0x17fe0000:0x30000 --section .bss3@0x37fe0000:0x30000 -p P3X_FW_V01.07.0060_m0306.bin```
+```./arm_bin2elf.py -vv -e -b 0x8020000 --section .ARM.exidx@0x085d34:0 --section .bss@0x07fe0000:0x0A000 --section .bss2@0x17fe0000:0x30000 --section .bss3@0x37fe0000:0x30000 -p P3X_FW_V01.07.0060_m0306.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x000a000 --section .ARM.exidx@0x01ce50:0 --section .bss@0xfff6000:0x8000 --section .bss2@0x3fff6000:0x50000 --section .bss3@0xdfff6000:0x10000 -p C1_FW_V01.06.0000_m1400.bin```
+```./arm_bin2elf.py -vv -e -b 0x000a000 --section .ARM.exidx@0x01ce50:0 --section .bss@0x0fff6000:0x08000 --section .bss2@0x3fff6000:0x50000 --section .bss3@0xdfff6000:0x10000 -p C1_FW_V01.06.0000_m1400.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x000a000 --section .ARM.exidx@0x0193E0:0 --section .bss@0x1ff6000:0x4000 --section .bss2@0x1ffe000:0x1000 --section .bss3@0x1bff6000:0x2400 --section .bss4@0x1c01a000:0x2400 --section .bss5@0x40022000:0x50000 --section .bss6@0x400ee000:0x200 --section .bss7@0xe0004000:0x1200 -p C1_FW_V01.06.0000_m1401.bin```
+```./arm_bin2elf.py -vv -e -b 0x000a000 --section .ARM.exidx@0x0172e0:0 --section .bss@0x0fff6000:0x08000 --section .bss2@0x3fff6000:0x50000 --section .bss3@0xdfff6000:0x10000 -p C1_FW_v01.09.0200_m1400.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x0D510:0 --section .bss@0x17FF7700:0x5A00 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x2200 --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p P3X_FW_V01.08.0080_m0900.bin```
+```./arm_bin2elf.py -vv -e -b 0x000a000 --section .ARM.exidx@0x0193E0:0 --section .bss@0x01ff6000:0x04000 --section .bss2@0x1ffe000:0x1000 --section .bss3@0x1bff6000:0x2400 --section .bss4@0x1c01a000:0x2400 --section .bss5@0x40022000:0x50000 --section .bss6@0x400ee000:0x200 --section .bss7@0xe0004000:0x1200 -p C1_FW_V01.06.0000_m1401.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x0136D0:0 --section .bss@0x17FF7700:0xC900 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x7000 --section .bss5@0x48058800:0x100 -p P3X_FW_V01.11.0030_m0400.bin```
+```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x00D510:0 --section .bss@0x17FF7700:0x05A00 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x2200 --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p P3X_FW_V01.08.0080_m0900.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x00d0e00:0 --section .bss@0x1ffe0000:0x60100 --section .bss2@0x3fcc0000:0x2000 -p wm330_0306_v03.01.10.93_20160707.fw_0306.decrypted.bin```
+```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x0136D0:0 --section .bss@0x17FF7700:0x0C900 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x7000 --section .bss5@0x48058800:0x100 -p P3X_FW_V01.11.0030_m0400.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x01077d0:0 --section .bss@0x1ffe0000:0x60000 --section .bss2@0x3fcc0000:0x1000 --section .bss3@0xdfbe0000:0x10000 -p wm100_0306_v03.02.43.20_20170920.pro.fw_0306.decrypted.bin```
+```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x0d0e00:0 --section .bss@0x1ffe0000:0x60100 --section .bss2@0x3fcc0000:0x2000 -p wm330_0306_v03.01.10.93_20160707.fw_0306.decrypted.bin```
 
-```./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x01265d8:0 --section .bss@0x1ffe0000:0x60100 --section .bss2@0x3fcc0000:0x2000 -p wm220_0306_v03.02.35.05_20170525.pro.fw_0306.decrypted.bin```
+```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x1077d0:0 --section .bss@0x1ffe0000:0x60000 --section .bss2@0x3fcc0000:0x1000 --section .bss3@0xdfbe0000:0x10000 -p wm100_0306_v03.02.43.20_20170920.pro.fw_0306.decrypted.bin```
+
+```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x1265d8:0 --section .bss@0x1ffe0000:0x60100 --section .bss2@0x3fcc0000:0x2000 -p wm220_0306_v03.02.35.05_20170525.pro.fw_0306.decrypted.bin```
 
 This tool supports only conversion in direction of bin-to-elf. To convert an ELF
 file back to BIN (ie. after modifications), use `objcopy` utility for the
