@@ -177,7 +177,9 @@ function exec_mod_for_m0900 {
 
 for FWPKG in "${FWPKG_LIST[@]}"; do
   echo "### TEST of hardcoders with ${FWPKG} ###"
+  set -x
   ./dji_xv4_fwcon.py -vvv -x -p "fw/${FWPKG}.bin"
+  set +x
 
   exec_mod_for_m0100 "${FWPKG}_m0100"
   exec_mod_for_m0800 "${FWPKG}_m0800"
