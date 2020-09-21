@@ -155,6 +155,18 @@ elf_archs = [
         'boundary' : 4,
         'modes'    : [
             {
+                'name'     : "arm",
+                'desc'     : "ARMv7 processor mode",
+                'cs_const' : CS_MODE_ARM,
+                'ks_const' : KS_MODE_ARM,
+            },
+            {
+                'name'     : "armv8",
+                'desc'     : "ARMv8 processor mode",
+                'cs_const' : CS_MODE_V8,
+                'ks_const' : KS_MODE_V8,
+            },
+            {
                 'name'     : "thumb",
                 'desc'     : "THUMB processor mode",
                 'cs_const' : CS_MODE_THUMB,
@@ -776,7 +788,7 @@ def armfw_asm_search_strings_to_re_list(re_patterns):
     # Later empty lines will be removed; update re_labels accordingly
     reduced_line = 0
     for s in re_lines:
-        if s is "":
+        if s == "":
             for lab_name, lab_line in re_labels.items():
                 if (lab_line > reduced_line):
                     re_labels[lab_name] = lab_line - 1
@@ -1520,7 +1532,7 @@ def armfw_asm_parse_data_definition(asm_arch, asm_line):
     return {'variety': dt_variety, 'item_size': single_len, 'value': dt_bytes }
 
 
-def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, var_defs, var_size_inc=0):
+def armfw_elf_data_definition_from_bytes(po, asm_arch, bt_data, bt_addr, pat_line, var_defs, var_size_inc=0):
     """ Converts bytes into data definition, keeping format given in pattern line.
 
     @asm_arch - Assembly architecture definition list.
@@ -1530,6 +1542,8 @@ def armfw_elf_data_definition_from_bytes(asm_arch, bt_data, bt_addr, pat_line, v
     @var_defs - definitions of variables which may be used in the pattern
     @var_size_inc - variable length increase when the variable is an array of varying size
     """
+    if (po.verbose > 3):
+        print("Using Keystone arch=0x{:x} mode=0x{:x} for data def conv".format(asm_arch['ks_const'], asm_arch['ks_mode']))
     whole_size_min = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs, 'short')
     whole_size_max = armfw_elf_compute_pattern_code_length(asm_arch, [pat_line,], var_defs, 'long')
     itm_size, itm_variety, _ = armfw_asm_is_data_definition(asm_arch, pat_line)
@@ -1750,7 +1764,7 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
         curr_is_data, _, _ = armfw_asm_is_data_definition(search['asm_arch'], curr_pattern)
         if curr_is_data is not None:
             # now matching a data line; get its length
-            line_iter = [armfw_elf_data_definition_from_bytes(search['asm_arch'],search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs, curr_pattern, search['var_defs'], search['varlen_inc']),]
+            line_iter = [armfw_elf_data_definition_from_bytes(po, search['asm_arch'],search['section']['data'][sect_offs:], search['section']['addr'] + sect_offs, curr_pattern, search['var_defs'], search['varlen_inc']),]
             for (address, size, max_size, mnemonic, op_str) in line_iter:
                 if size < max_size or search['varlen_inc'] > 0:
                     search = armfw_elf_section_search_varlen_point_mark(search, address, max_size - size)
@@ -2020,7 +2034,12 @@ def variable_info_from_value_name(glob_params_list, cfunc_name, var_name):
                 break
     return var_info
 
+
 def prepare_asm_line_from_pattern(asm_arch, glob_params_list, address, cfunc_name, pat_line, variab_size_select=None):
+    """ Given assembly pattern and list of variables, creates assembly line.
+
+    This function uses a list of variables to make compilable assembly line from a pattern.
+    """
     # List regex parameters used in that line
     vars_used = re.findall(r'[(][?]P<([^>]+)>([^()]*([(][^()]+[)][^()]*)*)[)]', pat_line)
     inaccurate_size = (variab_size_select is not None)
@@ -2183,6 +2202,8 @@ def get_final_address_from_var_info(asm_arch, elf_sections, var_info):
 def armfw_elf_get_value_switching_patterns_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, var_info, new_var_nativ):
     """ Finds an assembly pattern with matching value, and then returns a binary patching which makes the asm code to look like it
     """
+    if (po.verbose > 3):
+        print("Using Keystone arch=0x{:x} mode=0x{:x} for switching pat update".format(asm_arch['ks_const'], asm_arch['ks_mode']))
     patterns_next = find_patterns_containing_variable(re_list, cfunc_ver=var_info['cfunc_ver'], var_name=var_info['name'], var_setValue=str(new_var_nativ))
     patterns_prev = find_patterns_containing_variable(re_list, cfunc_ver=var_info['cfunc_ver'], var_type=var_info['type'], var_name=var_info['name'], var_setValue=var_info['setValue'])
     # Get part of the pattern which is different between the current one and the one we want
@@ -2223,6 +2244,8 @@ def armfw_elf_get_value_switching_patterns_update_bytes(po, asm_arch, elf_sectio
 
 
 def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_params_list, var_info, par_strvalue_nx):
+    if (po.verbose > 3):
+        print("Using Keystone arch=0x{:x} mode=0x{:x} for value bytes update".format(asm_arch['ks_const'], asm_arch['ks_mode']))
     valbts = []
     # Get expected length of the value
     prop_size, prop_count = armfw_elf_section_search_get_value_size(asm_arch, var_info)
@@ -2417,7 +2440,7 @@ def armfw_elf_paramvals_export_simple_list(po, params_list, valfile):
         print("{:s}: Listed {:d} hardcoded values".format(po.elffile,len(params_list)))
 
 def armfw_elf_ambavals_list(po, elffh):
-    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
+    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'arm')
     # print list of parameter values
     armfw_elf_paramvals_export_simple_list(po, params_list, sys.stdout)
 
@@ -2441,7 +2464,7 @@ def armfw_elf_paramvals_export_mapfile(po, params_list, elf_sections, asm_arch, 
         print("{:s}: Map contains {:d} symbols".format(po.elffile,symbols_num))
 
 def armfw_elf_ambavals_mapfile(po, elffh):
-    _, params_list, elf_sections, _, _, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
+    _, params_list, elf_sections, _, _, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'arm')
     armfw_elf_paramvals_export_mapfile(po, params_list, elf_sections, asm_arch, sys.stdout)
 
 
@@ -2488,7 +2511,7 @@ def armfw_elf_paramvals_export_json(po, params_list, valfile):
 def armfw_elf_ambavals_extract(po, elffh):
     """ Extracts all values from firmware to JSON format text file.
     """
-    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
+    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'arm')
     if len(params_list) <= 0:
         raise ValueError("No known values found in ELF file.")
     if not po.dry_run:
@@ -2615,7 +2638,7 @@ def armfw_elf_paramvals_update_list(po, asm_arch, re_list, pub_params_list, glob
 def armfw_elf_ambavals_update(po, elffh):
     """ Updates all hardcoded values in firmware from JSON format text file.
     """
-    pub_params_list, glob_params_list, elf_sections, cs, elfobj, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
+    pub_params_list, glob_params_list, elf_sections, cs, elfobj, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'arm')
     if len(pub_params_list) <= 0:
         raise ValueError("No known values found in ELF file.")
     with open(po.valfile) as valfile:
