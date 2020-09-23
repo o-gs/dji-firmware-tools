@@ -68,8 +68,6 @@ import enum
 import json
 
 from ctypes import *
-from capstone import *
-from keystone import *
 
 sys.path.insert(0, './')
 from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
@@ -80,11 +78,6 @@ from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
   armfw_asm_search_strings_to_re_list, armfw_elf_paramvals_export_json, \
   armfw_elf_paramvals_export_simple_list, armfw_elf_paramvals_export_mapfile, \
   VarType, DataVariety, CodeVariety
-
-# needs to be below amba_sys_hardcoder, as there is a warning in case of missing or wrong version
-sys.path.insert(0, '../pyelftools')
-from elftools.elf.elffile import ELFFile
-from elftools.elf.constants import SH_FLAGS
 
 
 def startup_encrypt_check_always_pass_params_update(asm_arch, elf_sections, re_list, glob_params_list, var_info, new_var_nativ):
@@ -457,20 +450,20 @@ re_general_list = [
 
 
 def armfw_elf_dm3xxvals_list(po, elffh):
-    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
+    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'arm')
     # print list of parameter values
     armfw_elf_paramvals_export_simple_list(po, params_list, sys.stdout)
 
 
 def armfw_elf_dm3xxvals_mapfile(po, elffh):
-    _, params_list, elf_sections, _, _, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
+    _, params_list, elf_sections, _, _, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'arm')
     armfw_elf_paramvals_export_mapfile(po, params_list, elf_sections, asm_arch, sys.stdout)
 
 
 def armfw_elf_dm3xxvals_extract(po, elffh):
     """ Extracts all values from firmware to JSON format text file.
     """
-    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
+    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'arm')
     if len(params_list) <= 0:
         raise ValueError("No known values found in ELF file.")
     if not po.dry_run:
@@ -484,7 +477,7 @@ def armfw_elf_dm3xxvals_extract(po, elffh):
 def armfw_elf_dm3xxvals_update(po, elffh):
     """ Updates all hardcoded values in firmware from JSON format text file.
     """
-    pub_params_list, glob_params_list, elf_sections, cs, elfobj, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list)
+    pub_params_list, glob_params_list, elf_sections, cs, elfobj, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'arm')
     if len(pub_params_list) <= 0:
         raise ValueError("No known values found in ELF file.")
     with open(po.valfile) as valfile:
