@@ -72,9 +72,26 @@ import enum
 import json
 
 from ctypes import *
-from capstone import *
-from keystone import *
-from keystone.keystone_const import *
+
+try:
+    import capstone
+    from capstone import *
+    if not callable(getattr(capstone, "Cs", None)):
+        raise ImportError("The capstone library provided is incorrect - lacks Cs")
+except ImportError:
+    print("Warning:")
+    print("This tool requires capstone to disassemble binary bytecode.")
+    raise
+
+try:
+    import keystone
+    from keystone.keystone_const import *
+    if not callable(getattr(keystone, "Ks", None)):
+        raise ImportError("The keystone library provided is incorrect - lacks Ks")
+except ImportError:
+    print("Warning:")
+    print("This tool requires keystone-engine to re-compile patched assembly.")
+    raise
 
 sys.path.insert(0, '../pyelftools')
 try:
@@ -715,7 +732,7 @@ def armfw_elf_generic_objdump(po, elffh, asm_submode=None):
         if 'retshift' in mode:
             retshift = mode['retshift']
 
-    cs = Cs(asm_arch['cs_const'], cs_mode)
+    cs = capstone.Cs(asm_arch['cs_const'], cs_mode)
 
     # Get sections dictionary, so that we can easily access them by name
     elf_sections = {}
@@ -1995,7 +2012,7 @@ def armfw_elf_match_to_global_values(po, match, cfunc_name):
 
 
 def armfw_asm_compile_lines(asm_arch, asm_addr, asm_lines):
-    ks = Ks(asm_arch['ks_const'], asm_arch['ks_mode'])
+    ks = keystone.Ks(asm_arch['ks_const'], asm_arch['ks_mode'])
     asm_ln_start = 0
     bt_enc_data = b''
     for asm_ln_curr in range(len(asm_lines)+1):
@@ -2345,7 +2362,7 @@ def armfw_elf_paramvals_extract_list(po, elffh, re_list, asm_submode=None):
     asm_arch['cs_mode'] = cs_mode
     asm_arch['ks_mode'] = ks_mode
 
-    cs = Cs(asm_arch['cs_const'], asm_arch['cs_mode'])
+    cs = capstone.Cs(asm_arch['cs_const'], asm_arch['cs_mode'])
 
     # Get sections dictionary, so that we can easily access them by name
     elf_sections = {}
