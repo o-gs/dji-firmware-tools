@@ -34,6 +34,14 @@ For higher level and more hardware related info, check [the project Wiki](https:
 
 # Tools
 
+The tools can be divided into two categories:
+
+* Hardware-independent tools - Those for which you do not need to have any DJI product
+to use. You just need an input file they use, like DJI Firmware Package or DAT Log file.
+
+* Product Communication tools - You need to connect your drone to a PC in order
+to use these tools in any meaningful way. Currently the tools use serial interface (UART).
+
 Below the specific tools are described in short. Running them without parameters
 will give you details on supported commands in each of them.
 
@@ -47,7 +55,9 @@ starts with `xV4`, or creating container by merging firmware modules. Use this t
 first, to extract the BIN file downloaded from DJI, as long as the file starts with
 `xV4`.
 
-Example: ```./dji_xv4_fwcon.py -vv -x -p P3X_FW_V01.08.0080.bin```
+Example of extracting modules from DJI firmware package for Phantom 3 Pro:
+
+```./dji_xv4_fwcon.py -vv -x -p P3X_FW_V01.08.0080.bin```
 
 ### dji_imah_fwsig.py
 
@@ -56,7 +66,9 @@ from `.sig` file which starts with `IM*H`. Use this tool after untarring single
 modules from a firmware package, to decrypt its content. The tool can also sign
 an un-signed module, as long as private part of the chosen key is available.
 
-Example: ```./dji_imah_fwsig.py -vv -u -i wm335_0306_v03.03.04.10_20180429.pro.fw.sig```
+Example of un-signing FC firmware for Phantom 4 Pro V2:
+
+```./dji_imah_fwsig.py -vv -u -i wm335_0306_v03.03.04.10_20180429.pro.fw.sig```
 
 ### dji_mvfc_fwpak.py
 
@@ -65,7 +77,9 @@ in Flight Controller firmware modules from several DJI products released around 
 same period: Mavic Pro, Spark, Inspire 2 and Phantom 4. Does not accept `IM*H`
 format - requires input files with first level encryption already removed.
 
-Example: ```./dji_mvfc_fwpak.py dec -i wm220_0306_v03.02.40.11_20170918.pro.fw```
+Example of decrypting FC firmware for Mavic Pro:
+
+```./dji_mvfc_fwpak.py dec -i wm220_0306_v03.02.40.11_20170918.pro.fw```
 
 ### amba_fwpak.py
 
@@ -75,7 +89,9 @@ files created after DJI Container is extracted. You can recognize the Ambarella
 firmware by a lot of "Amba" strings within, or by a 32-char zero-padded string
 at the beginning of the file.
 
-Example: ```./amba_fwpak.py -vv -x -m P3X_FW_V01.08.0080_m0100.bin```
+Example of extracting partitions from Ambarella firmware for Phantom 3 Pro:
+
+```./amba_fwpak.py -vv -x -m P3X_FW_V01.08.0080_m0100.bin```
 
 ### amba_romfs.py
 
@@ -85,7 +101,9 @@ Use this after the Ambarella firmware is extracted. You can recognize ROMFS
 partitions by file names near beginning of the file, surrounded by blocks of
 0xff filled bytes.
 
-Example: ```./amba_romfs.py -vv -x -p P3X_FW_V01.08.0080_m0100_part_rom_fw.a9s```
+Example of extracting ROMFS partition from Ambarella firmware for Phantom 3 Pro:
+
+```./amba_romfs.py -vv -x -p P3X_FW_V01.08.0080_m0100_part_rom_fw.a9s```
 
 ### amba_ubifs.sh
 
@@ -94,7 +112,9 @@ mounting, the files can be copied or modified. Use this after the Ambarella
 firmware is extracted. The file containing UBIFS can be easily recognized
 by `UBI#` at the beginning of the file.
 
-Example: ```sudo ./amba_ubifs.sh P3X_FW_V01.08.0080_m0100_part_rfs.a9s```
+Example of mounting Root Filesystem partition from Ambarella firmware for Phantom 3 Pro:
+
+```sudo ./amba_ubifs.sh P3X_FW_V01.08.0080_m0100_part_rfs.a9s```
 
 
 ### arm_bin2elf.py
@@ -104,7 +124,9 @@ contains binary image of executable file, this tool can rebuild ELF header for i
 The ELF format can be then easily disassembled, as most debuggers can read ELF files.
 Note that using this tool on encrypted firmwares will not result in useable ELF.
 
-Example: ```./arm_bin2elf.py -vv -e -b 0x8020000 -l 0x6000000 -p P3X_FW_V01.07.0060_m0306.bin```
+Example of converting FC firmware for Phantom 3 to ELF:
+
+```./arm_bin2elf.py -vv -e -b 0x8020000 -l 0x6000000 -p P3X_FW_V01.07.0060_m0306.bin```
 
 The command above will cause the tool to try and detect where the border between
 code (`.text`) and data (`.data`) sections should be. This detection is not perfect,
@@ -362,7 +384,8 @@ Example of performing service "linear hall" calibration of Spark gimbal, using W
 
 ### comm_dissector
 
-The folder contains [Wireshark](https://www.wireshark.org/) dissector for for analyzing communication in DJI drone interfaces.
+The folder contains [Wireshark](https://www.wireshark.org/) dissector for for analyzing
+communication in DJI drone interfaces.
 
 Documentation of the tool is [included in its folder](comm_dissector/README.md).
 
