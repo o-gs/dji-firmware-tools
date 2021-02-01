@@ -342,7 +342,7 @@ def imah_get_crypto_params(po, pkghead):
         cipher = AES.new(enc_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
         if (po.verbose > 3):
             print("Encrypted Scramble key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in pkghead.scram_key)))
-        crypt_key = cipher.decrypt(pkghead.scram_key)
+        crypt_key = cipher.decrypt(bytes(pkghead.scram_key))
         crypt_iv = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     else:
         crypt_key = enc_key
@@ -540,9 +540,9 @@ def imah_unsign(po, fwsigfile):
 
     # Compute header hash
     header_digest = SHA256.new()
-    header_digest.update((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+    header_digest.update(bytes(pkghead))
     for i, chunk in enumerate(chunks):
-        header_digest.update((c_ubyte * sizeof(chunk)).from_buffer_copy(chunk))
+        header_digest.update(bytes(chunk))
     if (po.verbose > 2):
         print("Computed header digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in header_digest.digest())))
 
@@ -666,10 +666,10 @@ def imah_sign(po, fwsigfile):
             chunk = imah_read_fwentry_head(po, i, miname)
         chunks.append(chunk)
     # Write the unfinished headers
-    fwsigfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+    fwsigfile.write(bytes(pkghead))
     for chunk in chunks:
-        fwsigfile.write((c_ubyte * sizeof(chunk)).from_buffer_copy(chunk))
-    fwsigfile.write((c_ubyte * pkghead.signature_size)())
+        fwsigfile.write(bytes(chunk))
+    fwsigfile.write(b"\0" * pkghead.signature_size)
     # prepare encryption
     crypt_key, crypt_mode, crypt_iv = imah_get_crypto_params(po, pkghead)
     # Write module data
@@ -717,7 +717,7 @@ def imah_sign(po, fwsigfile):
             # Pad the payload to AES.block_size = 16
             if (len(copy_buffer) % AES.block_size) != 0:
                 pad_cnt = AES.block_size - (len(copy_buffer) % AES.block_size)
-                pad_buffer = (c_ubyte * pad_cnt)()
+                pad_buffer = b"\0" * pad_cnt
                 copy_buffer += pad_buffer
             copy_buffer = cipher.encrypt(copy_buffer)
             payload_digest.update(copy_buffer)
@@ -727,7 +727,7 @@ def imah_sign(po, fwsigfile):
         dji_block_size = 32
         if (fwsigfile.tell() - chunk.offset) % dji_block_size != 0:
             pad_cnt = dji_block_size - ((fwsigfile.tell() - chunk.offset) % dji_block_size)
-            pad_buffer = (c_ubyte * pad_cnt)()
+            pad_buffer = b"\0" * pad_cnt
             payload_digest.update(pad_buffer) # why Dji includes padding in digest?
             fwsigfile.write(pad_buffer)
         chunk.size = decrypted_n
@@ -739,19 +739,19 @@ def imah_sign(po, fwsigfile):
         print("Computed payload digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in pkghead.payload_digest)))
     # Write all headers again
     fwsigfile.seek(0,os.SEEK_SET)
-    fwsigfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+    fwsigfile.write(bytes(pkghead))
     if (po.verbose > 1):
         print(str(pkghead))
     for chunk in chunks:
-        fwsigfile.write((c_ubyte * sizeof(chunk)).from_buffer_copy(chunk))
+        fwsigfile.write(bytes(chunk))
         if (po.verbose > 1):
             print(str(chunk))
 
     # Compute header hash
     header_digest = SHA256.new()
-    header_digest.update((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+    header_digest.update(bytes(pkghead))
     for i, chunk in enumerate(chunks):
-        header_digest.update((c_ubyte * sizeof(chunk)).from_buffer_copy(chunk))
+        header_digest.update(bytes(chunk))
     if (po.verbose > 2):
         print("Computed header digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in header_digest.digest())))
 
