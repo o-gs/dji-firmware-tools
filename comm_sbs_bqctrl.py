@@ -3630,38 +3630,6 @@ SBS_MANUFACTURING_STATUS_INFO = {
 }
 
 
-class SBS_FLAG_TODO11(DecoratedEnum):
-    """ Flags used in TODO11 command
-    """
-    RESERVED0					= 0
-    RESERVED1					= 1
-    RESERVED2					= 2
-    RESERVED3					= 3
-    RESERVED4					= 4
-    RESERVED5					= 5
-    RESERVED6					= 6
-    RESERVED7					= 7
-    RESERVED8					= 8
-    RESERVED9					= 9
-    RESERVED10					= 10
-    RESERVED11					= 11
-    RESERVED12					= 12
-    RESERVED13					= 13
-    RESERVED14					= 14
-    RESERVED15					= 15
-
-SBS_TODO11_INFO = {
-    SBS_FLAG_TODO11.RESERVED0 : {
-        'type'	: "int_bitfield",
-        'unit'	: {'scale':1,'name':"boolean"},
-        'nbits'	: 1,
-        'access'	: "r",
-        'tiny_name'	: "Res",
-        'desc'	: ("TODO."),
-    },
-}
-
-
 MANUFACTURER_ACCESS_CMD_BQ_INFO = {
     MANUFACTURER_ACCESS_CMD_BQ30.ManufacturerData : {
         # Data type associated with the sub-command
@@ -4071,13 +4039,14 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES_INFO,
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("TODO."),
+        'desc'	: ("Outputs voltage data values."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.Temperatures : {
         'type'	: "byte[14]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES_INFO,
+        'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Outputs temperature data values. Block size "
             "is either 10 or 14 bytes, depending on chip and firmware."),
     },
@@ -4086,21 +4055,28 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO,
-        'desc'	: ("TODO."),
+        'access_per_seal'	: ("r","r","r",),
+        'desc'	: ("Gauging algorithm related parameters 1. Outputs 30 bytes "
+            "of IT data values."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.ITStatus2 : {
         'type'	: "byte[10]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO,
-        'desc'	: ("TODO."),
+        'access_per_seal'	: ("r","r","r",),
+        'desc'	: ("Gauging algorithm related parameters 2. Outputs 30 bytes "
+            "of IT data values."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.DFAccessRowAddress : {
         'type'	: "byte[]",
-        'unit'	: {'scale':None,'name':"struct"},
+        'unit'	: {'scale':None,'name':"hex"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: None,
-        'desc'	: ("TODO."),
+        # Requires special processing, not just r/w, as row needs to be added to the command
+        'access_per_seal'	: ("-","-","-",),
+        'desc'	: ("Read/write DF row with given address. Sets the DF row "
+            "with address yy on ManufacturerInfo() for immediate read/write "
+            "on ManufacturingInfo()."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.ExitCalibOutputMode : {
         'type'	: "void",
@@ -4115,6 +4091,8 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'struct_info'	: None,
+        # Requires special processing, not just r/w, as it changes the battery mode
+        'access_per_seal'	: ("-","-","-",),
         'desc'	: ("Output CC and ADC for Calibration. Lets the device output "
             "the raw values of Coulomb counter, CellVoltagen, TSn, Tint, PACK, "
             "and BAT as block on ManufacturerData() with updates every 250 ms."),
@@ -4124,6 +4102,8 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'struct_info'	: None,
+        # Requires special processing, not just r/w, as it changes the battery mode
+        'access_per_seal'	: ("-","-","-",),
         'desc'	: ("Output Shorted CC AND ADC Offset for Calibration. Lets the "
             "device output the raw CC value on ManufacturerData()."),
     },
