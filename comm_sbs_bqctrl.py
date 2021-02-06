@@ -1242,16 +1242,169 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
 class MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2(DecoratedEnum):
     """ ITStatus2 sub-command fields used in BQ30 family SBS chips
     """
-    IntTemperature			= 0x000
+    PackGridPoint			= 0x000
+    LearnedStatus			= 0x008
+    GridCell0				= 0x010
+    GridCell1				= 0x018
+    GridCell2				= 0x020
+    GridCell3				= 0x028
+    CompResCell0			= 0x030
+    CompResCell1			= 0x040
+    CompResCell2			= 0x050
+    CompResCell3			= 0x060
+    CBTimeCell0				= 0x070
+    CBTimeCell1				= 0x080
+    CBTimeCell2				= 0x090
+    CBTimeCell3				= 0x0a0
+    RaScale0				= 0x0b0
+    RaScale1				= 0x0c0
+    RaScale2				= 0x0d0
+    RaScale3				= 0x0e0
 
 MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.IntTemperature : {
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.PackGridPoint : {
+        'type'	: "uint8",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 8,
+        'access'	: "r",
+        'tiny_name'	: "PackGrid",
+        'desc'	: ("Active pack grid point. Minimum of CellGrid0 to CellGrid3."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.LearnedStatus : {
+        'type'	: "uint8",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 8,
+        'access'	: "r",
+        'tiny_name'	: "LStatus",
+        'desc'	: ("Learned status of resistance table."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.GridCell0 : {
+        'type'	: "uint8",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 8,
+        'access'	: "r",
+        'tiny_name'	: "CellGrid0",
+        'desc'	: ("Active grid point cell 0."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.GridCell1 : {
+        'type'	: "uint8",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 8,
+        'access'	: "r",
+        'tiny_name'	: "CellGrid1",
+        'desc'	: ("Active grid point cell 1."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.GridCell2 : {
+        'type'	: "uint8",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 8,
+        'access'	: "r",
+        'tiny_name'	: "CellGrid2",
+        'desc'	: ("Active grid point cell 2."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.GridCell3 : {
+        'type'	: "uint8",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 8,
+        'access'	: "r",
+        'tiny_name'	: "CellGrid3",
+        'desc'	: ("Active grid point cell 3."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CompResCell0 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
         'access'	: "r",
-        'tiny_name'	: "TODO",
-        'desc'	: ("TODO."),
+        'tiny_name'	: "CompRes0",
+        'desc'	: ("Last calc temp compensated resistance cell 0."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CompResCell1 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "CompRes1",
+        'desc'	: ("Last calc temp compensated resistance cell 1."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CompResCell2 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "CompRes2",
+        'desc'	: ("Last calc temp compensated resistance cell 2."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CompResCell3 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "CompRes3",
+        'desc'	: ("Last calc temp compensated resistance cell 3."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CBTimeCell0 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "CBTime0",
+        'desc'	: ("Calculated cell balancing time cell 0."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CBTimeCell1 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "CBTime1",
+        'desc'	: ("Calculated cell balancing time cell 1."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CBTimeCell2 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "CBTime2",
+        'desc'	: ("Calculated cell balancing time cell 2."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CBTimeCell3 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "CBTime3",
+        'desc'	: ("Calculated cell balancing time cell 3."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.RaScale0 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "RaScale0",
+        'desc'	: ("Ra Table scaling factor cell 0."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.RaScale1 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "RaScale1",
+        'desc'	: ("Ra Table scaling factor cell 1."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.RaScale2 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "RaScale2",
+        'desc'	: ("Ra Table scaling factor cell 2."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.RaScale3 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "RaScale3",
+        'desc'	: ("Ra Table scaling factor cell 3."),
     },
 }
 
