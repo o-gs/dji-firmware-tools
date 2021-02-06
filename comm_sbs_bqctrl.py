@@ -267,7 +267,7 @@ class MANUFACTURER_ACCESS_CMD_BQ30(DecoratedEnum):
 
 
 class MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION(DecoratedEnum):
-    """ DeviceType sub-command fields used in BQ30 family SBS chips
+    """ FirmwareVersion sub-command fields used in BQ30 family SBS chips
     """
     DeviceNumber			= 0x00
     FirmwareVersion			= 0x10
@@ -343,7 +343,7 @@ MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION_INFO = {
 
 
 class MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1(DecoratedEnum):
-    """ DeviceType sub-command fields used in BQ30 family SBS chips
+    """ LifetimeDataBlock1 sub-command fields used in BQ30 family SBS chips
     """
     MaxCellVoltage1			= 0x000
     MaxCellVoltage2			= 0x008
@@ -639,7 +639,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
 
 
 class MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2(DecoratedEnum):
-    """ DeviceType sub-command fields used in BQ30 family SBS chips
+    """ LifetimeDataBlock2 sub-command fields used in BQ30 family SBS chips
     """
     LastOTCEvent			= 0x000
     NoOfOTDEvents			= 0x008
@@ -890,7 +890,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
 
 
 class MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3(DecoratedEnum):
-    """ DeviceType sub-command fields used in BQ30 family SBS chips
+    """ LifetimeDataBlock3 sub-command fields used in BQ30 family SBS chips
     """
     TotalFwRunTime			= 0x000
     TimeSpentInUT			= 0x010
@@ -965,6 +965,293 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO = {
         'access'	: "r",
         'tiny_name'	: "TimeOT",
         'desc'	: ("Time Spent in Over Temperature."),
+    },
+}
+
+
+class MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES(DecoratedEnum):
+    """ Voltages sub-command fields used in BQ30 family SBS chips
+    """
+    CellVoltage0			= 0x000
+    CellVoltage1			= 0x010
+    CellVoltage2			= 0x020
+    CellVoltage3			= 0x030
+    BATVoltage				= 0x040
+    PACKVoltage				= 0x050
+
+MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES_INFO = {
+    MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES.CellVoltage0 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"mV"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "Volt0",
+        'desc'	: ("Cell Voltage 0."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES.CellVoltage1 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"mV"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "Volt1",
+        'desc'	: ("Cell Voltage 1."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES.CellVoltage2 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"mV"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "Volt2",
+        'desc'	: ("Cell Voltage 2."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES.CellVoltage3 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"mV"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "Volt3",
+        'desc'	: ("Cell Voltage 3."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES.BATVoltage : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"mV"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "BatV",
+        'desc'	: ("BAT Voltage."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES.PACKVoltage : {
+        'type'	: "uint16",
+        'unit'	: {'scale':100,'name':"mV"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "PackV",
+        'desc'	: ("PACK Voltage."),
+    },
+}
+
+
+class MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES(DecoratedEnum):
+    """ Temperatures sub-command fields used in BQ30 family SBS chips
+    """
+    IntTemperature			= 0x000
+    TS1Temperature			= 0x010
+    TS2Temperature			= 0x020
+    TS3Temperature			= 0x030
+    TS4Temperature			= 0x040
+    CellTemperature			= 0x050
+    FETTemperature			= 0x060
+
+MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES_INFO = {
+    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.IntTemperature : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "IntTm",
+        'desc'	: ("Int Temperature."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.TS1Temperature : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "TS1Tm",
+        'desc'	: ("Temp Sensor 1 Temperature."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.TS2Temperature : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "TS2Tm",
+        'desc'	: ("Temp Sensor 2 Temperature."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.TS3Temperature : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "TS3Tm",
+        'desc'	: ("Temp Sensor 3 Temperature."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.TS4Temperature : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "TS4Tm",
+        'desc'	: ("Temp Sensor 4 Temperature."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.CellTemperature : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'optional'	: True,
+        'access'	: "r",
+        'tiny_name'	: "CelTm",
+        'desc'	: ("Cell Temperature."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.FETTemperature : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'optional'	: True,
+        'access'	: "r",
+        'tiny_name'	: "FETTm",
+        'desc'	: ("FET Temperature."),
+    },
+}
+
+
+class MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1(DecoratedEnum):
+    """ ITStatus1 sub-command fields used in BQ30 family SBS chips
+    """
+    DepthOfDischg0Cell0		= 0x000
+    DepthOfDischg0Cell1		= 0x010
+    DepthOfDischg0Cell2		= 0x020
+    DepthOfDischg0Cell3		= 0x030
+    ChargeLastDOD0Upd		= 0x040
+    QMaxCell0				= 0x050
+    QMaxCell1				= 0x060
+    QMaxCell2				= 0x070
+    QMaxCell3				= 0x080
+    TimeSinceStateChg		= 0x090
+    DepOfDischEOCCell0		= 0x0b0
+    DepOfDischEOCCell1		= 0x0c0
+    DepOfDischEOCCell2		= 0x0d0
+    DepOfDischEOCCell3		= 0x0e0
+
+MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepthOfDischg0Cell0 : {
+        'type'	: "int16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "DOD0_0",
+        'desc'	: ("Depth of discharge cell 0."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepthOfDischg0Cell1 : {
+        'type'	: "int16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "DOD0_1",
+        'desc'	: ("Depth of discharge cell 1."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepthOfDischg0Cell2 : {
+        'type'	: "int16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "DOD0_2",
+        'desc'	: ("Depth of discharge cell 2."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepthOfDischg0Cell3 : {
+        'type'	: "int16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "DOD0_3",
+        'desc'	: ("Depth of discharge cell 3."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.ChargeLastDOD0Upd : {
+        'type'	: "int16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "ChDOD0Up",
+        'desc'	: ("Passed charge since last DOD0 update."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.QMaxCell0 : {
+        'type'	: "int16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "QMAX0",
+        'desc'	: ("Qmax of cell 0."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.QMaxCell1 : {
+        'type'	: "int16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "QMAX1",
+        'desc'	: ("Qmax of cell 1."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.QMaxCell2 : {
+        'type'	: "int16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "QMAX2",
+        'desc'	: ("Qmax of cell 2."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.QMaxCell3 : {
+        'type'	: "int16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "QMAX3",
+        'desc'	: ("Qmax of cell 3."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.TimeSinceStateChg : {
+        'type'	: "uint32",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 32,
+        'access'	: "r",
+        'tiny_name'	: "StateTime",
+        'desc'	: ("Time passed since last state change. The changes "
+            "accounted are DSG, CHG, RST."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepOfDischEOCCell0 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "DODEOC0",
+        'desc'	: ("Depth of discharge cell0 at End of Charge."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepOfDischEOCCell1 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "DODEOC1",
+        'desc'	: ("Depth of discharge cell1 at End of Charge."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepOfDischEOCCell2 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "DODEOC2",
+        'desc'	: ("Depth of discharge cell2 at End of Charge."),
+    },
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepOfDischEOCCell3 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "DODEOC3",
+        'desc'	: ("Depth of discharge cell3 at End of Charge."),
+    },
+}
+
+
+class MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2(DecoratedEnum):
+    """ ITStatus2 sub-command fields used in BQ30 family SBS chips
+    """
+    IntTemperature			= 0x000
+
+MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
+    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.IntTemperature : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 16,
+        'access'	: "r",
+        'tiny_name'	: "TODO",
+        'desc'	: ("TODO."),
     },
 }
 
@@ -3619,18 +3906,17 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'desc'	: ("Output lifetimes values on ManufacturerData()."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.ManufacturerInfo : {
-        'type'	: "byte[32]",
-        'unit'	: {'scale':None,'name':"struct"},
+        'type'	: "string[32]",
+        'unit'	: {'scale':None,'name':None},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: None,
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("TODO."),
+        'desc'	: ("Output 32 bytes of ManufacturerInfo."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.Voltages : {
         'type'	: "byte[12]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: None,
+        'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("TODO."),
     },
@@ -3638,21 +3924,22 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'type'	: "byte[14]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: None,
-        'desc'	: ("TODO."),
+        'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES_INFO,
+        'desc'	: ("Outputs temperature data values. Block size "
+            "is either 10 or 14 bytes, depending on chip and firmware."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.ITStatus1 : {
         'type'	: "byte[30]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: None,
+        'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO,
         'desc'	: ("TODO."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.ITStatus2 : {
         'type'	: "byte[10]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: None,
+        'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO,
         'desc'	: ("TODO."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.DFAccessRowAddress : {
@@ -5287,21 +5574,33 @@ def parse_sbs_command_value(cmd, subcmdinf, v, u, po):
         for fld in sorted(subcmdinf.keys(), key=lambda x:x.value):
             fldinf = subcmdinf[fld]
             fld_buf = []
-            for i in range((fldinf['nbits']+7) // 8):
-                m = (fld_start // 8) + i
-                r = (fld_start % 8)
-                if r == 0:
-                    c = v[m]
-                else:
-                    c = (v[m] >> r) + (v[m+1] << (8-r)) & 0xff
-                fld_buf.append(c)
+            try:
+                for i in range((fldinf['nbits']+7) // 8):
+                    m = (fld_start // 8) + i
+                    r = (fld_start % 8)
+                    if r == 0:
+                        c = v[m]
+                    else:
+                        c = (v[m] >> r) + (v[m+1] << (8-r)) & 0xff
+                    fld_buf.append(c)
+            except IndexError as ex:
+                # Some structs can have fields at end which exist only in some versions
+                if ('optional' in fldinf) and fldinf['optional']:
+                    if (po.verbose > 2):
+                        print("Optional field {} does not exist".format(fld.name))
+                    break
+                raise IndexError("Received block too short to contain '{}' field".format(fld.name))
             fld_type = fldinf['type']
             fld_unit = fldinf['unit']
 
             if fld_type in ("int16","uint16",) and len(fld_buf) < 2:
-                fld_type.extend([0,0])
+                if (po.verbose > 2):
+                    print("Zero-extending {} field {}".format(fld_type,fld.name))
+                fld_buf.extend([0,0])
             elif fld_type in ("int32","uint32",) and len(fld_buf) < 4:
-                fld_type.extend([0,0,0,0])
+                if (po.verbose > 2):
+                    print("Zero-extending {} field {}".format(fld_type,fld.name))
+                fld_buf.extend([0,0,0,0])
 
             if 'endian' in fldinf:
                 fld_val = bytes_to_type_str(fld_buf, fld_type, fldinf['endian'])
