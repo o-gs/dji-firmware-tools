@@ -5802,6 +5802,8 @@ def print_sbs_command_subfield_value(fld, lstfld, fields_info, name_width, po):
         fld_uname = lstfld['uname']
     # Prepare the value for formatting
     fmt_val = command_value_to_string({'type':"byte[1]"}, fldinf, lstfld['uname'], val, po)
+    if fldinf['type'] == "named_bitfield":
+        fmt_val = "{}={}".format(fmt_val, fldinf['value_names'][val])
 
     print(" {:>{}s}:\t{}\t{}\t{}".format(fld.name, name_width, fmt_val, fld_uname, fld_short_desc))
     if (po.explain):
