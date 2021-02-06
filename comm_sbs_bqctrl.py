@@ -5781,8 +5781,8 @@ def command_value_to_string(cmdinf, subcmdinf, u, v, po):
                 v <<= 8
                 val_len -= 2
             return fmt_val[0:len(fmt_val)-1]
-    if u == "dec04":
-        return "{:04d}".format(v)
+    if u in ("dec02","dec04",):
+        return "{:{}d}".format(v,u[u.index('0'):])
     if u == "date547":
         return "{:d}-{:02d}-{:02d}".format(1980 + ((v>>9)&0x7f), (v>>5)&0x0f, (v)&0x1f)
     return "{}".format(v)
@@ -6260,17 +6260,30 @@ def main():
       Its task is to parse command line options and call a function which performs sniffing.
     """
     # Create a list of valid commands/offsets
-    all_commands = []
-    all_commands.extend( [cmd.name for cmd in SBS_COMMAND] )
-    all_commands.extend( [cmd.name for cmd in SBS_COMMAND_BQ30] )
-    all_commands.extend( [cmd.name for cmd in SBS_COMMAND_BQ_TURBO] )
+    all_r_commands = []
     for cmd, cmdinf in SBS_CMD_INFO.items():
+        can_access = sum(('r' in accstr) for accstr in cmdinf['access_per_seal'])
         if 'subcmd_infos' in cmdinf:
             for subgrp in cmdinf['subcmd_infos']:
-                for subcmd in subgrp.keys():
-                    all_commands.append("{}.{}".format(cmd.name,subcmd.name))
+                for subcmd, subcmdinf in subgrp.items():
+                    sub_can_access = sum(('r' in accstr) for accstr in subcmdinf['access_per_seal'])
+                    if sub_can_access > 0:
+                        all_r_commands.append("{}.{}".format(cmd.name,subcmd.name))
+        elif can_access > 0:
+            all_r_commands.append(cmd.name)
+    all_w_commands = []
+    for cmd, cmdinf in SBS_CMD_INFO.items():
+        can_access = sum(('w' in accstr) for accstr in cmdinf['access_per_seal'])
+        if 'subcmd_infos' in cmdinf:
+            for subgrp in cmdinf['subcmd_infos']:
+                for subcmd, subcmdinf in subgrp.items():
+                    sub_can_access = sum(('w' in accstr) for accstr in subcmdinf['access_per_seal'])
+                    if sub_can_access > 0:
+                        all_w_commands.append("{}.{}".format(cmd.name,subcmd.name))
+        elif can_access > 0:
+            all_w_commands.append(cmd.name)
                 
-    parser = argparse.ArgumentParser(description=__doc__.split('.')[0],epilog="List of commands/offsets: " + ", ".join(all_commands))
+    parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
     parser.add_argument('-b', '--bus', default="smbus:1", type=str,
             help="I2C bus device selection (defaults to '%(default)s')")
@@ -6309,15 +6322,15 @@ def main():
     subpar_read = subparsers.add_parser('read',
             help="Read value from a single command/offset of the battery")
 
-    subpar_read.add_argument('command', metavar='command', choices=all_commands, type=parse_command,
-            help="The command/offset name to read from")
+    subpar_read.add_argument('command', metavar='command', choices=all_r_commands, type=parse_command,
+            help="The command/offset name to read from; one of: {:s}".format(', '.join(all_r_commands)))
 
 
     subpar_write = subparsers.add_parser('write',
             help="Write value to a single command/offset of the battery")
 
-    subpar_write.add_argument('command', metavar='command', choices=all_commands, type=parse_command,
-            help="The command/offset name to write to")
+    subpar_write.add_argument('command', metavar='command', choices=all_w_commands, type=parse_command,
+            help="The command/offset name to write to; one of: {:s}".format(', '.join(all_w_commands)))
 
 
     subpar_monitor = subparsers.add_parser('monitor',
