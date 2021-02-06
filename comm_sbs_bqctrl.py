@@ -5854,16 +5854,14 @@ def print_sbs_command_short_subfields(field_groups, l, fields_info, cell_width, 
         print("".join(line_str),'\x1b[0m')
 
 
-def print_sbs_command_value(cmd, subcmd_str, response, name_width, po):
+def print_sbs_command_value(cmd, subcmd, response, name_width, po):
     v = response['val']
     l = response['list']
     s = response['sinf']
     u = response['uname']
     cmdinf = SBS_CMD_INFO[cmd]
-    subcmd = None
     subcmdinf = {}
-    if subcmd_str:
-        subcmd = sbs_subcommand_from_text(cmd, subcmd_str, po)
+    if subcmd is not None:
         for subgrp in cmdinf['subcmd_infos']:
             if subcmd in subgrp.keys():
                 subcmdinf = subgrp[subcmd]
@@ -5935,19 +5933,6 @@ def smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po)
     return v, resp_unit['name']
 
 
-def sbs_subcommand_from_text(cmd, subcmd_str, po):
-    """ Converts SBS sub-command from text to enum
-
-    Requires chip to be identified to properly map commands
-    which are not in base SBS specification.
-    """
-    if (cmd == SBS_COMMAND.ManufacturerAccess) and is_ti_bq_chip(po.chip):
-        if subcmd_str in [i.name for i in MANUFACTURER_ACCESS_CMD_BQ30]:
-            subcmd = MANUFACTURER_ACCESS_CMD_BQ30.from_name(subcmd_str)
-            return subcmd
-    raise ValueError("The sub-command is either invalid or not supported by chip")
-
-
 def smbus_read(bus, dev_addr, cmd, opts, vals, po):
     """ Reads value of given command from the battery.
 
@@ -5983,9 +5968,9 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
         v, u = smbus_read_simple(bus, dev_addr, cmd, cmdinf['type'], resp_unit, retry_count, po)
 
     elif cmdinf['getter'] == "manufacturer_access_subcommand":
-        if "subcmd_str" not in opts.keys():
+        if "subcmd" not in opts.keys():
             raise ValueError("Command {} requires to provide sub-command".format(cmd.name))
-        subcmd = sbs_subcommand_from_text(cmd, opts["subcmd_str"], po)
+        subcmd = opts["subcmd"]
         for subgrp in cmdinf['subcmd_infos']:
             if subcmd in subgrp.keys():
                 subcmdinf = subgrp[subcmd]
@@ -6104,32 +6089,38 @@ def smart_battery_system_command_from_text(cmd_str, po):
     subcmd_str = None
     if len(cmd_str_parts) > 1:
         subcmd_str = cmd_str_parts[1]
+    cmd = None
     if is_ti_bq_chip(po.chip):
         if major_cmd_str in [i.name for i in SBS_COMMAND_BQ30]:
             cmd = SBS_COMMAND_BQ30.from_name(major_cmd_str)
-            return cmd, subcmd_str
-        if major_cmd_str in [i.name for i in SBS_COMMAND_BQ_TURBO]:
+        elif major_cmd_str in [i.name for i in SBS_COMMAND_BQ_TURBO]:
             cmd = SBS_COMMAND_BQ_TURBO.from_name(major_cmd_str)
-            return cmd, subcmd_str
-    if True: # Standard SBS command can be used on any chip
+    if cmd is None: # Standard SBS command can be used on any chip
         if major_cmd_str in [i.name for i in SBS_COMMAND]:
             cmd = SBS_COMMAND.from_name(major_cmd_str)
-            return cmd, subcmd_str
-    raise ValueError("The command is either invalid or not supported by chip")
+    if cmd is None:
+        raise ValueError("The command '{}' is either invalid or not supported by chip".format(major_cmd_str))
+
+    subcmd = None
+    if (cmd == SBS_COMMAND.ManufacturerAccess) and is_ti_bq_chip(po.chip):
+        if subcmd_str in [i.name for i in MANUFACTURER_ACCESS_CMD_BQ30]:
+            subcmd = MANUFACTURER_ACCESS_CMD_BQ30.from_name(subcmd_str)
+
+    return cmd, subcmd
 
 
 def smart_battery_system_read(cmd_str, vals, po):
     """ Reads and prints value of the command from the battery.
     """
     global bus
-    cmd, subcmd_str = smart_battery_system_command_from_text(cmd_str, po)
+    cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
     cmdinf = SBS_CMD_INFO[cmd]
     short_desc = cmdinf['desc'].split('.')[0]
-    opts = {"subcmd_str": subcmd_str}
+    opts = {"subcmd": subcmd}
     v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
     response = {'val':v,'list':l,'sinf':s,'uname':u,}
-    vals[cmd] = response
-    print_sbs_command_value(cmd, subcmd_str, response, 0, po)
+    vals[cmd if subcmd is None else subcmd] = response
+    print_sbs_command_value(cmd, subcmd, response, 0, po)
 
 
 def smart_battery_system_last_error(vals, po):
@@ -6140,9 +6131,9 @@ def smart_battery_system_last_error(vals, po):
     fldinf = SBS_BATTERY_STATUS_INFO[fld]
     val = None
     try:
-        v, l, u, s = smbus_read(bus, po.dev_address, cmd, {"subcmd_str": None,"retry_count":1}, vals, po)
+        v, l, u, s = smbus_read(bus, po.dev_address, cmd, {"subcmd": None,"retry_count":1}, vals, po)
         response = {'val':v,'list':l,'sinf':s,'uname':u,}
-        vals[cmd] = response
+        vals[cmd if subcmd is None else subcmd] = response
         val = l[fld]['val']
         fmt_val = "{}={}".format(val, fldinf['value_names'][val])
         print("Reported {}: {}".format(fld.name,fmt_val))
@@ -6171,13 +6162,13 @@ def smart_battery_system_monitor(mgroup_str, vals, po):
     for anycmd in SBS_CMD_GROUPS[mgroup]:
         if anycmd in MANUFACTURER_ACCESS_CMD_BQ_INFO.keys():
             cmd = SBS_COMMAND.ManufacturerAccess
-            subcmd_str = anycmd.name
+            subcmd = anycmd
         else:
             cmd = anycmd
-            subcmd_str = None
+            subcmd = None
         cmdinf = SBS_CMD_INFO[cmd]
         short_desc = cmdinf['desc'].split('.')[0]
-        opts = {"subcmd_str": subcmd_str}
+        opts = {"subcmd": subcmd}
         try:
             v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
         except Exception as ex:
@@ -6188,8 +6179,8 @@ def smart_battery_system_monitor(mgroup_str, vals, po):
                 print("Description: {}".format(cmdinf['desc']))
             continue
         response = {'val':v,'list':l,'sinf':s,'uname':u,}
-        vals[cmd] = response
-        print_sbs_command_value(cmd, subcmd_str, response, names_width, po)
+        vals[cmd if subcmd is None else subcmd] = response
+        print_sbs_command_value(cmd, subcmd, response, names_width, po)
     return
 
 
