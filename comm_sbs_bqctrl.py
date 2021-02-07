@@ -4544,7 +4544,7 @@ SBS_CMD_INFO = {
             "return specific version information, internal calibration "
             "information, or some other manufacturer specific function."),
         # Selection of an algorithm to read/write the value of this function
-        'getter'	: "manufacturer_access_subcommand",
+        'getter'	: "write_word_subcommand",
     },
     SBS_COMMAND.RemainingCapacityAlarm : {
         'type'	: "uint16",
@@ -5290,7 +5290,11 @@ def crc8_ccitt_compute(data):
 
 
 def is_ti_bq_chip(chip):
-    return chip.name.startswith("BQ")
+    """ Returns whether the chip is Texas Instruments BQ chip
+
+    Also gives True if the chip awaits auto-detection.
+    """
+    return chip.name.startswith("BQ") or chip == CHIP_TYPE.AUTO
 
 
 def type_str_value_length(type_str):
@@ -6079,7 +6083,7 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
             resp_unit = cmdinf['unit0']
         v, u = smbus_read_simple(bus, dev_addr, cmd, cmdinf['type'], resp_unit, retry_count, po)
 
-    elif cmdinf['getter'] == "manufacturer_access_subcommand":
+    elif cmdinf['getter'] == "write_word_subcommand":
         if "subcmd" not in opts.keys():
             raise ValueError("Command {} requires to provide sub-command".format(cmd.name))
         subcmd = opts["subcmd"]
@@ -6147,7 +6151,7 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
             stor_unit = cmdinf['unit0']
         u = smbus_write_simple(bus, dev_addr, cmd, v, cmdinf['type'], stor_unit, retry_count, po)
 
-    elif cmdinf['getter'] == "manufacturer_access_subcommand":
+    elif cmdinf['getter'] == "write_word_subcommand":
         if "subcmd" not in opts.keys():
             raise ValueError("Command {} requires to provide sub-command".format(cmd.name))
         subcmd = opts["subcmd"]
@@ -6286,6 +6290,9 @@ def smart_battery_system_command_from_text(cmd_str, po):
         if subcmd_str in [i.name for i in MANUFACTURER_ACCESS_CMD_BQ30]:
             subcmd = MANUFACTURER_ACCESS_CMD_BQ30.from_name(subcmd_str)
 
+    if subcmd_str is not None and subcmd is None:
+        raise ValueError("The sub-command '{}' is either invalid or not supported by chip".format(subcmd_str))
+
     return cmd, subcmd
 
 
@@ -6314,6 +6321,76 @@ def smart_battery_system_last_error(bus, dev_addr, vals, po):
             print(("Explanation: The 'Unsupported command' error often means "
               "that the command is unavailable in sealed mode. "
               "But it may also be unsupported by the specific chip."))
+    return
+
+
+def smart_battery_system_info(cmd_str, vals, po):
+    """ Prints info on the command/offces based on fields from its info dict.
+    """
+    cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
+    cmdinf = SBS_CMD_INFO[cmd]
+    subcmdinf = {}
+    if subcmd is not None:
+        for subgrp in cmdinf['subcmd_infos']:
+            if subcmd in subgrp.keys():
+                subcmdinf = subgrp[subcmd]
+                break
+
+    if True:
+        print("Command/offset:")
+        if subcmd is None:
+            print("  {} = 0x{:02x}".format(cmd.name,cmd.value))
+        else:
+            print("  {}.{} = 0x{:02x}.0x{:04x}".format(cmd.name,subcmd.name,cmd.value,subcmd.value))
+
+        print("Access:")
+        aps = subcmdinf['access_per_seal'] if 'access_per_seal' in subcmdinf else cmdinf['access_per_seal']
+        if len(set(aps)) <= 1:
+            print("  Always '{}'".format(aps[0].upper()))
+        else:
+            print("  Sealed '{}'; Unsealed  '{}'; Full Access  '{}'".format(aps[0].upper(),aps[1].upper(),aps[2].upper()))
+        gtr = subcmdinf['getter'] if 'getter' in subcmdinf else cmdinf['getter']
+
+        if gtr == "simple":
+            print("  Read/Write by simple SMBus operations")
+        elif gtr == "unit_select_on_capacity_mode":
+            print("  Read/Write by simple SMBus operations, but unit of the value depends on flags config")
+        elif gtr == "write_word_subcommand":
+            print("  Access by first writing sub-command word to {}".format(cmd.name))
+        else:
+            print("  Access by special method '{}'".format(gtr))
+
+        print("Type:")
+        vtype = subcmdinf['type'] if 'type' in subcmdinf else cmdinf['type']
+        if vtype == "void":
+            print("  There is no value field in read/Write operations, it works as trigger")
+        else:
+            print("  Read/Write value is of type '{}'".format(vtype))
+        if gtr == "unit_select_on_capacity_mode":
+            vunits = []
+            if 'getter' in subcmdinf:
+                for n in range(16):
+                    if ('unit'+str(n)) not in subcmdinf:
+                        break
+                    vunits.append(subcmdinf['unit'+str(n)])
+            else:
+                for n in range(16):
+                    if ('unit'+str(n)) not in cmdinf:
+                        break
+                    vunits.append(cmdinf['unit'+str(n)])
+            vunit = {'scale': " / ".join(str(vu['scale']) for vu in vunits), 'name': " / ".join(vu['name'] for vu in vunits)}
+        else:
+            vunit = subcmdinf['unit'] if 'unit' in subcmdinf else cmdinf['unit']
+        if vunit['name'] is None and vunit['scale'] is None:
+            print("  The value has no unit or printing format preference")
+        elif is_printable_value_unit(vunit):
+            print("  Physical unit of the value is '{}' with value scaler {}".format(vunit['name'],vunit['scale']))
+        else:
+            print("  The value has no unit, but uses printing format '{}' with multiplier {}".format(vunit['name'],vunit['scale']))
+
+        print("Description:")
+        print(" ", subcmdinf['desc'] if 'desc' in subcmdinf else cmdinf['desc'])
+
     return
 
 
@@ -6448,8 +6525,9 @@ def main():
 
       Its task is to parse command line options and call a function which performs sniffing.
     """
-    # Create a list of valid commands/offsets: for read, write and trigger
+    # Create a list of valid commands/offsets: for read, non-read, write and trigger
     all_r_commands = []
+    all_nr_commands = []
     for cmd, cmdinf in SBS_CMD_INFO.items():
         can_access = sum(('r' in accstr) for accstr in cmdinf['access_per_seal'])
         if 'subcmd_infos' in cmdinf:
@@ -6458,8 +6536,14 @@ def main():
                     sub_can_access = sum(('r' in accstr) for accstr in subcmdinf['access_per_seal'])
                     if sub_can_access > 0:
                         all_r_commands.append("{}.{}".format(cmd.name,subcmd.name))
-        elif can_access > 0:
-            all_r_commands.append(cmd.name)
+                    else:
+                        all_nr_commands.append("{}.{}".format(cmd.name,subcmd.name))
+        else:
+            if can_access > 0:
+                all_r_commands.append(cmd.name)
+            else:
+                all_nr_commands.append(cmd.name)
+
     all_w_commands = []
     all_t_commands = []
     for cmd, cmdinf in SBS_CMD_INFO.items():
@@ -6473,11 +6557,12 @@ def main():
                             all_t_commands.append("{}.{}".format(cmd.name,subcmd.name))
                         else:
                             all_w_commands.append("{}.{}".format(cmd.name,subcmd.name))
-        elif can_access > 0:
-            if cmdinf['type'] == "void":
-                all_t_commands.append(cmd.name)
-            else:
-                all_w_commands.append(cmd.name)
+        else:
+            if can_access > 0:
+                if cmdinf['type'] == "void":
+                    all_t_commands.append(cmd.name)
+                else:
+                    all_w_commands.append(cmd.name)
                 
     parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
@@ -6513,6 +6598,14 @@ def main():
 
     subparsers = parser.add_subparsers(dest='action', metavar='action',
             help="action to take")
+
+
+    subpar_info = subparsers.add_parser('info',
+            help="Displays information about specific command; doesn't require SMBus connection, "
+              "just shows the shortened version of manual description which is included in the tool.")
+
+    subpar_info.add_argument('command', metavar='command', choices=all_r_commands+all_nr_commands, type=parse_command,
+            help="The command/offset name to show info about; one of: {:s}".format(', '.join(all_r_commands+all_nr_commands)))
 
 
     subpar_read = subparsers.add_parser('read',
@@ -6558,13 +6651,18 @@ def main():
 
     po = parser.parse_args();
 
+    vals = {}
+
     po.chip = CHIP_TYPE.from_name(po.chip)
+
+    # Handle info command before anything else, as it doesn't require SMBus connection
+    if po.action == 'info':
+        smart_battery_system_info(po.command, vals, po)
+        return
 
     if (po.verbose > 0):
         print("Opening {}".format(po.bus))
     smbus_open(po.bus, po)
-
-    vals = {}
 
     if po.chip == CHIP_TYPE.AUTO:
         po.chip = smart_battery_detect(vals, po)
