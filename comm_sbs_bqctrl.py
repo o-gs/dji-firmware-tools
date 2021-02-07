@@ -6381,6 +6381,10 @@ def smart_battery_system_command_from_text(cmd_str, po):
     return cmd, subcmd
 
 
+def smart_battery_system_value_from_text(cmd, subcmd, nval_str, po):
+    raise NotImplementedError('Converting the string value to smd/subcmd type is not implemented.')
+
+
 def smart_battery_system_last_error(bus, dev_addr, vals, po):
     """ Reads and prints value of last ERROR_CODE from the battery.
     """
@@ -6510,6 +6514,26 @@ def smart_battery_system_trigger(cmd_str, vals, po):
             print("Description: {}".format(cmdinf['desc']))
         return
     print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "trigger", "SUCCESS", "Trigger switch write accepted"))
+
+
+def smart_battery_system_write(cmd_str, nval_str, vals, po):
+    """ Write value to a command within the battery.
+    """
+    global bus
+    cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
+    cmdinf = SBS_CMD_INFO[cmd]
+    opts = {"subcmd": subcmd}
+    v = smart_battery_system_value_from_text(cmd, subcmd, nval_str, po)
+    try:
+        u, s = smbus_write(bus, po.dev_address, cmd, v, opts, vals, po)
+    except Exception as ex:
+        print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "write", "FAIL", str(ex)))
+        if (isinstance(ex, OSError)):
+            smart_battery_system_last_error(bus, po.dev_address, vals, po)
+        if (po.explain):
+            print("Description: {}".format(cmdinf['desc']))
+        return
+    print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "write", "SUCCESS", "Value write accepted"))
 
 
 def smart_battery_system_monitor(mgroup_str, vals, po):
