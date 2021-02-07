@@ -251,7 +251,7 @@ class MANUFACTURER_ACCESS_CMD_BQ30(DecoratedEnum):
     ChargingStatus			= 0x55
     GaugingStatus			= 0x56
     ManufacturingStatus		= 0x57
-    AFERegister				= 0x58
+    AFERegisters			= 0x58
     LifetimeDataBlock1		= 0x60
     LifetimeDataBlock2		= 0x61
     LifetimeDataBlock3		= 0x62
@@ -266,7 +266,7 @@ class MANUFACTURER_ACCESS_CMD_BQ30(DecoratedEnum):
     OutputShortCCnADCOffset	= 0xf082
 
 
-class MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION(DecoratedEnum):
+class SBS_CMD_BQ_FIRMWARE_VERSION(DecoratedEnum):
     """ FirmwareVersion sub-command fields used in BQ30 family SBS chips
     """
     DeviceNumber			= 0x00
@@ -277,8 +277,8 @@ class MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION(DecoratedEnum):
     ReservedRR				= 0x48
     ReservedEE				= 0x58
 
-MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION_INFO = {
-    MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION.DeviceNumber : {
+SBS_CMD_BQ_FIRMWARE_VERSION_INFO = {
+    SBS_CMD_BQ_FIRMWARE_VERSION.DeviceNumber : {
         'type'	: "uint16",
         'endian': "be",
         'unit'	: {'scale':1,'name':"hex"},
@@ -287,7 +287,7 @@ MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION_INFO = {
         'tiny_name'	: "DevN",
         'desc'	: ("Type of this IC device. The same as returned by DeviceType."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION.FirmwareVersion : {
+    SBS_CMD_BQ_FIRMWARE_VERSION.FirmwareVersion : {
         'type'	: "byte[2]",
         'unit'	: {'scale':1,'name':"hexver"},
         'nbits'	: 16,
@@ -295,7 +295,7 @@ MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION_INFO = {
         'tiny_name'	: "FwVer",
         'desc'	: ("Version number of the firmware."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION.FwBuildNumber : {
+    SBS_CMD_BQ_FIRMWARE_VERSION.FwBuildNumber : {
         'type'	: "uint16",
         'endian': "be",
         'unit'	: {'scale':1,'name':"dec04"},
@@ -304,7 +304,7 @@ MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION_INFO = {
         'tiny_name'	: "FwBld",
         'desc'	: ("Build number of the firmware."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION.FirmwareType : {
+    SBS_CMD_BQ_FIRMWARE_VERSION.FirmwareType : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"hex"},
         'nbits'	: 8,
@@ -313,7 +313,7 @@ MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION_INFO = {
         'desc'	: ("Type of the firmware. Usually used to differentiate "
             "pre-release firmwares from production ones."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION.ImpedanceTrackVersion : {
+    SBS_CMD_BQ_FIRMWARE_VERSION.ImpedanceTrackVersion : {
         'type'	: "byte[2]",
         'unit'	: {'scale':1,'name':"hexver"},
         'nbits'	: 16,
@@ -323,7 +323,7 @@ MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION_INFO = {
             "Track Algorithm with Cell Balancing During Rest is Texas "
             "Instuments trademarked functionality."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION.ReservedRR : {
+    SBS_CMD_BQ_FIRMWARE_VERSION.ReservedRR : {
         'type'	: "byte[2]",
         'unit'	: {'scale':1,'name':"hex"},
         'nbits'	: 16,
@@ -331,7 +331,7 @@ MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION_INFO = {
         'tiny_name'	: "ResR",
         'desc'	: ("Field RR reserved by manufacturer. Either unused or used for internal purposes."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION.ReservedEE : {
+    SBS_CMD_BQ_FIRMWARE_VERSION.ReservedEE : {
         'type'	: "byte[2]",
         'unit'	: {'scale':1,'name':"hex"},
         'nbits'	: 16,
@@ -342,7 +342,66 @@ MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION_INFO = {
 }
 
 
-class MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1(DecoratedEnum):
+class SBS_CMD_BQ_AFE_REGISTERS(DecoratedEnum):
+    """ AFERegisters sub-command fields used in BQ family SBS chips
+    """
+    STATUS					= 0x000
+    STATE_CONTROL			= 0x008
+    OUTPUT_CONTROL			= 0x010
+    OUTPUT_STATUS			= 0x018
+    FUNCTION_CONTROL		= 0x020
+    CELL_SEL				= 0x028
+    OCDV					= 0x030
+    OCDD					= 0x038
+    SCC						= 0x040
+    SCD1					= 0x048
+    SCD2					= 0x050
+
+SBS_CMD_BQ_AFE_REGISTERS_INFO = {
+    SBS_CMD_BQ_AFE_REGISTERS.STATUS : {
+        'type'	: "uint8",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 8,
+        'access'	: "r",
+        'tiny_name'	: "Statu",
+        'desc'	: ("STATUS register."),
+    },
+    SBS_CMD_BQ_AFE_REGISTERS.STATE_CONTROL : {
+        'type'	: "uint8",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 8,
+        'access'	: "r",
+        'tiny_name'	: "StCtl",
+        'desc'	: ("STATE_CONTROL register."),
+    },
+    SBS_CMD_BQ_AFE_REGISTERS.OUTPUT_CONTROL : {
+        'type'	: "uint8",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 8,
+        'access'	: "r",
+        'tiny_name'	: "OuCtl",
+        'desc'	: ("OUTPUT_CONTROL register."),
+    },
+    SBS_CMD_BQ_AFE_REGISTERS.OUTPUT_STATUS : {
+        'type'	: "uint8",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 8,
+        'access'	: "r",
+        'tiny_name'	: "OuSta",
+        'desc'	: ("OUTPUT_STATUS register."),
+    },
+    SBS_CMD_BQ_AFE_REGISTERS.FUNCTION_CONTROL : {
+        'type'	: "uint8",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 8,
+        'access'	: "r",
+        'tiny_name'	: "FuCtl",
+        'desc'	: ("FUNCTION_CONTROL register."),
+    },
+}
+
+
+class SBS_CMD_BQ_LIFETIME_DATA_BLOCK1(DecoratedEnum):
     """ LifetimeDataBlock1 sub-command fields used in BQ30 family SBS chips
     """
     MaxCellVoltage1			= 0x000
@@ -378,8 +437,8 @@ class MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1(DecoratedEnum):
     LastSCCEvent			= 0x0f0
     NoOfOTCEvents			= 0x0f8
 
-MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage1 : {
+SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage1 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -387,7 +446,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MaxV1",
         'desc'	: ("Max Cell 1 Voltage."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage2 : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage2 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -395,7 +454,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MaxV2",
         'desc'	: ("Max Cell 2 Voltage."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage3 : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage3 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -403,7 +462,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MaxV3",
         'desc'	: ("Max Cell 3 Voltage."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage4 : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage4 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -411,7 +470,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MaxV4",
         'desc'	: ("Max Cell 4 Voltage."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage1 : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage1 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -419,7 +478,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MinV1",
         'desc'	: ("Min Cell 1 Voltage."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage2 : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage2 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -427,7 +486,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MinV2",
         'desc'	: ("Min Cell 2 Voltage."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage3 : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage3 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -435,7 +494,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MinV3",
         'desc'	: ("Min Cell 3 Voltage."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage4 : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage4 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -443,7 +502,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MinV4",
         'desc'	: ("Min Cell 4 Voltage."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxDeltaCellVoltage : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxDeltaCellVoltage : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -451,7 +510,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MaxDV",
         'desc'	: ("Max Delta Cell Voltage."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxChargeCurrent : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxChargeCurrent : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -459,7 +518,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MChgI",
         'desc'	: ("Max Charge Current."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxDischargeCurrent : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxDischargeCurrent : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -467,7 +526,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MDisI",
         'desc'	: ("Max Discharge Current."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxAvgDischrCurrent : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxAvgDischrCurrent : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -475,7 +534,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MADisI",
         'desc'	: ("Max Average Discharge Current."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxAvgDischrPower : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxAvgDischrPower : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -483,7 +542,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "MADisP",
         'desc'	: ("Max Average Discharge Power."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfCOVEvents : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfCOVEvents : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -491,7 +550,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "nCOVEv",
         'desc'	: ("Number of Cell Overvoltage Events."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastCOVEvent : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastCOVEvent : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -499,7 +558,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "LCOVEv",
         'desc'	: ("Last Cell Overvoltage Event."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfCUVEvents : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfCUVEvents : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -507,7 +566,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "nCUVEv",
         'desc'	: ("Number of Cell Undervoltage Events."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastCUVEvent : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastCUVEvent : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -515,7 +574,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "LCUVEv",
         'desc'	: ("Last Cell Undervoltage Event."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfOCD1Events : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfOCD1Events : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -523,7 +582,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "nOCD1E",
         'desc'	: ("Number of Overcurrent in Discharge 1 Events."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastOCD1Event : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastOCD1Event : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -531,7 +590,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "LOCD1E",
         'desc'	: ("Last Overcurrent in Discharge 1 Event."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfOCD2Events : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfOCD2Events : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -539,7 +598,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "nOCD2E",
         'desc'	: ("Number of Overcurrent in Discharge 2 Events."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastOCD2Event : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastOCD2Event : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -547,7 +606,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "LOCD2E",
         'desc'	: ("Last Overcurrent in Discharge 2 Event."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfOCC1Events : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfOCC1Events : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -555,7 +614,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "nOCC1E",
         'desc'	: ("Number of Overcurrent in Charge 1 Events."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastOCC1Event : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastOCC1Event : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -563,7 +622,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "LOCC1E",
         'desc'	: ("Last Overcurrent in Charge 1 Event."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfOCC2Events : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfOCC2Events : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -571,7 +630,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "nOCC2E",
         'desc'	: ("Number of Overcurrent in Charge 2 Events."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastOCC2Event : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastOCC2Event : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -579,7 +638,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "LOCC2E",
         'desc'	: ("Last Overcurrent in Charge 2 Event."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfOLDEvents : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfOLDEvents : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -587,7 +646,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "nOLDEv",
         'desc'	: ("Number of Overload in Discharge Events."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastOLDEvent : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastOLDEvent : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -595,7 +654,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "LOLDEv",
         'desc'	: ("Last Overload in Discharge Event."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfSCDEvents : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfSCDEvents : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -603,7 +662,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "nSCDEv",
         'desc'	: ("Number of Short Circuit in Discharge Events."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastSCDEvent : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastSCDEvent : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -611,7 +670,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "LSCDEv",
         'desc'	: ("Last Short Circuit in Discharge Event."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfSCCEvents : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfSCCEvents : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -619,7 +678,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "nSCCEv",
         'desc'	: ("Number of Short Circuit in Charge Events."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastSCCEvent : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.LastSCCEvent : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -627,7 +686,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'tiny_name'	: "LSCCEv",
         'desc'	: ("Last Short Circuit in Charge Event."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfOTCEvents : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.NoOfOTCEvents : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -638,7 +697,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
 }
 
 
-class MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2(DecoratedEnum):
+class SBS_CMD_BQ_LIFETIME_DATA_BLOCK2(DecoratedEnum):
     """ LifetimeDataBlock2 sub-command fields used in BQ30 family SBS chips
     """
     LastOTCEvent			= 0x000
@@ -669,8 +728,8 @@ class MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2(DecoratedEnum):
     MinTempIntSensor		= 0x0c8
     MaxTempFET				= 0x0d0
 
-MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastOTCEvent : {
+SBS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastOTCEvent : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -678,7 +737,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "LOTCEv",
         'desc'	: ("Last Overtemperature in Charge Event."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfOTDEvents : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfOTDEvents : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -686,7 +745,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "nOTDEv",
         'desc'	: ("Number of Overtemperature in Discharge Events."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastOTDEvent : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastOTDEvent : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -694,7 +753,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "LOTDEv",
         'desc'	: ("Last Overtemperature in Discharge Event."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfOTFEvents : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfOTFEvents : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -702,7 +761,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "nOTFEv",
         'desc'	: ("Number of Overtemperature FET Events."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastOTFEvent : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastOTFEvent : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -710,7 +769,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "LOTFEv",
         'desc'	: ("Last Overtemperature FET Event."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoValidChrgTerm : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoValidChrgTerm : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -718,7 +777,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "nVChrT",
         'desc'	: ("Number of Valid Charge Terminations."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastValidChrgTerm : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastValidChrgTerm : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -726,7 +785,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "LVChrT",
         'desc'	: ("Last Valid Charge Termination."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfQMaxUpdates : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfQMaxUpdates : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -734,7 +793,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "nQMaxU",
         'desc'	: ("Number of QMax Updates."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastQMaxUpdate : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastQMaxUpdate : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -742,7 +801,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "LQMaxU",
         'desc'	: ("Last QMax Update."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfRAUpdates : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfRAUpdates : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -750,7 +809,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "nRAUpd",
         'desc'	: ("Number of RA resistance Updates."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastRAUpdate : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastRAUpdate : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -758,7 +817,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "LRAUp2",
         'desc'	: ("Last RA resistance Update."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfRADisables : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfRADisables : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -766,7 +825,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "nRADis",
         'desc'	: ("Number of RA resistance Disables."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastRADisable : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.LastRADisable : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -774,7 +833,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "LRADis",
         'desc'	: ("Last RA resistance Disable."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfShutdowns : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfShutdowns : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -782,7 +841,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "nShtdn",
         'desc'	: ("Number of Shutdowns."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfPartialResets : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfPartialResets : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -790,7 +849,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "nPaRst",
         'desc'	: ("Number of Partial Resets."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfFullResets : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfFullResets : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -798,7 +857,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "nFuRst",
         'desc'	: ("Number of Full Resets."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfWDTResets : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfWDTResets : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -806,7 +865,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "nWDRst",
         'desc'	: ("Number of Resets by Watchdog Timer."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.CBTimeCell1 : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.CBTimeCell1 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -814,7 +873,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "CBTim1",
         'desc'	: ("Total performed balancing bypass time cell 1."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.CBTimeCell2 : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.CBTimeCell2 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -822,7 +881,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "CBTim2",
         'desc'	: ("Total performed balancing bypass time cell 2."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.CBTimeCell3 : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.CBTimeCell3 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -830,7 +889,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "CBTim3",
         'desc'	: ("Total performed balancing bypass time cell 3."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.CBTimeCell4 : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.CBTimeCell4 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -838,7 +897,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "CBTim4",
         'desc'	: ("Total performed balancing bypass time cell 4."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.MaxTempCell : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.MaxTempCell : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -846,7 +905,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "MaxTem",
         'desc'	: ("Max cell temperatute."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.MinTempCell : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.MinTempCell : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -854,7 +913,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "MinTem",
         'desc'	: ("Min cell temperatute."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.MaxDeltaCellTemp : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.MaxDeltaCellTemp : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -862,7 +921,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "MaxDTe",
         'desc'	: ("Max delta of cell temperatute."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.MaxTempIntSensor : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.MaxTempIntSensor : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -870,7 +929,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "MaxTeS",
         'desc'	: ("Max temperatute on internal sensor."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.MinTempIntSensor : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.MinTempIntSensor : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -878,7 +937,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'tiny_name'	: "MinTeS",
         'desc'	: ("Min temperatute on internal sensor."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2.MaxTempFET : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.MaxTempFET : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -889,7 +948,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
 }
 
 
-class MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3(DecoratedEnum):
+class SBS_CMD_BQ_LIFETIME_DATA_BLOCK3(DecoratedEnum):
     """ LifetimeDataBlock3 sub-command fields used in BQ30 family SBS chips
     """
     TotalFwRunTime			= 0x000
@@ -901,8 +960,8 @@ class MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3(DecoratedEnum):
     TimeSpentInHT			= 0x060
     TimeSpentInOT			= 0x070
 
-MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO = {
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3.TotalFwRunTime : {
+SBS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO = {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK3.TotalFwRunTime : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -910,7 +969,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO = {
         'tiny_name'	: "TotFRT",
         'desc'	: ("Total firmware Run Time."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInUT : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInUT : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -918,7 +977,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO = {
         'tiny_name'	: "TimeUT",
         'desc'	: ("Time Spent in Under Temperature."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInLT : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInLT : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -926,7 +985,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO = {
         'tiny_name'	: "TimeLT",
         'desc'	: ("Time Spent in Low Temperature."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInSTL : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInSTL : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -934,7 +993,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO = {
         'tiny_name'	: "TimSTL",
         'desc'	: ("Time Spent in Standard Temp Low."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInRT : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInRT : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -942,7 +1001,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO = {
         'tiny_name'	: "TimeRT",
         'desc'	: ("Time Spent in Recommended Temperature."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInSTH : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInSTH : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -950,7 +1009,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO = {
         'tiny_name'	: "TimSTH",
         'desc'	: ("Time Spent in Standard Temp High."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInHT : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInHT : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -958,7 +1017,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO = {
         'tiny_name'	: "TimeHT",
         'desc'	: ("Time Spent in High Temperature."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInOT : {
+    SBS_CMD_BQ_LIFETIME_DATA_BLOCK3.TimeSpentInOT : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -969,7 +1028,7 @@ MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO = {
 }
 
 
-class MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES(DecoratedEnum):
+class SBS_CMD_BQ_VOLTAGES(DecoratedEnum):
     """ Voltages sub-command fields used in BQ30 family SBS chips
     """
     CellVoltage0			= 0x000
@@ -979,8 +1038,8 @@ class MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES(DecoratedEnum):
     BATVoltage				= 0x040
     PACKVoltage				= 0x050
 
-MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES_INFO = {
-    MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES.CellVoltage0 : {
+SBS_CMD_BQ_VOLTAGES_INFO = {
+    SBS_CMD_BQ_VOLTAGES.CellVoltage0 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
@@ -988,7 +1047,7 @@ MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES_INFO = {
         'tiny_name'	: "Volt0",
         'desc'	: ("Cell Voltage 0."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES.CellVoltage1 : {
+    SBS_CMD_BQ_VOLTAGES.CellVoltage1 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
@@ -996,7 +1055,7 @@ MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES_INFO = {
         'tiny_name'	: "Volt1",
         'desc'	: ("Cell Voltage 1."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES.CellVoltage2 : {
+    SBS_CMD_BQ_VOLTAGES.CellVoltage2 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
@@ -1004,7 +1063,7 @@ MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES_INFO = {
         'tiny_name'	: "Volt2",
         'desc'	: ("Cell Voltage 2."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES.CellVoltage3 : {
+    SBS_CMD_BQ_VOLTAGES.CellVoltage3 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
@@ -1012,7 +1071,7 @@ MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES_INFO = {
         'tiny_name'	: "Volt3",
         'desc'	: ("Cell Voltage 3."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES.BATVoltage : {
+    SBS_CMD_BQ_VOLTAGES.BATVoltage : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
@@ -1020,7 +1079,7 @@ MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES_INFO = {
         'tiny_name'	: "BatV",
         'desc'	: ("BAT Voltage."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES.PACKVoltage : {
+    SBS_CMD_BQ_VOLTAGES.PACKVoltage : {
         'type'	: "uint16",
         'unit'	: {'scale':100,'name':"mV"},
         'nbits'	: 16,
@@ -1031,7 +1090,7 @@ MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES_INFO = {
 }
 
 
-class MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES(DecoratedEnum):
+class SBS_CMD_BQ_TEMPERATURES(DecoratedEnum):
     """ Temperatures sub-command fields used in BQ30 family SBS chips
     """
     IntTemperature			= 0x000
@@ -1042,8 +1101,8 @@ class MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES(DecoratedEnum):
     CellTemperature			= 0x050
     FETTemperature			= 0x060
 
-MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES_INFO = {
-    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.IntTemperature : {
+SBS_CMD_BQ_TEMPERATURES_INFO = {
+    SBS_CMD_BQ_TEMPERATURES.IntTemperature : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1051,7 +1110,7 @@ MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES_INFO = {
         'tiny_name'	: "IntTm",
         'desc'	: ("Int Temperature."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.TS1Temperature : {
+    SBS_CMD_BQ_TEMPERATURES.TS1Temperature : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1059,7 +1118,7 @@ MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES_INFO = {
         'tiny_name'	: "TS1Tm",
         'desc'	: ("Temp Sensor 1 Temperature."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.TS2Temperature : {
+    SBS_CMD_BQ_TEMPERATURES.TS2Temperature : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1067,7 +1126,7 @@ MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES_INFO = {
         'tiny_name'	: "TS2Tm",
         'desc'	: ("Temp Sensor 2 Temperature."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.TS3Temperature : {
+    SBS_CMD_BQ_TEMPERATURES.TS3Temperature : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1075,7 +1134,7 @@ MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES_INFO = {
         'tiny_name'	: "TS3Tm",
         'desc'	: ("Temp Sensor 3 Temperature."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.TS4Temperature : {
+    SBS_CMD_BQ_TEMPERATURES.TS4Temperature : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1083,7 +1142,7 @@ MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES_INFO = {
         'tiny_name'	: "TS4Tm",
         'desc'	: ("Temp Sensor 4 Temperature."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.CellTemperature : {
+    SBS_CMD_BQ_TEMPERATURES.CellTemperature : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1092,7 +1151,7 @@ MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES_INFO = {
         'tiny_name'	: "CelTm",
         'desc'	: ("Cell Temperature."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES.FETTemperature : {
+    SBS_CMD_BQ_TEMPERATURES.FETTemperature : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1104,7 +1163,7 @@ MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES_INFO = {
 }
 
 
-class MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1(DecoratedEnum):
+class SBS_CMD_BQ_IT_STATUS1(DecoratedEnum):
     """ ITStatus1 sub-command fields used in BQ30 family SBS chips
     """
     DepthOfDischg0Cell0		= 0x000
@@ -1122,8 +1181,8 @@ class MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1(DecoratedEnum):
     DepOfDischEOCCell2		= 0x0d0
     DepOfDischEOCCell3		= 0x0e0
 
-MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepthOfDischg0Cell0 : {
+SBS_CMD_BQ_IT_STATUS1_INFO = {
+    SBS_CMD_BQ_IT_STATUS1.DepthOfDischg0Cell0 : {
         'type'	: "int16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1131,7 +1190,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'tiny_name'	: "DOD0_0",
         'desc'	: ("Depth of discharge cell 0."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepthOfDischg0Cell1 : {
+    SBS_CMD_BQ_IT_STATUS1.DepthOfDischg0Cell1 : {
         'type'	: "int16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1139,7 +1198,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'tiny_name'	: "DOD0_1",
         'desc'	: ("Depth of discharge cell 1."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepthOfDischg0Cell2 : {
+    SBS_CMD_BQ_IT_STATUS1.DepthOfDischg0Cell2 : {
         'type'	: "int16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1147,7 +1206,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'tiny_name'	: "DOD0_2",
         'desc'	: ("Depth of discharge cell 2."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepthOfDischg0Cell3 : {
+    SBS_CMD_BQ_IT_STATUS1.DepthOfDischg0Cell3 : {
         'type'	: "int16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1155,7 +1214,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'tiny_name'	: "DOD0_3",
         'desc'	: ("Depth of discharge cell 3."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.ChargeLastDOD0Upd : {
+    SBS_CMD_BQ_IT_STATUS1.ChargeLastDOD0Upd : {
         'type'	: "int16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1163,7 +1222,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'tiny_name'	: "ChDOD0Up",
         'desc'	: ("Passed charge since last DOD0 update."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.QMaxCell0 : {
+    SBS_CMD_BQ_IT_STATUS1.QMaxCell0 : {
         'type'	: "int16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1171,7 +1230,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'tiny_name'	: "QMAX0",
         'desc'	: ("Qmax of cell 0."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.QMaxCell1 : {
+    SBS_CMD_BQ_IT_STATUS1.QMaxCell1 : {
         'type'	: "int16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1179,7 +1238,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'tiny_name'	: "QMAX1",
         'desc'	: ("Qmax of cell 1."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.QMaxCell2 : {
+    SBS_CMD_BQ_IT_STATUS1.QMaxCell2 : {
         'type'	: "int16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1187,7 +1246,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'tiny_name'	: "QMAX2",
         'desc'	: ("Qmax of cell 2."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.QMaxCell3 : {
+    SBS_CMD_BQ_IT_STATUS1.QMaxCell3 : {
         'type'	: "int16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1195,7 +1254,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'tiny_name'	: "QMAX3",
         'desc'	: ("Qmax of cell 3."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.TimeSinceStateChg : {
+    SBS_CMD_BQ_IT_STATUS1.TimeSinceStateChg : {
         'type'	: "uint32",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 32,
@@ -1204,7 +1263,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'desc'	: ("Time passed since last state change. The changes "
             "accounted are DSG, CHG, RST."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepOfDischEOCCell0 : {
+    SBS_CMD_BQ_IT_STATUS1.DepOfDischEOCCell0 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1212,7 +1271,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'tiny_name'	: "DODEOC0",
         'desc'	: ("Depth of discharge cell0 at End of Charge."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepOfDischEOCCell1 : {
+    SBS_CMD_BQ_IT_STATUS1.DepOfDischEOCCell1 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1220,7 +1279,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'tiny_name'	: "DODEOC1",
         'desc'	: ("Depth of discharge cell1 at End of Charge."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepOfDischEOCCell2 : {
+    SBS_CMD_BQ_IT_STATUS1.DepOfDischEOCCell2 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1228,7 +1287,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
         'tiny_name'	: "DODEOC2",
         'desc'	: ("Depth of discharge cell2 at End of Charge."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1.DepOfDischEOCCell3 : {
+    SBS_CMD_BQ_IT_STATUS1.DepOfDischEOCCell3 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1239,7 +1298,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO = {
 }
 
 
-class MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2(DecoratedEnum):
+class SBS_CMD_BQ_IT_STATUS2(DecoratedEnum):
     """ ITStatus2 sub-command fields used in BQ30 family SBS chips
     """
     PackGridPoint			= 0x000
@@ -1261,8 +1320,8 @@ class MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2(DecoratedEnum):
     RaScale2				= 0x0d0
     RaScale3				= 0x0e0
 
-MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.PackGridPoint : {
+SBS_CMD_BQ_IT_STATUS2_INFO = {
+    SBS_CMD_BQ_IT_STATUS2.PackGridPoint : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -1270,7 +1329,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "PackGrid",
         'desc'	: ("Active pack grid point. Minimum of CellGrid0 to CellGrid3."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.LearnedStatus : {
+    SBS_CMD_BQ_IT_STATUS2.LearnedStatus : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -1278,7 +1337,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "LStatus",
         'desc'	: ("Learned status of resistance table."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.GridCell0 : {
+    SBS_CMD_BQ_IT_STATUS2.GridCell0 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -1286,7 +1345,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "CellGrid0",
         'desc'	: ("Active grid point cell 0."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.GridCell1 : {
+    SBS_CMD_BQ_IT_STATUS2.GridCell1 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -1294,7 +1353,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "CellGrid1",
         'desc'	: ("Active grid point cell 1."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.GridCell2 : {
+    SBS_CMD_BQ_IT_STATUS2.GridCell2 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -1302,7 +1361,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "CellGrid2",
         'desc'	: ("Active grid point cell 2."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.GridCell3 : {
+    SBS_CMD_BQ_IT_STATUS2.GridCell3 : {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
@@ -1310,7 +1369,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "CellGrid3",
         'desc'	: ("Active grid point cell 3."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CompResCell0 : {
+    SBS_CMD_BQ_IT_STATUS2.CompResCell0 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1318,7 +1377,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "CompRes0",
         'desc'	: ("Last calc temp compensated resistance cell 0."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CompResCell1 : {
+    SBS_CMD_BQ_IT_STATUS2.CompResCell1 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1326,7 +1385,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "CompRes1",
         'desc'	: ("Last calc temp compensated resistance cell 1."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CompResCell2 : {
+    SBS_CMD_BQ_IT_STATUS2.CompResCell2 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1334,7 +1393,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "CompRes2",
         'desc'	: ("Last calc temp compensated resistance cell 2."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CompResCell3 : {
+    SBS_CMD_BQ_IT_STATUS2.CompResCell3 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1342,7 +1401,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "CompRes3",
         'desc'	: ("Last calc temp compensated resistance cell 3."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CBTimeCell0 : {
+    SBS_CMD_BQ_IT_STATUS2.CBTimeCell0 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1350,7 +1409,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "CBTime0",
         'desc'	: ("Calculated cell balancing time cell 0."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CBTimeCell1 : {
+    SBS_CMD_BQ_IT_STATUS2.CBTimeCell1 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1358,7 +1417,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "CBTime1",
         'desc'	: ("Calculated cell balancing time cell 1."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CBTimeCell2 : {
+    SBS_CMD_BQ_IT_STATUS2.CBTimeCell2 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1366,7 +1425,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "CBTime2",
         'desc'	: ("Calculated cell balancing time cell 2."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.CBTimeCell3 : {
+    SBS_CMD_BQ_IT_STATUS2.CBTimeCell3 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1374,7 +1433,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "CBTime3",
         'desc'	: ("Calculated cell balancing time cell 3."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.RaScale0 : {
+    SBS_CMD_BQ_IT_STATUS2.RaScale0 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1382,7 +1441,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "RaScale0",
         'desc'	: ("Ra Table scaling factor cell 0."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.RaScale1 : {
+    SBS_CMD_BQ_IT_STATUS2.RaScale1 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1390,7 +1449,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "RaScale1",
         'desc'	: ("Ra Table scaling factor cell 1."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.RaScale2 : {
+    SBS_CMD_BQ_IT_STATUS2.RaScale2 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -1398,7 +1457,7 @@ MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO = {
         'tiny_name'	: "RaScale2",
         'desc'	: ("Ra Table scaling factor cell 2."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2.RaScale3 : {
+    SBS_CMD_BQ_IT_STATUS2.RaScale3 : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 16,
@@ -3659,7 +3718,7 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'type'	: "byte[13]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_FIRMWARE_VERSION_INFO,
+        'struct_info'	: SBS_CMD_BQ_FIRMWARE_VERSION_INFO,
         'access_per_seal'	: ("r","r","r",), # Tested working on BQ30z55 in sealed mode
         'desc'	: ("Version of the firmware within the device. Major and "
             "minor version numbers."),
@@ -3993,20 +4052,20 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'desc'	: ("Manufacturing Status bits. Works in sealed mode."),
         'getter'	: "simple",
     },
-    MANUFACTURER_ACCESS_CMD_BQ30.AFERegister : {
+    MANUFACTURER_ACCESS_CMD_BQ30.AFERegisters : {
         'type'	: "byte[]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: None,
+        'struct_info'	: SBS_CMD_BQ_AFE_REGISTERS_INFO,
         # doesn't seem to work on sealed BQ30z55
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("Output AFE register values on ManufacturerData()."),
+        'desc'	: ("Output Analog-front-End register values."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.LifetimeDataBlock1 : {
         'type'	: "byte[32]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO,
+        'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Output lifetimes values on ManufacturerData()."),
     },
@@ -4014,7 +4073,7 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'type'	: "byte[27]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO,
+        'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Output lifetimes values on ManufacturerData()."),
     },
@@ -4022,7 +4081,7 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'type'	: "byte[16]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO,
+        'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Output lifetimes values on ManufacturerData()."),
     },
@@ -4037,7 +4096,7 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'type'	: "byte[12]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_VOLTAGES_INFO,
+        'struct_info'	: SBS_CMD_BQ_VOLTAGES_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Outputs voltage data values."),
     },
@@ -4045,7 +4104,7 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'type'	: "byte[14]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_TEMPERATURES_INFO,
+        'struct_info'	: SBS_CMD_BQ_TEMPERATURES_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Outputs temperature data values. Block size "
             "is either 10 or 14 bytes, depending on chip and firmware."),
@@ -4054,7 +4113,7 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'type'	: "byte[30]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO,
+        'struct_info'	: SBS_CMD_BQ_IT_STATUS1_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Impedance Track Status parameters 1. Gauging algorithm "
             "related params. Outputs 30 bytes of IT data values."),
@@ -4063,7 +4122,7 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'type'	: "byte[10]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO,
+        'struct_info'	: SBS_CMD_BQ_IT_STATUS2_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Impedance Track Status parameters 2. Gauging algorithm "
             "related params. Outputs 30 bytes of IT data values."),
@@ -4985,12 +5044,12 @@ SBS_CMD_INFO = {
     },
     SBS_COMMAND_BQ30.AFERegisters : {
         'type'	: "byte[]",
-        'unit'	: {'scale':1,'name':"bitfields"},
-        'bitfields_info'	: {},
+        'unit'	: {'scale':None,'name':"struct"},
+        'struct_info'	: SBS_CMD_BQ_AFE_REGISTERS_INFO,
         'access_per_seal'	: ("-","r","r",),
-        'desc'	: ("AFE register values from ManufacturerData(). "
+        'desc'	: ("Analog-front-End reg values from ManufacturerData(). "
             "In sealed mode, use ManufacturerAccess() instead."),
-        'getter'	: "TODO",
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ_TURBO.TURBO_POWER : {
         'type'	: "uint16",
@@ -5053,64 +5112,73 @@ SBS_CMD_INFO = {
         'getter'	: "TODO",
     },
     SBS_COMMAND_BQ30.LifetimeDataBlock1 : {
-        'type'	: "byte[]",
-        'unit'	: {'scale':1,'name':"variable"},
+        'type'	: "byte[32]",
+        'unit'	: {'scale':None,'name':"struct"},
+        'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Lifetime data values, block 1. The values from "
             "ManufacturerData()."),
-        'getter'	: "TODO",
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ30.LifetimeDataBlock2 : {
-        'type'	: "byte[]",
-        'unit'	: {'scale':1,'name':"variable"},
+        'type'	: "byte[32]",
+        'unit'	: {'scale':None,'name':"struct"},
+        'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Lifetime data values, block 2. The values from "
             "ManufacturerData()."),
-        'getter'	: "TODO",
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ30.LifetimeDataBlock3 : {
-        'type'	: "byte[]",
-        'unit'	: {'scale':1,'name':"variable"},
+        'type'	: "byte[32]",
+        'unit'	: {'scale':None,'name':"struct"},
+        'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Lifetime data values, block 3. The values from "
             "ManufacturerData()."),
-        'getter'	: "TODO",
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ30.ManufacturerInfo : {
-        'type'	: "byte[]",
+        'type'	: "string[32]",
         'unit'	: {'scale':1,'name':"variable"},
         'access_per_seal'	: ("r","rw","rw",),
         'desc'	: ("Manufacturer Info values. The values from "
             "ManufacturerData()."),
-        'getter'	: "TODO",
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ30.Voltages : {
-        'type'	: "byte[]",
-        'unit'	: {'scale':1,'name':"mV"},
+        'type'	: "byte[12]",
+        'unit'	: {'scale':None,'name':"struct"},
+        'struct_info'	: SBS_CMD_BQ_VOLTAGES_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Voltage data values. The values from ManufacturerData()."),
-        'getter'	: "TODO",
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ30.Temperatures : {
-        'type'	: "byte[]",
-        'unit'	: {'scale':0.1,'name':"K"},
+        'type'	: "byte[14]",
+        'unit'	: {'scale':None,'name':"struct"},
+        'struct_info'	: SBS_CMD_BQ_TEMPERATURES_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("IT data values. The values from ManufacturerData()."),
-        'getter'	: "TODO",
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ30.ITStatus1 : {
         'type'	: "byte[30]",
-        'unit'	: {'scale':1,'name':"variable"},
+        'unit'	: {'scale':None,'name':"struct"},
+        'struct_info'	: SBS_CMD_BQ_IT_STATUS1_INFO,
         'access_per_seal'	: ("-","r","r",),
-        'desc'	: ("IT data values, block 1. The values from ManufacturerData()."),
-        'getter'	: "TODO",
+        'desc'	: ("Impedance Track Status parameters 1. Gauging algorithm "
+            "related params. The values from ManufacturerData()."),
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ30.ITStatus2 : {
         'type'	: "byte[30]",
-        'unit'	: {'scale':1,'name':"variable"},
+        'unit'	: {'scale':None,'name':"struct"},
+        'struct_info'	: SBS_CMD_BQ_IT_STATUS2_INFO,
         'access_per_seal'	: ("-","r","r",),
-        'desc'	: ("IT data values, block 2. The values from ManufacturerData()."),
-        'getter'	: "TODO",
+        'desc'	: ("Impedance Track Status parameters 2. Gauging algorithm "
+            "related params. The values from ManufacturerData()."),
+        'getter'	: "simple",
     },
 
 }
@@ -5128,6 +5196,10 @@ class MONITOR_GROUP(DecoratedEnum):
     BQStatusBits	= 0x06
     BQStatusBitsMA	= 0x07
     BQCellVoltages	= 0x08
+    BQLifetimeData	= 0x09
+    BQLifetimeDataMA	= 0x0a
+    ImpedanceTrack	= 0x0b
+    ImpedanceTrackMA	= 0x0c
     BQTurboMode	= 0x0f
 
 
@@ -5187,16 +5259,29 @@ SBS_CMD_GROUPS = {
         MANUFACTURER_ACCESS_CMD_BQ30.GaugingStatus,
         MANUFACTURER_ACCESS_CMD_BQ30.ManufacturingStatus,
     ),
-    MONITOR_GROUP.Group1 : (
-        SBS_COMMAND_BQ30.AFERegisters,
+    MONITOR_GROUP.BQLifetimeData : (
+        SBS_COMMAND_BQ30.ManufacturerInfo,
         SBS_COMMAND_BQ30.LifetimeDataBlock1,
         SBS_COMMAND_BQ30.LifetimeDataBlock2,
         SBS_COMMAND_BQ30.LifetimeDataBlock3,
-        SBS_COMMAND_BQ30.ManufacturerInfo,
+    ),
+    MONITOR_GROUP.BQLifetimeDataMA : (
+        MANUFACTURER_ACCESS_CMD_BQ30.ManufacturerInfo,
+        MANUFACTURER_ACCESS_CMD_BQ30.LifetimeDataBlock1,
+        MANUFACTURER_ACCESS_CMD_BQ30.LifetimeDataBlock2,
+        MANUFACTURER_ACCESS_CMD_BQ30.LifetimeDataBlock3,
+    ),
+    MONITOR_GROUP.ImpedanceTrack : (
         SBS_COMMAND_BQ30.Voltages,
         SBS_COMMAND_BQ30.Temperatures,
         SBS_COMMAND_BQ30.ITStatus1,
         SBS_COMMAND_BQ30.ITStatus2,
+    ),
+    MONITOR_GROUP.ImpedanceTrackMA : (
+        MANUFACTURER_ACCESS_CMD_BQ30.Voltages,
+        MANUFACTURER_ACCESS_CMD_BQ30.Temperatures,
+        MANUFACTURER_ACCESS_CMD_BQ30.ITStatus1,
+        MANUFACTURER_ACCESS_CMD_BQ30.ITStatus2,
     ),
     MONITOR_GROUP.BQCellVoltages : (
         SBS_COMMAND_BQ30.Cell0Voltage,
