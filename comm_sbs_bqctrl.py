@@ -5757,7 +5757,7 @@ def smbus_write_simple(bus, dev_addr, cmd, v, val_type, val_unit, retry_count, p
     else:
         raise ValueError("Command {} type {} not supported".format(cmd.name,val_type))
 
-    return
+    return val_unit['name']
 
 
 def parse_sbs_command_value(cmd, subcmdinf, v, u, po):
@@ -5993,7 +5993,10 @@ def smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po)
     """ Reads value of ManufacturerAccess sub-command from the battery.
     """
     resp_type = subcmdinf['type']
-    resp_cmd = subcmdinf['resp_location']
+    if 'resp_location' in subcmdinf:
+        resp_cmd = subcmdinf['resp_location']
+    else:
+        resp_cmd = None
     if 'resp_wait' in subcmdinf:
         resp_wait = subcmdinf['resp_wait']
     else:
@@ -6017,7 +6020,10 @@ def smbus_write_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, v,
     Handles value scaling and its conversion to bytes. Handles retries as well.
     """
     stor_type = subcmdinf['type']
-    stor_cmd = subcmdinf['resp_location']
+    if 'resp_location' in subcmdinf:
+        stor_cmd = subcmdinf['resp_location']
+    else:
+        stor_cmd = None
     if 'resp_wait' in subcmdinf:
         stor_wait = subcmdinf['resp_wait']
     else:
@@ -6030,12 +6036,13 @@ def smbus_write_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, v,
         else:
             v = v // stor_unit['scale']
 
-    if (stor_type.startswith("byte[") or stor_type.startswith("string") or stor_type.endswith("_blk")):
-        smbus_write_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, stor_type, stor_cmd, stor_wait, po)
+    if (stor_type.startswith("byte[") or stor_type.startswith("string") or
+      stor_type.endswith("_blk") or stor_type in ("void",)):
+        smbus_write_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po)
     else:
         raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,stor_type))
 
-    return
+    return stor_unit['name']
 
 
 def smbus_read(bus, dev_addr, cmd, opts, vals, po):
@@ -6083,8 +6090,8 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
         if not subgrp:
             raise ValueError("Command {}.{} missing definition".format(cmd.name,subcmd.name))
 
-        if 'resp_location' in subcmdinf:
-            # do write request, then expect response at specific location
+        if ('resp_location' in subcmdinf) or (subcmdinf['type'] == "void"):
+            # do write request with subcmd, then expect response at specific location
             v, u = smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po)
         else:
             # Do normal read, this is not a sub-command with different response location
@@ -6122,7 +6129,7 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
 
     if cmdinf['getter'] == "simple":
         stor_unit = cmdinf['unit']
-        smbus_write_simple(bus, dev_addr, cmd, v, cmdinf['type'], stor_unit, retry_count, po)
+        u = smbus_write_simple(bus, dev_addr, cmd, v, cmdinf['type'], stor_unit, retry_count, po)
 
     elif cmdinf['getter'] == "unit_select_on_capacity_mode":
         capacity_mode = None
@@ -6138,7 +6145,7 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
             stor_unit = cmdinf['unit1']
         else:
             stor_unit = cmdinf['unit0']
-        smbus_write_simple(bus, dev_addr, cmd, v, cmdinf['type'], stor_unit, retry_count, po)
+        u = smbus_write_simple(bus, dev_addr, cmd, v, cmdinf['type'], stor_unit, retry_count, po)
 
     elif cmdinf['getter'] == "manufacturer_access_subcommand":
         if "subcmd" not in opts.keys():
@@ -6151,11 +6158,11 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
         if not subgrp:
             raise ValueError("Command {}.{} missing definition".format(cmd.name,subcmd.name))
 
-        if 'resp_location' in subcmdinf:
-            # do write request, then expect response at specific location
-            smbus_write_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, v, po)
+        if ('resp_location' in subcmdinf) or (subcmdinf['type'] == "void"):
+            # do write request with subcmd, then do actual data write at specific location
+            u = smbus_write_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, v, po)
         else:
-            smbus_write_simple(bus, dev_addr, cmd, v, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
+            u = smbus_write_simple(bus, dev_addr, cmd, v, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
         if (u == "struct"):
             subinfgrp = subcmdinf['struct_info']
         elif (u == "bitfields"):
@@ -6330,7 +6337,7 @@ def smart_battery_system_trigger(cmd_str, vals, po):
     cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
     cmdinf = SBS_CMD_INFO[cmd]
     opts = {"subcmd": subcmd}
-    v = None
+    v = b''
     try:
         u, s = smbus_write(bus, po.dev_address, cmd, v, opts, vals, po)
     except Exception as ex:
