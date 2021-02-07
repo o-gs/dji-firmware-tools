@@ -4056,8 +4056,8 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS1_INFO,
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("Gauging algorithm related parameters 1. Outputs 30 bytes "
-            "of IT data values."),
+        'desc'	: ("Impedance Track Status parameters 1. Gauging algorithm "
+            "related params. Outputs 30 bytes of IT data values."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.ITStatus2 : {
         'type'	: "byte[10]",
@@ -4065,8 +4065,8 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'struct_info'	: MANUFACTURER_ACCESS_CMD_BQ_IT_STATUS2_INFO,
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("Gauging algorithm related parameters 2. Outputs 30 bytes "
-            "of IT data values."),
+        'desc'	: ("Impedance Track Status parameters 2. Gauging algorithm "
+            "related params. Outputs 30 bytes of IT data values."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.DFAccessRowAddress : {
         'type'	: "byte[]",
@@ -5336,6 +5336,32 @@ def bytes_to_type_str(b, type_str, endian="le"):
     return v
 
 
+def type_str_to_bytes(v, type_str, endian="le"):
+    if endian == "be":
+        endian = '>'
+    else:
+        endian = '<'
+    if type_str in ("int8",):
+        b = struct.pack(endian+'b', v)
+    elif type_str in ("uint8",):
+        b = struct.pack(endian+'B', v)
+    elif type_str in ("int16","int16_blk",):
+        b = struct.pack(endian+'h', v)
+    elif type_str in ("uint16","uint16_blk",):
+        b = struct.pack(endian+'H', v)
+    elif type_str in ("uint24","uint24_blk",):
+        b = struct.pack(endian+'L', v)
+    elif type_str in ("int32","int32_blk",):
+        b = struct.pack(endian+'l', v)
+    elif type_str in ("uint32","uint32_blk",):
+        b = struct.pack(endian+'L', v)
+    elif type_str in ("float","float_blk",):
+        b = struct.pack(endian+'f', v)
+    else:
+        b = bytes(v)
+    return b
+
+
 def smbus_recreate_read_packet_data(dev_addr, cmd, resp_data):
   """ Re-creates read command packet with response
 
@@ -5471,16 +5497,6 @@ def smbus_write_word(bus, dev_addr, cmd, v, val_type, po):
     bus.write_word_data(dev_addr, cmd.value, v)
 
 
-def smbus_write_long_blk(bus, dev_addr, cmd, v, val_type, po):
-    if val_type in ("int32",): # signed type support
-        b = struct.pack('<l', v)
-    else:
-        b = struct.pack('<L', v)
-    if (po.verbose > 2):
-        print("Write {}: {:02x} BLOCK={}".format(cmd.name, cmd.value, " ".join('{:02x}'.format(x) for x in b)))
-    bus.write_i2c_block_data(dev_addr, cmd.value, b)
-
-
 def smbus_write_block_for_basecmd(bus, dev_addr, cmd, v, basecmd_name, val_type, po):
     """ Write block to cmd, use basecmd_name for logging
     """
@@ -5496,25 +5512,49 @@ def smbus_write_block(bus, dev_addr, cmd, v, val_type, po):
     smbus_write_block_for_basecmd(bus, dev_addr, cmd, v, cmd.name, val_type, po)
 
 
+def smbus_write_word_blk(bus, dev_addr, cmd, v, val_type, po):
+    b = type_str_to_bytes(v, val_type)
+    smbus_write_block_for_basecmd(bus, dev_addr, cmd, b, cmd.name, val_type, po)
+
+
+def smbus_write_long_blk(bus, dev_addr, cmd, v, val_type, po):
+    b = type_str_to_bytes(v, val_type)
+    smbus_write_block_for_basecmd(bus, dev_addr, cmd, b, cmd.name, val_type, po)
+
+
 def smbus_read_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po):
-    """ Reads value of ManufacturerAccess sub-command from the battery.
+    """ Reads value from ManufacturerAccess sub-command of the battery.
+
+    Returns bytes array received in response, without converting the type.
     """
     # write sub-command to ManufacturerAccess
     bus.write_word_data(dev_addr, cmd.value, subcmd.value)
     # Check if sleep needed inbetween requests
     if resp_wait > 0:
         time.sleep(resp_wait)
+    # This function should never be called for void type; if it was, error out
+    if resp_type == "void":
+        raise TypeError("Reading should not be called for a void response type")
     basecmd_name = "{}.{}".format(cmd.name,subcmd.name)
     v = smbus_read_block_for_basecmd(bus, dev_addr, resp_cmd, basecmd_name, resp_type, po)
     return v
 
 
-def smbus_write_manufacturer_access_trigger_bq(bus, dev_addr, cmd, subcmd, po):
-    """ Write command without params to ManufacturerAccess sub-command from the battery.
+def smbus_write_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, v, resp_type, resp_cmd, resp_wait, po):
+    """ Write value to ManufacturerAccess sub-command of the battery.
+
+    Expects value to already be bytes array ready for sending.
     """
     # write sub-command to ManufacturerAccess
     bus.write_word_data(dev_addr, cmd.value, subcmd.value)
-    return
+    # Check if sleep needed inbetween requests
+    if resp_wait > 0:
+        time.sleep(resp_wait)
+    # If the type to store is void, meaning we're writing to trigger switch - that's all
+    if resp_type == "void":
+        return
+    basecmd_name = "{}.{}".format(cmd.name,subcmd.name)
+    smbus_write_block_for_basecmd(bus, dev_addr, resp_cmd, v, basecmd_name, resp_type, po)
 
 
 def smbus_perform_unseal_bq30(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, sec_key_hex, po):
@@ -5523,7 +5563,7 @@ def smbus_perform_unseal_bq30(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, r
     basecmd_name = "{}.{}".format(cmd.name,subcmd.name)
     if resp_type == "void":
         # Command with no params - which is sealing
-        smbus_write_manufacturer_access_trigger_bq(bus, dev_addr, cmd, subcmd, po)
+        smbus_write_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, b'', resp_type, resp_cmd, resp_wait, po)
         return
     if False: # TODO use for dry run
         KD = bytes.fromhex("00000000 00000000 00000000 00000000")
@@ -5572,17 +5612,23 @@ def smbus_perform_unseal_bq30(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, r
 
 def smbus_read_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po):
     """ Reads value of ManufacturerAccess sub-command from the battery.
+
+    Converts the received bytes to properly typed value, based on resp_type.
+    Handles retries, if neccessary.
     """
     basecmd_name = "{}.{}".format(cmd.name,subcmd.name)
     if (po.verbose > 2):
         print("Query {}: {:02x} WORD=0x{:x}".format(basecmd_name, cmd.value, subcmd.value))
+
     b = None
     for nretry in reversed(range(3)):
         try:
             b = smbus_read_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
         except Exception as ex:
             if (nretry > 0) and (
-              (isinstance(ex, OSError) and ex.errno in (121,)) # 121 = I/O error, usually means no ACK
+              (isinstance(ex, OSError) and ex.errno in (5,121,))
+              # 5 = Input/output error, sometimes just happens
+              # 121 = I/O error, usually means no ACK
               ):
                 if (po.verbose > 2):
                     print("Retrying due to error: "+str(ex))
@@ -5597,6 +5643,40 @@ def smbus_read_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, re
     v = bytes_to_type_str(b, resp_type, "le")
 
     return v
+
+
+def smbus_write_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po):
+    """ Writes value to ManufacturerAccess sub-command of the battery.
+
+    Converts the value v to proper bytes array for write, based on stor_type.
+    Handles retries, if neccessary.
+    """
+    basecmd_name = "{}.{}".format(cmd.name,subcmd.name)
+    if (po.verbose > 2):
+        print("Store {}: {:02x} WORD=0x{:x}".format(basecmd_name, cmd.value, subcmd.value))
+
+    b = type_str_to_bytes(v, stor_type, "le")
+
+    for nretry in reversed(range(1)):
+        try:
+            smbus_write_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, b, stor_type, stor_cmd, stor_wait, po)
+        except Exception as ex:
+            if (nretry > 0) and (
+              (isinstance(ex, OSError) and ex.errno in (5,121,))
+              # 5 = Input/output error, sometimes just happens
+              # 121 = I/O error, usually means no ACK
+              ):
+                if (po.verbose > 2):
+                    print("Retrying due to error: "+str(ex))
+                pass
+            else:
+                raise
+        if b is None:
+            time.sleep(0.25)
+            continue
+        break
+
+    return
 
 
 def smbus_read_simple(bus, dev_addr, cmd, resp_type, resp_unit, retry_count, po):
@@ -5647,7 +5727,7 @@ def smbus_read_simple(bus, dev_addr, cmd, resp_type, resp_unit, retry_count, po)
     return v, resp_unit['name']
 
 
-def smbus_write_simple(bus, dev_addr, cmd, v, val_type, val_unit, po):
+def smbus_write_simple(bus, dev_addr, cmd, v, val_type, val_unit, retry_count, po):
     """ Writes value of simple command to the battery.
     """
     if val_unit['scale'] is not None:
@@ -5919,9 +5999,7 @@ def smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po)
     else:
         resp_wait = 0
 
-    if (resp_type.startswith("byte[") or resp_type.startswith("string") or
-      resp_type in ("int32_blk","uint32_blk","int24_blk","uint24_blk","int16_blk","uint16_blk","float_blk",)
-      ):
+    if (resp_type.startswith("byte[") or resp_type.startswith("string") or resp_type.endswith("_blk")):
         v = smbus_read_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
     else:
         raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,resp_type))
@@ -5931,6 +6009,33 @@ def smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po)
         v *= resp_unit['scale']
 
     return v, resp_unit['name']
+
+
+def smbus_write_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, v, po):
+    """ Write value to ManufacturerAccess sub-command of the battery.
+
+    Handles value scaling and its conversion to bytes. Handles retries as well.
+    """
+    stor_type = subcmdinf['type']
+    stor_cmd = subcmdinf['resp_location']
+    if 'resp_wait' in subcmdinf:
+        stor_wait = subcmdinf['resp_wait']
+    else:
+        stor_wait = 0
+
+    stor_unit = subcmdinf['unit']
+    if stor_unit['scale'] is not None:
+        if stor_type in ("float","float_blk",):
+            v = v / stor_unit['scale']
+        else:
+            v = v // stor_unit['scale']
+
+    if (stor_type.startswith("byte[") or stor_type.startswith("string") or stor_type.endswith("_blk")):
+        smbus_write_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, stor_type, stor_cmd, stor_wait, po)
+    else:
+        raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,stor_type))
+
+    return
 
 
 def smbus_read(bus, dev_addr, cmd, opts, vals, po):
@@ -6000,6 +6105,72 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
     return v, l, u, subinfgrp
 
 
+def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
+    """ Write value to given command of the battery.
+
+    Selects proper getter function for the command given.
+    """
+    cmdinf = SBS_CMD_INFO[cmd]
+    subinfgrp = None
+    if 'retry_count' in opts:
+        retry_count = opts['retry_count']
+    else:
+        retry_count = 1
+    if (po.verbose > 1):
+        print("Writing {} command at addr=0x{:x}, cmd=0x{:x}, type={}, v={}, opts={}".format(
+          cmdinf['getter'], dev_addr, cmd.value, cmdinf['type'], v, opts))
+
+    if cmdinf['getter'] == "simple":
+        stor_unit = cmdinf['unit']
+        smbus_write_simple(bus, dev_addr, cmd, v, cmdinf['type'], stor_unit, retry_count, po)
+
+    elif cmdinf['getter'] == "unit_select_on_capacity_mode":
+        capacity_mode = None
+        if SBS_COMMAND.BatteryMode in vals.keys():
+            batt_mode = vals[SBS_COMMAND.BatteryMode]
+            capacity_mode_mask = 1 << SBS_FLAG_BATTERY_MODE.CAPACITY_MODE.value
+            capacity_mode = (batt_mode['val'] & capacity_mode_mask) != 0
+        if capacity_mode is None:
+            stor_unit = {'scale':1,'name':"{:d}{:s}/{:d}{:s}".format(
+                cmdinf['unit0']['scale'],cmdinf['unit0']['name'],
+                cmdinf['unit1']['scale'],cmdinf['unit1']['name'])}
+        elif capacity_mode:
+            stor_unit = cmdinf['unit1']
+        else:
+            stor_unit = cmdinf['unit0']
+        smbus_write_simple(bus, dev_addr, cmd, v, cmdinf['type'], stor_unit, retry_count, po)
+
+    elif cmdinf['getter'] == "manufacturer_access_subcommand":
+        if "subcmd" not in opts.keys():
+            raise ValueError("Command {} requires to provide sub-command".format(cmd.name))
+        subcmd = opts["subcmd"]
+        for subgrp in cmdinf['subcmd_infos']:
+            if subcmd in subgrp.keys():
+                subcmdinf = subgrp[subcmd]
+                break
+        if not subgrp:
+            raise ValueError("Command {}.{} missing definition".format(cmd.name,subcmd.name))
+
+        if 'resp_location' in subcmdinf:
+            # do write request, then expect response at specific location
+            smbus_write_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, v, po)
+        else:
+            smbus_write_simple(bus, dev_addr, cmd, v, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
+        if (u == "struct"):
+            subinfgrp = subcmdinf['struct_info']
+        elif (u == "bitfields"):
+            subinfgrp = subcmdinf['bitfields_info']
+
+    else:
+        raise ValueError("Command {} getter {} not supported".format(cmd.name,cmdinf['getter']))
+
+    if (not subinfgrp) and (u == "bitfields"):
+        # The 'bitfields' type has only one list of sub-fields, so use it
+        subinfgrp = cmdinf['bitfields_info']
+
+    return u, subinfgrp
+
+
 def bq_read_firmware_version_sealed(bus, dev_addr, po):
     """ Reads firmware version from BQ series chips
 
@@ -6041,7 +6212,9 @@ def smart_battery_bq_detect(vals, po):
             v = bq_read_firmware_version_sealed(bus, po.dev_address, po)
         except Exception as ex:
             if (nretry > 0) and (
-              (isinstance(ex, OSError) and ex.errno in (121,)) or # 121 = I/O error, usually means no ACK
+              (isinstance(ex, OSError) and ex.errno in (5,121,)) or
+              # 5 = Input/output error, sometimes just happens
+              # 121 = I/O error, usually means no ACK
               (isinstance(ex, ValueError)) or # invalid length or checksum
               (isinstance(ex, ConnectionError)) # invalid response on initial writes
               ):
@@ -6109,21 +6282,7 @@ def smart_battery_system_command_from_text(cmd_str, po):
     return cmd, subcmd
 
 
-def smart_battery_system_read(cmd_str, vals, po):
-    """ Reads and prints value of the command from the battery.
-    """
-    global bus
-    cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
-    cmdinf = SBS_CMD_INFO[cmd]
-    short_desc = cmdinf['desc'].split('.')[0]
-    opts = {"subcmd": subcmd}
-    v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
-    response = {'val':v,'list':l,'sinf':s,'uname':u,}
-    vals[cmd if subcmd is None else subcmd] = response
-    print_sbs_command_value(cmd, subcmd, response, 0, po)
-
-
-def smart_battery_system_last_error(vals, po):
+def smart_battery_system_last_error(bus, dev_addr, vals, po):
     """ Reads and prints value of last ERROR_CODE from the battery.
     """
     cmd = SBS_COMMAND.BatteryStatus
@@ -6131,7 +6290,7 @@ def smart_battery_system_last_error(vals, po):
     fldinf = SBS_BATTERY_STATUS_INFO[fld]
     val = None
     try:
-        v, l, u, s = smbus_read(bus, po.dev_address, cmd, {"subcmd": None,"retry_count":1}, vals, po)
+        v, l, u, s = smbus_read(bus, dev_addr, cmd, {"subcmd": None,"retry_count":1}, vals, po)
         response = {'val':v,'list':l,'sinf':s,'uname':u,}
         vals[cmd if subcmd is None else subcmd] = response
         val = l[fld]['val']
@@ -6151,6 +6310,39 @@ def smart_battery_system_last_error(vals, po):
     return
 
 
+def smart_battery_system_read(cmd_str, vals, po):
+    """ Reads and prints value of the command from the battery.
+    """
+    global bus
+    cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
+    cmdinf = SBS_CMD_INFO[cmd]
+    opts = {"subcmd": subcmd}
+    v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
+    response = {'val':v,'list':l,'sinf':s,'uname':u,}
+    vals[cmd if subcmd is None else subcmd] = response
+    print_sbs_command_value(cmd, subcmd, response, 0, po)
+
+
+def smart_battery_system_trigger(cmd_str, vals, po):
+    """ Trigger a switch command within the battery.
+    """
+    global bus
+    cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
+    cmdinf = SBS_CMD_INFO[cmd]
+    opts = {"subcmd": subcmd}
+    v = None
+    try:
+        u, s = smbus_write(bus, po.dev_address, cmd, v, opts, vals, po)
+    except Exception as ex:
+        print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "trigger", "FAIL", str(ex)))
+        if (isinstance(ex, OSError)):
+            smart_battery_system_last_error(bus, po.dev_address, vals, po)
+        if (po.explain):
+            print("Description: {}".format(cmdinf['desc']))
+        return
+    print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "trigger", "SUCCESS", "Trigger switch write accepted"))
+
+
 def smart_battery_system_monitor(mgroup_str, vals, po):
     """ Reads and prints multiple values from the battery.
     """
@@ -6167,14 +6359,13 @@ def smart_battery_system_monitor(mgroup_str, vals, po):
             cmd = anycmd
             subcmd = None
         cmdinf = SBS_CMD_INFO[cmd]
-        short_desc = cmdinf['desc'].split('.')[0]
         opts = {"subcmd": subcmd}
         try:
             v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
         except Exception as ex:
             print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", names_width, "n/a", "FAIL", str(ex)))
             if (isinstance(ex, OSError)):
-                smart_battery_system_last_error(vals, po)
+                smart_battery_system_last_error(bus, po.dev_address, vals, po)
             if (po.explain):
                 print("Description: {}".format(cmdinf['desc']))
             continue
@@ -6250,7 +6441,7 @@ def main():
 
       Its task is to parse command line options and call a function which performs sniffing.
     """
-    # Create a list of valid commands/offsets
+    # Create a list of valid commands/offsets: for read, write and trigger
     all_r_commands = []
     for cmd, cmdinf in SBS_CMD_INFO.items():
         can_access = sum(('r' in accstr) for accstr in cmdinf['access_per_seal'])
@@ -6263,6 +6454,7 @@ def main():
         elif can_access > 0:
             all_r_commands.append(cmd.name)
     all_w_commands = []
+    all_t_commands = []
     for cmd, cmdinf in SBS_CMD_INFO.items():
         can_access = sum(('w' in accstr) for accstr in cmdinf['access_per_seal'])
         if 'subcmd_infos' in cmdinf:
@@ -6270,9 +6462,15 @@ def main():
                 for subcmd, subcmdinf in subgrp.items():
                     sub_can_access = sum(('w' in accstr) for accstr in subcmdinf['access_per_seal'])
                     if sub_can_access > 0:
-                        all_w_commands.append("{}.{}".format(cmd.name,subcmd.name))
+                        if subcmdinf['type'] == "void":
+                            all_t_commands.append("{}.{}".format(cmd.name,subcmd.name))
+                        else:
+                            all_w_commands.append("{}.{}".format(cmd.name,subcmd.name))
         elif can_access > 0:
-            all_w_commands.append(cmd.name)
+            if cmdinf['type'] == "void":
+                all_t_commands.append(cmd.name)
+            else:
+                all_w_commands.append(cmd.name)
                 
     parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
@@ -6317,11 +6515,21 @@ def main():
             help="The command/offset name to read from; one of: {:s}".format(', '.join(all_r_commands)))
 
 
+    subpar_trigger = subparsers.add_parser('trigger',
+            help="Write to a trigger, command/offset of the battery which acts as a switch")
+
+    subpar_trigger.add_argument('command', metavar='command', choices=all_t_commands, type=parse_command,
+            help="The command/offset name to trigger; one of: {:s}".format(', '.join(all_t_commands)))
+
+
     subpar_write = subparsers.add_parser('write',
             help="Write value to a single command/offset of the battery")
 
     subpar_write.add_argument('command', metavar='command', choices=all_w_commands, type=parse_command,
             help="The command/offset name to write to; one of: {:s}".format(', '.join(all_w_commands)))
+
+    subpar_write.add_argument('newvalue', metavar='value', type=str,
+            help="New value to write to the command/offset")
 
 
     subpar_monitor = subparsers.add_parser('monitor',
@@ -6356,8 +6564,10 @@ def main():
 
     if po.action == 'read':
         smart_battery_system_read(po.command, vals, po)
+    elif po.action == 'trigger':
+        smart_battery_system_trigger(po.command, vals, po)
     elif po.action == 'write':
-        smart_battery_system_write(po.command, vals, po)
+        smart_battery_system_write(po.command, po.newvalue, vals, po)
     elif po.action == 'monitor':
         smart_battery_system_monitor(po.cmdgroup, vals, po)
     elif po.action == 'sealing':
