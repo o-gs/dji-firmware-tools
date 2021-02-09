@@ -6594,7 +6594,10 @@ def smart_battery_system_sealing(seal_str, vals, po):
 
     checkcmd_name = "{}.{}".format(SBS_COMMAND.ManufacturerAccess.name,SBS_COMMAND_BQ30.OperationStatus.name)
     resp_type = subcmdinf['type']
-    resp_cmd = subcmdinf['resp_location']
+    if 'resp_location' in subcmdinf:
+        resp_cmd = subcmdinf['resp_location']
+    else:
+        resp_cmd = None
     if 'resp_wait' in subcmdinf:
         resp_wait = subcmdinf['resp_wait']
     else:
