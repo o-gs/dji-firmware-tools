@@ -266,6 +266,13 @@ class MANUFACTURER_ACCESS_CMD_BQ30(DecoratedEnum):
     OutputShortCCnADCOffset	= 0xf082
 
 
+class RAW_ADDRESS_SPACE_KIND_BQ30(DecoratedEnum):
+    """ Address spaces used in BQ30 family SBS chips
+    """
+    DataFlash				= 0x00
+    InstructionFlash		= 0x01
+
+
 class SBS_CMD_BQ_FIRMWARE_VERSION(DecoratedEnum):
     """ FirmwareVersion sub-command fields used in BQ30 family SBS chips
     """
@@ -5184,6 +5191,30 @@ SBS_CMD_INFO = {
 }
 
 
+RAW_ADDRESS_SPACE_KIND_INFO = {
+    RAW_ADDRESS_SPACE_KIND_BQ30.DataFlash : {
+        'type'	: "byte[32]",
+        'unit'	: {'scale':None,'name':"hex"},
+        'access_per_seal'	: ("-","rw","rw",),
+        'desc'	: ("Data Flash raw access. Allows to read/write values within "
+            "data flash, which stores all parameters which drive smart battery "
+            "algorithms. Positions of values depend not only on chip model, "
+            "but also of battery firmware version - so be careful when writing "
+            "to this space."),
+        'getter'	: "data_flash_access",
+    },
+    RAW_ADDRESS_SPACE_KIND_BQ30.InstructionFlash : {
+        'type'	: "byte[32]",
+        'unit'	: {'scale':None,'name':"hex"},
+        'access_per_seal'	: ("-","rw","rw",),
+        'desc'	: ("Instruction Flash raw access. The easiest way to brick "
+            "your chip."),
+        'getter'	: "instruction_flash_access",
+    },
+
+}
+
+
 class MONITOR_GROUP(DecoratedEnum):
     """ List of groups of commands/offsets.
     """
@@ -6675,6 +6706,24 @@ def main():
                     all_t_commands.append(cmd.name)
                 else:
                     all_w_commands.append(cmd.name)
+
+    # Create a list of valid address spaces: for read and write
+
+    raw_r_commands = []
+    for knd, kndinf in RAW_ADDRESS_SPACE_KIND_INFO.items():
+        can_access = sum(('r' in accstr) for accstr in kndinf['access_per_seal'])
+        if True:
+            if can_access > 0:
+                raw_r_commands.append(knd.name)
+
+    raw_w_commands = []
+    for knd, kndinf in RAW_ADDRESS_SPACE_KIND_INFO.items():
+        can_access = sum(('w' in accstr) for accstr in kndinf['access_per_seal'])
+        if True:
+            if can_access > 0:
+                raw_w_commands.append(knd.name)
+
+    addrspace_datatypes = [ "int8", "uint8", "int16", "uint16", "int32", "uint32"]
                 
     parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
@@ -6742,6 +6791,26 @@ def main():
 
     subpar_write.add_argument('newvalue', metavar='value', type=str,
             help="New value to write to the command/offset")
+
+
+    subpar_raw_read = subparsers.add_parser('raw-read',
+            help="Read raw value from an address space of the battery")
+
+    subpar_raw_read.add_argument('addrspace', metavar='addrspace', choices=raw_r_commands, type=parse_command,
+            help="The address space name to read from; one of: {:s}".format(', '.join(raw_r_commands)))
+
+    subpar_raw_read.add_argument('address', metavar='address', type=lambda x: int(x,0),
+            help="Address within the space to read from")
+
+    subpar_raw_read.add_argument('dttype', metavar='datatype', choices=addrspace_datatypes, type=str,
+            help="Data type at target offset; one of: {:s}".format(', '.join(addrspace_datatypes)))
+
+
+    subpar_raw_write = subparsers.add_parser('raw-write',
+            help="Write raw value into an address space of the battery")
+
+    subpar_raw_write.add_argument('addrspace', metavar='addrspace', choices=raw_w_commands, type=parse_command,
+            help="The address space name to write into; one of: {:s}".format(', '.join(raw_w_commands)))
 
 
     subpar_monitor = subparsers.add_parser('monitor',
