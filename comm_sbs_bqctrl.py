@@ -4100,7 +4100,7 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
     },
     MANUFACTURER_ACCESS_CMD_BQ30.ManufacturerInfo : {
         'type'	: "string[32]",
-        'unit'	: {'scale':None,'name':None},
+        'unit'	: {'scale':None,'name':"str"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Output 32 bytes of ManufacturerInfo."),
@@ -4912,7 +4912,7 @@ SBS_CMD_INFO = {
     },
     SBS_COMMAND.ManufacturerName : {
         'type'	: "string[8]", # expected length, max is 32
-        'unit'	: {'scale':None,'name':None},
+        'unit'	: {'scale':None,'name':"str"},
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("The battery's manufacturer's name. "
             "The name can be displayed by the SMBus Host's power "
@@ -4922,7 +4922,7 @@ SBS_CMD_INFO = {
     },
     SBS_COMMAND.DeviceName : {
         'type'	: "string[12]",
-        'unit'	: {'scale':None,'name':None},
+        'unit'	: {'scale':None,'name':"str"},
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Character string that contains the battery's name. This "
             "returns the battery's name for display by the SMBus Host's power "
@@ -4931,7 +4931,7 @@ SBS_CMD_INFO = {
     },
     SBS_COMMAND.DeviceChemistry : {
         'type'	: "string[4]",
-        'unit'	: {'scale':None,'name':None},
+        'unit'	: {'scale':None,'name':"str"},
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Character string that contains the battery's chemistry. "
             "This function gives cell chemistry information for use by "
@@ -5154,7 +5154,7 @@ SBS_CMD_INFO = {
     },
     SBS_COMMAND_BQ30.ManufacturerInfo : {
         'type'	: "string[32]",
-        'unit'	: {'scale':1,'name':"variable"},
+        'unit'	: {'scale':1,'name':"str"},
         'access_per_seal'	: ("r","rw","rw",),
         'desc'	: ("Manufacturer Info values. The values from "
             "ManufacturerData()."),
@@ -5421,9 +5421,9 @@ def is_ti_bq_chip(chip):
 
 
 def type_str_value_length(type_str):
-    m = re.match(r'[a-z]+\[([0-9]+)\]', type_str)
+    m = re.match(r'(bytes|string)\[([0-9]+|0x[0-9a-fA-F]+)\]', type_str)
     if m:
-        return int(m.group(1))
+        return int(m.group(2),0)
     elif type_str in ("int8","uint8",):
         return 1
     elif type_str in ("int16","uint16","int16_blk","uint16_blk",):
@@ -5957,7 +5957,7 @@ def parse_sbs_command_value(cmd, subcmdinf, v, u, po):
 
 
 def is_printable_value_unit(uname):
-    return uname not in ("boolean","hex","hexver","dec","dec02","dec04","date547",)
+    return uname not in ("boolean","hex","hexver","dec","dec02","dec04","date547","str",)
 
 
 def command_value_to_string(cmdinf, subcmdinf, u, v, po):
@@ -5992,6 +5992,8 @@ def command_value_to_string(cmdinf, subcmdinf, u, v, po):
         return "{:{}d}".format(v,u[u.index('0'):])
     if u == "date547":
         return "{:d}-{:02d}-{:02d}".format(1980 + ((v>>9)&0x7f), (v>>5)&0x0f, (v)&0x1f)
+    if u in ("str",):
+        return "{}".format(bytes(v))
     return "{}".format(v)
 
 
@@ -6648,7 +6650,7 @@ def smart_battery_system_raw_read(knd_str, addr, val_type, vals, po):
     #vals[cmd if subcmd is None else subcmd] = response #TODO we need to store sub-index
 
     # Create improvised data type if the user demanded
-    if val_type not in ("bytes[32]","string[32]",):
+    if val_type not in ("bytes[32]",):
         subcmd_pos = addr - subcmd_shift * 32
         s = {}
         fld_nbytes = type_str_value_length(val_type)
@@ -6656,7 +6658,7 @@ def smart_battery_system_raw_read(knd_str, addr, val_type, vals, po):
             fld0 = ImprovisedCommand(value=0, name="UserVal{:02x}".format(0))
             s[fld0] = {
                 'type'	: "bytes[{}]".format(subcmd_pos),
-                'unit'	: {'scale':1,'name':"hex"},
+                'unit'	: {'scale':None,'name':"hex"},
                 'nbits'	: subcmd_pos * 8,
                 'access'	: "-",
                 'tiny_name'	: "BefUD",
@@ -6666,17 +6668,23 @@ def smart_battery_system_raw_read(knd_str, addr, val_type, vals, po):
             fld = ImprovisedCommand(value=subcmd_pos*8, name="UserVal{:02x}".format(subcmd_pos))
             s[fld] = {
                 'type'	: val_type,
-                'unit'	: {'scale':1,'name':"hex"},
+                'unit'	: {'scale':None,'name':None},
                 'nbits'	: fld_nbytes * 8,
                 'access'	: "r",
                 'tiny_name'	: "UsrDf",
                 'desc'	: "User defined field.",
             }
+            if val_type in ("uint8","uint16","uint32",):
+                s[fld]['unit'] = {'scale':1,'name':"hex"}
+            elif val_type in ("int8","int16","int32",):
+                s[fld]['unit'] = {'scale':1,'name':"dec"}
+            elif val_type.startswith("string["):
+                s[fld]['unit'] = {'scale':None,'name':"str"}
         if subcmd_pos+fld_nbytes < 32:
             fld2 = ImprovisedCommand(value=(subcmd_pos+fld_nbytes)*8, name="UserVal{:02x}".format(subcmd_pos+fld_nbytes))
             s[fld2] = {
                 'type'	: "bytes[{}]".format(32-subcmd_pos-fld_nbytes),
-                'unit'	: {'scale':1,'name':"hex"},
+                'unit'	: {'scale':None,'name':"hex"},
                 'nbits'	: (32-subcmd_pos-fld_nbytes) * 8,
                 'access'	: "-",
                 'tiny_name'	: "AftUD",
@@ -6785,6 +6793,17 @@ def parse_command(s):
     return s
 
 
+def parse_addrspace_datatype(s):
+    """ Parses command/offset string in known formats.
+    """
+    if s in ("int8", "uint8", "int16", "uint16", "int32", "uint32", "float",):
+        return s
+
+    if re.match(r'(bytes|string)\[([0-9]+|0x[0-9a-fA-F]+)\]', s):
+        return s
+
+    raise argparse.ArgumentTypeError(" invalid choice: '{}' (see '--help' for a list)".format(s))
+
 def parse_monitor_group(s):
     """ Parses monitor group string in known formats.
     """
@@ -6860,8 +6879,8 @@ def main():
             if can_access > 0:
                 raw_w_commands.append(knd.name)
 
-    addrspace_datatypes = [ "int8", "uint8", "int16", "uint16", "int32", "uint32"]
-                
+    addrspace_datatypes = [ "int8", "uint8", "int16", "uint16", "int32", "uint32", "float", 'string[n]', 'byte[n]']
+
     parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
     parser.add_argument('-b', '--bus', default="smbus:1", type=str,
@@ -6939,7 +6958,7 @@ def main():
     subpar_raw_read.add_argument('address', metavar='address', type=lambda x: int(x,0),
             help="Address within the space to read from")
 
-    subpar_raw_read.add_argument('dttype', metavar='datatype', choices=addrspace_datatypes, type=str,
+    subpar_raw_read.add_argument('dttype', metavar='datatype', type=parse_addrspace_datatype,
             help="Data type at target offset; one of: {:s}".format(', '.join(addrspace_datatypes)))
 
 
@@ -6952,7 +6971,7 @@ def main():
     subpar_raw_write.add_argument('address', metavar='address', type=lambda x: int(x,0),
             help="Address within the space to write to")
 
-    subpar_raw_write.add_argument('dttype', metavar='datatype', choices=addrspace_datatypes, type=str,
+    subpar_raw_write.add_argument('dttype', metavar='datatype', type=parse_addrspace_datatype,
             help="Data type at target offset; one of: {:s}".format(', '.join(addrspace_datatypes)))
 
     subpar_raw_write.add_argument('newvalue', metavar='value', type=str,
