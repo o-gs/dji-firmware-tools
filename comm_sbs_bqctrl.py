@@ -76,6 +76,11 @@ class DecoratedEnum(enum.Enum):
         raise ValueError("{} is not a known value".format(name))
 
 
+class ImprovisedCommand(types.SimpleNamespace):
+    def __hash__(self):
+        return hash(self.value)
+
+
 class CHIP_TYPE(DecoratedEnum):
     """ Smart Battery System chip type
     """
@@ -6056,29 +6061,7 @@ def print_sbs_command_short_subfields(field_groups, l, fields_info, cell_width, 
         print("".join(line_str),'\x1b[0m')
 
 
-def print_sbs_command_value(cmd, subcmd, response, opts, name_width, po):
-    v = response['val']
-    l = response['list']
-    s = response['sinf']
-    u = response['uname']
-    cmdinf = SBS_CMD_INFO[cmd]
-    # If reading from array-like command, hand-craft our own which includes the shift
-    if 'cmd_shift' in opts:
-        cmd = sbs_command_add_shift(cmd, cmdinf, opts['cmd_shift'], po)
-
-    subcmdinf = {}
-    if subcmd is not None:
-        for subgrp in cmdinf['subcmd_infos']:
-            if subcmd in subgrp.keys():
-                subcmdinf = subgrp[subcmd]
-                break
-        # If reading from array-like command, hand-craft our own which includes the shift
-        if 'subcmd_shift' in opts:
-            subcmd = sbs_command_add_shift(subcmd, subcmdinf, opts['subcmd_shift'], po)
-        basecmd_name = re.sub('[^A-Z0-9]', '', cmd.name) + '.' + subcmd.name
-    else:
-        basecmd_name = cmd.name
-
+def print_sbs_command_value_cust_inf_basecmd(cmd, cmdinf, subcmd, subcmdinf, v, l, s, u, basecmd_name, name_width, po):
     if 'desc' in subcmdinf:
         short_desc = subcmdinf['desc'].split('.')[0]
     else:
@@ -6119,6 +6102,41 @@ def print_sbs_command_value(cmd, subcmd, response, opts, name_width, po):
             print("Description: {}".format(subcmdinf['desc'] if 'desc' in subcmdinf else cmdinf['desc']))
 
 
+def print_sbs_command_value_cust_inf(cmd, cmdinf, subcmd, subcmdinf, response, opts, name_width, po):
+    v = response['val']
+    l = response['list']
+    s = response['sinf']
+    u = response['uname']
+
+    # If reading from array-like command, hand-craft our own which includes the shift
+    if 'cmd_shift' in opts:
+        cmd = sbs_command_add_shift(cmd, cmdinf, opts['cmd_shift'], po)
+
+    if subcmd is not None:
+        # If reading from array-like command, hand-craft our own which includes the shift
+        if 'subcmd_shift' in opts:
+            subcmd = sbs_command_add_shift(subcmd, subcmdinf, opts['subcmd_shift'], po)
+
+    if subcmd is not None:
+        basecmd_name = re.sub('[^A-Z0-9]', '', cmd.name) + '.' + subcmd.name
+    else:
+        basecmd_name = cmd.name
+
+    print_sbs_command_value_cust_inf_basecmd(cmd, cmdinf, subcmd, subcmdinf, v, l, s, u, basecmd_name, name_width, po)
+
+
+def print_sbs_command_value(cmd, subcmd, response, opts, name_width, po):
+    cmdinf = SBS_CMD_INFO[cmd]
+    subcmdinf = {}
+    if subcmd is not None:
+        for subgrp in cmdinf['subcmd_infos']:
+            if subcmd in subgrp.keys():
+                subcmdinf = subgrp[subcmd]
+                break
+
+    print_sbs_command_value_cust_inf(cmd, cmdinf, subcmd, subcmdinf, response, opts, name_width, po)
+
+
 def sbs_command_add_shift(cmd, cmdinf, cmd_shift, po):
     """ Adds shift to array-like command
 
@@ -6129,7 +6147,7 @@ def sbs_command_add_shift(cmd, cmdinf, cmd_shift, po):
     cmd_array_len = cmdinf['cmd_array']
     if (cmd_shift < 0) or (cmd_shift >= cmd_array_len):
         raise ValueError("Command {} array shift {} out of bounds".format(cmd.name,cmd_shift))
-    return types.SimpleNamespace(value=cmd.value+cmd_shift, name="{}{}".format(cmd.name,cmd_shift))
+    return ImprovisedCommand(value=cmd.value+cmd_shift, name="{}{}".format(cmd.name,cmd_shift))
 
 
 def smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po):
@@ -6628,7 +6646,46 @@ def smart_battery_system_raw_read(knd_str, addr, val_type, vals, po):
     v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
     response = {'val':v,'list':l,'sinf':s,'uname':u,}
     #vals[cmd if subcmd is None else subcmd] = response #TODO we need to store sub-index
-    #TODO val_type is ignored
+
+    # Create improvised data type if the user demanded
+    if val_type not in ("bytes[32]","string[32]",):
+        subcmd_pos = addr - subcmd_shift * 32
+        s = {}
+        fld_nbytes = type_str_value_length(val_type)
+        if subcmd_pos > 0:
+            fld0 = ImprovisedCommand(value=0, name="UserVal{:02x}".format(0))
+            s[fld0] = {
+                'type'	: "bytes[{}]".format(subcmd_pos),
+                'unit'	: {'scale':1,'name':"hex"},
+                'nbits'	: subcmd_pos * 8,
+                'access'	: "-",
+                'tiny_name'	: "BefUD",
+                'desc'	: "Data before user field.",
+            }
+        if fld_nbytes > 0:
+            fld = ImprovisedCommand(value=subcmd_pos*8, name="UserVal{:02x}".format(subcmd_pos))
+            s[fld] = {
+                'type'	: val_type,
+                'unit'	: {'scale':1,'name':"hex"},
+                'nbits'	: fld_nbytes * 8,
+                'access'	: "r",
+                'tiny_name'	: "UsrDf",
+                'desc'	: "User defined field.",
+            }
+        if subcmd_pos+fld_nbytes < 32:
+            fld2 = ImprovisedCommand(value=(subcmd_pos+fld_nbytes)*8, name="UserVal{:02x}".format(subcmd_pos+fld_nbytes))
+            s[fld2] = {
+                'type'	: "bytes[{}]".format(32-subcmd_pos-fld_nbytes),
+                'unit'	: {'scale':1,'name':"hex"},
+                'nbits'	: (32-subcmd_pos-fld_nbytes) * 8,
+                'access'	: "-",
+                'tiny_name'	: "AftUD",
+                'desc'	: "Data after user field.",
+            }
+        u = "struct"
+        l = parse_sbs_command_value(cmd, s, v, u, po)
+        response = {'val':v,'list':l,'sinf':s,'uname':u,}
+
     print_sbs_command_value(cmd, subcmd, response, opts, 0, po)
 
 
