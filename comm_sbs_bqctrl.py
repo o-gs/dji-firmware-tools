@@ -59,6 +59,7 @@ import re
 import sys
 import time
 import enum
+import types
 import struct
 import hashlib
 import argparse
@@ -4135,11 +4136,12 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
             "related params. Outputs 30 bytes of IT data values."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.DFAccessRowAddress : {
-        'type'	: "byte[]",
+        'type'	: "byte[32]",
         'unit'	: {'scale':None,'name':"hex"},
-        'resp_location'	: SBS_COMMAND.ManufacturerData,
-        # Requires special processing, not just r/w, as row needs to be added to the command
-        'access_per_seal'	: ("-","-","-",),
+        # Special command - is really an array of commands, shift needs to be added to cmd.value
+        'cmd_array'	: 0x1000,
+        'resp_location'	: SBS_COMMAND_BQ30.ManufacturerInput,
+        'access_per_seal'	: ("-","rw","rw",),
         'desc'	: ("Read/write DF row with given address. Sets the DF row "
             "with address yy on ManufacturerInfo() for immediate read/write "
             "on ManufacturingInfo()."),
@@ -5128,7 +5130,7 @@ SBS_CMD_INFO = {
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ30.LifetimeDataBlock2 : {
-        'type'	: "byte[32]",
+        'type'	: "byte[27]",
         'unit'	: {'scale':None,'name':"struct"},
         'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO,
         'access_per_seal'	: ("-","r","r",),
@@ -5137,7 +5139,7 @@ SBS_CMD_INFO = {
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ30.LifetimeDataBlock3 : {
-        'type'	: "byte[32]",
+        'type'	: "byte[16]",
         'unit'	: {'scale':None,'name':"struct"},
         'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO,
         'access_per_seal'	: ("-","r","r",),
@@ -6054,21 +6056,29 @@ def print_sbs_command_short_subfields(field_groups, l, fields_info, cell_width, 
         print("".join(line_str),'\x1b[0m')
 
 
-def print_sbs_command_value(cmd, subcmd, response, name_width, po):
+def print_sbs_command_value(cmd, subcmd, response, opts, name_width, po):
     v = response['val']
     l = response['list']
     s = response['sinf']
     u = response['uname']
     cmdinf = SBS_CMD_INFO[cmd]
+    # If reading from array-like command, hand-craft our own which includes the shift
+    if 'cmd_shift' in opts:
+        cmd = sbs_command_add_shift(cmd, cmdinf, opts['cmd_shift'], po)
+
     subcmdinf = {}
     if subcmd is not None:
         for subgrp in cmdinf['subcmd_infos']:
             if subcmd in subgrp.keys():
                 subcmdinf = subgrp[subcmd]
                 break
-        basecmd_name = re.sub('[^A-Z]', '', cmd.name) + '.' + subcmd.name
+        # If reading from array-like command, hand-craft our own which includes the shift
+        if 'subcmd_shift' in opts:
+            subcmd = sbs_command_add_shift(subcmd, subcmdinf, opts['subcmd_shift'], po)
+        basecmd_name = re.sub('[^A-Z0-9]', '', cmd.name) + '.' + subcmd.name
     else:
         basecmd_name = cmd.name
+
     if 'desc' in subcmdinf:
         short_desc = subcmdinf['desc'].split('.')[0]
     else:
@@ -6107,6 +6117,19 @@ def print_sbs_command_value(cmd, subcmd, response, name_width, po):
         print("{:{}s}\t{}\t{}\t{}".format(basecmd_name+":", name_width, fmt_val, u, short_desc))
         if (po.explain):
             print("Description: {}".format(subcmdinf['desc'] if 'desc' in subcmdinf else cmdinf['desc']))
+
+
+def sbs_command_add_shift(cmd, cmdinf, cmd_shift, po):
+    """ Adds shift to array-like command
+
+    When reading from array-like command, we need to hand-craft our own 'cmd' which includes the shift.
+    """
+    if 'cmd_array' not in cmdinf:
+        raise ValueError("Tried to add shift to non-array command '{}'".format(cmd.name))
+    cmd_array_len = cmdinf['cmd_array']
+    if (cmd_shift < 0) or (cmd_shift >= cmd_array_len):
+        raise ValueError("Command {} array shift {} out of bounds".format(cmd.name,cmd_shift))
+    return types.SimpleNamespace(value=cmd.value+cmd_shift, name="{}{}".format(cmd.name,cmd_shift))
 
 
 def smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po):
@@ -6176,8 +6199,13 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
         retry_count = opts['retry_count']
     else:
         retry_count = 3
+
     if (po.verbose > 1):
         print("Reading {} command at addr=0x{:x}, cmd=0x{:x}, type={}, opts={}".format(cmdinf['getter'], dev_addr, cmd.value, cmdinf['type'], opts))
+
+    # If reading from array-like command, hand-craft our own which includes the shift
+    if 'cmd_shift' in opts:
+        cmd = sbs_command_add_shift(cmd, cmdinf, opts['cmd_shift'], po)
 
     if cmdinf['getter'] == "simple":
         resp_unit = cmdinf['unit']
@@ -6209,6 +6237,10 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
                 break
         if not subgrp:
             raise ValueError("Command {}.{} missing definition".format(cmd.name,subcmd.name))
+
+        # If reading from array-like sub-command, hand-craft our own which includes the shift
+        if 'subcmd_shift' in opts:
+            subcmd = sbs_command_add_shift(subcmd, subcmdinf, opts['subcmd_shift'], po)
 
         if ('resp_location' in subcmdinf) or (subcmdinf['type'] == "void"):
             # do write request with subcmd, then expect response at specific location
@@ -6412,8 +6444,25 @@ def smart_battery_system_command_from_text(cmd_str, po):
     return cmd, subcmd
 
 
-def smart_battery_system_value_from_text(cmd, subcmd, nval_str, po):
+def smart_battery_system_cmd_value_from_text(cmd, subcmd, nval_str, po):
     raise NotImplementedError('Converting the string value to smd/subcmd type is not implemented.')
+
+
+def smart_battery_system_address_space_from_text(knd_str, addr, po):
+    """ Converts SBS address space name text to enum
+
+    Requires chip to be identified to properly map commands
+    which are not in base SBS specification.
+    """
+    knd = None
+
+    if is_ti_bq_chip(po.chip):
+        if knd_str in [i.name for i in RAW_ADDRESS_SPACE_KIND_BQ30]:
+            knd = RAW_ADDRESS_SPACE_KIND_BQ30.from_name(knd_str)
+
+    if knd is None:
+        raise ValueError("The address space '{}' is either invalid or not supported by chip".format(knd_str))
+    return knd
 
 
 def smart_battery_system_last_error(bus, dev_addr, vals, po):
@@ -6524,7 +6573,7 @@ def smart_battery_system_read(cmd_str, vals, po):
     v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
     response = {'val':v,'list':l,'sinf':s,'uname':u,}
     vals[cmd if subcmd is None else subcmd] = response
-    print_sbs_command_value(cmd, subcmd, response, 0, po)
+    print_sbs_command_value(cmd, subcmd, response, opts, 0, po)
 
 
 def smart_battery_system_trigger(cmd_str, vals, po):
@@ -6554,7 +6603,7 @@ def smart_battery_system_write(cmd_str, nval_str, vals, po):
     cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
     cmdinf = SBS_CMD_INFO[cmd]
     opts = {"subcmd": subcmd}
-    v = smart_battery_system_value_from_text(cmd, subcmd, nval_str, po)
+    v = smart_battery_system_cmd_value_from_text(cmd, subcmd, nval_str, po)
     try:
         u, s = smbus_write(bus, po.dev_address, cmd, v, opts, vals, po)
     except Exception as ex:
@@ -6565,6 +6614,28 @@ def smart_battery_system_write(cmd_str, nval_str, vals, po):
             print("Description: {}".format(cmdinf['desc']))
         return
     print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "write", "SUCCESS", "Value write accepted"))
+
+
+def smart_battery_system_raw_read(knd_str, addr, val_type, vals, po):
+    """ Reads and prints raw value from address space of the battery.
+    """
+    global bus
+    knd = smart_battery_system_address_space_from_text(knd_str, addr, po)
+    cmd, subcmd = (SBS_COMMAND.ManufacturerAccess,MANUFACTURER_ACCESS_CMD_BQ30.DFAccessRowAddress,)
+    cmdinf = SBS_CMD_INFO[cmd]
+    subcmd_shift = addr // 32
+    opts = {"subcmd": subcmd, "subcmd_shift": subcmd_shift}
+    v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
+    response = {'val':v,'list':l,'sinf':s,'uname':u,}
+    #vals[cmd if subcmd is None else subcmd] = response #TODO we need to store sub-index
+    #TODO val_type is ignored
+    print_sbs_command_value(cmd, subcmd, response, opts, 0, po)
+
+
+def smart_battery_system_raw_write(knd_str, addr, val_type, nval_str, vals, po):
+    """ Writes raw value to address space of the battery.
+    """
+    raise NotImplementedError('Writing raw data is not implemented.')
 
 
 def smart_battery_system_monitor(mgroup_str, vals, po):
@@ -6595,7 +6666,7 @@ def smart_battery_system_monitor(mgroup_str, vals, po):
             continue
         response = {'val':v,'list':l,'sinf':s,'uname':u,}
         vals[cmd if subcmd is None else subcmd] = response
-        print_sbs_command_value(cmd, subcmd, response, names_width, po)
+        print_sbs_command_value(cmd, subcmd, response, opts, names_width, po)
     return
 
 
@@ -6676,11 +6747,16 @@ def main():
         if 'subcmd_infos' in cmdinf:
             for subgrp in cmdinf['subcmd_infos']:
                 for subcmd, subcmdinf in subgrp.items():
+                    if 'cmd_array' in subcmdinf:
+                        all_nr_commands.append("{}.{}".format(cmd.name,subcmd.name))
+                        continue
                     sub_can_access = sum(('r' in accstr) for accstr in subcmdinf['access_per_seal'])
                     if sub_can_access > 0:
                         all_r_commands.append("{}.{}".format(cmd.name,subcmd.name))
                     else:
                         all_nr_commands.append("{}.{}".format(cmd.name,subcmd.name))
+        elif 'cmd_array' in cmdinf:
+            all_nr_commands.append(cmd.name)
         else:
             if can_access > 0:
                 all_r_commands.append(cmd.name)
@@ -6694,12 +6770,16 @@ def main():
         if 'subcmd_infos' in cmdinf:
             for subgrp in cmdinf['subcmd_infos']:
                 for subcmd, subcmdinf in subgrp.items():
+                    if 'cmd_array' in subcmdinf:
+                        continue
                     sub_can_access = sum(('w' in accstr) for accstr in subcmdinf['access_per_seal'])
                     if sub_can_access > 0:
                         if subcmdinf['type'] == "void":
                             all_t_commands.append("{}.{}".format(cmd.name,subcmd.name))
                         else:
                             all_w_commands.append("{}.{}".format(cmd.name,subcmd.name))
+        elif 'cmd_array' in cmdinf:
+            pass
         else:
             if can_access > 0:
                 if cmdinf['type'] == "void":
@@ -6812,6 +6892,15 @@ def main():
     subpar_raw_write.add_argument('addrspace', metavar='addrspace', choices=raw_w_commands, type=parse_command,
             help="The address space name to write into; one of: {:s}".format(', '.join(raw_w_commands)))
 
+    subpar_raw_write.add_argument('address', metavar='address', type=lambda x: int(x,0),
+            help="Address within the space to write to")
+
+    subpar_raw_write.add_argument('dttype', metavar='datatype', choices=addrspace_datatypes, type=str,
+            help="Data type at target offset; one of: {:s}".format(', '.join(addrspace_datatypes)))
+
+    subpar_raw_write.add_argument('newvalue', metavar='value', type=str,
+            help="New value to write at the address")
+
 
     subpar_monitor = subparsers.add_parser('monitor',
             help="Monitor value of a group of commands/offsets")
@@ -6854,6 +6943,12 @@ def main():
         smart_battery_system_trigger(po.command, vals, po)
     elif po.action == 'write':
         smart_battery_system_write(po.command, po.newvalue, vals, po)
+    elif po.action == 'raw-read':
+        smart_battery_system_raw_read(po.addrspace, po.address,
+          po.dttype, vals, po)
+    elif po.action == 'raw-write':
+        smart_battery_system_raw_write(po.addrspace, po.address,
+          po.dttype, po.newvalue, vals, po)
     elif po.action == 'monitor':
         smart_battery_system_monitor(po.cmdgroup, vals, po)
     elif po.action == 'sealing':
