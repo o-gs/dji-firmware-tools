@@ -51,7 +51,7 @@ interchangeably with "Remote I/O error", but only if the other side responds
 to part of the message.
 
 """
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -5538,6 +5538,28 @@ def smbus_close():
     bus = None
 
 
+def smbus_write_raw(bus, dev_addr, b, po):
+    if (po.verbose > 2):
+        print("Raw write: DATA={}".format(
+          " ".join('{:02x}'.format(x) for x in b)))
+
+    if po.api_type == "smbus":
+        # Try to send the raw data using normal smbus API
+        orig_pec = bus.pec
+        bus.pec = False
+        if len(b) in (2,3):
+            (v,) = struct.unpack('<H', bytearray(bytes(b[1:]) + b'\0')[0:2])
+            bus.write_word_data(dev_addr, b[0], v)
+        else:
+            raise NotImplementedError("No way of sending such raw data via smbus api")
+        bus.pec = orig_pec
+    elif po.api_type == "i2c":
+        part_write = i2c_msg.write(dev_addr, b)
+        bus.i2c_rdwr(part_write)
+    else:
+        raise NotImplementedError("Unsupported bus API type '{}'".format(po.api_type))
+
+
 def smbus_read_word(bus, dev_addr, cmd, resp_type, po):
     """ Read 16-bit integer from SMBus command, using READ_WORD protocol.
     """
@@ -5624,8 +5646,8 @@ def smbus_read_block_for_basecmd(bus, dev_addr, cmd, basecmd_name, resp_type, po
         if len(b) == 32 and b[0] == 32:
             # We've lost last byte; but there is no other way - accept the truncated message
             # Otherwise communicating 32-bit messages would just not work
-            if (po.verbose > 2):
-                print("Response last byte was truncated because of I2C constrains; adding zero")
+            if (po.verbose > 1):
+                print("Warning: Response last byte was truncated because of Smbus 2.0 constrains; adding zero")
             b += b'\0'
     elif po.api_type == "i2c":
         expect_len = 32 + 1 + (1 if bus.pec else 0) # +1 length, +1 PEC
@@ -6447,7 +6469,7 @@ def bq_read_firmware_version_sealed(bus, dev_addr, po):
 
     Uses the sequence which allows to read the FW version even in sealed mode.
     The sequence used to do this read requires low-level access to the bus via
-    `write()` command which allows sending raw data. Not all smbus wrappers
+    i2c commands which allows sending raw data. Not all smbus wrappers
     available in various platforms have that support.
     """
     cmd, subcmd = (SBS_COMMAND.ManufacturerAccess,MANUFACTURER_ACCESS_CMD_BQ30.FirmwareVersion,)
@@ -6462,7 +6484,7 @@ def bq_read_firmware_version_sealed(bus, dev_addr, po):
         # We are sending messages which are not correct commands - we expect to receive no ACK
         # This is normal part of this routine; each of these commands should fail
         try:
-            bus.write(dev_addr, [pre_cmd.value, 62])
+            smbus_write_raw(bus, dev_addr, [pre_cmd.value, 62], po)
             # If somehow we got no exception, raise one
             raise ConnectionError("FW version acquire tripped as it expected NACK on a command")
         except OSError as ex:
@@ -6501,6 +6523,11 @@ def smart_battery_bq_detect(vals, po):
                 pass
             else:
                 raise
+        # If we still have retries, accept only packets of certain length
+        if (nretry > 0) and (v is not None) and (len(v) not in (11,13,)):
+            if (po.verbose > 2):
+                print("Retrying because received data looks suspicious")
+            v = None
         if v is None:
             time.sleep(0.35)
             continue
@@ -6983,33 +7010,36 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
     parser.add_argument('-b', '--bus', default="smbus:1", type=str,
-            help="I2C bus device selection (defaults to '%(default)s')")
+            help=("I2C/SMBus bus device selection; 'smbus' will use OS API "
+              "prepared for that protocol, while 'i2c' will use I2C messages, "
+              "constructing SMBus frames manually; after a colon, bus number "
+              "from your OS has to be provided (defaults to '%(default)s')"))
 
     parser.add_argument('-a', '--dev_address', default=0x0b, type=lambda x: int(x,0),
-            help="Target SBS device address (defaults to 0x%(default)x)")
+            help="target SBS device address (defaults to 0x%(default)x)")
 
     parser.add_argument('-c', '--chip', metavar='model', choices=[i.name for i in CHIP_TYPE],
             type=parse_chip_type,  default=CHIP_TYPE.AUTO.name,
-            help="target chip model; one of: {:s}".format(', '.join(i.name for i in CHIP_TYPE)))
+            help="target chip model; one of: {:s} (defaults to '%(default)s')".format(', '.join(i.name for i in CHIP_TYPE)))
 
     parser.add_argument("--dry-run", action="store_true",
-            help="Do not use real smbus device or do permanent changes")
+            help="do not use real smbus device or do permanent changes")
 
     parser.add_argument('-v', '--verbose', action='count', default=0,
-            help="Increases verbosity level; max level is set by -vvv")
+            help="increases verbosity level; max level is set by -vvv")
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-s', '--short', action="store_true",
-            help="Display only minimal description of values; to be used by "
+            help="display only minimal description of values; to be used by "
               "experienced users, who have no need for additional info")
 
     subparser.add_argument('-e', '--explain', action="store_true",
-            help="Explain each value by providing description from spec")
+            help="explain each value by providing description from spec")
 
     parser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
               .format(version=__version__,author=__author__),
-            help="Display version information and exit")
+            help="display version information and exit")
 
 
     subparsers = parser.add_subparsers(dest='action', metavar='action',
@@ -7017,82 +7047,82 @@ def main():
 
 
     subpar_info = subparsers.add_parser('info',
-            help="Displays information about specific command; doesn't require SMBus connection, "
+            help="displays information about specific command; doesn't require SMBus connection, "
               "just shows the shortened version of manual description which is included in the tool.")
 
     subpar_info.add_argument('command', metavar='command', choices=all_r_commands+all_nr_commands, type=parse_command,
-            help="The command/offset name to show info about; one of: {:s}".format(', '.join(all_r_commands+all_nr_commands)))
+            help="the command/offset name to show info about; one of: {:s}".format(', '.join(all_r_commands+all_nr_commands)))
 
 
     subpar_read = subparsers.add_parser('read',
-            help="Read value from a single command/offset of the battery")
+            help="read value from a single command/offset of the battery")
 
     subpar_read.add_argument('command', metavar='command', choices=all_r_commands, type=parse_command,
-            help="The command/offset name to read from; one of: {:s}".format(', '.join(all_r_commands)))
+            help="the command/offset name to read from; one of: {:s}".format(', '.join(all_r_commands)))
 
 
     subpar_trigger = subparsers.add_parser('trigger',
-            help="Write to a trigger, command/offset of the battery which acts as a switch")
+            help="write to a trigger, command/offset of the battery which acts as a switch")
 
     subpar_trigger.add_argument('command', metavar='command', choices=all_t_commands, type=parse_command,
-            help="The command/offset name to trigger; one of: {:s}".format(', '.join(all_t_commands)))
+            help="the command/offset name to trigger; one of: {:s}".format(', '.join(all_t_commands)))
 
 
     subpar_write = subparsers.add_parser('write',
-            help="Write value to a single command/offset of the battery")
+            help="write value to a single command/offset of the battery")
 
     subpar_write.add_argument('command', metavar='command', choices=all_w_commands, type=parse_command,
-            help="The command/offset name to write to; one of: {:s}".format(', '.join(all_w_commands)))
+            help="the command/offset name to write to; one of: {:s}".format(', '.join(all_w_commands)))
 
     subpar_write.add_argument('newvalue', metavar='value', type=str,
-            help="New value to write to the command/offset")
+            help="new value to write to the command/offset")
 
 
     subpar_raw_read = subparsers.add_parser('raw-read',
-            help="Read raw value from an address space of the battery")
+            help="read raw value from an address space of the battery")
 
     subpar_raw_read.add_argument('addrspace', metavar='addrspace', choices=raw_r_commands, type=parse_command,
-            help="The address space name to read from; one of: {:s}".format(', '.join(raw_r_commands)))
+            help="the address space name to read from; one of: {:s}".format(', '.join(raw_r_commands)))
 
     subpar_raw_read.add_argument('address', metavar='address', type=lambda x: int(x,0),
-            help="Address within the space to read from")
+            help="address within the space to read from")
 
     subpar_raw_read.add_argument('dttype', metavar='datatype', type=parse_addrspace_datatype,
             help="Data type at target offset; one of: {:s}".format(', '.join(addrspace_datatypes)))
 
 
     subpar_raw_write = subparsers.add_parser('raw-write',
-            help="Write raw value into an address space of the battery")
+            help="write raw value into an address space of the battery")
 
     subpar_raw_write.add_argument('addrspace', metavar='addrspace', choices=raw_w_commands, type=parse_command,
-            help="The address space name to write into; one of: {:s}".format(', '.join(raw_w_commands)))
+            help="the address space name to write into; one of: {:s}".format(', '.join(raw_w_commands)))
 
     subpar_raw_write.add_argument('address', metavar='address', type=lambda x: int(x,0),
-            help="Address within the space to write to")
+            help="address within the space to write to")
 
     subpar_raw_write.add_argument('dttype', metavar='datatype', type=parse_addrspace_datatype,
-            help="Data type at target offset; one of: {:s}".format(', '.join(addrspace_datatypes)))
+            help="data type at target offset; one of: {:s}".format(', '.join(addrspace_datatypes)))
 
     subpar_raw_write.add_argument('newvalue', metavar='value', type=str,
-            help="New value to write at the address")
+            help="new value to write at the address")
 
 
     subpar_monitor = subparsers.add_parser('monitor',
-            help="Monitor value of a group of commands/offsets")
+            help="monitor value of a group of commands/offsets; just reads all of the values from a group")
 
     subpar_monitor.add_argument('cmdgroup', metavar='group', choices=[i.name for i in MONITOR_GROUP], type=parse_monitor_group,
-            help="Group of commands/offsets; one of: {:s}".format(', '.join(i.name for i in MONITOR_GROUP)))
+            help="group of commands/offsets; one of: {:s}".format(', '.join(i.name for i in MONITOR_GROUP)))
 
 
     subpar_sealing = subparsers.add_parser('sealing',
-            help="Change sealing state of BQ chip")
+            help="change sealing state of BQ chip")
 
     sealing_choices = ("Unseal", "Seal", "FullAccess",)
     subpar_sealing.add_argument('sealstate', metavar='state', choices=sealing_choices, type=str,
-            help="New sealing state; one of: {:s}".format(', '.join(sealing_choices)))
+            help="new sealing state; one of: {:s}".format(', '.join(sealing_choices)))
 
     subpar_sealing.add_argument('--sha1key', default='0123456789abcdeffedcba9876543210', type=str,
-            help="Device key for SHA-1/HMAC Authentication (defaults to '%(default)s')")
+            help="device key for SHA-1/HMAC Authentication (defaults to '%(default)s')")
 
     po = parser.parse_args();
 
