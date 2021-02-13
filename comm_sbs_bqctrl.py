@@ -5675,23 +5675,54 @@ def smbus_read_long_blk(bus, dev_addr, cmd, resp_type, po):
 
 
 def smbus_write_word(bus, dev_addr, cmd, v, val_type, po):
-    if val_type in ("int16",): # signed type support
-        if v < 0:
-            v += 65536
-    if v < 0 or v > 65535:
-        raise ValueError("Value to write for command {} is beyond type {} bounds".format(cmd.name,val_type))
-    if (po.verbose > 2):
-        print("Write {}: {:02x} WORD=0x{:x}".format(cmd.name, cmd.value, v))
-    bus.write_word_data(dev_addr, cmd.value, v)
+    if po.api_type == "smbus":
+        if val_type in ("int16",): # signed type support
+            if v < 0:
+                v += 65536
+        if v < 0 or v > 65535:
+            raise ValueError("Value to write for command {} is beyond type {} bounds".format(cmd.name,val_type))
+        if (po.verbose > 2):
+            print("Write {}: {:02x} WORD=0x{:x}".format(cmd.name, cmd.value, v))
+        bus.write_word_data(dev_addr, cmd.value, v)
+    elif po.api_type == "i2c":
+        b = type_str_to_bytes(v, val_type, endian="le")
+        if (po.verbose > 2):
+            print("Write {}: CMD={:02x} WORD={}".format(cmd.name,
+              cmd.value, " ".join('{:02x}'.format(x) for x in b)))
+        if bus.pec:
+            whole_packet = smbus_recreate_write_packet_data(dev_addr, cmd, b)
+            pec = crc8_ccitt_compute(whole_packet)
+            b = bytes([cmd.value]) + b + bytes([pec])
+        else:
+            b = bytes([cmd.value]) + b
+        part_write = i2c_msg.write(dev_addr, b)
+        bus.i2c_rdwr(part_write)
+    else:
+        raise NotImplementedError("Unsupported bus API type '{}'".format(po.api_type))
 
 
 def smbus_write_block_for_basecmd(bus, dev_addr, cmd, v, basecmd_name, val_type, po):
     """ Write block to cmd, use basecmd_name for logging
     """
     b = v
-    if (po.verbose > 2):
-        print("Write {}: {:02x} BLOCK={}".format(basecmd_name, cmd.value, " ".join('{:02x}'.format(x) for x in b)))
-    bus.write_block_data(dev_addr, cmd.value, b)
+    if po.api_type == "smbus":
+        if (po.verbose > 2):
+            print("Write {}: {:02x} BLOCK={}".format(basecmd_name, cmd.value, " ".join('{:02x}'.format(x) for x in b)))
+        bus.write_block_data(dev_addr, cmd.value, b)
+    elif po.api_type == "i2c":
+        if (po.verbose > 2):
+            print("Write {}: CMD={:02x} BLOCK={}".format(basecmd_name,
+              cmd.value, " ".join('{:02x}'.format(x) for x in b)))
+        if bus.pec:
+            whole_packet = smbus_recreate_write_packet_data(dev_addr, cmd, bytes([len(b)]) + b)
+            pec = crc8_ccitt_compute(whole_packet)
+            b = bytes([cmd.value,len(b)]) + b + bytes([pec])
+        else:
+            b = bytes([cmd.value,len(b)]) + b
+        part_write = i2c_msg.write(dev_addr, b)
+        bus.i2c_rdwr(part_write)
+    else:
+        raise NotImplementedError("Unsupported bus API type '{}'".format(po.api_type))
 
 
 def smbus_write_block(bus, dev_addr, cmd, v, val_type, po):
@@ -5716,7 +5747,7 @@ def smbus_read_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, resp_typ
     Returns bytes array received in response, without converting the type.
     """
     # write sub-command to ManufacturerAccess
-    bus.write_word_data(dev_addr, cmd.value, subcmd.value)
+    smbus_write_word(bus, dev_addr, cmd, subcmd.value, "uint16", po)
     # Check if sleep needed inbetween requests
     if resp_wait > 0:
         time.sleep(resp_wait)
@@ -5734,7 +5765,7 @@ def smbus_write_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, v, resp
     Expects value to already be bytes array ready for sending.
     """
     # write sub-command to ManufacturerAccess
-    bus.write_word_data(dev_addr, cmd.value, subcmd.value)
+    smbus_write_word(bus, dev_addr, cmd, subcmd.value, "uint16", po)
     # Check if sleep needed inbetween requests
     if resp_wait > 0:
         time.sleep(resp_wait)
