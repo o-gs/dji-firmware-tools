@@ -5421,7 +5421,7 @@ def is_ti_bq_chip(chip):
 
 
 def type_str_value_length(type_str):
-    m = re.match(r'(bytes|string)\[([0-9]+|0x[0-9a-fA-F]+)\]', type_str)
+    m = re.match(r'(byte|string)\[([0-9]+|0x[0-9a-fA-F]+)\]', type_str)
     if m:
         return int(m.group(2),0)
     elif type_str in ("int8","uint8",):
@@ -5513,15 +5513,19 @@ def smbus_open(bus_str, po):
     The current implementation is for Rapsberry Pi.
     """
     global bus
-    m = re.match(r'smbus:([0-9]+)', bus_str)
+    m = re.match(r'(smbus|i2c):([0-9]+)', bus_str)
     if m:
-        bus_index = int(m.group(1),0)
+        po.api_type = str(m.group(1))
+        bus_index = int(m.group(2),0)
         if po.dry_run:
             bus = SMBusMock(bus_index)
             return
         import smbus2
         bus = smbus2.SMBus(bus_index)
         bus.pec = True
+        if po.api_type == "i2c":
+            global i2c_msg
+            from smbus2 import i2c_msg
         return
     raise ValueError("Unrecognized bus definition")
 
@@ -5537,23 +5541,54 @@ def smbus_close():
 def smbus_read_word(bus, dev_addr, cmd, resp_type, po):
     """ Read 16-bit integer from SMBus command, using READ_WORD protocol.
     """
-    v = bus.read_word_data(dev_addr, cmd.value)
-    if (po.verbose > 2):
-        print("Raw {} response: 0x{:x}".format(cmd.name, v))
-    if v < 0 or v > 65535:
-        raise ValueError("Received value of command {} is beyond type {} bounds".format(cmd.name,resp_type))
-    if resp_type in ("int16",): # signed type support
-        if v > 32767:
-            v -= 65536
+    if po.api_type == "smbus":
+        v = bus.read_word_data(dev_addr, cmd.value)
+        if (po.verbose > 2):
+            print("Raw {} response: 0x{:x}".format(cmd.name, v))
+        if v < 0 or v > 65535:
+            raise ValueError("Received value of command {} is beyond type {} bounds".format(cmd.name,resp_type))
+        if resp_type in ("int16",): # signed type support
+            if v > 32767:
+                v -= 65536
+    elif po.api_type == "i2c":
+        part_write = i2c_msg.write(dev_addr, [cmd.value])
+        part_read = i2c_msg.read(dev_addr, 2 + (1 if bus.pec else 0))
+        bus.i2c_rdwr(part_write, part_read)
+        b = bytes(part_read)
+        if (po.verbose > 2):
+            print("Raw {} response: {}".format(cmd.name, " ".join('{:02x}'.format(x) for x in b)))
+        if len(b) > 2:
+            whole_packet = smbus_recreate_read_packet_data(dev_addr, cmd, b[0:2])
+            pec = crc8_ccitt_compute(whole_packet)
+            if b[2] != pec:
+                raise ValueError("Received {} from command {} with wrong PEC checksum".format(resp_type,cmd.name))
+        v = bytes_to_type_str(b[0:2], resp_type)
+    else:
+        raise NotImplementedError("Unsupported bus API type '{}'".format(po.api_type))
     return v
 
 
 def smbus_read_long(bus, dev_addr, cmd, resp_type, po):
     """ Read 32-bit integer from SMBus command, reading just 4 bytes.
     """
-    b = bus.read_i2c_block_data(dev_addr, cmd.value, 4)
+    if po.api_type == "smbus":
+        b = bus.read_i2c_block_data(dev_addr, cmd.value, 4)
+    elif po.api_type == "i2c":
+        part_write = i2c_msg.write(dev_addr, [cmd.value])
+        part_read = i2c_msg.read(dev_addr, 4 + (1 if bus.pec else 0))
+        bus.i2c_rdwr(part_write, part_read)
+        b = bytes(part_read)
+    else:
+        raise NotImplementedError("Unsupported bus API type '{}'".format(po.api_type))
+
     if (po.verbose > 2):
         print("Raw {} response: {}".format(cmd.name, " ".join('{:02x}'.format(x) for x in b)))
+
+    if len(b) > 4:
+        whole_packet = smbus_recreate_read_packet_data(dev_addr, cmd, b[0:4])
+        pec = crc8_ccitt_compute(whole_packet)
+        if b[4] != pec:
+            raise ValueError("Received {} from command {} with wrong PEC checksum".format(resp_type,cmd.name))
     return bytes_to_type_str(b, resp_type)
 
 
@@ -5562,33 +5597,59 @@ def smbus_read_block_for_basecmd(bus, dev_addr, cmd, basecmd_name, resp_type, po
 
     Needed because request cmd isn't always clearly identifying what we're reading.
     """
-    expect_len = min(type_str_value_length(resp_type) + 2, 32) # +1 length, +1 PEC
+    expect_len = type_str_value_length(resp_type)
     # Try reading expected length first
-    b = bus.read_i2c_block_data(dev_addr, cmd.value, expect_len)
+    if po.api_type == "smbus":
+        expect_len = min(expect_len+ 1 + (1 if bus.pec else 0), 32) # +1 length, +1 PEC
+        b = bus.read_i2c_block_data(dev_addr, cmd.value, expect_len)
+    elif po.api_type == "i2c":
+        expect_len = min(expect_len+ 1 + (1 if bus.pec else 0), 34) # +1 length, +1 PEC
+        part_write = i2c_msg.write(dev_addr, [cmd.value])
+        part_read = i2c_msg.read(dev_addr, expect_len)
+        bus.i2c_rdwr(part_write, part_read)
+        b = bytes(part_read)
+    else:
+        raise NotImplementedError("Unsupported bus API type '{}'".format(po.api_type))
+
     # block starts with 1-byte lenght
-    # check if we meet the expected length restriction
     if (len(b) < 1):
         raise ValueError("Received {} from command {} is too short to even have length".format(resp_type,basecmd_name))
-    if (b[0] < 32) and (len(b) < b[0]+2):
-        # expected lngth exceeded - read the whole thing
-        b = bus.read_i2c_block_data(dev_addr, cmd.value, 32)
+
+    # check if we meet the expected length restriction
+    if len(b) >= b[0] + 1:
+        pass # length expectations met
+    elif po.api_type == "smbus":
+        expect_len = 32 # smbus2 library won't allow more ATM
+        b = bus.read_i2c_block_data(dev_addr, cmd.value, expect_len)
+        if len(b) == 32 and b[0] == 32:
+            # We've lost last byte; but there is no other way - accept the truncated message
+            # Otherwise communicating 32-bit messages would just not work
+            if (po.verbose > 2):
+                print("Response last byte was truncated because of I2C constrains; adding zero")
+            b += b'\0'
+    elif po.api_type == "i2c":
+        expect_len = 32 + 1 + (1 if bus.pec else 0) # +1 length, +1 PEC
+        part_write = i2c_msg.write(dev_addr, [cmd.value])
+        part_read = i2c_msg.read(dev_addr, expect_len)
+        bus.i2c_rdwr(part_write, part_read)
+        b = bytes(part_read)
+    else:
+        raise NotImplementedError("Unsupported bus API type '{}'".format(po.api_type))
+
     if (po.verbose > 2):
         print("Raw {} response: {}".format(basecmd_name, " ".join('{:02x}'.format(x) for x in b)))
-    if b[0] == 32 and len(b) == 32:
-        # We've lost last byte; but there is no other way - accept the truncated message
-        # Otherwise communicating 32-bit messages would just not work
-        if (po.verbose > 2):
-            print("Response last byte was truncated because of I2C constrains; adding zero")
-        b += b'\0'
+
     if len(b) < b[0] + 1:
         raise ValueError("Received {} from command {} has invalid length".format(resp_type,basecmd_name))
+
     # check PEC crc-8 byte (unless the packet was so long that we didn't receive it)
-    if b[0] < 31:
+    if len(b) >= b[0] + 2:
         whole_packet = smbus_recreate_read_packet_data(dev_addr, cmd, b[0:b[0]+1])
         pec = crc8_ccitt_compute(whole_packet)
         if b[b[0]+1] != pec:
             raise ValueError("Received {} from command {} with wrong PEC checksum".format(resp_type,basecmd_name))
-    # prepare data part of the string
+
+    # prepare data part of the message
     v = bytes(b[1:b[0]+1])
     return v
 
@@ -6358,12 +6419,19 @@ def bq_read_firmware_version_sealed(bus, dev_addr, po):
     `write()` command which allows sending raw data. Not all smbus wrappers
     available in various platforms have that support.
     """
+    cmd, subcmd = (SBS_COMMAND.ManufacturerAccess,MANUFACTURER_ACCESS_CMD_BQ30.FirmwareVersion,)
+    cmdinf = SBS_CMD_INFO[cmd]
+    for subgrp in cmdinf['subcmd_infos']:
+        if subcmd in subgrp.keys():
+            subcmdinf = subgrp[subcmd]
+            break
+
     # Do 3 commands which pretend to write oversized buffer; this needs to be done within 4 seconds
-    for cmd in (SBS_COMMAND.DeviceChemistry, SBS_COMMAND.ManufacturerName, SBS_COMMAND.DeviceChemistry):
+    for pre_cmd in (SBS_COMMAND.DeviceChemistry, SBS_COMMAND.ManufacturerName, SBS_COMMAND.DeviceChemistry):
         # We are sending messages which are not correct commands - we expect to receive no ACK
         # This is normal part of this routine; each of these commands should fail
         try:
-            bus.write(dev_addr, [cmd.value, 62])
+            bus.write(dev_addr, [pre_cmd.value, 62])
             # If somehow we got no exception, raise one
             raise ConnectionError("FW version acquire tripped as it expected NACK on a command")
         except OSError as ex:
@@ -6373,9 +6441,9 @@ def bq_read_firmware_version_sealed(bus, dev_addr, po):
     # Now ManufacturerData() will contain FW version data which we can read; wait to make sure it's ready
     time.sleep(0.35) # EV2300 software waits 350 ms; but documentation doesn't explicitly say to wait here
 
-    cmd  = SBS_COMMAND_BQ30.ManufacturerInput
+    resp_cmd  = SBS_COMMAND_BQ30.ManufacturerInput
     # Data length is 11 or 13 bytes
-    v = smbus_read_block_for_basecmd(bus, dev_addr, cmd, "FirmwareVersion", "byte[13]", po)
+    v = smbus_read_block_for_basecmd(bus, dev_addr, resp_cmd, subcmd.name, subcmdinf['type'], po)
 
     return v
 
@@ -6799,7 +6867,7 @@ def parse_addrspace_datatype(s):
     if s in ("int8", "uint8", "int16", "uint16", "int32", "uint32", "float",):
         return s
 
-    if re.match(r'(bytes|string)\[([0-9]+|0x[0-9a-fA-F]+)\]', s):
+    if re.match(r'(byte|string)\[([0-9]+|0x[0-9a-fA-F]+)\]', s):
         return s
 
     raise argparse.ArgumentTypeError(" invalid choice: '{}' (see '--help' for a list)".format(s))
