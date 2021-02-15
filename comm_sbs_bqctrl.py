@@ -22,12 +22,19 @@ break, sepecially when the chip is sealed. Probing will not accidently result
 in a packet which disables the battery forever.
 
 If the battery already has I2C master device on the bus (like uC on battery
-board), do NOT turn the battery on for use with this program. The SBS chip
+board), try not to turn on the battery for use with this program. The SBS chip
 should wake from sleep to answer on requests from this program, and if the
 battery is turned on, the constant communication from internal master will
 interfere with packets sent by this tool. It can also cause the battery
 to enter temporary SMBus error mode. To avoid that, don't even press the
 battery button while it is connected to I2C interface.
+
+Though in case of connection issues, you may try re-running the script when
+battery is on. The uC of some batteries keeps the line shorted to high state
+when turned off.
+
+Another thing to try on issues is using your bus through both SMBus API and
+I2C API, using "--bus" parameter.
 
 If the script shows "OSError: [Errno 74] Bad message", the very likely
 cause is invalid I2C speed. Check how to change baud rate of your
@@ -45,10 +52,16 @@ signals on lines.
 
 On Raspberry Pi, the "Remote I/O error" can sometimes disappear after
 starting GPIO deamon with high sampling rate, ie. `sudo pigpiod -s 1`.
+Constant probing of the line affects its impedance, which may sometimes
+lead to such unusual effects.
 
 There is also "OSError: [Errno 5] Input/output error" which tend to happen
 interchangeably with "Remote I/O error", but only if the other side responds
 to part of the message.
+
+Finally, remember that cheap I2C devices can sometimes get into unuseable
+state - make sure you reboot the Raspberry Pi, or re-connect the USB stick,
+if logic signal changes are visible but I2C still refuses to detect anything.
 
 """
 __version__ = "0.1.1"
@@ -2820,7 +2833,7 @@ class SBS_FLAG_OPERATION_STATUS(DecoratedEnum):
     SHUTDOWN_BY_VOLTAGE			= 22
     SLEEP_BY_MA					= 23
     INIT_AFTER_RESET			= 24
-    SMB_CAL_ON_LOW			= 25
+    SMB_CAL_ON_LOW				= 25
     QMAX_UPDATE_IN_SLEEP		= 26
     CURRENT_CHK_IN_SLEEP		= 27
     XLOW_SPEED_STATE			= 28
