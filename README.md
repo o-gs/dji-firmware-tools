@@ -382,6 +382,30 @@ Example of performing service "linear hall" calibration of Spark gimbal, using W
 
 ```python3 comm_og_service_tool.py COM23 -vv SPARK GimbalCalib LinearHall```
 
+### comm_sbs_bqctrl.py
+
+Smart Battery System communication tool.
+
+This tool allows to interact with chips designed based on Smart Battery Data
+Specification. It also supports some extensions to that specification
+implemented by Texas Instruments in their BQ series gas gauge chips.
+
+Usage of this tool requires connection to SMBus lines (SDA,SCL,GND) of the
+SBS-compatible chip. SMBus communication uses I2C as a base, so most devices
+with I2C bus can be used to establish the communication.
+
+Example of simple read of BatteryStatus(), using I2C interface (the script will construct SMBus messages internally):
+
+```./comm_sbs_bqctrl.py -vvv --bus "i2c:1" --dev_address 0x0b read BatteryStatus```
+
+Example of reading several flag fields from BQ30z55 by ManufacturerAccess(), using SMBus interface:
+
+```./comm_sbs_bqctrl.py -v --bus "smbus:1" --dev_address 0x0b --chip BQ30z55 --short monitor BQStatusBitsMA```
+
+Example of unsealing BQ30z55 (enabling write capabilities), with default SHA-1 key, using I2C interface on 2nd bus device available to OS:
+
+```./comm_sbs_bqctrl.py -v --bus "i2c:2" --dev_address 0x0b --chip BQ30z55 --short sealing Unseal```
+
 ### comm_dissector
 
 The folder contains [Wireshark](https://www.wireshark.org/) dissector for for analyzing
