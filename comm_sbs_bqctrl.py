@@ -63,6 +63,20 @@ Finally, remember that cheap I2C devices can sometimes get into unuseable
 state - make sure you reboot the Raspberry Pi, or re-connect the USB stick,
 if logic signal changes are visible but I2C still refuses to detect anything.
 
+Tested devices:
+(these devices are confirmed)
+BQ30z55 fw 0.36, Mavic Pro battery, 2021-02-15, mefistotelis
+
+Devices verified with spec:
+(should work, but not actually tested)
+BQ30z50, BQ30z554
+
+For other devices, only basic SBS functions are expected to work.
+Using chip-specific commands on them may have undesired effects.
+To make sure a command is safe, check Reference Manual of the chip
+and make sure the command is defined in the same way as in spec of
+one of tested devices.
+
 """
 __version__ = "0.1.1"
 __author__ = "Mefistotelis @ Original Gangsters"
@@ -105,41 +119,75 @@ class CHIP_TYPE(DecoratedEnum):
     BQ20z65		= 0x010650
     BQ3050		= 0x013050
     BQ3060		= 0x013060
-    BQ40z307	= 0x014307
+    BQ40z307	= 0x014307 # hw marking bq9003; custom chip for DJI
+    BQ40370		= 0x019db2
     # supported by BatteryManagementStudio-1.3
-    BQ35100		= 0x010100
-    BQ34110		= 0x010110
-    BQ34210		= 0x010210
-    BQ27220		= 0x010220
-    BQ27320		= 0x010320
-    BQ27421		= 0x010421
-    BQ27425		= 0x010425
-    BQ27426		= 0x010426
-    BQ27510		= 0x010510
-    BQ27520		= 0x010520
-    BQ27530		= 0x010530
-    BQ27531		= 0x010531
-    BQ27532		= 0x010532
-    BQ27541		= 0x010541
-    BQ27542		= 0x010542
-    BQ27545		= 0x010545
-    BQ27546		= 0x010546
-    BQ27621		= 0x010621
-    BQ27742		= 0x010742
-    BQ78z100	= 0x011100
-    BQ27z561	= 0x011561
-    BQ78350		= 0x011e9b
-    BQ28z610	= 0x012610
-    BQ40z50		= 0x014500
-    BQ40z60		= 0x014600
-    BQ40z70		= 0x014800
-    BQ4050		= 0x019e34
-    BQ769x2		= 0x017692
+    BQ35100		= 0x010100 # hw marking bq8035;
+    BQ34110		= 0x010110 # hw marking bq8035;
+    BQ34210		= 0x010210 # hw marking bq8101;
+    BQ27220		= 0x010220 # hw marking bq8101;
+    BQ27320		= 0x010320 # hw marking bq8035;
+    BQ27421		= 0x010421 # hw marking bq8101; seem to also be BQ27411 ?
+    BQ27425		= 0x010425 # hw marking bq8036;
+    BQ27426		= 0x010426 # hw marking bq8101;
+    BQ27510		= 0x010510 # hw marking bq8035;
+    BQ27520		= 0x010520 # hw marking bq8035;
+    BQ27530		= 0x010530 # hw marking bq8035;
+    BQ27531		= 0x010531 # hw marking bq8035;
+    BQ27532		= 0x010532 # hw marking bq8035;
+    BQ27541		= 0x010541 # hw marking bq8034;
+    BQ27542		= 0x010542 # hw marking bq8034;
+    BQ27545		= 0x010545 # hw marking bq8035;
+    BQ27546		= 0x010546 # hw marking bq8034;
+    BQ27621		= 0x010621 # hw marking bq8101;
+    BQ27742		= 0x010742 # hw marking bq8037;
+    BQ78z100	= 0x011100 # hw marking bq9002;
+    BQ27z561	= 0x011561 # hw marking bq9035;
+    BQ78350		= 0x011e9b # hw marking bq8030;
+    BQ28z610	= 0x012610 # hw marking bq9002;
+    BQ40z50		= 0x014500 # hw marking bq9000;
+    BQ40z60		= 0x014600 # hw marking bq9000;
+    BQ40z80		= 0x014800 # hw marking bq9006; seem to also be BQ40z70 ?
+    BQ4050		= 0x019e34 # hw marking bq9000;
+    BQ769x2		= 0x017692 # hw marking bq7692; BQ76942/BQ76952
 
-CHIP_TYPE.AUTO.__doc__	= "Automatic detection of the chip"
-CHIP_TYPE.SBS.__doc__	= "Generic chip with SBS support"
-CHIP_TYPE.BQGENERIC.__doc__= "Unidentified chip from TI BQ family"
-CHIP_TYPE.BQ30z55.__doc__ = "Texas Instruments BQ30z55 chip"
+CHIP_TYPE.AUTO.__doc__		= "Automatic detection of the chip"
+CHIP_TYPE.SBS.__doc__		= "Generic chip with SBS support"
+CHIP_TYPE.BQGENERIC.__doc__	= "Unidentified chip from TI BQ family"
+CHIP_TYPE.BQ30z55.__doc__	= "Texas Instruments BQ30z55 chip"
+CHIP_TYPE.BQ20z65.__doc__	= "Texas Instruments BQ20z65 chip"
+CHIP_TYPE.BQ3050.__doc__	= "Texas Instruments BQ3050 chip"
+CHIP_TYPE.BQ3060.__doc__	= "Texas Instruments BQ3060 chip"
+CHIP_TYPE.BQ40z307.__doc__	= "Texas Instruments BQ40z307 chip for DJI"
+CHIP_TYPE.BQ40370.__doc__	= "Texas Instruments BQ40370 chip"
+CHIP_TYPE.BQ35100.__doc__	= "Texas Instruments BQ35100 chip"
+CHIP_TYPE.BQ34110.__doc__	= "Texas Instruments BQ34110 chip"
+CHIP_TYPE.BQ34210.__doc__	= "Texas Instruments BQ34210 chip"
+CHIP_TYPE.BQ27220.__doc__	= "Texas Instruments BQ27220 chip"
+CHIP_TYPE.BQ27320.__doc__	= "Texas Instruments BQ27320 chip"
+CHIP_TYPE.BQ27421.__doc__	= "Texas Instruments BQ27411/BQ27421 chip"
+CHIP_TYPE.BQ27425.__doc__	= "Texas Instruments BQ27425 chip"
+CHIP_TYPE.BQ27426.__doc__	= "Texas Instruments BQ27426 chip"
+CHIP_TYPE.BQ27510.__doc__	= "Texas Instruments BQ27510 chip"
+CHIP_TYPE.BQ27520.__doc__	= "Texas Instruments BQ27520 chip"
+CHIP_TYPE.BQ27530.__doc__	= "Texas Instruments BQ27530 chip"
+CHIP_TYPE.BQ27531.__doc__	= "Texas Instruments BQ27531 chip"
+CHIP_TYPE.BQ27532.__doc__	= "Texas Instruments BQ27532 chip"
+CHIP_TYPE.BQ27541.__doc__	= "Texas Instruments BQ27541 chip"
+CHIP_TYPE.BQ27542.__doc__	= "Texas Instruments BQ27542 chip"
+CHIP_TYPE.BQ27545.__doc__	= "Texas Instruments BQ27545 chip"
+CHIP_TYPE.BQ27546.__doc__	= "Texas Instruments BQ27546 chip"
+CHIP_TYPE.BQ27621.__doc__	= "Texas Instruments BQ27621 chip"
+CHIP_TYPE.BQ27742.__doc__	= "Texas Instruments BQ27742 chip"
+CHIP_TYPE.BQ78z100.__doc__	= "Texas Instruments BQ78z100 chip"
+CHIP_TYPE.BQ27z561.__doc__	= "Texas Instruments BQ27z561 chip"
+CHIP_TYPE.BQ78350.__doc__	= "Texas Instruments BQ78350 chip"
+CHIP_TYPE.BQ28z610.__doc__	= "Texas Instruments BQ28z610 chip"
+CHIP_TYPE.BQ40z50.__doc__	= "Texas Instruments BQ40z50 chip"
+CHIP_TYPE.BQ40z60.__doc__	= "Texas Instruments BQ40z60 chip"
+CHIP_TYPE.BQ40z80.__doc__	= "Texas Instruments BQ40z70/BQ40z80 chip"
+CHIP_TYPE.BQ4050.__doc__	= "Texas Instruments BQ4050 chip"
+CHIP_TYPE.BQ769x2.__doc__	= "Texas Instruments BQ76942/BQ76952 chip"
 
 class SBS_COMMAND(DecoratedEnum):
     """ Smart Battery Data Specification 1.1 commands list
@@ -5362,6 +5410,19 @@ class SMBusMock(object):
         self.address = None
         self.bus = bus
         self.force = force
+        self.pec = False
+        self.mock_reads = {}
+        # Few commands for testing
+        self.add_mock_read(0x16, (0x48d0).to_bytes(2, byteorder='little')) # BatteryStatus
+        self.add_mock_read(0x20, b'MockMfc') # ManufacturerName
+        self.add_mock_read(0x50, (0x00).to_bytes(4, byteorder='little')) # SafetyAlert
+        self.add_mock_read(0x51, (0x00).to_bytes(4, byteorder='little')) # SafetyStatus
+        self.add_mock_read(0x52, (0x00).to_bytes(4, byteorder='little')) # PFAlert
+        self.add_mock_read(0x53, (0x05).to_bytes(4, byteorder='little')) # PFStatus
+        self.add_mock_read(0x54, (0x107200).to_bytes(4, byteorder='little')) # OperationStatus
+        self.add_mock_read(0x55, (0x00).to_bytes(3, byteorder='little')) # ChargingStatus
+        self.add_mock_read(0x56, (0x817).to_bytes(2, byteorder='little')) # GaugingStatus
+        self.add_mock_read(0x57, (0x58).to_bytes(2, byteorder='little')) # ManufacturingStatus
 
     def open(self, bus):
         self.bus = bus
@@ -5379,13 +5440,15 @@ class SMBusMock(object):
         pass
 
     def read_byte_data(self, i2c_addr, register, force=None):
-        return 1
+        data = self.do_mock_read(i2c_addr, register)
+        return data[0]
 
     def write_byte_data(self, i2c_addr, register, value, force=None):
         pass
 
     def read_word_data(self, i2c_addr, register, force=None):
-        return 0x101
+        data = self.do_mock_read(i2c_addr, register)
+        return struct.unpack('<H', data[0:2])
 
     def write_word_data(self, i2c_addr, register, value, force=None):
         pass
@@ -5394,16 +5457,31 @@ class SMBusMock(object):
         pass
 
     def read_block_data(self, i2c_addr, register, force=None):
-        return [1] * 32
+        data = self.do_mock_read(i2c_addr, register, is_block=True)
+        return data[1:data[0]+1]
 
     def write_block_data(self, i2c_addr, register, data, force=None):
         pass
 
     def read_i2c_block_data(self, i2c_addr, register, length, force=None):
-        return [1] * length
+        data = self.do_mock_read(i2c_addr, register, is_block=True)
+        data = data + bytes([data[-1]] * 32)
+        return data[0:length] # For some reason this doesn't start at 1
 
     def write_i2c_block_data(self, i2c_addr, register, data, force=None):
         pass
+
+    def add_mock_read(self, register, data):
+        self.mock_reads[register] = data
+
+    def do_mock_read(self, i2c_addr, register, is_block=False):
+        data = bytes(self.mock_reads[register])
+        if is_block: data = bytes([len(data)]) + data
+        if is_block and self.pec:
+            whole_packet = smbus_recreate_read_packet_data(i2c_addr, register, data)
+            pec = crc8_ccitt_compute(whole_packet)
+            data = data + bytes([pec])
+        return data
 
 
 def crc8_ccitt_byte(crc, dt):
@@ -5423,6 +5501,12 @@ def crc8_ccitt_compute(data):
     for dt in data:
         crc = crc8_ccitt_byte(crc, dt)
     return crc
+
+
+def str_exception_with_type(ex):
+    if type(ex).__name__ not in str(ex):
+        return "{}: {}".format(type(ex).__name__,str(ex))
+    return str(ex)
 
 
 def is_ti_bq_chip(chip):
@@ -5507,7 +5591,11 @@ def smbus_recreate_read_packet_data(dev_addr, cmd, resp_data):
 
   The data is useful for PEC calculation.
   """
-  data = bytes([(dev_addr << 1) + 0, cmd.value, (dev_addr << 1) + 1]) + bytes(resp_data)
+  if isinstance(cmd, enum.Enum):
+      register = cmd.value
+  else:
+      register = int(cmd)
+  data = bytes([(dev_addr << 1) + 0, register, (dev_addr << 1) + 1]) + bytes(resp_data)
   return data
 
 
@@ -5532,6 +5620,7 @@ def smbus_open(bus_str, po):
         bus_index = int(m.group(2),0)
         if po.dry_run:
             bus = SMBusMock(bus_index)
+            bus.pec = True
             return
         import smbus2
         bus = smbus2.SMBus(bus_index)
@@ -5556,7 +5645,16 @@ def smbus_write_raw(bus, dev_addr, b, po):
         print("Raw write: DATA={}".format(
           " ".join('{:02x}'.format(x) for x in b)))
 
-    if po.api_type == "smbus":
+    if po.api_type == "i2c":
+        if callable(getattr(bus, "i2c_rdwr", None)):
+            use_api_type = "i2c"
+        else:
+            print("No real raw write supported; using smbus write")
+            use_api_type = "smbus"
+    else:
+        use_api_type = po.api_type
+
+    if use_api_type == "smbus":
         # Try to send the raw data using normal smbus API
         orig_pec = bus.pec
         bus.pec = False
@@ -5566,7 +5664,7 @@ def smbus_write_raw(bus, dev_addr, b, po):
         else:
             raise NotImplementedError("No way of sending such raw data via smbus api")
         bus.pec = orig_pec
-    elif po.api_type == "i2c":
+    elif use_api_type == "i2c":
         part_write = i2c_msg.write(dev_addr, b)
         bus.i2c_rdwr(part_write)
     else:
@@ -5635,7 +5733,7 @@ def smbus_read_block_for_basecmd(bus, dev_addr, cmd, basecmd_name, resp_type, po
     expect_len = type_str_value_length(resp_type)
     # Try reading expected length first
     if po.api_type == "smbus":
-        expect_len = min(expect_len+ 1 + (1 if bus.pec else 0), 32) # +1 length, +1 PEC
+        expect_len = min(expect_len + 1 + (1 if bus.pec else 0), 32) # +1 length, +1 PEC
         b = bus.read_i2c_block_data(dev_addr, cmd.value, expect_len)
     elif po.api_type == "i2c":
         expect_len = min(expect_len+ 1 + (1 if bus.pec else 0), 34) # +1 length, +1 PEC
@@ -5885,7 +5983,7 @@ def smbus_read_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, re
               # 121 = I/O error, usually means no ACK
               ):
                 if (po.verbose > 2):
-                    print("Retrying due to error: "+str(ex))
+                    print("Retrying due to error: "+str_exception_with_type(ex))
                 pass
             else:
                 raise
@@ -5921,7 +6019,7 @@ def smbus_write_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, v
               # 121 = I/O error, usually means no ACK
               ):
                 if (po.verbose > 2):
-                    print("Retrying due to error: "+str(ex))
+                    print("Retrying due to error: "+str_exception_with_type(ex))
                 pass
             else:
                 raise
@@ -5967,7 +6065,7 @@ def smbus_read_simple(bus, dev_addr, cmd, resp_type, resp_unit, retry_count, po)
               (isinstance(ex, ValueError)) # invalid length or checksum
               ):
                 if (po.verbose > 2):
-                    print("Retrying due to error: "+str(ex))
+                    print("Retrying due to error: "+str_exception_with_type(ex))
                 pass
             else:
                 raise
@@ -6516,8 +6614,6 @@ def bq_read_firmware_version_sealed(bus, dev_addr, po):
 
 def smart_battery_bq_detect(vals, po):
     global bus
-    if not callable(getattr(bus, "write", None)):
-        raise ImportError("The smbus library provided has no raw write support")
 
     v = None
     for nretry in reversed(range(3)):
@@ -6532,7 +6628,7 @@ def smart_battery_bq_detect(vals, po):
               (isinstance(ex, ConnectionError)) # invalid response on initial writes
               ):
                 if (po.verbose > 2):
-                    print("Retrying due to error: "+str(ex))
+                    print("Retrying due to error: "+str_exception_with_type(ex))
                 pass
             else:
                 raise
@@ -6563,7 +6659,7 @@ def smart_battery_detect(vals, po):
     try:
         chip = smart_battery_bq_detect(vals, po)
     except Exception as ex:
-        print("Chip detection failded: "+str(ex))
+        print("Chip detection failded: {}".format(str_exception_with_type(ex)))
     if (po.verbose > 0):
         print("Auto-selected chip: {}, {}".format(chip.name,chip.__doc__))
     return chip
@@ -6746,7 +6842,7 @@ def smart_battery_system_trigger(cmd_str, vals, po):
     try:
         u, s = smbus_write(bus, po.dev_address, cmd, v, opts, vals, po)
     except Exception as ex:
-        print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "trigger", "FAIL", str(ex)))
+        print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "trigger", "FAIL", str_exception_with_type(ex)))
         if (isinstance(ex, OSError)):
             smart_battery_system_last_error(bus, po.dev_address, vals, po)
         if (po.explain):
@@ -6766,7 +6862,7 @@ def smart_battery_system_write(cmd_str, nval_str, vals, po):
     try:
         u, s = smbus_write(bus, po.dev_address, cmd, v, opts, vals, po)
     except Exception as ex:
-        print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "write", "FAIL", str(ex)))
+        print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "write", "FAIL", str_exception_with_type(ex)))
         if (isinstance(ex, OSError)):
             smart_battery_system_last_error(bus, po.dev_address, vals, po)
         if (po.explain):
@@ -6862,7 +6958,7 @@ def smart_battery_system_monitor(mgroup_str, vals, po):
         try:
             v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
         except Exception as ex:
-            print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", names_width, "n/a", "FAIL", str(ex)))
+            print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", names_width, "n/a", "FAIL", str_exception_with_type(ex)))
             if (isinstance(ex, OSError)):
                 smart_battery_system_last_error(bus, po.dev_address, vals, po)
             if (po.explain):
@@ -7181,6 +7277,6 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as ex:
-        eprint("Error: "+str(ex))
+        eprint("Error: "+str_exception_with_type(ex))
         raise
         sys.exit(10)
