@@ -5413,6 +5413,7 @@ class SMBusMock(object):
         self.pec = False
         self.mock_reads = {}
         self.mock_reads_ma = {}
+        self.mock_exception = None
         # Few commands for testing, simulated BQ30z55
         self.add_mock_read(0x16, (0x48d0).to_bytes(2, byteorder='little')) # BatteryStatus
         self.add_mock_read(0x20, b'MockMfc') # ManufacturerName
@@ -5424,7 +5425,14 @@ class SMBusMock(object):
         self.add_mock_read(0x55, (0x00).to_bytes(3, byteorder='little')) # ChargingStatus
         self.add_mock_read(0x56, (0x817).to_bytes(2, byteorder='little')) # GaugingStatus
         self.add_mock_read(0x57, (0x58).to_bytes(2, byteorder='little')) # ManufacturingStatus
-        self.add_mock_read_ma(0x02, bytes([0x05,0x50,0x00,0x36,0x00,0x34,0x00,0x03,0x80,0x00,0x01,0x00,0x83]))
+        self.add_mock_read_ma(0x02, bytes.fromhex("0550 0036 0034 00 0380 0001 0083")) # FirmwareVersion
+        if False: # UnSealDevice M zero-filled key
+            self.add_mock_read_ma(0x31, reversed(bytes.fromhex("C82CA3CA 10DEC726 8E070A7C F0D1FE82 20AAD3B8")))
+            # For above case, HMAC2=fb8a342458e0b136988cb5203bb23f94dfd4440e
+        if True: # UnSealDevice M default key
+            self.add_mock_read_ma(0x31, reversed(bytes.fromhex("12b59558 b6d20605 121149b1 16af564a ae19a256")))
+            # For above case, HMAC2=fca9642f6846e01f219c6ed7160b2f15cddeb1bc
+
 
     def open(self, bus):
         self.bus = bus
@@ -5446,14 +5454,14 @@ class SMBusMock(object):
         return data[0]
 
     def write_byte_data(self, i2c_addr, register, value, force=None):
-        pass
+        self.do_mock_write(i2c_addr, register, struct.pack('<B', value))
 
     def read_word_data(self, i2c_addr, register, force=None):
         data = self.do_mock_read(i2c_addr, register)
         return struct.unpack('<H', data[0:2])
 
     def write_word_data(self, i2c_addr, register, value, force=None):
-        pass
+        self.do_mock_write(i2c_addr, register, struct.pack('<H', value))
 
     def process_call(self, i2c_addr, register, value, force=None):
         pass
@@ -5463,7 +5471,7 @@ class SMBusMock(object):
         return data[1:data[0]+1]
 
     def write_block_data(self, i2c_addr, register, data, force=None):
-        pass
+        self.do_mock_write(i2c_addr, register, bytes(data), is_block=True)
 
     def read_i2c_block_data(self, i2c_addr, register, length, force=None):
         data = self.do_mock_read(i2c_addr, register, is_block=True)
@@ -5471,13 +5479,16 @@ class SMBusMock(object):
         return data[0:length] # For some reason this doesn't start at 1
 
     def write_i2c_block_data(self, i2c_addr, register, data, force=None):
-        pass
+        self.do_mock_write(i2c_addr, register, bytes(data), is_block=True)
 
     def add_mock_read(self, register, data):
         self.mock_reads[register] = data
 
     def add_mock_read_ma(self, subreg, data):
         self.mock_reads_ma[subreg] = data
+
+    def add_mock_except(self, ex):
+        self.mock_exception = ex
 
     def prep_mock_read(self, cmd, subcmd=None):
         if cmd == SBS_COMMAND.ManufacturerAccess:
@@ -5486,7 +5497,10 @@ class SMBusMock(object):
                 if subcmd in subgrp.keys():
                     subcmdinf = subgrp[subcmd]
             register = subcmdinf['resp_location'].value
-            self.mock_reads[register] = self.mock_reads_ma[subcmd.value]
+            if subcmd.value in self.mock_reads_ma:
+                self.mock_reads[register] = self.mock_reads_ma[subcmd.value]
+            else: # some MA commands are just mirrors of standard SBS commands
+                self.mock_reads[register] = self.mock_reads[subcmd.value]
             if subcmd == MANUFACTURER_ACCESS_CMD_BQ30.FirmwareVersion:
                 register = 0x2f
                 self.mock_reads[register] = self.mock_reads_ma[subcmd.value]
@@ -5499,6 +5513,13 @@ class SMBusMock(object):
             pec = crc8_ccitt_compute(whole_packet)
             data = data + bytes([pec])
         return data
+
+    def do_mock_write(self, i2c_addr, register, value, is_block=False):
+        if self.mock_exception is not None:
+            ex = self.mock_exception
+            self.mock_exception = None
+            raise ex
+        pass
 
 
 def crc8_ccitt_byte(crc, dt):
@@ -5934,17 +5955,12 @@ def smbus_perform_unseal_bq30(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, r
         # Command with no params - which is sealing
         smbus_write_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, b'', resp_type, resp_cmd, resp_wait, po)
         return
-    if False: # TODO use for dry run
-        KD = bytes.fromhex("00000000 00000000 00000000 00000000")
     KD = bytes.fromhex(sec_key_hex)
     if len(KD) != 16:
         raise ValueError("Algorithm broken, length of unseal key KD is {} instead of {} bytes".format(len(KD),16))
     # write UnSealDevice/FullAccessDevice sub-command to ManufacturerAccess, then read 160-bit message M
-    if False: # TODO use for dry run
-        M = bytes.fromhex("C82CA3CA 10DEC726 8E070A7C F0D1FE82 20AAD3B8") # on zeroed key
-        # For above case, HMAC2=fb8a342458e0b136988cb5203bb23f94dfd4440e
-        M = bytes.fromhex("12b59558 b6d20605 121149b1 16af564a ae19a256") # on default key
-        # For above case, HMAC2=fca9642f6846e01f219c6ed7160b2f15cddeb1bc
+    if po.dry_run:
+        bus.prep_mock_read(cmd, subcmd)
     M = smbus_read_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
     M = bytes(reversed(M))
     if len(M) != 20:
@@ -6617,13 +6633,15 @@ def bq_read_firmware_version_sealed(bus, dev_addr, po):
     for pre_cmd in (SBS_COMMAND.DeviceChemistry, SBS_COMMAND.ManufacturerName, SBS_COMMAND.DeviceChemistry):
         # We are sending messages which are not correct commands - we expect to receive no ACK
         # This is normal part of this routine; each of these commands should fail
+        if po.dry_run:
+            bus.add_mock_except(OSError(121,"Simulated error"))
         try:
             smbus_write_raw(bus, dev_addr, [pre_cmd.value, 62], po)
             # If somehow we got no exception, raise one
             raise ConnectionError("FW version acquire tripped as it expected NACK on a command")
         except OSError as ex:
-            if ex.errno in (121,): # I/O error - usually means no ACK
-                pass
+            if ex.errno not in (121,): # I/O error - usually means no ACK - this is what we expect
+                raise
 
     # Now ManufacturerData() will contain FW version data which we can read; wait to make sure it's ready
     time.sleep(0.35) # EV2300 software waits 350 ms; but documentation doesn't explicitly say to wait here
