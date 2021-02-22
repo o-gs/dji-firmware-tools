@@ -5412,7 +5412,8 @@ class SMBusMock(object):
         self.force = force
         self.pec = False
         self.mock_reads = {}
-        # Few commands for testing
+        self.mock_reads_ma = {}
+        # Few commands for testing, simulated BQ30z55
         self.add_mock_read(0x16, (0x48d0).to_bytes(2, byteorder='little')) # BatteryStatus
         self.add_mock_read(0x20, b'MockMfc') # ManufacturerName
         self.add_mock_read(0x50, (0x00).to_bytes(4, byteorder='little')) # SafetyAlert
@@ -5423,6 +5424,7 @@ class SMBusMock(object):
         self.add_mock_read(0x55, (0x00).to_bytes(3, byteorder='little')) # ChargingStatus
         self.add_mock_read(0x56, (0x817).to_bytes(2, byteorder='little')) # GaugingStatus
         self.add_mock_read(0x57, (0x58).to_bytes(2, byteorder='little')) # ManufacturingStatus
+        self.add_mock_read_ma(0x02, bytes([0x05,0x50,0x00,0x36,0x00,0x34,0x00,0x03,0x80,0x00,0x01,0x00,0x83]))
 
     def open(self, bus):
         self.bus = bus
@@ -5473,6 +5475,21 @@ class SMBusMock(object):
 
     def add_mock_read(self, register, data):
         self.mock_reads[register] = data
+
+    def add_mock_read_ma(self, subreg, data):
+        self.mock_reads_ma[subreg] = data
+
+    def prep_mock_read(self, cmd, subcmd=None):
+        if cmd == SBS_COMMAND.ManufacturerAccess:
+            cmdinf = SBS_CMD_INFO[cmd]
+            for subgrp in cmdinf['subcmd_infos']:
+                if subcmd in subgrp.keys():
+                    subcmdinf = subgrp[subcmd]
+            register = subcmdinf['resp_location'].value
+            self.mock_reads[register] = self.mock_reads_ma[subcmd.value]
+            if subcmd == MANUFACTURER_ACCESS_CMD_BQ30.FirmwareVersion:
+                register = 0x2f
+                self.mock_reads[register] = self.mock_reads_ma[subcmd.value]
 
     def do_mock_read(self, i2c_addr, register, is_block=False):
         data = bytes(self.mock_reads[register])
@@ -6034,6 +6051,9 @@ def smbus_write_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, v
 def smbus_read_simple(bus, dev_addr, cmd, resp_type, resp_unit, retry_count, po):
     """ Reads value of simple command from the battery.
     """
+    if po.dry_run:
+        bus.prep_mock_read(cmd)
+
     v = None
     for nretry in reversed(range(retry_count)):
         try:
@@ -6390,6 +6410,9 @@ def smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po)
     else:
         resp_wait = 0
 
+    if po.dry_run:
+        bus.prep_mock_read(cmd, subcmd)
+
     if (resp_type.startswith("byte[") or resp_type.startswith("string") or resp_type.endswith("_blk")):
         v = smbus_read_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
     else:
@@ -6604,6 +6627,8 @@ def bq_read_firmware_version_sealed(bus, dev_addr, po):
 
     # Now ManufacturerData() will contain FW version data which we can read; wait to make sure it's ready
     time.sleep(0.35) # EV2300 software waits 350 ms; but documentation doesn't explicitly say to wait here
+    if po.dry_run:
+        bus.prep_mock_read(cmd, subcmd)
 
     resp_cmd  = SBS_COMMAND_BQ30.ManufacturerInput
     # Data length is 11 or 13 bytes
