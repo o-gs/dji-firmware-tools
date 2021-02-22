@@ -5415,8 +5415,37 @@ class SMBusMock(object):
         self.mock_reads_ma = {}
         self.mock_exception = None
         # Few commands for testing, simulated BQ30z55
+        self.add_mock_read(0x01, (150).to_bytes(2, byteorder='little')) # RemainingCapacityAlarm
+        self.add_mock_read(0x02, (10).to_bytes(2, byteorder='little')) # RemainingTimeAlarm
+        self.add_mock_read(0x03, (0x6001).to_bytes(2, byteorder='little')) # BatteryMode
+        self.add_mock_read(0x04, (0).to_bytes(2, byteorder='little')) # AtRate
+        self.add_mock_read(0x05, (0xffff).to_bytes(2, byteorder='little')) # AtRateToFull
+        self.add_mock_read(0x06, (0xffff).to_bytes(2, byteorder='little')) # AtRateToEmpty
+        self.add_mock_read(0x07, (1).to_bytes(2, byteorder='little')) # AtRateOK
+        self.add_mock_read(0x08, (2992).to_bytes(2, byteorder='little')) # Temperature
+        self.add_mock_read(0x09, (3711+3712+3713).to_bytes(2, byteorder='little')) # Voltage
+        self.add_mock_read(0x0a, (0).to_bytes(2, byteorder='little')) # Current
+        self.add_mock_read(0x0b, (0).to_bytes(2, byteorder='little')) # AverageCurrent
+        self.add_mock_read(0x0c, (4).to_bytes(2, byteorder='little')) # MaxError
+        self.add_mock_read(0x0d, (100*571//1670).to_bytes(2, byteorder='little')) # RelativeStateOfCharge
+        self.add_mock_read(0x0e, (100*571//1915).to_bytes(2, byteorder='little')) # AbsoluteStateOfCharge
+        self.add_mock_read(0x0f, (571).to_bytes(2, byteorder='little')) # RemainingCapacity
+        self.add_mock_read(0x10, (1670).to_bytes(2, byteorder='little')) # FullChargeCapacity
+        self.add_mock_read(0x11, (0xffff).to_bytes(2, byteorder='little')) # RunTimeToEmpty
+        self.add_mock_read(0x12, (0xffff).to_bytes(2, byteorder='little')) # AverageTimeToEmpty
+        self.add_mock_read(0x13, (0xffff).to_bytes(2, byteorder='little')) # AverageTimeToFull
+        self.add_mock_read(0x14, (0).to_bytes(2, byteorder='little')) # ChargingCurrent
+        self.add_mock_read(0x15, (0).to_bytes(2, byteorder='little')) # ChargingVoltage
         self.add_mock_read(0x16, (0x48d0).to_bytes(2, byteorder='little')) # BatteryStatus
+        self.add_mock_read(0x17, (99).to_bytes(2, byteorder='little')) # CycleCount
+        self.add_mock_read(0x18, (1915).to_bytes(2, byteorder='little')) # DesignCapacity
+        self.add_mock_read(0x19, (11400).to_bytes(2, byteorder='little')) # DesignVoltage
+        self.add_mock_read(0x1a, (0x0031).to_bytes(2, byteorder='little')) # SpecificationInfo
+        self.add_mock_read(0x1b, (0x4661).to_bytes(2, byteorder='little')) # ManufactureDate
+        self.add_mock_read(0x1c, (0x0dd3).to_bytes(2, byteorder='little')) # SerialNumber
         self.add_mock_read(0x20, b'MockMfc') # ManufacturerName
+        self.add_mock_read(0x21, b'DJI008') # DeviceName
+        self.add_mock_read(0x22, b'LION') # DeviceChemistry
         self.add_mock_read(0x50, (0x00).to_bytes(4, byteorder='little')) # SafetyAlert
         self.add_mock_read(0x51, (0x00).to_bytes(4, byteorder='little')) # SafetyStatus
         self.add_mock_read(0x52, (0x00).to_bytes(4, byteorder='little')) # PFAlert
@@ -5458,7 +5487,7 @@ class SMBusMock(object):
 
     def read_word_data(self, i2c_addr, register, force=None):
         data = self.do_mock_read(i2c_addr, register)
-        return struct.unpack('<H', data[0:2])
+        return struct.unpack('<H', data[0:2])[0]
 
     def write_word_data(self, i2c_addr, register, value, force=None):
         self.do_mock_write(i2c_addr, register, struct.pack('<H', value))
@@ -5508,9 +5537,11 @@ class SMBusMock(object):
     def do_mock_read(self, i2c_addr, register, is_block=False):
         data = bytes(self.mock_reads[register])
         if is_block: data = bytes([len(data)]) + data
+        print("xxx",is_block, self.pec)
         if is_block and self.pec:
             whole_packet = smbus_recreate_read_packet_data(i2c_addr, register, data)
             pec = crc8_ccitt_compute(whole_packet)
+            print("xxx",data.hex(),"{:02x}".format(pec))
             data = data + bytes([pec])
         return data
 
@@ -5695,13 +5726,15 @@ def smbus_write_raw(bus, dev_addr, b, po):
     if use_api_type == "smbus":
         # Try to send the raw data using normal smbus API
         orig_pec = bus.pec
-        bus.pec = False
-        if len(b) in (2,3):
-            (v,) = struct.unpack('<H', bytearray(bytes(b[1:]) + b'\0')[0:2])
-            bus.write_word_data(dev_addr, b[0], v)
-        else:
-            raise NotImplementedError("No way of sending such raw data via smbus api")
-        bus.pec = orig_pec
+        try:
+            bus.pec = False
+            if len(b) in (2,3):
+                (v,) = struct.unpack('<H', bytearray(bytes(b[1:]) + b'\0')[0:2])
+                bus.write_word_data(dev_addr, b[0], v)
+            else:
+                raise NotImplementedError("No way of sending such raw data via smbus api")
+        finally:
+            bus.pec = orig_pec
     elif use_api_type == "i2c":
         part_write = i2c_msg.write(dev_addr, b)
         bus.i2c_rdwr(part_write)
