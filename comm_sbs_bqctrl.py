@@ -5416,33 +5416,38 @@ class SMBusMock(object):
         self.mock_exception = None
         # Few commands for testing, simulated BQ30z55
         v = (3711, 3712, 3713, 0, )
-        rv = (3835, 3835, 3835, 0, )
+        dv = (3800, 3800, 3800, 0, )
+        dc = (639, 639, 639, 0, )
+        cyc = 99
+        wear = max(1.0-cyc/400,0.01)
+        c = [(dc[i] * wear * max(v[i]-3500,0)/700) for i in range(4)]
         t = 29.92
+        atrate = 0
         self.add_mock_read(0x01, struct.pack('<H', 150)) # RemainingCapacityAlarm
         self.add_mock_read(0x02, struct.pack('<H', 10)) # RemainingTimeAlarm
         self.add_mock_read(0x03, struct.pack('<H', 0x6001)) # BatteryMode
-        self.add_mock_read(0x04, struct.pack('<H', 0)) # AtRate
-        self.add_mock_read(0x05, struct.pack('<H', 0xffff)) # AtRateToFull
-        self.add_mock_read(0x06, struct.pack('<H', 0xffff)) # AtRateToEmpty
+        self.add_mock_read(0x04, struct.pack('<H', int(atrate))) # AtRate
+        self.add_mock_read(0x05, struct.pack('<H', int(min(60*(sum(dc)-sum(c))/max(atrate,0.00001),0xffff)))) # AtRateToFull
+        self.add_mock_read(0x06, struct.pack('<H', int(min(60*sum(c)/max(atrate,0.00001),0xffff)))) # AtRateToEmpty
         self.add_mock_read(0x07, struct.pack('<H', 1)) # AtRateOK
         self.add_mock_read(0x08, struct.pack('<H', int(t*100))) # Temperature
-        self.add_mock_read(0x09, struct.pack('<H', sum(v))) # Voltage
+        self.add_mock_read(0x09, struct.pack('<H', int(sum(v)))) # Voltage
         self.add_mock_read(0x0a, struct.pack('<H', 0)) # Current
         self.add_mock_read(0x0b, struct.pack('<H', 0)) # AverageCurrent
         self.add_mock_read(0x0c, struct.pack('<H', 4)) # MaxError
-        self.add_mock_read(0x0d, struct.pack('<H', 100*571//1670)) # RelativeStateOfCharge
-        self.add_mock_read(0x0e, struct.pack('<H', 100*571//1915)) # AbsoluteStateOfCharge
-        self.add_mock_read(0x0f, struct.pack('<H', 571)) # RemainingCapacity
-        self.add_mock_read(0x10, struct.pack('<H', 1670)) # FullChargeCapacity
+        self.add_mock_read(0x0d, struct.pack('<H', int(100*sum(c)//(sum(dc)*wear)))) # RelativeStateOfCharge
+        self.add_mock_read(0x0e, struct.pack('<H', int(100*sum(c)//sum(dc)))) # AbsoluteStateOfCharge
+        self.add_mock_read(0x0f, struct.pack('<H', int(sum(c)))) # RemainingCapacity
+        self.add_mock_read(0x10, struct.pack('<H', int(sum(dc)*wear))) # FullChargeCapacity
         self.add_mock_read(0x11, struct.pack('<H', 0xffff)) # RunTimeToEmpty
         self.add_mock_read(0x12, struct.pack('<H', 0xffff)) # AverageTimeToEmpty
         self.add_mock_read(0x13, struct.pack('<H', 0xffff)) # AverageTimeToFull
         self.add_mock_read(0x14, struct.pack('<H', 0)) # ChargingCurrent
         self.add_mock_read(0x15, struct.pack('<H', 0)) # ChargingVoltage
         self.add_mock_read(0x16, struct.pack('<H', 0x48d0)) # BatteryStatus
-        self.add_mock_read(0x17, struct.pack('<H', 99)) # CycleCount
-        self.add_mock_read(0x18, struct.pack('<H', 1915)) # DesignCapacity
-        self.add_mock_read(0x19, struct.pack('<H', 11400)) # DesignVoltage
+        self.add_mock_read(0x17, struct.pack('<H', int(cyc))) # CycleCount
+        self.add_mock_read(0x18, struct.pack('<H', sum(dc))) # DesignCapacity
+        self.add_mock_read(0x19, struct.pack('<H', sum(dv))) # DesignVoltage
         self.add_mock_read(0x1a, struct.pack('<H', 0x0031)) # SpecificationInfo
         self.add_mock_read(0x1b, struct.pack('<H', 0x4661)) # ManufactureDate
         self.add_mock_read(0x1c, struct.pack('<H', 0x0dd3)) # SerialNumber
@@ -5462,7 +5467,7 @@ class SMBusMock(object):
         self.add_mock_read(0x56, struct.pack('<H', 0x0817)) # GaugingStatus
         self.add_mock_read(0x57, struct.pack('<H', 0x0058)) # ManufacturingStatus
         self.add_mock_read(0x70, b'abcdefghijklmnopqrstuvwzxy012345') # ManufacturerInfo
-        self.add_mock_read(0x71, struct.pack('<HHHHHH', v[0], v[1], v[2], v[3], sum(v), sum(rv)//100)) # Voltages
+        self.add_mock_read(0x71, struct.pack('<HHHHHH', v[0], v[1], v[2], v[3], sum(v), int(sum(v)*1.04//100))) # Voltages
         self.add_mock_read(0x72, struct.pack('<HHHHHHH', int(t*100-9), int(t*100-20), int(t*100), int(t*100), int(t*100), int(t*100), int(t*100-100))) # Temperatures
         self.add_mock_read_ma(0x02, bytes.fromhex("0550 0036 0034 00 0380 0001 0083")) # FirmwareVersion
         if False: # UnSealDevice M zero-filled key
