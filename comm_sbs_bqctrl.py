@@ -1178,7 +1178,7 @@ class SBS_CMD_BQ_TEMPERATURES(DecoratedEnum):
 SBS_CMD_BQ_TEMPERATURES_INFO = {
     SBS_CMD_BQ_TEMPERATURES.IntTemperature : {
         'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':0.1,'name':"K"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "IntTm",
@@ -1186,7 +1186,7 @@ SBS_CMD_BQ_TEMPERATURES_INFO = {
     },
     SBS_CMD_BQ_TEMPERATURES.TS1Temperature : {
         'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':0.1,'name':"K"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "TS1Tm",
@@ -1194,7 +1194,7 @@ SBS_CMD_BQ_TEMPERATURES_INFO = {
     },
     SBS_CMD_BQ_TEMPERATURES.TS2Temperature : {
         'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':0.1,'name':"K"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "TS2Tm",
@@ -1202,7 +1202,7 @@ SBS_CMD_BQ_TEMPERATURES_INFO = {
     },
     SBS_CMD_BQ_TEMPERATURES.TS3Temperature : {
         'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':0.1,'name':"K"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "TS3Tm",
@@ -1210,7 +1210,7 @@ SBS_CMD_BQ_TEMPERATURES_INFO = {
     },
     SBS_CMD_BQ_TEMPERATURES.TS4Temperature : {
         'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':0.1,'name':"K"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "TS4Tm",
@@ -1218,7 +1218,7 @@ SBS_CMD_BQ_TEMPERATURES_INFO = {
     },
     SBS_CMD_BQ_TEMPERATURES.CellTemperature : {
         'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':0.1,'name':"K"},
         'nbits'	: 16,
         'optional'	: True,
         'access'	: "r",
@@ -1227,7 +1227,7 @@ SBS_CMD_BQ_TEMPERATURES_INFO = {
     },
     SBS_CMD_BQ_TEMPERATURES.FETTemperature : {
         'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':0.1,'name':"K"},
         'nbits'	: 16,
         'optional'	: True,
         'access'	: "r",
@@ -5291,7 +5291,6 @@ class MONITOR_GROUP(DecoratedEnum):
     ComputedInfo= 0x02
     StatusBits	= 0x03
     AtRates		= 0x04
-    Group1		= 0x05
     BQStatusBits	= 0x06
     BQStatusBitsMA	= 0x07
     BQCellVoltages	= 0x08
@@ -5300,7 +5299,6 @@ class MONITOR_GROUP(DecoratedEnum):
     ImpedanceTrack	= 0x0b
     ImpedanceTrackMA	= 0x0c
     BQTurboMode	= 0x0f
-
 
 SBS_CMD_GROUPS = {
     MONITOR_GROUP.DeviceInfo : (
@@ -6270,7 +6268,7 @@ def is_printable_value_unit(uname):
 def command_value_to_string(cmdinf, subcmdinf, u, v, po):
     if u in ("bitfields","struct","hex",):
         if isinstance(v, list) or isinstance(v, bytes):
-            return "hex:" + "".join('{:02x}'.format(x) for x in v)
+            return "hex:" + "".join('{:02x}'.format(x) for x in v), u
         else:
             if 'nbits' in subcmdinf:
                 val_len = (subcmdinf['nbits']+3) // 4
@@ -6278,10 +6276,10 @@ def command_value_to_string(cmdinf, subcmdinf, u, v, po):
                 val_len = 2*type_str_value_length(subcmdinf['type'])
             else:
                 val_len = 2*type_str_value_length(cmdinf['type'])
-            return "0x{:0{}x}".format(v,val_len)
+            return "0x{:0{}x}".format(v,val_len), u
     if u == "hexver":
         if isinstance(v, list) or isinstance(v, bytes):
-            return ".".join('{:02x}'.format(x) for x in v)
+            return ".".join('{:02x}'.format(x) for x in v), u
         else:
             if 'nbits' in subcmdinf:
                 val_len = (subcmdinf['nbits']+3) // 4
@@ -6294,14 +6292,16 @@ def command_value_to_string(cmdinf, subcmdinf, u, v, po):
                 fmt_val += "{:02x}.".format(v & 0xff)
                 v <<= 8
                 val_len -= 2
-            return fmt_val[0:len(fmt_val)-1]
+            return fmt_val[0:len(fmt_val)-1], u
     if u in ("dec02","dec04",):
-        return "{:{}d}".format(v,u[u.index('0'):])
+        return "{:{}d}".format(v,u[u.index('0'):]), u
+    if u == "K": # Temperature in Kelvin - convert to degC
+        return "{:.2f}".format(v - 273.15), "degC"
     if u == "date547":
-        return "{:d}-{:02d}-{:02d}".format(1980 + ((v>>9)&0x7f), (v>>5)&0x0f, (v)&0x1f)
+        return "{:d}-{:02d}-{:02d}".format(1980 + ((v>>9)&0x7f), (v>>5)&0x0f, (v)&0x1f), "date"
     if u in ("str",):
-        return "{}".format(bytes(v))
-    return "{}".format(v)
+        return "{}".format(bytes(v)), u
+    return "{}".format(v), u
 
 
 def print_sbs_command_subfield_value(fld, lstfld, fields_info, name_width, po):
@@ -6311,13 +6311,11 @@ def print_sbs_command_subfield_value(fld, lstfld, fields_info, name_width, po):
     # Do not show fields which have no read access, unless somehow they're non-zero
     if ('r' not in fldinf['access']) and (val == 0):
         return
-    # Prepare the unit (or replace it with short name for flags)
-    if (not is_printable_value_unit(lstfld['uname'])) and ('tiny_name' in fldinf):
-        fld_uname = "[{}]".format(fldinf['tiny_name'])
-    else:
-        fld_uname = lstfld['uname']
     # Prepare the value for formatting
-    fmt_val = command_value_to_string({'type':"byte[1]"}, fldinf, lstfld['uname'], val, po)
+    fmt_val, fld_uname = command_value_to_string({'type':"byte[1]"}, fldinf, lstfld['uname'], val, po)
+    # Prepare the unit (or replace it with short name for flags)
+    if (not is_printable_value_unit(fld_uname)) and ('tiny_name' in fldinf):
+        fld_uname = "[{}]".format(fldinf['tiny_name'])
     if fldinf['type'] == "named_bitfield":
         fmt_val = "{}={}".format(fmt_val, fldinf['value_names'][val])
 
@@ -6378,12 +6376,15 @@ def print_sbs_command_value_cust_inf_basecmd(cmd, cmdinf, subcmd, subcmdinf, v, 
 
     if name_width < 1:
         name_width = 1
-    if u in ("bitfields","struct",):
-        fmt_val = command_value_to_string(cmdinf, subcmdinf, u, v, po)
-        print("{:{}s}\t{}\t{}\t{}".format(basecmd_name+":", name_width, fmt_val, u, short_desc))
+    if True:
+        fmt_val, fld_uname = command_value_to_string(cmdinf, subcmdinf, u, v, po)
+        if (not is_printable_value_unit(fld_uname)) and ('tiny_name' in fldinf):
+            fld_uname = "[{}]".format(fldinf['tiny_name'])
+        print("{:{}s}\t{}\t{}\t{}".format(basecmd_name+":", name_width, fmt_val, fld_uname, short_desc))
         if (po.explain):
             print("Description: {}".format(subcmdinf['desc'] if 'desc' in subcmdinf else cmdinf['desc']))
 
+    if u in ("bitfields","struct",):
         fields_info = s
         if (po.short):
             if u in ("bitfields",):
@@ -6396,19 +6397,7 @@ def print_sbs_command_value_cust_inf_basecmd(cmd, cmdinf, subcmd, subcmdinf, v, 
             max_name_len = max([len(fld.name) for fld in l.keys()])
             for fld in sorted(l.keys(), key=lambda x:x.value):
                 print_sbs_command_subfield_value(fld, l[fld], fields_info, max_name_len, po)
-
-    elif u == "date547":
-        fld_uname = "date"
-        fmt_val = "{:d}-{:02d}-{:02d}".format(1980 + ((v>>9)&0x7f), (v>>5)&0x0f, (v)&0x1f)
-        print("{:{}s}\t{}\t{}\t{}".format(basecmd_name+":", name_width, fmt_val, fld_uname, short_desc))
-        if (po.explain):
-            print("Description: {}".format(subcmdinf['desc'] if 'desc' in subcmdinf else cmdinf['desc']))
-
-    else:
-        fmt_val = command_value_to_string(cmdinf, subcmdinf, u, v, po)
-        print("{:{}s}\t{}\t{}\t{}".format(basecmd_name+":", name_width, fmt_val, u, short_desc))
-        if (po.explain):
-            print("Description: {}".format(subcmdinf['desc'] if 'desc' in subcmdinf else cmdinf['desc']))
+    pass
 
 
 def print_sbs_command_value_cust_inf(cmd, cmdinf, subcmd, subcmdinf, response, opts, name_width, po):
