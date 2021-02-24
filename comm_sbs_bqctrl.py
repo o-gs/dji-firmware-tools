@@ -7093,6 +7093,81 @@ def smart_battery_system_sealing(seal_str, vals, po):
     smart_battery_system_read(checkcmd_name, vals, po)
 
 
+def extract_r_commands_list():
+    """ Create lists of commands: for read, and everything else (not read).
+    """
+    all_r_commands = []
+    all_nr_commands = []
+    for cmd, cmdinf in SBS_CMD_INFO.items():
+        can_access = sum(('r' in accstr) for accstr in cmdinf['access_per_seal'])
+        if 'subcmd_infos' in cmdinf:
+            for subgrp in cmdinf['subcmd_infos']:
+                for subcmd, subcmdinf in subgrp.items():
+                    if 'cmd_array' in subcmdinf:
+                        all_nr_commands.append("{}.{}".format(cmd.name,subcmd.name))
+                        continue
+                    sub_can_access = sum(('r' in accstr) for accstr in subcmdinf['access_per_seal'])
+                    if sub_can_access > 0:
+                        all_r_commands.append("{}.{}".format(cmd.name,subcmd.name))
+                    else:
+                        all_nr_commands.append("{}.{}".format(cmd.name,subcmd.name))
+        elif 'cmd_array' in cmdinf:
+            all_nr_commands.append(cmd.name)
+        else:
+            if can_access > 0:
+                all_r_commands.append(cmd.name)
+            else:
+                all_nr_commands.append(cmd.name)
+    return all_r_commands, all_nr_commands
+
+
+def extract_w_commands_list():
+    """ Create lists of commands: for write, and for trigger.
+    """
+    all_w_commands = []
+    all_t_commands = []
+    for cmd, cmdinf in SBS_CMD_INFO.items():
+        can_access = sum(('w' in accstr) for accstr in cmdinf['access_per_seal'])
+        if 'subcmd_infos' in cmdinf:
+            for subgrp in cmdinf['subcmd_infos']:
+                for subcmd, subcmdinf in subgrp.items():
+                    if 'cmd_array' in subcmdinf:
+                        continue
+                    sub_can_access = sum(('w' in accstr) for accstr in subcmdinf['access_per_seal'])
+                    if sub_can_access > 0:
+                        if subcmdinf['type'] == "void":
+                            all_t_commands.append("{}.{}".format(cmd.name,subcmd.name))
+                        else:
+                            all_w_commands.append("{}.{}".format(cmd.name,subcmd.name))
+        elif 'cmd_array' in cmdinf:
+            pass
+        else:
+            if can_access > 0:
+                if cmdinf['type'] == "void":
+                    all_t_commands.append(cmd.name)
+                else:
+                    all_w_commands.append(cmd.name)
+    return all_w_commands, all_t_commands
+
+
+def extract_raw_commands_list():
+    """ Create lists of raw commands: for read and write.
+    """
+    raw_r_commands = []
+    for knd, kndinf in RAW_ADDRESS_SPACE_KIND_INFO.items():
+        can_access = sum(('r' in accstr) for accstr in kndinf['access_per_seal'])
+        if True:
+            if can_access > 0:
+                raw_r_commands.append(knd.name)
+
+    raw_w_commands = []
+    for knd, kndinf in RAW_ADDRESS_SPACE_KIND_INFO.items():
+        can_access = sum(('w' in accstr) for accstr in kndinf['access_per_seal'])
+        if True:
+            if can_access > 0:
+                raw_w_commands.append(knd.name)
+    return raw_r_commands, raw_w_commands
+
 def parse_chip_type(s):
     """ Parses chip type string in known formats.
     """
@@ -7132,69 +7207,8 @@ def main():
 
       Its task is to parse command line options and call a function which performs sniffing.
     """
-    # Create a list of valid commands/offsets: for read, non-read, write and trigger
-    all_r_commands = []
-    all_nr_commands = []
-    for cmd, cmdinf in SBS_CMD_INFO.items():
-        can_access = sum(('r' in accstr) for accstr in cmdinf['access_per_seal'])
-        if 'subcmd_infos' in cmdinf:
-            for subgrp in cmdinf['subcmd_infos']:
-                for subcmd, subcmdinf in subgrp.items():
-                    if 'cmd_array' in subcmdinf:
-                        all_nr_commands.append("{}.{}".format(cmd.name,subcmd.name))
-                        continue
-                    sub_can_access = sum(('r' in accstr) for accstr in subcmdinf['access_per_seal'])
-                    if sub_can_access > 0:
-                        all_r_commands.append("{}.{}".format(cmd.name,subcmd.name))
-                    else:
-                        all_nr_commands.append("{}.{}".format(cmd.name,subcmd.name))
-        elif 'cmd_array' in cmdinf:
-            all_nr_commands.append(cmd.name)
-        else:
-            if can_access > 0:
-                all_r_commands.append(cmd.name)
-            else:
-                all_nr_commands.append(cmd.name)
-
-    all_w_commands = []
-    all_t_commands = []
-    for cmd, cmdinf in SBS_CMD_INFO.items():
-        can_access = sum(('w' in accstr) for accstr in cmdinf['access_per_seal'])
-        if 'subcmd_infos' in cmdinf:
-            for subgrp in cmdinf['subcmd_infos']:
-                for subcmd, subcmdinf in subgrp.items():
-                    if 'cmd_array' in subcmdinf:
-                        continue
-                    sub_can_access = sum(('w' in accstr) for accstr in subcmdinf['access_per_seal'])
-                    if sub_can_access > 0:
-                        if subcmdinf['type'] == "void":
-                            all_t_commands.append("{}.{}".format(cmd.name,subcmd.name))
-                        else:
-                            all_w_commands.append("{}.{}".format(cmd.name,subcmd.name))
-        elif 'cmd_array' in cmdinf:
-            pass
-        else:
-            if can_access > 0:
-                if cmdinf['type'] == "void":
-                    all_t_commands.append(cmd.name)
-                else:
-                    all_w_commands.append(cmd.name)
-
     # Create a list of valid address spaces: for read and write
-
-    raw_r_commands = []
-    for knd, kndinf in RAW_ADDRESS_SPACE_KIND_INFO.items():
-        can_access = sum(('r' in accstr) for accstr in kndinf['access_per_seal'])
-        if True:
-            if can_access > 0:
-                raw_r_commands.append(knd.name)
-
-    raw_w_commands = []
-    for knd, kndinf in RAW_ADDRESS_SPACE_KIND_INFO.items():
-        can_access = sum(('w' in accstr) for accstr in kndinf['access_per_seal'])
-        if True:
-            if can_access > 0:
-                raw_w_commands.append(knd.name)
+    raw_r_commands, raw_w_commands = extract_raw_commands_list()
 
     addrspace_datatypes = [ "int8", "uint8", "int16", "uint16", "int32", "uint32", "float", 'string[n]', 'byte[n]']
 
@@ -7241,32 +7255,48 @@ def main():
             help="displays information about specific command; doesn't require SMBus connection, "
               "just shows the shortened version of manual description which is included in the tool.")
 
-    subpar_info.add_argument('command', metavar='command', choices=all_r_commands+all_nr_commands, type=parse_command,
-            help="the command/offset name to show info about; one of: {:s}".format(', '.join(all_r_commands+all_nr_commands)))
+    subpar_info.add_argument('command', metavar='command', type=str,
+            help="the command/offset name to show info about; use 'info-list' action to see supported commands")
+
+
+    subpar_info = subparsers.add_parser('info-list',
+            help="lists all commands on which 'info' action can be used; the list changes with selected chip type")
 
 
     subpar_read = subparsers.add_parser('read',
             help="read value from a single command/offset of the battery")
 
-    subpar_read.add_argument('command', metavar='command', choices=all_r_commands, type=parse_command,
-            help="the command/offset name to read from; one of: {:s}".format(', '.join(all_r_commands)))
+    subpar_read.add_argument('command', metavar='command', type=str,
+            help="the command/offset name to read from; use 'read-list' action to see supported commands")
+
+
+    subpar_info = subparsers.add_parser('read-list',
+            help="lists all commands on which 'read' action can be used; the list changes with selected chip type")
 
 
     subpar_trigger = subparsers.add_parser('trigger',
             help="write to a trigger, command/offset of the battery which acts as a switch")
 
-    subpar_trigger.add_argument('command', metavar='command', choices=all_t_commands, type=parse_command,
-            help="the command/offset name to trigger; one of: {:s}".format(', '.join(all_t_commands)))
+    subpar_trigger.add_argument('command', metavar='command', type=str,
+            help="the command/offset name to trigger; use 'trigger-list' action to see supported commands")
+
+
+    subpar_info = subparsers.add_parser('trigger-list',
+            help="lists all commands on which 'trigger' action can be used; the list changes with selected chip type")
 
 
     subpar_write = subparsers.add_parser('write',
             help="write value to a single command/offset of the battery")
 
-    subpar_write.add_argument('command', metavar='command', choices=all_w_commands, type=parse_command,
-            help="the command/offset name to write to; one of: {:s}".format(', '.join(all_w_commands)))
+    subpar_write.add_argument('command', metavar='command', type=str,
+            help="the command/offset name to write to; use 'write-list' action to see supported commands")
 
     subpar_write.add_argument('newvalue', metavar='value', type=str,
             help="new value to write to the command/offset")
+
+
+    subpar_info = subparsers.add_parser('write-list',
+            help="lists all commands on which 'write' action can be used; the list changes with selected chip type")
 
 
     subpar_raw_read = subparsers.add_parser('raw-read',
@@ -7321,9 +7351,33 @@ def main():
 
     po.chip = CHIP_TYPE.from_name(po.chip)
 
-    # Handle info command before anything else, as it doesn't require SMBus connection
+    # Create a list of valid commands/offsets: for read, non-read, write and trigger
+    all_r_commands, all_nr_commands = extract_r_commands_list()
+    all_w_commands, all_t_commands = extract_w_commands_list()
+
+    # Handle info and list commands before anything else, as they do not require SMBus connection
     if po.action == 'info':
         smart_battery_system_info(po.command, vals, po)
+        return
+    elif po.action == 'info-list':
+        if (po.verbose > 0):
+            print("You can display info on any of the following commands:")
+        print("\n".join(sorted(all_r_commands+all_nr_commands)))
+        return
+    elif po.action == 'read-list':
+        if (po.verbose > 0):
+            print("You can read value from any of the following commands:")
+        print("\n".join(sorted(all_r_commands)))
+        return
+    elif po.action == 'trigger-list':
+        if (po.verbose > 0):
+            print("You can send a trigger to any of the following commands:")
+        print("\n".join(sorted(all_t_commands)))
+        return
+    elif po.action == 'write-list':
+        if (po.verbose > 0):
+            print("You can write value to any of the following commands:")
+        print("\n".join(sorted(all_w_commands)))
         return
 
     if (po.verbose > 0):
@@ -7334,11 +7388,14 @@ def main():
         po.chip = smart_battery_detect(vals, po)
 
     if po.action == 'read':
-        smart_battery_system_read(po.command, vals, po)
+        cmd_str = parse_command(po.command)
+        smart_battery_system_read(cmd_str, vals, po)
     elif po.action == 'trigger':
-        smart_battery_system_trigger(po.command, vals, po)
+        cmd_str = parse_command(po.command)
+        smart_battery_system_trigger(cmd_str, vals, po)
     elif po.action == 'write':
-        smart_battery_system_write(po.command, po.newvalue, vals, po)
+        cmd_str = parse_command(po.command)
+        smart_battery_system_write(cmd_str, po.newvalue, vals, po)
     elif po.action == 'raw-read':
         smart_battery_system_raw_read(po.addrspace, po.address,
           po.dttype, vals, po)
