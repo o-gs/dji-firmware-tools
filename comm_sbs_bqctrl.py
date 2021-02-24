@@ -3676,7 +3676,8 @@ SBS_MANUFACTURING_STATUS_INFO = {
         'value_names'	: ["Disabled","Enabled"],
         'access'	: "r",
         'tiny_name'	: "PF",
-        'desc'	: ("Permanent Fail."),
+        'desc'	: ("Permanent Failure functionality. When enabled, the chip "
+          "will trigger PF mode if alarm conditions are tripped."),
     },
     SBS_FLAG_MANUFACTURING_STATUS.BLACK_BOX_REC : {
         'type'	: "named_bitfield",
@@ -6378,8 +6379,8 @@ def print_sbs_command_value_cust_inf_basecmd(cmd, cmdinf, subcmd, subcmdinf, v, 
         name_width = 1
     if True:
         fmt_val, fld_uname = command_value_to_string(cmdinf, subcmdinf, u, v, po)
-        if (not is_printable_value_unit(fld_uname)) and ('tiny_name' in fldinf):
-            fld_uname = "[{}]".format(fldinf['tiny_name'])
+        if (not is_printable_value_unit(fld_uname)) and ('tiny_name' in subcmdinf):
+            fld_uname = "[{}]".format(subcmdinf['tiny_name'])
         print("{:{}s}\t{}\t{}\t{}".format(basecmd_name+":", name_width, fmt_val, fld_uname, short_desc))
         if (po.explain):
             print("Description: {}".format(subcmdinf['desc'] if 'desc' in subcmdinf else cmdinf['desc']))
