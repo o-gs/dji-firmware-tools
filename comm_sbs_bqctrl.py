@@ -6310,7 +6310,7 @@ def print_sbs_command_subfield_value(fld, lstfld, fields_info, name_width, po):
     fld_short_desc = fldinf['desc'].split('.')[0]
     val = lstfld['val']
     # Do not show fields which have no read access, unless somehow they're non-zero
-    if ('r' not in fldinf['access']) and (val == 0):
+    if ("r" not in fldinf['access']) and (val == 0):
         return
     # Prepare the value for formatting
     fmt_val, fld_uname = command_value_to_string({'type':"byte[1]"}, fldinf, lstfld['uname'], val, po)
@@ -6351,13 +6351,13 @@ def print_sbs_command_short_subfields(field_groups, l, fields_info, cell_width, 
             fldt = {}
             if display_mode == 1:
                 fldt['str'] = "{}={}".format(fldinf['tiny_name'],val)
-                fldt['color'] = 34 if ('r' not in fldinf['access']) else 31 if val!=0 else 32
+                fldt['color'] = 34 if ("r" not in fldinf['access']) else 31 if val!=0 else 32
             else:
                 if isinstance(val, list) or isinstance(val, bytes):
                     fldt['str'] = "{}={}".format(fldinf['tiny_name'],"".join('{:02x}'.format(x) for x in val))
                 else:
                     fldt['str'] = "{}={:x}".format(fldinf['tiny_name'],val)
-                fldt['color'] = 30 if ('r' not in fldinf['access']) else 37
+                fldt['color'] = 30 if ("r" not in fldinf['access']) else 37
             fldt['nbits'] = fldinf['nbits']
             field_strings.append(fldt)
         field_lines.append(field_strings)
@@ -6449,6 +6449,24 @@ def sbs_command_add_shift(cmd, cmdinf, cmd_shift, po):
     return ImprovisedCommand(value=cmd.value+cmd_shift, name="{}{}".format(cmd.name,cmd_shift))
 
 
+def sbs_command_check_access(cmd, cmdinf, opts, acc_type, po):
+    """ Checks if given command allows given access type
+    """
+    if cmdinf['getter'] == "write_word_subcommand":
+        can_access = sum(("w" in accstr) for accstr in cmdinf['access_per_seal'])
+        if can_access == 0:
+            return False
+        subcmd = opts['subcmd']
+        for subgrp in cmdinf['subcmd_infos']:
+            if subcmd in subgrp.keys():
+                subcmdinf = subgrp[subcmd]
+                break
+        if subcmdinf:
+            can_access = sum((acc_type in accstr) for accstr in subcmdinf['access_per_seal'])
+    else:
+        can_access = sum((acc_type in accstr) for accstr in cmdinf['access_per_seal'])
+    return (can_access > 0)
+
 def smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po):
     """ Reads value of ManufacturerAccess sub-command from the battery.
     """
@@ -6527,6 +6545,9 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
     if 'cmd_shift' in opts:
         cmd = sbs_command_add_shift(cmd, cmdinf, opts['cmd_shift'], po)
 
+    if not sbs_command_check_access(cmd, cmdinf, opts, "r", po):
+        print("Warning: Requested command does not provide read access; continuing anyway")
+
     if cmdinf['getter'] == "simple":
         resp_unit = cmdinf['unit']
         v, u = smbus_read_simple(bus, dev_addr, cmd, cmdinf['type'], resp_unit, retry_count, po)
@@ -6548,9 +6569,9 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
         v, u = smbus_read_simple(bus, dev_addr, cmd, cmdinf['type'], resp_unit, retry_count, po)
 
     elif cmdinf['getter'] == "write_word_subcommand":
-        if "subcmd" not in opts.keys():
+        if 'subcmd' not in opts.keys():
             raise ValueError("Command {} requires to provide sub-command".format(cmd.name))
-        subcmd = opts["subcmd"]
+        subcmd = opts['subcmd']
         for subgrp in cmdinf['subcmd_infos']:
             if subcmd in subgrp.keys():
                 subcmdinf = subgrp[subcmd]
@@ -6602,6 +6623,9 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
         print("Writing {} command at addr=0x{:x}, cmd=0x{:x}, type={}, v={}, opts={}".format(
           cmdinf['getter'], dev_addr, cmd.value, cmdinf['type'], v, opts))
 
+    if not sbs_command_check_access(cmd, cmdinf, opts, "w", po):
+        print("Warning: Requested command does not provide write access; continuing anyway")
+
     if cmdinf['getter'] == "simple":
         stor_unit = cmdinf['unit']
         u = smbus_write_simple(bus, dev_addr, cmd, v, cmdinf['type'], stor_unit, retry_count, po)
@@ -6623,9 +6647,9 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
         u = smbus_write_simple(bus, dev_addr, cmd, v, cmdinf['type'], stor_unit, retry_count, po)
 
     elif cmdinf['getter'] == "write_word_subcommand":
-        if "subcmd" not in opts.keys():
+        if 'subcmd' not in opts.keys():
             raise ValueError("Command {} requires to provide sub-command".format(cmd.name))
-        subcmd = opts["subcmd"]
+        subcmd = opts['subcmd']
         for subgrp in cmdinf['subcmd_infos']:
             if subcmd in subgrp.keys():
                 subcmdinf = subgrp[subcmd]
@@ -6782,7 +6806,7 @@ def smart_battery_system_command_from_text(cmd_str, po):
 
 
 def smart_battery_system_cmd_value_from_text(cmd, subcmd, nval_str, po):
-    raise NotImplementedError('Converting the string value to smd/subcmd type is not implemented.')
+    raise NotImplementedError('Converting the string value to cmd/subcmd type is not implemented.')
 
 
 def smart_battery_system_address_space_from_text(knd_str, addr, po):
@@ -6810,7 +6834,7 @@ def smart_battery_system_last_error(bus, dev_addr, vals, po):
     fldinf = SBS_BATTERY_STATUS_INFO[fld]
     val = None
     try:
-        v, l, u, s = smbus_read(bus, dev_addr, cmd, {"subcmd": None,"retry_count":1}, vals, po)
+        v, l, u, s = smbus_read(bus, dev_addr, cmd, {'subcmd': None,'retry_count':1}, vals, po)
         response = {'val':v,'list':l,'sinf':s,'uname':u,}
         vals[cmd if subcmd is None else subcmd] = response
         val = l[fld]['val']
@@ -6906,7 +6930,7 @@ def smart_battery_system_read(cmd_str, vals, po):
     global bus
     cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
     cmdinf = SBS_CMD_INFO[cmd]
-    opts = {"subcmd": subcmd}
+    opts = {'subcmd': subcmd}
     v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
     response = {'val':v,'list':l,'sinf':s,'uname':u,}
     vals[cmd if subcmd is None else subcmd] = response
@@ -6919,7 +6943,7 @@ def smart_battery_system_trigger(cmd_str, vals, po):
     global bus
     cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
     cmdinf = SBS_CMD_INFO[cmd]
-    opts = {"subcmd": subcmd}
+    opts = {'subcmd': subcmd}
     v = b''
     try:
         u, s = smbus_write(bus, po.dev_address, cmd, v, opts, vals, po)
@@ -6939,7 +6963,7 @@ def smart_battery_system_write(cmd_str, nval_str, vals, po):
     global bus
     cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
     cmdinf = SBS_CMD_INFO[cmd]
-    opts = {"subcmd": subcmd}
+    opts = {'subcmd': subcmd}
     v = smart_battery_system_cmd_value_from_text(cmd, subcmd, nval_str, po)
     try:
         u, s = smbus_write(bus, po.dev_address, cmd, v, opts, vals, po)
@@ -6961,7 +6985,7 @@ def smart_battery_system_raw_read(knd_str, addr, val_type, vals, po):
     cmd, subcmd = (SBS_COMMAND.ManufacturerAccess,MANUFACTURER_ACCESS_CMD_BQ30.DFAccessRowAddress,)
     cmdinf = SBS_CMD_INFO[cmd]
     subcmd_shift = addr // 32
-    opts = {"subcmd": subcmd, "subcmd_shift": subcmd_shift}
+    opts = {'subcmd': subcmd, 'subcmd_shift': subcmd_shift}
     v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
     response = {'val':v,'list':l,'sinf':s,'uname':u,}
     #vals[cmd if subcmd is None else subcmd] = response #TODO we need to store sub-index
@@ -7036,7 +7060,7 @@ def smart_battery_system_monitor(mgroup_str, vals, po):
             cmd = anycmd
             subcmd = None
         cmdinf = SBS_CMD_INFO[cmd]
-        opts = {"subcmd": subcmd}
+        opts = {'subcmd': subcmd}
         try:
             v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
         except Exception as ex:
@@ -7099,14 +7123,14 @@ def extract_r_commands_list():
     all_r_commands = []
     all_nr_commands = []
     for cmd, cmdinf in SBS_CMD_INFO.items():
-        can_access = sum(('r' in accstr) for accstr in cmdinf['access_per_seal'])
+        can_access = sum(("r" in accstr) for accstr in cmdinf['access_per_seal'])
         if 'subcmd_infos' in cmdinf:
             for subgrp in cmdinf['subcmd_infos']:
                 for subcmd, subcmdinf in subgrp.items():
                     if 'cmd_array' in subcmdinf:
                         all_nr_commands.append("{}.{}".format(cmd.name,subcmd.name))
                         continue
-                    sub_can_access = sum(('r' in accstr) for accstr in subcmdinf['access_per_seal'])
+                    sub_can_access = sum(("r" in accstr) for accstr in subcmdinf['access_per_seal'])
                     if sub_can_access > 0:
                         all_r_commands.append("{}.{}".format(cmd.name,subcmd.name))
                     else:
@@ -7127,13 +7151,13 @@ def extract_w_commands_list():
     all_w_commands = []
     all_t_commands = []
     for cmd, cmdinf in SBS_CMD_INFO.items():
-        can_access = sum(('w' in accstr) for accstr in cmdinf['access_per_seal'])
+        can_access = sum(("w" in accstr) for accstr in cmdinf['access_per_seal'])
         if 'subcmd_infos' in cmdinf:
             for subgrp in cmdinf['subcmd_infos']:
                 for subcmd, subcmdinf in subgrp.items():
                     if 'cmd_array' in subcmdinf:
                         continue
-                    sub_can_access = sum(('w' in accstr) for accstr in subcmdinf['access_per_seal'])
+                    sub_can_access = sum(("w" in accstr) for accstr in subcmdinf['access_per_seal'])
                     if sub_can_access > 0:
                         if subcmdinf['type'] == "void":
                             all_t_commands.append("{}.{}".format(cmd.name,subcmd.name))
@@ -7155,14 +7179,14 @@ def extract_raw_commands_list():
     """
     raw_r_commands = []
     for knd, kndinf in RAW_ADDRESS_SPACE_KIND_INFO.items():
-        can_access = sum(('r' in accstr) for accstr in kndinf['access_per_seal'])
+        can_access = sum(("r" in accstr) for accstr in kndinf['access_per_seal'])
         if True:
             if can_access > 0:
                 raw_r_commands.append(knd.name)
 
     raw_w_commands = []
     for knd, kndinf in RAW_ADDRESS_SPACE_KIND_INFO.items():
-        can_access = sum(('w' in accstr) for accstr in kndinf['access_per_seal'])
+        can_access = sum(("w" in accstr) for accstr in kndinf['access_per_seal'])
         if True:
             if can_access > 0:
                 raw_w_commands.append(knd.name)
@@ -7351,10 +7375,6 @@ def main():
 
     po.chip = CHIP_TYPE.from_name(po.chip)
 
-    # Create a list of valid commands/offsets: for read, non-read, write and trigger
-    all_r_commands, all_nr_commands = extract_r_commands_list()
-    all_w_commands, all_t_commands = extract_w_commands_list()
-
     # Handle info and list commands before anything else, as they do not require SMBus connection
     if po.action == 'info':
         smart_battery_system_info(po.command, vals, po)
@@ -7362,21 +7382,25 @@ def main():
     elif po.action == 'info-list':
         if (po.verbose > 0):
             print("You can display info on any of the following commands:")
+        all_r_commands, all_nr_commands = extract_r_commands_list()
         print("\n".join(sorted(all_r_commands+all_nr_commands)))
         return
     elif po.action == 'read-list':
         if (po.verbose > 0):
             print("You can read value from any of the following commands:")
+        all_r_commands, all_nr_commands = extract_r_commands_list()
         print("\n".join(sorted(all_r_commands)))
         return
     elif po.action == 'trigger-list':
         if (po.verbose > 0):
             print("You can send a trigger to any of the following commands:")
+        all_w_commands, all_t_commands = extract_w_commands_list()
         print("\n".join(sorted(all_t_commands)))
         return
     elif po.action == 'write-list':
         if (po.verbose > 0):
             print("You can write value to any of the following commands:")
+        all_w_commands, all_t_commands = extract_w_commands_list()
         print("\n".join(sorted(all_w_commands)))
         return
 
