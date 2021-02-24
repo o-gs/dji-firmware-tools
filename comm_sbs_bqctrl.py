@@ -7289,15 +7289,19 @@ def main():
 
 
     subpar_info = subparsers.add_parser('info',
-            help="displays information about specific command; doesn't require SMBus connection, "
-              "just shows the shortened version of manual description which is included in the tool.")
+            help=("displays information about specific command; when chip "
+              "auto-detect is disabled, this action does not require SMBus "
+              "connection; it just shows the shortened version of description "
+              "from manual, which is included in the tool"))
 
     subpar_info.add_argument('command', metavar='command', type=str,
             help="the command/offset name to show info about; use 'info-list' action to see supported commands")
 
 
     subpar_info = subparsers.add_parser('info-list',
-            help="lists all commands on which 'info' action can be used; the list changes with selected chip type")
+            help=("lists all commands on which 'info' action can be used; "
+              "the list changes with selected chip type; when chip auto-detect "
+              "is disabled, this action can be performed without connection"))
 
 
     subpar_read = subparsers.add_parser('read',
@@ -7308,7 +7312,9 @@ def main():
 
 
     subpar_info = subparsers.add_parser('read-list',
-            help="lists all commands on which 'read' action can be used; the list changes with selected chip type")
+            help=("lists all commands on which 'read' action can be used; "
+              "the list changes with selected chip type; when chip auto-detect "
+              "is disabled, this action can be performed without connection"))
 
 
     subpar_trigger = subparsers.add_parser('trigger',
@@ -7319,7 +7325,9 @@ def main():
 
 
     subpar_info = subparsers.add_parser('trigger-list',
-            help="lists all commands on which 'trigger' action can be used; the list changes with selected chip type")
+            help=("lists all commands on which 'trigger' action can be used; "
+              "the list changes with selected chip type; when chip auto-detect "
+              "is disabled, this action can be performed without connection"))
 
 
     subpar_write = subparsers.add_parser('write',
@@ -7333,7 +7341,9 @@ def main():
 
 
     subpar_info = subparsers.add_parser('write-list',
-            help="lists all commands on which 'write' action can be used; the list changes with selected chip type")
+            help=("lists all commands on which 'write' action can be used; "
+              "the list changes with selected chip type; when chip auto-detect "
+              "is disabled, this action can be performed without connection"))
 
 
     subpar_raw_read = subparsers.add_parser('raw-read',
@@ -7388,43 +7398,44 @@ def main():
 
     po.chip = CHIP_TYPE.from_name(po.chip)
 
-    # Handle info and list commands before anything else, as they do not require SMBus connection
-    if po.action == 'info':
-        smart_battery_system_info(po.command, vals, po)
-        return
-    elif po.action == 'info-list':
-        if (po.verbose > 0):
-            print("You can display info on any of the following commands:")
-        all_r_commands, all_nr_commands = extract_r_commands_list()
-        print("\n".join(sorted(all_r_commands+all_nr_commands)))
-        return
-    elif po.action == 'read-list':
-        if (po.verbose > 0):
-            print("You can read value from any of the following commands:")
-        all_r_commands, all_nr_commands = extract_r_commands_list()
-        print("\n".join(sorted(all_r_commands)))
-        return
-    elif po.action == 'trigger-list':
-        if (po.verbose > 0):
-            print("You can send a trigger to any of the following commands:")
-        all_w_commands, all_t_commands = extract_w_commands_list()
-        print("\n".join(sorted(all_t_commands)))
-        return
-    elif po.action == 'write-list':
-        if (po.verbose > 0):
-            print("You can write value to any of the following commands:")
-        all_w_commands, all_t_commands = extract_w_commands_list()
-        print("\n".join(sorted(all_w_commands)))
-        return
+    po.offline_mode = False
 
-    if (po.verbose > 0):
-        print("Opening {}".format(po.bus))
-    smbus_open(po.bus, po)
+    # If specific chip type was provided, then some actions do not require SMBus connection
+    if po.action in ('info','info-list','read-list','trigger-list','write-list',) and (po.chip != CHIP_TYPE.AUTO):
+        if (po.verbose > 0):
+            print("Using offline mode")
+        po.offline_mode = True
+    else:
+        if (po.verbose > 0):
+            print("Opening {}".format(po.bus))
+        smbus_open(po.bus, po)
 
     if po.chip == CHIP_TYPE.AUTO:
         po.chip = smart_battery_detect(vals, po)
 
-    if po.action == 'read':
+    if po.action == 'info':
+        smart_battery_system_info(po.command, vals, po)
+    elif po.action == 'info-list':
+        if (po.explain > 0):
+            print("Display info can be used on any of the following commands:")
+        all_r_commands, all_nr_commands = extract_r_commands_list()
+        print("\n".join(sorted(all_r_commands+all_nr_commands)))
+    elif po.action == 'read-list':
+        if (po.explain > 0):
+            print("Read value can be used on any of the following commands:")
+        all_r_commands, all_nr_commands = extract_r_commands_list()
+        print("\n".join(sorted(all_r_commands)))
+    elif po.action == 'trigger-list':
+        if (po.explain > 0):
+            print("Trigger can be sent to any of the following commands:")
+        all_w_commands, all_t_commands = extract_w_commands_list()
+        print("\n".join(sorted(all_t_commands)))
+    elif po.action == 'write-list':
+        if (po.explain > 0):
+            print("Write value can be used on any of the following commands:")
+        all_w_commands, all_t_commands = extract_w_commands_list()
+        print("\n".join(sorted(all_w_commands)))
+    elif po.action == 'read':
         cmd_str = parse_command(po.command)
         smart_battery_system_read(cmd_str, vals, po)
     elif po.action == 'trigger':
@@ -7446,7 +7457,8 @@ def main():
     else:
         raise NotImplementedError('Unsupported command.')
 
-    smbus_close()
+    if not po.offline_mode:
+        smbus_close()
 
 
 if __name__ == '__main__':
