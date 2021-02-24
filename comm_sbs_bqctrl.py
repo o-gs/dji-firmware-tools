@@ -6155,19 +6155,25 @@ def smbus_read_simple(bus, dev_addr, cmd, resp_type, resp_unit, retry_count, po)
             continue
         break
 
-    if resp_unit['scale'] is not None:
-        v *= resp_unit['scale']
+    if (resp_unit['scale'] is not None) and (resp_unit['scale'] != 1):
+        if isinstance(v, int) or isinstance(v, float):
+            v *= resp_unit['scale']
+        else:
+            print("Warning: Cannot apply scaling to non-numeric value of {} command".format(cmd.name))
     return v, resp_unit['name']
 
 
 def smbus_write_simple(bus, dev_addr, cmd, v, val_type, val_unit, retry_count, po):
     """ Writes value of simple command to the battery.
     """
-    if val_unit['scale'] is not None:
-        if val_type in ("float","float_blk",):
-            v = v / val_unit['scale']
+    if (val_unit['scale'] is not None) and (val_unit['scale'] != 1):
+        if isinstance(v, int) or isinstance(v, float):
+            if val_type in ("float","float_blk",):
+                v = v / val_unit['scale']
+            else:
+                v = v // val_unit['scale']
         else:
-            v = v // val_unit['scale']
+            raise ValueError("Cannot apply scaling to non-numeric value of {} command".format(cmd.name))
 
     if val_type in ("int16","uint16",):
         smbus_write_word(bus, dev_addr, cmd, v, val_type, po)
@@ -6489,8 +6495,11 @@ def smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po)
         raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,resp_type))
 
     resp_unit = subcmdinf['unit']
-    if resp_unit['scale'] is not None:
-        v *= resp_unit['scale']
+    if (resp_unit['scale'] is not None) and (resp_unit['scale'] != 1):
+        if isinstance(v, int) or isinstance(v, float):
+            v *= resp_unit['scale']
+        else:
+            print("Warning: Cannot apply scaling to non-numeric value of {} command".format(cmd.name))
 
     return v, resp_unit['name']
 
@@ -6511,11 +6520,15 @@ def smbus_write_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, v,
         stor_wait = 0
 
     stor_unit = subcmdinf['unit']
-    if stor_unit['scale'] is not None:
-        if stor_type in ("float","float_blk",):
-            v = v / stor_unit['scale']
+    if (stor_unit['scale'] is not None) and (stor_unit['scale'] != 1):
+        if isinstance(v, int) or isinstance(v, float):
+            if stor_type in ("float","float_blk",):
+                v = v / stor_unit['scale']
+            else:
+                v = v // stor_unit['scale']
         else:
-            v = v // stor_unit['scale']
+            raise ValueError("Cannot apply scaling to non-numeric value of {}.{} command".format(cmd.name,subcmd.name))
+
 
     if (stor_type.startswith("byte[") or stor_type.startswith("string") or
       stor_type.endswith("_blk") or stor_type in ("void",)):
