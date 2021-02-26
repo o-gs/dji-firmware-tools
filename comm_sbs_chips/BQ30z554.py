@@ -276,7 +276,7 @@ class SBS_CMD_BQ_LIFETIME_DATA_BLOCK1(DecoratedEnum):
 SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage1 : {
         'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':20,'name':"mV"},
         'nbits'	: 8,
         'access'	: "r",
         'tiny_name'	: "MaxV1",
@@ -284,7 +284,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage2 : {
         'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':20,'name':"mV"},
         'nbits'	: 8,
         'access'	: "r",
         'tiny_name'	: "MaxV2",
@@ -292,7 +292,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage3 : {
         'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':20,'name':"mV"},
         'nbits'	: 8,
         'access'	: "r",
         'tiny_name'	: "MaxV3",
@@ -300,7 +300,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage4 : {
         'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':20,'name':"mV"},
         'nbits'	: 8,
         'access'	: "r",
         'tiny_name'	: "MaxV4",
@@ -308,7 +308,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage1 : {
         'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':20,'name':"mV"},
         'nbits'	: 8,
         'access'	: "r",
         'tiny_name'	: "MinV1",
@@ -316,7 +316,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage2 : {
         'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':20,'name':"mV"},
         'nbits'	: 8,
         'access'	: "r",
         'tiny_name'	: "MinV2",
@@ -324,7 +324,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage3 : {
         'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':20,'name':"mV"},
         'nbits'	: 8,
         'access'	: "r",
         'tiny_name'	: "MinV3",
@@ -332,7 +332,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage4 : {
         'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':20,'name':"mV"},
         'nbits'	: 8,
         'access'	: "r",
         'tiny_name'	: "MinV4",
@@ -340,11 +340,11 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxDeltaCellVoltage : {
         'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':20,'name':"mV"},
         'nbits'	: 8,
         'access'	: "r",
         'tiny_name'	: "MaxDV",
-        'desc'	: ("Max Delta Cell Voltage."),
+        'desc'	: ("Max Delta Cell Voltage. That is, the max cell imbalance voltage."),
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxChargeCurrent : {
         'type'	: "uint8",
@@ -1134,6 +1134,53 @@ SBS_CMD_BQ_IT_STATUS1_INFO = {
 }
 
 
+class SBS_LEARNED_STATUS(DecoratedEnum):
+    """ ITStatus2 LearnedStatus fields used in BQ30 family SBS chips
+    """
+    CF						= 0x000
+    ITEn					= 0x002
+    ITEnQax					= 0x003
+    RESRV4					= 0x004
+
+SBS_LEARNED_STATUS_INFO = {
+    SBS_LEARNED_STATUS.CF : {
+        'type'	: "named_bitfield",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 2,
+        'value_names'	: ["Bat.OK","Qm first","Qm&RT Upd","Unkn3",],
+        'access'	: "r",
+        'tiny_name'	: "CF",
+        'desc'	: ("QMax Status."),
+    },
+    SBS_LEARNED_STATUS.ITEn : {
+        'type'	: "named_bitfield",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 1,
+        'value_names'	: ["Disabled","Enabled"],
+        'access'	: "r",
+        'tiny_name'	: "ITEn",
+        'desc'	: ("Impedance Track enable."),
+    },
+    SBS_LEARNED_STATUS.ITEnQax : {
+        'type'	: "named_bitfield",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 1,
+        'value_names'	: ["Not upd.","Updated"],
+        'access'	: "r",
+        'tiny_name'	: "ITEnQ",
+        'desc'	: ("QMax field updates."),
+    },
+    SBS_LEARNED_STATUS.RESRV4 : {
+        'type'	: "int8",
+        'unit'	: {'scale':1,'name':"dec"},
+        'nbits'	: 4,
+        'access'	: "r",
+        'tiny_name'	: "Rsrv4",
+        'desc'	: ("Reserved bits."),
+    },
+}
+
+
 class SBS_CMD_BQ_IT_STATUS2(DecoratedEnum):
     """ ITStatus2 sub-command fields used in BQ30 family SBS chips
     """
@@ -1167,7 +1214,8 @@ SBS_CMD_BQ_IT_STATUS2_INFO = {
     },
     SBS_CMD_BQ_IT_STATUS2.LearnedStatus : {
         'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
+        'unit'	: {'scale':1,'name':"bitfields"},
+        'bitfields_info'	: SBS_LEARNED_STATUS_INFO,
         'nbits'	: 8,
         'access'	: "r",
         'tiny_name'	: "LStatus",
