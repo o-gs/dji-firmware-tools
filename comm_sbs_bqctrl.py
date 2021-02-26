@@ -1179,9 +1179,15 @@ class SMBusMock(object):
         self.add_mock_read(0x55, struct.pack('<L', 0x000000)[:3]) # ChargingStatus
         self.add_mock_read(0x56, struct.pack('<H', 0x0817)) # GaugingStatus
         self.add_mock_read(0x57, struct.pack('<H', 0x0058)) # ManufacturingStatus
+        self.add_mock_read(0x58, bytes.fromhex("00 20 00 00 00 04 0f 0f 20 44 46 0d")) # AFERegisters
+        self.add_mock_read(0x60, bytes.fromhex("ec e5 ec 00 7b 83 a9 00 44 16 45 2a 70 2a 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # LifetimeDataBlock1
+        self.add_mock_read(0x61, bytes.fromhex("00 00 00 00 00 07 0b 01 09 22 0b 03 0b 01 00 0a 00 22 00 18 00 3b ff 75 30 f9 80")) # LifetimeDataBlock2
+        self.add_mock_read(0x62, bytes.fromhex("12 4a 18 00 f8 04 8b 19 58 2a 0e 01 0d 00 01 00")) # LifetimeDataBlock3
         self.add_mock_read(0x70, b'abcdefghijklmnopqrstuvwzxy012345') # ManufacturerInfo
         self.add_mock_read(0x71, struct.pack('<HHHHHH', v[0], v[1], v[2], v[3], sum(v), int(sum(v)*1.04//100))) # Voltages
         self.add_mock_read(0x72, struct.pack('<HHHHHHH', int(t*100-9), int(t*100-20), int(t*100), int(t*100), int(t*100), int(t*100), int(t*100-100))) # Temperatures
+        self.add_mock_read(0x73, bytes.fromhex("c0 03 e0 03 a0 05 00 00 00 00 ad 07 7e 07 bd 07 7b 07 00 00 34 04 00 00 30 00 18 01 00 00")) # ITStatus1
+        self.add_mock_read(0x74, bytes.fromhex("01 0e 01 01 01 00 7d 00 5a 00 8a 00 00 00 d9 39 00 00 00 00 00 00 e8 03 e8 03 e8 03 00 00")) # ITStatus2
         self.add_mock_read_ma(0x02, bytes.fromhex("0550 0036 0034 00 0380 0001 0083")) # FirmwareVersion
         if False: # UnSealDevice M zero-filled key
             self.add_mock_read_ma(0x31, reversed(bytes.fromhex("C82CA3CA 10DEC726 8E070A7C F0D1FE82 20AAD3B8")))
@@ -1674,9 +1680,10 @@ def smbus_write_long_blk(bus, dev_addr, cmd, v, val_type, po):
     smbus_write_block_for_basecmd(bus, dev_addr, cmd, b, cmd.name, val_type, po)
 
 
-def smbus_read_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po):
-    """ Reads value from ManufacturerAccess sub-command of the battery.
+def smbus_read_raw_block_by_writing_word_subcmd(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po):
+    """ Read raw value of a sub-command, performing subcmd selection write first.
 
+    Used to access ManufacturerAccess sub-commands of the battery.
     Returns bytes array received in response, without converting the type.
     """
     # write sub-command to ManufacturerAccess
@@ -1692,9 +1699,10 @@ def smbus_read_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, resp_typ
     return v
 
 
-def smbus_write_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, v, resp_type, resp_cmd, resp_wait, po):
-    """ Write value to ManufacturerAccess sub-command of the battery.
+def smbus_write_raw_block_by_writing_word_subcmd(bus, dev_addr, cmd, subcmd, v, resp_type, resp_cmd, resp_wait, po):
+    """ Write raw value of a sub-command, performing subcmd selection write first.
 
+    Used to access ManufacturerAccess sub-commands of the battery.
     Expects value to already be bytes array ready for sending.
     """
     # write sub-command to ManufacturerAccess
@@ -1709,13 +1717,13 @@ def smbus_write_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, v, resp
     smbus_write_block_for_basecmd(bus, dev_addr, resp_cmd, v, basecmd_name, resp_type, po)
 
 
-def smbus_perform_unseal_bq30(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, sec_key_hex, po):
+def smbus_perform_unseal_bq_sha1(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, sec_key_hex, po):
     """ Execute Unseal or Full Access operation on BQ30 chip.
     """
     basecmd_name = "{}.{}".format(cmd.name,subcmd.name)
     if resp_type == "void":
         # Command with no params - which is sealing
-        smbus_write_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, b'', resp_type, resp_cmd, resp_wait, po)
+        smbus_write_raw_block_by_writing_word_subcmd(bus, dev_addr, cmd, subcmd, b'', resp_type, resp_cmd, resp_wait, po)
         return
     KD = bytes.fromhex(sec_key_hex)
     if len(KD) != 16:
@@ -1723,7 +1731,7 @@ def smbus_perform_unseal_bq30(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, r
     # write UnSealDevice/FullAccessDevice sub-command to ManufacturerAccess, then read 160-bit message M
     if po.dry_run:
         bus.prep_mock_read(cmd, subcmd)
-    M = smbus_read_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
+    M = smbus_read_raw_block_by_writing_word_subcmd(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
     M = bytes(reversed(M))
     if len(M) != 20:
         raise ValueError("Algorithm broken, length of challenge message M is {} instead of {} bytes".format(len(M),20))
@@ -1757,8 +1765,8 @@ def smbus_perform_unseal_bq30(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, r
     # allows UNSEALED/FULL ACCESS mode indicated with the OperationStatus()[SEC1],[SEC0] flags.
     return
 
-def smbus_read_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po):
-    """ Reads value of ManufacturerAccess sub-command from the battery.
+def smbus_read_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po):
+    """ Reads value of a sub-command which requires the subcmd selection write first.
 
     Converts the received bytes to properly typed value, based on resp_type.
     Handles retries, if neccessary.
@@ -1770,7 +1778,7 @@ def smbus_read_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, re
     b = None
     for nretry in reversed(range(3)):
         try:
-            b = smbus_read_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
+            b = smbus_read_raw_block_by_writing_word_subcmd(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
         except Exception as ex:
             if (nretry > 0) and (
               (isinstance(ex, OSError) and ex.errno in (5,121,))
@@ -1792,8 +1800,8 @@ def smbus_read_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, re
     return v
 
 
-def smbus_write_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po):
-    """ Writes value to ManufacturerAccess sub-command of the battery.
+def smbus_write_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po):
+    """ Writes value to a sub-command which requires the subcmd selection write first.
 
     Converts the value v to proper bytes array for write, based on stor_type.
     Handles retries, if neccessary.
@@ -1806,7 +1814,7 @@ def smbus_write_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, v
 
     for nretry in reversed(range(1)):
         try:
-            smbus_write_manufacturer_access_block_bq(bus, dev_addr, cmd, subcmd, b, stor_type, stor_cmd, stor_wait, po)
+            smbus_write_raw_block_by_writing_word_subcmd(bus, dev_addr, cmd, subcmd, b, stor_type, stor_cmd, stor_wait, po)
         except Exception as ex:
             if (nretry > 0) and (
               (isinstance(ex, OSError) and ex.errno in (5,121,))
@@ -2198,8 +2206,11 @@ def sbs_command_check_access(cmd, cmdinf, opts, acc_type, po):
     return (can_access > 0)
 
 
-def smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po):
-    """ Reads value of ManufacturerAccess sub-command from the battery.
+def smbus_read_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, po):
+    """ Reads value of a sub-command by writing the subcmd index, then reading response location.
+
+    This is used to access ManufacturerAccess sub-commands of the battery.
+    Handles value scaling and its conversion to bytes. Handles retries as well.
     """
     resp_type = subcmdinf['type']
     if 'resp_location' in subcmdinf:
@@ -2215,7 +2226,7 @@ def smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po)
         bus.prep_mock_read(cmd, subcmd)
 
     if (resp_type.startswith("byte[") or resp_type.startswith("string") or resp_type.endswith("_blk")):
-        v = smbus_read_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
+        v = smbus_read_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
     else:
         raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,resp_type))
 
@@ -2229,9 +2240,10 @@ def smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po)
     return v, resp_unit['name']
 
 
-def smbus_write_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, v, po):
-    """ Write value to ManufacturerAccess sub-command of the battery.
+def smbus_write_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, v, po):
+    """ Write value of a sub-command by writing the subcmd index, then writing to resp_location.
 
+    This is used to access ManufacturerAccess sub-commands of the battery.
     Handles value scaling and its conversion to bytes. Handles retries as well.
     """
     stor_type = subcmdinf['type']
@@ -2257,7 +2269,7 @@ def smbus_write_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, v,
 
     if (stor_type.startswith("byte[") or stor_type.startswith("string") or
       stor_type.endswith("_blk") or stor_type in ("void",)):
-        smbus_write_manufacturer_access_block_value_bq(bus, dev_addr, cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po)
+        smbus_write_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po)
     else:
         raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,stor_type))
 
@@ -2320,7 +2332,7 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
 
         if ('resp_location' in subcmdinf) or (subcmdinf['type'] == "void"):
             # do write request with subcmd, then expect response at specific location
-            v, u = smbus_read_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, po)
+            v, u = smbus_read_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, po)
         else:
             # Do normal read, this is not a sub-command with different response location
             v, u = smbus_read_simple(bus, dev_addr, cmd, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
@@ -2391,7 +2403,7 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
 
         if ('resp_location' in subcmdinf) or (subcmdinf['type'] == "void"):
             # do write request with subcmd, then do actual data write at specific location
-            u = smbus_write_manufacturer_access_bq(bus, dev_addr, cmd, subcmd, subcmdinf, v, po)
+            u = smbus_write_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, v, po)
         else:
             u = smbus_write_simple(bus, dev_addr, cmd, v, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
         if (u == "struct"):
@@ -2409,13 +2421,15 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
     return u, subinfgrp
 
 
-def bq_read_firmware_version_sealed(bus, dev_addr, po):
+def sbs_read_firmware_version_bq_sealed(bus, dev_addr, po):
     """ Reads firmware version from BQ series chips
 
     Uses the sequence which allows to read the FW version even in sealed mode.
     The sequence used to do this read requires low-level access to the bus via
     i2c commands which allows sending raw data. Not all smbus wrappers
     available in various platforms have that support.
+
+    This function is designed to work even if command list for specific BQ chip was not loaded.
     """
     cmd, subcmd = (SBS_COMMAND.ManufacturerAccess,MANUFACTURER_ACCESS_CMD_BQGENERIC.FirmwareVersion,)
     cmdinf = SBS_CMD_INFO[cmd]
@@ -2453,7 +2467,7 @@ def smart_battery_bq_detect(vals, po):
     v = None
     for nretry in reversed(range(3)):
         try:
-            v = bq_read_firmware_version_sealed(bus, po.dev_address, po)
+            v = sbs_read_firmware_version_bq_sealed(bus, po.dev_address, po)
         except Exception as ex:
             if (nretry > 0) and (
               (isinstance(ex, OSError) and ex.errno in (5,121,)) or
@@ -2836,7 +2850,7 @@ def smart_battery_system_sealing(seal_str, vals, po):
 
     if seal_str != "Check":
         time.sleep(0.35)
-        smbus_perform_unseal_bq30(bus, po.dev_address, cmd, subcmd, resp_type, resp_cmd, resp_wait, po.sha1key, po)
+        smbus_perform_unseal_bq_sha1(bus, po.dev_address, cmd, subcmd, resp_type, resp_cmd, resp_wait, po.sha1key, po)
         time.sleep(0.35)
 
     smart_battery_system_read(checkcmd_name, vals, po)
@@ -2917,6 +2931,7 @@ def extract_raw_commands_list():
                 raw_w_commands.append(knd.name)
     return raw_r_commands, raw_w_commands
 
+
 def parse_chip_type(s):
     """ Parses chip type string in known formats.
     """
@@ -2927,8 +2942,11 @@ def parse_command(s):
     """ Parses command/offset string in known formats.
     """
     try: 
-        if int(s) in SBS_COMMAND.values:
-            s = SBS_COMMAND(int(s)).name
+        int_val = int(s)
+        for cmd in SBS_CMD_INFO.keys():
+            if cmd.value == int_val:
+                s = cmd.name
+                break
     except ValueError:
         pass
     return s
@@ -2944,6 +2962,7 @@ def parse_addrspace_datatype(s):
         return s
 
     raise argparse.ArgumentTypeError(" invalid choice: '{}' (see '--help' for a list)".format(s))
+
 
 def parse_monitor_group(s):
     """ Parses monitor group string in known formats.
@@ -3140,7 +3159,8 @@ def main():
             print("Warning: Could not open chip definition file '{}'".format(fname))
 
     if po.action == 'info':
-        smart_battery_system_info(po.command, vals, po)
+        cmd_str = parse_command(po.command)
+        smart_battery_system_info(cmd_str, vals, po)
     elif po.action == 'info-list':
         if (po.explain > 0):
             print("Display info can be used on any of the following commands:")
