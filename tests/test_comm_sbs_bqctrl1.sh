@@ -99,4 +99,20 @@ for SBSGROUP in ${MONITOR_LIST}; do
     fi
 done
 
+SEALING_LIST="Unseal Seal"
+
+for SBSGROUP in ${SEALING_LIST}; do
+    set -x # print the command before executing
+    ./comm_sbs_bqctrl.py -vvv --dry-run --short sealing ${SBSGROUP}
+    TEST_RESULT=$?
+    set +x
+
+    if [ ${TEST_RESULT} == 0 ]; then
+        echo '### SUCCESS: sealing '${SBSGROUP}' - No error returned. ###'
+    else
+        echo '### FAIL: sealing '${SBSGROUP}' - Script run failed! ###'
+        exit 1
+    fi
+done
+
 exit 0
