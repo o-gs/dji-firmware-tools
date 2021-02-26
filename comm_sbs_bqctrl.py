@@ -1257,8 +1257,13 @@ class SMBusMock(object):
         cmdinf = SBS_CMD_INFO[cmd]
         if 'subcmd_infos' in cmdinf:
             subcmdinf = sbs_subcommand_get_info(cmd, subcmd)
-            register = subcmdinf['resp_location'].value
-            if subcmd.value in self.mock_reads_ma:
+            if 'resp_location' in subcmdinf:
+                register = subcmdinf['resp_location'].value
+            else:
+                register = cmd.value
+            if subcmd is None:
+                self.mock_reads[register] = b''
+            elif subcmd.value in self.mock_reads_ma:
                 self.mock_reads[register] = self.mock_reads_ma[subcmd.value]
             else: # some MA commands are just mirrors of standard SBS commands
                 self.mock_reads[register] = self.mock_reads[subcmd.value]

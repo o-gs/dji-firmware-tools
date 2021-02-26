@@ -3530,11 +3530,9 @@ SBS_MANUFACTURING_STATUS_INFO = {
 MANUFACTURER_ACCESS_CMD_BQ30_INFO = {
     MANUFACTURER_ACCESS_CMD_BQGENERIC.ManufacturerData : {
         # Data type associated with the sub-command
-        'type'	: "uint16",
+        'type'	: "byte[]",
         # Measurement unit in which data type is stored
-        'unit'	: {'scale':1,'name':"bitfields"},
-        # Response field definition
-        'bitfields_info'	: SBS_OPERATION_STATUS_INFO,
+        'unit'	: {'scale':None,'name':"hex"},
         # Access to the function in BQ seal modes: sealed, unsealed, full access;
         # write - means the command does a change within SBS chip other that
         # preparing output; read - means the command prepares output accessible by
@@ -3543,7 +3541,8 @@ MANUFACTURER_ACCESS_CMD_BQ30_INFO = {
         # Command/offsets which stores response on this sub-command
         #'resp_location'	: SBS_COMMAND.ManufacturerData,
         # Description, with first sentence making a short description,
-        'desc'	: ("Output ManufacturerData()."),
+        'desc'	: ("Output selected ManufacturerData(). The selection is made"
+          "by invoking other sub-commands."),
     },
     MANUFACTURER_ACCESS_CMD_BQGENERIC.DeviceType : {
         'type'	: "uint16_blk",
@@ -3569,7 +3568,7 @@ MANUFACTURER_ACCESS_CMD_BQ30_INFO = {
         'desc'	: ("The IC hardware revision."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.InstructionFlashChecksum : {
-        'type'	: "uint32_blk",
+        'type'	: "uint16_blk",
         'unit'	: {'scale':1,'name':"hex"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'resp_wait'	: 0.35, # 250 turned out to be too little sometimes
@@ -3578,7 +3577,7 @@ MANUFACTURER_ACCESS_CMD_BQ30_INFO = {
             "ManufacturerData() after a wait time of 250 ms"),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.DataFlashChecksum : {
-        'type'	: "uint32_blk",
+        'type'	: "uint16_blk",
         'unit'	: {'scale':1,'name':"hex"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'resp_wait'	: 0.35,
@@ -4148,66 +4147,6 @@ SBS_CMD_BQ30_INFO = {
             "In sealed mode, use ManufacturerAccess() instead."),
         'getter'	: "simple",
     },
-    SBS_COMMAND_BQ_TURBO.TURBO_POWER : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"cW"},
-        'access_per_seal'	: ("r","r","rw",),
-        'desc'	: ("Max Peak Power for the battery pack config. Computes "
-            "and provides Max Power information based on the battery pack "
-            "configuration. The device predicts the maximum power pulse "
-            "the system can deliver for approximately 10 ms. Value is "
-            "negative."),
-        'getter'	: "TODO",
-    },
-    SBS_COMMAND_BQ_TURBO.TURBO_FINAL : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"cW"},
-        'access_per_seal'	: ("r","rw","rw",),
-        'desc'	: ("Minimal TURBO-mode power level during active operation. "
-            "DF.Min Turbo Power represents minimal TURBO-mode power level "
-            "during active operation (e.g., non-SLEEP) after all higher "
-            "TURBO-mode levels are disabled (expected at the end of discharge). "
-            "Negative value is expected."),
-        'getter'	: "TODO",
-    },
-    SBS_COMMAND_BQ_TURBO.TURBO_PACK_R : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"mOhm"},
-        'access_per_seal'	: ("r","rw","rw",),
-        'desc'	: ("Battery pack serial resistance. The serial resistance "
-            "includes FETs, traces, sense resistors, etc. This is the "
-            "actual data flash value DF.Pack Resistance."),
-        'getter'	: "TODO",
-    },
-    SBS_COMMAND_BQ_TURBO.TURBO_SYS_R : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"mOhm"},
-        'access_per_seal'	: ("r","rw","rw",),
-        'desc'	: ("System serial resistance. Resistance along the path from "
-            "battery to system power converter input that includes FETs, "
-            "traces, sense resistors, etc. This is the actual data flash "
-            "value DF.Pack Resistance."),
-        'getter'	: "TODO",
-    },
-    SBS_COMMAND_BQ_TURBO.MIN_SYS_V : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"mV"},
-        'access_per_seal'	: ("r","rw","rw",),
-        'desc'	: ("Minimal system power converter operational voltage. "
-            "Minimal Voltage at system power converter input at which the "
-            "system will still operate. This is initialized to the data "
-            "flash value of DF.Terminate Voltage."),
-        'getter'	: "TODO",
-    },
-    SBS_COMMAND_BQ_TURBO.TURBO_CURRENT : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"mA"},
-        'access_per_seal'	: ("r","r","rw",),
-        'desc'	: ("Max supported pulse current. The gauge computes "
-            "a maximal discharge current supported by the cell "
-            "for a 10 ms pulse. Value is updated every 1 sec."),
-        'getter'	: "TODO",
-    },
     SBS_COMMAND_BQ30.LifetimeDataBlock1 : {
         'type'	: "byte[32]",
         'unit'	: {'scale':None,'name':"struct"},
@@ -4280,8 +4219,72 @@ SBS_CMD_BQ30_INFO = {
 
 }
 
+SBS_CMD_BQ30_TURBO_INFO = {
+    SBS_COMMAND_BQ_TURBO.TURBO_POWER : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"cW"},
+        'access_per_seal'	: ("r","r","rw",),
+        'desc'	: ("Max Peak Power for the battery pack config. Computes "
+            "and provides Max Power information based on the battery pack "
+            "configuration. The device predicts the maximum power pulse "
+            "the system can deliver for approximately 10 ms. Value is "
+            "negative."),
+        'getter'	: "TODO",
+    },
+    SBS_COMMAND_BQ_TURBO.TURBO_FINAL : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"cW"},
+        'access_per_seal'	: ("r","rw","rw",),
+        'desc'	: ("Minimal TURBO-mode power level during active operation. "
+            "DF.Min Turbo Power represents minimal TURBO-mode power level "
+            "during active operation (e.g., non-SLEEP) after all higher "
+            "TURBO-mode levels are disabled (expected at the end of discharge). "
+            "Negative value is expected."),
+        'getter'	: "TODO",
+    },
+    SBS_COMMAND_BQ_TURBO.TURBO_PACK_R : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"mOhm"},
+        'access_per_seal'	: ("r","rw","rw",),
+        'desc'	: ("Battery pack serial resistance. The serial resistance "
+            "includes FETs, traces, sense resistors, etc. This is the "
+            "actual data flash value DF.Pack Resistance."),
+        'getter'	: "TODO",
+    },
+    SBS_COMMAND_BQ_TURBO.TURBO_SYS_R : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"mOhm"},
+        'access_per_seal'	: ("r","rw","rw",),
+        'desc'	: ("System serial resistance. Resistance along the path from "
+            "battery to system power converter input that includes FETs, "
+            "traces, sense resistors, etc. This is the actual data flash "
+            "value DF.Pack Resistance."),
+        'getter'	: "TODO",
+    },
+    SBS_COMMAND_BQ_TURBO.MIN_SYS_V : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"mV"},
+        'access_per_seal'	: ("r","rw","rw",),
+        'desc'	: ("Minimal system power converter operational voltage. "
+            "Minimal Voltage at system power converter input at which the "
+            "system will still operate. This is initialized to the data "
+            "flash value of DF.Terminate Voltage."),
+        'getter'	: "TODO",
+    },
+    SBS_COMMAND_BQ_TURBO.TURBO_CURRENT : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"mA"},
+        'access_per_seal'	: ("r","r","rw",),
+        'desc'	: ("Max supported pulse current. The gauge computes "
+            "a maximal discharge current supported by the cell "
+            "for a 10 ms pulse. Value is updated every 1 sec."),
+        'getter'	: "TODO",
+    },
+}
+
 global SBS_CMD_INFO
 SBS_CMD_INFO.update(SBS_CMD_BQ30_INFO)
+#SBS_CMD_INFO.update(SBS_CMD_BQ30_TURBO_INFO) # TODO only for BQ30z554
 
 
 RAW_ADDRESS_SPACE_KIND_BQ_INFO = {
@@ -4365,6 +4368,9 @@ SBS_CMD_GROUPS_BQ30 = {
         SBS_COMMAND_BQ30.Cell2Voltage,
         SBS_COMMAND_BQ30.Cell3Voltage,
     ),
+}
+
+SBS_CMD_GROUPS_BQ30_TURBO = {
     MONITOR_GROUP.BQTurboMode : (
         SBS_COMMAND_BQ_TURBO.TURBO_POWER,
         SBS_COMMAND_BQ_TURBO.TURBO_FINAL,
@@ -4377,6 +4383,7 @@ SBS_CMD_GROUPS_BQ30 = {
 
 global SBS_CMD_GROUPS
 SBS_CMD_GROUPS.update(SBS_CMD_GROUPS_BQ30)
+#SBS_CMD_GROUPS.update(SBS_CMD_GROUPS_BQ30_TURBO) # TODO only for BQ30z554
 
 global SBS_SEALING
 SBS_SEALING = {
