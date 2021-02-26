@@ -234,12 +234,6 @@ class SBS_COMMAND(DecoratedEnum):
     OptionalMfgFunction1	= 0x3f
 
 
-class SBS_COMMAND_BQGENERIC(DecoratedEnum):
-    """ Commands used in BQ family SBS chips
-    """
-    ManufacturerInput		= SBS_COMMAND.OptionalMfgFunction5.value
-
-
 class RAW_ADDRESS_SPACE_KIND_BQ30(DecoratedEnum):
     """ Address spaces used in BQ30 family SBS chips
     """
@@ -2446,7 +2440,7 @@ def bq_read_firmware_version_sealed(bus, dev_addr, po):
     if po.dry_run:
         bus.prep_mock_read(cmd, subcmd)
 
-    resp_cmd  = SBS_COMMAND_BQGENERIC.ManufacturerInput
+    resp_cmd  = SBS_COMMAND.OptionalMfgFunction5 # ManufacturerInput
     # Data length is 11 or 13 bytes
     v = smbus_read_block_for_basecmd(bus, dev_addr, resp_cmd, subcmd.name, subcmdinf['type'], po)
 

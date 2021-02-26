@@ -1,11 +1,10 @@
 #!/usr/bin/env false
 # -*- coding: utf-8 -*-
 
-""" Smart Battery System communication tool.
+""" Smart Battery System chip definition.
 
-Devices verified with spec:
-(should work, but not actually tested)
-BQ30z50, BQ30z554
+Compatible chips:
+BQ30z50, BQ30z55, BQ30z554
 """
 
 class SBS_COMMAND_BQ30(DecoratedEnum):
