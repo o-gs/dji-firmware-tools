@@ -2079,6 +2079,8 @@ def print_sbs_command_short_subfields(field_groups, l, fields_info, cell_width, 
             else:
                 if isinstance(val, list) or isinstance(val, bytes):
                     fldt['str'] = "{}={}".format(fldinf['tiny_name'],"".join('{:02x}'.format(x) for x in val))
+                elif isinstance(val, float):
+                    fldt['str'] = "{}={:g}".format(fldinf['tiny_name'],val)
                 else:
                     fldt['str'] = "{}={:x}".format(fldinf['tiny_name'],val)
                 fldt['color'] = 30 if ("r" not in fldinf['access']) else 37
@@ -2512,8 +2514,9 @@ def smart_battery_system_command_from_text(cmd_str, po):
         subcmd_str = cmd_str_parts[1]
     cmd = None
     if cmd is None: # Standard SBS command can be used on any chip
-        if major_cmd_str in [i.name for i in SBS_CMD_INFO.keys()]:
-            cmd = SBS_COMMAND.from_name(major_cmd_str)
+        for curr_cmd in SBS_CMD_INFO.keys():
+            if major_cmd_str == curr_cmd.name:
+                cmd = curr_cmd
     if cmd is None:
         raise ValueError("The command '{}' is either invalid or not supported by chip".format(major_cmd_str))
 
