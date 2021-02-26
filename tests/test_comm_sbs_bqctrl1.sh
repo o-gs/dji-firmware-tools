@@ -49,7 +49,7 @@ for SBSCMD in ${INFO_LIST}; do
 done
 
 # Remove commands which do not support dry-run
-READ_LIST=$(echo -n "${READ_LIST}" | sed -e 's/\(ManufacturerAccess[.]\)\?\(AFERegisters\|ITStatus1\|ITStatus2\|LifetimeDataBlock1\|LifetimeDataBlock2\|LifetimeDataBlock3\|ManufacturerData\|ManufacturerInput\) / /g')
+READ_LIST=$(echo -n "${READ_LIST}" | sed -e 's/\(ManufacturerAccess[.]\)\?\(ManufacturerData\|ManufacturerInput\) / /g')
 
 for SBSCMD in ${READ_LIST}; do
     set -x # print the command before executing
