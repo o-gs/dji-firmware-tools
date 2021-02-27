@@ -4336,7 +4336,7 @@ if po.chip == CHIP_TYPE.BQ30z554: # Support of TURBO
 
 
 RAW_ADDRESS_SPACE_KIND_BQ_INFO = {
-    RAW_ADDRESS_SPACE_KIND_BQ30.DataFlash : {
+    RAW_ADDRESS_SPACE_KIND_BQGENERIC.DataFlash : {
         'type'	: "byte[32]",
         'unit'	: {'scale':None,'name':"hex"},
         'access_per_seal'	: ("-","rw","rw",),
@@ -4349,7 +4349,7 @@ RAW_ADDRESS_SPACE_KIND_BQ_INFO = {
         'read_subcmd':	MANUFACTURER_ACCESS_CMD_BQ30.DFAccessRowAddress,
         'getter'	: "data_flash_access",
     },
-    RAW_ADDRESS_SPACE_KIND_BQ30.InstructionFlash : {
+    RAW_ADDRESS_SPACE_KIND_BQGENERIC.InstructionFlash : {
         'type'	: "byte[32]",
         'unit'	: {'scale':None,'name':"hex"},
         'access_per_seal'	: ("-","rw","rw",),

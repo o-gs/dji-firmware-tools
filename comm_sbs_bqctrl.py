@@ -237,8 +237,8 @@ class SBS_COMMAND(DecoratedEnum):
     OptionalMfgFunction1	= 0x3f
 
 
-class RAW_ADDRESS_SPACE_KIND_BQ30(DecoratedEnum):
-    """ Address spaces used in BQ30 family SBS chips
+class RAW_ADDRESS_SPACE_KIND_BQGENERIC(DecoratedEnum):
+    """ Address spaces used in BQ family SBS chips
     """
     DataFlash				= 0x00
     InstructionFlash		= 0x01
