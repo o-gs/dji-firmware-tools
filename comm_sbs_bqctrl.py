@@ -18,7 +18,7 @@ You do not need the TI EV2300 programmer to use this script.
 
 To get address of the device, you may use `i2cdetect`. Don't be scared about
 the interactive messages, SBS is a well defined protocol which isn't easy to
-break, sepecially when the chip is sealed. Probing will not accidently result
+break, especially when the chip is sealed. Probing will not accidently result
 in a packet which disables the battery forever.
 
 If the battery already has I2C master device on the bus (like uC on battery
@@ -39,7 +39,7 @@ I2C API, using "--bus" parameter.
 If the script shows "OSError: [Errno 74] Bad message", the very likely
 cause is invalid I2C speed. Check how to change baud rate of your
 I2C bus device. Baud rate of 100kbps should work. The EV2300 usually
-uses baud rate of 66kbps.
+uses baud rate of 66kbps, though for some chips it switches to 30kbps.
 
 If the script shows "OSError: [Errno 121] Remote I/O error", that means
 the device did not respond to a command. It's hard to say if there was no
@@ -115,7 +115,10 @@ class CHIP_TYPE(DecoratedEnum):
     SBS			= 1
     # Texas Instruments BQ chips; lower 16 bits are DeviceType
     BQGENERIC	= 0x010000
+    BQ20z45		= 0x010450
+    BQ30z50		= 0x010500
     BQ30z55		= 0x010550
+    BQ30z554	= 0x010554
     BQ20z65		= 0x010650
     BQ3050		= 0x013050
     BQ3060		= 0x013060
@@ -3115,7 +3118,7 @@ def main():
     if po.chip == CHIP_TYPE.AUTO:
         po.chip = smart_battery_detect(vals, po)
 
-    if po.chip in (CHIP_TYPE.BQ30z55,):
+    if po.chip in (CHIP_TYPE.BQ30z50, CHIP_TYPE.BQ30z55, CHIP_TYPE.BQ30z554,):
         fnames = ["comm_sbs_chips/{}.py".format("BQ30z554")]
     else:
         fnames = ["comm_sbs_chips/{}.py".format(po.chip.name)]

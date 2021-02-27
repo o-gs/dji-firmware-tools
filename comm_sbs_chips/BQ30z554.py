@@ -4331,7 +4331,7 @@ SBS_CMD_BQ30_TURBO_INFO = {
 
 global SBS_CMD_INFO
 SBS_CMD_INFO.update(SBS_CMD_BQ30_INFO)
-if False:#po.chip == CHIP_TYPE.BQ30z554: # TODO only for BQ30z554
+if po.chip == CHIP_TYPE.BQ30z554: # Support of TURBO
     SBS_CMD_INFO.update(SBS_CMD_BQ30_TURBO_INFO)
 
 
@@ -4431,7 +4431,7 @@ SBS_CMD_GROUPS_BQ30_TURBO = {
 
 global SBS_CMD_GROUPS
 SBS_CMD_GROUPS.update(SBS_CMD_GROUPS_BQ30)
-if False:#po.chip == CHIP_TYPE.BQ30z554: # TODO only for BQ30z554
+if po.chip == CHIP_TYPE.BQ30z554: # Support of TURBO
     SBS_CMD_GROUPS.update(SBS_CMD_GROUPS_BQ30_TURBO)
 
 global SBS_SEALING
