@@ -1118,90 +1118,135 @@ SBS_CMD_GROUPS = {
 }
 
 
-class SMBusMock(object):
-    def __init__(self, bus=None, force=False):
-        self.address = None
+class ChipMock(object):
+    def __init__(self, bus, chip=None):
         self.bus = bus
-        self.force = force
-        self.pec = False
-        self.mock_reads = {}
-        self.mock_reads_ma = {}
-        self.mock_exception = None
+        self.reads = {}
+        self.reads_sub = {}
+        # Battery status, used for returned packets
+        self.v = (3711, 3712, 3713, 0, )
+        self.dv = (3800, 3800, 3800, 0, )
+        self.dc = (639, 639, 639, 0, )
+        self.cyc = 99
+        self.t = 29.92
+        self.atrate = 0
+        # Prepare static packets
+        self.prep_static()
+
+    def prep_static(self):
         # Few commands for testing, simulated BQ30z55
-        v = (3711, 3712, 3713, 0, )
-        dv = (3800, 3800, 3800, 0, )
-        dc = (639, 639, 639, 0, )
-        cyc = 99
-        wear = max(1.0-cyc/400,0.01)
-        c = [(dc[i] * wear * max(v[i]-3500,0)/700) for i in range(4)]
-        t = 29.92
-        atrate = 0
-        self.add_mock_read(0x01, struct.pack('<H', 150)) # RemainingCapacityAlarm
-        self.add_mock_read(0x02, struct.pack('<H', 10)) # RemainingTimeAlarm
-        self.add_mock_read(0x03, struct.pack('<H', 0x6001)) # BatteryMode
-        self.add_mock_read(0x04, struct.pack('<H', int(atrate))) # AtRate
-        self.add_mock_read(0x05, struct.pack('<H', int(min(60*(sum(dc)-sum(c))/max(atrate,0.00001),0xffff)))) # AtRateToFull
-        self.add_mock_read(0x06, struct.pack('<H', int(min(60*sum(c)/max(atrate,0.00001),0xffff)))) # AtRateToEmpty
-        self.add_mock_read(0x07, struct.pack('<H', 1)) # AtRateOK
-        self.add_mock_read(0x08, struct.pack('<H', int(t*100))) # Temperature
-        self.add_mock_read(0x09, struct.pack('<H', int(sum(v)))) # Voltage
-        self.add_mock_read(0x0a, struct.pack('<H', 0)) # Current
-        self.add_mock_read(0x0b, struct.pack('<H', 0)) # AverageCurrent
-        self.add_mock_read(0x0c, struct.pack('<H', 4)) # MaxError
-        self.add_mock_read(0x0d, struct.pack('<H', int(100*sum(c)//(sum(dc)*wear)))) # RelativeStateOfCharge
-        self.add_mock_read(0x0e, struct.pack('<H', int(100*sum(c)//sum(dc)))) # AbsoluteStateOfCharge
-        self.add_mock_read(0x0f, struct.pack('<H', int(sum(c)))) # RemainingCapacity
-        self.add_mock_read(0x10, struct.pack('<H', int(sum(dc)*wear))) # FullChargeCapacity
-        self.add_mock_read(0x11, struct.pack('<H', 0xffff)) # RunTimeToEmpty
-        self.add_mock_read(0x12, struct.pack('<H', 0xffff)) # AverageTimeToEmpty
-        self.add_mock_read(0x13, struct.pack('<H', 0xffff)) # AverageTimeToFull
-        self.add_mock_read(0x14, struct.pack('<H', 0)) # ChargingCurrent
-        self.add_mock_read(0x15, struct.pack('<H', 0)) # ChargingVoltage
-        self.add_mock_read(0x16, struct.pack('<H', 0x48d0)) # BatteryStatus
-        self.add_mock_read(0x17, struct.pack('<H', int(cyc))) # CycleCount
-        self.add_mock_read(0x18, struct.pack('<H', sum(dc))) # DesignCapacity
-        self.add_mock_read(0x19, struct.pack('<H', sum(dv))) # DesignVoltage
-        self.add_mock_read(0x1a, struct.pack('<H', 0x0031)) # SpecificationInfo
-        self.add_mock_read(0x1b, struct.pack('<H', 0x4661)) # ManufactureDate
-        self.add_mock_read(0x1c, struct.pack('<H', 0x0dd3)) # SerialNumber
-        self.add_mock_read(0x20, b'MockMfc') # ManufacturerName
-        self.add_mock_read(0x21, b'DJI008') # DeviceName
-        self.add_mock_read(0x22, b'LION') # DeviceChemistry
-        self.add_mock_read(0x3c, struct.pack('<H', v[3])) # Cell3Voltage
-        self.add_mock_read(0x3d, struct.pack('<H', v[2])) # Cell2Voltage
-        self.add_mock_read(0x3e, struct.pack('<H', v[1])) # Cell1Voltage
-        self.add_mock_read(0x3f, struct.pack('<H', v[0])) # Cell0Voltage
-        self.add_mock_read(0x50, struct.pack('<L', 0x0000)) # SafetyAlert
-        self.add_mock_read(0x51, struct.pack('<L', 0x0000)) # SafetyStatus
-        self.add_mock_read(0x52, struct.pack('<L', 0x0000)) # PFAlert
-        self.add_mock_read(0x53, struct.pack('<L', 0x0005)) # PFStatus
-        self.add_mock_read(0x54, struct.pack('<L', 0x107200)) # OperationStatus
-        self.add_mock_read(0x55, struct.pack('<L', 0x000000)[:3]) # ChargingStatus
-        self.add_mock_read(0x56, struct.pack('<H', 0x0817)) # GaugingStatus
-        self.add_mock_read(0x57, struct.pack('<H', 0x0058)) # ManufacturingStatus
-        self.add_mock_read(0x58, bytes.fromhex("00 20 00 00 00 04 0f 0f 20 44 46 0d")) # AFERegisters
-        self.add_mock_read(0x60, bytes.fromhex("ec e5 ec 00 7b 83 a9 00 44 16 45 2a 70 2a 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # LifetimeDataBlock1
-        self.add_mock_read(0x61, bytes.fromhex("00 00 00 00 00 07 0b 01 09 22 0b 03 0b 01 00 0a 00 22 00 18 00 3b ff 75 30 f9 80")) # LifetimeDataBlock2
-        self.add_mock_read(0x62, bytes.fromhex("12 4a 18 00 f8 04 8b 19 58 2a 0e 01 0d 00 01 00")) # LifetimeDataBlock3
-        self.add_mock_read(0x70, b'abcdefghijklmnopqrstuvwzxy012345') # ManufacturerInfo
-        self.add_mock_read(0x71, struct.pack('<HHHHHH', v[0], v[1], v[2], v[3], sum(v), int(sum(v)*1.04//100))) # Voltages
-        self.add_mock_read(0x72, struct.pack('<HHHHHHH', int(t*100-9), int(t*100-20), int(t*100), int(t*100), int(t*100), int(t*100), int(t*100-100))) # Temperatures
-        self.add_mock_read(0x73, bytes.fromhex("c0 03 e0 03 a0 05 00 00 00 00 ad 07 7e 07 bd 07 7b 07 00 00 34 04 00 00 30 00 18 01 00 00")) # ITStatus1
-        self.add_mock_read(0x74, bytes.fromhex("01 0e 01 01 01 00 7d 00 5a 00 8a 00 00 00 d9 39 00 00 00 00 00 00 e8 03 e8 03 e8 03 00 00")) # ITStatus2
-        self.add_mock_read_ma(0x02, bytes.fromhex("0550 0036 0034 00 0380 0001 0083")) # FirmwareVersion
+        wear = max(1.0-self.cyc/400,0.01)
+        c = [(self.dc[i] * wear * max(self.v[i]-3500,0)/700) for i in range(4)]
+        self.add_read(0x01, struct.pack('<H', 150)) # RemainingCapacityAlarm
+        self.add_read(0x02, struct.pack('<H', 10)) # RemainingTimeAlarm
+        self.add_read(0x03, struct.pack('<H', 0x6001)) # BatteryMode
+        self.add_read(0x04, struct.pack('<H', int(self.atrate))) # AtRate
+        self.add_read(0x05, struct.pack('<H', int(min(60*(sum(self.dc)-sum(c))/max(self.atrate,0.00001),0xffff)))) # AtRateToFull
+        self.add_read(0x06, struct.pack('<H', int(min(60*sum(c)/max(self.atrate,0.00001),0xffff)))) # AtRateToEmpty
+        self.add_read(0x07, struct.pack('<H', 1)) # AtRateOK
+        self.add_read(0x08, struct.pack('<H', int(self.t*100))) # Temperature
+        self.add_read(0x09, struct.pack('<H', int(sum(self.v)))) # Voltage
+        self.add_read(0x0a, struct.pack('<H', 0)) # Current
+        self.add_read(0x0b, struct.pack('<H', 0)) # AverageCurrent
+        self.add_read(0x0c, struct.pack('<H', 4)) # MaxError
+        self.add_read(0x0d, struct.pack('<H', int(100*sum(c)//(sum(self.dc)*wear)))) # RelativeStateOfCharge
+        self.add_read(0x0e, struct.pack('<H', int(100*sum(c)//sum(self.dc)))) # AbsoluteStateOfCharge
+        self.add_read(0x0f, struct.pack('<H', int(sum(c)))) # RemainingCapacity
+        self.add_read(0x10, struct.pack('<H', int(sum(self.dc)*wear))) # FullChargeCapacity
+        self.add_read(0x11, struct.pack('<H', 0xffff)) # RunTimeToEmpty
+        self.add_read(0x12, struct.pack('<H', 0xffff)) # AverageTimeToEmpty
+        self.add_read(0x13, struct.pack('<H', 0xffff)) # AverageTimeToFull
+        self.add_read(0x14, struct.pack('<H', 0)) # ChargingCurrent
+        self.add_read(0x15, struct.pack('<H', 0)) # ChargingVoltage
+        self.add_read(0x16, struct.pack('<H', 0x48d0)) # BatteryStatus
+        self.add_read(0x17, struct.pack('<H', int(self.cyc))) # CycleCount
+        self.add_read(0x18, struct.pack('<H', sum(self.dc))) # DesignCapacity
+        self.add_read(0x19, struct.pack('<H', sum(self.dv))) # DesignVoltage
+        self.add_read(0x1a, struct.pack('<H', 0x0031)) # SpecificationInfo
+        self.add_read(0x1b, struct.pack('<H', 0x4661)) # ManufactureDate
+        self.add_read(0x1c, struct.pack('<H', 0x0dd3)) # SerialNumber
+        self.add_read(0x20, b'ATL NVT') # ManufacturerName
+        self.add_read(0x21, b'DJI008') # DeviceName
+        self.add_read(0x22, b'LION') # DeviceChemistry
+        self.add_read(0x3c, struct.pack('<H', self.v[3])) # Cell3Voltage
+        self.add_read(0x3d, struct.pack('<H', self.v[2])) # Cell2Voltage
+        self.add_read(0x3e, struct.pack('<H', self.v[1])) # Cell1Voltage
+        self.add_read(0x3f, struct.pack('<H', self.v[0])) # Cell0Voltage
+        self.add_read(0x50, struct.pack('<L', 0x0000)) # SafetyAlert
+        self.add_read(0x51, struct.pack('<L', 0x0000)) # SafetyStatus
+        self.add_read(0x52, struct.pack('<L', 0x0000)) # PFAlert
+        self.add_read(0x53, struct.pack('<L', 0x0005)) # PFStatus
+        self.add_read(0x54, struct.pack('<L', 0x107200)) # OperationStatus
+        self.add_read(0x55, struct.pack('<L', 0x000000)[:3]) # ChargingStatus
+        self.add_read(0x56, struct.pack('<H', 0x0817)) # GaugingStatus
+        self.add_read(0x57, struct.pack('<H', 0x0058)) # ManufacturingStatus
+        self.add_read(0x58, bytes.fromhex("00 20 00 00 00 04 0f 0f 20 44 46 0d")) # AFERegisters
+        self.add_read(0x60, bytes.fromhex("ec e5 ec 00 7b 83 a9 00 44 16 45 2a 70 2a 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # LifetimeDataBlock1
+        self.add_read(0x61, bytes.fromhex("00 00 00 00 00 07 0b 01 09 22 0b 03 0b 01 00 0a 00 22 00 18 00 3b ff 75 30 f9 80")) # LifetimeDataBlock2
+        self.add_read(0x62, bytes.fromhex("12 4a 18 00 f8 04 8b 19 58 2a 0e 01 0d 00 01 00")) # LifetimeDataBlock3
+        self.add_read(0x70, b'abcdefghijklmnopqrstuvwzxy012345') # ManufacturerInfo
+        self.add_read(0x71, struct.pack('<HHHHHH', self.v[0], self.v[1], self.v[2], self.v[3], sum(self.v), int(sum(self.v)*1.04//100))) # Voltages
+        self.add_read(0x72, struct.pack('<HHHHHHH', int(self.t*100-9), int(self.t*100-20), int(self.t*100), int(self.t*100), int(self.t*100), int(self.t*100), int(self.t*100-100))) # Temperatures
+        self.add_read(0x73, bytes.fromhex("c0 03 e0 03 a0 05 00 00 00 00 ad 07 7e 07 bd 07 7b 07 00 00 34 04 00 00 30 00 18 01 00 00")) # ITStatus1
+        self.add_read(0x74, bytes.fromhex("01 0e 01 01 01 00 7d 00 5a 00 8a 00 00 00 d9 39 00 00 00 00 00 00 e8 03 e8 03 e8 03 00 00")) # ITStatus2
+        self.add_read_sub(0x00, 0x02, bytes.fromhex("0550 0036 0034 00 0380 0001 0083")) # FirmwareVersion
         if False: # UnSealDevice M zero-filled key
-            self.add_mock_read_ma(0x31, reversed(bytes.fromhex("C82CA3CA 10DEC726 8E070A7C F0D1FE82 20AAD3B8")))
+            self.add_read_sub(0x00, 0x31, reversed(bytes.fromhex("C82CA3CA 10DEC726 8E070A7C F0D1FE82 20AAD3B8")))
             # For above case, HMAC2=fb8a342458e0b136988cb5203bb23f94dfd4440e
         if True: # UnSealDevice M default key
-            self.add_mock_read_ma(0x31, reversed(bytes.fromhex("12b59558 b6d20605 121149b1 16af564a ae19a256")))
+            self.add_read_sub(0x00, 0x31, reversed(bytes.fromhex("12b59558 b6d20605 121149b1 16af564a ae19a256")))
             # For above case, HMAC2=fca9642f6846e01f219c6ed7160b2f15cddeb1bc
 
+    def add_read(self, register, data):
+        self.reads[register] = data
 
-    def open(self, bus):
-        self.bus = bus
+    def add_read_sub(self, register, subreg, data):
+        self.reads_sub[subreg] = data
+
+    def prep_read_sub(self, cmd, cmdinf, subcmd, subcmdinf):
+        if 'resp_location' in subcmdinf:
+            register = subcmdinf['resp_location'].value
+        else:
+            register = cmd.value
+        if subcmd is None:
+            self.mock_reads[register] = b''
+        elif subcmd.value in self.reads_sub:
+            self.reads[register] = self.reads_sub[subcmd.value]
+        else: # some MA commands are just mirrors of standard SBS commands
+            self.reads[register] = self.reads[subcmd.value]
+        if subcmd == MANUFACTURER_ACCESS_CMD_BQGENERIC.FirmwareVersion:
+            register = 0x2f
+            self.reads[register] = self.reads_sub[subcmd.value]
+
+    def prep_read(self, cmd, cmdinf):
+        pass
+
+    def do_write(self, i2c_addr, register, value):
+        pass
+
+    def do_read(self, i2c_addr, register):
+        data = bytes(self.reads[register])
+        return data
+
+
+class SMBusMock(object):
+    """ Mock SMBus module, used for dry-run testing.
+
+    Implements PEC and block sizes, but for actual data requires mock chip.
+    """
+    def __init__(self, busid=None, force=False):
+        self.address = None
+        self.busid = busid
+        self.force = force
+        self.pec = False
+        self.mock = ChipMock(self)
+        self.mock_exception = None
+
+    def open(self, busid):
+        self.busid = busid
 
     def close(self):
-        pass
+        self.busid = None
 
     def write_quick(self, i2c_addr, force=None):
         pass
@@ -1245,10 +1290,10 @@ class SMBusMock(object):
         self.do_mock_write(i2c_addr, register, bytes(data), is_block=True)
 
     def add_mock_read(self, register, data):
-        self.mock_reads[register] = data
+        self.mock.add_read(register, data)
 
-    def add_mock_read_ma(self, subreg, data):
-        self.mock_reads_ma[subreg] = data
+    def add_mock_read_sub(self, register, subreg, data):
+        self.mock.add_read_sub(register, subreg, data)
 
     def add_mock_except(self, ex):
         self.mock_exception = ex
@@ -1257,22 +1302,12 @@ class SMBusMock(object):
         cmdinf = SBS_CMD_INFO[cmd]
         if 'subcmd_infos' in cmdinf:
             subcmdinf = sbs_subcommand_get_info(cmd, subcmd)
-            if 'resp_location' in subcmdinf:
-                register = subcmdinf['resp_location'].value
-            else:
-                register = cmd.value
-            if subcmd is None:
-                self.mock_reads[register] = b''
-            elif subcmd.value in self.mock_reads_ma:
-                self.mock_reads[register] = self.mock_reads_ma[subcmd.value]
-            else: # some MA commands are just mirrors of standard SBS commands
-                self.mock_reads[register] = self.mock_reads[subcmd.value]
-            if subcmd == MANUFACTURER_ACCESS_CMD_BQGENERIC.FirmwareVersion:
-                register = 0x2f
-                self.mock_reads[register] = self.mock_reads_ma[subcmd.value]
+            self.mock.prep_read_sub(cmd, cmdinf, subcmd, subcmdinf)
+        else:
+            self.mock.prep_read(cmd, cmdinf)
 
     def do_mock_read(self, i2c_addr, register, is_block=False):
-        data = bytes(self.mock_reads[register])
+        data = self.mock.do_read(i2c_addr, register)
         if is_block: data = bytes([len(data)]) + data
         if is_block and self.pec:
             whole_packet = smbus_recreate_read_packet_data(i2c_addr, register, data)
@@ -1285,6 +1320,7 @@ class SMBusMock(object):
             ex = self.mock_exception
             self.mock_exception = None
             raise ex
+        self.mock.do_write(i2c_addr, register, value)
         pass
 
 
