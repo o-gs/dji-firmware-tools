@@ -1727,7 +1727,7 @@ def smbus_perform_unseal_bq_sha1(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd
     HMAC2 = hashlib.sha1(B2).digest()
     if (po.verbose > 2):
         print("Computed {} HMAC2={}".format(basecmd_name,HMAC2.hex()))
-    # Write 160-bit hash HMAC2 to ManufacturerInput() in the format
+    # Write 160-bit hash HMAC2 to ManufacturerInput()/Authenticate() in the format
     # 0xAABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTT, where AA is LSB
     HMAC2 = bytes(reversed(HMAC2))
     if False: # re-creation of the whole packet, for debug
@@ -2428,7 +2428,7 @@ def sbs_read_firmware_version_bq_sealed(bus, dev_addr, po):
     if po.dry_run:
         bus.prep_mock_read(cmd, subcmd)
 
-    resp_cmd  = SBS_COMMAND.OptionalMfgFunction5 # ManufacturerInput
+    resp_cmd  = SBS_COMMAND.OptionalMfgFunction5 # ManufacturerInput/Authenticate
     # Data length is 11 or 13 bytes
     v = smbus_read_block_for_basecmd(bus, dev_addr, resp_cmd, subcmd.name, subcmdinf['type'], po)
 

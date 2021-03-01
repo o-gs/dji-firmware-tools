@@ -10,8 +10,8 @@ BQ30z50, BQ30z55, BQ30z554
 class SBS_COMMAND_BQ30(DecoratedEnum):
     """ Commands used in BQ30 family SBS chips
     """
-    ManufacturerInput		= SBS_COMMAND.OptionalMfgFunction5.value
-    Cell3Voltage			= SBS_COMMAND.OptionalMfgFunction4.value
+    ManufacturerInput		= SBS_COMMAND.OptionalMfgFunction5.value # 0x2f
+    Cell3Voltage			= SBS_COMMAND.OptionalMfgFunction4.value # 0x3c
     Cell2Voltage			= SBS_COMMAND.OptionalMfgFunction3.value
     Cell1Voltage			= SBS_COMMAND.OptionalMfgFunction2.value
     Cell0Voltage			= SBS_COMMAND.OptionalMfgFunction1.value
@@ -1477,7 +1477,7 @@ SBS_SAFETY_ALERT_INFO = {
         'value_names'	: ["Inactive","Detected"],
         'access'	: "-",
         'tiny_name'	: "Res9",
-        'desc'	: ("Reserved (Short circ. in charge latch)."),
+        'desc'	: ("Reserved (Short circt in charge latch)."),
     },
     SBS_FLAG_SAFETY_ALERT.SHORT_CIRCUIT_DIS : {
         'type'	: "named_bitfield",
@@ -1495,7 +1495,7 @@ SBS_SAFETY_ALERT_INFO = {
         'value_names'	: ["Inactive","Detected"],
         'access'	: "-",
         'tiny_name'	: "ResB",
-        'desc'	: ("Reserved (Short circ. in disch. latch)."),
+        'desc'	: ("Reserved (Short circt in dischg latch)."),
     },
     SBS_FLAG_SAFETY_ALERT.OVERTEMPERATURE_CHG : {
         'type'	: "named_bitfield",
@@ -4276,7 +4276,7 @@ SBS_CMD_BQ30_TURBO_INFO = {
             "configuration. The device predicts the maximum power pulse "
             "the system can deliver for approximately 10 ms. Value is "
             "negative."),
-        'getter'	: "TODO",
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ_TURBO.TURBO_FINAL : {
         'type'	: "uint16",
@@ -4287,7 +4287,7 @@ SBS_CMD_BQ30_TURBO_INFO = {
             "during active operation (e.g., non-SLEEP) after all higher "
             "TURBO-mode levels are disabled (expected at the end of discharge). "
             "Negative value is expected."),
-        'getter'	: "TODO",
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ_TURBO.TURBO_PACK_R : {
         'type'	: "uint16",
@@ -4296,7 +4296,7 @@ SBS_CMD_BQ30_TURBO_INFO = {
         'desc'	: ("Battery pack serial resistance. The serial resistance "
             "includes FETs, traces, sense resistors, etc. This is the "
             "actual data flash value DF.Pack Resistance."),
-        'getter'	: "TODO",
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ_TURBO.TURBO_SYS_R : {
         'type'	: "uint16",
@@ -4305,8 +4305,8 @@ SBS_CMD_BQ30_TURBO_INFO = {
         'desc'	: ("System serial resistance. Resistance along the path from "
             "battery to system power converter input that includes FETs, "
             "traces, sense resistors, etc. This is the actual data flash "
-            "value DF.Pack Resistance."),
-        'getter'	: "TODO",
+            "value DF.System Resistance."),
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ_TURBO.MIN_SYS_V : {
         'type'	: "uint16",
@@ -4316,7 +4316,7 @@ SBS_CMD_BQ30_TURBO_INFO = {
             "Minimal Voltage at system power converter input at which the "
             "system will still operate. This is initialized to the data "
             "flash value of DF.Terminate Voltage."),
-        'getter'	: "TODO",
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ_TURBO.TURBO_CURRENT : {
         'type'	: "uint16",
@@ -4325,7 +4325,7 @@ SBS_CMD_BQ30_TURBO_INFO = {
         'desc'	: ("Max supported pulse current. The gauge computes "
             "a maximal discharge current supported by the cell "
             "for a 10 ms pulse. Value is updated every 1 sec."),
-        'getter'	: "TODO",
+        'getter'	: "simple",
     },
 }
 
