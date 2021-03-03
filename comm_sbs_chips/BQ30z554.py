@@ -3709,7 +3709,7 @@ MANUFACTURER_ACCESS_CMD_BQ30_INFO = {
         'access_per_seal'	: ("w","w","w",),
         'desc'	: ("Control of the CHG, DSG, and PCHG FET. Toggle switch "
             "which allows to either control the 3 FETs by the firmware, "
-            "or disable them."),
+            "or disable automation and allow manual control."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.LifetimeDataCollection : {
         'type'	: "void",

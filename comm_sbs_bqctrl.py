@@ -1810,6 +1810,8 @@ def smbus_write_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcm
 
 def smbus_read_simple(bus, dev_addr, cmd, resp_type, resp_unit, retry_count, po):
     """ Reads value of simple command from the battery.
+
+    Returns the value as either a number or byte array, depending on type.
     """
     if po.dry_run:
         bus.prep_mock_read(cmd)
@@ -1903,6 +1905,7 @@ def parse_sbs_command_value(cmd, subcmdinf, v, u, po):
     """
     cmdinf = SBS_CMD_INFO[cmd]
     if (u == "bitfields"):
+        # We only support bitfields on integer value
         vlist = {}
         for fld in sorted(subcmdinf.keys(), key=lambda x:x.value):
             fldinf = subcmdinf[fld]
@@ -1920,6 +1923,7 @@ def parse_sbs_command_value(cmd, subcmdinf, v, u, po):
                 fld_val *= fld_unit['scale']
             vlist[fld] = {'val':fld_val,'uname':fld_unit['name'],}
     elif u == "struct":
+        # We only support struct on byte array value
         fld_start = 0
         vlist = {}
         for fld in sorted(subcmdinf.keys(), key=lambda x:x.value):
