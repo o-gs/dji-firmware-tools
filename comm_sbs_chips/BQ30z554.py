@@ -526,7 +526,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
         'type'	: "uint8",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 8,
-        'access'	: "-", # Inaccessible - message limit to 32 bytes
+        'access'	: "r",
         'tiny_name'	: "nOTCEv",
         'desc'	: ("Number of Overtemperature in Charge Events. Inaccessible due to I2C constrains."),
     },
@@ -3057,7 +3057,7 @@ SBS_CHARGING_STATUS_INFO = {
         'nbits'	: 1,
         'value_names'	: ["Inactive","Active"],
         'access'	: "r",
-        'tiny_name'	: "ST",
+        'tiny_name'	: "STH",
         'desc'	: ("Standard Temperature High Range."),
     },
     SBS_FLAG_CHARGING_STATUS.HIGH_TEMPERATURE : {
@@ -3943,7 +3943,7 @@ MANUFACTURER_ACCESS_CMD_BQ30_INFO = {
         'struct_info'	: SBS_CMD_BQ_AFE_REGISTERS_INFO,
         # doesn't seem to work on sealed BQ30z55
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("Output Analog-front-End register values."),
+        'desc'	: ("Output Analog-Front-End register values."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.LifetimeDataBlock1 : {
         'type'	: "byte[32]",
@@ -4190,7 +4190,7 @@ SBS_CMD_BQ30_INFO = {
         'unit'	: {'scale':None,'name':"struct"},
         'struct_info'	: SBS_CMD_BQ_AFE_REGISTERS_INFO,
         'access_per_seal'	: ("-","r","r",),
-        'desc'	: ("Analog-front-End reg values from ManufacturerData(). "
+        'desc'	: ("Analog-Front-End reg values from ManufacturerData(). "
             "In sealed mode, use ManufacturerAccess() instead."),
         'getter'	: "simple",
     },
@@ -4570,6 +4570,6 @@ class ChipMockBQ30(ChipMock):
     def do_write(self, i2c_addr, register, value):
         pass
 
-if po.dry_run:
+if (not po.offline_mode) and (po.dry_run):
     global bus
     bus.mock = ChipMockBQ30(bus)

@@ -286,6 +286,10 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
 }
 
 
+MANUFACTURER_BLOCK_ACCESS_CMD_BQ_INFO = {
+}
+
+
 class SBS_FLAG_BATTERY_MODE(DecoratedEnum):
     """ Flags used in BatteryMode command
     """
