@@ -1517,10 +1517,10 @@ def smbus_read_block_for_basecmd(bus, dev_addr, cmd, basecmd_name, resp_type, po
     expect_len = type_str_value_length(resp_type)
     # Try reading expected length first
     if po.api_type == "smbus":
-        expect_len = min(expect_len + 1 + (1 if bus.pec else 0), 32) # +1 length, +1 PEC
+        expect_len = min(expect_len + 1 + (1 if bus.pec else 0), 32) # 32 +1 length, +1 PEC
         b = bus.read_i2c_block_data(dev_addr, cmd.value, expect_len)
     elif po.api_type == "i2c":
-        expect_len = min(expect_len+ 1 + (1 if bus.pec else 0), 34) # +1 length, +1 PEC
+        expect_len = min(expect_len+ 1 + (1 if bus.pec else 0), 36) # 32 +2 subcmd +1 length, +1 PEC
         part_write = i2c_msg.write(dev_addr, [cmd.value])
         part_read = i2c_msg.read(dev_addr, expect_len)
         bus.i2c_rdwr(part_write, part_read)
@@ -1538,12 +1538,12 @@ def smbus_read_block_for_basecmd(bus, dev_addr, cmd, basecmd_name, resp_type, po
     elif po.api_type == "smbus":
         expect_len = 32 # smbus2 library won't allow more ATM
         b = bus.read_i2c_block_data(dev_addr, cmd.value, expect_len)
-        if len(b) == 32 and b[0] == 32:
-            # We've lost last byte; but there is no other way - accept the truncated message
-            # Otherwise communicating 32-bit messages would just not work
+        if len(b) == 32 and b[0] in (32,33,34,):
+            # We've lost last bytes; but there is no other way - accept the truncated message
+            # Otherwise communicating messages >  31-byte would just not work
             if (po.verbose > 1):
-                print("Warning: Response last byte was truncated because of Smbus 2.0 constrains; adding zero")
-            b += b'\0'
+                print("Warning: Response last bytes were truncated because of Smbus 2.0 constrains; adding zeros")
+            b += b'\0' * (b[0]-31)
     elif po.api_type == "i2c":
         expect_len = 32 + 1 + (1 if bus.pec else 0) # +1 length, +1 PEC
         part_write = i2c_msg.write(dev_addr, [cmd.value])
@@ -1678,7 +1678,7 @@ def smbus_read_raw_block_by_writing_word_subcmd(bus, dev_addr, cmd, subcmd, resp
 
 
 def smbus_write_raw_block_by_writing_word_subcmd(bus, dev_addr, cmd, subcmd, v, resp_type, resp_cmd, resp_wait, po):
-    """ Write raw value of a sub-command, performing subcmd selection write first.
+    """ Write raw value of a sub-command, performing subcmd selection word write first.
 
     Used to access ManufacturerAccess sub-commands of the battery.
     Expects value to already be bytes array ready for sending.
@@ -1693,6 +1693,25 @@ def smbus_write_raw_block_by_writing_word_subcmd(bus, dev_addr, cmd, subcmd, v, 
         return
     basecmd_name = "{}.{}".format(cmd.name,subcmd.name)
     smbus_write_block_for_basecmd(bus, dev_addr, resp_cmd, v, basecmd_name, resp_type, po)
+
+
+def smbus_read_raw_block_by_writing_block_subcmd(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po):
+    """ Read raw value of a sub-command, performing subcmd selection block write first.
+
+    Used to access ManufacturerBlockAccess sub-commands of the battery.
+    Returns bytes array received in response, without converting the type.
+    """
+    # write sub-command to ManufacturerBlockAccess
+    smbus_write_word_blk(bus, dev_addr, cmd, subcmd.value, "uint16_blk", po)
+    # Check if sleep needed inbetween requests
+    if resp_wait > 0:
+        time.sleep(resp_wait)
+    # This function should never be called for void type; if it was, error out
+    if resp_type == "void":
+        raise TypeError("Reading should not be called for a void response type")
+    basecmd_name = "{}.{}".format(cmd.name,subcmd.name)
+    v = smbus_read_block_for_basecmd(bus, dev_addr, resp_cmd, basecmd_name, resp_type, po)
+    return v
 
 
 def smbus_perform_unseal_bq_sha1(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, sec_key_hex, po):
@@ -1772,6 +1791,49 @@ def smbus_read_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd
             time.sleep(0.25)
             continue
         break
+
+    v = bytes_to_type_str(b, resp_type, "le")
+
+    return v
+
+
+def smbus_read_macblock_val_by_writing_block_subcmd_first(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po):
+    """ Reads value of a sub-command which requires the subcmd selection write first, and expects sub-cmd at start of output.
+
+    Converts the received bytes to properly typed value, based on resp_type.
+    Handles retries, if neccessary.
+    """
+    basecmd_name = "{}.{}".format(cmd.name,subcmd.name)
+    if (po.verbose > 2):
+        print("Query {}: {:02x} WORD=0x{:x}".format(basecmd_name, cmd.value, subcmd.value))
+
+    b = None
+    expect_len = type_str_value_length(resp_type)
+    full_resp_type = "byte[{}]".format(expect_len+2)
+    for nretry in reversed(range(3)):
+        try:
+            full_b = smbus_read_raw_block_by_writing_block_subcmd(bus, dev_addr, cmd, subcmd, full_resp_type, resp_cmd, resp_wait, po)
+            subcmd_num = bytes_to_type_str(full_b[:2], "uint16", "le")
+            if subcmd_num != subcmd.value:
+                raise ValueError("Read claims the subcmd was 0x{:x} instead of 0x{:x}".format(subcmd_num,subcmd.value))
+            b = full_b[2:]
+        except Exception as ex:
+            if (nretry > 0) and (
+              (isinstance(ex, OSError) and ex.errno in (5,121,)) or
+              # 5 = Input/output error, sometimes just happens
+              # 121 = I/O error, usually means no ACK
+              isinstance(ex, ValueError)
+              ):
+                if (po.verbose > 2):
+                    print("Retrying due to error: "+str_exception_with_type(ex))
+                pass
+            else:
+                raise
+        if b is None:
+            time.sleep(0.25)
+            continue
+        break
+
 
     v = bytes_to_type_str(b, resp_type, "le")
 
@@ -2175,7 +2237,7 @@ def sbs_subcommand_get_info(cmd, subcmd):
 def sbs_command_check_access(cmd, cmdinf, opts, acc_type, po):
     """ Checks if given command allows given access type
     """
-    if cmdinf['getter'] == "write_word_subcommand":
+    if cmdinf['getter'] in ("write_word_subcommand","write_word_subcmd_mac_block",):
         can_access = sum(("w" in accstr) for accstr in cmdinf['access_per_seal'])
         if can_access == 0:
             return False
@@ -2258,6 +2320,77 @@ def smbus_write_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdi
     return stor_unit['name']
 
 
+def smbus_read_macblk_by_writing_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, po):
+    """ Reads value of a sub-command by writing the subcmd index, then reading response which starts with the sub-command.
+
+    This is used to access ManufacturerBlockAccess sub-commands of the battery.
+    Handles value scaling and its conversion to bytes. Handles retries as well.
+    """
+    resp_type = subcmdinf['type']
+    if 'resp_location' in subcmdinf:
+        resp_cmd = subcmdinf['resp_location']
+    else:
+        resp_cmd = None
+    if 'resp_wait' in subcmdinf:
+        resp_wait = subcmdinf['resp_wait']
+    else:
+        resp_wait = 0
+
+    if po.dry_run:
+        bus.prep_mock_read(cmd, subcmd)
+
+    if (resp_type.startswith("byte[") or resp_type.startswith("string") or resp_type.endswith("_blk")):
+        v = smbus_read_macblock_val_by_writing_block_subcmd_first(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
+    else:
+        raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,resp_type))
+
+    resp_unit = subcmdinf['unit']
+    if (resp_unit['scale'] is not None) and (resp_unit['scale'] != 1):
+        if isinstance(v, int) or isinstance(v, float):
+            v *= resp_unit['scale']
+        else:
+            print("Warning: Cannot apply scaling to non-numeric value of {} command".format(cmd.name))
+
+    return v, resp_unit['name']
+
+
+def smbus_write_macblk_with_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, v, po):
+    """ Write value of a sub-command by writing block data with the subcmd index before actual content.
+
+    This is used to access ManufacturerBlockAccess sub-commands of the battery.
+    Handles value scaling and its conversion to bytes. Handles retries as well.
+    """
+    stor_type = subcmdinf['type']
+    #TODO modify for MAC algorithm
+    if 'resp_location' in subcmdinf:
+        stor_cmd = subcmdinf['resp_location']
+    else:
+        stor_cmd = None
+    if 'resp_wait' in subcmdinf:
+        stor_wait = subcmdinf['resp_wait']
+    else:
+        stor_wait = 0
+
+    stor_unit = subcmdinf['unit']
+    if (stor_unit['scale'] is not None) and (stor_unit['scale'] != 1):
+        if isinstance(v, int) or isinstance(v, float):
+            if stor_type in ("float","float_blk",):
+                v = v / stor_unit['scale']
+            else:
+                v = v // stor_unit['scale']
+        else:
+            raise ValueError("Cannot apply scaling to non-numeric value of {}.{} command".format(cmd.name,subcmd.name))
+
+
+    if (stor_type.startswith("byte[") or stor_type.startswith("string") or
+      stor_type.endswith("_blk") or stor_type in ("void",)):
+        smbus_write_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po)
+    else:
+        raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,stor_type))
+
+    return stor_unit['name']
+
+
 def smbus_read(bus, dev_addr, cmd, opts, vals, po):
     """ Reads value of given command from the battery.
 
@@ -2300,7 +2433,7 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
             resp_unit = cmdinf['unit0']
         v, u = smbus_read_simple(bus, dev_addr, cmd, cmdinf['type'], resp_unit, retry_count, po)
 
-    elif cmdinf['getter'] == "write_word_subcommand":
+    elif cmdinf['getter'] in ("write_word_subcommand", "write_word_subcmd_mac_block",):
         if 'subcmd' not in opts.keys():
             raise ValueError("Command {} requires to provide sub-command".format(cmd.name))
         subcmd = opts['subcmd']
@@ -2312,12 +2445,15 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
         if 'subcmd_shift' in opts:
             subcmd = sbs_command_add_shift(subcmd, subcmdinf, opts['subcmd_shift'], po)
 
-        if ('resp_location' in subcmdinf) or (subcmdinf['type'] == "void"):
+        if ('resp_location' not in subcmdinf) and (subcmdinf['type'] != "void"):
+            # Do normal read, this is not a sub-command with different response location
+            v, u = smbus_read_simple(bus, dev_addr, cmd, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
+        elif cmdinf['getter'] == "write_word_subcommand":
             # do write request with subcmd, then expect response at specific location
             v, u = smbus_read_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, po)
         else:
-            # Do normal read, this is not a sub-command with different response location
-            v, u = smbus_read_simple(bus, dev_addr, cmd, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
+            # do write request with subcmd, then expect block response at specific location starting with subcmd
+            v, u = smbus_read_macblk_by_writing_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, po)
         if (u == "struct"):
             subinfgrp = subcmdinf['struct_info']
         elif (u == "bitfields"):
@@ -2375,7 +2511,7 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
             stor_unit = cmdinf['unit0']
         u = smbus_write_simple(bus, dev_addr, cmd, v, cmdinf['type'], stor_unit, retry_count, po)
 
-    elif cmdinf['getter'] == "write_word_subcommand":
+    elif cmdinf['getter'] in ("write_word_subcommand", "write_word_subcmd_mac_block",):
         if 'subcmd' not in opts.keys():
             raise ValueError("Command {} requires to provide sub-command".format(cmd.name))
         subcmd = opts['subcmd']
@@ -2383,11 +2519,14 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
         if len(subcmdinf) <= 0:
             raise ValueError("Command {}.{} missing definition".format(cmd.name,subcmd.name))
 
-        if ('resp_location' in subcmdinf) or (subcmdinf['type'] == "void"):
-            # do write request with subcmd, then do actual data write at specific location
+        if ('resp_location' not in subcmdinf) and (subcmdinf['type'] != "void"):
+            u = smbus_write_simple(bus, dev_addr, cmd, v, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
+        elif cmdinf['getter'] == "write_word_subcommand":
+            # write request with subcmd, then do actual data write at specific location
             u = smbus_write_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, v, po)
         else:
-            u = smbus_write_simple(bus, dev_addr, cmd, v, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
+            # write block with actual data preceded by subcmd
+            u = smbus_write_macblk_with_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, v, po)
         if (u == "struct"):
             subinfgrp = subcmdinf['struct_info']
         elif (u == "bitfields"):
@@ -2610,6 +2749,8 @@ def smart_battery_system_info(cmd_str, vals, po):
             print("  Read/Write by simple SMBus operations, but unit of the value depends on flags config")
         elif gtr == "write_word_subcommand":
             print("  Access by first writing sub-command word to {}".format(cmd.name))
+        elif gtr == "write_word_subcmd_mac_block":
+            print("  Access by writing sub-command; read in 2nd command, or append data to write (MAC block algorithm)")
         else:
             print("  Access by special method '{}'".format(gtr))
 
