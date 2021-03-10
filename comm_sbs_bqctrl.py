@@ -1714,14 +1714,13 @@ def smbus_read_raw_block_by_writing_block_subcmd(bus, dev_addr, cmd, subcmd, res
     return v
 
 
-def smbus_perform_unseal_bq_sha1(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, sec_key_hex, po):
-    """ Execute Unseal or Full Access operation on BQ30 chip.
+def smbus_perform_unseal_bq_sha1_hmac(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, sec_key_hex, po):
+    """ Execute Unseal or Full Access operation using SHA-1/HMAC algorithm, for BQ30 chips.
     """
     basecmd_name = "{}.{}".format(cmd.name,subcmd.name)
-    if resp_type == "void":
-        # Command with no params - which is sealing
-        smbus_write_raw_block_by_writing_word_subcmd(bus, dev_addr, cmd, subcmd, b'', resp_type, resp_cmd, resp_wait, po)
-        return
+    if not resp_type.startswith("byte["):
+        # Command with unexpected params - cannot perform the auth
+        raise ValueError("Cannot perform SHA-1/HMAC auth with response type '{}'".format(resp_type))
     KD = bytes.fromhex(sec_key_hex)
     if len(KD) != 16:
         raise ValueError("Algorithm broken, length of unseal key KD is {} instead of {} bytes".format(len(KD),16))
@@ -1760,6 +1759,33 @@ def smbus_perform_unseal_bq_sha1(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd
     smbus_write_block_for_basecmd(bus, dev_addr, resp_cmd, HMAC2, basecmd_name, resp_type, po)
     # Device compares hash HMAC2 with internal calculated hash HMAC3. If it matches, device
     # allows UNSEALED/FULL ACCESS mode indicated with the OperationStatus()[SEC1],[SEC0] flags.
+    return
+
+def smbus_perform_unseal_bq_2word_sckey(bus, dev_addr, cmd, resp_wait, sec_key_w0, sec_key_w1, vals, po):
+    """ Execute Unseal or Full Access operation using 2 Word MA commands, for BQ40 chips.
+    """
+    subcmd0 = ImprovisedCommand(value=sec_key_w0, name="SecKeyWord{:x}".format(0))
+    subcmd1 = ImprovisedCommand(value=sec_key_w1, name="SecKeyWord{:x}".format(1))
+    basecmd_name = "{}.{}".format(cmd.name,subcmd0.name)
+    # Unsealing is a two-step command, performed by writing the first word
+    # of the unseal key to ManufacturerAccess() (MAC), followed by the second
+    # word of the unseal key to ManufacturerAccess(). The two words must be
+    # sent within 4 sec.
+    subcmdinf = {
+        'type'	: "void",
+        'unit'	: {'scale':None,'name':"hex"},
+        'tiny_name'	: "SKeyUD",
+        'desc'	: "Word of Security key.",
+    }
+    v = b''
+    if True:
+        if po.dry_run:
+            bus.prep_mock_write(cmd, subcmd0)
+        u = smbus_write_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd0, subcmdinf, v, po)
+    if True:
+        if po.dry_run:
+            bus.prep_mock_write(cmd, subcmd1)
+        u = smbus_write_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd1, subcmdinf, v, po)
     return
 
 def smbus_read_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po):
@@ -2980,6 +3006,7 @@ def smart_battery_system_sealing(seal_str, vals, po):
     global bus
 
     if seal_str in SBS_SEALING:
+        auth = SBS_SEALING[seal_str]['auth']
         cmd = SBS_SEALING[seal_str]['cmd']
         subcmd = SBS_SEALING[seal_str]['subcmd']
     else:
@@ -2987,13 +3014,15 @@ def smart_battery_system_sealing(seal_str, vals, po):
 
     if True:
         cmdinf = SBS_CMD_INFO[cmd]
+    if subcmd is not None:
         subcmdinf = sbs_subcommand_get_info(cmd, subcmd)
         if len(subcmdinf) <= 0:
             raise ValueError("Command {}.{} missing definition".format(cmd.name,subcmd.name))
+        resp_type = subcmdinf['type']
+    else:
+        subcmdinf = {}
+        resp_type = "void"
 
-    checkcmd = SBS_SEALING["Check"]
-    checkcmd_name = "{}.{}".format(checkcmd['cmd'].name,checkcmd['subcmd'].name)
-    resp_type = subcmdinf['type']
     if 'resp_location' in subcmdinf:
         resp_cmd = subcmdinf['resp_location']
     else:
@@ -3003,10 +3032,22 @@ def smart_battery_system_sealing(seal_str, vals, po):
     else:
         resp_wait = 0
 
-    if seal_str != "Check":
+    checkcmd = SBS_SEALING["Check"]
+    checkcmd_name = "{}.{}".format(checkcmd['cmd'].name,checkcmd['subcmd'].name)
+
+    if auth == "SHA-1/HMAC":
         time.sleep(0.35)
-        smbus_perform_unseal_bq_sha1(bus, po.dev_address, cmd, subcmd, resp_type, resp_cmd, resp_wait, po.sha1key, po)
+        smbus_perform_unseal_bq_sha1_hmac(bus, po.dev_address, cmd, subcmd, resp_type, resp_cmd, resp_wait, po.sha1key, po)
         time.sleep(0.35)
+    elif auth == "2-Word SCKey": # Two word key, where first word is written as MAC sub-command
+        time.sleep(0.35)
+        smbus_perform_unseal_bq_2word_sckey(bus, po.dev_address, cmd, resp_wait, (po.i32key>>16) & 0xffff, (po.i32key) & 0xffff, vals, po)
+        time.sleep(0.35)
+    else: # No auth required - sealing or checking status
+        if resp_type == "void":
+            smbus_write_raw_block_by_writing_word_subcmd(bus, po.dev_address, cmd, subcmd, b'', resp_type, resp_cmd, resp_wait, po)
+        else:
+            raise ValueError("No auth, but not void command; not sure what to do")
 
     smart_battery_system_read(checkcmd_name, vals, po)
 
@@ -3277,6 +3318,9 @@ def main():
 
     subpar_sealing.add_argument('--sha1key', default='0123456789abcdeffedcba9876543210', type=str,
             help="device key for SHA-1/HMAC Authentication (defaults to '%(default)s')")
+
+    subpar_sealing.add_argument('--i32key', default=0x04143672, type=lambda x: int(x,0),
+            help="device key for 32-bit integer (two word) Authentication (defaults to 0x%(default)08x)")
 
     po = parser.parse_args();
 

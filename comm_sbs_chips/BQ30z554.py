@@ -4440,20 +4440,24 @@ if po.chip == CHIP_TYPE.BQ30z554: # Support of TURBO
 global SBS_SEALING
 SBS_SEALING = {
     "Unseal": {
-        'cmd':SBS_COMMAND.ManufacturerAccess,
-        'subcmd':MANUFACTURER_ACCESS_CMD_BQ30.UnSealDevice,
+        'auth' : "SHA-1/HMAC",
+        'cmd' : SBS_COMMAND.ManufacturerAccess,
+        'subcmd' : MANUFACTURER_ACCESS_CMD_BQ30.UnSealDevice,
     },
     "Seal": {
-        'cmd':SBS_COMMAND.ManufacturerAccess,
-        'subcmd':MANUFACTURER_ACCESS_CMD_BQ30.SealDevice,
+        'auth' : None,
+        'cmd' : SBS_COMMAND.ManufacturerAccess,
+        'subcmd' : MANUFACTURER_ACCESS_CMD_BQ30.SealDevice,
     },
     "FullAccess": {
-        'cmd':SBS_COMMAND.ManufacturerAccess,
-        'subcmd':MANUFACTURER_ACCESS_CMD_BQ30.FullAccessDevice,
+        'auth' : "SHA-1/HMAC",
+        'cmd' : SBS_COMMAND.ManufacturerAccess,
+        'subcmd' : MANUFACTURER_ACCESS_CMD_BQ30.FullAccessDevice,
     },
     "Check": {
-        'cmd':SBS_COMMAND.ManufacturerAccess,
-        'subcmd':MANUFACTURER_ACCESS_CMD_BQ30.OperationStatus,
+        'auth' : None,
+        'cmd' : SBS_COMMAND.ManufacturerAccess,
+        'subcmd' : MANUFACTURER_ACCESS_CMD_BQ30.OperationStatus,
     },
 }
 

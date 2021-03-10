@@ -5515,20 +5515,24 @@ SBS_CMD_GROUPS.update(SBS_CMD_GROUPS_BQ40_TURBO)
 global SBS_SEALING
 SBS_SEALING = {
     "Unseal": {
-        'cmd':SBS_COMMAND.ManufacturerAccess,
-        'subcmd':None,#TODO
+        'auth' : "2-Word SCKey",
+        'cmd' : SBS_COMMAND.ManufacturerAccess,
+        'subcmd' : None, # first word of key is the sub-command
     },
     "Seal": {
-        'cmd':SBS_COMMAND.ManufacturerAccess,
-        'subcmd':MANUFACTURER_ACCESS_CMD_BQ40.SealDevice,
+        'auth' : None,
+        'cmd' : SBS_COMMAND.ManufacturerAccess,
+        'subcmd' : MANUFACTURER_ACCESS_CMD_BQ40.SealDevice,
     },
     "FullAccess": {
-        'cmd':SBS_COMMAND.ManufacturerAccess,
-        'subcmd':None,#TODO
+        'auth' : "2-Word SCKey",
+        'cmd' : SBS_COMMAND.ManufacturerAccess,
+        'subcmd' : None, # first word of key is the sub-command
     },
     "Check": {
-        'cmd':SBS_COMMAND.ManufacturerAccess,
-        'subcmd':MANUFACTURER_ACCESS_CMD_BQ40.OperationStatus,
+        'auth' : None,
+        'cmd' : SBS_COMMAND.ManufacturerAccess,
+        'subcmd' : MANUFACTURER_ACCESS_CMD_BQ40.OperationStatus,
     },
 }
 
