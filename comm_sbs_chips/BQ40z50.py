@@ -4,7 +4,7 @@
 """ Smart Battery System chip definition.
 
 Compatible chips:
-BQ40z307
+BQ40z50, BQ40z307
 """
 
 class SBS_COMMAND_BQ40(DecoratedEnum):

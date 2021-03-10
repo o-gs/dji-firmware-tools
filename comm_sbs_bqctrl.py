@@ -1777,6 +1777,13 @@ def smbus_perform_unseal_bq_2word_sckey(bus, dev_addr, cmd, resp_wait, sec_key_w
         'tiny_name'	: "SKeyUD",
         'desc'	: "Word of Security key.",
     }
+    # Make sure the command isn't just one of known commands; would be bad to start triggering random things
+    for ckcmd, ckcmdinfo in MANUFACTURER_BLOCK_ACCESS_CMD_BQ_INFO.items():
+        ckcmd_range = 1
+        if 'cmd_array' in ckcmdinfo:
+            ckcmd_range = ckcmdinfo['cmd_array']
+        if (subcmd0.value >= ckcmd.value) and (subcmd0.value < ckcmd.value + ckcmd_range):
+            raise ValueError("First word of security key (0x{:04x}) cannot be valid MAC command".format(subcmd0.value))
     v = b''
     if True:
         if po.dry_run:
@@ -3319,8 +3326,8 @@ def main():
     subpar_sealing.add_argument('--sha1key', default='0123456789abcdeffedcba9876543210', type=str,
             help="device key for SHA-1/HMAC Authentication (defaults to '%(default)s')")
 
-    subpar_sealing.add_argument('--i32key', default=0x04143672, type=lambda x: int(x,0),
-            help="device key for 32-bit integer (two word) Authentication (defaults to 0x%(default)08x)")
+    subpar_sealing.add_argument('--i32key', default=None, type=lambda x: int(x,0),
+            help="device key for 32-bit integer (two word) Authentication (defaults to 0x{:08x} for FullAccess, otherwise to 0x{:08x})".format(0xffffffff,0x04143672))
 
     po = parser.parse_args();
 
@@ -3400,6 +3407,11 @@ def main():
     elif po.action == 'monitor':
         smart_battery_system_monitor(po.cmdgroup, vals, po)
     elif po.action == 'sealing':
+        if po.i32key is None:
+            if po.sealstate == "FullAccess":
+                po.i32key = 0xffffffff
+            else:
+                po.i32key = 0x04143672
         smart_battery_system_sealing(po.sealstate, vals, po)
     else:
         raise NotImplementedError('Unsupported command.')
