@@ -1797,6 +1797,40 @@ def smbus_read_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd
     return v
 
 
+def smbus_write_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po):
+    """ Writes value to a sub-command which requires the subcmd selection write first.
+
+    Converts the value v to proper bytes array for write, based on stor_type.
+    Handles retries, if neccessary.
+    """
+    basecmd_name = "{}.{}".format(cmd.name,subcmd.name)
+    if (po.verbose > 2):
+        print("Store {}: {:02x} WORD=0x{:x}".format(basecmd_name, cmd.value, subcmd.value))
+
+    b = type_str_to_bytes(v, stor_type, "le")
+
+    for nretry in reversed(range(1)):
+        try:
+            smbus_write_raw_block_by_writing_word_subcmd(bus, dev_addr, cmd, subcmd, b, stor_type, stor_cmd, stor_wait, po)
+        except Exception as ex:
+            if (nretry > 0) and (
+              (isinstance(ex, OSError) and ex.errno in (5,121,))
+              # 5 = Input/output error, sometimes just happens
+              # 121 = I/O error, usually means no ACK
+              ):
+                if (po.verbose > 2):
+                    print("Retrying due to error: "+str_exception_with_type(ex))
+                pass
+            else:
+                raise
+        if b is None:
+            time.sleep(0.25)
+            continue
+        break
+
+    return
+
+
 def smbus_read_macblock_val_by_writing_block_subcmd_first(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po):
     """ Reads value of a sub-command which requires the subcmd selection write first, and expects sub-cmd at start of output.
 
@@ -1840,8 +1874,8 @@ def smbus_read_macblock_val_by_writing_block_subcmd_first(bus, dev_addr, cmd, su
     return v
 
 
-def smbus_write_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po):
-    """ Writes value to a sub-command which requires the subcmd selection write first.
+def smbus_write_macblock_val_adding_block_subcmd_first(bus, dev_addr, cmd, subcmd, v, stor_type, stor_wait, po):
+    """ Writes value to a sub-command which requires the subcmd written at start of the data.
 
     Converts the value v to proper bytes array for write, based on stor_type.
     Handles retries, if neccessary.
@@ -1851,10 +1885,12 @@ def smbus_write_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcm
         print("Store {}: {:02x} WORD=0x{:x}".format(basecmd_name, cmd.value, subcmd.value))
 
     b = type_str_to_bytes(v, stor_type, "le")
+    v = type_str_to_bytes(subcmd.value, "uint16", "le") + b[1:]
+    full_stor_type = "byte[{}]".format(len(v))
 
     for nretry in reversed(range(1)):
         try:
-            smbus_write_raw_block_by_writing_word_subcmd(bus, dev_addr, cmd, subcmd, b, stor_type, stor_cmd, stor_wait, po)
+            smbus_write_block_for_basecmd(bus, dev_addr, cmd, v, basecmd_name, full_stor_type, po)
         except Exception as ex:
             if (nretry > 0) and (
               (isinstance(ex, OSError) and ex.errno in (5,121,))
@@ -2361,11 +2397,7 @@ def smbus_write_macblk_with_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcm
     Handles value scaling and its conversion to bytes. Handles retries as well.
     """
     stor_type = subcmdinf['type']
-    #TODO modify for MAC algorithm
-    if 'resp_location' in subcmdinf:
-        stor_cmd = subcmdinf['resp_location']
-    else:
-        stor_cmd = None
+    # Separate response command is only in use when reading MAC Block values
     if 'resp_wait' in subcmdinf:
         stor_wait = subcmdinf['resp_wait']
     else:
@@ -2384,7 +2416,7 @@ def smbus_write_macblk_with_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcm
 
     if (stor_type.startswith("byte[") or stor_type.startswith("string") or
       stor_type.endswith("_blk") or stor_type in ("void",)):
-        smbus_write_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po)
+        smbus_write_macblock_val_adding_block_subcmd_first(bus, dev_addr, cmd, subcmd, v, stor_type, stor_wait, po)
     else:
         raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,stor_type))
 
