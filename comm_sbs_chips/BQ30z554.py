@@ -4082,8 +4082,11 @@ SBS_CMD_BQ30_INFO = {
         'type'	: "byte[]",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("rw","rw","rw",),
-        'desc'	: ("Either Authentication or ManufacturerInfo, depending on use."),
-        'getter'	: "TODO",
+        'desc'	: ("Either Authentication or ManufacturerInfo, depending on use. "
+            "Direct R/W of this command isn't very useful, it is to be used in "
+            "compound commands."),
+        # We need special algorithm to use this; but simple r/w is possible
+        'getter'	: "simple",
     },
     SBS_COMMAND_BQ30.Cell3Voltage : {
         'type'	: "int16",
