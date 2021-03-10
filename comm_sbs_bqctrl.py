@@ -3352,7 +3352,7 @@ def main():
 
     if po.chip in (CHIP_TYPE.BQ30z50, CHIP_TYPE.BQ30z55, CHIP_TYPE.BQ30z554,):
         fnames = ["comm_sbs_chips/{}.py".format("BQ30z554")]
-    if po.chip in (CHIP_TYPE.BQ40z50, CHIP_TYPE.BQ40z307,):
+    elif po.chip in (CHIP_TYPE.BQ40z50, CHIP_TYPE.BQ40z307,):
         fnames = ["comm_sbs_chips/{}.py".format("BQ40z50")]
     else:
         fnames = ["comm_sbs_chips/{}.py".format(po.chip.name)]
