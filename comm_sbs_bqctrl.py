@@ -2107,7 +2107,7 @@ def parse_sbs_command_value(cmd, subcmdinf, v, u, po):
 
 
 def is_printable_value_unit(uname):
-    return uname not in ("boolean","hex","hexver","dec","dec02","dec04","date547","str",)
+    return uname not in ("boolean","hex","hexver","dec","dec02","dec04","date547","str","bitfields","struct",)
 
 
 def command_value_to_string(cmdinf, subcmdinf, u, v, po):

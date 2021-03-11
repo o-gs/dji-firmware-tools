@@ -189,6 +189,7 @@ SBS_CMD_BQ_FIRMWARE_VERSION_INFO = {
         'type'	: "byte[2]",
         'unit'	: {'scale':1,'name':"hex"},
         'nbits'	: 16,
+        'optional'	: True,
         'access'	: "-",
         'tiny_name'	: "ResE",
         'desc'	: ("Field EE reserved by manufacturer. Either unused or used for internal purposes."),
@@ -1093,7 +1094,7 @@ SBS_CMD_BQ_DA_STATUS1_INFO = {
     },
     SBS_CMD_BQ_DA_STATUS1.PACKVoltage : {
         'type'	: "uint16",
-        'unit'	: {'scale':100,'name':"mV"},
+        'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "PackV",
@@ -1549,7 +1550,7 @@ SBS_CMD_BQ_GAUGE_STATUS2_INFO = {
     },
     SBS_CMD_BQ_GAUGE_STATUS2.StateTime : {
         'type'	: "uint32",
-        'unit'	: {'scale':1,'name':"s"},
+        'unit'	: {'scale':1,'name':"sec"},
         'nbits'	: 32,
         'access'	: "r",
         'tiny_name'	: "StateTm",
@@ -4875,7 +4876,7 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'desc'	: ("Output 32 bytes of ManufacturerInfo."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.DAStatus1 : {
-        'type'	: "byte[12]",
+        'type'	: "byte[32]",
         'unit'	: {'scale':None,'name':"struct"},
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'struct_info'	: SBS_CMD_BQ_DA_STATUS1_INFO,
@@ -5083,12 +5084,12 @@ SBS_CMD_BQ40_INFO = {
         'type'	: "byte[]",
         'unit'	: {'scale':None,'name':None},
         'subcmd_infos'	: (MANUFACTURER_BLOCK_ACCESS_CMD_BQ_INFO,),
+        # We need special algorithm to use this; but simple r/w is possible
         'access_per_seal'	: ("rw","rw","rw",),
-        'desc'	: ("Authentication challenge / response / new key. "
-          "Provides SHA-1 authentication to send the challenge and read the "
-          "response in the default mode. It is also used to input a new "
-          "authentication key when the MAC AuthenticationKey() is used."),
-        # We need special algorithm to authenticate or change key; but simple r/w is possible
+        'desc'	: ("Method of data R/W in the Manufacturer Access System (MAC). "
+          "The MAC command is sent via ManufacturerBlockAccess() by the SMBus "
+          "block protocol. The result is returned on ManufacturerBlockAccess() "
+          "via an SMBus block read."),
         'getter'	: "write_word_subcmd_mac_block",
     },
     SBS_COMMAND_BQ40.BTPDischargeSet : {
@@ -5166,7 +5167,7 @@ SBS_CMD_BQ40_INFO = {
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.ChargingStatus : {
-        'type'	: "uint32_blk",
+        'type'	: "uint24_blk",
         'unit'	: {'scale':1,'name':"bitfields"},
         'bitfields_info'	: SBS_CHARGING_STATUS_INFO,
         'access_per_seal'	: ("-","r","r",),
@@ -5175,7 +5176,7 @@ SBS_CMD_BQ40_INFO = {
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.GaugingStatus : {
-        'type'	: "uint32_blk",
+        'type'	: "uint24_blk",
         'unit'	: {'scale':1,'name':"bitfields"},
         'bitfields_info'	: SBS_GAUGING_STATUS_INFO,
         'access_per_seal'	: ("-","r","r",),
@@ -5184,7 +5185,7 @@ SBS_CMD_BQ40_INFO = {
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.ManufacturingStatus : {
-        'type'	: "uint32_blk",
+        'type'	: "uint16_blk",
         'unit'	: {'scale':1,'name':"bitfields"},
         'bitfields_info'	: SBS_MANUFACTURING_STATUS_INFO,
         'access_per_seal'	: ("-","r","r",),
@@ -5193,7 +5194,7 @@ SBS_CMD_BQ40_INFO = {
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.AFERegisters : {
-        'type'	: "byte[]",
+        'type'	: "byte[20]",
         'unit'	: {'scale':None,'name':"struct"},
         'struct_info'	: SBS_CMD_BQ_AFE_REGISTERS_INFO,
         'access_per_seal'	: ("-","r","r",),
@@ -5255,7 +5256,7 @@ SBS_CMD_BQ40_INFO = {
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.DAStatus1 : {
-        'type'	: "byte[12]",
+        'type'	: "byte[32]",
         'unit'	: {'scale':None,'name':"struct"},
         'struct_info'	: SBS_CMD_BQ_DA_STATUS1_INFO,
         'access_per_seal'	: ("-","r","r",),
@@ -5546,7 +5547,7 @@ class ChipMockBQ40(ChipMock):
         self.dv = (3600, 3600, 0, 0, ) # design voltage
         self.dc = (1200, 1200, 0, 0, ) # design capacity
         self.cyc = 13
-        self.t = 23.45
+        self.t = 23.45 + 273.15 # temperature, in Kelvin
         self.atrate = 0
         # Prepare static packets
         self.prep_static()
@@ -5559,6 +5560,7 @@ class ChipMockBQ40(ChipMock):
         maxc = [(self.dc[i] * (1.015 + i/1000)) for i in range(4)] # manufacture time capacity
         wear = max(1.0-self.cyc/800,0.01)
         c = [(self.dc[i] * wear * max(self.v[i]-minv[i],0)/(maxv[i]-minv[i])) for i in range(4)]
+        mamp = [0, 0, 0, 0, ] # Current, mAmp
         self.add_read(0x01, struct.pack('<H', 712)) # RemainingCapacityAlarm
         self.add_read(0x02, struct.pack('<H', 10)) # RemainingTimeAlarm
         self.add_read(0x03, struct.pack('<H', 0x6001)) # BatteryMode
@@ -5566,10 +5568,10 @@ class ChipMockBQ40(ChipMock):
         self.add_read(0x05, struct.pack('<H', int(min(60*(sum(maxc)-sum(c))/max(self.atrate,0.00001),0xffff)))) # AtRateToFull
         self.add_read(0x06, struct.pack('<H', int(min(60*sum(c)/max(self.atrate,0.00001),0xffff)))) # AtRateToEmpty
         self.add_read(0x07, struct.pack('<H', 1)) # AtRateOK
-        self.add_read(0x08, struct.pack('<H', int(self.t*100))) # Temperature
+        self.add_read(0x08, struct.pack('<H', int(self.t*10))) # Temperature
         self.add_read(0x09, struct.pack('<H', int(sum(self.v)))) # Voltage
-        self.add_read(0x0a, struct.pack('<H', 0)) # Current
-        self.add_read(0x0b, struct.pack('<H', 0)) # AverageCurrent
+        self.add_read(0x0a, struct.pack('<H', int(sum(mamp)))) # Current
+        self.add_read(0x0b, struct.pack('<H', int(sum(mamp)*0.77))) # AverageCurrent
         self.add_read(0x0c, struct.pack('<H', 2)) # MaxError
         self.add_read(0x0d, struct.pack('<H', int(100*sum(c)//(sum(maxc)*wear)))) # RelativeStateOfCharge
         self.add_read(0x0e, struct.pack('<H', int(100*sum(c)//sum(self.dc)))) # AbsoluteStateOfCharge
@@ -5578,15 +5580,15 @@ class ChipMockBQ40(ChipMock):
         self.add_read(0x11, struct.pack('<H', 0xffff)) # RunTimeToEmpty
         self.add_read(0x12, struct.pack('<H', 0xffff)) # AverageTimeToEmpty
         self.add_read(0x13, struct.pack('<H', 0xffff)) # AverageTimeToFull
-        self.add_read(0x14, struct.pack('<H', 0)) # ChargingCurrent
+        self.add_read(0x14, struct.pack('<H', 4750)) # ChargingCurrent
         self.add_read(0x15, struct.pack('<H', 0)) # ChargingVoltage
-        self.add_read(0x16, struct.pack('<H', 0x48d0)) # BatteryStatus
+        self.add_read(0x16, struct.pack('<H', 0x00c0)) # BatteryStatus
         self.add_read(0x17, struct.pack('<H', int(self.cyc))) # CycleCount
         self.add_read(0x18, struct.pack('<H', sum(self.dc))) # DesignCapacity
         self.add_read(0x19, struct.pack('<H', sum(self.dv))) # DesignVoltage
         self.add_read(0x1a, struct.pack('<H', 0x0031)) # SpecificationInfo
         self.add_read(0x1b, struct.pack('<H', 0x4f5a)) # ManufactureDate
-        self.add_read(0x1c, struct.pack('<H', 0x0087)) # SerialNumber
+        self.add_read(0x1c, struct.pack('<H', 0x0057)) # SerialNumber
         self.add_read(0x20, b'SDI') # ManufacturerName
         self.add_read(0x21, b'BA01WM160') # DeviceName
         self.add_read(0x22, b'2044') # DeviceChemistry
@@ -5594,36 +5596,59 @@ class ChipMockBQ40(ChipMock):
         self.add_read(0x3d, struct.pack('<H', self.v[2])) # Cell2Voltage
         self.add_read(0x3e, struct.pack('<H', self.v[1])) # Cell1Voltage
         self.add_read(0x3f, struct.pack('<H', self.v[0])) # Cell0Voltage
+        #self.add_read(0x4a, struct.pack('<H', 0x0000)) # BTPDischargeSet, non readable for BQ40z307
+        #self.add_read(0x4b, struct.pack('<H', 0x0000)) # BTPChargeSet, non readable for BQ40z307
+        #self.add_read(0x4f, struct.pack('<H', 0x0000)) # StateOfHealthPercent, non readable for BQ40z307
         self.add_read(0x50, struct.pack('<L', 0x0000)) # SafetyAlert
         self.add_read(0x51, struct.pack('<L', 0x0000)) # SafetyStatus
         self.add_read(0x52, struct.pack('<L', 0x0000)) # PFAlert
-        self.add_read(0x53, struct.pack('<L', 0x0005)) # PFStatus
-        self.add_read(0x54, struct.pack('<L', 0x107200)) # OperationStatus
-        self.add_read(0x55, struct.pack('<H', 0x0408)) # ChargingStatus
-        self.add_read(0x56, struct.pack('<H', 0x0817)) # GaugingStatus
-        self.add_read(0x57, struct.pack('<H', 0x0058)) # ManufacturingStatus
-        self.add_read(0x58, bytes.fromhex("00 20 00 00 00 04 0f 0f 20 44 46 0d")) # AFERegisters
-        self.add_read(0x60, bytes.fromhex("ec e5 ec 00 7b 83 a9 00 44 16 45 2a 70 2a 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # LifetimeDataBlock1
-        self.add_read(0x61, bytes.fromhex("00 00 00 00 00 07 0b 01 09 22 0b 03 0b 01 00 0a 00 22 00 18 00 3b ff 75 30 f9 80")) # LifetimeDataBlock2
-        self.add_read(0x62, bytes.fromhex("12 4a 18 00 f8 04 8b 19 58 2a 0e 01 0d 00 01 00")) # LifetimeDataBlock3
-        self.add_read(0x70, b'abcdefghijklmnopqrstuvwzxy012345') # ManufacturerInfo
-        self.add_read(0x71, struct.pack('<HHHHHH', self.v[0], self.v[1], self.v[2], self.v[3], sum(self.v), int(sum(self.v)*1.04//100))) # DAStatus1
-        self.add_read(0x72, struct.pack('<HHHHHHH', int(self.t*100-9), int(self.t*100-20), int(self.t*100), int(self.t*100), int(self.t*100), int(self.t*100), int(self.t*100-100))) # DAStatus2
-        self.add_read(0x73, bytes.fromhex("c0 03 e0 03 a0 05 00 00 00 00 ad 07 7e 07 bd 07 7b 07 00 00 34 04 00 00 30 00 18 01 00 00")) # GaugeStatus1
-        self.add_read(0x74, bytes.fromhex("01 0e 01 01 01 00 7d 00 5a 00 8a 00 00 00 d9 39 00 00 00 00 00 00 e8 03 e8 03 e8 03 00 00")) # GaugeStatus2
-        self.add_read_sub(0x00, 0x02, bytes.fromhex("0550 0036 0034 00 0380 0001 0083")) # FirmwareVersion
-        if False: # UnSealDevice M zero-filled key
-            self.add_read_sub(0x00, 0x31, reversed(bytes.fromhex("C82CA3CA 10DEC726 8E070A7C F0D1FE82 20AAD3B8")))
-            # For above case, HMAC2=fb8a342458e0b136988cb5203bb23f94dfd4440e
-        if True: # UnSealDevice M default key
-            self.add_read_sub(0x00, 0x31, reversed(bytes.fromhex("12b59558 b6d20605 121149b1 16af564a ae19a256")))
-            # For above case, HMAC2=fca9642f6846e01f219c6ed7160b2f15cddeb1bc
+        self.add_read(0x53, struct.pack('<L', 0x0000)) # PFStatus
+        self.add_read(0x54, struct.pack('<L', 0x0c048106)) # OperationStatus
+        self.add_read(0x55, struct.pack('<H', 0x0408)) # ChargingStatus, 16-bit for BQ40z307
+        self.add_read(0x56, struct.pack('<L', 0x091950)[:3]) # GaugingStatus
+        self.add_read(0x57, struct.pack('<H', 0x0038)) # ManufacturingStatus
+        #self.add_read(0x58, bytes.fromhex("00 20 00 00 00 04 0f 0f 20 44 46 0d")) # AFERegisters, non readable for BQ40z307
+        self.add_read(0x5a, struct.pack('<H', 1261)) # TURBO_FINAL, read as 2-byte block for BQ40z307
+        self.add_read(0x60, bytes.fromhex("36 0f 36 0f 00 00 00 00 e6 0b ed 0b ff 7f ff 7f 1c 00")) # LifetimeDataBlock1, 18 bytes for BQ40z307
+        self.add_read(0x61, bytes.fromhex("03 00 07 00")) # LifetimeDataBlock2, 4 bytes for BQ40z307
+        self.add_read(0x62, bytes.fromhex("5c 09 00 00 00 00 00 00 5b 09 00 00 00 00 00 00")) # LifetimeDataBlock3
+        #self.add_read(0x63, bytes.fromhex("00 00")) # LifetimeDataBlock4, non readable for BQ40z307
+        #self.add_read(0x64, bytes.fromhex("00 00")) # LifetimeDataBlock5, non readable for BQ40z307
+        self.add_read(0x70, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02') # ManufacturerInfo
+        self.add_read(0x71, struct.pack('<HHHHHHHHHHHHHHHH', self.v[0], self.v[1],
+          self.v[2], self.v[3], sum(self.v), int(sum(self.v)*1.04),
+          mamp[0], mamp[1], mamp[2], mamp[3], self.v[0]*mamp[0],
+          self.v[1]*mamp[1], self.v[2]*mamp[2], self.v[3]*mamp[3],
+          int(sum(self.v)*sum(mamp)), int(sum(self.v)*sum(mamp)*0.88))) # DAStatus1
+        self.add_read(0x72, struct.pack('<HHHHHHH', int(self.t*10-21), int(self.t*10), int(self.t*10-772), int(0*10), int(0*10), int(self.t*10), int(0*10))) # DAStatus2
+        self.add_read(0x73, bytes.fromhex("24 04 aa 02 5d 05 2d 04 81 09 d7 06 9c 0b 9c 0b e8 03 e8 03 00 00 00 00 2f 00 30 00 00 00 00 00")) # GaugeStatus1
+        self.add_read(0x74, bytes.fromhex("05 0e 00 00 00 00 b0 cd 13 00 5e 21 3e 21 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00")) # GaugeStatus2
+        self.add_read(0x75, bytes.fromhex("4a 0a 5a 0a c4 09 c4 09 6f 17 4f 17 00 00 00 00 32 01 99 16 57 01 82 02 60 21 40 21 00 00 00 00")) # GaugeStatus3
+        self.add_read(0x76, bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # CBStatus
+        #self.add_read(0x77, bytes.fromhex("00 00")) # StateOfHealthPhys, non readable for BQ40z307
+        self.add_read(0x78, struct.pack('<HHHH', int(1059), int(681), int(2432), int(1750))) # FilteredCapacity
+
+        self.add_read_sub(0x00, 0x01, struct.pack('<H', 0x4307)) # DeviceType
+        self.add_read_sub(0x00, 0x02, bytes.fromhex("4307 0101 0027 00 0385 0200")) # FirmwareVersion
+        self.add_read_sub(0x00, 0x03, struct.pack('<H', 0x00a1)) # HardwareVersion
+        self.add_read_sub(0x00, 0x04, struct.pack('<H', 0x67b2)) # InstrFlashChecksum
+        self.add_read_sub(0x00, 0x05, struct.pack('<H', 0x9a31)) # StaticDataFlashChecksum
+        self.add_read_sub(0x00, 0x06, struct.pack('<H', 0x2044)) # ChemicalID
+        self.add_read_sub(0x00, 0x08, struct.pack('<H', 0x3a6b)) # StaticChemDFSignature
+        self.add_read_sub(0x00, 0x09, struct.pack('<H', 0xd5fa)) # AllDFSignature
+        self.add_read_sub(0x00, 0x35, struct.pack('<LL', int(0x04143672), int(0xffffffff))) # SecurityKeys
+        self.add_read_sub(0x00, 0x63, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02') # LifetimeDataBlock4, but for some reason looks like ManufacturerInfo
+        self.add_read_sub(0x00, 0x64, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02') # LifetimeDataBlock5, but for some reason looks like ManufacturerInfo
+        self.add_read_sub(0x00, 0x77, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02') # StateOfHealthPhys, but for some reason looks like ManufacturerInfo
+        # For ManufacturerBlockAccess commands, remember to add subcmd word at start
 
     def add_read(self, register, data):
         self.reads[register] = data
 
     def add_read_sub(self, register, subreg, data):
-        self.reads_sub[subreg] = data
+        if register not in self.reads_sub:
+            self.reads_sub[register] = {}
+        self.reads_sub[register][subreg] = data
 
     def prep_read(self, cmd, cmdinf):
         pass
@@ -5633,10 +5658,17 @@ class ChipMockBQ40(ChipMock):
             register = subcmdinf['resp_location'].value
         else:
             register = cmd.value
-        if subcmd is None:
+        if subcmd is None: # No sub-command, just clear the data
             self.mock_reads[register] = b''
-        elif subcmd.value in self.reads_sub:
-            self.reads[register] = self.reads_sub[subcmd.value]
+        elif cmd.value == 0x44: # ManufacturerBlockAccess clones ManufacturerAccess but adds subcmd word
+            if cmd.value in self.reads_sub and subcmd.value in self.reads_sub[cmd.value]:
+                self.reads[register] = self.reads_sub[cmd.value][subcmd.value]
+            elif 0x00 in self.reads_sub and subcmd.value in self.reads_sub[0x00]:
+                self.reads[register] = struct.pack('<H', subcmd.value) + self.reads_sub[0x00][subcmd.value]
+            else: # some MA commands are just mirrors of standard SBS commands
+                self.reads[register] = struct.pack('<H', subcmd.value) + self.reads[subcmd.value]
+        elif cmd.value in self.reads_sub and subcmd.value in self.reads_sub[cmd.value]:
+            self.reads[register] = self.reads_sub[cmd.value][subcmd.value]
         else: # some MA commands are just mirrors of standard SBS commands
             self.reads[register] = self.reads[subcmd.value]
         if subcmd == MANUFACTURER_ACCESS_CMD_BQGENERIC.FirmwareVersion:

@@ -171,6 +171,7 @@ SBS_CMD_BQ_FIRMWARE_VERSION_INFO = {
         'type'	: "byte[2]",
         'unit'	: {'scale':1,'name':"hex"},
         'nbits'	: 16,
+        'optional'	: True,
         'access'	: "-",
         'tiny_name'	: "ResE",
         'desc'	: ("Field EE reserved by manufacturer. Either unused or used for internal purposes."),
