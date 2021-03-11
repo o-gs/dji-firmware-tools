@@ -3,8 +3,15 @@
 
 """ Smart Battery System chip definition.
 
+Implemented based on:
+* sluu852a.pdf BQ30z50-R1 and BQ30z55-R1 Technical Reference
+* sluua79.pdf BQ30z554-R1 Technical Reference
+
 Compatible chips:
 BQ30z50, BQ30z55, BQ30z554
+
+For list of devices on which these definitons were tested,
+see comments within `comm_sbs_bqctrl.py`.
 """
 
 class SBS_COMMAND_BQ30(DecoratedEnum):

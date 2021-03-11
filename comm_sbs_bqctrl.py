@@ -78,7 +78,7 @@ and make sure the command is defined in the same way as in spec of
 one of tested devices.
 
 """
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 

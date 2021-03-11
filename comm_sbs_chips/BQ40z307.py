@@ -3,8 +3,15 @@
 
 """ Smart Battery System chip definition.
 
+Implemented based on:
+* Empirical testing of the chip
+* Used BQ40z50 as a documented base
+
 Compatible chips:
-BQ40z50, BQ40z307
+BQ40z307
+
+For list of devices on which these definitons were tested,
+see comments within `comm_sbs_bqctrl.py`.
 """
 
 class SBS_COMMAND_BQ40(DecoratedEnum):
@@ -24,6 +31,7 @@ class SBS_COMMAND_BQ40(DecoratedEnum):
     ChargingStatus			= 0x55
     GaugingStatus			= 0x56
     ManufacturingStatus		= 0x57
+    TURBO_FINAL				= 0x5a
     LifetimeDataBlock1		= 0x60
     LifetimeDataBlock2		= 0x61
     LifetimeDataBlock3		= 0x62
@@ -35,17 +43,6 @@ class SBS_COMMAND_BQ40(DecoratedEnum):
     GaugeStatus3			= 0x75
     CBStatus				= 0x76
     FilteredCapacity		= 0x78
-
-
-class SBS_COMMAND_BQ_TURBO(DecoratedEnum):
-    """ Commands used in BQ family SBS chips which support TURBO mode
-    """
-    TURBO_POWER				= 0x59
-    TURBO_FINAL				= 0x5a
-    TURBO_PACK_R			= 0x5b
-    TURBO_SYS_R				= 0x5c
-    TURBO_EDV				= 0x5d
-    TURBO_CURRENT			= 0x5e
 
 
 class MANUFACTURER_ACCESS_CMD_BQ40(DecoratedEnum):
@@ -4475,6 +4472,13 @@ SBS_CMD_BQ40_INFO = {
             "ManufacturerAccess() instead."),
         'getter'	: "simple",
     },
+    SBS_COMMAND_BQ40.TURBO_FINAL : {
+        'type'	: "uint16_blk",
+        'unit'	: {'scale':1,'name':"cW"},
+        'access_per_seal'	: ("r","r","rw",),
+        'desc'	: ("Turbo final, or something else."),
+        'getter'	: "simple",
+    },
     SBS_COMMAND_BQ40.LifetimeDataBlock1 : {
         'type'	: "byte[32]",
         'unit'	: {'scale':None,'name':"struct"},
@@ -4579,69 +4583,8 @@ SBS_CMD_BQ40_INFO = {
     },
 }
 
-SBS_CMD_BQ40_TURBO_INFO = {
-    SBS_COMMAND_BQ_TURBO.TURBO_POWER : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"cW"},
-        'access_per_seal'	: ("r","r","rw",),
-        'desc'	: ("Max Peak Power for the battery pack config. Computes "
-            "and provides Max Power information based on the battery pack "
-            "configuration. The gauge computes a new RAM value every second."),
-        'getter'	: "simple",
-    },
-    SBS_COMMAND_BQ_TURBO.TURBO_FINAL : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"cW"},
-        'access_per_seal'	: ("rw","rw","rw",),
-        'desc'	: ("Minimal TURBO-mode power level during active operation. "
-            "Min Turbo Power represents minimal TURBO BOOST mode power level "
-            "during active operation (e.g., non-SLEEP)."),
-        'getter'	: "simple",
-    },
-    SBS_COMMAND_BQ_TURBO.TURBO_PACK_R : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"mOhm"},
-        'access_per_seal'	: ("rw","rw","rw",),
-        'desc'	: ("Battery pack serial resistance. The serial resistance "
-            "includes FETs, traces, sense resistors, etc. This accesses the "
-            "actual data flash value PackResistance."),
-        'getter'	: "simple",
-    },
-    SBS_COMMAND_BQ_TURBO.TURBO_SYS_R : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"mOhm"},
-        'access_per_seal'	: ("rw","rw","rw",),
-        'desc'	: ("System serial resistance. Resistance along the path from "
-            "battery to system power converter input that includes FETs, "
-            "traces, sense resistors, etc. This accesses the actual data flash "
-            "value SystemResistance."),
-        'getter'	: "simple",
-    },
-    SBS_COMMAND_BQ_TURBO.TURBO_EDV : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"mV"},
-        'access_per_seal'	: ("rw","rw","rw",),
-        'desc'	: ("Minimal system power converter operational voltage. "
-            "Minimal Voltage at system power converter input at which the "
-            "system will still operate. This accesses the actual data "
-            "flash value of TerminateVoltage. Older name was MIN_SYS_V."),
-        'getter'	: "simple",
-    },
-    SBS_COMMAND_BQ_TURBO.TURBO_CURRENT : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"mA"},
-        'access_per_seal'	: ("r","r","rw",),
-        'desc'	: ("Max supported pulse current. The gauge computes "
-            "a maximal discharge current supported by the cell "
-            "for a 10 ms pulse. Value is updated every 1 sec."),
-        'getter'	: "simple",
-    },
-}
-
 global SBS_CMD_INFO
 SBS_CMD_INFO.update(SBS_CMD_BQ40_INFO)
-# Support of TURBO
-SBS_CMD_INFO.update(SBS_CMD_BQ40_TURBO_INFO)
 
 
 RAW_ADDRESS_SPACE_KIND_BQ_INFO = {
@@ -4697,6 +4640,7 @@ SBS_CMD_GROUPS_BQ40 = {
     ),
     MONITOR_GROUP.BQLifetimeData : (
         SBS_COMMAND_BQ40.ManufacturerInfo,
+        SBS_COMMAND_BQ40.TURBO_FINAL,
         SBS_COMMAND_BQ40.LifetimeDataBlock1,
         SBS_COMMAND_BQ40.LifetimeDataBlock2,
         SBS_COMMAND_BQ40.LifetimeDataBlock3,
@@ -4733,21 +4677,8 @@ SBS_CMD_GROUPS_BQ40 = {
     ),
 }
 
-SBS_CMD_GROUPS_BQ40_TURBO = {
-    MONITOR_GROUP.BQTurboMode : (
-        SBS_COMMAND_BQ_TURBO.TURBO_POWER,
-        SBS_COMMAND_BQ_TURBO.TURBO_FINAL,
-        SBS_COMMAND_BQ_TURBO.TURBO_PACK_R,
-        SBS_COMMAND_BQ_TURBO.TURBO_SYS_R,
-        SBS_COMMAND_BQ_TURBO.TURBO_EDV,
-        SBS_COMMAND_BQ_TURBO.TURBO_CURRENT,
-    ),
-}
-
 global SBS_CMD_GROUPS
 SBS_CMD_GROUPS.update(SBS_CMD_GROUPS_BQ40)
-# Support of TURBO
-SBS_CMD_GROUPS.update(SBS_CMD_GROUPS_BQ40_TURBO)
 
 global SBS_SEALING
 SBS_SEALING = {
