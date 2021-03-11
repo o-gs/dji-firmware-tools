@@ -1517,7 +1517,7 @@ def smbus_read_block_for_basecmd(bus, dev_addr, cmd, basecmd_name, resp_type, po
     expect_len = type_str_value_length(resp_type)
     # Try reading expected length first
     if po.api_type == "smbus":
-        expect_len = min(expect_len + 1 + (1 if bus.pec else 0), 32) # 32 +1 length, +1 PEC
+        expect_len = min(expect_len + 1 + (1 if bus.pec else 0), 32) # 32 is SMBus 2.0 limit
         b = bus.read_i2c_block_data(dev_addr, cmd.value, expect_len)
     elif po.api_type == "i2c":
         expect_len = min(expect_len+ 1 + (1 if bus.pec else 0), 36) # 32 +2 subcmd +1 length, +1 PEC
@@ -1545,7 +1545,7 @@ def smbus_read_block_for_basecmd(bus, dev_addr, cmd, basecmd_name, resp_type, po
                 print("Warning: Response last bytes were truncated because of Smbus 2.0 constrains; adding zeros")
             b += b'\0' * (b[0]-31)
     elif po.api_type == "i2c":
-        expect_len = 32 + 1 + (1 if bus.pec else 0) # +1 length, +1 PEC
+        expect_len = 32 + 2 + 1 + (1 if bus.pec else 0) # 32 +2 subcmd +1 length, +1 PEC
         part_write = i2c_msg.write(dev_addr, [cmd.value])
         part_read = i2c_msg.read(dev_addr, expect_len)
         bus.i2c_rdwr(part_write, part_read)

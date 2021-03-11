@@ -5628,6 +5628,8 @@ class ChipMockBQ40(ChipMock):
         #self.add_read(0x77, bytes.fromhex("00 00")) # StateOfHealthPhys, non readable for BQ40z307
         self.add_read(0x78, struct.pack('<HHHH', int(1059), int(681), int(2432), int(1750))) # FilteredCapacity
 
+        # The chip returns the same invalid data for unsupported ManufacturerAccess commands
+        bad_manufc_info_data = b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02'
         self.add_read_sub(0x00, 0x01, struct.pack('<H', 0x4307)) # DeviceType
         self.add_read_sub(0x00, 0x02, bytes.fromhex("4307 0101 0027 00 0385 0200")) # FirmwareVersion
         self.add_read_sub(0x00, 0x03, struct.pack('<H', 0x00a1)) # HardwareVersion
@@ -5637,10 +5639,17 @@ class ChipMockBQ40(ChipMock):
         self.add_read_sub(0x00, 0x08, struct.pack('<H', 0x3a6b)) # StaticChemDFSignature
         self.add_read_sub(0x00, 0x09, struct.pack('<H', 0xd5fa)) # AllDFSignature
         self.add_read_sub(0x00, 0x35, struct.pack('<LL', int(0x04143672), int(0xffffffff))) # SecurityKeys
-        self.add_read_sub(0x00, 0x63, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02') # LifetimeDataBlock4, but for some reason looks like ManufacturerInfo
-        self.add_read_sub(0x00, 0x64, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02') # LifetimeDataBlock5, but for some reason looks like ManufacturerInfo
-        self.add_read_sub(0x00, 0x77, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02') # StateOfHealthPhys, but for some reason looks like ManufacturerInfo
+        self.add_read_sub(0x00, 0x63, bad_manufc_info_data) # LifetimeDataBlock4, chip returns invalid data
+        self.add_read_sub(0x00, 0x64, bad_manufc_info_data) # LifetimeDataBlock5, chip returns invalid data
+        self.add_read_sub(0x00, 0x77, bad_manufc_info_data) # StateOfHealthPhys, chip returns invalid data
+        # The chip returns the same invalid data for unsupported ManufacturerBlockAccess commands
+        bad_manufc_block_data = bytes.fromhex( ("00 00 13 7f 16 be 94 98 d8 15 "
+          "bd a3 f0 fa c5 d9 98 5b 67 78 dc d6 00 f8 53 9f "
+          "9c 79 3c c2 21 ce f4 33 a6 50 38 84 37 6f 72 7b 59 00") )
         # For ManufacturerBlockAccess commands, remember to add subcmd word at start
+        self.add_read_sub(0x44, 0x63, bad_manufc_block_data) # LifetimeDataBlock4, chip returns invalid data
+        self.add_read_sub(0x44, 0x64, bad_manufc_block_data) # LifetimeDataBlock5, chip returns invalid data
+        self.add_read_sub(0x44, 0x77, bad_manufc_block_data) # StateOfHealthPhys, chip returns invalid data
 
     def add_read(self, register, data):
         self.reads[register] = data
