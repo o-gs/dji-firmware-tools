@@ -34,7 +34,6 @@ class SBS_COMMAND_BQ40(DecoratedEnum):
     GaugeStatus2			= 0x74
     GaugeStatus3			= 0x75
     CBStatus				= 0x76
-    StateOfHealthPhys		= 0x77
     FilteredCapacity		= 0x78
 
 
@@ -102,7 +101,6 @@ class MANUFACTURER_ACCESS_CMD_BQ40(DecoratedEnum):
     GaugeStatus2			= 0x74
     GaugeStatus3			= 0x75
     CBStatus				= 0x76
-    StateOfHealthPhys		= 0x77
     FilteredCapacity		= 0x78
     ROMMode					= 0x0f00
     DataFlashAccess			= 0x4000
@@ -200,21 +198,11 @@ class SBS_CMD_BQ_LIFETIME_DATA_BLOCK1(DecoratedEnum):
     MinCellVoltage3			= 0x060
     MinCellVoltage4			= 0x070
     MaxDeltaCellVoltage		= 0x080
-    MaxChargeCurrent		= 0x090
-    MaxDischargeCurrent		= 0x0a0
-    MaxAvgDischrCurrent		= 0x0b0
-    MaxAvgDischrPower		= 0x0c0
-    MaxTempCell				= 0x0d0
-    MinTempCell				= 0x0d8
-    MaxDeltaCellTemp		= 0x0e0
-    MaxTempIntSensor		= 0x0e8
-    MinTempIntSensor		= 0x0f0
-    MaxTempFET				= 0x0f8
 
 SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage1 : {
         'type'	: "uint16",
-        'unit'	: {'scale':20,'name':"mV"},
+        'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "MaxV1",
@@ -222,7 +210,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage2 : {
         'type'	: "uint16",
-        'unit'	: {'scale':20,'name':"mV"},
+        'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "MaxV2",
@@ -230,7 +218,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage3 : {
         'type'	: "uint16",
-        'unit'	: {'scale':20,'name':"mV"},
+        'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "MaxV3",
@@ -238,7 +226,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxCellVoltage4 : {
         'type'	: "uint16",
-        'unit'	: {'scale':20,'name':"mV"},
+        'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "MaxV4",
@@ -246,7 +234,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage1 : {
         'type'	: "uint16",
-        'unit'	: {'scale':20,'name':"mV"},
+        'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "MinV1",
@@ -254,15 +242,15 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage2 : {
         'type'	: "uint16",
-        'unit'	: {'scale':20,'name':"mV"},
+        'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "MinV2",
         'desc'	: ("Min Cell 2 Voltage."),
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage3 : {
-        'type'	: "uint16",
-        'unit'	: {'scale':20,'name':"mV"},
+        'type'	: "int16",
+        'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "MinV3",
@@ -270,7 +258,7 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinCellVoltage4 : {
         'type'	: "uint16",
-        'unit'	: {'scale':20,'name':"mV"},
+        'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "MinV4",
@@ -278,91 +266,11 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO = {
     },
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxDeltaCellVoltage : {
         'type'	: "uint16",
-        'unit'	: {'scale':20,'name':"mV"},
+        'unit'	: {'scale':1,'name':"mV"},
         'nbits'	: 16,
         'access'	: "r",
         'tiny_name'	: "MaxDV",
         'desc'	: ("Max Delta Cell Voltage. That is, the max cell imbalance voltage."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxChargeCurrent : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 16,
-        'access'	: "r",
-        'tiny_name'	: "MChgI",
-        'desc'	: ("Max Charge Current."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxDischargeCurrent : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 16,
-        'access'	: "r",
-        'tiny_name'	: "MDisI",
-        'desc'	: ("Max Discharge Current."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxAvgDischrCurrent : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 16,
-        'access'	: "r",
-        'tiny_name'	: "MADisI",
-        'desc'	: ("Max Average Discharge Current."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxAvgDischrPower : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 16,
-        'access'	: "r",
-        'tiny_name'	: "MADisP",
-        'desc'	: ("Max Average Discharge Power."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxTempCell : {
-        'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 8,
-        'access'	: "r",
-        'tiny_name'	: "MaxTem",
-        'desc'	: ("Max Temp Cell."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinTempCell : {
-        'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 8,
-        'access'	: "r",
-        'tiny_name'	: "MinTem",
-        'desc'	: ("Min Temp Cell."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxDeltaCellTemp : {
-        'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 8,
-        'access'	: "r",
-        'tiny_name'	: "MaxDTe",
-        'desc'	: ("Max delta of cell temperatute."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxTempIntSensor : {
-        'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 8,
-        'access'	: "r",
-        'tiny_name'	: "MaxTeS",
-        'desc'	: ("Max temperatute on internal sensor."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MinTempIntSensor : {
-        'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 8,
-        'access'	: "r",
-        'tiny_name'	: "MinTeS",
-        'desc'	: ("Min temperatute on internal sensor."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK1.MaxTempFET : {
-        'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 8,
-        'access'	: "r",
-        'tiny_name'	: "MxTFET",
-        'desc'	: ("Max temperature of FET."),
     },
 }
 
@@ -374,10 +282,6 @@ class SBS_CMD_BQ_LIFETIME_DATA_BLOCK2(DecoratedEnum):
     NoOfPartialResets		= 0x008
     NoOfFullResets			= 0x010
     NoOfWDTResets			= 0x018
-    CBTimeCell1				= 0x020
-    CBTimeCell2				= 0x028
-    CBTimeCell3				= 0x030
-    CBTimeCell4				= 0x038
 
 SBS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
     SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.NoOfShutdowns : {
@@ -411,38 +315,6 @@ SBS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO = {
         'access'	: "r",
         'tiny_name'	: "nWDRst",
         'desc'	: ("Number of Resets by Watchdog Timer."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.CBTimeCell1 : {
-        'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 8,
-        'access'	: "r",
-        'tiny_name'	: "CBTim1",
-        'desc'	: ("Total performed balancing bypass time cell 1."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.CBTimeCell2 : {
-        'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 8,
-        'access'	: "r",
-        'tiny_name'	: "CBTim2",
-        'desc'	: ("Total performed balancing bypass time cell 2."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.CBTimeCell3 : {
-        'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 8,
-        'access'	: "r",
-        'tiny_name'	: "CBTim3",
-        'desc'	: ("Total performed balancing bypass time cell 3."),
-    },
-    SBS_CMD_BQ_LIFETIME_DATA_BLOCK2.CBTimeCell4 : {
-        'type'	: "uint8",
-        'unit'	: {'scale':1,'name':"dec"},
-        'nbits'	: 8,
-        'access'	: "r",
-        'tiny_name'	: "CBTim4",
-        'desc'	: ("Total performed balancing bypass time cell 4."),
     },
 }
 
@@ -1310,32 +1182,6 @@ SBS_CMD_BQ_CB_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "CBTime3",
         'desc'	: ("Calculated cell balancing time cell 3."),
-    },
-}
-
-
-class SBS_CMD_BQ_STATE_OF_HEALTH_PHYS(DecoratedEnum):
-    """ StateOfHealthPhys sub-command fields used in BQ40 family SBS chips
-    """
-    SOH_FCC				= 0x000
-    SOH_Energy			= 0x010
-
-SBS_CMD_BQ_STATE_OF_HEALTH_PHYS_INFO = {
-    SBS_CMD_BQ_STATE_OF_HEALTH_PHYS.SOH_FCC : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"mAh"},
-        'nbits'	: 16,
-        'access'	: "r",
-        'tiny_name'	: "FCC",
-        'desc'	: ("State-of-Health FCC."),
-    },
-    SBS_CMD_BQ_STATE_OF_HEALTH_PHYS.SOH_Energy : {
-        'type'	: "uint16",
-        'unit'	: {'scale':1,'name':"cWh"},
-        'nbits'	: 16,
-        'access'	: "r",
-        'tiny_name'	: "Enrgy",
-        'desc'	: ("State-of-Health energy."),
     },
 }
 
@@ -4400,14 +4246,6 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Cell balance time information."),
     },
-    MANUFACTURER_ACCESS_CMD_BQ40.StateOfHealthPhys : {
-        'type'	: "byte[4]",
-        'unit'	: {'scale':None,'name':"struct"},
-        'resp_location'	: SBS_COMMAND.ManufacturerData,
-        'struct_info'	: SBS_CMD_BQ_STATE_OF_HEALTH_PHYS_INFO,
-        'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("State-of-health full charge capacity and energy."),
-    },
     MANUFACTURER_ACCESS_CMD_BQ40.FilteredCapacity : {
         'type'	: "byte[8]",
         'unit'	: {'scale':None,'name':"struct"},
@@ -4729,16 +4567,6 @@ SBS_CMD_BQ40_INFO = {
             "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
-    SBS_COMMAND_BQ40.StateOfHealthPhys : {
-        'type'	: "byte[4]",
-        'unit'	: {'scale':None,'name':"struct"},
-        'struct_info'	: SBS_CMD_BQ_STATE_OF_HEALTH_PHYS_INFO,
-        'access_per_seal'	: ("-","r","r",),
-        'desc'	: ("State-of-health full charge capacity and energy. "
-            "The same values "
-            "as in corresponding ManufacturerData() command."),
-        'getter'	: "simple",
-    },
     SBS_COMMAND_BQ40.FilteredCapacity : {
         'type'	: "byte[8]",
         'unit'	: {'scale':None,'name':"struct"},
@@ -4886,7 +4714,6 @@ SBS_CMD_GROUPS_BQ40 = {
         SBS_COMMAND_BQ40.GaugeStatus2,
         SBS_COMMAND_BQ40.GaugeStatus3,
         SBS_COMMAND_BQ40.CBStatus,
-        SBS_COMMAND_BQ40.StateOfHealthPhys,
         SBS_COMMAND_BQ40.FilteredCapacity,
     ),
     MONITOR_GROUP.ImpedanceTrackMA : (
@@ -4896,7 +4723,6 @@ SBS_CMD_GROUPS_BQ40 = {
         MANUFACTURER_ACCESS_CMD_BQ40.GaugeStatus2,
         MANUFACTURER_ACCESS_CMD_BQ40.GaugeStatus3,
         MANUFACTURER_ACCESS_CMD_BQ40.CBStatus,
-        MANUFACTURER_ACCESS_CMD_BQ40.StateOfHealthPhys,
         MANUFACTURER_ACCESS_CMD_BQ40.FilteredCapacity,
     ),
     MONITOR_GROUP.BQCellVoltages : (
@@ -5031,7 +4857,6 @@ class ChipMockBQ40(ChipMock):
         self.add_read(0x74, bytes.fromhex("05 0e 00 00 00 00 b0 cd 13 00 5e 21 3e 21 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00")) # GaugeStatus2
         self.add_read(0x75, bytes.fromhex("4a 0a 5a 0a c4 09 c4 09 6f 17 4f 17 00 00 00 00 32 01 99 16 57 01 82 02 60 21 40 21 00 00 00 00")) # GaugeStatus3
         self.add_read(0x76, bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # CBStatus
-        #self.add_read(0x77, bytes.fromhex("00 00")) # StateOfHealthPhys, non readable for BQ40z307
         self.add_read(0x78, struct.pack('<HHHH', int(1059), int(681), int(2432), int(1750))) # FilteredCapacity
 
         # The chip returns the same invalid data for unsupported ManufacturerAccess commands
@@ -5045,13 +4870,11 @@ class ChipMockBQ40(ChipMock):
         self.add_read_sub(0x00, 0x08, struct.pack('<H', 0x3a6b)) # StaticChemDFSignature
         self.add_read_sub(0x00, 0x09, struct.pack('<H', 0xd5fa)) # AllDFSignature
         self.add_read_sub(0x00, 0x35, struct.pack('<LL', int(0x04143672), int(0xffffffff))) # SecurityKeys
-        self.add_read_sub(0x00, 0x77, bad_manufc_info_data) # StateOfHealthPhys, chip returns invalid data
         # The chip returns the same invalid data for unsupported ManufacturerBlockAccess commands
         bad_manufc_block_data = bytes.fromhex( ("00 00 13 7f 16 be 94 98 d8 15 "
           "bd a3 f0 fa c5 d9 98 5b 67 78 dc d6 00 f8 53 9f "
           "9c 79 3c c2 21 ce f4 33 a6 50 38 84 37 6f 72 7b 59 00") )
         # For ManufacturerBlockAccess commands, remember to add subcmd word at start
-        self.add_read_sub(0x44, 0x77, bad_manufc_block_data) # StateOfHealthPhys, chip returns invalid data
 
     def add_read(self, register, data):
         self.reads[register] = data

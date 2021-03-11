@@ -2714,10 +2714,21 @@ def smart_battery_system_command_from_text(cmd_str, po):
     if len(cmd_str_parts) > 1:
         subcmd_str = cmd_str_parts[1]
     cmd = None
-    if cmd is None: # Standard SBS command can be used on any chip
-        for curr_cmd in SBS_CMD_INFO.keys():
-            if major_cmd_str == curr_cmd.name:
-                cmd = curr_cmd
+    if cmd is None: # Recognize major SBS command by name
+        if True:
+            for curr_cmd in SBS_CMD_INFO.keys():
+                if major_cmd_str == curr_cmd.name:
+                    cmd = curr_cmd
+                    break
+    if cmd is None: # Recognize major SBS command by number
+        try:
+            major_cmd_int = int(major_cmd_str,0)
+            for curr_cmd in SBS_CMD_INFO.keys():
+                if major_cmd_int == curr_cmd.value:
+                    cmd = curr_cmd
+                    break
+        except ValueError:
+            pass
     if cmd is None:
         raise ValueError("The command '{}' is either invalid or not supported by chip".format(major_cmd_str))
 
@@ -2725,13 +2736,27 @@ def smart_battery_system_command_from_text(cmd_str, po):
     if subcmd_str is not None:
         cmdinf = SBS_CMD_INFO[cmd]
         if 'subcmd_infos' in cmdinf:
-            for subgrp in cmdinf['subcmd_infos']:
-                for cur_subcmd in subgrp.keys():
-                    if subcmd_str == cur_subcmd.name:
-                        subcmd = cur_subcmd
-                        break
-                if subcmd is not None:
-                    break
+            if subcmd is None: # Recognize SBS sub-command by name
+                if True:
+                    for subgrp in cmdinf['subcmd_infos']:
+                        for cur_subcmd in subgrp.keys():
+                            if subcmd_str == cur_subcmd.name:
+                                subcmd = cur_subcmd
+                                break
+                        if subcmd is not None:
+                            break
+            if subcmd is None: # Recognize SBS sub-command by number
+                try:
+                    subcmd_int = int(subcmd_str,0)
+                    for subgrp in cmdinf['subcmd_infos']:
+                        for cur_subcmd in subgrp.keys():
+                            if subcmd_int == cur_subcmd.value:
+                                subcmd = cur_subcmd
+                                break
+                        if subcmd is not None:
+                            break
+                except ValueError:
+                    pass
 
     if subcmd_str is not None and subcmd is None:
         raise ValueError("The sub-command '{}' is either invalid or not supported by chip".format(subcmd_str))
@@ -3143,20 +3168,6 @@ def parse_chip_type(s):
     return s
 
 
-def parse_command(s):
-    """ Parses command/offset string in known formats.
-    """
-    try: 
-        int_val = int(s)
-        for cmd in SBS_CMD_INFO.keys():
-            if cmd.value == int_val:
-                s = cmd.name
-                break
-    except ValueError:
-        pass
-    return s
-
-
 def parse_addrspace_datatype(s):
     """ Parses command/offset string in known formats.
     """
@@ -3285,7 +3296,7 @@ def main():
     subpar_raw_read = subparsers.add_parser('raw-read',
             help="read raw value from an address space of the battery")
 
-    subpar_raw_read.add_argument('addrspace', metavar='addrspace', choices=raw_r_commands, type=parse_command,
+    subpar_raw_read.add_argument('addrspace', metavar='addrspace', choices=raw_r_commands, type=str,
             help="the address space name to read from; one of: {:s}".format(', '.join(raw_r_commands)))
 
     subpar_raw_read.add_argument('address', metavar='address', type=lambda x: int(x,0),
@@ -3298,7 +3309,7 @@ def main():
     subpar_raw_write = subparsers.add_parser('raw-write',
             help="write raw value into an address space of the battery")
 
-    subpar_raw_write.add_argument('addrspace', metavar='addrspace', choices=raw_w_commands, type=parse_command,
+    subpar_raw_write.add_argument('addrspace', metavar='addrspace', choices=raw_w_commands, type=str,
             help="the address space name to write into; one of: {:s}".format(', '.join(raw_w_commands)))
 
     subpar_raw_write.add_argument('address', metavar='address', type=lambda x: int(x,0),
@@ -3371,8 +3382,7 @@ def main():
             print("Warning: Could not open chip definition file '{}'".format(fname))
 
     if po.action == 'info':
-        cmd_str = parse_command(po.command)
-        smart_battery_system_info(cmd_str, vals, po)
+        smart_battery_system_info(po.command, vals, po)
     elif po.action == 'info-list':
         if (po.explain > 0):
             print("Display info can be used on any of the following commands:")
@@ -3394,14 +3404,11 @@ def main():
         all_w_commands, all_t_commands = extract_w_commands_list()
         print("\n".join(sorted(all_w_commands)))
     elif po.action == 'read':
-        cmd_str = parse_command(po.command)
-        smart_battery_system_read(cmd_str, vals, po)
+        smart_battery_system_read(po.command, vals, po)
     elif po.action == 'trigger':
-        cmd_str = parse_command(po.command)
-        smart_battery_system_trigger(cmd_str, vals, po)
+        smart_battery_system_trigger(po.command, vals, po)
     elif po.action == 'write':
-        cmd_str = parse_command(po.command)
-        smart_battery_system_write(cmd_str, po.newvalue, vals, po)
+        smart_battery_system_write(po.command, po.newvalue, vals, po)
     elif po.action == 'raw-read':
         smart_battery_system_raw_read(po.addrspace, po.address,
           po.dttype, vals, po)
