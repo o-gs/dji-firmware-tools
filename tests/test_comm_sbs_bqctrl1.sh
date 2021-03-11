@@ -19,100 +19,147 @@
 
 TMPFILE=_tmp_test_comm_sbs_bqctrl1.log
 
-# Prepare command lists
 
-./comm_sbs_bqctrl.py --chip BQ30z55 info-list | tee "${TMPFILE}"
-INFO_LIST=$(cat "${TMPFILE}" | tr "\r" " " | tr "\n" " ")
+function test_chip_detect {
 
-./comm_sbs_bqctrl.py --chip BQ30z55 read-list | tee "${TMPFILE}"
-READ_LIST=$(cat "${TMPFILE}" | tr "\r" " " | tr "\n" " ")
+    # Provide chip - should know not to contact the chip even w/o "--dry-run"
+    if true; then
+        set -x # print the command before executing
+        ./comm_sbs_bqctrl.py --chip BQ30z55 read-list
+        TEST_RESULT=$?
+        set +x
 
-./comm_sbs_bqctrl.py --chip BQ30z55 trigger-list | tee "${TMPFILE}"
-TRIGGER_LIST=$(cat "${TMPFILE}" | tr "\r" " " | tr "\n" " ")
-
-./comm_sbs_bqctrl.py --chip BQ30z55 write-list | tee "${TMPFILE}"
-WRITE_LIST=$(cat "${TMPFILE}" | tr "\r" " " | tr "\n" " ")
-
-
-for SBSCMD in ${INFO_LIST}; do
-    set -x # print the command before executing
-    ./comm_sbs_bqctrl.py -vvv --chip BQ30z55 info "${SBSCMD}"
-    TEST_RESULT=$?
-    set +x
-
-    if [ ${TEST_RESULT} == 0 ]; then
-        echo '### SUCCESS: info '${SBSCMD}' - No error returned. ###'
-    else
-        echo '### FAIL: info '${SBSCMD}' - Script run failed! ###'
-        exit 1
+        if [ ${TEST_RESULT} == 0 ]; then
+            echo '### SUCCESS: read-list - No error returned. ###'
+        else
+            echo '### FAIL: read-list - Script run failed! ###'
+            exit 1
+        fi
     fi
-done
 
-# Remove commands which do not support dry-run
-READ_LIST=$(echo -n "${READ_LIST}" | sed -e 's/\(ManufacturerAccess[.]\)\?\(ManufacturerData\|ManufacturerInput\) / /g')
+    # Do not provide chip - test auto-detect
+    if true; then
+        set -x # print the command before executing
+        ./comm_sbs_bqctrl.py --dry-run info-list
+        TEST_RESULT=$?
+        set +x
 
-for SBSCMD in ${READ_LIST}; do
-    set -x # print the command before executing
-    ./comm_sbs_bqctrl.py -vvv --chip BQ30z55 --dry-run read ${SBSCMD}
-    TEST_RESULT=$?
-    set +x
-
-    if [ ${TEST_RESULT} == 0 ]; then
-        echo '### SUCCESS: read '${SBSCMD}' - No error returned. ###'
-    else
-        echo '### FAIL: read '${SBSCMD}' - Script run failed! ###'
-        exit 1
+        if [ ${TEST_RESULT} == 0 ]; then
+            echo '### SUCCESS: info-list - No error returned. ###'
+        else
+            echo '### FAIL: info-list - Script run failed! ###'
+            exit 1
+        fi
     fi
-done
+}
 
-for SBSCMD in ${TRIGGER_LIST}; do
-    set -x # print the command before executing
-    ./comm_sbs_bqctrl.py -vvv --chip BQ30z55 --dry-run trigger ${SBSCMD}
-    TEST_RESULT=$?
-    set +x
 
-    if [ ${TEST_RESULT} == 0 ]; then
-        echo '### SUCCESS: trigger '${SBSCMD}' - No error returned. ###'
-    else
-        echo '### FAIL: trigger '${SBSCMD}' - Script run failed! ###'
-        exit 1
-    fi
-done
+function test_chip_commands {
+    TEST_PARAMS=$1
+    # Prepare command lists
 
-# No WRITE validation - the command isn't finished yet
+    ./comm_sbs_bqctrl.py ${TEST_PARAMS} info-list | tee "${TMPFILE}"
+    INFO_LIST=$(cat "${TMPFILE}" | tr "\r" " " | tr "\n" " ")
 
-MONITOR_LIST="DeviceInfo UsageInfo ComputedInfo StatusBits AtRates
-  BQCellVoltages BQStatusBits BQStatusBitsMA BQLifetimeData BQLifetimeDataMA
-  ImpedanceTrack ImpedanceTrackMA"
+    ./comm_sbs_bqctrl.py ${TEST_PARAMS} read-list | tee "${TMPFILE}"
+    READ_LIST=$(cat "${TMPFILE}" | tr "\r" " " | tr "\n" " ")
 
-for SBSGROUP in ${MONITOR_LIST}; do
-    set -x # print the command before executing
-    ./comm_sbs_bqctrl.py -vvv --dry-run --short monitor ${SBSGROUP}
-    TEST_RESULT=$?
-    set +x
+    ./comm_sbs_bqctrl.py ${TEST_PARAMS} trigger-list | tee "${TMPFILE}"
+    TRIGGER_LIST=$(cat "${TMPFILE}" | tr "\r" " " | tr "\n" " ")
 
-    if [ ${TEST_RESULT} == 0 ]; then
-        echo '### SUCCESS: monitor '${SBSGROUP}' - No error returned. ###'
-    else
-        echo '### FAIL: monitor '${SBSGROUP}' - Script run failed! ###'
-        exit 1
-    fi
-done
+    ./comm_sbs_bqctrl.py ${TEST_PARAMS} write-list | tee "${TMPFILE}"
+    WRITE_LIST=$(cat "${TMPFILE}" | tr "\r" " " | tr "\n" " ")
 
-SEALING_LIST="Unseal Seal"
 
-for SBSGROUP in ${SEALING_LIST}; do
-    set -x # print the command before executing
-    ./comm_sbs_bqctrl.py -vvv --dry-run --short sealing ${SBSGROUP}
-    TEST_RESULT=$?
-    set +x
+    for SBSCMD in ${INFO_LIST}; do
+        set -x # print the command before executing
+        ./comm_sbs_bqctrl.py -vvv ${TEST_PARAMS} info "${SBSCMD}"
+        TEST_RESULT=$?
+        set +x
 
-    if [ ${TEST_RESULT} == 0 ]; then
-        echo '### SUCCESS: sealing '${SBSGROUP}' - No error returned. ###'
-    else
-        echo '### FAIL: sealing '${SBSGROUP}' - Script run failed! ###'
-        exit 1
-    fi
-done
+        if [ ${TEST_RESULT} == 0 ]; then
+            echo '### SUCCESS: info '${SBSCMD}' - No error returned. ###'
+        else
+            echo '### FAIL: info '${SBSCMD}' - Script run failed! ###'
+            exit 1
+        fi
+    done
+
+    # Remove commands which do not support dry-run
+    READ_LIST=$(echo -n "${READ_LIST}" | sed -e 's/\([A-Za-z]\+[.]\)\?\(ManufacturerData\|ManufacturerInput\|Authenticate\) / /g')
+
+    for SBSCMD in ${READ_LIST}; do
+        set -x # print the command before executing
+        ./comm_sbs_bqctrl.py -vvv ${TEST_PARAMS} read ${SBSCMD}
+        TEST_RESULT=$?
+        set +x
+
+        if [ ${TEST_RESULT} == 0 ]; then
+            echo '### SUCCESS: read '${SBSCMD}' - No error returned. ###'
+        else
+            echo '### FAIL: read '${SBSCMD}' - Script run failed! ###'
+            exit 1
+        fi
+    done
+
+    for SBSCMD in ${TRIGGER_LIST}; do
+        set -x # print the command before executing
+        ./comm_sbs_bqctrl.py -vvv ${TEST_PARAMS} trigger ${SBSCMD}
+        TEST_RESULT=$?
+        set +x
+
+        if [ ${TEST_RESULT} == 0 ]; then
+            echo '### SUCCESS: trigger '${SBSCMD}' - No error returned. ###'
+        else
+            echo '### FAIL: trigger '${SBSCMD}' - Script run failed! ###'
+            exit 1
+        fi
+    done
+
+    # No WRITE validation - the command isn't finished yet
+
+    MONITOR_LIST="DeviceInfo UsageInfo ComputedInfo StatusBits AtRates
+      BQCellVoltages BQStatusBits BQStatusBitsMA BQLifetimeData BQLifetimeDataMA
+      ImpedanceTrack ImpedanceTrackMA"
+
+    for SBSGROUP in ${MONITOR_LIST}; do
+        set -x # print the command before executing
+        ./comm_sbs_bqctrl.py -vvv ${TEST_PARAMS} --short monitor ${SBSGROUP}
+        TEST_RESULT=$?
+        set +x
+
+        if [ ${TEST_RESULT} == 0 ]; then
+            echo '### SUCCESS: monitor '${SBSGROUP}' - No error returned. ###'
+        else
+            echo '### FAIL: monitor '${SBSGROUP}' - Script run failed! ###'
+            exit 1
+        fi
+    done
+
+    SEALING_LIST="Unseal Seal"
+
+    for SBSGROUP in ${SEALING_LIST}; do
+        set -x # print the command before executing
+        ./comm_sbs_bqctrl.py -vvv ${TEST_PARAMS} --short sealing ${SBSGROUP}
+        TEST_RESULT=$?
+        set +x
+
+        if [ ${TEST_RESULT} == 0 ]; then
+            echo '### SUCCESS: sealing '${SBSGROUP}' - No error returned. ###'
+        else
+            echo '### FAIL: sealing '${SBSGROUP}' - Script run failed! ###'
+            exit 1
+        fi
+    done
+}
+
+
+test_chip_detect
+
+test_chip_commands "--chip BQ30z55 --dry-run"
+
+test_chip_commands "--chip BQ40z50 --dry-run"
+
+test_chip_commands "--chip BQ40z307 --dry-run"
 
 exit 0

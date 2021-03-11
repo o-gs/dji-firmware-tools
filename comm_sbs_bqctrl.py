@@ -802,7 +802,7 @@ SBS_CMD_INFO = {
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Cell-pack's internal temperature. The actual operational "
             "temperature range will be defined at a pack level by a particular "
-            "manufacturer. Typically it will be in the range of -20°C to +75°C."),
+            "manufacturer. Typically it will be in the range of -20 degC to +75 degC."),
         'getter'	: "simple",
     },
     SBS_COMMAND.Voltage : {
@@ -1140,7 +1140,9 @@ class ChipMock(object):
         self.reads[register] = data
 
     def add_read_sub(self, register, subreg, data):
-        self.reads_sub[subreg] = data
+        if register not in self.reads_sub.keys():
+            self.reads_sub[register] = {}
+        self.reads_sub[register][subreg] = data
 
     def prep_read(self, cmd, cmdinf):
         pass
@@ -1148,7 +1150,7 @@ class ChipMock(object):
     def prep_read_sub(self, cmd, cmdinf, subcmd, subcmdinf):
         if subcmd == MANUFACTURER_ACCESS_CMD_BQGENERIC.FirmwareVersion:
             register = 0x2f
-            self.reads[register] = self.reads_sub[subcmd.value]
+            self.reads[register] = self.reads_sub[cmd.value][subcmd.value]
 
     def do_read(self, i2c_addr, register):
         data = bytes(self.reads[register])
@@ -3327,7 +3329,9 @@ def main():
             help="device key for SHA-1/HMAC Authentication (defaults to '%(default)s')")
 
     subpar_sealing.add_argument('--i32key', default=None, type=lambda x: int(x,0),
-            help="device key for 32-bit integer (two word) Authentication (defaults to 0x{:08x} for FullAccess, otherwise to 0x{:08x})".format(0xffffffff,0x04143672))
+            help=("device key for 32-bit integer (two word) Authentication "
+              "(defaults to 0x{:08x} for FullAccess, otherwise to 0x{:08x})"
+              ).format(0xffffffff,0x04143672))
 
     po = parser.parse_args();
 
@@ -3352,7 +3356,7 @@ def main():
 
     if po.chip in (CHIP_TYPE.BQ30z50, CHIP_TYPE.BQ30z55, CHIP_TYPE.BQ30z554,):
         fnames = ["comm_sbs_chips/{}.py".format("BQ30z554")]
-    elif po.chip in (CHIP_TYPE.BQ40z50, CHIP_TYPE.BQ40z307,):
+    elif po.chip in (CHIP_TYPE.BQ40z50,):
         fnames = ["comm_sbs_chips/{}.py".format("BQ40z50")]
     else:
         fnames = ["comm_sbs_chips/{}.py".format(po.chip.name)]

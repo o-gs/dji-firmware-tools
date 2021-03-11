@@ -4,7 +4,7 @@
 """ Smart Battery System chip definition.
 
 Compatible chips:
-BQ40z50, BQ40z307
+BQ40z50
 """
 
 class SBS_COMMAND_BQ40(DecoratedEnum):
@@ -5553,7 +5553,9 @@ class ChipMockBQ40(ChipMock):
         self.prep_static()
 
     def prep_static(self):
-        """ Commands for simulated BQ40z307
+        """ Commands for simulated BQ40z50
+
+        Not real values - just made up data which meets spec requirements
         """
         minv = [3500, 3500, 3500, 3500, ] # min (zero charge) voltage
         maxv = [4200, 4200, 4200, 4200, ] # max (full charge) voltage
@@ -5596,25 +5598,30 @@ class ChipMockBQ40(ChipMock):
         self.add_read(0x3d, struct.pack('<H', self.v[2])) # Cell2Voltage
         self.add_read(0x3e, struct.pack('<H', self.v[1])) # Cell1Voltage
         self.add_read(0x3f, struct.pack('<H', self.v[0])) # Cell0Voltage
-        #self.add_read(0x4a, struct.pack('<H', 0x0000)) # BTPDischargeSet, non readable for BQ40z307
-        #self.add_read(0x4b, struct.pack('<H', 0x0000)) # BTPChargeSet, non readable for BQ40z307
-        #self.add_read(0x4f, struct.pack('<H', 0x0000)) # StateOfHealthPercent, non readable for BQ40z307
+        self.add_read(0x4a, struct.pack('<H', 0x0000)) # BTPDischargeSet
+        self.add_read(0x4b, struct.pack('<H', 0x0000)) # BTPChargeSet
+        self.add_read(0x4f, struct.pack('<BB', 0, 0)) # StateOfHealthPercent
         self.add_read(0x50, struct.pack('<L', 0x0000)) # SafetyAlert
         self.add_read(0x51, struct.pack('<L', 0x0000)) # SafetyStatus
         self.add_read(0x52, struct.pack('<L', 0x0000)) # PFAlert
         self.add_read(0x53, struct.pack('<L', 0x0000)) # PFStatus
         self.add_read(0x54, struct.pack('<L', 0x0c048106)) # OperationStatus
-        self.add_read(0x55, struct.pack('<H', 0x0408)) # ChargingStatus, 16-bit for BQ40z307
+        self.add_read(0x55, struct.pack('<L', 0x000408)[:3]) # ChargingStatus
         self.add_read(0x56, struct.pack('<L', 0x091950)[:3]) # GaugingStatus
         self.add_read(0x57, struct.pack('<H', 0x0038)) # ManufacturingStatus
-        #self.add_read(0x58, bytes.fromhex("00 20 00 00 00 04 0f 0f 20 44 46 0d")) # AFERegisters, non readable for BQ40z307
-        self.add_read(0x5a, struct.pack('<H', 1261)) # TURBO_FINAL, read as 2-byte block for BQ40z307
-        self.add_read(0x60, bytes.fromhex("36 0f 36 0f 00 00 00 00 e6 0b ed 0b ff 7f ff 7f 1c 00")) # LifetimeDataBlock1, 18 bytes for BQ40z307
-        self.add_read(0x61, bytes.fromhex("03 00 07 00")) # LifetimeDataBlock2, 4 bytes for BQ40z307
+        self.add_read(0x58, bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # AFERegisters
+        self.add_read(0x59, struct.pack('<H', 0)) # TURBO_POWER
+        self.add_read(0x5a, struct.pack('<H', 1261)) # TURBO_FINAL
+        self.add_read(0x5b, struct.pack('<H', 1)) # TURBO_PACK_R
+        self.add_read(0x5c, struct.pack('<H', 1)) # TURBO_SYS_R
+        self.add_read(0x5d, struct.pack('<H', 6)) # TURBO_EDV
+        self.add_read(0x5e, struct.pack('<H', 21)) # TURBO_CURRENT
+        self.add_read(0x60, bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # LifetimeDataBlock1
+        self.add_read(0x61, bytes.fromhex("00 00 00 00 00 00 00 00")) # LifetimeDataBlock2
         self.add_read(0x62, bytes.fromhex("5c 09 00 00 00 00 00 00 5b 09 00 00 00 00 00 00")) # LifetimeDataBlock3
-        #self.add_read(0x63, bytes.fromhex("00 00")) # LifetimeDataBlock4, non readable for BQ40z307
-        #self.add_read(0x64, bytes.fromhex("00 00")) # LifetimeDataBlock5, non readable for BQ40z307
-        self.add_read(0x70, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02') # ManufacturerInfo
+        self.add_read(0x63, bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # LifetimeDataBlock4
+        self.add_read(0x64, bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # LifetimeDataBlock5
+        self.add_read(0x70, b'abcdefghijklmnopqrstuvwzxy012345') # ManufacturerInfo
         self.add_read(0x71, struct.pack('<HHHHHHHHHHHHHHHH', self.v[0], self.v[1],
           self.v[2], self.v[3], sum(self.v), int(sum(self.v)*1.04),
           mamp[0], mamp[1], mamp[2], mamp[3], self.v[0]*mamp[0],
@@ -5623,15 +5630,13 @@ class ChipMockBQ40(ChipMock):
         self.add_read(0x72, struct.pack('<HHHHHHH', int(self.t*10-21), int(self.t*10), int(self.t*10-772), int(0*10), int(0*10), int(self.t*10), int(0*10))) # DAStatus2
         self.add_read(0x73, bytes.fromhex("24 04 aa 02 5d 05 2d 04 81 09 d7 06 9c 0b 9c 0b e8 03 e8 03 00 00 00 00 2f 00 30 00 00 00 00 00")) # GaugeStatus1
         self.add_read(0x74, bytes.fromhex("05 0e 00 00 00 00 b0 cd 13 00 5e 21 3e 21 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00")) # GaugeStatus2
-        self.add_read(0x75, bytes.fromhex("4a 0a 5a 0a c4 09 c4 09 6f 17 4f 17 00 00 00 00 32 01 99 16 57 01 82 02 60 21 40 21 00 00 00 00")) # GaugeStatus3
-        self.add_read(0x76, bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # CBStatus
-        #self.add_read(0x77, bytes.fromhex("00 00")) # StateOfHealthPhys, non readable for BQ40z307
+        self.add_read(0x75, bytes.fromhex("4a 0a 5a 0a c4 09 c4 09 6f 17 4f 17 00 00 00 00 32 01 99 16 57 01 82 02")) # GaugeStatus3
+        self.add_read(0x76, bytes.fromhex("00 00 00 00 00 00 00 00")) # CBStatus
+        self.add_read(0x77, struct.pack('<HH', 900, 901)) # StateOfHealthPhys
         self.add_read(0x78, struct.pack('<HHHH', int(1059), int(681), int(2432), int(1750))) # FilteredCapacity
 
-        # The chip returns the same invalid data for unsupported ManufacturerAccess commands
-        bad_manufc_info_data = b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02'
-        self.add_read_sub(0x00, 0x01, struct.pack('<H', 0x4307)) # DeviceType
-        self.add_read_sub(0x00, 0x02, bytes.fromhex("4307 0101 0027 00 0385 0200")) # FirmwareVersion
+        self.add_read_sub(0x00, 0x01, struct.pack('<H', 0x4500)) # DeviceType
+        self.add_read_sub(0x00, 0x02, bytes.fromhex("4500 0061 0027 00 0385 0200")) # FirmwareVersion
         self.add_read_sub(0x00, 0x03, struct.pack('<H', 0x00a1)) # HardwareVersion
         self.add_read_sub(0x00, 0x04, struct.pack('<H', 0x67b2)) # InstrFlashChecksum
         self.add_read_sub(0x00, 0x05, struct.pack('<H', 0x9a31)) # StaticDataFlashChecksum
@@ -5639,23 +5644,13 @@ class ChipMockBQ40(ChipMock):
         self.add_read_sub(0x00, 0x08, struct.pack('<H', 0x3a6b)) # StaticChemDFSignature
         self.add_read_sub(0x00, 0x09, struct.pack('<H', 0xd5fa)) # AllDFSignature
         self.add_read_sub(0x00, 0x35, struct.pack('<LL', int(0x04143672), int(0xffffffff))) # SecurityKeys
-        self.add_read_sub(0x00, 0x63, bad_manufc_info_data) # LifetimeDataBlock4, chip returns invalid data
-        self.add_read_sub(0x00, 0x64, bad_manufc_info_data) # LifetimeDataBlock5, chip returns invalid data
-        self.add_read_sub(0x00, 0x77, bad_manufc_info_data) # StateOfHealthPhys, chip returns invalid data
-        # The chip returns the same invalid data for unsupported ManufacturerBlockAccess commands
-        bad_manufc_block_data = bytes.fromhex( ("00 00 13 7f 16 be 94 98 d8 15 "
-          "bd a3 f0 fa c5 d9 98 5b 67 78 dc d6 00 f8 53 9f "
-          "9c 79 3c c2 21 ce f4 33 a6 50 38 84 37 6f 72 7b 59 00") )
         # For ManufacturerBlockAccess commands, remember to add subcmd word at start
-        self.add_read_sub(0x44, 0x63, bad_manufc_block_data) # LifetimeDataBlock4, chip returns invalid data
-        self.add_read_sub(0x44, 0x64, bad_manufc_block_data) # LifetimeDataBlock5, chip returns invalid data
-        self.add_read_sub(0x44, 0x77, bad_manufc_block_data) # StateOfHealthPhys, chip returns invalid data
 
     def add_read(self, register, data):
         self.reads[register] = data
 
     def add_read_sub(self, register, subreg, data):
-        if register not in self.reads_sub:
+        if register not in self.reads_sub.keys():
             self.reads_sub[register] = {}
         self.reads_sub[register][subreg] = data
 
@@ -5680,9 +5675,6 @@ class ChipMockBQ40(ChipMock):
             self.reads[register] = self.reads_sub[cmd.value][subcmd.value]
         else: # some MA commands are just mirrors of standard SBS commands
             self.reads[register] = self.reads[subcmd.value]
-        if subcmd == MANUFACTURER_ACCESS_CMD_BQGENERIC.FirmwareVersion:
-            register = 0x2f
-            self.reads[register] = self.reads_sub[subcmd.value]
 
     def do_read(self, i2c_addr, register):
         data = bytes(self.reads[register])
