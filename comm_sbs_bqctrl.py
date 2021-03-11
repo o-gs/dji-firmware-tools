@@ -2702,7 +2702,33 @@ def smart_battery_detect(vals, po):
     return chip
 
 
-def smart_battery_system_command_from_text(cmd_str, po):
+def smart_battery_system_subcmd_define(subcmd_val, cmdinf, data_len):
+    if ('subcmd_infos' not in cmdinf) or (len(cmdinf['subcmd_infos']) < 1):
+        raise ValueError("The sub-cmd 0x{:02x} cannot be user-defined within requested command".format(subcmd_val))
+    subcmd = ImprovisedCommand(value=subcmd_val, name="UserSubCmd{:02x}".format(subcmd_val))
+    subgrp = cmdinf['subcmd_infos'][0]
+    subcmdinf = {
+        'type'	: "byte[{}]".format(data_len),
+        'unit'	: {'scale':None,'name':"hex"},
+        'access_per_seal'	: ("rw","rw","rw",),
+        'tiny_name'	: "UsrSC",
+        'desc'	: "User defined sub-command {:02x}.".format(subcmd_val),
+    }
+    # Figure out response location
+    resp_location = None
+    for nxsubcmd, nxsubcmdinf in subgrp.items():
+        if 'resp_location' not in nxsubcmdinf:
+            continue
+        resp_location = nxsubcmdinf['resp_location']
+        break
+    if resp_location is not None:
+        subcmdinf['resp_location'] = resp_location
+    # Add info dict on the new sub-command
+    subgrp[subcmd] = subcmdinf
+    return subcmd
+
+
+def smart_battery_system_command_from_text(cmd_str, po, define_new=False):
     """ Converts SBS command from text to enum
 
     Requires chip to be identified to properly map commands
@@ -2755,6 +2781,14 @@ def smart_battery_system_command_from_text(cmd_str, po):
                                 break
                         if subcmd is not None:
                             break
+                except ValueError:
+                    pass
+            if subcmd is None and define_new: # Define new SBS sub-command
+                try:
+                    subcmd_int = int(subcmd_str,0)
+                    if (po.verbose > 0):
+                        print("Warning: Sub-command 0x{:02x} not recognized, creating user-definwd one".format(subcmd_int))
+                    subcmd = smart_battery_system_subcmd_define(subcmd_int, cmdinf, 32)
                 except ValueError:
                     pass
 
@@ -2884,7 +2918,7 @@ def smart_battery_system_read(cmd_str, vals, po):
     """ Reads and prints value of the command from the battery.
     """
     global bus
-    cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
+    cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po, define_new=True)
     cmdinf = SBS_CMD_INFO[cmd]
     opts = {'subcmd': subcmd}
     v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
@@ -2897,7 +2931,7 @@ def smart_battery_system_trigger(cmd_str, vals, po):
     """ Trigger a switch command within the battery.
     """
     global bus
-    cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
+    cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po, define_new=True)
     cmdinf = SBS_CMD_INFO[cmd]
     opts = {'subcmd': subcmd}
     v = b''
@@ -2917,7 +2951,7 @@ def smart_battery_system_write(cmd_str, nval_str, vals, po):
     """ Write value to a command within the battery.
     """
     global bus
-    cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po)
+    cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po, define_new=True)
     cmdinf = SBS_CMD_INFO[cmd]
     opts = {'subcmd': subcmd}
     v = smart_battery_system_cmd_value_from_text(cmd, subcmd, nval_str, po)
@@ -2949,14 +2983,14 @@ def smart_battery_system_raw_read(knd_str, addr, val_type, vals, po):
     #vals[cmd if subcmd is None else subcmd] = response #TODO we need to store sub-index
 
     # Create improvised data type if the user demanded
-    if val_type not in ("bytes[32]",):
+    if val_type not in ("byte[32]",):
         subcmd_pos = addr - subcmd_shift * 32
         s = {}
         fld_nbytes = type_str_value_length(val_type)
         if subcmd_pos > 0:
             fld0 = ImprovisedCommand(value=0, name="UserVal{:02x}".format(0))
             s[fld0] = {
-                'type'	: "bytes[{}]".format(subcmd_pos),
+                'type'	: "byte[{}]".format(subcmd_pos),
                 'unit'	: {'scale':None,'name':"hex"},
                 'nbits'	: subcmd_pos * 8,
                 'access'	: "-",
@@ -2982,7 +3016,7 @@ def smart_battery_system_raw_read(knd_str, addr, val_type, vals, po):
         if subcmd_pos+fld_nbytes < 32:
             fld2 = ImprovisedCommand(value=(subcmd_pos+fld_nbytes)*8, name="UserVal{:02x}".format(subcmd_pos+fld_nbytes))
             s[fld2] = {
-                'type'	: "bytes[{}]".format(32-subcmd_pos-fld_nbytes),
+                'type'	: "byte[{}]".format(32-subcmd_pos-fld_nbytes),
                 'unit'	: {'scale':None,'name':"hex"},
                 'nbits'	: (32-subcmd_pos-fld_nbytes) * 8,
                 'access'	: "-",
