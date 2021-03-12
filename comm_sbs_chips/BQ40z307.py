@@ -43,6 +43,7 @@ class SBS_COMMAND_BQ40(DecoratedEnum):
     GaugeStatus3			= 0x75
     CBStatus				= 0x76
     FilteredCapacity		= 0x78
+    ManufacturerInfo2		= 0x7a
 
 
 class MANUFACTURER_ACCESS_CMD_BQ40(DecoratedEnum):
@@ -99,6 +100,7 @@ class MANUFACTURER_ACCESS_CMD_BQ40(DecoratedEnum):
     GaugeStatus3			= 0x75
     CBStatus				= 0x76
     FilteredCapacity		= 0x78
+    ManufacturerInfo2		= 0x7a
     ROMMode					= 0x0f00
     DataFlashAccess			= 0x4000
     ExitCalibOutputMode		= 0xf080
@@ -2700,7 +2702,7 @@ class SBS_FLAG_OPERATION_STATUS(DecoratedEnum):
     PCHG_FET_STATUS				= 3
     RESERVED4					= 4
     FUSE_STATUS					= 5
-    RESERVED6					= 6
+    SMOOTHING					= 6
     TRIP_POINT_INTR				= 7
     SECURITY_MODE				= 8
     SHUTDOWN_LOW_VOLT			= 10
@@ -2768,7 +2770,7 @@ SBS_OPERATION_STATUS_INFO = {
         'unit'	: {'scale':1,'name':"boolean"},
         'nbits'	: 1,
         'value_names'	: ["Inactive","Active"],
-        'access'	: "r",
+        'access'	: "-",
         'tiny_name'	: "Res4",
         'desc'	: ("Reserved (GPOD FET Status)."),
     },
@@ -2781,14 +2783,16 @@ SBS_OPERATION_STATUS_INFO = {
         'tiny_name'	: "FUSE",
         'desc'	: ("FUSE input status."),
     },
-    SBS_FLAG_OPERATION_STATUS.RESERVED6 : {
+    SBS_FLAG_OPERATION_STATUS.SMOOTHING : {
         'type'	: "named_bitfield",
         'unit'	: {'scale':1,'name':"boolean"},
         'nbits'	: 1,
         'value_names'	: ["Inactive","Active"],
         'access'	: "r",
-        'tiny_name'	: "Res6",
-        'desc'	: ("Reserved (Cell Balancing)."),
+        'tiny_name'	: "SMOTH",
+        'desc'	: ("CEDV Smoothing status. The ability to smooth the "
+          "RemainingCapacity() during discharge in order to avoid a drop in "
+          "RelativeStateOfCharge() when the EDV thresholds are reached."),
     },
     SBS_FLAG_OPERATION_STATUS.TRIP_POINT_INTR : {
         'type'	: "named_bitfield",
@@ -3040,17 +3044,9 @@ class SBS_FLAG_CHARGING_STATUS(DecoratedEnum):
     MID_VOLTAGE					= 10
     HIGH_VOLTAGE				= 11
     CHARGE_INHIBIT				= 12
-    MAINTENANCE_CHARGE			= 13
-    CHARGE_TERMINATION			= 14
-    CHARGING_CURRENT_RATE		= 15
-    CHARGING_VOLTAGE_RATE		= 16
-    CHARGING_CURRENT_COMPNS		= 17
-    RESERVED18					= 18
-    RESERVED19					= 19
-    RESERVED20					= 20
-    RESERVED21					= 21
-    RESERVED22					= 22
-    RESERVED23					= 23
+    CHARGE_SUSPEND				= 13
+    MAINTENANCE_CHARGE			= 14
+    CHARGE_TERMINATION			= 15
 
 SBS_CHARGING_STATUS_INFO = {
     SBS_FLAG_CHARGING_STATUS.UNDER_TEMPERATURE : {
@@ -3170,6 +3166,15 @@ SBS_CHARGING_STATUS_INFO = {
         'tiny_name'	: "IN",
         'desc'	: ("Charge Inhibit."),
     },
+    SBS_FLAG_CHARGING_STATUS.CHARGE_SUSPEND : {
+        'type'	: "named_bitfield",
+        'unit'	: {'scale':1,'name':"boolean"},
+        'nbits'	: 1,
+        'value_names'	: ["Inactive","Active"],
+        'access'	: "r",
+        'tiny_name'	: "SU",
+        'desc'	: ("Charge Suspend."),
+    },
     SBS_FLAG_CHARGING_STATUS.MAINTENANCE_CHARGE : {
         'type'	: "named_bitfield",
         'unit'	: {'scale':1,'name':"boolean"},
@@ -3187,87 +3192,6 @@ SBS_CHARGING_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "VCT",
         'desc'	: ("Valid Charge Termination."),
-    },
-    SBS_FLAG_CHARGING_STATUS.CHARGING_CURRENT_RATE : {
-        'type'	: "named_bitfield",
-        'unit'	: {'scale':1,'name':"boolean"},
-        'nbits'	: 1,
-        'value_names'	: ["Inactive","Active"],
-        'access'	: "r",
-        'tiny_name'	: "CCR",
-        'desc'	: ("Charging Current Rate of Change."),
-    },
-    SBS_FLAG_CHARGING_STATUS.CHARGING_VOLTAGE_RATE : {
-        'type'	: "named_bitfield",
-        'unit'	: {'scale':1,'name':"boolean"},
-        'nbits'	: 1,
-        'value_names'	: ["Inactive","Active"],
-        'access'	: "r",
-        'tiny_name'	: "CVR",
-        'desc'	: ("Charging Voltage Rate of Change."),
-    },
-    SBS_FLAG_CHARGING_STATUS.CHARGING_CURRENT_COMPNS : {
-        'type'	: "named_bitfield",
-        'unit'	: {'scale':1,'name':"boolean"},
-        'nbits'	: 1,
-        'value_names'	: ["Inactive","Active"],
-        'access'	: "r",
-        'tiny_name'	: "CCC",
-        'desc'	: ("Charging Current Loss Compensation."),
-    },
-    SBS_FLAG_CHARGING_STATUS.RESERVED18 : {
-        'type'	: "named_bitfield",
-        'unit'	: {'scale':1,'name':"boolean"},
-        'nbits'	: 1,
-        'value_names'	: ["Inactive","Active"],
-        'access'	: "-",
-        'tiny_name'	: "ResI",
-        'desc'	: ("Reserved bit 18."),
-    },
-    SBS_FLAG_CHARGING_STATUS.RESERVED19 : {
-        'type'	: "named_bitfield",
-        'unit'	: {'scale':1,'name':"boolean"},
-        'nbits'	: 1,
-        'value_names'	: ["Inactive","Active"],
-        'access'	: "-",
-        'tiny_name'	: "ResJ",
-        'desc'	: ("Reserved bit 19."),
-    },
-    SBS_FLAG_CHARGING_STATUS.RESERVED20 : {
-        'type'	: "named_bitfield",
-        'unit'	: {'scale':1,'name':"boolean"},
-        'nbits'	: 1,
-        'value_names'	: ["Inactive","Active"],
-        'access'	: "-",
-        'tiny_name'	: "ResK",
-        'desc'	: ("Reserved bit 20."),
-    },
-    SBS_FLAG_CHARGING_STATUS.RESERVED21 : {
-        'type'	: "named_bitfield",
-        'unit'	: {'scale':1,'name':"boolean"},
-        'nbits'	: 1,
-        'value_names'	: ["Inactive","Active"],
-        'access'	: "-",
-        'tiny_name'	: "ResL",
-        'desc'	: ("Reserved bit 21."),
-    },
-    SBS_FLAG_CHARGING_STATUS.RESERVED22 : {
-        'type'	: "named_bitfield",
-        'unit'	: {'scale':1,'name':"boolean"},
-        'nbits'	: 1,
-        'value_names'	: ["Inactive","Active"],
-        'access'	: "-",
-        'tiny_name'	: "ResM",
-        'desc'	: ("Reserved bit 22."),
-    },
-    SBS_FLAG_CHARGING_STATUS.RESERVED23 : {
-        'type'	: "named_bitfield",
-        'unit'	: {'scale':1,'name':"boolean"},
-        'nbits'	: 1,
-        'value_names'	: ["Inactive","Active"],
-        'access'	: "-",
-        'tiny_name'	: "ResN",
-        'desc'	: ("Reserved bit 23."),
     },
 }
 
@@ -4252,6 +4176,13 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'desc'	: ("Returns the filtered capacity and energy. "
             "Works even if [SMOOTH]=0."),
     },
+    MANUFACTURER_ACCESS_CMD_BQ40.ManufacturerInfo2 : {
+        'type'	: "string[32]",
+        'unit'	: {'scale':None,'name':"str"},
+        'resp_location'	: SBS_COMMAND.ManufacturerData,
+        'access_per_seal'	: ("r","r","r",),
+        'desc'	: ("Unknown value."),
+    },
     MANUFACTURER_ACCESS_CMD_BQ40.ROMMode : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
@@ -4581,6 +4512,13 @@ SBS_CMD_BQ40_INFO = {
             "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
+    SBS_COMMAND_BQ40.ManufacturerInfo2 : {
+        'type'	: "uint16",
+        'unit'	: {'scale':1,'name':"dec"},
+        'access_per_seal'	: ("r","rw","rw",),
+        'desc'	: ("Unknown value."),
+        'getter'	: "simple",
+    },
 }
 
 global SBS_CMD_INFO
@@ -4789,7 +4727,7 @@ class ChipMockBQ40(ChipMock):
         self.add_read(0x75, bytes.fromhex("4a 0a 5a 0a c4 09 c4 09 6f 17 4f 17 00 00 00 00 32 01 99 16 57 01 82 02 60 21 40 21 00 00 00 00")) # GaugeStatus3
         self.add_read(0x76, bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # CBStatus
         self.add_read(0x78, struct.pack('<HHHH', int(1059), int(681), int(2432), int(1750))) # FilteredCapacity
-
+        self.add_read(0x7a, bytes.fromhex("00 00 45 67")) # ManufacturerInfo2
         # The chip returns the same invalid data for unsupported ManufacturerAccess commands
         bad_manufc_info_data = b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02'
         self.add_read_sub(0x00, 0x01, struct.pack('<H', 0x4307)) # DeviceType
