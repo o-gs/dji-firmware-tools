@@ -4358,6 +4358,8 @@ RAW_ADDRESS_SPACE_KIND_BQ_INFO = {
             "to this space."),
         'read_cmd':	SBS_COMMAND.ManufacturerAccess,
         'read_subcmd':	MANUFACTURER_ACCESS_CMD_BQ30.DFAccessRowAddress,
+        # How much data each cmd_array step represents
+        'granularity'	: 32,
         'getter'	: "data_flash_access",
     },
     RAW_ADDRESS_SPACE_KIND_BQGENERIC.InstructionFlash : {
@@ -4368,6 +4370,7 @@ RAW_ADDRESS_SPACE_KIND_BQ_INFO = {
             "your chip."),
         'read_cmd':	None,
         'read_subcmd':	None,
+        'granularity'	: 1,
         'getter'	: "instruction_flash_access",
     },
 

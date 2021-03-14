@@ -2401,7 +2401,7 @@ def smbus_read_macblk_by_writing_block_subcmd_first(bus, dev_addr, cmd, subcmd, 
     if 'resp_location' in subcmdinf:
         resp_cmd = subcmdinf['resp_location']
     else:
-        resp_cmd = None
+        resp_cmd = cmd
     if 'resp_wait' in subcmdinf:
         resp_wait = subcmdinf['resp_wait']
     else:
@@ -2512,13 +2512,14 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
         if 'subcmd_shift' in opts:
             subcmd = sbs_command_add_shift(subcmd, subcmdinf, opts['subcmd_shift'], po)
 
-        if ('resp_location' not in subcmdinf) and (subcmdinf['type'] != "void"):
-            # Do normal read, this is not a sub-command with different response location
-            v, u = smbus_read_simple(bus, dev_addr, cmd, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
-        elif cmdinf['getter'] == "write_word_subcommand":
-            # do write request with subcmd, then expect response at specific location
-            v, u = smbus_read_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, po)
-        else:
+        if cmdinf['getter'] == "write_word_subcommand":
+            if ('resp_location' in subcmdinf) or (subcmdinf['type'] == "void"):
+                # do write request with subcmd, then expect response at specific location
+                v, u = smbus_read_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, po)
+            else:
+                # Do normal read, this is not a sub-command with different response location
+                v, u = smbus_read_simple(bus, dev_addr, cmd, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
+        else: # cmdinf['getter'] == "write_word_subcmd_mac_block"
             # do write request with subcmd, then expect block response at specific location starting with subcmd
             v, u = smbus_read_macblk_by_writing_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, po)
         if (u == "struct"):
@@ -2809,11 +2810,12 @@ def smart_battery_system_address_space_from_text(knd_str, addr, po):
     which are not in base SBS specification.
     """
     knd = None
-
-    if is_ti_bq_chip(po.chip):
-        if knd_str in [i.name for i in RAW_ADDRESS_SPACE_KIND_BQ30]:
-            knd = RAW_ADDRESS_SPACE_KIND_BQ30.from_name(knd_str)
-
+    if knd is None: # Recognize address space by name
+        if True:
+            for curr_knd in RAW_ADDRESS_SPACE_KIND_INFO.keys():
+                if knd_str == curr_knd.name:
+                    knd = curr_knd
+                    break
     if knd is None:
         raise ValueError("The address space '{}' is either invalid or not supported by chip".format(knd_str))
     return knd
@@ -2976,15 +2978,16 @@ def smart_battery_system_raw_read(knd_str, addr, val_type, vals, po):
 
     cmd, subcmd = (kndinf['read_cmd'],kndinf['read_subcmd'],)
     cmdinf = SBS_CMD_INFO[cmd]
-    subcmd_shift = addr // 32
+    subcmd_shift = addr // kndinf['granularity']
     opts = {'subcmd': subcmd, 'subcmd_shift': subcmd_shift}
     v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
     response = {'val':v,'list':l,'sinf':s,'uname':u,}
     #vals[cmd if subcmd is None else subcmd] = response #TODO we need to store sub-index
+    response_tot_len = len(v)
 
     # Create improvised data type if the user demanded
     if val_type not in ("byte[32]",):
-        subcmd_pos = addr - subcmd_shift * 32
+        subcmd_pos = addr - subcmd_shift * kndinf['granularity']
         s = {}
         fld_nbytes = type_str_value_length(val_type)
         if subcmd_pos > 0:
@@ -3013,12 +3016,12 @@ def smart_battery_system_raw_read(knd_str, addr, val_type, vals, po):
                 s[fld]['unit'] = {'scale':1,'name':"dec"}
             elif val_type.startswith("string["):
                 s[fld]['unit'] = {'scale':None,'name':"str"}
-        if subcmd_pos+fld_nbytes < 32:
+        if subcmd_pos+fld_nbytes < response_tot_len:
             fld2 = ImprovisedCommand(value=(subcmd_pos+fld_nbytes)*8, name="UserVal{:02x}".format(subcmd_pos+fld_nbytes))
             s[fld2] = {
-                'type'	: "byte[{}]".format(32-subcmd_pos-fld_nbytes),
+                'type'	: "byte[{}]".format(response_tot_len-subcmd_pos-fld_nbytes),
                 'unit'	: {'scale':None,'name':"hex"},
-                'nbits'	: (32-subcmd_pos-fld_nbytes) * 8,
+                'nbits'	: (response_tot_len-subcmd_pos-fld_nbytes) * 8,
                 'access'	: "-",
                 'tiny_name'	: "AftUD",
                 'desc'	: "Data after user field.",
@@ -3225,9 +3228,6 @@ def main():
 
       Its task is to parse command line options and call a function which performs sniffing.
     """
-    # Create a list of valid address spaces: for read and write
-    raw_r_commands, raw_w_commands = extract_raw_commands_list()
-
     addrspace_datatypes = [ "int8", "uint8", "int16", "uint16", "int32", "uint32", "float", 'string[n]', 'byte[n]']
 
     parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
@@ -3330,8 +3330,9 @@ def main():
     subpar_raw_read = subparsers.add_parser('raw-read',
             help="read raw value from an address space of the battery")
 
-    subpar_raw_read.add_argument('addrspace', metavar='addrspace', choices=raw_r_commands, type=str,
-            help="the address space name to read from; one of: {:s}".format(', '.join(raw_r_commands)))
+    subpar_raw_read.add_argument('addrspace', metavar='addrspace', type=str,
+            help=("the address space name to read from; use 'raw-read-list' "
+              "action to see supported addrspaces"))
 
     subpar_raw_read.add_argument('address', metavar='address', type=lambda x: int(x,0),
             help="address within the space to read from")
@@ -3340,11 +3341,18 @@ def main():
             help="Data type at target offset; one of: {:s}".format(', '.join(addrspace_datatypes)))
 
 
+    subpar_info = subparsers.add_parser('raw-read-list',
+            help=("lists all address spaces on which 'raw-read' action can be used; "
+              "the list changes with selected chip type; when chip auto-detect "
+              "is disabled, this action can be performed without connection"))
+
+
     subpar_raw_write = subparsers.add_parser('raw-write',
             help="write raw value into an address space of the battery")
 
-    subpar_raw_write.add_argument('addrspace', metavar='addrspace', choices=raw_w_commands, type=str,
-            help="the address space name to write into; one of: {:s}".format(', '.join(raw_w_commands)))
+    subpar_raw_write.add_argument('addrspace', metavar='addrspace', type=str,
+            help=("the address space name to write into; use 'raw-write-list' "
+              "action to see supported addrspaces"))
 
     subpar_raw_write.add_argument('address', metavar='address', type=lambda x: int(x,0),
             help="address within the space to write to")
@@ -3354,6 +3362,12 @@ def main():
 
     subpar_raw_write.add_argument('newvalue', metavar='value', type=str,
             help="new value to write at the address")
+
+
+    subpar_info = subparsers.add_parser('raw-write-list',
+            help=("lists all address spaces on which 'raw-write' action can be used; "
+              "the list changes with selected chip type; when chip auto-detect "
+              "is disabled, this action can be performed without connection"))
 
 
     subpar_monitor = subparsers.add_parser('monitor',
@@ -3437,6 +3451,16 @@ def main():
             print("Write value can be used on any of the following commands:")
         all_w_commands, all_t_commands = extract_w_commands_list()
         print("\n".join(sorted(all_w_commands)))
+    elif po.action == 'raw-read-list':
+        if (po.explain > 0):
+            print("Raw Read can be used on any of the following address spaces:")
+        raw_r_commands, raw_w_commands = extract_raw_commands_list()
+        print("\n".join(sorted(raw_r_commands)))
+    elif po.action == 'raw-write-list':
+        if (po.explain > 0):
+            print("Raw Write can be used on any of the following address spaces:")
+        raw_r_commands, raw_w_commands = extract_raw_commands_list()
+        print("\n".join(sorted(raw_w_commands)))
     elif po.action == 'read':
         smart_battery_system_read(po.command, vals, po)
     elif po.action == 'trigger':

@@ -5018,7 +5018,8 @@ for subcmd, subcmdinf in MANUFACTURER_ACCESS_CMD_BQ40_INFO.items():
     if 'resp_location' not in maccmdinf:
         pass
     elif maccmdinf['resp_location'] == SBS_COMMAND.ManufacturerData:
-        maccmdinf['resp_location'] = SBS_COMMAND_BQ40.ManufacturerBlockAccess
+        # The response location is same as command - SBS_COMMAND_BQ40.ManufacturerBlockAccess
+        del maccmdinf['resp_location']
     MANUFACTURER_BLOCK_ACCESS_CMD_BQ40_INFO[subcmd] = maccmdinf
 
 
@@ -5415,8 +5416,10 @@ RAW_ADDRESS_SPACE_KIND_BQ_INFO = {
             "algorithms. Positions of values depend not only on chip model, "
             "but also of battery firmware version - so be careful when writing "
             "to this space."),
-        'read_cmd':	SBS_COMMAND.ManufacturerAccess,
-        'read_subcmd':	None,#TODO
+        'read_cmd':	SBS_COMMAND_BQ40.ManufacturerBlockAccess,
+        'read_subcmd':	MANUFACTURER_ACCESS_CMD_BQ40.DataFlashAccess,
+        # How much data each cmd_array step represents
+        'granularity'	: 1,
         'getter'	: "data_flash_access",
     },
     RAW_ADDRESS_SPACE_KIND_BQGENERIC.InstructionFlash : {
@@ -5427,6 +5430,7 @@ RAW_ADDRESS_SPACE_KIND_BQ_INFO = {
             "your chip."),
         'read_cmd':	None,
         'read_subcmd':	None,
+        'granularity'	: 1,
         'getter'	: "instruction_flash_access",
     },
 
