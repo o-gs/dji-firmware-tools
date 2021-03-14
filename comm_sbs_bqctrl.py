@@ -3109,7 +3109,7 @@ def smart_battery_system_sealing(seal_str, vals, po):
         time.sleep(0.35)
     elif auth == "2-Word SCKey": # Two word key, where first word is written as MAC sub-command
         time.sleep(0.35)
-        smbus_perform_unseal_bq_2word_sckey(bus, po.dev_address, cmd, resp_wait, (po.i32key>>16) & 0xffff, (po.i32key) & 0xffff, vals, po)
+        smbus_perform_unseal_bq_2word_sckey(bus, po.dev_address, cmd, resp_wait, (po.i32key) & 0xffff, (po.i32key>>16) & 0xffff, vals, po)
         time.sleep(0.35)
     else: # No auth required - sealing or checking status
         if resp_type == "void":
@@ -3376,7 +3376,7 @@ def main():
     subpar_sealing.add_argument('--i32key', default=None, type=lambda x: int(x,0),
             help=("device key for 32-bit integer (two word) Authentication "
               "(defaults to 0x{:08x} for FullAccess, otherwise to 0x{:08x})"
-              ).format(0xffffffff,0x04143672))
+              ).format(0xffffffff,0x36720414))
 
     po = parser.parse_args();
 
@@ -3456,7 +3456,7 @@ def main():
             if po.sealstate == "FullAccess":
                 po.i32key = 0xffffffff
             else:
-                po.i32key = 0x04143672
+                po.i32key = 0x36720414
         smart_battery_system_sealing(po.sealstate, vals, po)
     else:
         raise NotImplementedError('Unsupported command.')

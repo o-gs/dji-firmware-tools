@@ -4738,7 +4738,7 @@ class ChipMockBQ40(ChipMock):
         self.add_read_sub(0x00, 0x06, struct.pack('<H', 0x2044)) # ChemicalID
         self.add_read_sub(0x00, 0x08, struct.pack('<H', 0x3a6b)) # StaticChemDFSignature
         self.add_read_sub(0x00, 0x09, struct.pack('<H', 0xd5fa)) # AllDFSignature
-        self.add_read_sub(0x00, 0x35, struct.pack('<LL', int(0x04143672), int(0xffffffff))) # SecurityKeys
+        self.add_read_sub(0x00, 0x35, struct.pack('<LL', int(0x36720414), int(0xffffffff))) # SecurityKeys
         # The chip returns the same invalid data for unsupported ManufacturerBlockAccess commands
         bad_manufc_block_data = bytes.fromhex( ("00 00 13 7f 16 be 94 98 d8 15 "
           "bd a3 f0 fa c5 d9 98 5b 67 78 dc d6 00 f8 53 9f "

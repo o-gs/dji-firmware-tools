@@ -5649,7 +5649,7 @@ class ChipMockBQ40(ChipMock):
         self.add_read_sub(0x00, 0x06, struct.pack('<H', 0x2044)) # ChemicalID
         self.add_read_sub(0x00, 0x08, struct.pack('<H', 0x3a6b)) # StaticChemDFSignature
         self.add_read_sub(0x00, 0x09, struct.pack('<H', 0xd5fa)) # AllDFSignature
-        self.add_read_sub(0x00, 0x35, struct.pack('<LL', int(0x04143672), int(0xffffffff))) # SecurityKeys
+        self.add_read_sub(0x00, 0x35, struct.pack('<LL', int(0x36720414), int(0xffffffff))) # SecurityKeys
         # For ManufacturerBlockAccess commands, remember to add subcmd word at start
 
     def add_read(self, register, data):
