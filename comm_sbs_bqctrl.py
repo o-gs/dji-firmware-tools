@@ -3053,24 +3053,52 @@ def smart_battery_system_raw_backup(knd_str, fname, vals, po):
     cmd, subcmd = (kndinf['read_cmd'],kndinf['read_subcmd'],)
     subcmdinf = sbs_subcommand_get_info(cmd, subcmd)
     addrspace_tot_len = subcmdinf['cmd_array'] * kndinf['granularity']
+    last_pct = -100
 
-    addrsp_file = open(fname, "wb")
-    while (addr < addrspace_tot_len):
-        subcmd_shift = addr // kndinf['granularity']
-        opts = {'subcmd': subcmd, 'subcmd_shift': subcmd_shift}
-        v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
-        response = {'val':v,'list':l,'sinf':s,'uname':u,}
-        #vals[cmd if subcmd is None else subcmd] = response #TODO we need to store sub-index
-        addrsp_file.write(v)
-        addr += len(v)
+    with open(fname, "wb") as addrsp_file:
+        while (addr < addrspace_tot_len):
+            if (po.verbose > 0) and (addr * 100 // addrspace_tot_len - last_pct >= 5):
+                last_pct = addr * 100 // addrspace_tot_len
+                print("Raw read {}: address=0x{:04X} progress={:d}%".format(knd.name, addr, last_pct,))
+            subcmd_shift = addr // kndinf['granularity']
+            opts = {'subcmd': subcmd, 'subcmd_shift': subcmd_shift}
+            v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
+            response = {'val':v,'list':l,'sinf':s,'uname':u,}
+            #vals[cmd if subcmd is None else subcmd] = response #TODO we need to store sub-index
+            addrsp_file.write(v)
+            addr += len(v)
 
-    addrsp_file.close()
+    print("Raw read {}: done".format(knd.name,))
 
 
 def smart_battery_system_raw_restore(knd_str, fname, vals, po):
     """ Writes raw data to address space of the battery, from a file.
     """
-    raise NotImplementedError('Restore raw data is not implemented.')
+    from functools import partial
+    global bus
+    addr = 0x0
+    knd = smart_battery_system_address_space_from_text(knd_str, addr, po)
+    kndinf = RAW_ADDRESS_SPACE_KIND_INFO[knd]
+
+    cmd, subcmd = (kndinf['read_cmd'],kndinf['read_subcmd'],)
+    subcmdinf = sbs_subcommand_get_info(cmd, subcmd)
+    addrspace_tot_len = subcmdinf['cmd_array'] * kndinf['granularity']
+    last_pct = -100
+
+    with open(fname, "rb") as addrsp_file:
+        for v in iter(partial(addrsp_file.read, 32), b''):
+            if (po.verbose > 0) and (addr * 100 // addrspace_tot_len - last_pct >= 5):
+                last_pct = addr * 100 // addrspace_tot_len
+                print("Raw write {}: address=0x{:04X} progress={:d}%".format(knd.name, addr, last_pct,))
+            if (addr >= addrspace_tot_len):
+                print("Warning: File size exceeds address space size; excessive data ignored")
+                break
+            subcmd_shift = addr // kndinf['granularity']
+            opts = {'subcmd': subcmd, 'subcmd_shift': subcmd_shift}
+            u, s = smbus_write(bus, po.dev_address, cmd, v, opts, vals, po)
+            addr += len(v)
+
+    print("Raw write {}: done".format(knd.name,))
 
 
 def smart_battery_system_monitor(mgroup_str, vals, po):
