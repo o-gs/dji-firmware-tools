@@ -4732,8 +4732,7 @@ class ChipMockBQ40(ChipMock):
         self.add_read(0x76, bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # CBStatus
         self.add_read(0x78, struct.pack('<HHHH', int(1059), int(681), int(2432), int(1750))) # FilteredCapacity
         self.add_read(0x7a, bytes.fromhex("00 00 45 67")) # ManufacturerInfo2
-        # The chip returns the same invalid data for unsupported ManufacturerAccess commands
-        bad_manufc_info_data = b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02'
+        # ManufacturerAccess commands
         self.add_read_sub(0x00, 0x01, struct.pack('<H', 0x4307)) # DeviceType
         self.add_read_sub(0x00, 0x02, bytes.fromhex("4307 0101 0027 00 0385 0200")) # FirmwareVersion
         self.add_read_sub(0x00, 0x03, struct.pack('<H', 0x00a1)) # HardwareVersion
@@ -4743,11 +4742,33 @@ class ChipMockBQ40(ChipMock):
         self.add_read_sub(0x00, 0x08, struct.pack('<H', 0x3a6b)) # StaticChemDFSignature
         self.add_read_sub(0x00, 0x09, struct.pack('<H', 0xd5fa)) # AllDFSignature
         self.add_read_sub(0x00, 0x35, struct.pack('<LL', int(0x36720414), int(0xffffffff))) # SecurityKeys
+        # Prepare data flash, or at least a chunk of it
+        df = bytearray(0x0c0)
+        df[0x000:0x010] = struct.pack('<hHHffh', 12146, 49158, 48942, 3.53481793, 1054300.5, 0) # Cell Gain, Pack Gain, BAT Gain, CC Gain, Capacity Gain, CC Offset
+        df[0x010:0x020] = struct.pack('<Hhbbbbb', 64, 0, 0, 0, 0, 0, 0) # Coulomb Counter Offset Samples, Board Offset, Internal Temp Offset, External 0..3 Temp Offset
+        df[0x010:0x020] = bytes.fromhex("ff 00 ff 00 00 01 00")
+        df[0x020:0x040] = bytes.fromhex("00 00 00 00 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff")
+        df[0x040:0x060] = struct.pack('<B31s', 32, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234') # ManufacturerInfo
+        df[0x060:0x068] = bytes.fromhex("02 04 00 00 00 67 00 00")
+        df[0x068:0x070] = struct.pack('<HHHH', 0x3a6b, 0, 0x4f5a, 0x0057)) # StaticChemDFSignature, ?, ManufactureDate, SerialNumber
+        df[0x070:0x085] = struct.pack('<B20s', 3, b'SDI') # ManufacturerName
+        df[0x085:0x09A] = struct.pack('<B20s', 9, b'BA01WM160') # DeviceName
+        df[0x09A:0x09F] = struct.pack('<B4s', 4, b'2044') # DeviceChemistry
         # The chip returns the same invalid data for unsupported ManufacturerBlockAccess commands
         bad_manufc_block_data = bytes.fromhex( ("00 00 13 7f 16 be 94 98 d8 15 "
           "bd a3 f0 fa c5 d9 98 5b 67 78 dc d6 00 f8 53 9f "
           "9c 79 3c c2 21 ce f4 33 a6 50 38 84 37 6f 72 7b 59 00") )
         # For ManufacturerBlockAccess commands, remember to add subcmd word at start
+        self.add_read(0x1b, df[0x06C:0x06E]) # ManufactureDate
+        self.add_read(0x1c, df[0x06E:0x070]) # SerialNumber
+        self.add_read(0x20, df[0x071:int(0x071+df[0x070])]) # ManufacturerName
+        self.add_read(0x21, df[0x086:int(0x086+df[0x085])]) # DeviceName
+        self.add_read(0x22, df[0x09b:int(0x09b+df[0x09a])]) # DeviceChemistry
+        self.add_read(0x70, df[0x041:int(0x041+df[0x040])]) # ManufacturerInfo
+        self.add_read_sub(0x00, 0x08, df[0x068:0x06A]) # StaticChemDFSignature
+        # TODO we should allow reading any offset from DF
+        for offs in range(0, len(df), 0x20):
+            self.add_read_sub(0x44, 0x4000+offs, struct.pack('<H', 0x4000+offs) + df[offs:offs+0x020]) # DataFlashAccess
 
     def add_read(self, register, data):
         self.reads[register] = data
