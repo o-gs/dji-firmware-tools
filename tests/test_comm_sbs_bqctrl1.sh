@@ -151,6 +151,27 @@ function test_chip_commands {
             exit 1
         fi
     done
+
+}
+
+function test_data_flash {
+    TEST_PARAMS=$1
+    DATAFLASH_LIST="0x0000 0x0020 0x0040 0x0060 0x0080 0x00A0"
+
+    for DFOFFS in ${DATAFLASH_LIST}; do
+        set -x # print the command before executing
+        ./comm_sbs_bqctrl.py -vvv ${TEST_PARAMS} raw-read DataFlash ${DFOFFS} 'string[32]'
+        TEST_RESULT=$?
+        set +x
+
+        if [ ${TEST_RESULT} == 0 ]; then
+            echo '### SUCCESS: raw-read DataFlash '${DFOFFS}' - No error returned. ###'
+        else
+            echo '### FAIL: raw-read DataFlash '${DFOFFS}' - Script run failed! ###'
+            exit 1
+        fi
+    done
+
 }
 
 
@@ -161,5 +182,7 @@ test_chip_commands "--chip BQ30z55 --dry-run"
 test_chip_commands "--chip BQ40z50 --dry-run"
 
 test_chip_commands "--chip BQ40z307 --dry-run"
+
+test_data_flash "--chip BQ40z307 --dry-run"
 
 exit 0

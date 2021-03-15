@@ -4745,12 +4745,12 @@ class ChipMockBQ40(ChipMock):
         # Prepare data flash, or at least a chunk of it
         df = bytearray(0x0c0)
         df[0x000:0x010] = struct.pack('<hHHffh', 12146, 49158, 48942, 3.53481793, 1054300.5, 0) # Cell Gain, Pack Gain, BAT Gain, CC Gain, Capacity Gain, CC Offset
-        df[0x010:0x020] = struct.pack('<Hhbbbbb', 64, 0, 0, 0, 0, 0, 0) # Coulomb Counter Offset Samples, Board Offset, Internal Temp Offset, External 0..3 Temp Offset
-        df[0x010:0x020] = bytes.fromhex("ff 00 ff 00 00 01 00")
+        df[0x010:0x019] = struct.pack('<Hhbbbbb', 64, 0, 0, 0, 0, 0, 0) # Coulomb Counter Offset Samples, Board Offset, Internal Temp Offset, External 0..3 Temp Offset
+        df[0x019:0x020] = bytes.fromhex("ff 00 ff 00 00 01 00")
         df[0x020:0x040] = bytes.fromhex("00 00 00 00 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff")
         df[0x040:0x060] = struct.pack('<B31s', 32, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234') # ManufacturerInfo
         df[0x060:0x068] = bytes.fromhex("02 04 00 00 00 67 00 00")
-        df[0x068:0x070] = struct.pack('<HHHH', 0x3a6b, 0, 0x4f5a, 0x0057)) # StaticChemDFSignature, ?, ManufactureDate, SerialNumber
+        df[0x068:0x070] = struct.pack('<HHHH', 0x3a6b, 0, 0x4f5a, 0x0057) # StaticChemDFSignature, ?, ManufactureDate, SerialNumber
         df[0x070:0x085] = struct.pack('<B20s', 3, b'SDI') # ManufacturerName
         df[0x085:0x09A] = struct.pack('<B20s', 9, b'BA01WM160') # DeviceName
         df[0x09A:0x09F] = struct.pack('<B4s', 4, b'2044') # DeviceChemistry

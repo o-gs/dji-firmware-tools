@@ -2587,14 +2587,17 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
         if len(subcmdinf) <= 0:
             raise ValueError("Command {}.{} missing definition".format(cmd.name,subcmd.name))
 
-        if ('resp_location' not in subcmdinf) and (subcmdinf['type'] != "void"):
-            u = smbus_write_simple(bus, dev_addr, cmd, v, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
-        elif cmdinf['getter'] == "write_word_subcommand":
-            # write request with subcmd, then do actual data write at specific location
-            u = smbus_write_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, v, po)
-        else:
+        if cmdinf['getter'] == "write_word_subcommand":
+            if ('resp_location' in subcmdinf) or (subcmdinf['type'] == "void"):
+                # do write request with subcmd, then expect response at specific location
+                u = smbus_write_simple(bus, dev_addr, cmd, v, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
+            else:
+                # write request with subcmd, then do actual data write at specific location
+                u = smbus_write_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, v, po)
+        else: # cmdinf['getter'] == "write_word_subcmd_mac_block"
             # write block with actual data preceded by subcmd
             u = smbus_write_macblk_with_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, v, po)
+
         if (u == "struct"):
             subinfgrp = subcmdinf['struct_info']
         elif (u == "bitfields"):
