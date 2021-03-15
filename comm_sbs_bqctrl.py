@@ -3042,6 +3042,37 @@ def smart_battery_system_raw_write(knd_str, addr, val_type, nval_str, vals, po):
     raise NotImplementedError('Writing raw data is not implemented.')
 
 
+def smart_battery_system_raw_backup(knd_str, fname, vals, po):
+    """ Reads raw data from address space of the battery, and stores in a file.
+    """
+    global bus
+    addr = 0x0
+    knd = smart_battery_system_address_space_from_text(knd_str, addr, po)
+    kndinf = RAW_ADDRESS_SPACE_KIND_INFO[knd]
+
+    cmd, subcmd = (kndinf['read_cmd'],kndinf['read_subcmd'],)
+    subcmdinf = sbs_subcommand_get_info(cmd, subcmd)
+    addrspace_tot_len = subcmdinf['cmd_array'] * kndinf['granularity']
+
+    addrsp_file = open(fname, "wb")
+    while (addr < addrspace_tot_len):
+        subcmd_shift = addr // kndinf['granularity']
+        opts = {'subcmd': subcmd, 'subcmd_shift': subcmd_shift}
+        v, l, u, s = smbus_read(bus, po.dev_address, cmd, opts, vals, po)
+        response = {'val':v,'list':l,'sinf':s,'uname':u,}
+        #vals[cmd if subcmd is None else subcmd] = response #TODO we need to store sub-index
+        addrsp_file.write(v)
+        addr += len(v)
+
+    addrsp_file.close()
+
+
+def smart_battery_system_raw_restore(knd_str, fname, vals, po):
+    """ Writes raw data to address space of the battery, from a file.
+    """
+    raise NotImplementedError('Restore raw data is not implemented.')
+
+
 def smart_battery_system_monitor(mgroup_str, vals, po):
     """ Reads and prints multiple values from the battery.
     """
@@ -3279,10 +3310,11 @@ def main():
               "from manual, which is included in the tool"))
 
     subpar_info.add_argument('command', metavar='command', type=str,
-            help="the command/offset name to show info about; use 'info-list' action to see supported commands")
+            help=("the command/offset name to show info about; "
+              "use 'info-list' action to see supported commands"))
 
 
-    subpar_info = subparsers.add_parser('info-list',
+    subpar_info_list = subparsers.add_parser('info-list',
             help=("lists all commands on which 'info' action can be used; "
               "the list changes with selected chip type; when chip auto-detect "
               "is disabled, this action can be performed without connection"))
@@ -3292,10 +3324,11 @@ def main():
             help="read value from a single command/offset of the battery")
 
     subpar_read.add_argument('command', metavar='command', type=str,
-            help="the command/offset name to read from; use 'read-list' action to see supported commands")
+            help=("the command/offset name to read from; "
+              "use 'read-list' action to see supported commands"))
 
 
-    subpar_info = subparsers.add_parser('read-list',
+    subpar_read_list = subparsers.add_parser('read-list',
             help=("lists all commands on which 'read' action can be used; "
               "the list changes with selected chip type; when chip auto-detect "
               "is disabled, this action can be performed without connection"))
@@ -3305,10 +3338,11 @@ def main():
             help="write to a trigger, command/offset of the battery which acts as a switch")
 
     subpar_trigger.add_argument('command', metavar='command', type=str,
-            help="the command/offset name to trigger; use 'trigger-list' action to see supported commands")
+            help=("the command/offset name to trigger; "
+              "use 'trigger-list' action to see supported commands"))
 
 
-    subpar_info = subparsers.add_parser('trigger-list',
+    subpar_trigger_list = subparsers.add_parser('trigger-list',
             help=("lists all commands on which 'trigger' action can be used; "
               "the list changes with selected chip type; when chip auto-detect "
               "is disabled, this action can be performed without connection"))
@@ -3318,13 +3352,14 @@ def main():
             help="write value to a single command/offset of the battery")
 
     subpar_write.add_argument('command', metavar='command', type=str,
-            help="the command/offset name to write to; use 'write-list' action to see supported commands")
+            help=("the command/offset name to write to; "
+              "use 'write-list' action to see supported commands"))
 
     subpar_write.add_argument('newvalue', metavar='value', type=str,
             help="new value to write to the command/offset")
 
 
-    subpar_info = subparsers.add_parser('write-list',
+    subpar_write_list = subparsers.add_parser('write-list',
             help=("lists all commands on which 'write' action can be used; "
               "the list changes with selected chip type; when chip auto-detect "
               "is disabled, this action can be performed without connection"))
@@ -3344,7 +3379,7 @@ def main():
             help="Data type at target offset; one of: {:s}".format(', '.join(addrspace_datatypes)))
 
 
-    subpar_info = subparsers.add_parser('raw-read-list',
+    subpar_raw_read_list = subparsers.add_parser('raw-read-list',
             help=("lists all address spaces on which 'raw-read' action can be used; "
               "the list changes with selected chip type; when chip auto-detect "
               "is disabled, this action can be performed without connection"))
@@ -3367,14 +3402,37 @@ def main():
             help="new value to write at the address")
 
 
-    subpar_info = subparsers.add_parser('raw-write-list',
+    subpar_raw_write_list = subparsers.add_parser('raw-write-list',
             help=("lists all address spaces on which 'raw-write' action can be used; "
               "the list changes with selected chip type; when chip auto-detect "
               "is disabled, this action can be performed without connection"))
 
 
+    subpar_raw_backup = subparsers.add_parser('raw-backup',
+            help="read whole raw address space and store it in a file")
+
+    subpar_raw_backup.add_argument('addrspace', metavar='addrspace', type=str,
+            help=("the address space name to backup; use 'raw-read-list' "
+              "action to see supported addrspaces"))
+
+    subpar_raw_backup.add_argument('fname', metavar='filename', type=str,
+            help="name of the file to write to")
+
+
+    subpar_raw_restore = subparsers.add_parser('raw-restore',
+            help="write whole raw address space using values from a file")
+
+    subpar_raw_restore.add_argument('addrspace', metavar='addrspace', type=str,
+            help=("the address space name to restore; use 'raw-write-list' "
+              "action to see supported addrspaces"))
+
+    subpar_raw_restore.add_argument('fname', metavar='filename', type=str,
+            help="name of the file to read from")
+
+
     subpar_monitor = subparsers.add_parser('monitor',
-            help="monitor value of a group of commands/offsets; just reads all of the values from a group")
+            help=("monitor value of a group of commands/offsets; "
+              "just reads all of the values from a group"))
 
     subpar_monitor.add_argument('cmdgroup', metavar='group', choices=[i.name for i in MONITOR_GROUP], type=parse_monitor_group,
             help="group of commands/offsets; one of: {:s}".format(', '.join(i.name for i in MONITOR_GROUP)))
@@ -3476,6 +3534,10 @@ def main():
     elif po.action == 'raw-write':
         smart_battery_system_raw_write(po.addrspace, po.address,
           po.dttype, po.newvalue, vals, po)
+    elif po.action == 'raw-backup':
+        smart_battery_system_raw_backup(po.addrspace, po.fname, vals, po)
+    elif po.action == 'raw-restore':
+        smart_battery_system_raw_restore(po.addrspace, po.fname, vals, po)
     elif po.action == 'monitor':
         smart_battery_system_monitor(po.cmdgroup, vals, po)
     elif po.action == 'sealing':
