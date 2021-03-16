@@ -678,7 +678,8 @@ SBS_SPECIFICATION_INFO = {
         'type'	: "named_bitfield",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 4,
-        'value_names'	: ["v0-none","v1.0","v1.1","v1.1+PEC","vFuture4","vFuture5","vFuture6","vFuture7"],
+        'value_names'	: ["v0-none","v1.0","v1.1","v1.1+PEC","vFuture4",
+          "vFuture5","vFuture6","vFuture7"],
         'access'	: "r",
         'tiny_name'	: "Ver",
         'desc'	: ("Supported SBS version. Identifies Smart Battery "
@@ -784,7 +785,7 @@ SBS_CMD_INFO = {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"minutes"},
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("Predicted remaining operating time if the battery is discharged. "
+        'desc'	: ("Predicted remaining operating time when discharging. "
             "Uses the previously written AtRate value."),
         'getter'	: "simple",
     },
@@ -792,8 +793,9 @@ SBS_CMD_INFO = {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"boolean"},
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("Whether the battery can deliver an additional energy for 10 seconds."
-            "Uses the previously written AtRate value for additional energy amount."),
+        'desc'	: ("Whether can deliver an additional energy for 10 sec."
+            "Uses the previously written AtRate value for additional energy "
+            "amount."),
         'getter'	: "simple",
     },
     SBS_COMMAND.Temperature : {
@@ -801,29 +803,31 @@ SBS_CMD_INFO = {
         'unit'	: {'scale':0.1,'name':"K"},
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Cell-pack's internal temperature. The actual operational "
-            "temperature range will be defined at a pack level by a particular "
-            "manufacturer. Typically it will be in the range of -20 degC to +75 degC."),
+            "temperature range will be defined at a pack level by a "
+            "particular manufacturer. Typically it will be in the range "
+            "of -20 degC to +75 degC."),
         'getter'	: "simple",
     },
     SBS_COMMAND.Voltage : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"mV"},
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("Cell-pack voltage. Provides power management systems with "
-            "an accurate battery terminal voltage. Power management systems can "
-            "use this voltage, along with battery current information, to "
-            "characterize devices they control."),
+        'desc'	: ("Cell-pack voltage. Provides power management systems "
+            "with an accurate battery terminal voltage. Power management "
+            "systems can use this voltage, along with battery current "
+            "information, to characterize devices they control."),
         'getter'	: "simple",
     },
     SBS_COMMAND.Current : {
         'type'	: "int16",
         'unit'	: {'scale':1,'name':"mA"},
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("The current being supplied (or accepted) through terminals. "
-            "Provides a snapshot for the power management system of the current "
-            "flowing into or out of the battery. This information will be of "
-            "particular use in power management systems because they can "
-            "characterize individual devices and \"tune\" their operation."),
+        'desc'	: ("The current being supplied/accepted through terminals. "
+            "Provides a snapshot for the power management system of the "
+            "current flowing into or out of the battery. This information "
+            "will be of particular use in power management systems because "
+            "they can characterize individual devices and \"tune\" their "
+            "operation."),
         'getter'	: "simple",
     },
     SBS_COMMAND.AverageCurrent : {
@@ -843,19 +847,19 @@ SBS_CMD_INFO = {
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Expected margin of error in charge calculation. "
             "For example, when MaxError() returns 10% and RelativeStateOfCharge() "
-            "returns 50%, the Relative StateOfCharge() is actually between 50 "
-            "and 60%. The MaxError() of a battery is expected to increase until "
-            "the Smart Battery identifies a condition that will give it higher "
-            "confidence in its own accuracy, like being fully charged. The Battery "
-            "can signal when MaxError() has become too high by setting the "
-            "CONDITION_FLAG bit in BatteryMode()."),
+            "returns 50%, the Relative StateOfCharge() is actually between "
+            "50 and 60%. The MaxError() of a battery is expected to increase "
+            "until the Smart Battery identifies a condition that will give it "
+            "higher confidence in its own accuracy, like being fully charged. "
+            "The Battery can signal when MaxError() has become too high by "
+            "setting the CONDITION_FLAG bit in BatteryMode()."),
         'getter'	: "simple",
     },
     SBS_COMMAND.RelativeStateOfCharge : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"%"},
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("Predicted remaining capacity, percentage of FullChargeCapacity()."
+        'desc'	: ("Predicted remaining capacity, % of FullChargeCap()."
             "Returns the predicted remaining battery capacity expressed as a "
             "percentage of FullChargeCapacity(). This is is used to estimate "
             "the amount of charge remaining in the battery. The problem with "
@@ -866,7 +870,7 @@ SBS_CMD_INFO = {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"%"},
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("Predicted remaining capacity, percentage of DesignCapacity(). "
+        'desc'	: ("Predicted remaining capacity, % of DesignCap(). "
             "Returns the predicted remaining battery capacity expressed as a "
             "percentage of DesignCapacity(). This can return values greater "
             "than 100%."),
@@ -901,18 +905,18 @@ SBS_CMD_INFO = {
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Remaining battery life at the present rate of discharge. "
             "The value is calculated based on either current or power, "
-            "depending on the setting of the BatteryMode()'s CAPACITY_MODE bit. "
-            "This is an important distinction because use of the wrong calculation "
-            "mode may result in inaccurate return values."),
+            "depending on the setting of the BatteryMode()'s CAPACITY_MODE "
+            "bit. This is an important distinction because use of the wrong "
+            "calculation mode may result in inaccurate return values."),
         'getter'	: "unit_select_on_capacity_mode",
     },
     SBS_COMMAND.AverageTimeToEmpty : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"minutes"},
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("One-minute rolling average of the remaining battery life. "
-            "The AverageTimeToEmpty() value is calculated based on either current "
-            "or power depending on the setting of the BatteryMode()'s "
+        'desc'	: ("One-minute rolling average of the remaining bat life. "
+            "The AverageTimeToEmpty() value is calculated based on either "
+            "current or power depending on the setting of the BatteryMode()'s "
             "CAPACITY_MODE bit."),
         'getter'	: "simple",
     },
@@ -920,10 +924,10 @@ SBS_CMD_INFO = {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"minutes"},
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("One minute average of the remaining time until full charge. "
+        'desc'	: ("One minute average of the remaining time until full. "
             "This function can be used by the SMBus Host's power management "
-            "system to aid in its policy. It may also be used to find out how "
-            "long the system must be left on to achieve full charge."),
+            "system to aid in its policy. It may also be used to find out "
+            "how long the system must be left on to achieve full charge."),
         'getter'	: "simple",
     },
     SBS_COMMAND.ChargingCurrent : {
@@ -1031,9 +1035,10 @@ SBS_CMD_INFO = {
         'type'	: "string[12]",
         'unit'	: {'scale':None,'name':"str"},
         'access_per_seal'	: ("r","r","r",),
-        'desc'	: ("Character string that contains the battery's name. This "
-            "returns the battery's name for display by the SMBus Host's power "
-            "management system as well as for identification purposes."),
+        'desc'	: ("Character string that contains the battery's name. "
+            "This returns the battery's name for display by the SMBus "
+            "Host's power management system as well as for identification "
+            "purposes."),
         'getter'	: "simple",
     },
     SBS_COMMAND.DeviceChemistry : {
@@ -1133,8 +1138,10 @@ class ChipMock(object):
         self.prep_static()
 
     def prep_static(self):
-        # Only commands required to chip detection; then, imported chip file will replace this
-        self.add_read_sub(0x00, 0x02, bytes.fromhex("0550 0036 0034 00 0380 0001 0083")) # FirmwareVersion
+        # Only commands required to chip detection;
+        # After detection, imported chip file will replace this
+        self.add_read_sub(0x00, 0x02, bytes.fromhex( \
+          "0550 0036 0034 00 0380 0001 0083")) # FirmwareVersion
 
     def add_read(self, register, data):
         self.reads[register] = data
@@ -1254,10 +1261,12 @@ class SMBusMock(object):
                 is_read = True
         # msg stays assigned from last iteration
         if is_read:
-            data = self.do_mock_read(msg.addr, register, is_block=self.expect_block)
+            data = self.do_mock_read(msg.addr, register, \
+              is_block=self.expect_block)
             msg.buf = data
         else:
-            self.do_mock_write(msg.addr, register, msg.buf[1:], is_block=self.expect_block)
+            self.do_mock_write(msg.addr, register, msg.buf[1:], \
+              is_block=self.expect_block)
 
     def add_mock_read(self, register, data):
         self.mock.add_read(register, data)
@@ -1292,7 +1301,8 @@ class SMBusMock(object):
         data = self.mock.do_read(i2c_addr, register)
         if is_block: data = bytes([len(data)]) + data
         if is_block and self.pec:
-            whole_packet = smbus_recreate_read_packet_data(i2c_addr, register, data)
+            whole_packet = smbus_recreate_read_packet_data(i2c_addr, \
+              register, data)
             pec = crc8_ccitt_compute(whole_packet)
             data = data + bytes([pec])
         return data
@@ -1424,7 +1434,8 @@ def smbus_recreate_read_packet_data(dev_addr, cmd, resp_data):
       register = cmd.value
   else:
       register = int(cmd)
-  data = bytes([(dev_addr << 1) + 0, register, (dev_addr << 1) + 1]) + bytes(resp_data)
+  data = bytes([(dev_addr << 1) + 0, register, (dev_addr << 1) + 1]) + \
+    bytes(resp_data)
   return data
 
 
@@ -1495,7 +1506,8 @@ def smbus_write_raw(bus, dev_addr, b, po):
                 (v,) = struct.unpack('<H', bytearray(bytes(b[1:]) + b'\0')[0:2])
                 bus.write_word_data(dev_addr, b[0], v)
             else:
-                raise NotImplementedError("No way of sending such raw data via smbus api")
+                raise NotImplementedError(\
+                  "No way of sending such raw data via smbus api")
         finally:
             bus.pec = orig_pec
     elif use_api_type == "i2c":
@@ -1513,7 +1525,9 @@ def smbus_read_word(bus, dev_addr, cmd, resp_type, po):
         if (po.verbose > 2):
             print("Raw {} response: 0x{:x}".format(cmd.name, v))
         if v < 0 or v > 65535:
-            raise ValueError("Received value of command {} is beyond type {} bounds".format(cmd.name,resp_type))
+            raise ValueError((
+              "Received value of command {} is beyond type {} bounds"
+              ).format(cmd.name,resp_type))
         if resp_type in ("int16",): # signed type support
             if v > 32767:
                 v -= 65536
@@ -1523,15 +1537,19 @@ def smbus_read_word(bus, dev_addr, cmd, resp_type, po):
         bus.i2c_rdwr(part_write, part_read)
         b = bytes(part_read)
         if (po.verbose > 2):
-            print("Raw {} response: {}".format(cmd.name, " ".join('{:02x}'.format(x) for x in b)))
+            print("Raw {} response: {}".format(cmd.name, \
+              " ".join('{:02x}'.format(x) for x in b)))
         if len(b) > 2:
             whole_packet = smbus_recreate_read_packet_data(dev_addr, cmd, b[0:2])
             pec = crc8_ccitt_compute(whole_packet)
             if b[2] != pec:
-                raise ValueError("Received {} from command {} with wrong PEC checksum".format(resp_type,cmd.name))
+                raise ValueError((
+                  "Received {} from command {} with wrong PEC checksum"
+                  ).format(resp_type,cmd.name))
         v = bytes_to_type_str(b[0:2], resp_type)
     else:
-        raise NotImplementedError("Unsupported bus API type '{}'".format(po.api_type))
+        raise NotImplementedError(("Unsupported bus API type '{}'"
+          ).format(po.api_type))
     return v
 
 
@@ -1546,16 +1564,20 @@ def smbus_read_long(bus, dev_addr, cmd, resp_type, po):
         bus.i2c_rdwr(part_write, part_read)
         b = bytes(part_read)
     else:
-        raise NotImplementedError("Unsupported bus API type '{}'".format(po.api_type))
+        raise NotImplementedError(("Unsupported bus API type '{}'"
+          ).format(po.api_type))
 
     if (po.verbose > 2):
-        print("Raw {} response: {}".format(cmd.name, " ".join('{:02x}'.format(x) for x in b)))
+        print("Raw {} response: {}".format(cmd.name, \
+          " ".join('{:02x}'.format(x) for x in b)))
 
     if len(b) > 4:
         whole_packet = smbus_recreate_read_packet_data(dev_addr, cmd, b[0:4])
         pec = crc8_ccitt_compute(whole_packet)
         if b[4] != pec:
-            raise ValueError("Received {} from command {} with wrong PEC checksum".format(resp_type,cmd.name))
+            raise ValueError((
+              "Received {} from command {} with wrong PEC checksum"
+              ).format(resp_type,cmd.name))
     return bytes_to_type_str(b, resp_type)
 
 
@@ -1567,10 +1589,12 @@ def smbus_read_block_for_basecmd(bus, dev_addr, cmd, basecmd_name, resp_type, po
     expect_len = type_str_value_length(resp_type)
     # Try reading expected length first
     if po.api_type == "smbus":
-        expect_len = min(expect_len + 1 + (1 if bus.pec else 0), 32) # 32 is SMBus 2.0 limit
+        # 32 is SMBus 2.0 limit, it is enforced by Linux kernel I2C module
+        expect_len = min(expect_len + 1 + (1 if bus.pec else 0), 32)
         b = bus.read_i2c_block_data(dev_addr, cmd.value, expect_len)
     elif po.api_type == "i2c":
-        expect_len = min(expect_len+ 1 + (1 if bus.pec else 0), 36) # 32 +2 subcmd +1 length, +1 PEC
+        # 36 = 32 sbs max len +2 subcmd +1 length, +1 PEC
+        expect_len = min(expect_len+ 1 + (1 if bus.pec else 0), 36)
         part_write = i2c_msg.write(dev_addr, [cmd.value])
         part_read = i2c_msg.read(dev_addr, expect_len)
         bus.i2c_rdwr(part_write, part_read)
@@ -1580,41 +1604,50 @@ def smbus_read_block_for_basecmd(bus, dev_addr, cmd, basecmd_name, resp_type, po
 
     # block starts with 1-byte lenght
     if (len(b) < 1):
-        raise ValueError("Received {} from command {} is too short to even have length".format(resp_type,basecmd_name))
+        raise ValueError((
+          "Received {} from command {} is too short to even have length"
+          ).format(resp_type,basecmd_name))
 
     # check if we meet the expected length restriction
     if len(b) >= b[0] + 1:
         pass # length expectations met
     elif po.api_type == "smbus":
-        expect_len = 32 # smbus2 library won't allow more ATM
+        # 32 is SMBus 2.0 limit, it is enforced by Linux kernel I2C module
+        expect_len = 32
         b = bus.read_i2c_block_data(dev_addr, cmd.value, expect_len)
         if len(b) == 32 and b[0] in (32,33,34,):
-            # We've lost last bytes; but there is no other way - accept the truncated message
-            # Otherwise communicating messages >  31-byte would just not work
-            if (po.verbose > 1):
-                print("Warning: Response last bytes were truncated because of Smbus 2.0 constrains; adding zeros")
+            # We've lost last bytes; but there is no other way - accept
+            # the truncated message. Otherwise communicating messages
+            # >  31-byte would just not work
+            if (po.verbose > 0):
+                print("Warning: Response truncated because of Smbus 2.0 constrains; adding zeros")
             b += b'\0' * (b[0]-31)
     elif po.api_type == "i2c":
-        expect_len = 32 + 2 + 1 + (1 if bus.pec else 0) # 32 +2 subcmd +1 length, +1 PEC
+        # 36 = 32 sbs max len +2 subcmd +1 length, +1 PEC
+        expect_len = 32 + 2 + 1 + (1 if bus.pec else 0)
         part_write = i2c_msg.write(dev_addr, [cmd.value])
         part_read = i2c_msg.read(dev_addr, expect_len)
         bus.i2c_rdwr(part_write, part_read)
         b = bytes(part_read)
     else:
-        raise NotImplementedError("Unsupported bus API type '{}'".format(po.api_type))
+        raise NotImplementedError(("Unsupported bus API type '{}'"
+          ).format(po.api_type))
 
     if (po.verbose > 2):
-        print("Raw {} response: {}".format(basecmd_name, " ".join('{:02x}'.format(x) for x in b)))
+        print("Raw {} response: {}".format(basecmd_name, \
+          " ".join('{:02x}'.format(x) for x in b)))
 
     if len(b) < b[0] + 1:
-        raise ValueError("Received {} from command {} has invalid length".format(resp_type,basecmd_name))
+        raise ValueError(("Received {} from command {} has invalid length"
+          ).format(resp_type,basecmd_name))
 
     # check PEC crc-8 byte (unless the packet was so long that we didn't receive it)
     if len(b) >= b[0] + 2:
         whole_packet = smbus_recreate_read_packet_data(dev_addr, cmd, b[0:b[0]+1])
         pec = crc8_ccitt_compute(whole_packet)
         if b[b[0]+1] != pec:
-            raise ValueError("Received {} from command {} with wrong PEC checksum".format(resp_type,basecmd_name))
+            raise ValueError(("Received {} from command {} with wrong PEC checksum"
+              ).format(resp_type,basecmd_name))
 
     # prepare data part of the message
     v = bytes(b[1:b[0]+1])
@@ -1647,7 +1680,9 @@ def smbus_write_word(bus, dev_addr, cmd, v, val_type, po):
             if v < 0:
                 v += 65536
         if v < 0 or v > 65535:
-            raise ValueError("Value to write for command {} is beyond type {} bounds".format(cmd.name,val_type))
+            raise ValueError((
+              "Value to write for command {} is beyond type {} bounds"
+              ).format(cmd.name,val_type))
         if (po.verbose > 2):
             print("Write {}: {:02x} WORD=0x{:x}".format(cmd.name, cmd.value, v))
         bus.write_word_data(dev_addr, cmd.value, v)
@@ -1674,7 +1709,8 @@ def smbus_write_block_for_basecmd(bus, dev_addr, cmd, v, basecmd_name, val_type,
     b = v
     if po.api_type == "smbus":
         if (po.verbose > 2):
-            print("Write {}: {:02x} BLOCK={}".format(basecmd_name, cmd.value, " ".join('{:02x}'.format(x) for x in b)))
+            print("Write {}: {:02x} BLOCK={}".format(basecmd_name, \
+              cmd.value, " ".join('{:02x}'.format(x) for x in b)))
         bus.write_block_data(dev_addr, cmd.value, b)
     elif po.api_type == "i2c":
         if (po.verbose > 2):

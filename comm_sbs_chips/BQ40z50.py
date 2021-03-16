@@ -171,7 +171,7 @@ SBS_CMD_BQ_FIRMWARE_VERSION_INFO = {
         'access'	: "r",
         'tiny_name'	: "FwTyp",
         'desc'	: ("Type of the firmware. Usually used to differentiate "
-            "pre-release firmwares from production ones."),
+          "pre-release firmwares from production ones."),
     },
     SBS_CMD_BQ_FIRMWARE_VERSION.ImpedanceTrackVersion : {
         'type'	: "byte[2]",
@@ -180,8 +180,8 @@ SBS_CMD_BQ_FIRMWARE_VERSION_INFO = {
         'access'	: "r",
         'tiny_name'	: "ITVer",
         'desc'	: ("Impedance Track sw implementation version. Impedance "
-            "Track Algorithm with Cell Balancing During Rest is Texas "
-            "Instuments trademarked functionality."),
+          "Track Algorithm with Cell Balancing During Rest is Texas "
+          "Instuments trademarked functionality."),
     },
     SBS_CMD_BQ_FIRMWARE_VERSION.ReservedRR : {
         'type'	: "byte[2]",
@@ -235,7 +235,7 @@ SBS_CMD_BQ_AFE_REGISTERS_INFO = {
         'access'	: "r",
         'tiny_name'	: "StIRQ",
         'desc'	: ("AFE Interrupt Status. AFE Hardware interrupt status (for "
-            "example, wake time, push-button, and so on)."),
+          "example, wake time, push-button, and so on)."),
     },
     SBS_CMD_BQ_AFE_REGISTERS.FET_STATUS : {
         'type'	: "uint8",
@@ -244,7 +244,7 @@ SBS_CMD_BQ_AFE_REGISTERS_INFO = {
         'access'	: "r",
         'tiny_name'	: "StFET",
         'desc'	: ("AFE FET Status. AFE FET status (for example, CHG FET, "
-            "DSG FET, PCHG FET, FUSE input, and so on)."),
+          "DSG FET, PCHG FET, FUSE input, and so on)."),
     },
     SBS_CMD_BQ_AFE_REGISTERS.RX_IN_STATUS : {
         'type'	: "uint8",
@@ -309,7 +309,7 @@ SBS_CMD_BQ_AFE_REGISTERS_INFO = {
         'access'	: "r",
         'tiny_name'	: "StCB",
         'desc'	: ("AFE Cell Balance. AFE cell balancing enable settings and "
-            "status."),
+          "status."),
     },
     SBS_CMD_BQ_AFE_REGISTERS.ADC_CC_CONTROL : {
         'type'	: "uint8",
@@ -342,7 +342,7 @@ SBS_CMD_BQ_AFE_REGISTERS_INFO = {
         'access'	: "r",
         'tiny_name'	: "FtCtl",
         'desc'	: ("AFE Features Control. AFE control on various HW based "
-            "features."),
+          "features."),
     },
     SBS_CMD_BQ_AFE_REGISTERS.COMP_TIMER_CONTROL : {
         'type'	: "uint8",
@@ -1096,7 +1096,7 @@ SBS_CMD_BQ_DA_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "BatV",
         'desc'	: ("Voltage at the BAT pin. This is different than Voltage(), "
-            "which is the sum of all the cell voltages."),
+          "which is the sum of all the cell voltages."),
     },
     SBS_CMD_BQ_DA_STATUS1.PACKVoltage : {
         'type'	: "uint16",
@@ -1113,7 +1113,7 @@ SBS_CMD_BQ_DA_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "Curr0",
         'desc'	: ("Cell Current 0. Simultaneous current measured during "
-            "Cell Voltage 0 measurement"),
+          "Cell Voltage 0 measurement"),
     },
     SBS_CMD_BQ_DA_STATUS1.CellCurrent1 : {
         'type'	: "uint16",
@@ -1122,7 +1122,7 @@ SBS_CMD_BQ_DA_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "Curr1",
         'desc'	: ("Cell Current 1. Simultaneous current measured during "
-            "Cell Voltage 1 measurement"),
+          "Cell Voltage 1 measurement"),
     },
     SBS_CMD_BQ_DA_STATUS1.CellCurrent2 : {
         'type'	: "uint16",
@@ -1131,7 +1131,7 @@ SBS_CMD_BQ_DA_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "Curr2",
         'desc'	: ("Cell Current 2. Simultaneous current measured during "
-            "Cell Voltage 2 measurement"),
+          "Cell Voltage 2 measurement"),
     },
     SBS_CMD_BQ_DA_STATUS1.CellCurrent3 : {
         'type'	: "uint16",
@@ -1140,7 +1140,7 @@ SBS_CMD_BQ_DA_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "Curr3",
         'desc'	: ("Cell Current 3. Simultaneous current measured during "
-            "Cell Voltage 3 measurement"),
+          "Cell Voltage 3 measurement"),
     },
     SBS_CMD_BQ_DA_STATUS1.CellPower0 : {
         'type'	: "uint16",
@@ -1149,7 +1149,7 @@ SBS_CMD_BQ_DA_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "Pwr0",
         'desc'	: ("Cell Power 0. Calculated using Cell Voltage 0 and "
-            "Cell Current 0 data."),
+          "Cell Current 0 data."),
     },
     SBS_CMD_BQ_DA_STATUS1.CellPower1 : {
         'type'	: "uint16",
@@ -1158,7 +1158,7 @@ SBS_CMD_BQ_DA_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "Pwr1",
         'desc'	: ("Cell Power 1. Calculated using Cell Voltage 1 and "
-            "Cell Current 1 data."),
+          "Cell Current 1 data."),
     },
     SBS_CMD_BQ_DA_STATUS1.CellPower2 : {
         'type'	: "uint16",
@@ -1167,7 +1167,7 @@ SBS_CMD_BQ_DA_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "Pwr2",
         'desc'	: ("Cell Power 2. Calculated using Cell Voltage 2 and "
-            "Cell Current 2 data."),
+          "Cell Current 2 data."),
     },
     SBS_CMD_BQ_DA_STATUS1.CellPower3 : {
         'type'	: "uint16",
@@ -1176,7 +1176,7 @@ SBS_CMD_BQ_DA_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "Pwr3",
         'desc'	: ("Cell Power 3. Calculated using Cell Voltage 3 and "
-            "Cell Current 3 data."),
+          "Cell Current 3 data."),
     },
     SBS_CMD_BQ_DA_STATUS1.AllCellPower : {
         'type'	: "uint16",
@@ -1298,8 +1298,8 @@ SBS_CMD_BQ_GAUGE_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "TruRemQ",
         'desc'	: ("True remaining capacity from sim. The value in mAh "
-            "computed by IT simulation before any filtering or smoothing "
-            "function. This value can be negative or higher than FCC."),
+          "computed by IT simulation before any filtering or smoothing "
+          "function. This value can be negative or higher than FCC."),
     },
     SBS_CMD_BQ_GAUGE_STATUS1.TrueRemE : {
         'type'	: "uint16",
@@ -1308,8 +1308,8 @@ SBS_CMD_BQ_GAUGE_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "TruRemE",
         'desc'	: ("True remaining energy from sim. The value in cWh "
-            "computed by IT simulation before any filtering or smoothing "
-            "function. This value can be negative or higher than FCC."),
+          "computed by IT simulation before any filtering or smoothing "
+          "function. This value can be negative or higher than FCC."),
     },
     SBS_CMD_BQ_GAUGE_STATUS1.InitialQ : {
         'type'	: "uint16",
@@ -1334,7 +1334,7 @@ SBS_CMD_BQ_GAUGE_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "TruFCCQ",
         'desc'	: ("True full charge capacity from sim. The value computed "
-            "by IT simulation without the effects of any smoothing function."),
+          "by IT simulation without the effects of any smoothing function."),
     },
     SBS_CMD_BQ_GAUGE_STATUS1.TrueFCCE : {
         'type'	: "uint16",
@@ -1343,7 +1343,7 @@ SBS_CMD_BQ_GAUGE_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "TruFCCE",
         'desc'	: ("True full charge energy from sim.  The value computed "
-            "by IT simulation without the effects of any smoothing function."),
+          "by IT simulation without the effects of any smoothing function."),
     },
     SBS_CMD_BQ_GAUGE_STATUS1.TempSim : {
         'type'	: "uint16",
@@ -1360,8 +1360,8 @@ SBS_CMD_BQ_GAUGE_STATUS1_INFO = {
         'access'	: "r",
         'tiny_name'	: "TempAmb",
         'desc'	: ("Assumed ambient temperature used by sim. The current "
-            "assumed ambient temperature used by the Impedance Track algorithm "
-            "for thermal modeling."),
+          "assumed ambient temperature used by the Impedance Track algorithm "
+          "for thermal modeling."),
     },
     SBS_CMD_BQ_GAUGE_STATUS1.RaScale0 : {
         'type'	: "uint16",
@@ -1507,7 +1507,7 @@ SBS_CMD_BQ_GAUGE_STATUS2_INFO = {
         'access'	: "r",
         'tiny_name'	: "PackGrid",
         'desc'	: ("Active pack grid point. Minimum of GridCell0 to GridCell3. "
-            "This data is only valid during DISCHARGE mode when [R_DIS] = 0."),
+          "This data is only valid during DISCHARGE mode when [R_DIS] = 0."),
     },
     SBS_CMD_BQ_GAUGE_STATUS2.LearnedStatus : {
         'type'	: "uint8",
@@ -1525,7 +1525,7 @@ SBS_CMD_BQ_GAUGE_STATUS2_INFO = {
         'access'	: "r",
         'tiny_name'	: "CellGrd0",
         'desc'	: ("Active grid point cell 0. This data is only valid during "
-            "DISCHARGE mode when [R_DIS] = 0."),
+          "DISCHARGE mode when [R_DIS] = 0."),
     },
     SBS_CMD_BQ_GAUGE_STATUS2.GridCell1 : {
         'type'	: "uint8",
@@ -1534,7 +1534,7 @@ SBS_CMD_BQ_GAUGE_STATUS2_INFO = {
         'access'	: "r",
         'tiny_name'	: "CellGrd1",
         'desc'	: ("Active grid point cell 1. This data is only valid during "
-            "DISCHARGE mode when [R_DIS] = 0."),
+          "DISCHARGE mode when [R_DIS] = 0."),
     },
     SBS_CMD_BQ_GAUGE_STATUS2.GridCell2 : {
         'type'	: "uint8",
@@ -1543,7 +1543,7 @@ SBS_CMD_BQ_GAUGE_STATUS2_INFO = {
         'access'	: "r",
         'tiny_name'	: "CellGrd2",
         'desc'	: ("Active grid point cell 2. This data is only valid during "
-            "DISCHARGE mode when [R_DIS] = 0."),
+          "DISCHARGE mode when [R_DIS] = 0."),
     },
     SBS_CMD_BQ_GAUGE_STATUS2.GridCell3 : {
         'type'	: "uint8",
@@ -1552,7 +1552,7 @@ SBS_CMD_BQ_GAUGE_STATUS2_INFO = {
         'access'	: "r",
         'tiny_name'	: "CellGrd3",
         'desc'	: ("Active grid point cell 3. This data is only valid during "
-            "DISCHARGE mode when [R_DIS] = 0."),
+          "DISCHARGE mode when [R_DIS] = 0."),
     },
     SBS_CMD_BQ_GAUGE_STATUS2.StateTime : {
         'type'	: "uint32",
@@ -1561,7 +1561,7 @@ SBS_CMD_BQ_GAUGE_STATUS2_INFO = {
         'access'	: "r",
         'tiny_name'	: "StateTm",
         'desc'	: ("Time past since last state change. Tracks time within "
-            "DISCHARGE, CHARGE, REST."),
+          "DISCHARGE, CHARGE, REST."),
     },
     SBS_CMD_BQ_GAUGE_STATUS2.DOD0_Cell0 : {
         'type'	: "int16",
@@ -1710,8 +1710,8 @@ SBS_CMD_BQ_GAUGE_STATUS3_INFO = {
         'access'	: "r",
         'tiny_name'	: "DOD0_0_Q",
         'desc'	: ("DOD0 saved for next QMax update of Cell 0. Value stored "
-            "as a component required for future QMax calculations. The value "
-            "is only valid when [VOK] = 1."),
+          "as a component required for future QMax calculations. The value "
+          "is only valid when [VOK] = 1."),
     },
     SBS_CMD_BQ_GAUGE_STATUS3.DOD0_Cell1_4QMax : {
         'type'	: "int16",
@@ -1720,8 +1720,8 @@ SBS_CMD_BQ_GAUGE_STATUS3_INFO = {
         'access'	: "r",
         'tiny_name'	: "DOD0_1_Q",
         'desc'	: ("DOD0 saved for next QMax update of Cell 1. Value stored "
-            "as a component required for future QMax calculations. The value "
-            "is only valid when [VOK] = 1."),
+          "as a component required for future QMax calculations. The value "
+          "is only valid when [VOK] = 1."),
     },
     SBS_CMD_BQ_GAUGE_STATUS3.DOD0_Cell2_4QMax : {
         'type'	: "int16",
@@ -1730,8 +1730,8 @@ SBS_CMD_BQ_GAUGE_STATUS3_INFO = {
         'access'	: "r",
         'tiny_name'	: "DOD0_2_Q",
         'desc'	: ("DOD0 saved for next QMax update of Cell 2. Value stored "
-            "as a component required for future QMax calculations. The value "
-            "is only valid when [VOK] = 1."),
+          "as a component required for future QMax calculations. The value "
+          "is only valid when [VOK] = 1."),
     },
     SBS_CMD_BQ_GAUGE_STATUS3.DOD0_Cell3_4QMax : {
         'type'	: "int16",
@@ -1740,8 +1740,8 @@ SBS_CMD_BQ_GAUGE_STATUS3_INFO = {
         'access'	: "r",
         'tiny_name'	: "DOD0_3_Q",
         'desc'	: ("DOD0 saved for next QMax update of Cell 3. Value stored "
-            "as a component required for future QMax calculations. The value "
-            "is only valid when [VOK] = 1."),
+          "as a component required for future QMax calculations. The value "
+          "is only valid when [VOK] = 1."),
     },
     SBS_CMD_BQ_GAUGE_STATUS3.PassedQ_4QMax : {
         'type'	: "int16",
@@ -1926,7 +1926,7 @@ SBS_CMD_BQ_CC_AND_ADC_INFO = {
         'access'	: "r",
         'tiny_name'	: "Status",
         'desc'	: ("Status, informs which calib mode is active. Is 1 when "
-            "ManufacturerAccess() = 0xF081, 2 when ManufacturerAccess() = 0xF082."),
+          "ManufacturerAccess() = 0xF081, 2 when ManufacturerAccess() = 0xF082."),
     },
     SBS_CMD_BQ_CC_AND_ADC.CurrentCC : {
         'type'	: "uint16",
@@ -2026,8 +2026,8 @@ SBS_COMMAND_BQ_CC_AND_ADC_CALIB_MODE = {
         'struct_info'	: SBS_CMD_BQ_CC_AND_ADC_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Output CC and ADC for Calibration. All values "
-            "are updated every 250 ms and the format of each value is 2's "
-            "complement, MSB first."),
+          "are updated every 250 ms and the format of each value is 2's "
+          "complement, MSB first."),
     },
 }
 
@@ -2790,7 +2790,7 @@ SBS_PF_ALERT_INFO = {
         'access'	: "r",
         'tiny_name'	: "SOTF",
         'desc'	: ("Safety Overtemperature FET Failure. Field Effect "
-            "Transistors used for gauging exceed temperature limit."),
+          "Transistors used for gauging exceed temperature limit."),
     },
     SBS_FLAG_PF_ALERT.QMAX_IMBALANCE : {
         'type'	: "named_bitfield",
@@ -2827,7 +2827,7 @@ SBS_PF_ALERT_INFO = {
         'access'	: "r",
         'tiny_name'	: "CD",
         'desc'	: ("Capacity Degradation Failure. Cell capacity "
-            "deteriorated below useablility."),
+          "deteriorated below useablility."),
     },
     SBS_FLAG_PF_ALERT.VOLTAGE_IMBALANCE_REST : {
         'type'	: "named_bitfield",
@@ -2936,7 +2936,7 @@ SBS_PF_ALERT_INFO = {
         'access'	: "r",
         'tiny_name'	: "2LVL",
         'desc'	: ("FUSE input trigger by external protection. Whether FUSE "
-            "input indicates fuse trigger by external 2nd level protection."),
+          "input indicates fuse trigger by external 2nd level protection."),
     },
     SBS_FLAG_PF_ALERT.RESERVED23 : {
         'type'	: "named_bitfield",
@@ -2964,7 +2964,7 @@ SBS_PF_ALERT_INFO = {
         'access'	: "r",
         'tiny_name'	: "OCECO",
         'desc'	: ("Open Cell Tab Connection Failure. Set if VCx "
-            "connection indicates open line."),
+          "connection indicates open line."),
     },
     SBS_FLAG_PF_ALERT.RESERVED26 : {
         'type'	: "named_bitfield",
@@ -3122,7 +3122,7 @@ SBS_PF_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "SOTF",
         'desc'	: ("Safety Overtemperature FET Failure. Field Effect "
-            "Transistors used for gauging exceed temperature limit."),
+          "Transistors used for gauging exceed temperature limit."),
     },
     SBS_FLAG_PF_STATUS.QMAX_IMBALANCE : {
         'type'	: "named_bitfield",
@@ -3159,7 +3159,7 @@ SBS_PF_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "CD",
         'desc'	: ("Capacity Degradation Failure. Cell capacity "
-            "deteriorated below useablility."),
+          "deteriorated below useablility."),
     },
     SBS_FLAG_PF_STATUS.VOLTAGE_IMBALANCE_REST : {
         'type'	: "named_bitfield",
@@ -3268,7 +3268,7 @@ SBS_PF_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "2LVL",
         'desc'	: ("FUSE input trigger by external protection. Whether FUSE "
-            "input indicates fuse trigger by external 2nd level protection."),
+          "input indicates fuse trigger by external 2nd level protection."),
     },
     SBS_FLAG_PF_STATUS.PTC_FAILURE : {
         'type'	: "named_bitfield",
@@ -3278,7 +3278,7 @@ SBS_PF_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "PTC",
         'desc'	: ("Positive Temperature Coefficient failure. The PTC is "
-            "linked to Analog-Front-End."),
+          "linked to Analog-Front-End."),
     },
     SBS_FLAG_PF_STATUS.INSTR_FLASH_CHECKSUM : {
         'type'	: "named_bitfield",
@@ -3297,7 +3297,7 @@ SBS_PF_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "OCECO",
         'desc'	: ("Open Cell Tab Connection Failure. Set if VCx "
-            "connection indicates open line."),
+          "connection indicates open line."),
     },
     SBS_FLAG_PF_STATUS.DF_WEAR_FAILURE : {
         'type'	: "named_bitfield",
@@ -3307,7 +3307,7 @@ SBS_PF_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "DFW",
         'desc'	: ("Data Flash wearout failure. Set if Data Flash writes "
-            "are not always ending with success."),
+          "are not always ending with success."),
     },
     SBS_FLAG_PF_STATUS.RESERVED27 : {
         'type'	: "named_bitfield",
@@ -3464,7 +3464,7 @@ SBS_OPERATION_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "BTPI",
         'desc'	: ("Battery Trip Point Interrupt. Setting and clearing "
-            "this bit depends on various conditions."),
+          "this bit depends on various conditions."),
     },
     SBS_FLAG_OPERATION_STATUS.SECURITY_MODE : {
         'type'	: "named_bitfield",
@@ -3555,7 +3555,7 @@ SBS_OPERATION_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "AUTH",
         'desc'	: ("Authentication ongoing. Set when Authentication function "
-            "is in progress."),
+          "is in progress."),
     },
     SBS_FLAG_OPERATION_STATUS.AUTO_CC_OFFS_CALIB : {
         'type'	: "named_bitfield",
@@ -3565,9 +3565,9 @@ SBS_OPERATION_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "ACALM",
         'desc'	: ("Auto CC offset calibration by SMBus cmd. When the gauge "
-            "receives the MAC AutoCCOffset(), it sets the bit and starts the "
-            "auto CC offset calibration. The bit gets cleared when the "
-            "calibration is completed."),
+          "receives the MAC AutoCCOffset(), it sets the bit and starts the "
+          "auto CC offset calibration. The bit gets cleared when the "
+          "calibration is completed."),
     },
     SBS_FLAG_OPERATION_STATUS.RAW_ADC_CC_OUTPUT : {
         'type'	: "named_bitfield",
@@ -3577,8 +3577,8 @@ SBS_OPERATION_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "CALOC",
         'desc'	: ("Raw ADC/CC data calibration output. Active when either "
-            "the MAC OutputCCADCCal() or OutputShortedCCADCCal() is sent and "
-            "the raw CC and ADC data for calibration is available."),
+          "the MAC OutputCCADCCal() or OutputShortedCCADCCal() is sent and "
+          "the raw CC and ADC data for calibration is available."),
     },
     SBS_FLAG_OPERATION_STATUS.RAW_CCOFFS_OUTPUT : {
         'type'	: "named_bitfield",
@@ -3588,8 +3588,8 @@ SBS_OPERATION_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "CALOO",
         'desc'	: ("Raw CC offset data calibration output. Active when MAC "
-            "OutputShortedCCADCCal() is sent and the raw shorted Current Check "
-            "data for calibration is available."),
+          "OutputShortedCCADCCal() is sent and the raw shorted Current Check "
+          "data for calibration is available."),
     },
     SBS_FLAG_OPERATION_STATUS.XLOW_SPEED_STATE : {
         'type'	: "named_bitfield",
@@ -3617,7 +3617,7 @@ SBS_OPERATION_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "INIT",
         'desc'	: ("Initialization after full reset. Cleared when SBS data "
-            "is calculated and available."),
+          "is calculated and available."),
     },
     SBS_FLAG_OPERATION_STATUS.SMB_CAL_ON_LOW : {
         'type'	: "named_bitfield",
@@ -3627,9 +3627,9 @@ SBS_OPERATION_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "SLCAL",
         'desc'	: ("Auto CC calibration when the bus is low. The Current Check "
-            "calibration is ongoing after this SBS line goes low. This bit may "
-            "not be read by the host because the FW will clear it when a "
-            "communication is detected."),
+          "calibration is ongoing after this SBS line goes low. This bit may "
+          "not be read by the host because the FW will clear it when a "
+          "communication is detected."),
     },
     SBS_FLAG_OPERATION_STATUS.ADC_MEAS_IN_SLEEP : {
         'type'	: "named_bitfield",
@@ -3639,7 +3639,7 @@ SBS_OPERATION_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "SLPAD",
         'desc'	: ("ADC Measurement in SLEEP mode. The measurement is "
-            "performed for QMax update."),
+          "performed for QMax update."),
     },
     SBS_FLAG_OPERATION_STATUS.CC_MEAS_IN_SLEEP : {
         'type'	: "named_bitfield",
@@ -3667,7 +3667,7 @@ SBS_OPERATION_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "EMSHT",
         'desc'	: ("Emergency Shutdown. This SHUTDOWN can be activated ie "
-            "by outranged voltage."),
+          "by outranged voltage."),
     },
     SBS_FLAG_OPERATION_STATUS.RESERVED30 : {
         'type'	: "named_bitfield",
@@ -4011,7 +4011,7 @@ SBS_GAUGING_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "BAL_EN",
         'desc'	: ("Cell Balancing availability. If set, cell balancing "
-            "is possible if enabled."),
+          "is possible if enabled."),
     },
     SBS_FLAG_GAUGING_STATUS.END_OF_DISCHG_V_REACH : {
         'type'	: "named_bitfield",
@@ -4021,7 +4021,7 @@ SBS_GAUGING_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "EDV",
         'desc'	: ("End-of-Discharge Termination Voltage. Set when "
-            "termination voltage is reached during discharge."),
+          "termination voltage is reached during discharge."),
     },
     SBS_FLAG_GAUGING_STATUS.DISCHARGE_RELAX : {
         'type'	: "named_bitfield",
@@ -4040,7 +4040,7 @@ SBS_GAUGING_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "CF",
         'desc'	: ("Condition Cycle Flag. Set when Condition Cycle is "
-            "needed due to MaxError() exceeding Max Error Limit."),
+          "needed due to MaxError() exceeding Max Error Limit."),
     },
     SBS_FLAG_GAUGING_STATUS.REST_OCV_READINGS : {
         'type'	: "named_bitfield",
@@ -4050,7 +4050,7 @@ SBS_GAUGING_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "REST",
         'desc'	: ("Open Circuit Voltage reading taken. If not set, the "
-            "OCV Reading was Not Taken, or battery is not in RELAX mode."),
+          "OCV Reading was Not Taken, or battery is not in RELAX mode."),
     },
     SBS_FLAG_GAUGING_STATUS.RESERVED9 : {
         'type'	: "named_bitfield",
@@ -4078,8 +4078,8 @@ SBS_GAUGING_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "VOK",
         'desc'	: ("Voltages are OK for QMax update. This flag is updated "
-            "at exit of the RELAX mode. If set, a DOD is saved for next "
-            "QMax update."),
+          "at exit of the RELAX mode. If set, a DOD is saved for next "
+          "QMax update."),
     },
     SBS_FLAG_GAUGING_STATUS.QMAX_GAUGING : {
         'type'	: "named_bitfield",
@@ -4089,7 +4089,7 @@ SBS_GAUGING_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "QEN",
         'desc'	: ("Impedance Track Gauging. If set, Ra and QMax updates "
-            "are enabled."),
+          "are enabled."),
     },
     SBS_FLAG_GAUGING_STATUS.OCV_UPDATE_IN_SLEEP : {
         'type'	: "named_bitfield",
@@ -4099,7 +4099,7 @@ SBS_GAUGING_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "SLPQMx",
         'desc'	: ("OCV update in SLEEP mode. Active when OCV reading is "
-            "in progress."),
+          "in progress."),
     },
     SBS_FLAG_GAUGING_STATUS.RESERVED14 : {
         'type'	: "named_bitfield",
@@ -4118,7 +4118,7 @@ SBS_GAUGING_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "NSFM",
         'desc'	: ("Negative scale factor mode. Set if Negative Ra Scaling "
-            "Factor is Detected."),
+          "Factor is Detected."),
     },
     SBS_FLAG_GAUGING_STATUS.DISCHARGE_QUALIFIED : {
         'type'	: "named_bitfield",
@@ -4128,7 +4128,7 @@ SBS_GAUGING_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "VDQ",
         'desc'	: ("Discharge qualified for learning. This is opposite "
-            "of the R_DIS flag."),
+          "of the R_DIS flag."),
     },
     SBS_FLAG_GAUGING_STATUS.QMAX_UPDATED_T : {
         'type'	: "named_bitfield",
@@ -4138,7 +4138,7 @@ SBS_GAUGING_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "QMax",
         'desc'	: ("QMax updated toggle. This flag toggles "
-            "every time QMax is updated."),
+          "every time QMax is updated."),
     },
     SBS_FLAG_GAUGING_STATUS.RESISTANCE_UPDATE_T : {
         'type'	: "named_bitfield",
@@ -4148,7 +4148,7 @@ SBS_GAUGING_STATUS_INFO = {
         'access'	: "r",
         'tiny_name'	: "RX",
         'desc'	: ("Resistance update toggle. This flag toggles "
-            "every time Resistance is updated."),
+          "every time Resistance is updated."),
     },
     SBS_FLAG_GAUGING_STATUS.LOAD_MODE : {
         'type'	: "named_bitfield",
@@ -4452,7 +4452,7 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         #'resp_location'	: SBS_COMMAND.ManufacturerData,
         # Description, with first sentence making a short description,
         'desc'	: ("Output selected ManufacturerData(). The selection is made"
-            "by invoking other sub-commands."),
+          "by invoking other sub-commands."),
     },
     MANUFACTURER_ACCESS_CMD_BQGENERIC.DeviceType : {
         'type'	: "uint16_blk",
@@ -4468,7 +4468,7 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_FIRMWARE_VERSION_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Version of the firmware within the device. Major and "
-            "minor version numbers."),
+          "minor version numbers."),
     },
     MANUFACTURER_ACCESS_CMD_BQGENERIC.HardwareVersion : {
         'type'	: "uint16_blk",
@@ -4484,8 +4484,8 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'resp_wait'	: 0.35,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Checksum/signature of the Instruction Flash. Read on "
-            "ManufacturerBlockAccess() or ManufacturerData() after a wait time "
-            "of 250 ms."),
+          "ManufacturerBlockAccess() or ManufacturerData() after a wait time "
+          "of 250 ms."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.StaticDataFlashChecksum : {
         'type'	: "uint16_blk",
@@ -4494,9 +4494,9 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'resp_wait'	: 0.35,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Checksum/signature of the Data Flash. MSB is set to 1 "
-            "if the calculated signature does not match the signature stored "
-            "in DF. Read on ManufacturerBlockAccess() or ManufacturerData() "
-            "after a wait time of 250 ms."),
+          "if the calculated signature does not match the signature stored "
+          "in DF. Read on ManufacturerBlockAccess() or ManufacturerData() "
+          "after a wait time of 250 ms."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.ChemicalID : {
         'type'	: "uint16_blk",
@@ -4504,7 +4504,7 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'resp_location'	: SBS_COMMAND.ManufacturerData,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Chemical ID of the OCV tables. Returns ID used in the "
-            "gauging algorithm."),
+          "gauging algorithm."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.StaticChemDFSignature : {
         'type'	: "uint16_blk",
@@ -4513,9 +4513,9 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'resp_wait'	: 0.35,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Checksum of the Chemical OCV tables Data Flash. MSB is set "
-            "to 1 if the calculated signature does not match the signature stored "
-            "in DF. Read on ManufacturerBlockAccess() or ManufacturerData() "
-            "after a wait time of 250 ms."),
+          "to 1 if the calculated signature does not match the signature stored "
+          "in DF. Read on ManufacturerBlockAccess() or ManufacturerData() "
+          "after a wait time of 250 ms."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.AllDFSignature : {
         'type'	: "uint16_blk",
@@ -4524,11 +4524,11 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'resp_wait'	: 0.35,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Checksum of the all Data Flash parameters. MSB is set "
-            "to 1 if the calculated signature does not match the signature "
-            "stored in DF. It is normally expected that this signature will "
-            "change due to updates of lifetime, gauging, and other info. "
-            "Read on ManufacturerBlockAccess() or ManufacturerData() after a "
-            "wait time of 250 ms"),
+          "to 1 if the calculated signature does not match the signature "
+          "stored in DF. It is normally expected that this signature will "
+          "change due to updates of lifetime, gauging, and other info. "
+          "Read on ManufacturerBlockAccess() or ManufacturerData() after a "
+          "wait time of 250 ms"),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.ShutdownMode : {
         'type'	: "void",
@@ -4536,17 +4536,17 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         # when sealed, the command needs to be sent twice to BQ40z55
         'access_per_seal'	: ("w","w","w",),
         'desc'	: ("SHUTDOWN mode with reduced power consumption. The device "
-            "can be sent to this mode before shipping. It shuts down respecting "
-            "ShipFETOffTime ShipDelayTime delays. The device will wake up when "
-            "voltage exceeding ChargerPresentThreshold is applied to PACK pin."),
+          "can be sent to this mode before shipping. It shuts down respecting "
+          "ShipFETOffTime ShipDelayTime delays. The device will wake up when "
+          "voltage exceeding ChargerPresentThreshold is applied to PACK pin."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.SleepMode : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Send device to sleep if conditions are met. Some of "
-            "wake conditions are: Current exceeds Sleep Current, Wake"
-            "Comparator trips, SafetyAlert() or PFAlert() flags are set."),
+          "wake conditions are: Current exceeds Sleep Current, Wake"
+          "Comparator trips, SafetyAlert() or PFAlert() flags are set."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.DeviceResetOld : {
         'type'	: "void",
@@ -4559,177 +4559,177 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Starts an Auto CC Offset calibration. The calibration "
-            "takes about 16 sec. This value is used for cell current measurement "
-            "when the device is in CHARGING or DISCHARGING state."),
+          "takes about 16 sec. This value is used for cell current measurement "
+          "when the device is in CHARGING or DISCHARGING state."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.FuseToggle : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Activate/deactivate FUSE output pin. Toggle switch which "
-            "allows to control the FUSE for ease of testing during manufacturing."),
+          "allows to control the FUSE for ease of testing during manufacturing."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.PreChargeFET : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Turns on/off Pre-CHG FET drive function. Toggle switch "
-            "which allows to control the PCHG FET for ease of testing during "
-            "manufacturing. This command is only enabled if FW FET control is "
-            "not active and manual control is allowed."),
+          "which allows to control the PCHG FET for ease of testing during "
+          "manufacturing. This command is only enabled if FW FET control is "
+          "not active and manual control is allowed."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.ChargeFET : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Turns on/off CHG FET drive function. Toggle switch "
-            "which allows to control the Charge FET for ease of testing "
-            "during manufacturing. This command is only enabled if FW FET "
-            "control is not active and manual control is allowed."),
+          "which allows to control the Charge FET for ease of testing "
+          "during manufacturing. This command is only enabled if FW FET "
+          "control is not active and manual control is allowed."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.DischargeFET : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Turns on/off DSG FET drive function. Toggle switch "
-            "which allows to control the Discharge FET for ease of testing "
-            "during manufacturing. This command is only enabled if FW FET "
-            "control is not active and manual control is allowed."),
+          "which allows to control the Discharge FET for ease of testing "
+          "during manufacturing. This command is only enabled if FW FET "
+          "control is not active and manual control is allowed."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.Gauging : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Enable/disable the gauging function. Toggle switch "
-            "which allows to control the Gauge for ease of testing during "
-            "manufacturing. If triggered in UNSEALED mode, the switch remains "
-            "on latest status after reset."),
+          "which allows to control the Gauge for ease of testing during "
+          "manufacturing. If triggered in UNSEALED mode, the switch remains "
+          "on latest status after reset."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.FETControl : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Control of the CHG, DSG, and PCHG FET. Toggle switch "
-            "which allows to either control the 3 FETs by the firmware, "
-            "or disable automation and allow manual control."),
+          "which allows to either control the 3 FETs by the firmware, "
+          "or disable automation and allow manual control."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.LifetimeDataCollection : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Enables/disables Lifetime data collection. Toggle switch "
-            "which allows to control whether Lifetime Data collection feature "
-            "is working. If triggered in UNSEALED mode, the switch remains "
-            "on latest status after reset."),
+          "which allows to control whether Lifetime Data collection feature "
+          "is working. If triggered in UNSEALED mode, the switch remains "
+          "on latest status after reset."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.PermanentFailure : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Enables/disables Permanent Failure. Toggle switch which "
-            "allows to control when PF mode can be triggered, for ease of "
-            "manufacturing. If triggered in UNSEALED mode, the switch remains "
-            "on latest status after reset."),
+          "allows to control when PF mode can be triggered, for ease of "
+          "manufacturing. If triggered in UNSEALED mode, the switch remains "
+          "on latest status after reset."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.BlackBoxRecorder : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Enables/disables Black box recorder function. Toggle "
-            "switch which allows to control the recorder for ease of "
-            "manufacturing. If triggered in UNSEALED mode, the switch remains "
-            "on latest status after reset."),
+          "switch which allows to control the recorder for ease of "
+          "manufacturing. If triggered in UNSEALED mode, the switch remains "
+          "on latest status after reset."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.Fuse : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Enables/disables firmware fuse tripping function. Toggle "
-            "switch which allows to switch beetween automatic control the fuse "
-            "by FW and manual control for ease of manufacturing. If triggered "
-            "in UNSEALED mode, the switch remains on latest status after reset."),
+          "switch which allows to switch beetween automatic control the fuse "
+          "by FW and manual control for ease of manufacturing. If triggered "
+          "in UNSEALED mode, the switch remains on latest status after reset."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.LEDDisplayEnable : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Enables/disables LED Display function. Toggle switch "
-            "which allows to control the LEDs for ease of manufacturing. "
-            "If triggered in UNSEALED mode, the switch remains on latest "
-            "status after reset."),
+          "which allows to control the LEDs for ease of manufacturing. "
+          "If triggered in UNSEALED mode, the switch remains on latest "
+          "status after reset."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.LifetimeDataReset : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Resets Lifetime data data in data flash. Clears the "
-            "flags for ease of manufacturing."),
+          "flags for ease of manufacturing."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.PermanentFailDataReset : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Resets PF data in data flash. Clears permanent fail "
-            "flags for ease of manufacturing. If the condition which caused "
-            "the flag to appear is still tripped, the flag will get set again."),
+          "flags for ease of manufacturing. If the condition which caused "
+          "the flag to appear is still tripped, the flag will get set again."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.LifetimeDataFlush : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Flushes the RAM Lifetime Data to Data Flash. Toggle switch "
-            "intended to help streamline evaluation testing."),
+          "intended to help streamline evaluation testing."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.LifetimeDataSpeedUpMode : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Lifetime SPEED UP mode, multiplies time by 7200. "
-            "When SPEED UP is active LT_TEST bit is set, and every 1 sec in "
-            "real time counts as 2 hours in FW time. Toggle switch "
-            "intended to help streamline evaluation testing."),
+          "When SPEED UP is active LT_TEST bit is set, and every 1 sec in "
+          "real time counts as 2 hours in FW time. Toggle switch "
+          "intended to help streamline evaluation testing."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.BlackBoxRecorderReset : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Resets the black box recorder data in Data Flash. "
-            "Toggle switch which allows to control the Black Box Recorder "
-            "data in DF for ease of manufacturing."),
+          "Toggle switch which allows to control the Black Box Recorder "
+          "data in DF for ease of manufacturing."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.LEDToggle : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Activate/deactivate configured LED display. Toggle "
-            "switch which allows to control the LED display for ease of "
-            "testing during manufacturing."),
+          "switch which allows to control the LED display for ease of "
+          "testing during manufacturing."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.LEDDisplayPress : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Simulates low-high-low detection on the /DISP pin. "
-            "Toggle switch which allows to activate the LED display, while "
-            "forcing RSOC to 100% in order to demonstrate all LEDs in use, "
-            "the full speed, and the brightness."),
+          "Toggle switch which allows to activate the LED display, while "
+          "forcing RSOC to 100% in order to demonstrate all LEDs in use, "
+          "the full speed, and the brightness."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.CalibrationMode : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Disables/enables entry into CALIBRATION mode. Status is "
-            "indicated by the CAL_EN flag. In this mode, the chip outputs the "
-            " raw ADC and CC data. Output is controllable with 0xF081 and 0xF082 "
-            "on ManufacturerAccess(). Toggle switch - write the value again "
-            "to disable the output. It is also disabled upon a reset."),
+          "indicated by the CAL_EN flag. In this mode, the chip outputs the "
+          " raw ADC and CC data. Output is controllable with 0xF081 and 0xF082 "
+          "on ManufacturerAccess(). Toggle switch - write the value again "
+          "to disable the output. It is also disabled upon a reset."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.SealDevice : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","w","w",),
         'desc'	: ("Seals the device, disabling some commands. Certain SBS "
-            "commands and access to Data Flash are disabled in sealed device."),
+          "commands and access to Data Flash are disabled in sealed device."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.SecurityKeys : {
         'type'	: "byte[8]",
@@ -4896,7 +4896,7 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_DA_STATUS2_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Outputs temperature data values. Block size "
-            "is either 10 or 14 bytes, depending on chip and firmware."),
+          "is either 10 or 14 bytes, depending on chip and firmware."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.GaugeStatus1 : {
         'type'	: "byte[32]",
@@ -4905,7 +4905,7 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_GAUGE_STATUS1_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Impedance Track Status parameters 1. Gauging algorithm "
-            "related params. Outputs 32 bytes of IT data values."),
+          "related params. Outputs 32 bytes of IT data values."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.GaugeStatus2 : {
         'type'	: "byte[32]",
@@ -4914,7 +4914,7 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_GAUGE_STATUS2_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Impedance Track Status parameters 2. Gauging algorithm "
-            "related params. Outputs 32 bytes of IT data values."),
+          "related params. Outputs 32 bytes of IT data values."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.GaugeStatus3 : {
         'type'	: "byte[24]",
@@ -4923,7 +4923,7 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_GAUGE_STATUS3_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Impedance Track Status parameters 3. Gauging algorithm "
-            "related params. Outputs 24 bytes of IT data values."),
+          "related params. Outputs 24 bytes of IT data values."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.CBStatus : {
         'type'	: "byte[8]",
@@ -4948,24 +4948,24 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_FILTERED_CAPACITY_INFO,
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("Returns the filtered capacity and energy. "
-            "Works even if [SMOOTH]=0."),
+          "Works even if [SMOOTH]=0."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.ROMMode : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","-","w",),
         'desc'	: ("Enables the ROM mode for IF update. On this command, "
-            "device goes to ROM mode ready for firmware re-programming. Use "
-            "0x08 to ManufacturerAccess() to return."),
+          "device goes to ROM mode ready for firmware re-programming. Use "
+          "0x08 to ManufacturerAccess() to return."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.ExitCalibOutputMode : {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("w","w","w",),
         'desc'	: ("Exit Calibration Output Mode. Stop output of ADC or CC "
-            "data on ManufacturerData() and return to NORMAL data acquisition "
-            "mode. Any other MAC command sent to the gauge will also stop the "
-            "output of the calibration data."),
+          "data on ManufacturerData() and return to NORMAL data acquisition "
+          "mode. Any other MAC command sent to the gauge will also stop the "
+          "output of the calibration data."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.OutputCCnADC : {
         'type'	: "void",
@@ -4974,10 +4974,10 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'mode_commands'	: SBS_COMMAND_BQ_CC_AND_ADC_CALIB_MODE,
         'access_per_seal'	: ("w","w","w",),
         'desc'	: ("Output CC and ADC for Calibration, mode trigger. Lets the "
-            "device output several raw values for calibration purposes, as "
-            "block on ManufacturerBlockAccess() or ManufacturerData(). "
-            "All values are updated every 250 ms and the format of each value "
-            "is 2's complement, MSB first."),
+          "device output several raw values for calibration purposes, as "
+          "block on ManufacturerBlockAccess() or ManufacturerData(). "
+          "All values are updated every 250 ms and the format of each value "
+          "is 2's complement, MSB first."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.OutputShortCCnADCOffset : {
         'type'	: "void",
@@ -4987,11 +4987,11 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         # Requires special processing, not just r/w, as it changes the battery mode
         'access_per_seal'	: ("w","w","w",),
         'desc'	: ("Output Shorted CC AND ADC Offset for Calib, mode trigger. "
-            "Lets the device output several raw values for calibration purposes, "
-            "as block on ManufacturerBlockAccess() or ManufacturerData(). "
-            "All values are updated every 250 ms and the format of each value "
-            "is 2's complement, MSB first. This mode includes an internal "
-            "short on the coulomb counter inputs for measuring offset."),
+          "Lets the device output several raw values for calibration purposes, "
+          "as block on ManufacturerBlockAccess() or ManufacturerData(). "
+          "All values are updated every 250 ms and the format of each value "
+          "is 2's complement, MSB first. This mode includes an internal "
+          "short on the coulomb counter inputs for measuring offset."),
     },
 }
 
@@ -5007,8 +5007,8 @@ MANUFACTURER_BLOCK_ACCESS_CMD_BQ40_INFO = {
         'cmd_array'	: 0x2000,
         'access_per_seal'	: ("-","rw","rw",),
         'desc'	: ("Read/write DF content with given address. Sets the DF address "
-            "for immediate read/write on ManufacturerBlockAccess(). Not available "
-            "on ManufacturerAccess()."),
+          "for immediate read/write on ManufacturerBlockAccess(). Not available "
+          "on ManufacturerAccess()."),
     },
 }
 
@@ -5042,9 +5042,9 @@ SBS_CMD_BQ40_INFO = {
         'access_per_seal'	: ("rw","rw","rw",),
         # Description, with first sentence making a short description,
         'desc'	: ("Optional command, is implementation specific. "
-            "It may be used by a battery manufacturer or silicon supplier to "
-            "return specific version information, internal calibration "
-            "information, or some other manufacturer specific function."),
+          "It may be used by a battery manufacturer or silicon supplier to "
+          "return specific version information, internal calibration "
+          "information, or some other manufacturer specific function."),
         # Selection of an algorithm to read/write the value of this function
         'getter'	: "write_word_subcommand",
     },
@@ -5134,7 +5134,7 @@ SBS_CMD_BQ40_INFO = {
         'bitfields_info'	: SBS_SAFETY_ALERT_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Safety Alert bits. In sealed mode, use "
-            "ManufacturerAccess() instead."),
+          "ManufacturerAccess() instead."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.SafetyStatus : {
@@ -5143,7 +5143,7 @@ SBS_CMD_BQ40_INFO = {
         'bitfields_info'	: SBS_SAFETY_STATUS_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Safety Status bits. In sealed mode, use "
-            "ManufacturerAccess() instead."),
+          "ManufacturerAccess() instead."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.PFAlert : {
@@ -5152,7 +5152,7 @@ SBS_CMD_BQ40_INFO = {
         'bitfields_info'	: SBS_PF_ALERT_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Permanent Failure Alert bits. In sealed mode, use "
-            "ManufacturerAccess() instead."),
+          "ManufacturerAccess() instead."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.PFStatus : {
@@ -5161,7 +5161,7 @@ SBS_CMD_BQ40_INFO = {
         'bitfields_info'	: SBS_PF_STATUS_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Permanent Failure Status bits. In sealed mode, use "
-            "ManufacturerAccess() instead."),
+          "ManufacturerAccess() instead."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.OperationStatus : {
@@ -5170,7 +5170,7 @@ SBS_CMD_BQ40_INFO = {
         'bitfields_info'	: SBS_OPERATION_STATUS_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Operational Status bits. In sealed mode, use "
-            "ManufacturerAccess() instead."),
+          "ManufacturerAccess() instead."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.ChargingStatus : {
@@ -5179,7 +5179,7 @@ SBS_CMD_BQ40_INFO = {
         'bitfields_info'	: SBS_CHARGING_STATUS_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Charging Status bits. In sealed mode, use "
-            "ManufacturerAccess() instead."),
+          "ManufacturerAccess() instead."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.GaugingStatus : {
@@ -5188,7 +5188,7 @@ SBS_CMD_BQ40_INFO = {
         'bitfields_info'	: SBS_GAUGING_STATUS_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Gauging Status bits. In sealed mode, use "
-            "ManufacturerAccess() instead."),
+          "ManufacturerAccess() instead."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.ManufacturingStatus : {
@@ -5197,7 +5197,7 @@ SBS_CMD_BQ40_INFO = {
         'bitfields_info'	: SBS_MANUFACTURING_STATUS_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Manufacturing Status bits. In sealed mode, use "
-            "ManufacturerAccess() instead."),
+          "ManufacturerAccess() instead."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.AFERegisters : {
@@ -5206,7 +5206,7 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_AFE_REGISTERS_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Analog-Front-End reg values from ManufacturerData(). "
-            "In sealed mode, use ManufacturerAccess() instead."),
+          "In sealed mode, use ManufacturerAccess() instead."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.LifetimeDataBlock1 : {
@@ -5215,7 +5215,7 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK1_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Lifetime data values, block 1. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.LifetimeDataBlock2 : {
@@ -5224,7 +5224,7 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK2_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Lifetime data values, block 2. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.LifetimeDataBlock3 : {
@@ -5233,7 +5233,7 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK3_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Lifetime data values, block 3. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.LifetimeDataBlock4 : {
@@ -5242,7 +5242,7 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK4_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Lifetime data values, block 4. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.LifetimeDataBlock5 : {
@@ -5251,7 +5251,7 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_LIFETIME_DATA_BLOCK5_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Lifetime data values, block 5. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.ManufacturerInfo : {
@@ -5259,7 +5259,7 @@ SBS_CMD_BQ40_INFO = {
         'unit'	: {'scale':1,'name':"str"},
         'access_per_seal'	: ("r","rw","rw",),
         'desc'	: ("Manufacturer Info values. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.DAStatus1 : {
@@ -5268,7 +5268,7 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_DA_STATUS1_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("DA status values, block 1. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.DAStatus2 : {
@@ -5277,7 +5277,7 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_DA_STATUS2_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("DA status values, block 2. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.GaugeStatus1 : {
@@ -5286,8 +5286,8 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_GAUGE_STATUS1_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Gauging Status for Impedance Track, block 1. "
-            "Gauging algorithm related parameters. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "Gauging algorithm related parameters. The same values "
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.GaugeStatus2 : {
@@ -5296,8 +5296,8 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_GAUGE_STATUS2_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Gauging Status for Impedance Track, block 2. "
-            "Gauging algorithm related parameters. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "Gauging algorithm related parameters. The same values "
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.GaugeStatus3 : {
@@ -5306,8 +5306,8 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_GAUGE_STATUS3_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Gauging Status for Impedance Track, block 3. "
-            "Gauging algorithm related parameters. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "Gauging algorithm related parameters. The same values "
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.CBStatus : {
@@ -5316,7 +5316,7 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_CB_STATUS_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Cell balance time information. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.StateOfHealthPhys : {
@@ -5325,8 +5325,8 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_STATE_OF_HEALTH_PHYS_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("State-of-health full charge capacity and energy. "
-            "The same values "
-            "as in corresponding ManufacturerData() command."),
+          "The same values "
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ40.FilteredCapacity : {
@@ -5335,8 +5335,8 @@ SBS_CMD_BQ40_INFO = {
         'struct_info'	: SBS_CMD_BQ_FILTERED_CAPACITY_INFO,
         'access_per_seal'	: ("-","r","r",),
         'desc'	: ("Returns the filtered capacity and energy. "
-            "Works even if [SMOOTH]=0. The same values "
-            "as in corresponding ManufacturerData() command."),
+          "Works even if [SMOOTH]=0. The same values "
+          "as in corresponding ManufacturerData() command."),
         'getter'	: "simple",
     },
 }
@@ -5347,8 +5347,8 @@ SBS_CMD_BQ40_TURBO_INFO = {
         'unit'	: {'scale':1,'name':"cW"},
         'access_per_seal'	: ("r","r","rw",),
         'desc'	: ("Max Peak Power for the battery pack config. Computes "
-            "and provides Max Power information based on the battery pack "
-            "configuration. The gauge computes a new RAM value every second."),
+          "and provides Max Power information based on the battery pack "
+          "configuration. The gauge computes a new RAM value every second."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ_TURBO.TURBO_FINAL : {
@@ -5356,8 +5356,8 @@ SBS_CMD_BQ40_TURBO_INFO = {
         'unit'	: {'scale':1,'name':"cW"},
         'access_per_seal'	: ("rw","rw","rw",),
         'desc'	: ("Minimal TURBO-mode power level during active operation. "
-            "Min Turbo Power represents minimal TURBO BOOST mode power level "
-            "during active operation (e.g., non-SLEEP)."),
+          "Min Turbo Power represents minimal TURBO BOOST mode power level "
+          "during active operation (e.g., non-SLEEP)."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ_TURBO.TURBO_PACK_R : {
@@ -5365,8 +5365,8 @@ SBS_CMD_BQ40_TURBO_INFO = {
         'unit'	: {'scale':1,'name':"mOhm"},
         'access_per_seal'	: ("rw","rw","rw",),
         'desc'	: ("Battery pack serial resistance. The serial resistance "
-            "includes FETs, traces, sense resistors, etc. This accesses the "
-            "actual data flash value PackResistance."),
+          "includes FETs, traces, sense resistors, etc. This accesses the "
+          "actual data flash value PackResistance."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ_TURBO.TURBO_SYS_R : {
@@ -5374,9 +5374,9 @@ SBS_CMD_BQ40_TURBO_INFO = {
         'unit'	: {'scale':1,'name':"mOhm"},
         'access_per_seal'	: ("rw","rw","rw",),
         'desc'	: ("System serial resistance. Resistance along the path from "
-            "battery to system power converter input that includes FETs, "
-            "traces, sense resistors, etc. This accesses the actual data flash "
-            "value SystemResistance."),
+          "battery to system power converter input that includes FETs, "
+          "traces, sense resistors, etc. This accesses the actual data flash "
+          "value SystemResistance."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ_TURBO.TURBO_EDV : {
@@ -5384,9 +5384,9 @@ SBS_CMD_BQ40_TURBO_INFO = {
         'unit'	: {'scale':1,'name':"mV"},
         'access_per_seal'	: ("rw","rw","rw",),
         'desc'	: ("Minimal system power converter operational voltage. "
-            "Minimal Voltage at system power converter input at which the "
-            "system will still operate. This accesses the actual data "
-            "flash value of TerminateVoltage. Older name was MIN_SYS_V."),
+          "Minimal Voltage at system power converter input at which the "
+          "system will still operate. This accesses the actual data "
+          "flash value of TerminateVoltage. Older name was MIN_SYS_V."),
         'getter'	: "simple",
     },
     SBS_COMMAND_BQ_TURBO.TURBO_CURRENT : {
@@ -5394,8 +5394,8 @@ SBS_CMD_BQ40_TURBO_INFO = {
         'unit'	: {'scale':1,'name':"mA"},
         'access_per_seal'	: ("r","r","rw",),
         'desc'	: ("Max supported pulse current. The gauge computes "
-            "a maximal discharge current supported by the cell "
-            "for a 10 ms pulse. Value is updated every 1 sec."),
+          "a maximal discharge current supported by the cell "
+          "for a 10 ms pulse. Value is updated every 1 sec."),
         'getter'	: "simple",
     },
 }
@@ -5412,10 +5412,10 @@ RAW_ADDRESS_SPACE_KIND_BQ_INFO = {
         'unit'	: {'scale':None,'name':"hex"},
         'access_per_seal'	: ("-","rw","rw",),
         'desc'	: ("Data Flash raw access. Allows to read/write values within "
-            "data flash, which stores all parameters which drive smart battery "
-            "algorithms. Positions of values depend not only on chip model, "
-            "but also of battery firmware version - so be careful when writing "
-            "to this space."),
+          "data flash, which stores all parameters which drive smart battery "
+          "algorithms. Positions of values depend not only on chip model, "
+          "but also of battery firmware version - so be careful when writing "
+          "to this space."),
         'read_cmd':	SBS_COMMAND_BQ40.ManufacturerBlockAccess,
         'read_subcmd':	MANUFACTURER_ACCESS_CMD_BQ40.DataFlashAccess,
         # How much data each cmd_array step represents
@@ -5427,7 +5427,7 @@ RAW_ADDRESS_SPACE_KIND_BQ_INFO = {
         'unit'	: {'scale':None,'name':"hex"},
         'access_per_seal'	: ("-","rw","rw",),
         'desc'	: ("Instruction Flash raw access. The easiest way to brick "
-            "your chip."),
+          "your chip."),
         'read_cmd':	None,
         'read_subcmd':	None,
         'granularity'	: 1,
