@@ -156,7 +156,7 @@ function test_chip_commands {
 
 function test_data_flash {
     TEST_PARAMS=$1
-    DATAFLASH_LIST="0x0000 0x0020 0x0040 0x0060 0x0080 0x00A0"
+    DATAFLASH_LIST=$(seq 0x0000 0x0020 0x0500)
 
     for DFOFFS in ${DATAFLASH_LIST}; do
         set -x # print the command before executing

@@ -4658,14 +4658,65 @@ class ChipMockBQ40(ChipMock):
         self.cyc = 13
         self.t = 23.45 + 273.15 # temperature, in Kelvin
         self.atrate = 0
+        self.prep_dataflash()
         # Prepare static packets
         self.prep_static()
+
+    def prep_dataflash(self):
+        # Prepare data flash, or at least a chunk of it
+        df = bytearray(0x2000)
+        df[0x000:0x010] = struct.pack('<hHHffh', 12146, 49158, 48942, 3.53481793, 1054300.5, 0) # Cell Gain, Pack Gain, BAT Gain, CC Gain, Capacity Gain, CC Offset
+        df[0x010:0x019] = struct.pack('<Hhbbbbb', 64, 0, 0, 0, 0, 0, 0) # Coulomb Counter Offset Samples, Board Offset, Internal Temp Offset, External 0..3 Temp Offset
+        df[0x019:0x020] = bytes.fromhex("ff 00 ff 00 00 01 00")
+        df[0x020:0x024] = bytes.fromhex("00 00 00 00 00")
+        df[0x024:0x040] = b'0xff' * 0x1c
+        df[0x040:0x060] = struct.pack('<B31s', 32, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234') # ManufacturerInfo
+        df[0x060:0x062] = bytes.fromhex("02 04")
+        df[0x062:0x068] = bytes.fromhex("00 00 00 67 00 00") # ManufacturerInfo2
+        df[0x068:0x070] = struct.pack('<HHHH', 0x3a6b, 0, 0x4f5a, 0x0057) # StaticChemDFSignature, ?, ManufactureDate, SerialNumber
+        df[0x070:0x085] = struct.pack('<B20s', 3, b'SDI') # ManufacturerName
+        df[0x085:0x09A] = struct.pack('<B20s', 9, b'BA01WM160') # DeviceName
+        df[0x09A:0x09F] = struct.pack('<B4s', 4, b'2044') # DeviceChemistry
+        df[0x0C0:0x0C2] = bytes.fromhex("07 4a")
+
+        df[0x100:0x104] = struct.pack('<hh', 0, 131)
+        df[0x104:0x110] = struct.pack('<HHHHHH', 0x2b, 0x2b, 0x2c, 0x29, 0x2b, 0x30)
+        df[0x110:0x120] = struct.pack('<HHHHHHHH', 0x2e, 0x31, 0x37, 0x3c, 0x42, 0x58, 0x0db, 0x742)
+        df[0x140:0x144] = struct.pack('<hh', 0, 131)
+        df[0x180:0x184] = struct.pack('<hh', -171, 308)
+        df[0x1c0:0x1c4] = struct.pack('<hh', -171, 308)
+        df[0x200:0x204] = struct.pack('<hh', 85, 150)
+        df[0x204:0x210] = struct.pack('<HHHHHH', 0x31, 0x31, 0x32, 0x2f, 0x31, 0x37)
+        df[0x210:0x220] = struct.pack('<HHHHHHHH', 0x35, 0x38, 0x3f, 0x45, 0x4c, 0x65, 0x0fb, 0x852)
+        df[0x220:0x240] = b'0xff' * 0x20
+        df[0x240:0x244] = struct.pack('<hh', 85, 153)
+        df[0x244:0x250] = struct.pack('<HHHHHH', 0x32, 0x32, 0x34, 0x30, 0x32, 0x38)
+        df[0x250:0x260] = struct.pack('<HHHHHHHH', 0x36, 0x39, 0x40, 0x46, 0x4d, 0x67, 0x100, 0x87f)
+        df[0x260:0x280] = b'0xff' * 0x20
+        df[0x280:0x284] = struct.pack('<hh', -1, 308)
+        df[0x2c0:0x2c4] = struct.pack('<hh', -1, 308)
+        df[0x144:0x150] = df[0x184:0x190] = df[0x1C4:0x1D0] = df[0x284:0x290] = df[0x2c4:0x2d0] = df[0x104:0x110]
+        df[0x150:0x160] = df[0x190:0x1A0] = df[0x1D0:0x1E0] = df[0x290:0x2A0] = df[0x2D0:0x2E0] = df[0x110:0x120]
+
+        df[0x300:0x310] = bytes.fromhex("39 00 1e 00 00 00 4a 0a  5a 0a c4 09 c4 09 4a 0a")
+        df[0x310:0x320] = bytes.fromhex("00 00 0e 6b 10 6e 10 65  10 00 00 70 00 b4 fd 48")
+        df[0x320:0x330] = bytes.fromhex("fe 03 00 57 01 82 02 87  fd 29 fe 00 00 00 00 00")
+        df[0x380:0x392] = struct.pack('<HHHHHHHHH', 0xf36, 0xf36, 0, 0, 0xbe6, 0xbed, 0x7fff, 0x7fff, 0x1c) # LifetimeDataBlock1
+        df[0x392:0x396] = struct.pack('<BBBB', 3, 0, 7, 0) # LifetimeDataBlock2
+        df[0x396:0x3a6] = struct.pack('<HHHHHHHH', 0x98f, 0, 0, 0, 0x98d, 0, 0, 0) # LifetimeDataBlock3
+        df[0x3a6:0x3a8] = struct.pack('<H', 500)
+
+        df[0x440:0x500] = b'0xff' * 0xc0
+        df[0x4c0:0x4c2] = struct.pack('<H', 0x38)
+        # Simulating 'proper' values of Data Flash up to offset 0x500
+        self.dataflash = df
 
     def prep_static(self):
         """ Commands for simulated BQ40z307
 
         Values taken from a real Mavic Mini battery
         """
+        df = self.dataflash
         minv = [3500, 3500, 3500, 3500, ] # min (zero charge) voltage
         maxv = [4200, 4200, 4200, 4200, ] # max (full charge) voltage
         maxc = [(self.dc[i] * (1.015 + i/1000)) for i in range(4)] # manufacture time capacity
@@ -4731,7 +4782,7 @@ class ChipMockBQ40(ChipMock):
         self.add_read(0x75, bytes.fromhex("4a 0a 5a 0a c4 09 c4 09 6f 17 4f 17 00 00 00 00 32 01 99 16 57 01 82 02 60 21 40 21 00 00 00 00")) # GaugeStatus3
         self.add_read(0x76, bytes.fromhex("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")) # CBStatus
         self.add_read(0x78, struct.pack('<HHHH', int(1059), int(681), int(2432), int(1750))) # FilteredCapacity
-        self.add_read(0x7a, bytes.fromhex("00 00 45 67")) # ManufacturerInfo2
+        self.add_read(0x7a, bytes.fromhex("72 05")) # ManufacturerInfo2
         # ManufacturerAccess commands
         self.add_read_sub(0x00, 0x01, struct.pack('<H', 0x4307)) # DeviceType
         self.add_read_sub(0x00, 0x02, bytes.fromhex("4307 0101 0027 00 0385 0200")) # FirmwareVersion
@@ -4742,23 +4793,12 @@ class ChipMockBQ40(ChipMock):
         self.add_read_sub(0x00, 0x08, struct.pack('<H', 0x3a6b)) # StaticChemDFSignature
         self.add_read_sub(0x00, 0x09, struct.pack('<H', 0xd5fa)) # AllDFSignature
         self.add_read_sub(0x00, 0x35, struct.pack('<LL', int(0x36720414), int(0xffffffff))) # SecurityKeys
-        # Prepare data flash, or at least a chunk of it
-        df = bytearray(0x0c0)
-        df[0x000:0x010] = struct.pack('<hHHffh', 12146, 49158, 48942, 3.53481793, 1054300.5, 0) # Cell Gain, Pack Gain, BAT Gain, CC Gain, Capacity Gain, CC Offset
-        df[0x010:0x019] = struct.pack('<Hhbbbbb', 64, 0, 0, 0, 0, 0, 0) # Coulomb Counter Offset Samples, Board Offset, Internal Temp Offset, External 0..3 Temp Offset
-        df[0x019:0x020] = bytes.fromhex("ff 00 ff 00 00 01 00")
-        df[0x020:0x040] = bytes.fromhex("00 00 00 00 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff")
-        df[0x040:0x060] = struct.pack('<B31s', 32, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234') # ManufacturerInfo
-        df[0x060:0x068] = bytes.fromhex("02 04 00 00 00 67 00 00")
-        df[0x068:0x070] = struct.pack('<HHHH', 0x3a6b, 0, 0x4f5a, 0x0057) # StaticChemDFSignature, ?, ManufactureDate, SerialNumber
-        df[0x070:0x085] = struct.pack('<B20s', 3, b'SDI') # ManufacturerName
-        df[0x085:0x09A] = struct.pack('<B20s', 9, b'BA01WM160') # DeviceName
-        df[0x09A:0x09F] = struct.pack('<B4s', 4, b'2044') # DeviceChemistry
+        self.add_read_sub(0x00, 0x7a, bytes.fromhex("00 00 45 67")) # ManufacturerInfo2 - somehow through MA it returns different value
         # The chip returns the same invalid data for unsupported ManufacturerBlockAccess commands
         bad_manufc_block_data = bytes.fromhex( ("00 00 13 7f 16 be 94 98 d8 15 "
           "bd a3 f0 fa c5 d9 98 5b 67 78 dc d6 00 f8 53 9f "
           "9c 79 3c c2 21 ce f4 33 a6 50 38 84 37 6f 72 7b 59 00") )
-        # For ManufacturerBlockAccess commands, remember to add subcmd word at start
+        #TODO should we get values from data space in more dynamic manner?
         self.add_read(0x1b, df[0x06C:0x06E]) # ManufactureDate
         self.add_read(0x1c, df[0x06E:0x070]) # SerialNumber
         self.add_read(0x20, df[0x071:int(0x071+df[0x070])]) # ManufacturerName
@@ -4766,9 +4806,7 @@ class ChipMockBQ40(ChipMock):
         self.add_read(0x22, df[0x09b:int(0x09b+df[0x09a])]) # DeviceChemistry
         self.add_read(0x70, df[0x041:int(0x041+df[0x040])]) # ManufacturerInfo
         self.add_read_sub(0x00, 0x08, df[0x068:0x06A]) # StaticChemDFSignature
-        # TODO we should allow reading any offset from DF
-        for offs in range(0, len(df), 0x20):
-            self.add_read_sub(0x44, 0x4000+offs, struct.pack('<H', 0x4000+offs) + df[offs:offs+0x020]) # DataFlashAccess
+        # For ManufacturerBlockAccess commands, remember to add subcmd word at start
 
     def add_read(self, register, data):
         self.reads[register] = data
@@ -4789,7 +4827,10 @@ class ChipMockBQ40(ChipMock):
         if subcmd is None: # No sub-command, just clear the data
             self.mock_reads[register] = b''
         elif cmd.value == 0x44: # ManufacturerBlockAccess clones ManufacturerAccess but adds subcmd word
-            if cmd.value in self.reads_sub and subcmd.value in self.reads_sub[cmd.value]:
+            if (subcmd.value >= 0x4000) and (subcmd.value < 0x6000): # DataFlashAccess
+                offs = subcmd.value - 0x4000
+                self.reads[register] = struct.pack('<H', 0x4000+offs) + self.dataflash[offs:offs+0x020]
+            elif cmd.value in self.reads_sub and subcmd.value in self.reads_sub[cmd.value]:
                 self.reads[register] = self.reads_sub[cmd.value][subcmd.value]
             elif 0x00 in self.reads_sub and subcmd.value in self.reads_sub[0x00]:
                 self.reads[register] = struct.pack('<H', subcmd.value) + self.reads_sub[0x00][subcmd.value]

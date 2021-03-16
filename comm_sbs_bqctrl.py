@@ -1166,6 +1166,22 @@ class ChipMock(object):
         pass
 
 
+class i2c_msg_mock(object):
+    def __init__(self, **kwargs):
+        vars(self).update(kwargs)
+
+    def __bytes__(self):
+        return bytes(self.buf[0:self.len])
+
+    @staticmethod
+    def read(address, length):
+        return i2c_msg_mock(addr=address, flags=0, len=length, buf=None)
+
+    @staticmethod
+    def write(address, buf):
+        return i2c_msg_mock(addr=address, flags=1, len=len(buf), buf=bytes(buf))
+
+
 class SMBusMock(object):
     """ Mock SMBus module, used for dry-run testing.
 
@@ -1176,6 +1192,7 @@ class SMBusMock(object):
         self.busid = busid
         self.force = force
         self.pec = False
+        self.expect_block = False
         self.mock = ChipMock(self)
         self.mock_exception = None
 
@@ -1226,6 +1243,22 @@ class SMBusMock(object):
     def write_i2c_block_data(self, i2c_addr, register, data, force=None):
         self.do_mock_write(i2c_addr, register, bytes(data), is_block=True)
 
+    def i2c_rdwr(self, *i2c_msgs):
+        data = None
+        register = None
+        is_read = False
+        for msg in i2c_msgs:
+            if msg.flags == 1:
+                register = msg.buf[0]
+            else:
+                is_read = True
+        # msg stays assigned from last iteration
+        if is_read:
+            data = self.do_mock_read(msg.addr, register, is_block=self.expect_block)
+            msg.buf = data
+        else:
+            self.do_mock_write(msg.addr, register, msg.buf[1:], is_block=self.expect_block)
+
     def add_mock_read(self, register, data):
         self.mock.add_read(register, data)
 
@@ -1235,12 +1268,24 @@ class SMBusMock(object):
     def add_mock_except(self, ex):
         self.mock_exception = ex
 
+    def prep_expect_block(self, cmdinf):
+        if cmdinf is None or 'type' not in cmdinf:
+            resp_type = 'byte[]'
+        elif 'resp_location' in cmdinf:
+            resp_type = 'byte[]'
+        else:
+            resp_type = cmdinf['type']
+        self.expect_block = (resp_type.startswith("byte[") or \
+          resp_type.startswith("string") or resp_type.endswith("_blk"))
+
     def prep_mock_read(self, cmd, subcmd=None):
         cmdinf = SBS_CMD_INFO[cmd]
         if 'subcmd_infos' in cmdinf:
             subcmdinf = sbs_subcommand_get_info(cmd, subcmd)
+            self.prep_expect_block(subcmdinf)
             self.mock.prep_read_sub(cmd, cmdinf, subcmd, subcmdinf)
         else:
+            self.prep_expect_block(cmdinf)
             self.mock.prep_read(cmd, cmdinf)
 
     def do_mock_read(self, i2c_addr, register, is_block=False):
@@ -1398,6 +1443,7 @@ def smbus_open(bus_str, po):
     The current implementation is for Rapsberry Pi.
     """
     global bus
+    global i2c_msg
     m = re.match(r'(smbus|i2c):([0-9]+)', bus_str)
     if m:
         po.api_type = str(m.group(1))
@@ -1405,12 +1451,14 @@ def smbus_open(bus_str, po):
         if po.dry_run:
             bus = SMBusMock(bus_index)
             bus.pec = True
+            if po.api_type == "i2c":
+                class i2c_msg(i2c_msg_mock):
+                    pass
             return
         import smbus2
         bus = smbus2.SMBus(bus_index)
         bus.pec = True
         if po.api_type == "i2c":
-            global i2c_msg
             from smbus2 import i2c_msg
         return
     raise ValueError("Unrecognized bus definition")
@@ -3294,7 +3342,7 @@ def main():
 
     parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
-    parser.add_argument('-b', '--bus', default="smbus:1", type=str,
+    parser.add_argument('-b', '--bus', default="i2c:1", type=str,
             help=("I2C/SMBus bus device selection; 'smbus' will use OS API "
               "prepared for that protocol, while 'i2c' will use I2C messages, "
               "constructing SMBus frames manually; after a colon, bus number "
