@@ -200,9 +200,9 @@ def pack(args):
 
     # Target
     if args.target == '0305':
-        header.target = 0xa3
+        header.target = (0x5 << 5) | (0x3)
     elif args.target == '0306':
-        header.target = 0xc3
+        header.target = (0x6 << 5) | (0x3)
     else:
         raise ValueError("Unknown target: '{}'".format(args.target))
 
