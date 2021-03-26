@@ -3835,8 +3835,9 @@ MANUFACTURER_ACCESS_CMD_BQ30_INFO = {
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","-","w",),
         'desc'	: ("Enables the ROM mode for IF update. On this command, "
-          "device goes to ROM mode ready for update. Use 0x08 to "
-          "ManufacturerAccess() to return."),
+          "device goes to ROM mode ready for re-programming firmware in "
+          "Instruction Flash. Thit is often called BootROM mode. Use "
+          "0x08 to ManufacturerAccess() to return."),
     },
     MANUFACTURER_ACCESS_CMD_BQ30.SHIPMode : {
         'type'	: "void",

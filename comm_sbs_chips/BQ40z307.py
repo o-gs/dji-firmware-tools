@@ -78,6 +78,7 @@ class MANUFACTURER_ACCESS_CMD_BQ40(DecoratedEnum):
     LifetimeDataFlush		= 0x2e
     LifetimeDataSpeedUpMode	= 0x2f
     SealDevice				= 0x30
+    ROMModeLegacy			= 0x33
     SecurityKeys			= 0x35
     AuthenticationKey		= 0x37
     DeviceReset				= 0x41
@@ -3992,6 +3993,16 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'desc'	: ("Seals the device, disabling some commands. Certain SBS "
           "commands and access to Data Flash are disabled in sealed device."),
     },
+    MANUFACTURER_ACCESS_CMD_BQ40.ROMModeLegacy : {
+        'type'	: "void",
+        'unit'	: {'scale':None,'name':None},
+        'access_per_seal'	: ("-","-","w",),
+        'desc'	: ("Legacy way of enabling the ROM mode for IF update. "
+          "This comand was left for compatibility with BQ30 chips. "
+          "It works in the same way as the new ROMMode cmd. On this command, "
+          "device goes to ROM mode ready for re-programming firmware in "
+          "Instruction Flash. Use 0x08 to ManufacturerAccess() to return."),
+    },
     MANUFACTURER_ACCESS_CMD_BQ40.SecurityKeys : {
         'type'	: "byte[8]",
         'unit'	: {'scale':None,'name':"struct"},
@@ -4191,7 +4202,8 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("-","-","w",),
         'desc'	: ("Enables the ROM mode for IF update. On this command, "
-          "device goes to ROM mode ready for firmware re-programming. Use "
+          "device goes to ROM mode ready for re-programming firmware in "
+          "Instruction Flash. Thit is often called BootROM mode. Use "
           "0x08 to ManufacturerAccess() to return."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.ExitCalibOutputMode : {
