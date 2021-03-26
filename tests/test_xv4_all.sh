@@ -94,26 +94,26 @@ for itm in "${all_firmwares[@]}"; do
 
   # Download firmwares
 
-  if [ ! -f "fw/${FWPKG}" ]; then
+  if [ ! -f "fw_xv4/${FWPKG}" ]; then
 
-    if [ ! -f "fw/${FWDLNAME}" ] && [ $((FWTSTFLG & 0x01)) -ne 0 ]; then
-      curl "${FWDLURL}" -o "fw/${FWDLNAME}"
+    if [ ! -f "fw_xv4/${FWDLNAME}" ] && [ $((FWTSTFLG & 0x01)) -ne 0 ]; then
+      curl "${FWDLURL}" -o "fw_xv4/${FWDLNAME}"
     fi
 
-    if [ ! -f "fw/${FWDLNAME}" ]; then
+    if [ ! -f "fw_xv4/${FWDLNAME}" ]; then
       echo '### SKIP could not download firmware to test ###'
       ((NUMSKIPS++))
       continue
     fi
 
     if [[ ${FWDLNAME} =~ [.]zip$ ]]; then
-      (unzip -j -o -d fw "fw/${FWDLNAME}")
+      (unzip -j -o -d fw "fw_xv4/${FWDLNAME}")
     elif [[ ${FWDLNAME} =~ [.]rar$ ]]; then
       (cd fw && unrar e "${FWDLNAME}")
     fi
   fi
 
-  if [ ! -f "fw/${FWPKG}" ]; then
+  if [ ! -f "fw_xv4/${FWPKG}" ]; then
     echo '### SKIP could not extract firmware to test ###'
     ((NUMSKIPS++))
     continue
@@ -121,7 +121,7 @@ for itm in "${all_firmwares[@]}"; do
 
   if [ ! -z "${FWPKG}" ]; then
     # Execute test - DJI firmware extractor
-    tests/test_dji_xv4_fwcon_rebin1.sh -sn "fw/${FWPKG}"
+    tests/test_dji_xv4_fwcon_rebin1.sh -sn "fw_xv4/${FWPKG}"
     if [ $? -ne 0 ]; then
       ((NUMFAILS++))
     fi
@@ -195,7 +195,7 @@ for itm in "${all_firmwares[@]}"; do
   fi
 
   if [ ! -z "${FWPKG}" ]; then
-    tests/test_dji_xv4_fwcon_rebin1.sh -on "fw/${FWPKG}"
+    tests/test_dji_xv4_fwcon_rebin1.sh -on "fw_xv4/${FWPKG}"
   fi
 
 done

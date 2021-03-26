@@ -23,7 +23,7 @@ declare -a FWPKG_LIST=(
 V01.03.0200_Mavic_dji_system.bin
 V01.03.0900_Mavic_dji_system.bin
 V01.04.0000_Mavic_dji_system.bin
-V01.04.0300_Mavic_dji_system.bin
+V01.04.0500_Mavic_dji_system.bin
 )
 
 # In case we want to use Python from non-standard location
@@ -115,7 +115,7 @@ function exec_mod_for_m0306 {
 
 for FWPKG in "${FWPKG_LIST[@]}"; do
   echo "### TEST of modding tools with ${FWPKG} ###"
-  FWIMAH_LIST=$(tar -xvf "fw_imah/${FWPKG}")
+  FWIMAH_LIST=$(tar -xvf "fw_imah1/${FWPKG}")
   FWIMAH_0306=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0306_v.*\)[.]fw[.]sig$/\1/p')
   set -x
   ./dji_imah_fwsig.py -vv -u -i "${FWIMAH_0306}.fw.sig"

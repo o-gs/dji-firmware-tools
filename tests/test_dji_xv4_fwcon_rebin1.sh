@@ -58,7 +58,7 @@ done
 
 if [ ! -f "${BINFILE}" ]; then
     echo '### FAIL: Input file not foumd! ###'
-    echo "### INFO: Expexted file \"${BINFILE}\" ###"
+    echo "### INFO: Expected file \"${BINFILE}\" ###"
     exit 3
 fi
 
@@ -67,7 +67,7 @@ TESTFILE="${TESTFILE##*/}"
 
 if [ "${SKIP_COMPARE}" -le "0" ]; then
   echo '### TEST for dji_xv4_fwcon.py re-creation of binary file ###'
-  # The test extracts firmware modules from DJI firmware package, abd then repacks them.
+  # The test extracts firmware modules from DJI firmware package, and then repacks them.
   # The test ends with success if the resulting BIN file is
   # exactly the same as input BIN file.
 fi
@@ -77,7 +77,7 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
   # Remove files which will be created
   rm ${TESTFILE%.*}_*.bin ${TESTFILE%.*}_*.ini 2>/dev/null
   # Extract firmwares for modules
-  ./dji_xv4_fwcon.py -vvv -x -p "${BINFILE}" -m ${TESTFILE%.*}
+  ./dji_xv4_fwcon.py -vvv -x -p "${BINFILE}" -m "${TESTFILE%.*}"
 fi
 
 if [ "${SKIP_REPACK}" -le "0" ]; then

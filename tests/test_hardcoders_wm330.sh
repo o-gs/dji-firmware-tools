@@ -115,7 +115,7 @@ function exec_mod_for_m0900 {
 
 for FWPKG in "${FWPKG_LIST[@]}"; do
   echo "### TEST of modding tools with ${FWPKG} ###"
-  FWIMAH_LIST=$(tar -xvf "fw_imah/${FWPKG}")
+  FWIMAH_LIST=$(tar -xvf "fw_imah1/${FWPKG}")
   FWIMAH_0100=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0100_v.*\)[.]fw[.]sig$/\1/p')
   FWIMAH_0306=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0306_v.*\)[.]fw[.]sig$/\1/p')
   FWIMAH_0900=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0900_v.*\)[.]fw[.]sig$/\1/p')

@@ -111,7 +111,7 @@ function exec_mod_for_m0306 {
 
 for FWPKG in "${FWPKG_LIST[@]}"; do
   echo "### TEST of modding tools with ${FWPKG} ###"
-  FWIMAH_LIST=$(tar -xvf "fw_imah/${FWPKG}")
+  FWIMAH_LIST=$(tar -xvf "fw_imah1/${FWPKG}")
   FWIMAH_0306=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0306_v.*\)[.]fw[.]sig$/\1/p')
   set -x
   ./dji_imah_fwsig.py -vv -u -i "${FWIMAH_0306}.fw.sig"
