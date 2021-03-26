@@ -468,7 +468,7 @@ def imah_read_fwsig_head(po):
             eprint("{}: Warning: Cannot find enc_key '{:s}'; scramble key left unencrypted.".format(fwsigfile.name,enc_k_str))
         else:
             cipher = AES.new(enc_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
-            crypt_key_enc = cipher.encrypt(pkghead.scram_key)
+            crypt_key_enc = cipher.encrypt(bytes(pkghead.scram_key))
             pkghead.scram_key = (c_ubyte * 16)(*list(crypt_key_enc))
 
     return (pkghead, minames, pkgformat)
