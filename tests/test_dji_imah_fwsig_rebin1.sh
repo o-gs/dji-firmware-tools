@@ -106,6 +106,7 @@ if [ "${SKIP_REPACK}" -le "0" ]; then
   rm "${TESTFILE}" 2>/dev/null
   # We do not have private parts of auth keys used for signing - use OG community key instead
   # Different signature means we will get up to 256 different bytes in the resulting file
+  # Additional 2 bytes of difference is the FourCC - two first bytes of it were changed
   sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${TESTFILE%.*}_head.ini"
   # Encrypt and sign back to final format
   if [ ! -z "${HAS_0305}" ]; then
@@ -126,6 +127,7 @@ fi
 if [ "${SKIP_COMPARE}" -le "0" ]; then
   # Compare converted with original
   TEST_RESULT=$(cmp -l "${BINFILE}" "${TESTFILE}" | wc -l)
+  echo '### INFO: Counted '${TEST_RESULT}' differences. ###'
 fi
 
 if [ "${SKIP_CLEANUP}" -le "0" ]; then
@@ -136,7 +138,7 @@ fi
 if [ "${SKIP_COMPARE}" -le "0" ]; then
   if [ ${TEST_RESULT} == 0 ]; then
     echo '### SUCCESS: File identical after conversion. ###'
-  elif [ ${TEST_RESULT} -le 256 ]; then
+  elif [ ${TEST_RESULT} -le 258 ]; then
     echo '### SUCCESS: File matches, except signature. ###'
   elif [ ! -s "${TESTFILE}" ]; then
     echo '### FAIL: File empty or missing; creation faled! ###'
