@@ -65,6 +65,8 @@ keys = {
         0x6f, 0x40, 0x2f, 0xb8, 0x62, 0x52, 0x05, 0xce, 0x9b, 0xdd, 0x58, 0x02, 0x17, 0xd2, 0x18, 0xd8
     ]),
     "PUEK":  bytes([ # Whitebox AES version 1; published 2017-10-25 by Freek van Tienen
+        # used for: WM330 FW V01.02.0503+, WM220 FW V01.03.0200+, WM620 FW V01.00.0135+, PM410 FW V01.01.0900+,
+        # PM420 FW V01.01.0450+, WM100 FW V01.00.0300-V01.00.0600, WM222 FW V00.00.0803
         0x63, 0xc4, 0x8e, 0x83, 0x26, 0x7e, 0xee, 0xc0, 0x3f, 0x33, 0x30, 0xad, 0xb2, 0x38, 0xdd, 0x6b
     ]),
     "_PUEK": bytes([ # Old Non-whitebox version; published 2017-06-27 by Freek van Tienen
@@ -325,13 +327,26 @@ def combine_int_array(int_arr, bits_per_entry):
         ans += (val << i*bits_per_entry)
     return ans
 
-def imah_get_crypto_params(po, pkghead):
-    # Get the encryption key
-    enc_k_str = pkghead.enc_key.decode("utf-8")
-    enc_key = None
+def get_key_data(po, pkghead, enc_k_fourcc):
+    """ Returns encryption/authentication key array for given FourCC.
+
+    Accepts both string and variants of bytes.
+    """
+    if hasattr(enc_k_fourcc, 'decode'):
+        enc_k_str = enc_k_fourcc.decode("utf-8")
+    else:
+        enc_k_str = str(enc_k_fourcc)
     if enc_k_str in keys:
         enc_key = keys[enc_k_str]
     else:
+        enc_key = None
+    return enc_key
+
+def imah_get_crypto_params(po, pkghead):
+    # Get the encryption key
+    enc_k_str = pkghead.enc_key.decode("utf-8")
+    enc_key = get_key_data(po, pkghead, enc_k_str)
+    if enc_key is None:
         eprint("{}: Warning: Cannot find enc_key '{:s}'".format(po.sigfile,enc_k_str))
         return (None, None, None)
     # Prepare initial values for AES
@@ -352,10 +367,8 @@ def imah_get_crypto_params(po, pkghead):
 def imah_get_auth_params(po, pkghead):
     # Get the key
     auth_k_str = pkghead.auth_key.decode("utf-8")
-    auth_key_data = None
-    if auth_k_str in keys:
-        auth_key_data = keys[auth_k_str]
-    else:
+    auth_key_data = get_key_data(po, pkghead, auth_k_str)
+    if auth_key_data is None:
         eprint("{}: Warning: Cannot find auth_key '{:s}'".format(po.sigfile,auth_k_str))
         return (None)
     if isinstance(auth_key_data, str):
@@ -461,9 +474,7 @@ def imah_read_fwsig_head(po):
     if scramble_needs_encrypt:
         # Get the encryption key
         enc_k_str = pkghead.enc_key.decode("utf-8")
-        enc_key = None
-        if enc_k_str in keys:
-            enc_key = keys[enc_k_str]
+        enc_key = get_key_data(po, pkghead, enc_k_str)
         if enc_key is None:
             eprint("{}: Warning: Cannot find enc_key '{:s}'; scramble key left unencrypted.".format(fwsigfile.name,enc_k_str))
         else:
