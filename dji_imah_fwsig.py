@@ -64,12 +64,15 @@ keys = {
     "SAAK":  bytes([ # First version; published 2017-06-27 by Freek van Tienen
         0x6f, 0x40, 0x2f, 0xb8, 0x62, 0x52, 0x05, 0xce, 0x9b, 0xdd, 0x58, 0x02, 0x17, 0xd2, 0x18, 0xd8
     ]),
-    "PUEK":  bytes([ # Whitebox AES version 1; published 2017-10-25 by Freek van Tienen
-        # used for: WM330 FW V01.02.0503+, WM220 FW V01.03.0200+, WM620 FW V01.00.0135+, PM410 FW V01.01.0900+,
-        # PM420 FW V01.01.0450+, WM100 FW V01.00.0300-V01.00.0600, WM222 FW V00.00.0803
+    # There are multiple PUEK keys, as DJI tried changing them as soon as they are published,
+    # without fixing vulnreabilities which allowed to read them
+    "PUEK-2017-07":  bytes([ # Whitebox AES version 1; published 2017-10-25 by Freek van Tienen
+        # first use on 2017-07-28; used for: WM335 FW V01.00.1000-V01.00.5200,
+        # WM220 FW V01.04.0000-V01.04.0500, PM420 FW V01.01.0450-V01.01.0590,
         0x63, 0xc4, 0x8e, 0x83, 0x26, 0x7e, 0xee, 0xc0, 0x3f, 0x33, 0x30, 0xad, 0xb2, 0x38, 0xdd, 0x6b
     ]),
-    "_PUEK": bytes([ # Old Non-whitebox version; published 2017-06-27 by Freek van Tienen
+    "PUEK-2017-01": bytes([ # Old Non-whitebox version; published 2017-06-27 by Freek van Tienen
+        # used for: WM330 FW V00.01.0000-V01.02.0499, WM220 FW V00.01.0000-V01.03.0600
         0x70, 0xe0, 0x03, 0x08, 0xe0, 0x4b, 0x0a, 0xe2, 0xce, 0x8e, 0x07, 0xd4, 0xd6, 0x21, 0x4b, 0xb6
     ]),
     "SLEK":  bytes([ # Slack community EK
@@ -152,7 +155,7 @@ class PlainCopyCipher:
 
 class ImgPkgHeader(LittleEndianStructure):
     _pack_ = 1
-    _fields_ = [('magic', c_char * 4),              #0
+    _fields_ = [('magic', c_char * 4),              #0 'IM*H'
                 ('header_version', c_uint),         #4
                 ('size', c_uint),                   #8
                 ('reserved', c_ubyte * 4),          #12
@@ -270,6 +273,7 @@ class ImgPkgHeader(LittleEndianStructure):
         from pprint import pformat
         return pformat(d, indent=0, width=160)
 
+
 class ImgChunkHeader(LittleEndianStructure):
     _pack_ = 1
     _fields_ = [('id', c_char * 4),          #0
@@ -327,6 +331,7 @@ def combine_int_array(int_arr, bits_per_entry):
         ans += (val << i*bits_per_entry)
     return ans
 
+
 def get_key_data(po, pkghead, enc_k_fourcc):
     """ Returns encryption/authentication key array for given FourCC.
 
@@ -336,8 +341,39 @@ def get_key_data(po, pkghead, enc_k_fourcc):
         enc_k_str = enc_k_fourcc.decode("utf-8")
     else:
         enc_k_str = str(enc_k_fourcc)
-    if enc_k_str in keys:
-        enc_key = keys[enc_k_str]
+    enc_k_select = None
+
+    for kstr in po.key_select:
+        if enc_k_str == kstr[:4]:
+            enc_k_select = kstr
+            break
+
+    key_list = []
+    if enc_k_select is None:
+        if enc_k_str in keys:
+            enc_k_select = enc_k_str
+        else:
+            for kstr in keys:
+                if enc_k_str == kstr[:4]:
+                    key_list.append(kstr)
+
+    if enc_k_select is not None:
+        # Key selection was already made
+        pass
+    elif len(key_list) == 1:
+        # There is only one key to choose from
+        enc_k_select = key_list[0]
+    elif len(key_list) > 1:
+        # We have multiple matching keys; we do not have enough information to auto-choose correct one
+        # (the key needs to be selected based of FW package version, we only have FW module version)
+        enc_k_select = key_list[0]
+        if (po.show_multiple_keys_warn):
+            eprint("{}: Warning: '{:s}' matches multiple keys; using first, '{:s}'".format(po.sigfile,enc_k_str,enc_k_select))
+            eprint("{}: Key choices: {:s}".format(po.sigfile,", ".join(key_list)))
+            po.show_multiple_keys_warn = False
+
+    if enc_k_select in keys.keys():
+        enc_key = keys[enc_k_select]
     else:
         enc_key = None
     return enc_key
@@ -794,6 +830,10 @@ def main():
     parser.add_argument("-r", "--random-scramble", action="store_true",
           help="while signing, use random scramble vector instead of from INI")
 
+    parser.add_argument("-k", "--key-select", default=[], action='append',
+          help=("select a specific key to be used for given four character code, "
+          "if multiple keys match this fourcc"))
+
     parser.add_argument("-v", "--verbose", action="count", default=0,
           help="increases verbosity level; max level is set by -vvv")
 
@@ -815,6 +855,7 @@ def main():
         po.mdprefix = os.path.splitext(os.path.basename(po.sigfile))[0]
     elif len(po.mdprefix) > 0 and len(po.sigfile) == 0:
         po.sigfile = po.mdprefix + ".sig"
+    po.show_multiple_keys_warn = True
 
     if po.unsign:
 
