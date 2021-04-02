@@ -37,6 +37,7 @@ import binascii
 import configparser
 import itertools
 from Crypto.Cipher import AES
+from Crypto.Util import Counter
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
@@ -386,16 +387,27 @@ def imah_get_crypto_params(po, pkghead):
         eprint("{}: Warning: Cannot find enc_key '{:s}'".format(po.sigfile,enc_k_str))
         return (None, None, None)
     # Prepare initial values for AES
-    crypt_mode = AES.MODE_CBC
-    if pkghead.header_version == 1:
+    if   pkghead.header_version == 2:
         if (po.verbose > 3):
             print("Key encryption key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in enc_key)))
+        crypt_mode = AES.MODE_CTR
+        cipher = AES.new(enc_key, AES.MODE_ECB)
+        if (po.verbose > 3):
+            print("Encrypted Scramble key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in pkghead.scram_key)))
+        crypt_key = cipher.decrypt(bytes(pkghead.scram_key))
+        # For CTR mode, 12 bytes of crypt_iv will be interpreted as nonce, and remaining 4 will be initial value of counter
+        crypt_iv = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    elif pkghead.header_version == 1:
+        if (po.verbose > 3):
+            print("Key encryption key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in enc_key)))
+        crypt_mode = AES.MODE_CBC
         cipher = AES.new(enc_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
         if (po.verbose > 3):
             print("Encrypted Scramble key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in pkghead.scram_key)))
         crypt_key = cipher.decrypt(bytes(pkghead.scram_key))
         crypt_iv = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     else:
+        crypt_mode = AES.MODE_CBC
         crypt_key = enc_key
         crypt_iv = bytes(pkghead.scram_key)
     return (crypt_key, crypt_mode, crypt_iv)
@@ -656,7 +668,12 @@ def imah_unsign(po, fwsigfile):
                 print("{}: Unpacking plaintext chunk '{:s}'...".format(fwsigfile.name,minames[i]))
 
         elif crypt_key is not None: # Encrypted chunk (have key as well)
-            cipher = AES.new(crypt_key, crypt_mode, crypt_iv)
+            if crypt_mode == AES.MODE_CTR:
+                init_cf = int.from_bytes(crypt_iv[12:16], byteorder='big')
+                countf = Counter.new(32, crypt_iv[:12], initial_value=init_cf)
+                cipher = AES.new(crypt_key, crypt_mode, counter=countf)
+            else:
+                cipher = AES.new(crypt_key, crypt_mode, iv=crypt_iv)
             pad_cnt = (AES.block_size - chunk.size % AES.block_size) % AES.block_size
             if (po.verbose > 0):
                 print("{}: Unpacking encrypted chunk '{:s}'...".format(fwsigfile.name,minames[i]))
@@ -735,7 +752,12 @@ def imah_sign(po, fwsigfile):
                 print("{}: Packing plaintext chunk '{:s}'...".format(fwsigfile.name,minames[i]))
 
         elif crypt_key != None: # Encrypted chunk (have key as well)
-            cipher = AES.new(crypt_key, crypt_mode, crypt_iv)
+            if crypt_mode == AES.MODE_CTR:
+                init_cf = int.from_bytes(crypt_iv[12:16], byteorder='big')
+                countf = Counter.new(32, crypt_iv[:12], initial_value=init_cf)
+                cipher = AES.new(crypt_key, crypt_mode, counter=countf)
+            else:
+                cipher = AES.new(crypt_key, crypt_mode, iv=crypt_iv)
             if (po.verbose > 0):
                 print("{}: Packing and encrypting chunk '{:s}'...".format(fwsigfile.name,minames[i]))
 
