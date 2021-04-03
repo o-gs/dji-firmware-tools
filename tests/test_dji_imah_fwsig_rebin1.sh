@@ -82,14 +82,14 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
   rm ${TESTFILE%.*}_*.bin ${TESTFILE%.*}_*.ini 2>/dev/null
   set -e
   # Unsign/decrypt the module
-  ./dji_imah_fwsig.py -vv -u -i "${BINFILE}" -m "${TESTFILE%.*}"
+  ./dji_imah_fwsig.py -vv -u -i "${BINFILE}" -m "${TESTFILE%.*}" 2>&1 | tee "${TESTFILE%.*}_unsig.log"
   # Some modules have another stage of encryption
   HAS_MVFC_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0305\|0306\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
   if [ ! -z "${HAS_MVFC_ENC}" ]; then
     MODULE="${HAS_MVFC_ENC}"
     echo "### INFO: Found m${MODULE} inside, doing 2nd stage decrypt ###"
     ./dji_mvfc_fwpak.py dec -i "${TESTFILE%.*}_${MODULE}.bin" \
-      -o "${TESTFILE%.*}_${MODULE}.decrypted.bin" | tee "${TESTFILE%.*}_${MODULE}.log"
+      -o "${TESTFILE%.*}_${MODULE}.decrypted.bin" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.log"
   fi
 fi
 
@@ -113,7 +113,7 @@ if [ "${SKIP_REPACK}" -le "0" ]; then
     ./dji_mvfc_fwpak.py enc -V "${MOD_FWVER}" -T "${MOD_TMSTAMP}" -t "${MODULE}" \
       -i "${TESTFILE%.*}_${MODULE}.decrypted.bin" -o "${TESTFILE%.*}_${MODULE}.bin"
   fi
-  ./dji_imah_fwsig.py -vv -s -i "${TESTFILE}" -m "${TESTFILE%.*}"
+  ./dji_imah_fwsig.py -vv -s -i "${TESTFILE}" -m "${TESTFILE%.*}" 2>&1 | tee "${TESTFILE%.*}_resig.log"
 fi
 
 set +eo pipefail
