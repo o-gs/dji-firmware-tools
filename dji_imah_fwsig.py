@@ -45,6 +45,7 @@ from ctypes import *
 from collections import OrderedDict
 from time import gmtime, strftime, strptime
 from calendar import timegm
+from copy import copy
 from os.path import basename
 
 # All found keys
@@ -176,7 +177,8 @@ class ImgPkgHeader(LittleEndianStructure):
                 ('type', c_char * 4),               #96 Target Module type identifier; used in versions > 1
                 ('version', c_uint),                #100
                 ('date', c_uint),                   #104
-                ('reserved2', c_ubyte * 20),        #108
+                ('encr_cksum', c_uint),             #108 Checksum of encrypted data; used in versions > 1
+                ('reserved2', c_ubyte * 16),        #112
                 ('userdata', c_char * 16),          #128
                 ('entry', c_ubyte * 8),             #144
                 ('plain_cksum', c_uint),            #152 Checksum of decrypted (plaintext) data; used in versions > 1
@@ -443,7 +445,7 @@ def imah_compute_checksum(po, buf, start = 0):
         last_buf = buf[i*4:i*4+4] + bytes(3 * [0])
         v = int.from_bytes(last_buf[:4], byteorder='little')
         cksum += v
-    return (cksum) & ((2 ** 32) - 1);
+    return (cksum) & ((2 ** 32) - 1)
 
 def imah_write_fwsig_head(po, pkghead, minames):
     fname = "{:s}_head.ini".format(po.mdprefix)
@@ -596,6 +598,9 @@ def imah_unsign(po, fwsigfile):
         eprint("{}: Warning: Header field 'reserved2' is non-zero; the tool is not designed to handle this.".format(fwsigfile.name))
 
     if pkgformat < 2018:
+        if pkghead.encr_cksum != 0:
+            eprint("{}: Warning: Header field 'encr_cksum' is non-zero; this is only allowed in newer formats.".format(fwsigfile.name))
+
         if pkghead.plain_cksum != 0:
             eprint("{}: Warning: Header field 'plain_cksum' is non-zero; this is only allowed in newer formats.".format(fwsigfile.name))
 
@@ -612,13 +617,17 @@ def imah_unsign(po, fwsigfile):
             raise EOFError("Could not read signed image chunk {:d} header.".format(i))
         chunks.append(chunk)
 
-    # Compute header hash
+    # Compute header hash and checksum; for checksum, we need a header without checksum stored
+    pkghead_nosum = copy(pkghead)
+    pkghead_nosum.encr_cksum = 0
+    checksum_enc = imah_compute_checksum(po, bytes(pkghead_nosum))
     header_digest = SHA256.new()
     header_digest.update(bytes(pkghead))
     for i, chunk in enumerate(chunks):
         header_digest.update(bytes(chunk))
+        checksum_enc = imah_compute_checksum(po, bytes(chunk), checksum_enc)
     if (po.verbose > 2):
-        print("Computed header digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in header_digest.digest())))
+        print("Computed header checksum 0x{:08X} and digest:\n{:s}".format(checksum_enc, ' '.join("{:02X}".format(x) for x in header_digest.digest())))
 
     head_signature_len = 256 # 2048 bit key length
     head_signature = fwsigfile.read(head_signature_len)
@@ -639,6 +648,27 @@ def imah_unsign(po, fwsigfile):
         if (not po.force_continue):
             raise ValueError("Image file head signature verification failed.")
         eprint("{}: Warning: Image file head signature verification failed; continuing anyway.".format(fwsigfile.name))
+
+    # Finish computing encrypted data checksum; cannot do that during decryption as we would
+    # likely miss some padding, which is also included in the checksum
+    remain_enc_n = pkghead.payload_size
+    while remain_enc_n > 0:
+        copy_buffer = fwsigfile.read(min(1024 * 1024, remain_enc_n))
+        checksum_enc = imah_compute_checksum(po, copy_buffer, checksum_enc)
+        remain_enc_n -= 1024 * 1024
+    checksum_enc = (2 ** 32) - checksum_enc
+
+    if pkgformat < 2018:
+        pass # No checksums are used in these formats
+    elif pkghead.encr_cksum == checksum_enc:
+        if (po.verbose > 1):
+            print("{}: Encrypted data checksum 0x{:08X} matches.".format(fwsigfile.name, checksum_enc))
+    else:
+        if (po.verbose > 1):
+            print("{}: Encrypted data checksum 0x{:08X}, expected 0x{:08X}.".format(fwsigfile.name, checksum_enc, pkghead.encr_cksum))
+        if (not po.force_continue):
+            raise ValueError("Encrypted data checksum verification failed.")
+        eprint("{}: Warning: Encrypted data checksum verification failed; continuing anyway.".format(fwsigfile.name))
 
     # Prepare array of names; "0" will mean empty index
     minames = ["0"]*len(chunks)
