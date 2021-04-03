@@ -179,7 +179,7 @@ class ImgPkgHeader(LittleEndianStructure):
                 ('reserved2', c_ubyte * 20),        #108
                 ('userdata', c_char * 16),          #128
                 ('entry', c_ubyte * 8),             #144
-                ('reserved3', c_ubyte * 4),         #152
+                ('plain_cksum', c_uint),            #152 Checksum of decrypted (plaintext) data; used in versions > 1
                 ('chunk_num', c_uint),              #156 Amount of chunks
                 ('payload_digest', c_ubyte * 32),   #160 SHA256 of the payload
                ]                                    #192 is the end; chunk headers start after that
@@ -432,6 +432,19 @@ def imah_get_auth_params(po, pkghead):
         return (None)
     return (auth_key)
 
+def imah_compute_checksum(po, buf, start = 0):
+    cksum = start
+    for i in range(0, len(buf) // 4):
+        v = int.from_bytes(buf[i*4:i*4+4], byteorder='little')
+        cksum += v
+    # last dword
+    i = len(buf) // 4
+    if i*4 < len(buf):
+        last_buf = buf[i*4:i*4+4] + bytes(3 * [0])
+        v = int.from_bytes(last_buf[:4], byteorder='little')
+        cksum += v
+    return (cksum) & ((2 ** 32) - 1);
+
 def imah_write_fwsig_head(po, pkghead, minames):
     fname = "{:s}_head.ini".format(po.mdprefix)
     fwheadfile = open(fname, "w")
@@ -582,8 +595,9 @@ def imah_unsign(po, fwsigfile):
     if not all(v == 0 for v in pkghead.reserved2):
         eprint("{}: Warning: Header field 'reserved2' is non-zero; the tool is not designed to handle this.".format(fwsigfile.name))
 
-    if not all(v == 0 for v in pkghead.reserved3):
-        eprint("{}: Warning: Header field 'reserved3' is non-zero; the tool is not designed to handle this.".format(fwsigfile.name))
+    if pkgformat < 2018:
+        if pkghead.plain_cksum != 0:
+            eprint("{}: Warning: Header field 'plain_cksum' is non-zero; this is only allowed in newer formats.".format(fwsigfile.name))
 
     if (po.verbose > 0):
         print("{}: Unpacking image...".format(fwsigfile.name))
@@ -656,6 +670,7 @@ def imah_unsign(po, fwsigfile):
         print("Scramble key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in crypt_key)))
 
     # Output the chunks
+    checksum_dec = 0
     for i, chunk in enumerate(chunks):
 
         imah_write_fwentry_head(po, i, chunk, minames[i])
@@ -705,6 +720,7 @@ def imah_unsign(po, fwsigfile):
                 break
             remain_enc_n -= len(copy_buffer)
             copy_buffer = cipher.decrypt(copy_buffer)
+            checksum_dec = imah_compute_checksum(po, copy_buffer, checksum_dec)
             if remain_dec_n >= len(copy_buffer):
                 fwitmfile.write(copy_buffer)
                 remain_dec_n -= len(copy_buffer)
@@ -716,6 +732,17 @@ def imah_unsign(po, fwsigfile):
         fwitmfile.close()
 
     print("{}: Un-signed {:d} chunks.".format(fwsigfile.name,len(chunks)))
+    if pkgformat < 2018:
+        pass # No checksums are used in these formats
+    elif pkghead.plain_cksum == checksum_dec:
+        if (po.verbose > 1):
+            print("{}: Decrypted chunks checksum 0x{:08X} matches.".format(fwsigfile.name, checksum_dec))
+    else:
+        if (po.verbose > 1):
+            print("{}: Decrypted chunks checksum 0x{:08X}, expected 0x{:08X}.".format(fwsigfile.name, checksum_dec, pkghead.plain_cksum))
+        if (not po.force_continue):
+            raise ValueError("Decrypted chunks checksum verification failed.")
+        eprint("{}: Warning: Decrypted chunks checksum verification failed; continuing anyway.".format(fwsigfile.name))
 
 def imah_sign(po, fwsigfile):
     # Read headers from INI files
