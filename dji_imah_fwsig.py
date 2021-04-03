@@ -160,8 +160,8 @@ class ImgPkgHeader(LittleEndianStructure):
                 ('header_version', c_uint),         #4
                 ('size', c_uint),                   #8
                 ('reserved', c_ubyte * 4),          #12
-                ('header_size', c_uint),            #16
-                ('signature_size', c_uint),         #20 RSA signature size
+                ('header_size', c_uint),            #16 Length of this header
+                ('signature_size', c_uint),         #20 Length of RSA signature
                 ('payload_size', c_uint),           #24
                 ('target_size', c_uint),            #28
                 ('os', c_ubyte),                    #32
@@ -180,9 +180,9 @@ class ImgPkgHeader(LittleEndianStructure):
                 ('userdata', c_char * 16),          #128
                 ('entry', c_ubyte * 8),             #144
                 ('reserved3', c_ubyte * 4),         #152
-                ('chunk_num', c_uint),              #156
+                ('chunk_num', c_uint),              #156 Amount of chunks
                 ('payload_digest', c_ubyte * 32),   #160 SHA256 of the payload
-               ]                                    #192 is the end
+               ]                                    #192 is the end; chunk headers start after that
 
     def get_format_version(self):
         if self.magic != bytes("IM*H", "utf-8"):
@@ -282,7 +282,8 @@ class ImgChunkHeader(LittleEndianStructure):
                 ('size', c_uint),            #8
                 ('attrib', c_uint),          #12
                 ('address', c_ulonglong),    #16
-                ('reserved', c_ubyte * 8)]   #24 end is 32
+                ('reserved', c_ubyte * 8),   #24
+               ]                             #32 is the end
 
     def dict_export(self):
         d = OrderedDict()
@@ -773,7 +774,7 @@ def imah_sign(po, fwsigfile):
             print(str(chunk))
 
         chunk_fname= "{:s}_{:s}.bin".format(po.mdprefix,miname)
-        # Copy chunk data and compute checksum
+        # Copy chunk data and compute digest
         fwitmfile = open(chunk_fname, "rb")
         decrypted_n = 0
         while True:
