@@ -341,7 +341,18 @@ class ImgRSAPublicKey(LittleEndianStructure):
                 ('exponent', c_int)] # 520: 3 or 65537
 
 
+def raise_or_warn(po, ex):
+    """ Raise exception, unless force-continue parameter was used.
+    """
+    if (po.force_continue):
+        eprint("{:s}: Warning: {:s} Continuing anyway.".format(po.sigfile,str(ex)))
+    else:
+        raise ex
+
+
 def combine_int_array(int_arr, bits_per_entry):
+    """ Makes one big numer out of an array of numbers
+    """
     ans = 0
     for i, val in enumerate(int_arr):
         ans += (val << i*bits_per_entry)
@@ -404,21 +415,21 @@ def imah_get_crypto_params(po, pkghead):
     # Prepare initial values for AES
     if   pkghead.header_version == 2:
         if (po.verbose > 3):
-            print("Key encryption key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in enc_key)))
+            print("Key encryption key:\n{:s}".format(' '.join("{:02X}".format(x) for x in enc_key)))
         crypt_mode = AES.MODE_CTR
         cipher = AES.new(enc_key, AES.MODE_ECB)
         if (po.verbose > 3):
-            print("Encrypted Scramble key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in pkghead.scram_key)))
+            print("Encrypted Scramble key:\n{:s}".format(' '.join("{:02X}".format(x) for x in pkghead.scram_key)))
         crypt_key = cipher.decrypt(bytes(pkghead.scram_key))
         # For CTR mode, 12 bytes of crypt_iv will be interpreted as nonce, and remaining 4 will be initial value of counter
         crypt_iv = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     elif pkghead.header_version == 1:
         if (po.verbose > 3):
-            print("Key encryption key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in enc_key)))
+            print("Key encryption key:\n{:s}".format(' '.join("{:02X}".format(x) for x in enc_key)))
         crypt_mode = AES.MODE_CBC
         cipher = AES.new(enc_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
         if (po.verbose > 3):
-            print("Encrypted Scramble key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in pkghead.scram_key)))
+            print("Encrypted Scramble key:\n{:s}".format(' '.join("{:02X}".format(x) for x in pkghead.scram_key)))
         crypt_key = cipher.decrypt(bytes(pkghead.scram_key))
         crypt_iv = bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     else:
@@ -594,11 +605,7 @@ def imah_unsign(po, fwsigfile):
     # Check the magic
     pkgformat = pkghead.get_format_version()
     if pkgformat == 0:
-        if (not po.force_continue):
-            raise ValueError("Unexpected magic value in main header; input file is not a signed image.")
-        eprint("{}: Warning: Unexpected magic value in main header; will try to extract anyway.".format(fwsigfile.name))
-    if pkgformat == 2018:
-        eprint("{}: Warning: The 2018 format is not fully supported.".format(fwsigfile.name))
+        raise_or_warn(po, ValueError("Unexpected magic value in main header; input file is not a signed image."))
 
     if pkghead.size != pkghead.target_size:
         eprint("{}: Warning: Header field 'size' is different that 'target_size'; the tool is not designed to handle this.".format(fwsigfile.name))
@@ -641,9 +648,10 @@ def imah_unsign(po, fwsigfile):
     if (po.verbose > 2):
         print("Computed header checksum 0x{:08X} and digest:\n{:s}".format(checksum_enc, ' '.join("{:02X}".format(x) for x in header_digest.digest())))
 
-    head_signature_len = 256 # 2048 bit key length
-    head_signature = fwsigfile.read(head_signature_len)
-    if len(head_signature) != head_signature_len:
+    if pkghead.signature_size != 256: # 2048 bit key length
+        raise_or_warn(po, ValueError("Signed image file head signature has unexpected size."))
+    head_signature = fwsigfile.read(pkghead.signature_size)
+    if len(head_signature) != pkghead.signature_size:
         raise EOFError("Could not read signature of signed image file head.")
 
     auth_key = imah_get_auth_params(po, pkghead)
@@ -657,9 +665,7 @@ def imah_unsign(po, fwsigfile):
         if (po.verbose > 1):
             print("{}: Image file head signature verification passed.".format(fwsigfile.name))
     else:
-        if (not po.force_continue):
-            raise ValueError("Image file head signature verification failed.")
-        eprint("{}: Warning: Image file head signature verification failed; continuing anyway.".format(fwsigfile.name))
+        raise_or_warn(po, ValueError("Image file head signature verification failed."))
 
     # Finish computing encrypted data checksum; cannot do that during decryption as we would
     # likely miss some padding, which is also included in the checksum
@@ -678,9 +684,7 @@ def imah_unsign(po, fwsigfile):
     else:
         if (po.verbose > 1):
             print("{}: Encrypted data checksum 0x{:08X}, expected 0x{:08X}.".format(fwsigfile.name, checksum_enc, pkghead.encr_cksum))
-        if (not po.force_continue):
-            raise ValueError("Encrypted data checksum verification failed.")
-        eprint("{}: Warning: Encrypted data checksum verification failed; continuing anyway.".format(fwsigfile.name))
+        raise_or_warn(po, ValueError("Encrypted data checksum verification failed."))
 
     # Prepare array of names; "0" will mean empty index
     minames = ["0"]*len(chunks)
@@ -709,7 +713,7 @@ def imah_unsign(po, fwsigfile):
 
     crypt_key, crypt_mode, crypt_iv = imah_get_crypto_params(po, pkghead)
     if (crypt_key is not None) and (po.verbose > 2):
-        print("Scramble key:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in crypt_key)))
+        print("Scramble key:\n{:s}".format(' '.join("{:02X}".format(x) for x in crypt_key)))
 
     # Output the chunks
     checksum_dec = 0
@@ -782,9 +786,7 @@ def imah_unsign(po, fwsigfile):
     else:
         if (po.verbose > 1):
             print("{}: Decrypted chunks checksum 0x{:08X}, expected 0x{:08X}.".format(fwsigfile.name, checksum_dec, pkghead.plain_cksum))
-        if (not po.force_continue):
-            raise ValueError("Decrypted chunks checksum verification failed.")
-        eprint("{}: Warning: Decrypted chunks checksum verification failed; continuing anyway.".format(fwsigfile.name))
+        raise_or_warn(po, ValueError("Decrypted chunks checksum verification failed."))
 
 def imah_sign(po, fwsigfile):
     # Read headers from INI files
@@ -833,8 +835,7 @@ def imah_sign(po, fwsigfile):
 
         else: # Missing encryption key
             eprint("{}: Warning: Cannot encrypt chunk '{:s}'; crypto config missing.".format(fwsigfile.name,minames[i]))
-            if (not po.force_continue):
-                raise ValueError("Unsupported encryption configuration.")
+            raise_or_warn(po, ValueError("Unsupported encryption configuration."))
             if (po.verbose > 0):
                 print("{}: Copying still encrypted chunk '{:s}'...".format(fwsigfile.name,minames[i]))
             cipher = PlainCopyCipher()
@@ -875,7 +876,7 @@ def imah_sign(po, fwsigfile):
     pkghead.update_payload_size(fwsigfile.tell() - pkghead.header_size - pkghead.signature_size)
     pkghead.payload_digest = (c_ubyte * 32)(*list(payload_digest.digest()))
     if (po.verbose > 2):
-        print("Computed payload digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in pkghead.payload_digest)))
+        print("Computed payload digest:\n{:s}".format(' '.join("{:02X}".format(x) for x in pkghead.payload_digest)))
     # Write all headers again
     fwsigfile.seek(0,os.SEEK_SET)
     fwsigfile.write(bytes(pkghead))
@@ -892,7 +893,7 @@ def imah_sign(po, fwsigfile):
     for i, chunk in enumerate(chunks):
         header_digest.update(bytes(chunk))
     if (po.verbose > 2):
-        print("Computed header digest:\n{:s}\n".format(' '.join("{:02X}".format(x) for x in header_digest.digest())))
+        print("Computed header digest:\n{:s}".format(' '.join("{:02X}".format(x) for x in header_digest.digest())))
 
     auth_key = imah_get_auth_params(po, pkghead)
     if not hasattr(auth_key, 'd'):
