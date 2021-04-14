@@ -723,7 +723,7 @@ def imah_unsign(po, fwsigfile):
 
         chunk_fname= "{:s}_{:s}.bin".format(po.mdprefix,minames[i])
 
-        if (chunk.attrib & 0x01): # Not encrypted chunk
+        if (chunk.attrib & 0x01) or (pkghead.enc_key == b''): # Not encrypted chunk
             cipher = PlainCopyCipher()
             pad_cnt = 0
             if (po.verbose > 0):
@@ -818,7 +818,7 @@ def imah_sign(po, fwsigfile):
                 print("{}: Empty chunk index {:d}".format(fwsigfile.name,i))
             continue
 
-        if (chunk.attrib & 0x01): # Not encrypted chunk
+        if (chunk.attrib & 0x01) or (pkghead.enc_key == b''): # Not encrypted chunk
             cipher = PlainCopyCipher()
             if (po.verbose > 0):
                 print("{}: Packing plaintext chunk '{:s}'...".format(fwsigfile.name,minames[i]))
