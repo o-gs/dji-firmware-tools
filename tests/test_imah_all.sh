@@ -26,11 +26,15 @@ if [ ! -f "tests/test_dji_imah_fwsig_rebin1.sh" ]; then
   exit 4
 fi
 
-declare -a FWPKG_LIST=(
+declare -a FWPKG1_LIST=(
 V01.03.0200_Mavic_dji_system.bin
 V01.03.0900_Mavic_dji_system.bin
 V01.04.0000_Mavic_dji_system.bin
 V01.04.0500_Mavic_dji_system.bin
+)
+
+declare -a FWPKG2_LIST=(
+V01.00.0500_Mavic_Mini_dji_system.tar
 )
 
 # In case we want to use Python from non-standard location
@@ -38,41 +42,41 @@ V01.04.0500_Mavic_dji_system.bin
 
 echo "Using Python: $(which python3)"
 
-set -e
-
 NUMFAILS=0
 NUMSKIPS=0
 
-for FWPKG in "${FWPKG_LIST[@]}"; do
-  FWDLURL=
-  FWDLNAME=
-  FWTSTFLG=0x00
+function test_dji_imah_package {
+  FWPKG="$1"
+  FWDIR="$2"
+  FWDLURL="$3"
+  FWDLNAME="$4"
+  FWTSTFLG="$5"
 
   # Download firmwares
 
-  if [ ! -f "fw_imah1/${FWPKG}" ]; then
+  if [ ! -f "${FWDIR}/${FWPKG}" ]; then
 
-    if [ ! -f "fw_imah1/${FWDLNAME}" ] && [ $((FWTSTFLG & 0x01)) -ne 0 ]; then
-      curl "${FWDLURL}" -o "fw_imah1/${FWDLNAME}"
+    if [ ! -f "${FWDIR}/${FWDLNAME}" ] && [ $((FWTSTFLG & 0x01)) -ne 0 ]; then
+      curl "${FWDLURL}" -o "${FWDIR}/${FWDLNAME}"
     fi
 
-    if [ ! -f "fw_imah1/${FWDLNAME}" ]; then
+    if [ ! -f "${FWDIR}/${FWDLNAME}" ]; then
       echo '### SKIP could not download firmware to test ###'
       ((NUMSKIPS++))
-      continue
+      return 1
     fi
 
     if [[ ${FWDLNAME} =~ [.]zip$ ]]; then
-      (unzip -j -o -d fw "fw_imah1/${FWDLNAME}")
+      (unzip -j -o -d fw "${FWDIR}/${FWDLNAME}")
     elif [[ ${FWDLNAME} =~ [.]rar$ ]]; then
       (cd fw && unrar e "${FWDLNAME}")
     fi
   fi
 
-  if [ ! -f "fw_imah1/${FWPKG}" ]; then
+  if [ ! -f "${FWDIR}/${FWPKG}" ]; then
     echo '### SKIP could not extract firmware to test ###'
     ((NUMSKIPS++))
-    continue
+    return 1
   fi
 
   SIGDIR=
@@ -80,7 +84,7 @@ for FWPKG in "${FWPKG_LIST[@]}"; do
     SIGDIR=${FWPKG%.*}
     # Extract the package TAR file
     mkdir "${SIGDIR}"
-    tar -xf "fw_imah1/${FWPKG}" -C "${SIGDIR}"
+    tar -xf "${FWDIR}/${FWPKG}" -C "${SIGDIR}"
     if [ $? -ne 0 ]; then
       ((NUMFAILS++))
     fi
@@ -110,6 +114,25 @@ for FWPKG in "${FWPKG_LIST[@]}"; do
     rm -d "${SIGDIR}"
   fi
 
+  return 0
+}
+
+for FWPKG in "${FWPKG1_LIST[@]}"; do
+  FWDIR="fw_imah1"
+  FWDLURL=
+  FWDLNAME=
+  FWTSTFLG=0x00
+
+  test_dji_imah_package "${FWPKG}" "${FWDIR}" "${FWDLURL}" "${FWDLNAME}" "${FWTSTFLG}"
+done
+
+for FWPKG in "${FWPKG2_LIST[@]}"; do
+  FWDIR="fw_imah2"
+  FWDLURL=
+  FWDLNAME=
+  FWTSTFLG=0x00
+
+  test_dji_imah_package "${FWPKG}" "${FWDIR}" "${FWDLURL}" "${FWDLNAME}" "${FWTSTFLG}"
 done
 
 if [ ${NUMSKIPS} -gt 0 ]; then
