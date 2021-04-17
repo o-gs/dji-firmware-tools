@@ -136,7 +136,8 @@ def unpack(args):
     else:
         eprint("Warning: CRC of the header doesn't match!")
 
-    data = args.input.read(((header.size + 255) // 256) * 256)
+    blocks_count = (header.size + 255) // 256
+    data = args.input.read(blocks_count * 256)
 
     # MD5 of the entire file
     md5_sum = hashlib.md5()
@@ -163,7 +164,7 @@ def unpack(args):
         eprint("{}: Warning: Expected no trailing bytes, got {:d}!".format(args.input.name,len(remaining)))
 
     dec_buffer = bytes()
-    for i in range((header.size + 255) // 256):
+    for i in range(blocks_count):
         enc_buffer = data[(i * 256):((i + 1) * 256)]
         cipher = AES.new(encrypt_key, AES.MODE_CBC, encrypt_iv)
         dec_buffer += cipher.decrypt(enc_buffer)
@@ -194,8 +195,6 @@ def pack(args):
 
     data = args.input.read()
 
-    # Calculate the md5
-    header.md5 = (c_ubyte * 16)(*(hashlib.md5(data).digest()))
     header.size = len(data)
 
     # Target
@@ -224,32 +223,50 @@ def pack(args):
     if ver == None:
         raise ValueError("Wrong firmware version string format (vAA.BB.CC.DD): '{}'".format(args.fwver))
 
-    # Version
+    # Store module version
     header.version[3] = int(ver.group(1), 10)
     header.version[2] = int(ver.group(2), 10)
     header.version[1] = int(ver.group(3), 10)
     header.version[0] = int(ver.group(4), 10)
+
+    # Prepare for computing MD5 sum of decrypted data
+    # Obviously padding on last block is included in the decrypted data checksum.
+    # You decide whether it's made on purpose, or just programmed by an intern.
+    md5_dec = hashlib.md5()
+
+    # Encrypt the file
+    enc_buffer = bytes()
+    blocks_size = 256
+    pad_len = (blocks_size - (len(data) % blocks_size)) % blocks_size
+    blocks_count = (len(data) + 255) // 256
+    enc_block = 256 * b'\0'
+    for i in range(blocks_count):
+        dec_block = data[(i * 256):((i + 1) * 256)]
+        if len(dec_block) < 256:
+            # Last block is padded by data from previous block; this is
+            # unlikely conscious decision; but that's how it was implemented
+            dec_block += enc_block[len(dec_block):256]
+        md5_dec.update(dec_block)
+        cipher = AES.new(encrypt_key, AES.MODE_CBC, encrypt_iv)
+        enc_block = cipher.encrypt(dec_block)
+        enc_buffer += enc_block
+
+    # Store MD5 of decrypted data
+    header.md5 = (c_ubyte * 16)(*(md5_dec.digest()))
 
     # Calculate the header crc
     header.crc16 = calc_checksum(bytes(header), 39)
 
     print(header)
 
-    # Encrypt the file
-    enc_buffer = bytes()
-    for i in range(((len(data) + 255) // 256)):
-        dec_buffer = data[(i * 256):((i + 1) * 256)]
-        cipher = AES.new(encrypt_key, AES.MODE_CBC, encrypt_iv)
-        enc_buffer += cipher.encrypt(dec_buffer)
-
     args.output.write(header)
     args.output.write(enc_buffer)
 
-    # MD5 of the entire file
-    md5_sum = hashlib.md5()
-    md5_sum.update(header)
-    md5_sum.update(enc_buffer)
-    args.output.write(md5_sum.digest())
+    # Prepare MD5 of the entire file
+    md5_enc = hashlib.md5()
+    md5_enc.update(header)
+    md5_enc.update(enc_buffer)
+    args.output.write(md5_enc.digest())
 
     args.output.close()
 
@@ -265,8 +282,9 @@ def main():
 
     subparsers = parser.add_subparsers(dest='cmd')
 
-    parser.add_argument("--verbose", action="count", default=0,
-            help="increases verbosity level")
+    parser.add_argument("-v", "--verbose", action="count", default=0,
+          help="increases verbosity level; max level is set by -vvv")
+
     parser.add_argument("-f", "--force-continue", action="store_true",
             help="force continuing execution despite warning signs of issues")
 
