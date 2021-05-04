@@ -2059,7 +2059,7 @@ def smbus_read_simple(bus, dev_addr, cmd, resp_type, resp_unit, retry_count, po)
                 v = smbus_read_block(bus, dev_addr, cmd, resp_type, po)
 
             else:
-                raise ValueError("Command {} type {} not supported".format(cmd.name,resp_type))
+                raise ValueError("Command {} type {} not supported in simple read".format(cmd.name,resp_type))
         except Exception as ex:
             if (nretry > 0) and (
               (isinstance(ex, OSError) and ex.errno in (5,121,)) or
@@ -2116,7 +2116,7 @@ def smbus_write_simple(bus, dev_addr, cmd, v, val_type, val_unit, retry_count, p
         smbus_write_block(bus, dev_addr, cmd, v, val_type, po)
 
     else:
-        raise ValueError("Command {} type {} not supported".format(cmd.name,val_type))
+        raise ValueError("Command {} type {} not supported in simple write".format(cmd.name,val_type))
 
     return val_unit['name']
 
@@ -2427,7 +2427,7 @@ def smbus_read_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdin
     if (resp_type.startswith("byte[") or resp_type.startswith("string") or resp_type.endswith("_blk")):
         v = smbus_read_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
     else:
-        raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,resp_type))
+        raise ValueError("Command {}.{} type {} not supported in sub-command read".format(cmd.name,subcmd.name,resp_type))
 
     resp_unit = subcmdinf['unit']
     if (resp_unit['scale'] is not None) and (resp_unit['scale'] != 1):
@@ -2470,7 +2470,7 @@ def smbus_write_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdi
       stor_type.endswith("_blk") or stor_type in ("void",)):
         smbus_write_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po)
     else:
-        raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,stor_type))
+        raise ValueError("Command {}.{} type {} not supported in sub-command write".format(cmd.name,subcmd.name,stor_type))
 
     return stor_unit['name']
 
@@ -2497,7 +2497,7 @@ def smbus_read_macblk_by_writing_block_subcmd_first(bus, dev_addr, cmd, subcmd, 
     if (resp_type.startswith("byte[") or resp_type.startswith("string") or resp_type.endswith("_blk")):
         v = smbus_read_macblock_val_by_writing_block_subcmd_first(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
     else:
-        raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,resp_type))
+        raise ValueError("Command {}.{} type {} not supported in block sub-command read".format(cmd.name,subcmd.name,resp_type))
 
     resp_unit = subcmdinf['unit']
     if (resp_unit['scale'] is not None) and (resp_unit['scale'] != 1):
@@ -2537,7 +2537,7 @@ def smbus_write_macblk_with_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcm
       stor_type.endswith("_blk") or stor_type in ("void",)):
         smbus_write_macblock_val_adding_block_subcmd_first(bus, dev_addr, cmd, subcmd, v, stor_type, stor_wait, po)
     else:
-        raise ValueError("Command {}.{} type {} not supported".format(cmd.name,subcmd.name,stor_type))
+        raise ValueError("Command {}.{} type {} not supported in block sub-command write".format(cmd.name,subcmd.name,stor_type))
 
     return stor_unit['name']
 
@@ -2601,7 +2601,7 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
                 # do write request with subcmd, then expect response at specific location
                 v, u = smbus_read_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, po)
             else:
-                # Do normal read, this is not a sub-command with different response location
+                # do normal read, this is not a sub-command with different response location
                 v, u = smbus_read_simple(bus, dev_addr, cmd, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
         else: # cmdinf['getter'] == "write_word_subcmd_mac_block"
             # do write request with subcmd, then expect block response at specific location starting with subcmd
@@ -2673,11 +2673,13 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
 
         if cmdinf['getter'] == "write_word_subcommand":
             if ('resp_location' in subcmdinf) or (subcmdinf['type'] == "void"):
-                # do write request with subcmd, then expect response at specific location
-                u = smbus_write_simple(bus, dev_addr, cmd, v, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
-            else:
-                # write request with subcmd, then do actual data write at specific location
+                # do write request with subcmd, then do actual data write at specific location
+                # trigger (type == "void") is supported by this function as well
                 u = smbus_write_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, v, po)
+            else:
+                # do normal write, this is not a sub-command with different value location
+                u = smbus_write_simple(bus, dev_addr, cmd, v, subcmdinf['type'], subcmdinf['unit'], retry_count, po)
+
         else: # cmdinf['getter'] == "write_word_subcmd_mac_block"
             # write block with actual data preceded by subcmd
             u = smbus_write_macblk_with_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, v, po)
@@ -3021,19 +3023,23 @@ def smart_battery_system_trigger(cmd_str, vals, po):
     """
     global bus
     cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po, define_new=True)
+    if subcmd is not None:
+        basecmd_name = re.sub('[^A-Z0-9]', '', cmd.name) + '.' + subcmd.name
+    else:
+        basecmd_name = cmd.name
     cmdinf = SBS_CMD_INFO[cmd]
     opts = {'subcmd': subcmd}
     v = b''
     try:
         u, s = smbus_write(bus, po.dev_address, cmd, v, opts, vals, po)
     except Exception as ex:
-        print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "trigger", "FAIL", str_exception_with_type(ex)))
+        print("{:{}s}\t{}\t{}\t{}".format(basecmd_name+":", 1, "trigger", "FAIL", str_exception_with_type(ex)))
         if (isinstance(ex, OSError)):
             smart_battery_system_last_error(bus, po.dev_address, vals, po)
         if (po.explain):
             print("Description: {}".format(cmdinf['desc']))
-        return
-    print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "trigger", "SUCCESS", "Trigger switch write accepted"))
+        raise RuntimeError("Trigger failed on command {}".format(basecmd_name))
+    print("{:{}s}\t{}\t{}\t{}".format(basecmd_name+":", 1, "trigger", "SUCCESS", "Trigger switch write accepted"))
 
 
 def smart_battery_system_write(cmd_str, nval_str, vals, po):
@@ -3041,18 +3047,22 @@ def smart_battery_system_write(cmd_str, nval_str, vals, po):
     """
     global bus
     cmd, subcmd = smart_battery_system_command_from_text(cmd_str, po, define_new=True)
+    if subcmd is not None:
+        basecmd_name = re.sub('[^A-Z0-9]', '', cmd.name) + '.' + subcmd.name
+    else:
+        basecmd_name = cmd.name
     cmdinf = SBS_CMD_INFO[cmd]
     opts = {'subcmd': subcmd}
     v = smart_battery_system_cmd_value_from_text(cmd, subcmd, nval_str, po)
     try:
         u, s = smbus_write(bus, po.dev_address, cmd, v, opts, vals, po)
     except Exception as ex:
-        print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "write", "FAIL", str_exception_with_type(ex)))
+        print("{:{}s}\t{}\t{}\t{}".format(basecmd_name+":", 1, "write", "FAIL", str_exception_with_type(ex)))
         if (isinstance(ex, OSError)):
             smart_battery_system_last_error(bus, po.dev_address, vals, po)
         if (po.explain):
             print("Description: {}".format(cmdinf['desc']))
-        return
+        raise RuntimeError("Write failed to command {}".format(basecmd_name))
     print("{:{}s}\t{}\t{}\t{}".format(cmd.name+":", 1, "write", "SUCCESS", "Value write accepted"))
 
 
