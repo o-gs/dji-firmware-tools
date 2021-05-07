@@ -4685,13 +4685,13 @@ class ChipMockBQ40(ChipMock):
         df[0x019:0x020] = bytes.fromhex("ff 00 ff 00 00 01 00")
         df[0x020:0x024] = bytes.fromhex("00 00 00 00 00")
         df[0x024:0x040] = b'0xff' * 0x1c
-        df[0x040:0x060] = struct.pack('<B31s', 32, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234') # ManufacturerInfo
+        df[0x040:0x060] = struct.pack('<B31s', 32, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234') # ManufacturerInfo; size exceeds actual length by 1, so it's kind of broken
         df[0x060:0x062] = bytes.fromhex("02 04")
         df[0x062:0x068] = bytes.fromhex("00 00 00 67 00 00") # ManufacturerInfo2
         df[0x068:0x070] = struct.pack('<HHHH', 0x3a6b, 0, 0x4f5a, 0x0057) # StaticChemDFSignature, ?, ManufactureDate, SerialNumber
-        df[0x070:0x085] = struct.pack('<B20s', 3, b'SDI') # ManufacturerName
-        df[0x085:0x09A] = struct.pack('<B20s', 9, b'BA01WM160') # DeviceName
-        df[0x09A:0x09F] = struct.pack('<B4s', 4, b'2044') # DeviceChemistry
+        df[0x070:0x085] = struct.pack('<21p', b'SDI') # ManufacturerName
+        df[0x085:0x09A] = struct.pack('<21p', b'BA01WM160') # DeviceName
+        df[0x09A:0x09F] = struct.pack('<5p', b'2044') # DeviceChemistry
         df[0x0C0:0x0C2] = bytes.fromhex("07 4a")
 
         df[0x100:0x104] = struct.pack('<hh', 0, 131)
@@ -4713,10 +4713,13 @@ class ChipMockBQ40(ChipMock):
         df[0x144:0x150] = df[0x184:0x190] = df[0x1C4:0x1D0] = df[0x284:0x290] = df[0x2c4:0x2d0] = df[0x104:0x110]
         df[0x150:0x160] = df[0x190:0x1A0] = df[0x1D0:0x1E0] = df[0x290:0x2A0] = df[0x2D0:0x2E0] = df[0x110:0x120]
 
-        df[0x300:0x310] = bytes.fromhex("39 00 1e 00 00 00 4a 0a  5a 0a c4 09 c4 09 4a 0a")
+        df[0x300:0x306] = bytes.fromhex("39 00 1e 00 00 00")
+        df[0x306:0x310] = struct.pack('<HHHHH', 2634, 2650, 2500, 2500, 2634)
         df[0x310:0x320] = bytes.fromhex("00 00 0e 6b 10 6e 10 65  10 00 00 70 00 b4 fd 48")
         df[0x320:0x330] = bytes.fromhex("fe 03 00 57 01 82 02 87  fd 29 fe 00 00 00 00 00")
-        df[0x380:0x392] = struct.pack('<HHHHHHHHH', 0xf36, 0xf36, 0, 0, 0xbe6, 0xbed, 0x7fff, 0x7fff, 0x1c) # LifetimeDataBlock1
+        df[0x380:0x388] = struct.pack('<HHHH', 3894, 3894, 0, 0) # LifetimeDataBlock1 - MaxCellVoltage
+        df[0x388:0x390] = struct.pack('<HHHH', 3046, 3053, 32767, 32767) # LifetimeDataBlock1 - MinCellVoltage
+        df[0x390:0x392] = struct.pack('<H', 28) # LifetimeDataBlock1 - MaxDeltaCellVoltage
         df[0x392:0x396] = struct.pack('<BBBB', 3, 0, 7, 0) # LifetimeDataBlock2
         df[0x396:0x3a6] = struct.pack('<HHHHHHHH', 0x98f, 0, 0, 0, 0x98d, 0, 0, 0) # LifetimeDataBlock3
         df[0x3a6:0x3a8] = struct.pack('<H', 500)
@@ -4764,11 +4767,6 @@ class ChipMockBQ40(ChipMock):
         self.add_read(0x18, struct.pack('<H', sum(self.dc))) # DesignCapacity
         self.add_read(0x19, struct.pack('<H', sum(self.dv))) # DesignVoltage
         self.add_read(0x1a, struct.pack('<H', 0x0031)) # SpecificationInfo
-        self.add_read(0x1b, struct.pack('<H', 0x4f5a)) # ManufactureDate
-        self.add_read(0x1c, struct.pack('<H', 0x0057)) # SerialNumber
-        self.add_read(0x20, b'SDI') # ManufacturerName
-        self.add_read(0x21, b'BA01WM160') # DeviceName
-        self.add_read(0x22, b'2044') # DeviceChemistry
         self.add_read(0x3c, struct.pack('<H', self.v[3])) # Cell3Voltage
         self.add_read(0x3d, struct.pack('<H', self.v[2])) # Cell2Voltage
         self.add_read(0x3e, struct.pack('<H', self.v[1])) # Cell1Voltage
@@ -4782,10 +4780,6 @@ class ChipMockBQ40(ChipMock):
         self.add_read(0x56, struct.pack('<L', 0x091950)[:3]) # GaugingStatus
         self.add_read(0x57, struct.pack('<H', 0x0038)) # ManufacturingStatus
         self.add_read(0x5a, struct.pack('<H', 1261)) # TURBO_FINAL, read as 2-byte block for BQ40z307
-        self.add_read(0x60, bytes.fromhex("36 0f 36 0f 00 00 00 00 e6 0b ed 0b ff 7f ff 7f 1c 00")) # LifetimeDataBlock1, 18 bytes for BQ40z307
-        self.add_read(0x61, bytes.fromhex("03 00 07 00")) # LifetimeDataBlock2, 4 bytes for BQ40z307
-        self.add_read(0x62, bytes.fromhex("5c 09 00 00 00 00 00 00 5b 09 00 00 00 00 00 00")) # LifetimeDataBlock3
-        self.add_read(0x70, b'\x20\x32\x1e\x14\x0afghijklmnopqrstuvwzxy01234\x02') # ManufacturerInfo
         self.add_read(0x71, struct.pack('<HHHHHHHHHHHHHHHH', self.v[0], self.v[1],
           self.v[2], self.v[3], sum(self.v), int(sum(self.v)*1.04),
           mamp[0], mamp[1], mamp[2], mamp[3], self.v[0]*mamp[0],
@@ -4805,7 +4799,6 @@ class ChipMockBQ40(ChipMock):
         self.add_read_sub(0x00, 0x04, struct.pack('<H', 0x67b2)) # InstrFlashChecksum
         self.add_read_sub(0x00, 0x05, struct.pack('<H', 0x9a31)) # StaticDataFlashChecksum
         self.add_read_sub(0x00, 0x06, struct.pack('<H', 0x2044)) # ChemicalID
-        self.add_read_sub(0x00, 0x08, struct.pack('<H', 0x3a6b)) # StaticChemDFSignature
         self.add_read_sub(0x00, 0x09, struct.pack('<H', 0xd5fa)) # AllDFSignature
         self.add_read_sub(0x00, 0x35, struct.pack('<LL', int(0x36720414), int(0xffffffff))) # SecurityKeys
         self.add_read_sub(0x00, 0x7a, bytes.fromhex("00 00 45 67")) # ManufacturerInfo2 - somehow through MA it returns different value
@@ -4816,10 +4809,14 @@ class ChipMockBQ40(ChipMock):
         #TODO should we get values from data space in more dynamic manner?
         self.add_read(0x1b, df[0x06C:0x06E]) # ManufactureDate
         self.add_read(0x1c, df[0x06E:0x070]) # SerialNumber
-        self.add_read(0x20, df[0x071:int(0x071+df[0x070])]) # ManufacturerName
-        self.add_read(0x21, df[0x086:int(0x086+df[0x085])]) # DeviceName
-        self.add_read(0x22, df[0x09b:int(0x09b+df[0x09a])]) # DeviceChemistry
-        self.add_read(0x70, df[0x041:int(0x041+df[0x040])]) # ManufacturerInfo
+        # Allow Pascal strings to behave as they do in original dataspace - if first byte is corrupted, they can return too much
+        self.add_read(0x20, struct.unpack('<256p', df[0x070:0x170])[0]) # ManufacturerName
+        self.add_read(0x21, struct.unpack('<256p', df[0x085:0x185])[0]) # DeviceName
+        self.add_read(0x22, struct.unpack('<256p', df[0x09A:0x19A])[0]) # DeviceChemistry
+        self.add_read(0x60, df[0x380:0x392]) # LifetimeDataBlock1, 18 bytes for BQ40z307
+        self.add_read(0x61, df[0x392:0x396]) # LifetimeDataBlock2, 4 bytes for BQ40z307
+        self.add_read(0x62, df[0x396:0x3A6]) # LifetimeDataBlock3
+        self.add_read(0x70, struct.unpack('<256p', df[0x040:0x140])[0]) # ManufacturerInfo
         self.add_read_sub(0x00, 0x08, df[0x068:0x06A]) # StaticChemDFSignature
         # For ManufacturerBlockAccess commands, remember to add subcmd word at start
 
