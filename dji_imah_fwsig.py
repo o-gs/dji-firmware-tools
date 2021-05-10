@@ -214,9 +214,9 @@ class ImgPkgHeader(LittleEndianStructure):
                 ('header_version', c_uint),         #4
                 ('size', c_uint),                   #8
                 ('reserved', c_ubyte * 4),          #12
-                ('header_size', c_uint),            #16 Length of this header
-                ('signature_size', c_uint),         #20 Length of RSA signature
-                ('payload_size', c_uint),           #24
+                ('header_size', c_uint),            #16 Length of this header and following chunk headers
+                ('signature_size', c_uint),         #20 Length of RSA signature located after chunk headers
+                ('payload_size', c_uint),           #24 Length of the area after signature which contains data of all chunks
                 ('target_size', c_uint),            #28
                 ('os', c_ubyte),                    #32
                 ('arch', c_ubyte),                  #33
@@ -541,8 +541,8 @@ def imah_read_fwsig_head(po):
         lines = itertools.chain(("[asection]",), lines)  # This line adds section header to ini
         parser.read_file(lines)
     # Set magic fields properly
-    pkgformat = parser.get("asection", "pkg_format")
-    pkghead.set_format_version(int(pkgformat))
+    pkgformat = int(parser.get("asection", "pkg_format"))
+    pkghead.set_format_version(pkgformat)
     # Set the rest of the fields
     pkghead.name = bytes(parser.get("asection", "name"), "utf-8")
     pkghead.userdata = bytes(parser.get("asection", "userdata"), "utf-8")
@@ -843,8 +843,6 @@ def imah_unsign(po, fwsigfile):
 def imah_sign(po, fwsigfile):
     # Read headers from INI files
     (pkghead, minames, pkgformat) = imah_read_fwsig_head(po)
-    if pkgformat == 2018:
-        eprint("{}: Warning: The 2018 format is not fully supported.".format(fwsigfile.name))
     chunks = []
     # Create header entry for each chunk
     for i, miname in enumerate(minames):
@@ -861,6 +859,7 @@ def imah_sign(po, fwsigfile):
     # prepare encryption
     crypt_key, crypt_mode, crypt_iv = imah_get_crypto_params(po, pkghead)
     # Write module data
+    checksum_dec = 0
     payload_digest = SHA256.new()
     for i, miname in enumerate(minames):
         chunk = chunks[i]
@@ -911,6 +910,7 @@ def imah_sign(po, fwsigfile):
                 pad_cnt = AES.block_size - (len(copy_buffer) % AES.block_size)
                 pad_buffer = b"\0" * pad_cnt
                 copy_buffer += pad_buffer
+            checksum_dec = imah_compute_checksum(po, copy_buffer, checksum_dec)
             copy_buffer = cipher.encrypt(copy_buffer)
             payload_digest.update(copy_buffer)
             fwsigfile.write(copy_buffer)
@@ -926,11 +926,36 @@ def imah_sign(po, fwsigfile):
         chunks[i] = chunk
 
     pkghead.update_payload_size(fwsigfile.tell() - pkghead.header_size - pkghead.signature_size)
+    if pkgformat >= 2018:
+        pkghead.plain_cksum = checksum_dec
+        if (po.verbose > 1):
+            print("{}: Decrypted chunks checksum 0x{:08X} stored".format(fwsigfile.name, checksum_dec))
     pkghead.payload_digest = (c_ubyte * 32)(*list(payload_digest.digest()))
     if (po.verbose > 2):
-        print("Computed payload digest:\n{:s}".format(' '.join("{:02X}".format(x) for x in pkghead.payload_digest)))
+        print("{}: Computed payload digest:\n{:s}".format(fwsigfile.name, ' '.join("{:02X}".format(x) for x in pkghead.payload_digest)))
+
+    # Compute encrypted data checksum; cannot do that during encryption as we
+    # need header with all fields filled, except of the checksum ofc.
+    checksum_enc = imah_compute_checksum(po, bytes(pkghead))
+    for i, chunk in enumerate(chunks):
+        checksum_enc = imah_compute_checksum(po, bytes(chunk), checksum_enc)
+    if (po.verbose > 2):
+        print("{}: Computed header checksum 0x{:08X}".format(fwsigfile.name, checksum_enc))
+
+    if pkgformat >= 2018:
+        fwsigfile.seek(pkghead.header_size + pkghead.signature_size, os.SEEK_SET)
+        remain_enc_n = pkghead.payload_size
+        while remain_enc_n > 0:
+            copy_buffer = fwsigfile.read(min(1024 * 1024, remain_enc_n))
+            checksum_enc = imah_compute_checksum(po, copy_buffer, checksum_enc)
+            remain_enc_n -= 1024 * 1024
+        checksum_enc = (2 ** 32) - checksum_enc
+        pkghead.encr_cksum = checksum_enc
+        if (po.verbose > 1):
+            print("{}: Encrypted data checksum 0x{:08X} stored".format(fwsigfile.name, checksum_enc))
+
     # Write all headers again
-    fwsigfile.seek(0,os.SEEK_SET)
+    fwsigfile.seek(0, os.SEEK_SET)
     fwsigfile.write(bytes(pkghead))
     if (po.verbose > 1):
         print(str(pkghead))
@@ -939,18 +964,24 @@ def imah_sign(po, fwsigfile):
         if (po.verbose > 1):
             print(str(chunk))
 
-    # Compute header hash
+    # Compute header hash, and use it to sign the header
     header_digest = SHA256.new()
     header_digest.update(bytes(pkghead))
     for i, chunk in enumerate(chunks):
         header_digest.update(bytes(chunk))
     if (po.verbose > 2):
-        print("Computed header digest:\n{:s}".format(' '.join("{:02X}".format(x) for x in header_digest.digest())))
+        print("{}: Computed header digest:\n{:s}".format(fwsigfile.name, ' '.join("{:02X}".format(x) for x in header_digest.digest())))
 
     auth_key = imah_get_auth_params(po, pkghead)
     if not hasattr(auth_key, 'd'):
         raise ValueError("Cannot compute image file head signature, auth key '{:s}' has no private part.".format(pkghead.auth_key.decode("utf-8")))
-    header_signer = PKCS1_v1_5.new(auth_key)
+
+    if pkgformat >= 2018:
+        mgf = lambda x, y: pss.MGF1(x, y, SHA256)
+        salt_bytes = header_digest.digest_size
+        header_signer = pss.new(auth_key, mask_func=mgf, salt_bytes=salt_bytes)
+    else:
+        header_signer = PKCS1_v1_5.new(auth_key)
     head_signature = header_signer.sign(header_digest)
     fwsigfile.write(head_signature)
 
@@ -1016,7 +1047,7 @@ def main():
 
         if (po.verbose > 0):
             print("{}: Opening for creation and signing".format(po.sigfile))
-        fwsigfile = open(po.sigfile, "wb")
+        fwsigfile = open(po.sigfile, "w+b")
 
         imah_sign(po, fwsigfile)
 
