@@ -18,6 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 set -eo pipefail
+set -x
 
 SKIP_EXTRACT=0
 SKIP_REPACK=0
@@ -88,7 +89,7 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
   if [ ! -z "${HAS_MVFC_ENC}" ]; then
     MODULE="${HAS_MVFC_ENC}"
     echo "### INFO: Found m${MODULE} inside, doing 2nd stage decrypt ###"
-    ./dji_mvfc_fwpak.py dec -i "${TESTFILE%.*}_${MODULE}.bin" \
+    ./dji_mvfc_fwpak.py -vv dec -i "${TESTFILE%.*}_${MODULE}.bin" \
       -o "${TESTFILE%.*}_${MODULE}.decrypted.bin" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.log"
   fi
 fi

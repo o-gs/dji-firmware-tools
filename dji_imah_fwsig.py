@@ -41,6 +41,7 @@ from Crypto.Util import Counter
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
+from Crypto.Signature import pss
 from ctypes import *
 from collections import OrderedDict
 from time import gmtime, strftime, strptime
@@ -351,7 +352,10 @@ def raise_or_warn(po, ex):
 
 
 def combine_int_array(int_arr, bits_per_entry):
-    """ Makes one big numer out of an array of numbers
+    """ Makes one big numer out of an array of numbers.
+
+    Allows to make pythonic big number out of little endian number stored in parts
+    as a list.
     """
     ans = 0
     for i, val in enumerate(int_arr):
@@ -656,8 +660,16 @@ def imah_unsign(po, fwsigfile):
 
     auth_key = imah_get_auth_params(po, pkghead)
     try:
-        header_signer = PKCS1_v1_5.new(auth_key)
-        signature_match = header_signer.verify(header_digest, head_signature)
+        if pkgformat >= 2018:
+            mgf = lambda x, y: pss.MGF1(x, y, SHA256)
+            salt_bytes = header_digest.digest_size
+            header_signer = pss.new(auth_key, mask_func=mgf, salt_bytes=salt_bytes)
+            # The PSS signer does not return value, just throws exception of a fail
+            header_signer.verify(header_digest, head_signature)
+            signature_match = True
+        else:
+            header_signer = PKCS1_v1_5.new(auth_key)
+            signature_match = header_signer.verify(header_digest, head_signature)
     except Exception as ex:
         print("{}: Warning: Image file head signature verification caused cryptographic exception: {}".format(fwsigfile.name,str(ex)))
         signature_match = False
