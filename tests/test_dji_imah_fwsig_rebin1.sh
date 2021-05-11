@@ -66,6 +66,7 @@ if [ ! -f "${BINFILE}" ]; then
 fi
 
 TESTFILE="${BINFILE%.*}-test.sig"
+SUPPORTS_MVFC_ENC=1
 HAS_MVFC_ENC=
 
 if [ "${SKIP_COMPARE}" -le "0" ]; then
@@ -76,6 +77,33 @@ if [ "${SKIP_COMPARE}" -le "0" ]; then
   # exactly the same as input BIN file.
 fi
 
+BINFNAME=$(basename "${BINFILE}")
+if   [[ ${BINFNAME} =~ ^wm220[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-07"
+  # allow change of 2 bytes from auth key name, 256 from signature
+  HEAD_CHANGES_LIMIT=$((2 + 256))
+elif [[ ${BINFNAME} =~ ^wm230[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2018-01"
+  # allow change of 2 bytes from auth key name, 4 from enc checksum, 256 from signature
+  HEAD_CHANGES_LIMIT=$((2 + 4 + 256))
+elif [[ ${BINFNAME} =~ ^wm160[._].*[.]sig$ ]]; then
+  EXTRAPAR="-f" # No PRAK - ignore signature fails instead
+  # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, 32+16 from payload digest and padding
+  HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
+  # Decryption of second level FC enc is not currently supported for this platform
+  SUPPORTS_MVFC_ENC=0
+elif [[ ${BINFNAME} =~ ^wm161[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2019-09"
+  # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, 32+16 from payload digest and padding
+  # TODO would be nice if we could eliminate padding discrepencies (these seem to happen in m0905 and m1100)
+  HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
+  # Decryption of second level FC enc is not currently supported for this platform
+  SUPPORTS_MVFC_ENC=0
+else
+  EXTRAPAR=""
+  HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256))
+fi
+
 if [ "${SKIP_EXTRACT}" -le "0" ]; then
   echo "### INFO: Input file \"${BINFILE}\" ###"
   # Remove files which will be created
@@ -83,9 +111,14 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
   rm ${TESTFILE%.*}_*.bin ${TESTFILE%.*}_*.ini 2>/dev/null
   set -e
   # Unsign/decrypt the module
-  ./dji_imah_fwsig.py -vv -u -i "${BINFILE}" -m "${TESTFILE%.*}" 2>&1 | tee "${TESTFILE%.*}_unsig.log"
+  ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${BINFILE}" -m "${TESTFILE%.*}" 2>&1 | tee "${TESTFILE%.*}_unsig.log"
   # Some modules have another stage of encryption
-  HAS_MVFC_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0305\|0306\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+    HAS_MVFC_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0305\|0306\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+  if [ "${SUPPORTS_MVFC_ENC}" -le "0" ] && [ ! -z "${HAS_MVFC_ENC}" ]; then
+    MODULE="${HAS_MVFC_ENC}"
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage decrypt disabled for this platform ###"
+    HAS_MVFC_ENC=
+  fi
   if [ ! -z "${HAS_MVFC_ENC}" ]; then
     MODULE="${HAS_MVFC_ENC}"
     echo "### INFO: Found m${MODULE} inside, doing 2nd stage decrypt ###"
@@ -114,7 +147,7 @@ if [ "${SKIP_REPACK}" -le "0" ]; then
     ./dji_mvfc_fwpak.py enc -V "${MOD_FWVER}" -T "${MOD_TMSTAMP}" -t "${MODULE}" \
       -i "${TESTFILE%.*}_${MODULE}.decrypted.bin" -o "${TESTFILE%.*}_${MODULE}.bin"
   fi
-  ./dji_imah_fwsig.py -vv -s -i "${TESTFILE}" -m "${TESTFILE%.*}" 2>&1 | tee "${TESTFILE%.*}_resig.log"
+  ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${TESTFILE}" -m "${TESTFILE%.*}" 2>&1 | tee "${TESTFILE%.*}_resig.log"
 fi
 
 set +eo pipefail
@@ -133,7 +166,7 @@ fi
 if [ "${SKIP_COMPARE}" -le "0" ]; then
   if [ ${TEST_RESULT} == 0 ]; then
     echo '### SUCCESS: File identical after conversion. ###'
-  elif [ ${TEST_RESULT} -le 258 ]; then
+  elif [ ${TEST_RESULT} -le ${HEAD_CHANGES_LIMIT} ]; then
     echo '### SUCCESS: File matches, except signature. ###'
   elif [ ! -s "${TESTFILE}" ]; then
     echo '### FAIL: File empty or missing; creation faled! ###'

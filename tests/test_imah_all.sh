@@ -35,6 +35,8 @@ V01.04.0500_Mavic_dji_system.bin
 
 declare -a FWPKG2_LIST=(
 V01.00.0500_Mavic_Mini_dji_system.tar
+V01.00.0000_Mavic_Mini_2_dji_system.bin
+V01.02.0300_Mavic_Mini_2_dji_system.bin
 )
 
 # In case we want to use Python from non-standard location
@@ -51,6 +53,7 @@ function test_dji_imah_package {
   FWDLURL="$3"
   FWDLNAME="$4"
   FWTSTFLG="$5"
+  LAST_NUMFAILS=${NUMFAILS}
 
   # Download firmwares
 
@@ -112,6 +115,12 @@ function test_dji_imah_package {
   fi
   if [ ! -z "${SIGDIR}" ]; then
     rm -d "${SIGDIR}"
+  fi
+
+  # Mention which file caused fails, for easier debug
+  NEW_NUMFAILS=$(( NUMFAILS - LAST_NUMFAILS ))
+  if (( ${NEW_NUMFAILS} > 0 )); then
+    echo "### FAIL count while processing ${FWPKG} is ${NEW_NUMFAILS} ###"
   fi
 
   return 0
