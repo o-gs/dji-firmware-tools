@@ -40,7 +40,8 @@ The tools can be divided into two categories:
 to use. You just need an input file they use, like DJI Firmware Package or DAT Log file.
 
 * Product Communication tools - You need to connect your drone to a PC in order
-to use these tools in any meaningful way. Currently the tools use serial interface (UART).
+to use these tools in any meaningful way. Currently the tools use serial interface
+(UART) and I2C.
 
 Below the specific tools are described in short. Running them without parameters
 will give you details on supported commands in each of them.
@@ -67,7 +68,7 @@ modules from a firmware package, to decrypt its content. The tool can also re-si
 a module, as long as private part of the chosen key is available.
 
 Keys used for encryption and authentication were changing over time; when an
-IM*H file refers to a key for which the tool has several versions, it will
+`IM*H` file refers to a key for which the tool has several versions, it will
 display a list of possible keys in a warning message, and select the most
 recent key for current operation.
 
@@ -424,6 +425,19 @@ Example of reading several flag fields from BQ30z55 by ManufacturerAccess(), usi
 Example of unsealing BQ30z55 (enabling write capabilities), with default SHA-1 key, using I2C interface on 2nd bus device available to OS:
 
 ```./comm_sbs_bqctrl.py -v --bus "i2c:2" --dev_address 0x0b --chip BQ30z55 --short sealing Unseal```
+
+### tests
+
+The `tests` folder contains a few `bash` scripts which can be used to verify
+whether the tools do their job correctly. Most tests will extract and re-pack
+a specific firmware, then compare the result to original to check whether
+no unintended changes were introduced to the file. Tools which communicate
+to a product are tested by injecting expected answers to their receive buffers,
+so they can be tested without the product as well.
+
+Besides testing your modifications, you can also use tests as source of more
+usage examples of the tools. They contain command lines to extract specific
+firmwares and execute specific commands on the products.
 
 ### comm_dissector
 
