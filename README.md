@@ -66,6 +66,11 @@ from `.sig` file which starts with `IM*H`. Use this tool after untarring single
 modules from a firmware package, to decrypt its content. The tool can also re-sign
 a module, as long as private part of the chosen key is available.
 
+Keys used for encryption and authentication were changing over time; when an
+IM*H file refers to a key for which the tool has several versions, it will
+display a list of possible keys in a warning message, and select the most
+recent key for current operation.
+
 Example of un-signing Camera firmware for *Mavic Pro*:
 
 ```./dji_imah_fwsig.py -vv -k PRAK-2017-01 -k PUEK-2017-07 -u -i wm220_0101_v02.00.55.69_20161215.pro.fw.sig```
@@ -74,7 +79,7 @@ Example of un-signing FC firmware for *Phantom 4 Pro V2*:
 
 ```./dji_imah_fwsig.py -vv -k PRAK-2017-01 -k PUEK-2017-07 -u -i wm335_0306_v03.03.04.10_20180429.pro.fw.sig```
 
-Example of signing (with `SLAK` key) previously un-signed FC firmware for *Mini 2*:
+Example of signing previously un-signed FC firmware for *Mini 2* (requires `PRAK` with private part):
 
 ```./dji_imah_fwsig.py -vv -k PRAK-2019-09 -s -i wm161_0306_v03.04.09.74_20210112.pro.fw.sig```
 
