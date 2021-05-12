@@ -28,9 +28,13 @@ fi
 
 declare -a FWPKG1_LIST=(
 V01.03.0200_Mavic_dji_system.bin
-V01.03.0900_Mavic_dji_system.bin
-V01.04.0000_Mavic_dji_system.bin
 V01.04.0500_Mavic_dji_system.bin
+V01.03.0400_RC_Mavic_dji_system.bin
+V02.00.0700_P4_dji_system.bin
+V01.01.0203_P4P_dji_system.bin
+V01.00.1000_P4PV2_dji_system.bin
+V01.02.0500_I2_dji_system.bin
+V01.00.0900_Spark_dji_system.bin
 )
 
 declare -a FWPKG2_LIST=(

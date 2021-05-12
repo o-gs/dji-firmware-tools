@@ -77,28 +77,45 @@ if [ "${SKIP_COMPARE}" -le "0" ]; then
   # exactly the same as input BIN file.
 fi
 
-BINFNAME=$(basename "${BINFILE}")
+BINFNAME=$(basename "${BINFILE}" | tr '[:upper:]' '[:lower:]')
 if   [[ ${BINFNAME} =~ ^wm220[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-07"
   # allow change of 2 bytes from auth key name, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 256))
+elif [[ ${BINFNAME} =~ ^wm330[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-07"
+  # allow change of 2 bytes from auth key name, 256 from signature
+  HEAD_CHANGES_LIMIT=$((2 + 256))
+elif [[ ${BINFNAME} =~ ^wm33[1-6][._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
+  # allow change of 2 bytes from auth key name, 256 from signature
+  HEAD_CHANGES_LIMIT=$((2 + 256))
+  SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc won't work without 1st stage
+elif [[ ${BINFNAME} =~ ^wm100[._a].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
+  # allow change of 2 bytes from auth key name, 256 from signature
+  HEAD_CHANGES_LIMIT=$((2 + 256))
+  SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc won't work without 1st stage
+elif [[ ${BINFNAME} =~ ^wm620[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
+  # allow change of 2 bytes from auth key name, 4 from enc checksum, 256 from signature
+  HEAD_CHANGES_LIMIT=$((2 + 4 + 256))
+  SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc won't work without 1st stage
 elif [[ ${BINFNAME} =~ ^wm230[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2018-01"
+  EXTRAPAR="-k PRAK-2018-01 -f" # PRAK not published, ignore signature fails
   # allow change of 2 bytes from auth key name, 4 from enc checksum, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 4 + 256))
 elif [[ ${BINFNAME} =~ ^wm160[._].*[.]sig$ ]]; then
-  EXTRAPAR="-f" # No PRAK - ignore signature fails instead
+  EXTRAPAR="-k UFIE-2019-11 -f" # PRAK not published, ignore signature fails
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, 32+16 from payload digest and padding
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
-  # Decryption of second level FC enc is not currently supported for this platform
-  SUPPORTS_MVFC_ENC=0
+  SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^wm161[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2019-09"
+  EXTRAPAR="-k PRAK-2019-09 -k UFIE-2019-11"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, 32+16 from payload digest and padding
   # TODO would be nice if we could eliminate padding discrepencies (these seem to happen in m0905 and m1100)
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
-  # Decryption of second level FC enc is not currently supported for this platform
-  SUPPORTS_MVFC_ENC=0
+  SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 else
   EXTRAPAR=""
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256))
