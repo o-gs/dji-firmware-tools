@@ -25,7 +25,7 @@ to decrypt its content.
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 __author__ = "Freek van Tienen, Jan Dumon, Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -87,7 +87,9 @@ keys = {
     "TBIE":  bytes([ # TBI Encryption key; published 2021-03-26 by Felix Domke
         0x54, 0xb8, 0xb9, 0xd7, 0x4c, 0x2b, 0x41, 0x46, 0x9c, 0x4d, 0xac, 0x3d, 0x16, 0xcc, 0x6f, 0x47
     ]),
-    "UFIE":  bytes([ # UFI Encryption key; published 2021-03-26 by Felix Domke
+    "UFIE-2019-11":  bytes([ # UFI Encryption key; published 2021-03-26 by Felix Domke
+        # first use on 2019-11-07; used for:
+        # WM160 FW V01.00.0200-V01.00.0500, WM161 FW V01.00.0000-V01.02.0300
         0xad, 0x45, 0xcd, 0x82, 0x13, 0xfb, 0x7e, 0x25, 0x5d, 0xbe, 0x45, 0x41, 0x70, 0xbc, 0x11, 0xa0
     ]),
     "SLEK":  bytes([ # Slack community EK; generated 2018-01-19 by Jan Dumon
@@ -615,10 +617,12 @@ def imah_read_fwsig_head(po):
 
     return (pkghead, minames, pkgformat)
 
-def imah_write_fwentry_head(po, i, e, miname):
+def imah_write_fwentry_head(po, i, e, miname, can_decrypt):
     fname = "{:s}_{:s}.ini".format(po.mdprefix,miname)
     fwheadfile = open(fname, "w")
     e.ini_export(fwheadfile)
+    if not can_decrypt: # If we're exporting without decryption, we must retain decrypted size
+        fwheadfile.write("{:s}={:s}\n".format('size',"{:d}".format(e.size)))
     fwheadfile.close()
 
 def imah_read_fwentry_head(po, i, miname):
@@ -628,13 +632,15 @@ def imah_read_fwentry_head(po, i, miname):
     with open(fname, "r") as lines:
         lines = itertools.chain(("[asection]",), lines)  # This line adds section header to ini
         parser.read_file(lines)
-    id_s = parser.get("asection", "id")
+    id_s = parser.get("asection", 'id')
     chunk.id = bytes(id_s, "utf-8")
-    attrib_s = parser.get("asection", "attrib")
+    attrib_s = parser.get("asection", 'attrib')
     chunk.attrib = int(attrib_s, 16)
-    #offset_s = parser.get("asection", "offset")
+    size_s = parser.get("asection", 'size',fallback="0")
+    chunk.size = int(size_s,0)
+    #offset_s = parser.get("asection", 'offset')
     #chunk.offset = int(offset_s, 16)
-    address_s = parser.get("asection", "address")
+    address_s = parser.get("asection", 'address')
     chunk.address = int(address_s, 16)
     del parser
     return (chunk)
@@ -769,9 +775,8 @@ def imah_unsign(po, fwsigfile):
 
     # Output the chunks
     checksum_dec = 0
+    num_skipped = 0
     for i, chunk in enumerate(chunks):
-
-        imah_write_fwentry_head(po, i, chunk, minames[i])
 
         chunk_fname= "{:s}_{:s}.bin".format(po.mdprefix,minames[i])
 
@@ -780,6 +785,7 @@ def imah_unsign(po, fwsigfile):
             pad_cnt = 0
             if (po.verbose > 0):
                 print("{}: Unpacking plaintext chunk '{:s}'...".format(fwsigfile.name,minames[i]))
+            can_decrypt = True
 
         elif crypt_key is not None: # Encrypted chunk (have key as well)
             if crypt_mode == AES.MODE_CTR:
@@ -791,15 +797,20 @@ def imah_unsign(po, fwsigfile):
             pad_cnt = (AES.block_size - chunk.size % AES.block_size) % AES.block_size
             if (po.verbose > 0):
                 print("{}: Unpacking encrypted chunk '{:s}'...".format(fwsigfile.name,minames[i]))
+            can_decrypt = True
 
         else: # Missing encryption key
             eprint("{}: Warning: Cannot decrypt chunk '{:s}'; crypto config missing.".format(fwsigfile.name,minames[i]))
             if (not po.force_continue):
+                num_skipped += 1
                 continue
             if (po.verbose > 0):
                 print("{}: Copying still encrypted chunk '{:s}'...".format(fwsigfile.name,minames[i]))
             cipher = PlainCopyCipher()
             pad_cnt = (AES.block_size - chunk.size % AES.block_size) % AES.block_size
+            can_decrypt = False
+
+        imah_write_fwentry_head(po, i, chunk, minames[i], can_decrypt)
 
         if (po.verbose > 1):
             print(str(chunk))
@@ -809,12 +820,15 @@ def imah_unsign(po, fwsigfile):
         fwitmfile = open(chunk_fname, "wb")
         remain_enc_n = chunk.size + pad_cnt
         remain_dec_n = chunk.size
+        if not can_decrypt: # If storing encrypted, include padding
+            remain_dec_n += pad_cnt
         while remain_enc_n > 0:
             # read block limit must be a multiplication of encryption block size
             # ie AES.block_size is fixed at 16 bytes
             copy_buffer = fwsigfile.read(min(1024 * 1024, remain_enc_n))
             if not copy_buffer:
                 eprint("{}: Warning: Chunk '{:s}' truncated.".format(fwsigfile.name,minames[i]))
+                num_skipped += 1
                 break
             remain_enc_n -= len(copy_buffer)
             copy_buffer = cipher.decrypt(copy_buffer)
@@ -829,7 +843,7 @@ def imah_unsign(po, fwsigfile):
                 remain_dec_n = 0
         fwitmfile.close()
 
-    print("{}: Un-signed {:d} chunks.".format(fwsigfile.name,len(chunks)))
+    print("{}: Un-signed {:d} chunks, skipped/truncated {:d} chunks.".format(fwsigfile.name,len(chunks)-num_skipped, num_skipped))
     if pkgformat < 2018:
         pass # No checksums are used in these formats
     elif pkghead.plain_cksum == checksum_dec:
@@ -873,6 +887,7 @@ def imah_sign(po, fwsigfile):
             cipher = PlainCopyCipher()
             if (po.verbose > 0):
                 print("{}: Packing plaintext chunk '{:s}'...".format(fwsigfile.name,minames[i]))
+            can_decrypt = True
 
         elif crypt_key != None: # Encrypted chunk (have key as well)
             if crypt_mode == AES.MODE_CTR:
@@ -883,13 +898,15 @@ def imah_sign(po, fwsigfile):
                 cipher = AES.new(crypt_key, crypt_mode, iv=crypt_iv)
             if (po.verbose > 0):
                 print("{}: Packing and encrypting chunk '{:s}'...".format(fwsigfile.name,minames[i]))
+            can_decrypt = True
 
         else: # Missing encryption key
             eprint("{}: Warning: Cannot encrypt chunk '{:s}'; crypto config missing.".format(fwsigfile.name,minames[i]))
             raise_or_warn(po, ValueError("Unsupported encryption configuration."))
             if (po.verbose > 0):
-                print("{}: Copying still encrypted chunk '{:s}'...".format(fwsigfile.name,minames[i]))
+                print("{}: Copying already encrypted chunk '{:s}'...".format(fwsigfile.name,minames[i]))
             cipher = PlainCopyCipher()
+            can_decrypt = False
 
         if (po.verbose > 1):
             print(str(chunk))
@@ -922,7 +939,9 @@ def imah_sign(po, fwsigfile):
             pad_buffer = b"\0" * pad_cnt
             payload_digest.update(pad_buffer) # why Dji includes padding in digest?
             fwsigfile.write(pad_buffer)
-        chunk.size = decrypted_n
+        # Update size of the chunk in header; skip that if the chunk was pre-encrypted and correct size was stored in INI
+        if can_decrypt or (decrypted_n <= chunk.size) or (decrypted_n >= chunk.size + AES.block_size):
+            chunk.size = decrypted_n
         chunks[i] = chunk
 
     pkghead.update_payload_size(fwsigfile.tell() - pkghead.header_size - pkghead.signature_size)
