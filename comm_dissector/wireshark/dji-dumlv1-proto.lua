@@ -291,7 +291,7 @@ local DM36X_UART_CMD_TEXT = {
     [0x04] = 'DM36x UAV Ctrl Info Recv',
     [0x05] = 'DM36x Gnd Stat Info Send',
     [0x06] = 'DM36x UAV Stat Info Send',
-    [0x05] = 'DM36x Gnd Stat Info Recv',
+    [0x07] = 'DM36x Gnd Stat Info Recv',
     [0x0e] = 'DM36x App Connect Stat Get',
     [0x0f] = 'DM36x Recycle Vision Frame Info',
     [0x20] = 'DM36x Bitrate Set', -- Wifi Code Rate Set
@@ -991,6 +991,19 @@ local function dm36x_recv_gnd_ctrl_info_dissector(pkt_length, buffer, pinfo, sub
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"DM36x Recv Gnd Ctrl Info: Payload size different than expected") end
 end
 
+-- DM36x proc. - DM36x Send Gnd Stat Info - 0x05
+
+local function dm36x_send_gnd_stat_info_dissector(pkt_length, buffer, pinfo, subtree)
+    local offset = 11
+    local payload = buffer(offset, pkt_length - offset - 2)
+    offset = 0
+
+    -- Answer could be decoded using func Dec_Serial_Get_GS_Config from `usbclient` binary
+
+    if (offset ~= 0) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"DM36x Send Gnd Stat Info: Offset does not match - internal inconsistency") end
+    if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"DM36x Send Gnd Stat Info: Payload size different than expected") end
+end
+
 -- DM36x proc. - DM36x Send UAV Stat Info - 0x06
 
 f.dm36x_uav_stat_info_unknown00 = ProtoField.bytes ("dji_dumlv1.dm36x_uav_stat_info_unknown00", "Unknown00", base.SPACE)
@@ -1048,6 +1061,7 @@ end
 local DM36X_UART_CMD_DISSECT = {
     [0x01] = dm36x_send_gnd_ctrl_info_dissector,
     [0x02] = dm36x_recv_gnd_ctrl_info_dissector,
+    [0x05] = dm36x_send_gnd_stat_info_dissector,
     [0x06] = dm36x_send_uav_stat_info_dissector,
     [0x07] = dm36x_recv_gnd_stat_info_dissector,
     [0x0e] = dm36x_get_app_conn_stat_dissector,
