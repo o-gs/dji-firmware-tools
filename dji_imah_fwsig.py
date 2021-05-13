@@ -943,7 +943,10 @@ def imah_sign(po, fwsigfile):
             payload_digest.update(pad_buffer) # why Dji includes padding in digest?
             fwsigfile.write(pad_buffer)
         # Update size of the chunk in header; skip that if the chunk was pre-encrypted and correct size was stored in INI
-        if can_decrypt or (decrypted_n <= chunk.size) or (decrypted_n >= chunk.size + AES.block_size):
+        if can_decrypt or chunk.size == 0:
+            chunk.size = decrypted_n
+        elif  (decrypted_n <= chunk.size) or (decrypted_n >= chunk.size + dji_block_size):
+            eprint("{}: Warning: Chunk '{:s}' size from INI is incorrect, ignoring".format(fwsigfile.name,minames[i]))
             chunk.size = decrypted_n
         chunks[i] = chunk
 
