@@ -25,7 +25,7 @@ to decrypt its content.
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 __author__ = "Freek van Tienen, Jan Dumon, Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -118,7 +118,8 @@ keys = {
         "4992e6594045d58001000100"
     )),
     "PRAK-2018-01":  bytes.fromhex(( # PR Auth Key v2; published 2021-04-02 by Mefistotelis
-        # first use on 2018-01-26; used for: WM230 FW V00.02.0032
+        # first use on 2018-01-26; used for: WM230 FW V00.02.0032,
+        # WM150 FW V01.00.0100, GL150 V01.00.0100-V01.00.0600
         "40000000dbe15b5badcde418e2dbd9e253d2b9aded7f187824b5677f0ee6a6c3"
         "fcd2ea329421a5b0252c63af6df81ac0c6416ec926e2558f4f4460a4b3af3ecb"
         "7fd4db4741c3602b900c495acff5f8651da895f4a60030b3be640f8382222793"
