@@ -42,6 +42,7 @@ V01.00.0500_Mavic_Air_dji_system.bin
 V01.00.0500_Mavic_Mini_dji_system.tar
 V01.00.0000_Mavic_Mini_2_dji_system.bin
 V01.02.0300_Mavic_Mini_2_dji_system.bin
+V01.00.0600_FPV_Goggles_dji_system.bin
 )
 
 # In case we want to use Python from non-standard location

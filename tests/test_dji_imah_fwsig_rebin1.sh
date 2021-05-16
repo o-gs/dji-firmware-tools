@@ -106,6 +106,11 @@ elif [[ ${BINFNAME} =~ ^wm230[._].*[.]sig$ ]]; then
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
+elif [[ ${BINFNAME} =~ ^(gl150|wm150)[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-01 -f" # UFIE not published, forcing extract encrypted
+  # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
+  HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
+  SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^wm160[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2019-09 -k UFIE-2019-11"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
