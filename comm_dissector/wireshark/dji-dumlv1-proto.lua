@@ -484,6 +484,17 @@ local AUTO_UART_CMD_TEXT = {
 }
 
 local ADSB_UART_CMD_TEXT = {
+    [0x02] = 'Push Data Get',
+    [0x08] = 'Push Warning Get',
+    [0x09] = 'Push Original Get',
+    [0x10] = 'Send Whitelist',
+    [0x11] = 'Request License',
+    [0x12] = 'License Enabled Set',
+    [0x13] = 'License Id Get',
+    [0x14] = 'Push Unlock Info Get',
+    [0x15] = 'User Id Set',
+    [0x16] = 'Key Version Get',
+    [0x17] = 'Push Avoidance Action Get ',
 }
 
 dofile('dji-dumlv1-general.lua')
@@ -3078,6 +3089,10 @@ local RTK_UART_CMD_DISSECT = {
 local AUTO_UART_CMD_DISSECT = {
 }
 
+local ADSB_UART_CMD_DISSECT = {
+
+}
+
 DJI_DUMLv1_CMD_DISSECT = {
     [0x00] = GENERAL_UART_CMD_DISSECT,
     [0x01] = SPECIAL_UART_CMD_DISSECT,
@@ -3096,6 +3111,7 @@ DJI_DUMLv1_CMD_DISSECT = {
     [0x0e] = DATA_LOG_UART_CMD_DISSECT,
     [0x0f] = RTK_UART_CMD_DISSECT,
     [0x10] = AUTO_UART_CMD_DISSECT,
+    [0x11] = ADSB_UART_CMD_DISSECT, 
 }
 
 -- Top level packet fields
