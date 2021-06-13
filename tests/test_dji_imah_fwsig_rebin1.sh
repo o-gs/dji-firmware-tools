@@ -96,7 +96,7 @@ elif [[ ${BINFNAME} =~ ^wm100[._a].*[.]sig$ ]]; then
   # allow change of 2 bytes from auth key name, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 256))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc won't work without 1st stage
-elif [[ ${BINFNAME} =~ ^wm620[._].*[.]sig$ ]]; then
+elif [[ ${BINFNAME} =~ ^(wm620|rc001)[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
   # allow change of 2 bytes from auth key name, 4 from enc checksum, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 4 + 256))
