@@ -27,7 +27,7 @@ as you know how the packet should look like.
 
 ## Parts identification on board and component level
 
-The [[wiki of this project|/o-gs/dji-firmware-tools/wiki]]
+The [wiki of this project](https://github.com/o-gs/dji-firmware-tools/wiki)
 has tons of information about boards within each drone,
 and components on each board. This info is created and shared by many enthusiasts
 and repair technicians.

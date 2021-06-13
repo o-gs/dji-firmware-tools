@@ -1099,7 +1099,7 @@ def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload, pktre
             ticks_received = ticks_received + 1
             last_tick_time = curr_time
             if rplpayload.status1 == pass_values[0] and rplpayload.status2 == pass_values[1]:
-                print("Concluding report received; celibration finished.")
+                print("Concluding report received; calibration finished.")
                 result = "PASS"
                 break
 
