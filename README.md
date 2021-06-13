@@ -15,7 +15,7 @@ of their content.
 
 Here are a few of possible uses of the tools.
 
-## Calibration after repair
+### Calibration after repair
 
 Replacing some components of the drone may require calibration. The tools are
 capable of triggering calibration in some devices, mostly gimbals with
@@ -25,14 +25,14 @@ It is albo possible to use them to send any custom packet to the drone, and
 this way trigger factory functions like calibration or pairing - as long
 as you know how the packet should look like.
 
-## Parts identification on board and component level
+### Parts identification on board and component level
 
 The [wiki of this project](https://github.com/o-gs/dji-firmware-tools/wiki)
 has tons of information about boards within each drone,
 and components on each board. This info is created and shared by many enthusiasts
 and repair technicians.
 
-## Flight parameters modification
+### Flight parameters modification
 
 The tools can be used as command line version of DJI Assistant software,
 which also allows to change parameters for platforms which lacks such
@@ -42,7 +42,7 @@ Flight Controllers from DJI define hunderds of parameters which affect their
 behavior. These can be modified by just sending a command to the drone,
 as long as the new value is within limits accepted by FC firmware.
 
-## Firmware modification
+### Firmware modification
 
 The tools allow modifying firmware binaries, and then re-packing them back
 into flashable firmware package. This way, any software-controled functionality
@@ -58,7 +58,7 @@ It may sometimes require additional knowledge and software modifications
 (ie. rooting the drone) to flash modified firmware - some firmware packages
 are signed using asymmetric cryptography, and private keys are rarely available.
 
-## Research
+### Research
 
 If you're interested in DJI hardware and software, this is the place to start
 learning. You can:
