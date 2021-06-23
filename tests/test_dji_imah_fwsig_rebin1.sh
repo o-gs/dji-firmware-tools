@@ -101,13 +101,28 @@ elif [[ ${BINFNAME} =~ ^(wm620|rc001)[._].*[.]sig$ ]]; then
   # allow change of 2 bytes from auth key name, 4 from enc checksum, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 4 + 256))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc won't work without 1st stage
-elif [[ ${BINFNAME} =~ ^wm230[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-01 -f" # UFIE not published, forcing extract encrypted
+elif [[ ${BINFNAME} =~ ^(wm230)[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-01"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
-elif [[ ${BINFNAME} =~ ^(gl150|wm150)[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-01 -f" # UFIE not published, forcing extract encrypted
+elif [[ ${BINFNAME} =~ ^(rc230)[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2018-02 -k UFIE-2018-01 -f" # PRAK not published, forcing ignore signature fail
+  # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
+  HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
+  SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
+elif [[ ${BINFNAME} =~ ^(wm170|rcss170|rcjs170|wm231|rcs231|wm232|rc-n1-wm161b|pm430|ag500)[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2018-02 -k UFIE-2020-04 -f" # PRAK not published, forcing ignore signature fail
+  # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
+  HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
+  SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
+elif [[ ${BINFNAME} =~ ^(wm24[0-6]|gl150|wm150)[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-07"
+  # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
+  HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
+  SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
+elif [[ ${BINFNAME} =~ ^(rc240)[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2018-02 -k UFIE-2018-07 -f" # PRAK not published, forcing ignore signature fail
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform

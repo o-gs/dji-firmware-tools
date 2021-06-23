@@ -38,11 +38,35 @@ V01.00.0900_Spark_dji_system.bin
 )
 
 declare -a FWPKG2_LIST=(
+V00.02.0026_Mavic_Air_dji_system.tar
 V01.00.0500_Mavic_Air_dji_system.bin
+V01.00.0000_Mavic_Air_RC_dji_system.tar
+V01.00.0200_Mavic_Air_RC_dji_system.bin
+V01.00.0113_Mavic_Air_2_dji_system.bin
+V01.01.0610_Mavic_Air_2_dji_system.bin
+V09.09.0902_Mavic_Air_2_dji_system.bin
+V01.00.0108_Mavic_Air_2_RC_dji_system.bin
+V02.00.1200_Mavic_Air_2_RC_dji_system.bin
+V02.04.1640_wm232_dji_system.bin
+V04.11.0016_RC-N1-WM161b_dji_system.bin
 V01.00.0500_Mavic_Mini_dji_system.tar
+V01.00.0200_Mavic_Mini_dji_system.tar
 V01.00.0000_Mavic_Mini_2_dji_system.bin
 V01.02.0300_Mavic_Mini_2_dji_system.bin
 V01.00.0600_FPV_Goggles_dji_system.bin
+V00.04.1009_FPV_Racer_dji_system.bin
+V01.01.0000_FPV_Racer_dji_system.bin
+V01.01.0000_FPV_Racer_RC_dji_system.bin
+V01.01.0000_FPV_Racer_RC_Motion_dji_system.bin
+V00.06.0000_Mavic2_dji_system.bin
+V01.00.0510_Mavic2_dji_system.bin
+V01.00.0640_RC_Mavic2_dji_system.bin
+V01.00.0100_RC_Mavic2_dji_system.bin
+V01.00.0670_wm240_dji_system.bin
+V01.01.0000_Mavic2_Enterprise_dji_system.bin
+V01.01.0800_Mavic2_Enterprise_dji_system.bin
+V01.00.0000_Mavic2_Enterprise_Dual_dji_system.bin
+V01.01.0800_Mavic2_Enterprise_Dual_dji_system.bin
 )
 
 # In case we want to use Python from non-standard location
