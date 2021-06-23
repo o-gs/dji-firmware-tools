@@ -89,10 +89,9 @@ keys = {
     ]),
     "UFIE-2020-04":  bytes([ # UFI Encryption key; published 2021-06-20 by OGs
         # first use on 2020-04-24; used for:
-        # WM170 FW V00.04.1009-V01.01.0000, RCJS170 FW V01.01.0000,
-        # RCSS170 FW V00.05.1505-V01.01.0000,
-        # WM231 FW V01.00.0113-V09.09.0902, RCS231 FW V01.00.0108-V02.00.1200,
-        # WM232 FW V02.04.1640, RC-N1-WM161B FW V04.11.0016,
+        # WM170 FW V00.04.1009-V01.01.0000,
+        # WM231 FW V01.00.0113-V09.09.0902,
+        # WM232 FW V02.04.1640,
         # PM430 FW, AG500 FW
         0xba, 0xb3, 0xcd, 0x72, 0x36, 0xb2, 0xe1, 0xd8, 0x66, 0x49, 0x35, 0xc9, 0xc2, 0x58, 0x8f, 0x3c
     ]),
