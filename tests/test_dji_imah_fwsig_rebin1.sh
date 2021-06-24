@@ -67,7 +67,9 @@ fi
 
 TESTFILE="${BINFILE%.*}-test.sig"
 SUPPORTS_MVFC_ENC=1
+SUPPORTS_ANDRBOOTIMG_ENC=0
 HAS_MVFC_ENC=
+HAS_ANDRBOOTIMG_ENC=
 
 if [ "${SKIP_COMPARE}" -le "0" ]; then
   echo '### TEST for dji_imah_fwsig.py and dji_mvfc_fwpak.py re-creation of binary file ###'
@@ -155,18 +157,36 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
   set -e
   # Unsign/decrypt the module
   ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${BINFILE}" -m "${TESTFILE%.*}" 2>&1 | tee "${TESTFILE%.*}_unsig.log"
-  # Some modules have another stage of encryption
-    HAS_MVFC_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0305\|0306\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+
+  # FC modules have another stage of encryption which can be handled by MVFC script
+  HAS_MVFC_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0305\|0306\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
   if [ "${SUPPORTS_MVFC_ENC}" -le "0" ] && [ ! -z "${HAS_MVFC_ENC}" ]; then
     MODULE="${HAS_MVFC_ENC}"
-    echo "### INFO: Found m${MODULE} inside, but 2nd stage decrypt disabled for this platform ###"
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage MVFC decrypt disabled for this platform ###"
     HAS_MVFC_ENC=
   fi
   if [ ! -z "${HAS_MVFC_ENC}" ]; then
     MODULE="${HAS_MVFC_ENC}"
-    echo "### INFO: Found m${MODULE} inside, doing 2nd stage decrypt ###"
+    echo "### INFO: Found m${MODULE} inside, doing 2nd stage MVFC decrypt ###"
     ./dji_mvfc_fwpak.py -vv dec -i "${TESTFILE%.*}_${MODULE}.bin" \
       -o "${TESTFILE%.*}_${MODULE}.decrypted.bin" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.log"
+  fi
+
+  # Some Android modules contain boot images which have another stage of IMaH encryption
+  HAS_ANDRBOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0801\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+  if [ "${SUPPORTS_ANDRBOOTIMG_ENC}" -le "0" ] && [ ! -z "${HAS_ANDRBOOTIMG_ENC}" ]; then
+    MODULE="${HAS_ANDRBOOTIMG_ENC}"
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage Android bootimg decrypt disabled for this platform ###"
+    HAS_ANDRBOOTIMG_ENC=
+  fi
+  if [ ! -z "${HAS_ANDRBOOTIMG_ENC}" ]; then
+    MODULE="${HAS_ANDRBOOTIMG_ENC}"
+    echo "### INFO: Found m${MODULE} inside, doing 2nd stage Android bootimg decrypt ###"
+    unzip -q -d "${TESTFILE%.*}_${MODULE}" "${TESTFILE%.*}_${MODULE}.bin"
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${TESTFILE%.*}_${MODULE}/normal.img" \
+      -m "${TESTFILE%.*}_${MODULE}.normal" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.normal_unsig.log"
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${TESTFILE%.*}_${MODULE}/recovery.img" \
+      -m "${TESTFILE%.*}_${MODULE}.recovery" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.recovery_unsig.log"
   fi
 fi
 
