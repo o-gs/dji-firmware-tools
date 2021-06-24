@@ -58,6 +58,7 @@ V00.04.1009_FPV_Racer_dji_system.bin
 V01.01.0000_FPV_Racer_dji_system.bin
 V01.01.0000_FPV_Racer_RC_dji_system.bin
 V01.01.0000_FPV_Racer_RC_Motion_dji_system.bin
+V01.01.0000_gl170_dji_system.bin
 V00.06.0000_Mavic2_dji_system.bin
 V01.00.0510_Mavic2_dji_system.bin
 V01.00.0640_RC_Mavic2_dji_system.bin

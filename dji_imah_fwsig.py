@@ -90,6 +90,7 @@ keys = {
     "UFIE-2020-04":  bytes([ # UFI Encryption key; published 2021-06-20 by OGs
         # first use on 2020-04-24; used for:
         # WM170 FW V00.04.1009-V01.01.0000,
+        # GL170 FW V01.01.0000,
         # WM231 FW V01.00.0113-V09.09.0902,
         # WM232 FW V02.04.1640,
         # PM430 FW, AG500 FW
@@ -100,13 +101,13 @@ keys = {
         # WM160 FW V01.00.0200-V01.00.0500, WM161 FW V01.00.0000-V01.02.0300
         0xad, 0x45, 0xcd, 0x82, 0x13, 0xfb, 0x7e, 0x25, 0x5d, 0xbe, 0x45, 0x41, 0x70, 0xbc, 0x11, 0xa0
     ]),
-    "UFIE-2018-07":  bytes([ # UFI Encryption key; published 2021-06-20 by OGs
+    "UFIE-2018-07":  bytes([ # Update Firmware Image Encryption key; published 2021-06-20 by OGs
         # first use on 2018-07-13; used for:
-        # WM240 V00.06.0000-V01.00.0670, RC240 V01.00.0640, WM241,
-        # GL150 V01.00.0600,
+        # WM240 FW V00.06.0000-V01.00.0670, RC240 FW V01.00.0640, WM241 FW,
+        # WM150 FW V01.01.0000, GL150 FW V01.00.0600, LT150 FW,
         0x78, 0x09, 0x39, 0xe1, 0xbe, 0x11, 0x7a, 0x66, 0xd3, 0x58, 0x41, 0xe9, 0x5b, 0x06, 0xaa, 0xc0
     ]),
-    "UFIE-2018-01":  bytes([ # UFI Encryption key; published 2021-06-19 by OGs
+    "UFIE-2018-01":  bytes([ # Update Firmware Image Encryption key; published 2021-06-19 by OGs
         # first use on 2018-01-26; used for: WM230 FW V00.02.0026-V01.00.0500,
         # RC230 FW V01.00.0000-V01.00.0200,
         0xcd, 0x3a, 0xa5, 0x72, 0x2a, 0x41, 0x0b, 0x6d, 0xba, 0x3d, 0xaf, 0x2e, 0x99, 0xf3, 0xd9, 0x6d
