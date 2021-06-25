@@ -67,7 +67,8 @@ fi
 
 TESTFILE="${BINFILE%.*}-test.sig"
 SUPPORTS_MVFC_ENC=1
-SUPPORTS_ANDRBOOTIMG_ENC=0
+SUPPORTS_ANDR_TAR_BOOTIMG_ENC=1
+SUPPORTS_ANDR_OTA_BOOTIMG_ENC=0
 HAS_MVFC_ENC=
 HAS_ANDRBOOTIMG_ENC=
 
@@ -84,15 +85,18 @@ if   [[ ${BINFNAME} =~ ^wm220[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-07"
   # allow change of 2 bytes from auth key name, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 256))
+  SUPPORTS_ANDR_OTA_BOOTIMG_ENC=0 # IAEK not published
 elif [[ ${BINFNAME} =~ ^wm330[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-07"
   # allow change of 2 bytes from auth key name, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 256))
+  SUPPORTS_ANDR_OTA_BOOTIMG_ENC=0 # IAEK not published
 elif [[ ${BINFNAME} =~ ^wm33[1-6][._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
   # allow change of 2 bytes from auth key name, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 256 + 16+32))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc won't work without 1st stage
+  SUPPORTS_ANDR_OTA_BOOTIMG_ENC=0 # IAEK not published
 elif [[ ${BINFNAME} =~ ^wm100[._a].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
   # allow change of 2 bytes from auth key name, 256 from signature
@@ -119,10 +123,11 @@ elif [[ ${BINFNAME} =~ ^(wm170|wm231|wm232|gl170|pm430|ag500)[._].*[.]sig$ ]]; t
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^(rcss170|rcjs170|rcs231|rc-n1-wm161b)[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2018-02 -f" # PRAK not published, forcing ignore signature fail; modules not encrypted
+  EXTRAPAR="-k PRAK-2018-02 -k TBIE-2020-04 -f" # PRAK not published, forcing ignore signature fail; modules not encrypted, boot images encrypted
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
+  SUPPORTS_ANDR_TAR_BOOTIMG_ENC=1
 elif [[ ${BINFNAME} =~ ^(wm24[0-6]|gl150|wm150|lt150)[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-07"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
@@ -172,21 +177,45 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
       -o "${TESTFILE%.*}_${MODULE}.decrypted.bin" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.log"
   fi
 
-  # Some Android modules contain boot images which have another stage of IMaH encryption
-  HAS_ANDRBOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0801\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
-  if [ "${SUPPORTS_ANDRBOOTIMG_ENC}" -le "0" ] && [ ! -z "${HAS_ANDRBOOTIMG_ENC}" ]; then
-    MODULE="${HAS_ANDRBOOTIMG_ENC}"
-    echo "### INFO: Found m${MODULE} inside, but 2nd stage Android bootimg decrypt disabled for this platform ###"
-    HAS_ANDRBOOTIMG_ENC=
+  # Some Android OTA modules contain boot images which have another stage of IMaH encryption
+  HAS_ANDR_OTA_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0801\|0802\|0901\|1301\|2801\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+  MODULE="${HAS_ANDR_OTA_BOOTIMG_ENC}"
+  if [ "${SUPPORTS_ANDR_OTA_BOOTIMG_ENC}" -le 0 ] && [ ! -z "${HAS_ANDR_OTA_BOOTIMG_ENC}" ]; then
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage Android OTA bootimg decrypt disabled for this platform ###"
+    HAS_ANDR_OTA_BOOTIMG_ENC=
   fi
-  if [ ! -z "${HAS_ANDRBOOTIMG_ENC}" ]; then
-    MODULE="${HAS_ANDRBOOTIMG_ENC}"
-    echo "### INFO: Found m${MODULE} inside, doing 2nd stage Android bootimg decrypt ###"
-    unzip -q -d "${TESTFILE%.*}_${MODULE}" "${TESTFILE%.*}_${MODULE}.bin"
+  if [ ! -z "${HAS_ANDR_OTA_BOOTIMG_ENC}" ] && [[ $(file "${TESTFILE%.*}_${MODULE}.bin") != *"Java archive"* ]]; then
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage Android OTA bootimg decrypt disabled because it is not Java archive ###"
+    HAS_ANDR_OTA_BOOTIMG_ENC=
+  fi
+  if [ ! -z "${HAS_ANDR_OTA_BOOTIMG_ENC}" ]; then
+    echo "### INFO: Found m${MODULE} inside, doing 2nd stage Android OTA bootimg decrypt ###"
+    unzip -q -o -d "${TESTFILE%.*}_${MODULE}" "${TESTFILE%.*}_${MODULE}.bin"
     ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${TESTFILE%.*}_${MODULE}/normal.img" \
       -m "${TESTFILE%.*}_${MODULE}.normal" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.normal_unsig.log"
     ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${TESTFILE%.*}_${MODULE}/recovery.img" \
       -m "${TESTFILE%.*}_${MODULE}.recovery" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.recovery_unsig.log"
+  fi
+
+  # Some Android TAR modules also contain boot images with another stage of IMaH encryption
+  HAS_ANDR_TAR_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(1301\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+  MODULE="${HAS_ANDR_TAR_BOOTIMG_ENC}"
+  if [ "${SUPPORTS_ANDR_TAR_BOOTIMG_ENC}" -le 0 ] && [ ! -z "${HAS_ANDR_TAR_BOOTIMG_ENC}" ]; then
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage Android TAR bootimg decrypt disabled for this platform ###"
+    HAS_ANDR_TAR_BOOTIMG_ENC=
+  fi
+  if [ ! -z "${HAS_ANDR_TAR_BOOTIMG_ENC}" ] && [[ $(file "${TESTFILE%.*}_${MODULE}.bin") != *"tar archive"* ]]; then
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage Android TAR bootimg decrypt disabled because it is not TAR archive ###"
+    HAS_ANDR_TAR_BOOTIMG_ENC=
+  fi
+  if [ ! -z "${HAS_ANDR_TAR_BOOTIMG_ENC}" ]; then
+    echo "### INFO: Found m${MODULE} inside, doing 2nd stage Android TAR bootimg decrypt ###"
+    mkdir -p "${TESTFILE%.*}_${MODULE}"
+    tar -xf "${TESTFILE%.*}_${MODULE}.bin" --directory="${TESTFILE%.*}_${MODULE}"
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${TESTFILE%.*}_${MODULE}/ap.img" \
+      -m "${TESTFILE%.*}_${MODULE}.ap" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.ap_unsig.log"
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${TESTFILE%.*}_${MODULE}/cp.img" \
+      -m "${TESTFILE%.*}_${MODULE}.cp" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.cp_unsig.log"
   fi
 fi
 
@@ -210,6 +239,25 @@ if [ "${SKIP_REPACK}" -le "0" ]; then
     ./dji_mvfc_fwpak.py enc -V "${MOD_FWVER}" -T "${MOD_TMSTAMP}" -t "${MODULE}" \
       -i "${TESTFILE%.*}_${MODULE}.decrypted.bin" -o "${TESTFILE%.*}_${MODULE}.bin"
   fi
+  if [ ! -z "${HAS_ANDR_OTA_BOOTIMG_ENC}" ]; then
+    MODULE="${HAS_ANDR_OTA_BOOTIMG_ENC}"
+    sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${TESTFILE%.*}_${MODULE}.normal_head.ini"
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${TESTFILE%.*}_${MODULE}.normal.img" \
+      -m "${TESTFILE%.*}_${MODULE}.normal" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.normal_resig.log"
+    sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${TESTFILE%.*}_${MODULE}.recovery_head.ini"
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${TESTFILE%.*}_${MODULE}.recovery.img" \
+      -m "${TESTFILE%.*}_${MODULE}.recovery" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.recovery_resig.log"
+  fi
+  if [ ! -z "${HAS_ANDR_TAR_BOOTIMG_ENC}" ]; then
+    MODULE="${HAS_ANDR_TAR_BOOTIMG_ENC}"
+    sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${TESTFILE%.*}_${MODULE}.ap_head.ini"
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${TESTFILE%.*}_${MODULE}.ap.img" \
+      -m "${TESTFILE%.*}_${MODULE}.ap" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.ap_resig.log"
+    sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${TESTFILE%.*}_${MODULE}.cp_head.ini"
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${TESTFILE%.*}_${MODULE}.cp.img" \
+      -m "${TESTFILE%.*}_${MODULE}.cp" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.cp_resig.log"
+  fi
+
   ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${TESTFILE}" -m "${TESTFILE%.*}" 2>&1 | tee "${TESTFILE%.*}_resig.log"
 fi
 
@@ -217,12 +265,46 @@ set +eo pipefail
 
 if [ "${SKIP_COMPARE}" -le "0" ]; then
   # Compare converted with original
+  if [ ! -z "${HAS_ANDR_OTA_BOOTIMG_ENC}" ]; then
+    MODULE="${HAS_ANDR_OTA_BOOTIMG_ENC}"
+    TEST_RESULT=$(cmp -l "${TESTFILE%.*}_${MODULE}/normal.img" "${TESTFILE%.*}_${MODULE}.normal.img" | wc -l)
+    echo '### INFO: Counted '${TEST_RESULT}' differences in normal.img. ###'
+    if [ ${TEST_RESULT} -gt ${HEAD_CHANGES_LIMIT} ]; then
+      echo '### FAIL: Boot image normal.img changed during conversion! ###'
+      exit 1
+    fi
+    TEST_RESULT=$(cmp -l "${TESTFILE%.*}_${MODULE}/recovery.img" "${TESTFILE%.*}_${MODULE}.recovery.img" | wc -l)
+    echo '### INFO: Counted '${TEST_RESULT}' differences in recovery.img. ###'
+    if [ ${TEST_RESULT} -gt ${HEAD_CHANGES_LIMIT} ]; then
+      echo '### FAIL: Boot image recovery.img changed during conversion! ###'
+      exit 1
+    fi
+  fi
+  if [ ! -z "${HAS_ANDR_TAR_BOOTIMG_ENC}" ]; then
+    TEST_RESULT=$(cmp -l "${TESTFILE%.*}_${MODULE}/ap.img" "${TESTFILE%.*}_${MODULE}.ap.img" | wc -l)
+    echo '### INFO: Counted '${TEST_RESULT}' differences in ap.img. ###'
+    if [ ${TEST_RESULT} -gt ${HEAD_CHANGES_LIMIT} ]; then
+      echo '### FAIL: Boot image ap.img changed during conversion! ###'
+      exit 1
+    fi
+    TEST_RESULT=$(cmp -l "${TESTFILE%.*}_${MODULE}/cp.img" "${TESTFILE%.*}_${MODULE}.cp.img" | wc -l)
+    echo '### INFO: Counted '${TEST_RESULT}' differences in cp.img. ###'
+    if [ ${TEST_RESULT} -gt ${HEAD_CHANGES_LIMIT} ]; then
+      echo '### FAIL: Boot image cp.img changed during conversion! ###'
+      exit 1
+    fi
+  fi
   TEST_RESULT=$(cmp -l "${BINFILE}" "${TESTFILE}" | wc -l)
   echo '### INFO: Counted '${TEST_RESULT}' differences. ###'
 fi
 
 if [ "${SKIP_CLEANUP}" -le "0" ]; then
   # Cleanup
+  MODULE="${HAS_ANDRBOOTIMG_ENC}"
+  if [ -d "${TESTFILE%.*}_${MODULE}" ]; then
+    rm -rf "${TESTFILE%.*}_${MODULE}"
+    rm "${TESTFILE%.*}_${MODULE}.*.img"
+  fi
   rm "${TESTFILE}" ${TESTFILE%.*}_*.bin ${TESTFILE%.*}_*.ini
 fi
 
