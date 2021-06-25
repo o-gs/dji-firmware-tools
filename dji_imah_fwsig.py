@@ -84,7 +84,15 @@ keys = {
     "TKIE":  bytes([ # TK Image Encryption key; published 2021-03-26 by Felix Domke
         0xb6, 0x28, 0x6a, 0x05, 0xfc, 0x3a, 0x02, 0xf0, 0x36, 0x51, 0x11, 0xf0, 0x20, 0x45, 0x03, 0xa3
     ]),
-    "TBIE":  bytes([ # Trusted Boot Image Encryption key; published 2021-03-26 by Felix Domke
+    "TBIE-2020-04":  bytes([ # Trusted Boot Image Encryption key; published 2021-06-25 by OGs
+        # first use on 2020-04-23; used for:
+        # RCS231 FW V01.00.0108-V02.00.1200,
+        # RC-N1-WM161B FW V04.11.0016,
+        # RCJS170 FW V01.01.0000,
+        # RCSS170 FW V01.01.0000,
+        0x48, 0xd6, 0xe8, 0xff, 0x1b, 0x7f, 0x20, 0x6e, 0x2d, 0xa7, 0x99, 0xc2, 0x7e, 0x5a, 0xd7, 0x0d
+    ]),
+    "TBIE-2020-01":  bytes([ # Trusted Boot Image Encryption key; published 2021-03-26 by Felix Domke
         0x54, 0xb8, 0xb9, 0xd7, 0x4c, 0x2b, 0x41, 0x46, 0x9c, 0x4d, 0xac, 0x3d, 0x16, 0xcc, 0x6f, 0x47
     ]),
     "UFIE-2020-04":  bytes([ # UFI Encryption key; published 2021-06-20 by OGs
