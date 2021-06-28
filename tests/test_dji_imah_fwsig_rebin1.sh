@@ -68,9 +68,10 @@ fi
 TESTFILE="${BINFILE%.*}-test.sig"
 SUPPORTS_MVFC_ENC=1
 SUPPORTS_ANDR_TAR_BOOTIMG_ENC=1
-SUPPORTS_ANDR_OTA_BOOTIMG_ENC=0
+SUPPORTS_ANDR_OTA_BOOTIMG_ENC=1
 HAS_MVFC_ENC=
-HAS_ANDRBOOTIMG_ENC=
+HAS_ANDR_OTA_BOOTIMG_ENC=
+HAS_ANDR_TAR_BOOTIMG_ENC=
 
 if [ "${SKIP_COMPARE}" -le "0" ]; then
   echo '### TEST for dji_imah_fwsig.py and dji_mvfc_fwpak.py re-creation of binary file ###'
@@ -129,7 +130,7 @@ elif [[ ${BINFNAME} =~ ^(rcss170|rcjs170|rcs231|rc-n1-wm161b)[._].*[.]sig$ ]]; t
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
   SUPPORTS_ANDR_TAR_BOOTIMG_ENC=1
 elif [[ ${BINFNAME} =~ ^(wm24[0-6]|gl150|wm150|lt150)[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-07"
+  EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-07 -k TBIE-2018-07"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
@@ -176,7 +177,9 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
     ./dji_mvfc_fwpak.py -vv dec -i "${TESTFILE%.*}_${MODULE}.bin" \
       -o "${TESTFILE%.*}_${MODULE}.decrypted.bin" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.log"
   fi
+fi
 
+if true; then
   # Some Android OTA modules contain boot images which have another stage of IMaH encryption
   HAS_ANDR_OTA_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0801\|0802\|0901\|1301\|2801\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
   MODULE="${HAS_ANDR_OTA_BOOTIMG_ENC}"
@@ -188,15 +191,16 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
     echo "### INFO: Found m${MODULE} inside, but 2nd stage Android OTA bootimg decrypt disabled because it is not Java archive ###"
     HAS_ANDR_OTA_BOOTIMG_ENC=
   fi
+fi
+
+if [ "${SKIP_EXTRACT}" -le "0" ]; then
   if [ ! -z "${HAS_ANDR_OTA_BOOTIMG_ENC}" ]; then
     echo "### INFO: Found m${MODULE} inside, doing 2nd stage Android OTA bootimg decrypt ###"
     unzip -q -o -d "${TESTFILE%.*}_${MODULE}" "${TESTFILE%.*}_${MODULE}.bin"
-    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${TESTFILE%.*}_${MODULE}/normal.img" \
-      -m "${TESTFILE%.*}_${MODULE}.normal" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.normal_unsig.log"
-    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${TESTFILE%.*}_${MODULE}/recovery.img" \
-      -m "${TESTFILE%.*}_${MODULE}.recovery" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.recovery_unsig.log"
   fi
+fi
 
+if true; then
   # Some Android TAR modules also contain boot images with another stage of IMaH encryption
   HAS_ANDR_TAR_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(1301\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
   MODULE="${HAS_ANDR_TAR_BOOTIMG_ENC}"
@@ -208,15 +212,63 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
     echo "### INFO: Found m${MODULE} inside, but 2nd stage Android TAR bootimg decrypt disabled because it is not TAR archive ###"
     HAS_ANDR_TAR_BOOTIMG_ENC=
   fi
+fi
+
+if [ "${SKIP_EXTRACT}" -le "0" ]; then
   if [ ! -z "${HAS_ANDR_TAR_BOOTIMG_ENC}" ]; then
     echo "### INFO: Found m${MODULE} inside, doing 2nd stage Android TAR bootimg decrypt ###"
     mkdir -p "${TESTFILE%.*}_${MODULE}"
     tar -xf "${TESTFILE%.*}_${MODULE}.bin" --directory="${TESTFILE%.*}_${MODULE}"
-    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${TESTFILE%.*}_${MODULE}/ap.img" \
-      -m "${TESTFILE%.*}_${MODULE}.ap" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.ap_unsig.log"
-    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${TESTFILE%.*}_${MODULE}/cp.img" \
-      -m "${TESTFILE%.*}_${MODULE}.cp" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.cp_unsig.log"
   fi
+fi
+
+NESTED_IMAH_LIST=
+MODULE=
+if [ ! -z "${HAS_ANDR_OTA_BOOTIMG_ENC}" ]; then
+  MODULE="${HAS_ANDR_OTA_BOOTIMG_ENC}"
+elif [ ! -z "${HAS_ANDR_TAR_BOOTIMG_ENC}" ]; then
+  MODULE="${HAS_ANDR_TAR_BOOTIMG_ENC}"
+fi
+if [ ! -z "${MODULE}" ]; then
+  # Some nested images are just single IMaH files
+  for IMAH_NAME in "ap" "cp" "normal" "recovery"; do
+    if [ -f "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img" ]; then
+      NESTED_IMAH_LIST+=" ${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img"
+    fi
+  done
+  # Some nested images may consists of several files; we need to separate them
+  for IMAH_NAME in "bootarea"; do
+    if [ -f "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img" ]; then
+      IMAH_SEARCH_RES=$(grep -obaUP 'IM[*]H[\x01\x02]' "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img")
+      IMAH_OFFSETS=( )
+      for IMAH_POS in ${IMAH_SEARCH_RES}; do
+        IMAH_OFFSETS+=( ${IMAH_POS%%:*} )
+      done
+      FILESIZE=$(stat -c%s "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img")
+      IMAH_OFFSETS+=( ${FILESIZE} )
+      for N in $(seq 0 $(( ${#IMAH_OFFSETS[@]} - 2 )) ); do
+        IMAH_OFFSET=${IMAH_OFFSETS[$N]}
+        IMAH_ENDOFF=${IMAH_OFFSETS[$((N + 1))]}
+        dd bs=256 skip=$((IMAH_OFFSET / 256)) count=$((IMAH_ENDOFF / 256)) \
+          if="${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img" \
+          of="${TESTFILE%.*}_${MODULE}/${IMAH_NAME}_p${N}.img"
+        NESTED_IMAH_LIST+=" ${TESTFILE%.*}_${MODULE}/${IMAH_NAME}_p${N}.img"
+      done
+    fi
+  done
+fi
+
+if [ "${SKIP_EXTRACT}" -le "0" ]; then
+  for IMAH_FNAME in ${NESTED_IMAH_LIST}; do
+    FNAME_ARR=( ${IMAH_FNAME//\//" " } )
+    IMAH_BDIR="${FNAME_ARR[0]}/${FNAME_ARR[1]}" # get first two folders in relative path
+    IMAH_NAME=${IMAH_FNAME##*/} # get file name with extension
+    IMAH_NAME=${IMAH_NAME%.*} # remove extension
+    set +e
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${IMAH_FNAME}" \
+      -m "${IMAH_BDIR}.${IMAH_NAME}" 2>&1 | tee "${IMAH_BDIR}.${IMAH_NAME}_unsig.log"
+    set -e
+  done
 fi
 
 if [ "${SKIP_REPACK}" -le "0" ]; then
@@ -239,24 +291,18 @@ if [ "${SKIP_REPACK}" -le "0" ]; then
     ./dji_mvfc_fwpak.py enc -V "${MOD_FWVER}" -T "${MOD_TMSTAMP}" -t "${MODULE}" \
       -i "${TESTFILE%.*}_${MODULE}.decrypted.bin" -o "${TESTFILE%.*}_${MODULE}.bin"
   fi
-  if [ ! -z "${HAS_ANDR_OTA_BOOTIMG_ENC}" ]; then
-    MODULE="${HAS_ANDR_OTA_BOOTIMG_ENC}"
-    sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${TESTFILE%.*}_${MODULE}.normal_head.ini"
-    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${TESTFILE%.*}_${MODULE}.normal.img" \
-      -m "${TESTFILE%.*}_${MODULE}.normal" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.normal_resig.log"
-    sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${TESTFILE%.*}_${MODULE}.recovery_head.ini"
-    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${TESTFILE%.*}_${MODULE}.recovery.img" \
-      -m "${TESTFILE%.*}_${MODULE}.recovery" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.recovery_resig.log"
-  fi
-  if [ ! -z "${HAS_ANDR_TAR_BOOTIMG_ENC}" ]; then
-    MODULE="${HAS_ANDR_TAR_BOOTIMG_ENC}"
-    sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${TESTFILE%.*}_${MODULE}.ap_head.ini"
-    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${TESTFILE%.*}_${MODULE}.ap.img" \
-      -m "${TESTFILE%.*}_${MODULE}.ap" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.ap_resig.log"
-    sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${TESTFILE%.*}_${MODULE}.cp_head.ini"
-    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${TESTFILE%.*}_${MODULE}.cp.img" \
-      -m "${TESTFILE%.*}_${MODULE}.cp" 2>&1 | tee "${TESTFILE%.*}_${MODULE}.cp_resig.log"
-  fi
+
+  for IMAH_FNAME in ${NESTED_IMAH_LIST}; do
+    FNAME_ARR=( ${IMAH_FNAME//\//" " } )
+    IMAH_BDIR="${FNAME_ARR[0]}/${FNAME_ARR[1]}" # get first two folders in relative path
+    IMAH_NAME=${IMAH_FNAME##*/} # get file name with extension
+    IMAH_NAME=${IMAH_NAME%.*} # remove extension
+    sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${IMAH_BDIR}.${IMAH_NAME}_head.ini"
+    set +e
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${IMAH_FNAME}" \
+      -m "${IMAH_BDIR}.${IMAH_NAME}" 2>&1 | tee "${IMAH_BDIR}.${IMAH_NAME}_resig.log"
+    set -e
+  done
 
   ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${TESTFILE}" -m "${TESTFILE%.*}" 2>&1 | tee "${TESTFILE%.*}_resig.log"
 fi
@@ -265,42 +311,29 @@ set +eo pipefail
 
 if [ "${SKIP_COMPARE}" -le "0" ]; then
   # Compare converted with original
-  if [ ! -z "${HAS_ANDR_OTA_BOOTIMG_ENC}" ]; then
-    MODULE="${HAS_ANDR_OTA_BOOTIMG_ENC}"
-    TEST_RESULT=$(cmp -l "${TESTFILE%.*}_${MODULE}/normal.img" "${TESTFILE%.*}_${MODULE}.normal.img" | wc -l)
-    echo '### INFO: Counted '${TEST_RESULT}' differences in normal.img. ###'
+  for IMAH_FNAME in ${NESTED_IMAH_LIST}; do
+    FNAME_ARR=( ${IMAH_FNAME//\//" " } )
+    IMAH_BDIR="${FNAME_ARR[0]}/${FNAME_ARR[1]}" # get first two folders in relative path
+    IMAH_NAME=${IMAH_FNAME##*/} # get file name with extension
+    IMAH_NAME=${IMAH_NAME%.*} # remove extension
+    TEST_RESULT=$(cmp -l "${IMAH_FNAME}" "${IMAH_BDIR}.${IMAH_NAME}.img" | wc -l)
+    echo '### INFO: Counted '${TEST_RESULT}' differences in '${IMAH_NAME}'.img. ###'
     if [ ${TEST_RESULT} -gt ${HEAD_CHANGES_LIMIT} ]; then
-      echo '### FAIL: Boot image normal.img changed during conversion! ###'
+      echo '### FAIL: Boot image '${IMAH_NAME}'.img changed during conversion! ###'
       exit 1
     fi
-    TEST_RESULT=$(cmp -l "${TESTFILE%.*}_${MODULE}/recovery.img" "${TESTFILE%.*}_${MODULE}.recovery.img" | wc -l)
-    echo '### INFO: Counted '${TEST_RESULT}' differences in recovery.img. ###'
-    if [ ${TEST_RESULT} -gt ${HEAD_CHANGES_LIMIT} ]; then
-      echo '### FAIL: Boot image recovery.img changed during conversion! ###'
-      exit 1
-    fi
-  fi
-  if [ ! -z "${HAS_ANDR_TAR_BOOTIMG_ENC}" ]; then
-    TEST_RESULT=$(cmp -l "${TESTFILE%.*}_${MODULE}/ap.img" "${TESTFILE%.*}_${MODULE}.ap.img" | wc -l)
-    echo '### INFO: Counted '${TEST_RESULT}' differences in ap.img. ###'
-    if [ ${TEST_RESULT} -gt ${HEAD_CHANGES_LIMIT} ]; then
-      echo '### FAIL: Boot image ap.img changed during conversion! ###'
-      exit 1
-    fi
-    TEST_RESULT=$(cmp -l "${TESTFILE%.*}_${MODULE}/cp.img" "${TESTFILE%.*}_${MODULE}.cp.img" | wc -l)
-    echo '### INFO: Counted '${TEST_RESULT}' differences in cp.img. ###'
-    if [ ${TEST_RESULT} -gt ${HEAD_CHANGES_LIMIT} ]; then
-      echo '### FAIL: Boot image cp.img changed during conversion! ###'
-      exit 1
-    fi
-  fi
+
+    sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${IMAH_BDIR}.${IMAH_NAME}_head.ini"
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${IMAH_FNAME}" \
+      -m "${IMAH_BDIR}.${IMAH_NAME}" 2>&1 | tee "${IMAH_BDIR}.${IMAH_NAME}_resig.log"
+  done
   TEST_RESULT=$(cmp -l "${BINFILE}" "${TESTFILE}" | wc -l)
   echo '### INFO: Counted '${TEST_RESULT}' differences. ###'
 fi
 
 if [ "${SKIP_CLEANUP}" -le "0" ]; then
   # Cleanup
-  MODULE="${HAS_ANDRBOOTIMG_ENC}"
+  MODULE=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0801\|0802\|0901\|1301\|2801\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
   if [ -d "${TESTFILE%.*}_${MODULE}" ]; then
     rm -rf "${TESTFILE%.*}_${MODULE}"
     rm "${TESTFILE%.*}_${MODULE}.*.img"

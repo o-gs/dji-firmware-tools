@@ -49,6 +49,7 @@ V01.00.0108_Mavic_Air_2_RC_dji_system.bin
 V02.00.1200_Mavic_Air_2_RC_dji_system.bin
 V02.04.1640_wm232_dji_system.bin
 V04.11.0016_RC-N1-WM161b_dji_system.bin
+V01.00.0600_lt150_dji_system.bin
 V01.00.0500_Mavic_Mini_dji_system.tar
 V01.00.0200_Mavic_Mini_dji_system.tar
 V01.00.0000_Mavic_Mini_2_dji_system.bin
