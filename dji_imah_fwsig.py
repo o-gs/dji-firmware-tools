@@ -95,6 +95,14 @@ keys = {
     "TBIE-2020-01":  bytes([ # Trusted Boot Image Encryption key; published 2021-03-26 by Felix Domke
         0x54, 0xb8, 0xb9, 0xd7, 0x4c, 0x2b, 0x41, 0x46, 0x9c, 0x4d, 0xac, 0x3d, 0x16, 0xcc, 0x6f, 0x47
     ]),
+    "TBIE-2018-07":  bytes([ # Trusted Boot Image Encryption key; published 2021-06-23 by fpv.wtf team
+        # first use on 2018-07-13; used for:
+        # WM240 FW V00.06.0000-V01.00.0670,
+        # WM245 FW V01.01.0000-V01.01.0800,
+        # WM246 FW V01.00.0000-V01.01.0800,
+        # GL150 FW V01.00.0600, LT150 FW V01.00.0600,
+        0xff, 0x94, 0x76, 0xf7, 0x8a, 0x89, 0xb9, 0x44, 0x9b, 0x6a, 0x90, 0x55, 0x64, 0x13, 0xb9, 0xc3
+    ]),
     "UFIE-2020-04":  bytes([ # UFI Encryption key; published 2021-06-20 by OGs
         # first use on 2020-04-24; used for:
         # WM170 FW V00.04.1009-V01.01.0000,
