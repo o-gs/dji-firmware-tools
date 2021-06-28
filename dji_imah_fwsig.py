@@ -809,6 +809,7 @@ def imah_unsign(po, fwsigfile):
     # Output the chunks
     checksum_dec = 0
     num_skipped = 0
+    single_cipher = None # IMaH v1 creates a new cipher for each chunk, IMaH v2 reuses a single cipher
     for i, chunk in enumerate(chunks):
 
         chunk_fname= "{:s}_{:s}.bin".format(po.mdprefix,minames[i])
@@ -822,12 +823,19 @@ def imah_unsign(po, fwsigfile):
 
         elif crypt_key is not None: # Encrypted chunk (have key as well)
             if crypt_mode == AES.MODE_CTR:
-                init_cf = int.from_bytes(crypt_iv[12:16], byteorder='big')
-                countf = Counter.new(32, crypt_iv[:12], initial_value=init_cf)
-                cipher = AES.new(crypt_key, crypt_mode, counter=countf)
+                if single_cipher is None:
+                    init_cf = int.from_bytes(crypt_iv[12:16], byteorder='big')
+                    countf = Counter.new(32, crypt_iv[:12], initial_value=init_cf)
+                    cipher = AES.new(crypt_key, crypt_mode, counter=countf)
+                    single_cipher = cipher
+                else:
+                    cipher = single_cipher
+                dji_block_size = 32
             else:
                 cipher = AES.new(crypt_key, crypt_mode, iv=crypt_iv)
-            pad_cnt = (AES.block_size - chunk.size % AES.block_size) % AES.block_size
+                # the data is really padded to 32, but we do not care as we reset state for every chunk
+                dji_block_size = AES.block_size
+            pad_cnt = (dji_block_size - chunk.size % dji_block_size) % dji_block_size
             if (po.verbose > 0):
                 print("{}: Unpacking encrypted chunk '{:s}'...".format(fwsigfile.name,minames[i]))
             can_decrypt = True
