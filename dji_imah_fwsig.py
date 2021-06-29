@@ -923,6 +923,7 @@ def imah_sign(po, fwsigfile):
     crypt_key, crypt_mode, crypt_iv = imah_get_crypto_params(po, pkghead)
     # Write module data
     checksum_dec = 0
+    single_cipher = None # IMaH v1 creates a new cipher for each chunk, IMaH v2 reuses a single cipher
     payload_digest = SHA256.new()
     for i, miname in enumerate(minames):
         chunk = chunks[i]
@@ -940,9 +941,13 @@ def imah_sign(po, fwsigfile):
 
         elif crypt_key != None: # Encrypted chunk (have key as well)
             if crypt_mode == AES.MODE_CTR:
-                init_cf = int.from_bytes(crypt_iv[12:16], byteorder='big')
-                countf = Counter.new(32, crypt_iv[:12], initial_value=init_cf)
-                cipher = AES.new(crypt_key, crypt_mode, counter=countf)
+                if single_cipher is None:
+                    init_cf = int.from_bytes(crypt_iv[12:16], byteorder='big')
+                    countf = Counter.new(32, crypt_iv[:12], initial_value=init_cf)
+                    cipher = AES.new(crypt_key, crypt_mode, counter=countf)
+                    single_cipher = cipher
+                else:
+                    cipher = single_cipher
             else:
                 cipher = AES.new(crypt_key, crypt_mode, iv=crypt_iv)
             if (po.verbose > 0):
