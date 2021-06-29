@@ -72,6 +72,9 @@ SUPPORTS_ANDR_OTA_BOOTIMG_ENC=1
 HAS_MVFC_ENC=
 HAS_ANDR_OTA_BOOTIMG_ENC=
 HAS_ANDR_TAR_BOOTIMG_ENC=
+EXTRAPAR_NESTED_m0801=
+EXTRAPAR_NESTED_m0901=
+NESTED_CHANGES_LIMIT=
 
 if [ "${SKIP_COMPARE}" -le "0" ]; then
   echo '### TEST for dji_imah_fwsig.py and dji_mvfc_fwpak.py re-creation of binary file ###'
@@ -112,6 +115,8 @@ elif [[ ${BINFNAME} =~ ^(wm230)[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-01"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
+  # nested files have more chunks, so require more discrepencies for chunk padding
+  NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 3*16 ))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^(rc230)[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2018-02 -k UFIE-2018-01 -f" # PRAK not published, forcing ignore signature fail
@@ -129,7 +134,13 @@ elif [[ ${BINFNAME} =~ ^(rcss170|rcjs170|rcs231|rc-n1-wm161b)[._].*[.]sig$ ]]; t
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
   SUPPORTS_ANDR_TAR_BOOTIMG_ENC=1
-elif [[ ${BINFNAME} =~ ^(wm24[0-6]|gl150|wm150|lt150)[._].*[.]sig$ ]]; then
+elif [[ ${BINFNAME} =~ ^(wm24[0-6])[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-07 -k TBIE-2018-07"
+  EXTRAPAR_NESTED_m0901="-k PRAK-2018-01 -f" # PRAK not published, forcing ignore signature fail; IAEK not published, forcing extract encrypted
+  # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
+  HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
+  SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
+elif [[ ${BINFNAME} =~ ^(gl150|wm150|lt150)[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-07 -k TBIE-2018-07"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
@@ -153,6 +164,10 @@ elif [[ ${BINFNAME} =~ ^wm161[._].*[.]sig$ ]]; then
 else
   EXTRAPAR=""
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256))
+fi
+
+if [ -z "${NESTED_CHANGES_LIMIT}" ]; then
+  NESTED_CHANGES_LIMIT=${HEAD_CHANGES_LIMIT}
 fi
 
 if [ "${SKIP_EXTRACT}" -le "0" ]; then
@@ -256,6 +271,13 @@ if [ ! -z "${MODULE}" ]; then
       done
     fi
   done
+  if [ "${MODULE}" == "0801" ] && [ ! -z "${EXTRAPAR_NESTED_m0801}" ]; then
+    EXTRAPAR_NESTED=${EXTRAPAR_NESTED_m0801}
+  elif [ "${MODULE}" == "0901" ] && [ ! -z "${EXTRAPAR_NESTED_m0901}" ]; then
+    EXTRAPAR_NESTED=${EXTRAPAR_NESTED_m0901}
+  else
+    EXTRAPAR_NESTED=${EXTRAPAR}
+  fi
 fi
 
 if [ "${SKIP_EXTRACT}" -le "0" ]; then
@@ -265,7 +287,7 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
     IMAH_NAME=${IMAH_FNAME##*/} # get file name with extension
     IMAH_NAME=${IMAH_NAME%.*} # remove extension
     set +e
-    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -u -i "${IMAH_FNAME}" \
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR_NESTED} -u -i "${IMAH_FNAME}" \
       -m "${IMAH_BDIR}.${IMAH_NAME}" 2>&1 | tee "${IMAH_BDIR}.${IMAH_NAME}_unsig.log"
     set -e
   done
@@ -298,10 +320,8 @@ if [ "${SKIP_REPACK}" -le "0" ]; then
     IMAH_NAME=${IMAH_FNAME##*/} # get file name with extension
     IMAH_NAME=${IMAH_NAME%.*} # remove extension
     sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${IMAH_BDIR}.${IMAH_NAME}_head.ini"
-    set +e
-    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${IMAH_FNAME}" \
+    ./dji_imah_fwsig.py -vv ${EXTRAPAR_NESTED} -s -i "${IMAH_BDIR}.${IMAH_NAME}.img" \
       -m "${IMAH_BDIR}.${IMAH_NAME}" 2>&1 | tee "${IMAH_BDIR}.${IMAH_NAME}_resig.log"
-    set -e
   done
 
   ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${TESTFILE}" -m "${TESTFILE%.*}" 2>&1 | tee "${TESTFILE%.*}_resig.log"
@@ -310,7 +330,7 @@ fi
 set +eo pipefail
 
 if [ "${SKIP_COMPARE}" -le "0" ]; then
-  # Compare converted with original
+  # Compare converted with original, nested images
   for IMAH_FNAME in ${NESTED_IMAH_LIST}; do
     FNAME_ARR=( ${IMAH_FNAME//\//" " } )
     IMAH_BDIR="${FNAME_ARR[0]}/${FNAME_ARR[1]}" # get first two folders in relative path
@@ -318,15 +338,12 @@ if [ "${SKIP_COMPARE}" -le "0" ]; then
     IMAH_NAME=${IMAH_NAME%.*} # remove extension
     TEST_RESULT=$(cmp -l "${IMAH_FNAME}" "${IMAH_BDIR}.${IMAH_NAME}.img" | wc -l)
     echo '### INFO: Counted '${TEST_RESULT}' differences in '${IMAH_NAME}'.img. ###'
-    if [ ${TEST_RESULT} -gt ${HEAD_CHANGES_LIMIT} ]; then
-      echo '### FAIL: Boot image '${IMAH_NAME}'.img changed during conversion! ###'
+    if [ ${TEST_RESULT} -gt ${NESTED_CHANGES_LIMIT} ]; then
+      echo '### FAIL: Nested image '${IMAH_NAME}'.img changed during conversion! ###'
       exit 1
     fi
-
-    sed -i "s/^auth_key=[0-9A-Za-z]\{4\}$/auth_key=SLAK/" "${IMAH_BDIR}.${IMAH_NAME}_head.ini"
-    ./dji_imah_fwsig.py -vv ${EXTRAPAR} -s -i "${IMAH_FNAME}" \
-      -m "${IMAH_BDIR}.${IMAH_NAME}" 2>&1 | tee "${IMAH_BDIR}.${IMAH_NAME}_resig.log"
   done
+  # Compare converted with original, main image
   TEST_RESULT=$(cmp -l "${BINFILE}" "${TESTFILE}" | wc -l)
   echo '### INFO: Counted '${TEST_RESULT}' differences. ###'
 fi
@@ -336,7 +353,7 @@ if [ "${SKIP_CLEANUP}" -le "0" ]; then
   MODULE=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0801\|0802\|0901\|1301\|2801\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
   if [ -d "${TESTFILE%.*}_${MODULE}" ]; then
     rm -rf "${TESTFILE%.*}_${MODULE}"
-    rm "${TESTFILE%.*}_${MODULE}.*.img"
+    rm ${TESTFILE%.*}_${MODULE}.*.img
   fi
   rm "${TESTFILE}" ${TESTFILE%.*}_*.bin ${TESTFILE%.*}_*.ini
 fi
