@@ -69,9 +69,11 @@ TESTFILE="${BINFILE%.*}-test.sig"
 SUPPORTS_MVFC_ENC=1
 SUPPORTS_ANDR_TAR_BOOTIMG_ENC=1
 SUPPORTS_ANDR_OTA_BOOTIMG_ENC=1
+SUPPORTS_ANDR_LZ4_BOOTIMG_ENC=1
 HAS_MVFC_ENC=
 HAS_ANDR_OTA_BOOTIMG_ENC=
 HAS_ANDR_TAR_BOOTIMG_ENC=
+HAS_ANDR_LZ4_BOOTIMG_ENC=
 EXTRAPAR_NESTED_m0801=
 EXTRAPAR_NESTED_m0901=
 NESTED_CHANGES_LIMIT=
@@ -157,12 +159,16 @@ elif [[ ${BINFNAME} =~ ^wm160[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2019-09 -k UFIE-2019-11"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
+  # nested files have more chunks, so allow more discrepencies for chunk padding
+  NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 16 ))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^wm161[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2019-09 -k UFIE-2019-11"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   # TODO would be nice if we could eliminate padding discrepencies (these seem to happen in m0905 and m1100, for both WM160 and WM161)
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
+  # nested files have more chunks, so allow more discrepencies for chunk padding
+  NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 16 ))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 else
   EXTRAPAR=""
@@ -240,12 +246,36 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
   fi
 fi
 
+if true; then
+  # Some Android LZ4 modules also contain boot images with another stage of IMaH encryption
+  HAS_ANDR_LZ4_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0100\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+  MODULE="${HAS_ANDR_LZ4_BOOTIMG_ENC}"
+  if [ "${SUPPORTS_ANDR_LZ4_BOOTIMG_ENC}" -le 0 ] && [ ! -z "${HAS_ANDR_LZ4_BOOTIMG_ENC}" ]; then
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage Android LZ4 bootimg decrypt disabled for this platform ###"
+    HAS_ANDR_LZ4_BOOTIMG_ENC=
+  fi
+  if [ ! -z "${HAS_ANDR_LZ4_BOOTIMG_ENC}" ] && [[ $(file "${TESTFILE%.*}_${MODULE}.bin") != *"LZ4 compressed"* ]]; then
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage Android LZ4 bootimg decrypt disabled because it is not LZ4 archive ###"
+    HAS_ANDR_LZ4_BOOTIMG_ENC=
+  fi
+fi
+
+if [ "${SKIP_EXTRACT}" -le "0" ]; then
+  if [ ! -z "${HAS_ANDR_LZ4_BOOTIMG_ENC}" ]; then
+    echo "### INFO: Found m${MODULE} inside, doing 2nd stage Android LZ4 bootimg decrypt ###"
+    mkdir -p "${TESTFILE%.*}_${MODULE}"
+    lz4 -d "${TESTFILE%.*}_${MODULE}.bin" "${TESTFILE%.*}_${MODULE}/whole.img"
+  fi
+fi
+
 NESTED_IMAH_LIST=
 MODULE=
 if [ ! -z "${HAS_ANDR_OTA_BOOTIMG_ENC}" ]; then
   MODULE="${HAS_ANDR_OTA_BOOTIMG_ENC}"
 elif [ ! -z "${HAS_ANDR_TAR_BOOTIMG_ENC}" ]; then
   MODULE="${HAS_ANDR_TAR_BOOTIMG_ENC}"
+elif [ ! -z "${HAS_ANDR_LZ4_BOOTIMG_ENC}" ]; then
+  MODULE="${HAS_ANDR_LZ4_BOOTIMG_ENC}"
 fi
 if [ ! -z "${MODULE}" ]; then
   # Some nested images are just single IMaH files
@@ -254,8 +284,8 @@ if [ ! -z "${MODULE}" ]; then
       NESTED_IMAH_LIST+=" ${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img"
     fi
   done
-  # Some nested images may consists of several files; we need to separate them
-  for IMAH_NAME in "bootarea"; do
+  # Some nested images may consist of several files; we need to separate them
+  for IMAH_NAME in "bootarea" "whole"; do
     if [ -f "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img" ]; then
       IMAH_SEARCH_RES=$(grep -obaUP 'IM[*]H[\x01\x02]' "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img")
       IMAH_OFFSETS=( )
@@ -267,7 +297,7 @@ if [ ! -z "${MODULE}" ]; then
       for N in $(seq 0 $(( ${#IMAH_OFFSETS[@]} - 2 )) ); do
         IMAH_OFFSET=${IMAH_OFFSETS[$N]}
         IMAH_ENDOFF=${IMAH_OFFSETS[$((N + 1))]}
-        dd bs=32 skip=$((IMAH_OFFSET / 32)) count=$((IMAH_ENDOFF / 32)) \
+        dd bs=4 skip=$((IMAH_OFFSET / 4)) count=$((IMAH_ENDOFF / 4)) \
           if="${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img" \
           of="${TESTFILE%.*}_${MODULE}/${IMAH_NAME}_p${N}.img"
         NESTED_IMAH_LIST+=" ${TESTFILE%.*}_${MODULE}/${IMAH_NAME}_p${N}.img"
