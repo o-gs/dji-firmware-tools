@@ -92,7 +92,9 @@ keys = {
         # RCSS170 FW V01.01.0000,
         0x48, 0xd6, 0xe8, 0xff, 0x1b, 0x7f, 0x20, 0x6e, 0x2d, 0xa7, 0x99, 0xc2, 0x7e, 0x5a, 0xd7, 0x0d
     ]),
-    "TBIE-2020-01":  bytes([ # Trusted Boot Image Encryption key; published 2021-03-26 by Felix Domke
+    "TBIE-2019-11":  bytes([ # Trusted Boot Image Encryption key; published 2021-03-26 by Felix Domke
+        # first use on 2019-11-07; used for:
+        # WM160 FW V01.00.0200-V01.00.0500, WM161 FW V01.00.0000-V01.02.0300
         0x54, 0xb8, 0xb9, 0xd7, 0x4c, 0x2b, 0x41, 0x46, 0x9c, 0x4d, 0xac, 0x3d, 0x16, 0xcc, 0x6f, 0x47
     ]),
     "TBIE-2018-07":  bytes([ # Trusted Boot Image Encryption key; published 2021-06-23 by fpv.wtf team
