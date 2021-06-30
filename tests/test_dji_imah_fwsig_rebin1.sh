@@ -74,6 +74,7 @@ HAS_MVFC_ENC=
 HAS_ANDR_OTA_BOOTIMG_ENC=
 HAS_ANDR_TAR_BOOTIMG_ENC=
 HAS_ANDR_LZ4_BOOTIMG_ENC=
+EXTRAPAR_NESTED_m0100=
 EXTRAPAR_NESTED_m0801=
 EXTRAPAR_NESTED_m0901=
 NESTED_CHANGES_LIMIT=
@@ -157,6 +158,7 @@ elif [[ ${BINFNAME} =~ ^(rc240)[._].*[.]sig$ ]]; then
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^wm160[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2019-09 -k UFIE-2019-11"
+  EXTRAPAR_NESTED_m0100="-k PRAK-2019-09 -k TBIE-2019-11"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   # nested files have more chunks, so allow more discrepencies for chunk padding
@@ -164,8 +166,8 @@ elif [[ ${BINFNAME} =~ ^wm160[._].*[.]sig$ ]]; then
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^wm161[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2019-09 -k UFIE-2019-11"
+  EXTRAPAR_NESTED_m0100="-k PRAK-2019-09 -k TBIE-2019-11"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
-  # TODO would be nice if we could eliminate padding discrepencies (these seem to happen in m0905 and m1100, for both WM160 and WM161)
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   # nested files have more chunks, so allow more discrepencies for chunk padding
   NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 16 ))
@@ -304,7 +306,9 @@ if [ ! -z "${MODULE}" ]; then
       done
     fi
   done
-  if [ "${MODULE}" == "0801" ] && [ ! -z "${EXTRAPAR_NESTED_m0801}" ]; then
+  if [ "${MODULE}" == "0100" ] && [ ! -z "${EXTRAPAR_NESTED_m0100}" ]; then
+    EXTRAPAR_NESTED=${EXTRAPAR_NESTED_m0100}
+  elif [ "${MODULE}" == "0801" ] && [ ! -z "${EXTRAPAR_NESTED_m0801}" ]; then
     EXTRAPAR_NESTED=${EXTRAPAR_NESTED_m0801}
   elif [ "${MODULE}" == "0901" ] && [ ! -z "${EXTRAPAR_NESTED_m0901}" ]; then
     EXTRAPAR_NESTED=${EXTRAPAR_NESTED_m0901}
