@@ -968,6 +968,12 @@ def imah_sign(po, fwsigfile):
         chunk_fname= "{:s}_{:s}.bin".format(po.mdprefix,miname)
         # Copy chunk data and compute digest
         fwitmfile = open(chunk_fname, "rb")
+        # Chunks in new formats are padded with zeros and then encrypted; for older formats,
+        # the padding rules are more convoluted, and also change slightly between platforms
+        if pkgformat >= 2018:
+            dji_block_size = 32
+        else:
+            dji_block_size = AES.block_size
         decrypted_n = 0
         while True:
             # read block limit must be a multiplication of encryption block size
@@ -977,8 +983,8 @@ def imah_sign(po, fwsigfile):
                 break
             decrypted_n += len(copy_buffer)
             # Pad the payload to AES.block_size = 16
-            if (len(copy_buffer) % AES.block_size) != 0:
-                pad_cnt = AES.block_size - (len(copy_buffer) % AES.block_size)
+            if (len(copy_buffer) % dji_block_size) != 0:
+                pad_cnt = dji_block_size - (len(copy_buffer) % dji_block_size)
                 pad_buffer = b"\0" * pad_cnt
                 copy_buffer += pad_buffer
             checksum_dec = imah_compute_checksum(po, copy_buffer, checksum_dec)
