@@ -113,10 +113,11 @@ elif [[ ${BINFNAME} =~ ^(wm620|rc001)[._].*[.]sig$ ]]; then
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc won't work without 1st stage
 elif [[ ${BINFNAME} =~ ^(wm230)[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-01"
+  EXTRAPAR_NESTED_m0801="-k PRAK-2018-01 -k FCIE-2018-01 -f" # FCIE not published, forcing extract encrypted
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
-  # nested files have more chunks, so require more discrepencies for chunk padding
-  NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 3*16 ))
+  # nested files have more chunks, so allow more discrepencies for chunk padding
+  NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 6*16 ))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^(rc230)[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2018-02 -k UFIE-2018-01 -f" # PRAK not published, forcing ignore signature fail
@@ -127,6 +128,8 @@ elif [[ ${BINFNAME} =~ ^(wm170|wm231|wm232|gl170|pm430|ag500)[._].*[.]sig$ ]]; t
   EXTRAPAR="-k PRAK-2018-02 -k UFIE-2020-04 -f" # PRAK not published, forcing ignore signature fail
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
+  # nested files have more chunks, so allow more discrepencies for chunk padding
+  NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 15*16 ))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^(rcss170|rcjs170|rcs231|rc-n1-wm161b)[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2018-02 -k TBIE-2020-04 -f" # PRAK not published, forcing ignore signature fail; modules not encrypted, boot images encrypted
@@ -264,7 +267,7 @@ if [ ! -z "${MODULE}" ]; then
       for N in $(seq 0 $(( ${#IMAH_OFFSETS[@]} - 2 )) ); do
         IMAH_OFFSET=${IMAH_OFFSETS[$N]}
         IMAH_ENDOFF=${IMAH_OFFSETS[$((N + 1))]}
-        dd bs=256 skip=$((IMAH_OFFSET / 256)) count=$((IMAH_ENDOFF / 256)) \
+        dd bs=32 skip=$((IMAH_OFFSET / 32)) count=$((IMAH_ENDOFF / 32)) \
           if="${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img" \
           of="${TESTFILE%.*}_${MODULE}/${IMAH_NAME}_p${N}.img"
         NESTED_IMAH_LIST+=" ${TESTFILE%.*}_${MODULE}/${IMAH_NAME}_p${N}.img"

@@ -131,8 +131,9 @@ function test_dji_imah_package {
     for SIGFILE in ${SIGLIST}; do
       # Execute test - DJI firmware extractor
       tests/test_dji_imah_fwsig_rebin1.sh -sn "${SIGFILE}"
-      if [ $? -ne 0 ]; then
-        echo '### ERROR code returned from test ###'
+      RESULT=$?
+      if [ $RESULT -ne 0 ]; then
+        echo '### FAIL: Error code '$RESULT' returned from test ###'
         ((NUMFAILS++))
       fi
       # per-SIG Cleanup
