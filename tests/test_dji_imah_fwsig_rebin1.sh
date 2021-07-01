@@ -456,11 +456,13 @@ fi
 
 if [ "${SKIP_CLEANUP}" -le "0" ]; then
   # Cleanup
-  MODULE=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0801\|0802\|0901\|1301\|2801\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
-  if [ -d "${TESTFILE%.*}_${MODULE}" ]; then
-    rm -rf "${TESTFILE%.*}_${MODULE}"
-    rm ${TESTFILE%.*}_${MODULE}.*.img
-  fi
+  MODULES=$(sed -n 's/^modules=\(.*\)$/\1/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+  for MODULE in $MODULES; do
+    if [ -d "${TESTFILE%.*}_${MODULE}" ]; then
+      rm -rf "${TESTFILE%.*}_${MODULE}"
+      rm ${TESTFILE%.*}_${MODULE}.*.img
+    fi
+  done
   rm "${TESTFILE}" ${TESTFILE%.*}_*.bin ${TESTFILE%.*}_*.ini
 fi
 
