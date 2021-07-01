@@ -67,16 +67,21 @@ fi
 
 TESTFILE="${BINFILE%.*}-test.sig"
 SUPPORTS_MVFC_ENC=1
-SUPPORTS_ANDR_TAR_BOOTIMG_ENC=1
 SUPPORTS_ANDR_OTA_BOOTIMG_ENC=1
+SUPPORTS_ANDR_TGZ_BOOTIMG_ENC=1
+SUPPORTS_ANDR_TAR_BOOTIMG_ENC=1
+SUPPORTS_ANDR_LZA_BOOTIMG_ENC=1
 SUPPORTS_ANDR_LZ4_BOOTIMG_ENC=1
 HAS_MVFC_ENC=
 HAS_ANDR_OTA_BOOTIMG_ENC=
+HAS_ANDR_TGZ_BOOTIMG_ENC=
 HAS_ANDR_TAR_BOOTIMG_ENC=
+HAS_ANDR_LZA_BOOTIMG_ENC=
 HAS_ANDR_LZ4_BOOTIMG_ENC=
 EXTRAPAR_NESTED_m0100=
 EXTRAPAR_NESTED_m0801=
 EXTRAPAR_NESTED_m0901=
+EXTRAPAR_NESTED_m0907=
 NESTED_CHANGES_LIMIT=
 
 if [ "${SKIP_COMPARE}" -le "0" ]; then
@@ -92,11 +97,13 @@ if   [[ ${BINFNAME} =~ ^wm220[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-07"
   # allow change of 2 bytes from auth key name, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 256))
+  NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 3*16 ))
   SUPPORTS_ANDR_OTA_BOOTIMG_ENC=0 # IAEK not published
 elif [[ ${BINFNAME} =~ ^wm330[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-07"
   # allow change of 2 bytes from auth key name, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 256))
+  NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 3*16 ))
   SUPPORTS_ANDR_OTA_BOOTIMG_ENC=0 # IAEK not published
 elif [[ ${BINFNAME} =~ ^wm33[1-6][._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
@@ -108,11 +115,13 @@ elif [[ ${BINFNAME} =~ ^wm100[._a].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
   # allow change of 2 bytes from auth key name, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 256))
+  NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 3*16 ))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc won't work without 1st stage
 elif [[ ${BINFNAME} =~ ^(wm620|rc001)[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
   # allow change of 2 bytes from auth key name, 4 from enc checksum, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 4 + 256))
+  NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 3*16 ))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc won't work without 1st stage
 elif [[ ${BINFNAME} =~ ^(wm230)[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-01"
@@ -143,6 +152,7 @@ elif [[ ${BINFNAME} =~ ^(rcss170|rcjs170|rcs231|rc-n1-wm161b)[._].*[.]sig$ ]]; t
 elif [[ ${BINFNAME} =~ ^(wm24[0-6])[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-07 -k TBIE-2018-07"
   EXTRAPAR_NESTED_m0901="-k PRAK-2018-01 -f" # PRAK not published, forcing ignore signature fail; IAEK not published, forcing extract encrypted
+  EXTRAPAR_NESTED_m0907="${EXTRAPAR_NESTED_m0901}"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
@@ -207,7 +217,7 @@ fi
 
 if true; then
   # Some Android OTA modules contain boot images which have another stage of IMaH encryption
-  HAS_ANDR_OTA_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0801\|0802\|0901\|1301\|2801\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+  HAS_ANDR_OTA_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0801\|0802\|0901\|1301\|2801\|2805\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
   MODULE="${HAS_ANDR_OTA_BOOTIMG_ENC}"
   if [ "${SUPPORTS_ANDR_OTA_BOOTIMG_ENC}" -le 0 ] && [ ! -z "${HAS_ANDR_OTA_BOOTIMG_ENC}" ]; then
     echo "### INFO: Found m${MODULE} inside, but 2nd stage Android OTA bootimg decrypt disabled for this platform ###"
@@ -227,8 +237,30 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
 fi
 
 if true; then
+  # Some Android TGZ modules also contain boot images with another stage of IMaH encryption
+  HAS_ANDR_TGZ_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0801\|0802\|0905\|0907\|1407\|2801\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+  MODULE="${HAS_ANDR_TGZ_BOOTIMG_ENC}"
+  if [ "${SUPPORTS_ANDR_TGZ_BOOTIMG_ENC}" -le 0 ] && [ ! -z "${HAS_ANDR_TGZ_BOOTIMG_ENC}" ]; then
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage Android TGZ bootimg decrypt disabled for this platform ###"
+    HAS_ANDR_TGZ_BOOTIMG_ENC=
+  fi
+  if [ ! -z "${HAS_ANDR_TGZ_BOOTIMG_ENC}" ] && [[ $(file "${TESTFILE%.*}_${MODULE}.bin") != *"gzip compressed"* ]]; then
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage Android TGZ bootimg decrypt disabled because it is not TGZ archive ###"
+    HAS_ANDR_TGZ_BOOTIMG_ENC=
+  fi
+fi
+
+if [ "${SKIP_EXTRACT}" -le "0" ]; then
+  if [ ! -z "${HAS_ANDR_TGZ_BOOTIMG_ENC}" ]; then
+    echo "### INFO: Found m${MODULE} inside, doing 2nd stage Android TGZ bootimg decrypt ###"
+    mkdir -p "${TESTFILE%.*}_${MODULE}"
+    tar -zxf "${TESTFILE%.*}_${MODULE}.bin" --directory="${TESTFILE%.*}_${MODULE}"
+  fi
+fi
+
+if true; then
   # Some Android TAR modules also contain boot images with another stage of IMaH encryption
-  HAS_ANDR_TAR_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(1301\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+  HAS_ANDR_TAR_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0905\|0907\|1301\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
   MODULE="${HAS_ANDR_TAR_BOOTIMG_ENC}"
   if [ "${SUPPORTS_ANDR_TAR_BOOTIMG_ENC}" -le 0 ] && [ ! -z "${HAS_ANDR_TAR_BOOTIMG_ENC}" ]; then
     echo "### INFO: Found m${MODULE} inside, but 2nd stage Android TAR bootimg decrypt disabled for this platform ###"
@@ -249,8 +281,30 @@ if [ "${SKIP_EXTRACT}" -le "0" ]; then
 fi
 
 if true; then
+  # Some Android LZA modules also contain boot images with another stage of IMaH encryption
+  HAS_ANDR_LZA_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0100\|0101\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+  MODULE="${HAS_ANDR_LZA_BOOTIMG_ENC}"
+  if [ "${SUPPORTS_ANDR_LZA_BOOTIMG_ENC}" -le 0 ] && [ ! -z "${HAS_ANDR_LZA_BOOTIMG_ENC}" ]; then
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage Android LZMA bootimg decrypt disabled for this platform ###"
+    HAS_ANDR_LZA_BOOTIMG_ENC=
+  fi
+  if [ ! -z "${HAS_ANDR_LZA_BOOTIMG_ENC}" ] && [[ $(file "${TESTFILE%.*}_${MODULE}.bin") != *"LZMA compressed"* ]]; then
+    echo "### INFO: Found m${MODULE} inside, but 2nd stage Android LZA bootimg decrypt disabled because it is not LZMA archive ###"
+    HAS_ANDR_LZA_BOOTIMG_ENC=
+  fi
+fi
+
+if [ "${SKIP_EXTRACT}" -le "0" ]; then
+  if [ ! -z "${HAS_ANDR_LZA_BOOTIMG_ENC}" ]; then
+    echo "### INFO: Found m${MODULE} inside, doing 2nd stage Android LZMA bootimg decrypt ###"
+    mkdir -p "${TESTFILE%.*}_${MODULE}"
+    lzma -d -c "${TESTFILE%.*}_${MODULE}.bin" > "${TESTFILE%.*}_${MODULE}/whole.img"
+  fi
+fi
+
+if true; then
   # Some Android LZ4 modules also contain boot images with another stage of IMaH encryption
-  HAS_ANDR_LZ4_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0100\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
+  HAS_ANDR_LZ4_BOOTIMG_ENC=$(sed -n 's/^modules=\([0-9]\{4\}[ ]\)*\(0100\|0101\).*$/\2/p' "${TESTFILE%.*}_head.ini" | head -n 1)
   MODULE="${HAS_ANDR_LZ4_BOOTIMG_ENC}"
   if [ "${SUPPORTS_ANDR_LZ4_BOOTIMG_ENC}" -le 0 ] && [ ! -z "${HAS_ANDR_LZ4_BOOTIMG_ENC}" ]; then
     echo "### INFO: Found m${MODULE} inside, but 2nd stage Android LZ4 bootimg decrypt disabled for this platform ###"
@@ -274,6 +328,8 @@ NESTED_IMAH_LIST=
 MODULE=
 if [ ! -z "${HAS_ANDR_OTA_BOOTIMG_ENC}" ]; then
   MODULE="${HAS_ANDR_OTA_BOOTIMG_ENC}"
+elif [ ! -z "${HAS_ANDR_TGZ_BOOTIMG_ENC}" ]; then
+  MODULE="${HAS_ANDR_TGZ_BOOTIMG_ENC}"
 elif [ ! -z "${HAS_ANDR_TAR_BOOTIMG_ENC}" ]; then
   MODULE="${HAS_ANDR_TAR_BOOTIMG_ENC}"
 elif [ ! -z "${HAS_ANDR_LZ4_BOOTIMG_ENC}" ]; then
@@ -306,12 +362,25 @@ if [ ! -z "${MODULE}" ]; then
       done
     fi
   done
+  # Some nested IMaH files can be found on Andoid `system` and `vendor` partitions
+  for IMAH_NAME in "system" "vendor"; do
+    if [ -f "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.new.dat" ]; then
+      # TODO unpack ext4 fs in `system.new.dat` and `vendor.new.dat` partitions, find IMaHs inside
+      echo "No support made for ${IMAH_NAME}.new.dat"
+    fi
+  done
+  # Some nested IMaH files can be recognized by name mask
+  for IMAH_FNAME in $(find "${TESTFILE%.*}_${MODULE}" -name '*.sig'); do
+    NESTED_IMAH_LIST+=" ${IMAH_FNAME}"
+  done
   if [ "${MODULE}" == "0100" ] && [ ! -z "${EXTRAPAR_NESTED_m0100}" ]; then
     EXTRAPAR_NESTED=${EXTRAPAR_NESTED_m0100}
   elif [ "${MODULE}" == "0801" ] && [ ! -z "${EXTRAPAR_NESTED_m0801}" ]; then
     EXTRAPAR_NESTED=${EXTRAPAR_NESTED_m0801}
   elif [ "${MODULE}" == "0901" ] && [ ! -z "${EXTRAPAR_NESTED_m0901}" ]; then
     EXTRAPAR_NESTED=${EXTRAPAR_NESTED_m0901}
+  elif [ "${MODULE}" == "0907" ] && [ ! -z "${EXTRAPAR_NESTED_m0907}" ]; then
+    EXTRAPAR_NESTED=${EXTRAPAR_NESTED_m0907}
   else
     EXTRAPAR_NESTED=${EXTRAPAR}
   fi
