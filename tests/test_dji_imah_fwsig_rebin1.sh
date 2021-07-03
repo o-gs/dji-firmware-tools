@@ -337,13 +337,18 @@ elif [ ! -z "${HAS_ANDR_LZ4_BOOTIMG_ENC}" ]; then
 fi
 if [ ! -z "${MODULE}" ]; then
   # Some nested images are just single IMaH files
-  for IMAH_NAME in "ap" "cp" "normal" "recovery"; do
+  for IMAH_NAME in "ap" "cp" "normal" "recovery" "rtos"; do
     if [ -f "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img" ]; then
       NESTED_IMAH_LIST+=" ${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img"
     fi
   done
+  for IMAH_NAME in "modemarm" "modemdsp_gnd" "modemdsp_uav"; do
+    if [ -f "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.pro.fw" ]; then
+      NESTED_IMAH_LIST+=" ${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.pro.fw"
+    fi
+  done
   # Some nested images may consist of several files; we need to separate them
-  for IMAH_NAME in "bootarea" "whole"; do
+  for IMAH_NAME in "bootarea" "loader" "whole"; do
     if [ -f "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img" ]; then
       IMAH_SEARCH_RES=$(grep -obaUP 'IM[*]H[\x01\x02]' "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img")
       IMAH_OFFSETS=( )
