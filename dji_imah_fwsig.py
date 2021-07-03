@@ -55,7 +55,9 @@ keys = {
     "RREK":  bytes([ # RR Encryption Key v1; published 2017-06-27 by Freek van Tienen
         0x37, 0xD6, 0xD9, 0x13, 0xE5, 0xD0, 0x80, 0x17, 0xE5, 0x12, 0x15, 0x45, 0x0C, 0x1E, 0x16, 0xE7
     ]),
-    "RIEK":  bytes([ # RI Encryption Key v1; published 2017-06-27 by Freek van Tienen
+    "RIEK":  bytes([ # R&D Image Encryption Key v1; published 2017-06-27 by Freek van Tienen
+        # This key is used on many platforms, for pre-production development and engineering images;
+        # it is used as pre-production version of IAEK key
         0xF1, 0x69, 0xC0, 0xF3, 0x8B, 0x2D, 0x9A, 0xDC, 0x65, 0xEE, 0x0C, 0x57, 0x83, 0x32, 0x94, 0xE9
     ]),
     "RUEK":  bytes([ # RU Encryption Key v1; published 2017-06-27 by Freek van Tienen
