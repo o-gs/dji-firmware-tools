@@ -137,7 +137,7 @@ keys = {
     ]),
 
     # RSA authentication keys
-    "PRAK-2019-09":  bytes.fromhex(( # PR Auth Key v3; published 2021-04-02 by Felix Domke
+    "PRAK-2019-09":  bytes.fromhex(( # Provisioning RSA Auth Key v3; published 2021-04-02 by Felix Domke
         # first use on 2020-06-09; used for: WM161 FW V01.00.0000
         "40000000a1f987bf9fd539732277b64b32f178d7a62106d20336f2888292ee28"
         "3790524565232831d245919a3a88d92a754cafbb1b8ccaed67dec3a29e0f425b"
@@ -157,7 +157,7 @@ keys = {
         "ce0b43a199f27a59f8a80b7cb9c0f9c3cf168f9095b5f5d862f2e174e30ed61e"
         "4992e6594045d58001000100"
     )),
-    "PRAK-2018-01":  bytes.fromhex(( # PR Auth Key v2; published 2021-04-02 by Mefistotelis
+    "PRAK-2018-01":  bytes.fromhex(( # Provisioning RSA Auth Key v2; published 2021-04-02 by Mefistotelis
         # first use on 2018-01-26; used for: WM230 FW V00.02.0032,
         # WM150 FW V01.00.0100, GL150 V01.00.0100-V01.00.0600,
         # LT150 V01.00.0600
@@ -179,7 +179,7 @@ keys = {
         "1820917aba93369e96f326c65fba2370ffc9db17aa3aefa062cc45e93e81d9cb"
         "36748cd95224988901000100"
     )),
-    "PRAK-2017-01":  bytes([ # Programming RSA Auth Key v1; published 2017-06-27 by Freek van Tienen
+    "PRAK-2017-01":  bytes([ # Provisioning RSA Auth Key v1; published 2017-06-27 by Freek van Tienen
         # used for: WM335 FW V01.00.1000-V01.00.5200,
         # WM220 FW V01.04.0000-V01.04.0500, PM420 FW V01.01.0450-V01.01.0590,
         # WM100 FW V01.00.0000-V01.00.1000, WM620 FW V01.00.0000-V01.02.0500,
