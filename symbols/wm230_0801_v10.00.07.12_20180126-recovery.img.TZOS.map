@@ -89,6 +89,7 @@
  0003:7D0011D0       fmt
  0003:7D0011F4       tee_ta_param_pa2va
  0003:7D00122C       tee_ta_init_static_ta_session
+ 0003:7D001298       m1
  0003:7D0012B0       advance_to
  0003:7D0012F4       e64_process_rel
  0003:7D0012FC       e32_process_rel
@@ -191,8 +192,10 @@
  0003:7D003054       wq_is_empty
  0003:7D003088       pm_panic
  0003:7D0030A0       generic_boot_init_primary
+ 0003:7D003134       buf
  0003:7D00314C       unwind_stack
  0003:7D003374       TA_KeyDerivation
+ 0003:7D0033C8       source
  0003:7D0033D0       out_key
  0003:7D0033DC       tee_core_cc_key_generate
  0003:7D003440       ufie
@@ -230,7 +233,7 @@
  0003:7D00450C       core_tlb_maintenance
  0003:7D00451A       jpt_7D004516
  0003:7D004548       def_7D004516
- 0003:7D004558       cache_operation
+ 0003:7D004558       cache_maintenance_l1
  0003:7D004564       jpt_7D004560
  0003:7D0045C6       def_7D004560
  0003:7D0045D0       check_pgt_avail
@@ -268,14 +271,18 @@
  0003:7D0055AE       def_7D00549E
  0003:7D0055E4       tee_entry_get_api_uuid
  0003:7D005604       tee_entry_get_os_uuid
+ 0003:7D005624       tee_entry_fast
  0003:7D005718       init_teecore
  0003:7D00577C       test_entry_params
  0003:7D0059C8       core_self_tests
+ 0003:7D005B84       physical_address_acceptable_for_smc
  0003:7D005BAC       main_fiq
- 0003:7D005BC4       tee_entry_fast
+ 0003:7D005BC4       platform_tee_entry_fast
  0003:7D005C58       pa
  0003:7D005C5C       generic_boot_get_handlers
  0003:7D005C64       main_init_gic
+ 0003:7D005CC4       gd
+ 0003:7D005D1C       init_unkn5D1C
  0003:7D005D6C       TEE_CryptoCell_GetLCS
  0003:7D005DC0       pm_system_reset
  0003:7D005DF8       psci_smc_handler
@@ -308,6 +315,7 @@
  0003:7D00679C       tee_ta_get_current_session
  0003:7D0067B8       tee_ta_dump_current
  0003:7D006840       panic
+ 0003:7D0068E4       itr_init
  0003:7D006900       tee_hash_get_digest_size
  0003:7D006BE4       tee_aes_cbc_cts_update
  0003:7D007220       syscall_not_supported
@@ -348,8 +356,10 @@
  0003:7D0081B4       syscall_cryp_obj_get_info
  0003:7D008200       syscall_cryp_obj_restrict_usage
  0003:7D008250       syscall_cryp_obj_get_attr
+ 0003:7D0082F8       tee_obj_attr_free
  0003:7D008340       tee_obj_attr_clear
  0003:7D008388       tee_obj_attr_to_binary
+ 0003:7D008424       tee_obj_attr_from_binary
  0003:7D00849C       tee_obj_attr_copy_from
  0003:7D0085BC       tee_obj_set_type
  0003:7D0086C8       syscall_cryp_obj_alloc
@@ -404,36 +414,53 @@
  0003:7D00B050       syscall_storage_obj_write
  0003:7D00B0E8       syscall_storage_obj_trunc
  0003:7D00B1B4       syscall_storage_obj_seek
+ 0003:7D00B274       tee_rpmb_alloc
  0003:7D00B2F8       rpmb_fs_close
+ 0003:7D00B32C       tee_rpmb_mac_calc
+ 0003:7D00B3B0       decrypt
+ 0003:7D00B468       tee_rpmb_req_pack
+ 0003:7D00B5B0       tee_rpmb_resp_unpack_verify
+ 0003:7D00B838       tee_rpmb_verify_key_sync_counter
  0003:7D00B90C       tee_rpmb_init
+ 0003:7D00BB24       tee_rpmb_write_blk
  0003:7D00BCD4       tee_rpmb_read
  0003:7D00BDE0       tee_rpmb_write
+ 0003:7D00BE5C       dump_fat
  0003:7D00BEB0       tee_rpmb_get_write_counter
  0003:7D00BEDC       len
  0003:7D00BEE4       write_fat_entry
  0003:7D00BF30       rpmb_fs_setup
  0003:7D00C02C       read_fat
  0003:7D00C1E8       rpmb_fs_access
- 0003:7D00C234       rpmb_fs_rename
- 0003:7D00C2A0       rpmb_fs_ftruncate
+ 0003:7D00C234       rpmb_fs_unlink
+ 0003:7D00C2A0       rpmb_fs_rename
  0003:7D00C35C       rpmb_fs_lseek
  0003:7D00C404       rpmb_fs_read
- 0003:7D00C494       rpmb_fs_unlink
+ 0003:7D00C494       rpmb_fs_ftruncate
  0003:7D00C5C4       rpmb_fs_write
+ 0003:7D00C768       rpmb_fs_open_internal
  0003:7D00C87C       rpmb_fs_open
+ 0003:7D00C8EC       rpmb_fs_opendir_internal
  0003:7D00CA88       rpmb_fs_rmdir
  0003:7D00CB80       rpmb_key_inject
+ 0003:7D00CBBC       do_hmac
+ 0003:7D00CC48       fek_crypt
  0003:7D00CD08       algo
+ 0003:7D00CD18       tee_fs_init_key_manager
+ 0003:7D00CD88       tee_fs_generate_fek
+ 0003:7D00CDB4       decrypt_block
  0003:7D00CF20       tee_obj_get
  0003:7D00CF3C       tee_obj_verify
  0003:7D00CFF8       tee_pobj_get
  0003:7D00D104       tee_pobj_release
  0003:7D00D144       tee_pobj_rename
+ 0003:7D00D190       tee_time_ta_set_offs
  0003:7D00D224       tee_time_get_ta_time
  0003:7D00D2E0       tee_time_set_ta_time
  0003:7D00D368       gic_op_disable
  0003:7D00D3A0       gic_op_enable
  0003:7D00D3D8       gic_op_add
+ 0003:7D00D454       gic_init_base_addr
  0003:7D00D4E0       flush_dcache_area
  0003:7D00D510       dsp_chunk_load
  0003:7D00D800       unrd_set_binary
@@ -442,6 +469,7 @@
  0003:7D00DB08       unrd_alloc_handle
  0003:7D00DBD8       unrd_release_handle
  0003:7D00DC38       is_context_head_valid
+ 0003:7D00DCE4       m2
  0003:7D00DD00       item_size
  0003:7D00DD30       hsearch_item
  0003:7D00DDCC       items_complete
@@ -480,6 +508,7 @@
  0003:7D00F4BC       sasi_mac_alloc_ctx
  0003:7D00F534       sasi_authenc_get_ctx_size
  0003:7D00F568       sasi_prng_add_entropy
+ 0003:7D00F58C       destination
  0003:7D00F594       sasi_authenc_final
  0003:7D00F5C8       bignum__num_bytes
  0003:7D00F5F4       Import_CRYSECCUserPrivkey_From_ECCKeypair
@@ -542,6 +571,7 @@
  0003:7D011CF0       tom_gen_dsa_key
  0003:7D011D88       tom_gen_rsa_key
  0003:7D011E28       tom_authenc_final
+ 0003:7D011E44       tee_algo_to_ltc_cipherindex
  0003:7D011F10       tom_authenc_init
  0003:7D011FE0       tom_cipher_get_block_size
  0003:7D012008       tom_cipher_update
@@ -565,29 +595,107 @@
  0003:7D012AB8       tom_cipher_final
  0003:7D012B38       tom_mac_final
  0003:7D012C30       tee_tom_init
+ 0003:7D012CE8       put
+ 0003:7D012CEC       sync
+ 0003:7D012CF0       get
  0003:7D012D2C       ecc_populate_ltc_private_key
  0003:7D012D94       tom_do_ecc_shared_secret
  0003:7D012E0C       tom_ecc_sign
+ 0003:7D012F24       rijndael_setup
  0003:7D014CF4       md5_init
  0003:7D015064       sha1_init
  0003:7D0150A0       sha224_init
  0003:7D01645C       sha256_init
+ 0003:7D01752C       mp_init_multi
+ 0003:7D0175E4       mp_clear_multi
+ 0003:7D017610       cipher_is_valid
+ 0003:7D017640       find_cipher
  0003:7D017718       hash_is_valid
+ 0003:7D017748       prng_is_valid
  0003:7D0177D0       lineno
  0003:7D017884       cbc_encrypt
  0003:7D017960       cbc_decrypt
- 0003:7D017AA8       ctr_decrypt
+ 0003:7D017AA8       ctr_encrypt
  0003:7D017C80       ecb_encrypt
  0003:7D017D3C       ecb_decrypt
+ 0003:7D017E08       tweak_crypt
  0003:7D017E54       xts_encrypt
+ 0003:7D017FB4       tweak_uncrypt
  0003:7D018000       xts_decrypt
  0003:7D018980       rsa_decrypt_key_ex
  0003:7D018A60       rsa_encrypt_key_ex
  0003:7D018B38       rsa_exptmod
+ 0003:7D018CC0       rsa_make_key
+ 0003:7D019AE4       deinit
+ 0003:7D019B28       mp_montgomery_normalization
+ 0003:7D019B5C       mp_mod
+ 0003:7D019B9C       mp_invmod
+ 0003:7D019BD0       mp_mulmod
+ 0003:7D019C2C       mp_add
+ 0003:7D019C50       mp_gcd
+ 0003:7D019C74       mp_divide
+ 0003:7D019CA0       mp_sqr
+ 0003:7D019CC4       mp_mul
+ 0003:7D019CE8       mp_muli
+ 0003:7D019D0C       mp_subi
+ 0003:7D019D30       mp_sub
+ 0003:7D019D54       mp_addi
+ 0003:7D019D78       mp_montgomery_setup
+ 0003:7D019DCC       init_size
+ 0003:7D019DF4       init
+ 0003:7D019E1C       mp_exptmod
+ 0003:7D019EB0       mp_montgomery_reduce
+ 0003:7D01A06C       rand_prime
+ 0003:7D01A148       rand_bn_bits
+ 0003:7D01A274       compar
+ 0003:7D01A278       der_encode_setof
+ 0003:7D01A3A0       char_to_int
+ 0003:7D01A3B8       der_encode_utctime
+ 0003:7D01A57C       der_encode_utf8_string
+ 0003:7D01A70C       der_length_utf8_string
+ 0003:7D01A76C       der_teletex_char_encode
+ 0003:7D01A794       der_teletex_value_decode
  0003:7D01A7BC       pkcs_1_oaep_decode
+ 0003:7D01A9A8       pkcs_1_oaep_encode
+ 0003:7D01AB94       pkcs_1_pss_decode
+ 0003:7D01ADA4       pkcs_1_pss_encode
+ 0003:7D01AFD8       pkcs_1_v1_5_encode
+ 0003:7D01B0C0       ltc_ecc_map
+ 0003:7D01B1B0       ltc_ecc_mulmod
+ 0003:7D01B47C       ltc_ecc_mul2add
+ 0003:7D01B84C       ltc_ecc_projective_add_point
+ 0003:7D01BE44       ltc_ecc_projective_dbl_point
+ 0003:7D01C290       der_ia5_char_encode
+ 0003:7D01C2B8       der_ia5_value_decode
+ 0003:7D01C2E0       der_decode_integer
+ 0003:7D01C3B4       der_encode_integer
+ 0003:7D01C578       der_length_integer
+ 0003:7D01C618       der_printable_char_encode
+ 0003:7D01C640       der_printable_value_decode
+ 0003:7D01C668       pkcs_1_mgf1
+ 0003:7D01C758       mpa_constant_one
+ 0003:7D01C760       mpa_compute_fmm_context
+ 0003:7D01C81C       primality_test_miller_rabin
+ 0003:7D01CA64       src2
+ 0003:7D01CA6C       op2
+ 0003:7D01CA78       mpa_set_random_generator
+ 0003:7D01CA84       mpa_get_random
+ 0003:7D01CB24       mpa_exp_mod
  0003:7D01CC00       mpa_set_str
- 0003:7D01D0D8       int64_div
+ 0003:7D01CDA4       malloc_lock
+ 0003:7D01CDB0       malloc_unlock
+ 0003:7D01CDBC       bget
+ 0003:7D01CE14       brel
+ 0003:7D01CE68       bpool
+ 0003:7D01CE94       memalign
+ 0003:7D01CF9C       malloc_add_pool
+ 0003:7D01D004       malloc_buffer_is_within_alloced
+ 0003:7D01D070       malloc_buffer_overlaps_heap
+ 0003:7D01D0C0       int64_unk1
+ 0003:7D01D0D8       uint64_div
  0003:7D01D0F0       trace_printf
+ 0003:7D01D224       kprintf
+ 0003:7D01D868       src
  0003:7D01D958       SaSi_LibInit
  0003:7D01DB10       SaSi_LibFini
  0003:7D01DB2C       SaSi_HalInit
@@ -595,19 +703,27 @@
  0003:7D01DB88       SaSi_HalWaitInterrupt
  0003:7D01DDF0       SaSi_PalInit
  0003:7D01DE3C       SaSi_PalTerminate
+ 0003:7D01DE40       cache_area_clean
+ 0003:7D01DE4C       cache_area_invalidate
  0003:7D01DE58       SaSi_PalDmaInit
  0003:7D01DE5C       SaSi_PalDmaTerminate
+ 0003:7D01DE94       mem_area_invalidate
+ 0003:7D01DEA0       SaSi_PalMemMalloc
+ 0003:7D01DEB0       SaSi_PalMemFree
+ 0003:7D01DEC4       SaSi_UnknRet1
+ 0003:7D01DEC8       SaSi_UnknRet0
  0003:7D01DECC       SaSi_PalMemMap
  0003:7D01DEDC       SaSi_PalMemUnMap
  0003:7D01DEE0       SaSi_PalMutexCreate
  0003:7D01DEEC       SaSi_PalMutexDestroy
  0003:7D01DEF8       SaSi_PalMutexLock
  0003:7D01DF04       SaSi_PalMutexUnlock
- 0003:7D01DF10       nullsub_5
- 0003:7D01DF14       nullsub_12
+ 0003:7D01DF10       SaSi_nullsub_5
+ 0003:7D01DF14       SaSi_nullsub_6
  0003:7D01DF18       SaSi_AesInit
  0003:7D01DFC4       SaSi_AesSetKey
  0003:7D01E158       SaSi_AesSetIv
+ 0003:7D01E1A8       SaSi_AesGetIv
  0003:7D01E1F8       SaSi_AesBlock
  0003:7D01E298       SaSi_AesFinish
  0003:7D01E494       CRYS_HASH_Init
@@ -631,9 +747,9 @@
  0003:7D01F566       jpt_7D01F562
  0003:7D01F58A       def_7D01F562
  0003:7D01F590       def_7D01F54C
- 0003:7D01F598       crys_unknfuncF598
+ 0003:7D01F598       crys_hash_do_init
  0003:7D01F5F8       crys_unknfuncF5F8
- 0003:7D01F814       crys_unknfuncF814
+ 0003:7D01F814       crys_hash_do_finish
  0003:7D01FC24       crys_unknfuncFC24
  0003:7D01FDF0       DX_Set_session_Key
  0003:7D01FEDC       TEE_CryptoCell_KeyDerivation
@@ -642,12 +758,22 @@
  0003:7D020924       CRYS_COMMON_InPlaceConvertBytesWordsAndArrayEndianness
  0003:7D020968       CRYS_COMMON_ConvertMsbLsbBytesToLswMswWords
  0003:7D020A14       CRYS_COMMON_ConvertLswMswWordsToMsbLsbBytes
+ 0003:7D020AA8       CRYS_COMMON_ConvertLsbMsbBytesToLswMswWords
+ 0003:7D020ACC       CRYS_COMMON_ConvertLswMswWordsToLsbMsbBytes
  0003:7D020AD8       CRYS_RSA_Build_PubKey
+ 0003:7D020C18       CRYS_RSA_Build_PrivKey
+ 0003:7D020DE8       CRYS_RSA_Build_PrivKeyCRT
+ 0003:7D02109C       CRYS_RSA_Get_PubKey
+ 0003:7D0213A0       SaSi_RsaSchemesEncrypt
  0003:7D0213B6       def_7D021478
  0003:7D02147C       jpt_7D021478
+ 0003:7D021540       SaSi_RsaSchemesDecrypt
  0003:7D02155A       def_7D02162A
  0003:7D02162E       jpt_7D02162A
+ 0003:7D02180C       RsaGenRndNonZeroVect
+ 0003:7D02188C       SaSi_RsaEmsaPkcs1v15Encode
  0003:7D021920       CRYS_RSA_PRIM_Encrypt
+ 0003:7D021A1C       CRYS_RSA_PRIM_Decrypt
  0003:7D021E88       CRYS_RSA_GenerateVectorInRangeX931
  0003:7D0221B4       CRYS_RSA_KG_GenerateKeyPairCRT
  0003:7D022774       _DX_DH_GeneratePubPrv
@@ -675,10 +801,15 @@
  0003:7D023ED4       EcWrstGenKeyPair
  0003:7D023FBC       SaSi_RndDf_isra_0
  0003:7D024178       SaSi_RndUpdate_isra_1
+ 0003:7D0241F4       CRYS_RND_Reseeding_do
  0003:7D0243B4       CRYS_RND_SetGenerateVectorFunc
  0003:7D0243D4       CRYS_RND_GenerateVector
  0003:7D02468C       CRYS_RND_Instantiation
  0003:7D0246DC       CRYS_RND_UnInstantiation
+ 0003:7D0246F8       CRYS_RND_Reseeding
+ 0003:7D024748       CRYS_RND_AddAdditionalInput
+ 0003:7D0247DC       CRYS_RND_EnterKatMode
+ 0003:7D0248E4       CRYS_RND_DisableKatMode
  0003:7D0248F4       CRYS_RND_GenerateVectorInRange
  0003:7D024AEC       SaSi_RndGenerateWordsArrayInRange
  0003:7D025058       LLF_RND_WaitRngInterrupt
@@ -692,16 +823,31 @@
  0003:7D025368       LLF_RND_StartTrngHW_part_3
  0003:7D025480       LLF_RND_GetTrngSource
  0003:7D025664       LLF_RND_RunTrngStartupTest
+ 0003:7D025668       PkaModDivideBy2
  0003:7D02571C       PkaGetRegEffectiveSizeInBits
  0003:7D0257D8       PkaGetNextMsBit
  0003:7D02595C       PkaInitAndMutexLock
  0003:7D025994       PkaFinishAndMutexUnlock
+ 0003:7D0259C8       PkiClearAllPka
  0003:7D0259EC       RsaInitPubKeyDb
  0003:7D025A08       RsaExecPubKeyExp
  0003:7D025AF0       RsaInitPrivKeyDb
+ 0003:7D025B54       RsaExecPrivKeyExp
+ 0003:7D025F2C       PkaInitPka_part_0_sub2
+ 0003:7D025F88       PkaInitPka_part_0
+ 0003:7D02604C       PkaCalcNpIntoPkaReg
  0003:7D0264D8       PkaCopyDataFromPkaReg
  0003:7D026554       PkaCopyDataIntoPkaReg
+ 0003:7D026660       PkiCalcNp
+ 0003:7D026818       PkiLongNumDiv
+ 0003:7D026924       PkaGetBitFromPkaReg
+ 0003:7D026A30       PkaExecFullModInv
+ 0003:7D026D50       PkiLongNumMul
  0003:7D026E2C       PkaRsaKgX931MillerRabinTest
+ 0003:7D027124       PkaRsaKgX931FindPrime1_isra_1
+ 0003:7D0274B8       PkaRsaKgX931LucasPrimeTest_isra_0
+ 0003:7D027B3C       PkaRsaKgFindPrime_isra_4_constprop_6
+ 0003:7D028964       RsaPrimeTestCall
  0003:7D028B7C       RsaGenerateKeyPair
  0003:7D029044       EcWrstDsaTruncateMsg
  0003:7D029094       EcWrstInitPubKey
@@ -715,9 +861,9 @@
  0003:7D029C28       PkaBuildNaf
  0003:7D029D24       ScalarMultAff
  0003:7D029E6C       PkaEcWrstScalarMult
- 0003:7D029ED8       crys_unknfunc9ED8
- 0003:7D029F1C       crys_unknfunc9F1C
- 0003:7D029F54       crys_unknfunc9F54
+ 0003:7D029ED8       crys_buffer_aligned_len
+ 0003:7D029F1C       crys_init_user_context
+ 0003:7D029F54       crys_align_user_context
  0003:7D02A232       jpt_7D02A22E
  0003:7D02A352       def_7D02A22E
  0003:7D02B1F8       jpt_7D02B1F4
@@ -739,8 +885,10 @@
  0003:7D02C8C8       CRYS_COMMON_Add2vectors
  0003:7D02C918       CRYS_COMMON_SubtractUintArrays
  0003:7D02C954       CRYS_COMMON_SubtractMSBUint8Arrays
+ 0003:7D02CA3C       CRYS_RSA_PSS_OAEPEncode
  0003:7D02CA68       jpt_7D02CA64
  0003:7D02CC56       def_7D02CA64
+ 0003:7D02CC60       CRYS_RSA_PSS_OAEPDecode
  0003:7D02CC70       jpt_7D02CC6C
  0003:7D02CE74       def_7D02CC6C
  0003:7D02D1F8       nullsub_13
@@ -754,6 +902,10 @@
  0003:7D02E6F0       PkaEcdsaVerify
  0003:7D02EAFC       crys_unknfuncEAFC
  0003:7D02EBA4       crys_unknfuncEBA4
+ 0003:7D02EBC8       user_ta_ctx_destroy
+ 0003:7D02EC72       user_ta_enter_close_session
+ 0003:7D02EC96       user_ta_enter_invoke_cmd
+ 0003:7D02ECAE       user_ta_enter_open_session
  0003:7D02ECC6       static_ta_destroy
  0003:7D02ECCC       static_ta_enter_close_session
  0003:7D02ECF8       static_ta_enter_open_session
@@ -784,7 +936,7 @@
  0003:7D02F098       init_secondary_helper
  0003:7D02F0D2       unwind_unksub1
  0003:7D02F0FE       compute_checksum
- 0003:7D02F134       image_calculate_sha256
+ 0003:7D02F134       image_calculate_digest
  0003:7D02F170       get_auth_key
  0003:7D02F194       pbuf_is_inside
  0003:7D02F1A0       pbuf_intersects
@@ -809,6 +961,7 @@
  0003:7D02F5EE       tee_mm_unlock
  0003:7D02F600       tee_mm_init
  0003:7D02F75E       tee_mm_final
+ 0003:7D02F780       tee_mm_get_bytes
  0003:7D02F792       tee_mm_addr_is_within_range
  0003:7D02F7E6       tee_mm_get_smem
  0003:7D02F7F4       copy_out_param
@@ -817,9 +970,13 @@
  0003:7D02F836       copy_in_params
  0003:7D02F86E       jpt_7D02F86A
  0003:7D02F90E       def_7D02F86A
+ 0003:7D02F916       tee_entry_get_api_call_count
+ 0003:7D02F91C       tee_entry_get_api_revision
+ 0003:7D02F926       tee_entry_get_os_revision
  0003:7D02F934       nullsub_9
  0003:7D02F93A       nullsub_8
  0003:7D02F942       console_init
+ 0003:7D02F944       mpcore_processor_number
  0003:7D02F970       jpt_7D02F96C
  0003:7D02F98C       def_7D02F96C
  0003:7D02F9F4       tee_ta_session_is_cancelled
@@ -830,6 +987,8 @@
  0003:7D02FAB2       tee_b2hs
  0003:7D02FB5C       _core_is_buffer_inside
  0003:7D02FB86       core_is_buffer_intersect
+ 0003:7D02FBAC       handle_get
+ 0003:7D02FC0C       handle_put
  0003:7D02FC30       handle_lookup
  0003:7D02FC48       syscall_check_access_rights
  0003:7D02FC6E       tee_svc_copy_from_user
@@ -844,6 +1003,7 @@
  0003:7D02FE36       op_attr_value_from_obj
  0003:7D02FE3E       op_attr_value_clear
  0003:7D02FE44       tee_svc_cryp_obj_find_type_attr_idx
+ 0003:7D02FE6A       op_u32_from_binary_helper
  0003:7D02FE9A       op_attr_value_from_binary
  0003:7D02FE9E       op_attr_secret_value_from_binary
  0003:7D02FF10       op_attr_value_to_binary
@@ -851,30 +1011,38 @@
  0003:7D02FF46       op_attr_secret_value_clear
  0003:7D02FF54       cryp_state_free
  0003:7D02FFAC       copy_in_attrs
+ 0003:7D030004       tee_svc_cryp_free_states
  0003:7D030016       syscall_cipher_update
  0003:7D030030       syscall_cipher_final
- 0003:7D03004A       syscall_7D03004A
- 0003:7D03007C       syscall_7D03007C
+ 0003:7D03004A       syscall_oper72
+ 0003:7D03007C       syscall_oper73
  0003:7D03009A       syscall_cryptocell_9A
  0003:7D0300D2       tee_svc_storage_create_filename
  0003:7D030130       tee_svc_storage_create_dirname
+ 0003:7D030154       tee_svc_storage_close_all_enum
  0003:7D030166       rpmb_fs_mkdir
+ 0003:7D03016A       rpmb_fs_dir_free
  0003:7D03018E       rpmb_fs_readdir
  0003:7D0301B4       rpmb_fs_closedir
+ 0003:7D0301C8       tee_rpmb_invoke
+ 0003:7D030226       tee_rpmb_free
  0003:7D030250       alloc_file_handle
  0003:7D030274       rpmb_fs_opendir
  0003:7D030294       tee_obj_add
  0003:7D0302A2       tee_obj_alloc
  0003:7D0302AA       tee_obj_free
  0003:7D0302C6       tee_obj_close
- 0003:7D030310       syscall_7D030310
+ 0003:7D0302FE       tee_obj_close_all
+ 0003:7D030310       syscall_oper71
  0003:7D03032E       plat_cpu_gic_conf_interrupts
+ 0003:7D030344       gic_init
  0003:7D0303FC       sasi_bn_clear
  0003:7D030404       sasi_bn_free
  0003:7D030408       sasi_free_ecc_public_key
  0003:7D030420       sasi_free_rsa_public_key
  0003:7D030438       sasi_copy
  0003:7D030442       sasi_bn_allocate
+ 0003:7D03045C       sasi_bn_alloc_max
  0003:7D030472       sasi_bignum_bn2bin
  0003:7D030490       sasi_bignum_num_bytes
  0003:7D030494       tom_bn_clear
@@ -882,11 +1050,22 @@
  0003:7D0304A0       tom_free_ecc_public_key
  0003:7D0304B8       tom_free_rsa_public_key
  0003:7D0304D0       tom_bn_allocate
+ 0003:7D0304EA       tom_bn_alloc_max
  0003:7D030500       tom_rsanopad_encrypt
  0003:7D030532       tom_rsanopad_decrypt
+ 0003:7D03058A       tom_get_pool
+ 0003:7D0305C6       tom_get_des2_key
  0003:7D030608       nullsub_14
- 0003:7D030638       nullsub_15
- 0003:7D03063A       nullsub_16
+ 0003:7D03060A       rijndael_keysize
+ 0003:7D030638       des_done
+ 0003:7D03063A       des3_done
+ 0003:7D03063C       des_keysize
+ 0003:7D030654       des3_keysize
+ 0003:7D030906       ccm_reset
+ 0003:7D03093E       gcm_add_aad
+ 0003:7D030AF0       gcm_add_iv
+ 0003:7D030BA4       gcm_mult_h
+ 0003:7D030BC0       gcm_reset
  0003:7D030C02       md5_test
  0003:7D030C06       md5_done
  0003:7D030CD2       md5_process
@@ -903,8 +1082,17 @@
  0003:7D0310CC       sha512_test
  0003:7D0310D0       sha512_done
  0003:7D0311C6       sha512_process
- 0003:7D03127A       ctr_encrypt
+ 0003:7D031268       zeromem
+ 0003:7D03127A       ctr_decrypt
+ 0003:7D03128E       xts_mult_x
+ 0003:7D0312B8       dsa_free
+ 0003:7D0312D2       rsa_free
+ 0003:7D0312FC       ecc_free
+ 0003:7D031312       ltc_ecc_new_point
+ 0003:7D031346       ltc_ecc_del_point
+ 0003:7D031360       fortuna_update_iv
  0003:7D031378       fortuna_test
+ 0003:7D03137C       fortuna_reseed
  0003:7D03145C       fortuna_ready
  0003:7D031460       fortuna_start
  0003:7D03150A       fortuna_done
@@ -912,30 +1100,156 @@
  0003:7D0315DE       fortuna_import
  0003:7D031612       fortuna_read
  0003:7D0316F4       fortuna_export
- 0003:7D0317DE       j_free_1
- 0003:7D031854       mp_read_unsigned_bin
+ 0003:7D0317B0       mp_get_digit
+ 0003:7D0317CE       mp_get_digit_count
+ 0003:7D0317DE       mp_montgomery_deinit
+ 0003:7D0317E2       mp_copy
+ 0003:7D0317FA       mp_compare_d
+ 0003:7D03183A       mp_div_2
+ 0003:7D031854       mp_unsigned_read
+ 0003:7D031868       mp_read_radix
+ 0003:7D031882       mp_get_int
+ 0003:7D03188C       mp_set_int
+ 0003:7D03189C       mp_neg
+ 0003:7D0318B4       mp_twoexpt
+ 0003:7D0318F6       mp_sqrmod
+ 0003:7D031912       mp_write_radix
+ 0003:7D031930       mp_count_lsb_bits
+ 0003:7D031960       mp_count_bits
+ 0003:7D031970       mp_unsigned_size
+ 0003:7D031998       mp_unsigned_write
+ 0003:7D0319BE       mp_compare
+ 0003:7D0319DE       mp_lcm
+ 0003:7D031A2E       mp_modi
+ 0003:7D031A76       mp_init_copy
+ 0003:7D031A92       der_decode_sequence_ex
  0003:7D031B52       jpt_7D031B4E
  0003:7D031D7C       def_7D031B4E
+ 0003:7D031D84       der_encode_sequence_ex
  0003:7D031DCC       jpt_7D031DC8
  0003:7D031F14       jpt_7D031F10
  0003:7D03203E       def_7D031F10
+ 0003:7D032046       der_length_sequence
  0003:7D03207A       jpt_7D032076
  0003:7D032120       def_7D032076
+ 0003:7D032128       qsort_helper
+ 0003:7D03216C       der_decode_short_integer
+ 0003:7D0321A8       der_encode_short_integer
+ 0003:7D032234       der_length_short_integer
+ 0003:7D032262       der_decode_utctime
+ 0003:7D032414       der_length_utctime
+ 0003:7D032432       der_decode_utf8_string
+ 0003:7D03250A       der_utf8_charsize
+ 0003:7D032528       der_decode_teletex_string
+ 0003:7D0325BE       der_length_teletex_string
  0003:7D03260A       pkcs_1_v1_5_decode
+ 0003:7D0326A6       der_decode_bit_string
+ 0003:7D032748       der_encode_bit_string
+ 0003:7D03280E       der_length_bit_string
+ 0003:7D032840       der_decode_raw_bit_string
+ 0003:7D0328F8       der_encode_raw_bit_string
+ 0003:7D0329D6       der_decode_boolean
+ 0003:7D032A06       der_encode_boolean
+ 0003:7D032A32       der_length_boolean
+ 0003:7D032A40       der_decode_choice
  0003:7D032A9C       jpt_7D032A98
  0003:7D032C3C       def_7D032A98
+ 0003:7D032C44       der_decode_ia5_string
+ 0003:7D032CDA       der_encode_ia5_string
+ 0003:7D032D7C       der_length_ia5_string
+ 0003:7D032DC8       der_decode_object_identifier
+ 0003:7D032E80       der_encode_object_identifier
+ 0003:7D032FB8       der_object_identifier_bits
+ 0003:7D032FC6       der_length_object_identifier
+ 0003:7D033060       der_decode_octet_string
+ 0003:7D0330D8       der_encode_octet_string
+ 0003:7D03316A       der_length_octet_string
+ 0003:7D033198       der_decode_printable_string
+ 0003:7D03322E       der_encode_printable_string
+ 0003:7D0332D0       der_length_printable_string
+ 0003:7D03331C       __mpa_set_unused_digits_to_zero
+ 0003:7D033336       mpa_wipe
+ 0003:7D03334C       mpa_copy
+ 0003:7D03336E       mpa_highest_bit_index
+ 0003:7D033398       mpa_get_bit
+ 0003:7D0333C4       mpa_parity
+ 0003:7D0333CC       __mpa_montgomery_mul_add
+ 0003:7D03342C       __mpa_montgomery_sub_ack
+ 0003:7D03348A       __mpa_montgomery_mul
+ 0003:7D033532       mpa_montgomery_mul
+ 0003:7D033570       mpa_set_S32
+ 0003:7D03358C       mpa_set_word
+ 0003:7D033598       mpa_get_word
+ 0003:7D0335A4       __mpa_soft_div
+ 0003:7D033608       __mpa_div_q_r_internal_word
+ 0003:7D0336CC       __mpa_div_q_r
+ 0003:7D033B12       mpa_div
+ 0003:7D033BA0       __mpa_divby2
+ 0003:7D033BEE       __mpa_gcd
+ 0003:7D033CC8       __mpa_egcd
+ 0003:7D033EEC       mpa_gcd
+ 0003:7D033F8A       mpa_extended_gcd
+ 0003:7D0340C2       mpa_init_scratch_mem_sync
+ 0003:7D0340D8       mpa_alloc_static_temp_var_size
+ 0003:7D03414E       mpa_alloc_static_temp_var
+ 0003:7D03415A       mpa_free_static_temp_var
+ 0003:7D034188       __mpa_mul_add_word
+ 0003:7D034198       __mpa_mul_add_word_cum
+ 0003:7D0341B0       __mpa_abs_mul_word
+ 0003:7D034206       __mpa_abs_mul
+ 0003:7D03429E       mpa_mul
+ 0003:7D034326       mpa_mul_word
+ 0003:7D034392       __mpa_shift_words_left
+ 0003:7D0343E6       __mpa_shift_words_right
+ 0003:7D03442C       mpa_shift_left
+ 0003:7D034542       mpa_shift_right
+ 0003:7D03463C       __mpa_full_adder
+ 0003:7D034654       __mpa_full_sub
+ 0003:7D03466C       __mpa_abs_add
+ 0003:7D03471C       __mpa_abs_sub
+ 0003:7D0347A6       mpa_add
+ 0003:7D0348AA       mpa_sub
+ 0003:7D0349B4       mpa_neg
+ 0003:7D0349C4       mpa_add_word
+ 0003:7D034A90       mpa_sub_word
+ 0003:7D034B5A       __mpa_abs_cmp
+ 0003:7D034BB6       __mpa_abs_greater_than
+ 0003:7D034BC6       mpa_cmp
+ 0003:7D034C0A       mpa_cmp_short
+ 0003:7D034C60       mpa_init_static
+ 0003:7D034C72       mpa_init_static_fmm_context
+ 0003:7D034CAA       __mpa_word_to_hexstr
+ 0003:7D034CD4       __mpa_mpanum_to_hexstr
+ 0003:7D034D70       __mpa_isspace
+ 0003:7D034D92       mpa_get_str
  0003:7D034DBE       mpa_set_oct_str
  0003:7D034E52       mpa_get_oct_str
+ 0003:7D034F2A       mpa_mod
+ 0003:7D034F44       mpa_mul_mod
+ 0003:7D034F82       mpa_inv_mod
+ 0003:7D035026       bgetz
+ 0003:7D03504E       realloc_unlocked
  0003:7D035080       malloc
  0003:7D03509E       free
  0003:7D0350B6       calloc
+ 0003:7D0350E4       realloc
+ 0003:7D035106       swapfunc
+ 0003:7D035136       med3
+ 0003:7D03517A       qsort
  0003:7D0353F4       memcmp
  0003:7D035412       memcpy
  0003:7D035424       memmove
  0003:7D035458       memset
  0003:7D035468       strcmp
  0003:7D035482       strlen
+ 0003:7D035492       uint64_div_soft
+ 0003:7D03550A       int64_unk1_soft
+ 0003:7D0355DC       __aeabi_llsr
  0003:7D035606       strlcpy
+ 0003:7D035630       buf_compare_ct
+ 0003:7D035658       vsnprintk
+ 0003:7D035666       snprintk
+ 0003:7D035680       memchr
  0003:7D0356A0       j_vfp_write_fpexc
  0003:7D0356A8       j_tee_svc_sys_return_helper
  0003:7D0356B0       j_cpu_spin_unlock
@@ -988,11 +1302,23 @@
  0004:7D0454D0       sha512_desc
  0004:7D045538       ltc_ecc_sets
  0004:7D0455E0       fortuna_desc
+ 0004:7D045608       teletex_table
+ 0004:7D0459B8       ia5_table
+ 0004:7D045CE8       printable_table
+ 0004:7D045F38       Const_1_LShift_Base
+ 0004:7D045F48       const_one
+ 0004:7D045F54       const_miller_rabin_proof_limit
+ 0004:7D045F64       proof_a
+ 0004:7D045F80       const_two
+ 0004:7D045F8C       const_small_prime_factors
+ 0004:7D046044       PRIME_TABLE
  0004:7D046C7C       CSWTCH_7_SaSi_AesInit
  0004:7D046CF0       crys_hash_err_map
  0004:7D047008       aRpmbKeysasi
+ 0004:7D047054       gHashDerCodes
  0004:7D047128       aCrysEcpkiBuild
  0004:7D047140       aIllgalPrivKeyS
+ 0004:7D047334       g_SmallPrime
  0004:7D047980       ecpki_domain_secp160k1
  0004:7D047C5C       ecpki_domain_secp160r1
  0004:7D047F38       ecpki_domain_secp160r2
@@ -1468,7 +1794,8 @@
  0004:7D04CD40       aC6858e06b70404
  0004:7D04CDC3       a11839296a789a3
  0004:7D04CE47       aMpa
- 0004:7D04CE73       a0123456789
+ 0004:7D04CE69       char_to_int_switch
+ 0004:7D04CE73       baseten
  0004:7D04CE7E       aDataLenDMaxSiz
  0004:7D04CE9C       aBinaryBufferDA
  0004:7D04CEC5       aMpaSetStr
@@ -1483,10 +1810,10 @@
  0004:7D04CF11       a0xX
  0004:7D04CF19       aS_0
  0004:7D04CF1D       aSD
- 0004:7D04CF24       a0123456789abcd_0
+ 0004:7D04CF24       HEXDIGITS
  0004:7D04CF35       aNull
  0004:7D04CF3C       a08x04x04x02x02
- 0004:7D04CF6C       a0123456789abcd
+ 0004:7D04CF6C       hexdigits
  0004:7D04CF80       __start_ta_head_section
  0004:7D04CFA8       __stop_ta_head_section
  0004:7D04D0C8       static_memory_map
@@ -1506,6 +1833,7 @@
  0004:7D04F044       g_asid
  0004:7D04F04C       pgt_mu
  0004:7D04F064       call_initcalls__is_first
+ 0004:7D04F078       allowed_phys_addr_ranges
  0004:7D04F0A4       tee_open_sessions
  0004:7D04F0AC       tee_ctxes_0
  0004:7D04F0B0       tee_ctxes
@@ -1514,20 +1842,23 @@
  0004:7D04F0D0       ta_dir_mutex
  0004:7D04F0E8       rpmb_mutex
  0004:7D04F108       urnd_mutex
- 0004:7D04F1C8       mp_count_bits
- 0004:7D04F1DC       mp_unsigned_bin_size
- 0004:7D04F1E4       mp_read_unsigned_bin_ptr
- 0004:7D04F258       ltc_mp__rsa_me
+ 0004:7D04F148       ltc_cipher_mutex
+ 0004:7D04F190       ltc_mp
+ 0004:7D04F25C       freelist
+ 0004:7D04F264       freelist__ql__flink
+ 0004:7D04F268       freelist__ql__blink
+ 0004:7D04F26C       __malloc_mu
  0004:7D04F2D8       jpt_7D0296C6
- 0004:7D04F320       sasi_mutexunkn4
+ 0004:7D04F320       sasiGenVecMutex
  0004:7D04F328       gCcRegBase
- 0004:7D04F32C       sasi_mutexunkn3
+ 0004:7D04F32C       sasiAsymCryptoMutex_0
  0004:7D04F338       ecpki_supported_hash_modes
  0004:7D04F340       regTemps
  0004:7D04F34C       ecpki_hash_info
- 0004:7D04F354       sasi_mutexunkn2
+ 0004:7D04F354       sasiAsymCryptoMutex
  0004:7D04F368       ppSaSiRndCryptoMutex
  0004:7D04F36C       pCRYS_RND_GenerateVector
+ 0004:7D04F378       p_g_SmallPrime
  0004:7D04F37C       sasiSymCryptoMutex
  0005:7D04F380       UFIE_key
  0005:7D04F3A0       TBIE_key
@@ -1551,8 +1882,10 @@
  0005:7D051D4C       pgt_free_list
  0005:7D051D50       pgt_entries
  0005:7D052550       pgt_cv
+ 0005:7D052558       gic_data
  0005:7D0528B0       tee_ta_single_instance_count
  0005:7D0528B4       tee_ta_cv
+ 0005:7D0528BC       itr_chip
  0005:7D0528C0       fw_impl_bin_version
  0005:7D0528C4       ts_antiroll_prot_lvl
  0005:7D0528C8       vendor_props_client_C8
@@ -1566,6 +1899,8 @@
  0005:7D0528E8       fs_par
  0005:7D0528EC       rpmb_ctx
  0005:7D0528F0       fs_handle_db
+ 0005:7D0528F8       tee_time_offs
+ 0005:7D0528FC       tee_time_num_offs
  0005:7D052978       eccSignContext
  0006:7D0F1A00       __init_end
 
