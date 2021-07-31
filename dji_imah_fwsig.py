@@ -52,12 +52,16 @@ from os.path import basename
 # All found keys
 keys = {
     # Encryption keys
-    "RREK":  bytes([ # RR Encryption Key v1; published 2017-06-27 by Freek van Tienen
+    "RREK-2017-01":  bytes([ # RR Encryption Key v1; published 2017-06-27 by Freek van Tienen
+        # This key is used for protecting storage of development keys, it typically encrypts a container
+        # with plaintext RIEK key inside.
+        # used for: WM330 FW V00.01.0000-V01.02.0499, WM220 FW V00.01.0000-V01.03.0600
         0x37, 0xD6, 0xD9, 0x13, 0xE5, 0xD0, 0x80, 0x17, 0xE5, 0x12, 0x15, 0x45, 0x0C, 0x1E, 0x16, 0xE7
     ]),
-    "RIEK":  bytes([ # R&D Image Encryption Key v1; published 2017-06-27 by Freek van Tienen
+    "RIEK-2017-01":  bytes([ # R&D Image Encryption Key v1; published 2017-06-27 by Freek van Tienen
         # This key is used on many platforms, for pre-production development and engineering images;
         # it is used as pre-production version of IAEK key
+        # used for: WM330 FW V00.01.0000-V01.02.0499, WM220 FW V00.01.0000-V01.03.0600
         0xF1, 0x69, 0xC0, 0xF3, 0x8B, 0x2D, 0x9A, 0xDC, 0x65, 0xEE, 0x0C, 0x57, 0x83, 0x32, 0x94, 0xE9
     ]),
     "RUEK":  bytes([ # RU Encryption Key v1; published 2017-06-27 by Freek van Tienen
