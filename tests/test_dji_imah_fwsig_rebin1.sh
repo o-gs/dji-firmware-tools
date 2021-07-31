@@ -98,13 +98,14 @@ if   [[ ${BINFNAME} =~ ^wm220[._].*[.]sig$ ]]; then
   # allow change of 2 bytes from auth key name, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 256))
   NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 3*16 ))
-  SUPPORTS_ANDR_OTA_BOOTIMG_ENC=0 # IAEK not published
+  EXTRAPAR_NESTED_m0801="-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
+  EXTRAPAR_NESTED_m1301="-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
 elif [[ ${BINFNAME} =~ ^wm330[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-07"
   # allow change of 2 bytes from auth key name, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 256))
   NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 3*16 ))
-  SUPPORTS_ANDR_OTA_BOOTIMG_ENC=0 # IAEK not published
+  EXTRAPAR_NESTED_m0801="-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
 elif [[ ${BINFNAME} =~ ^wm33[1-6][._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
   # allow change of 2 bytes from auth key name, 256 from signature, up to 16 chunk padding, 32 payload digest
@@ -116,6 +117,7 @@ elif [[ ${BINFNAME} =~ ^wm100[._a].*[.]sig$ ]]; then
   # allow change of 2 bytes from auth key name, 256 from signature
   HEAD_CHANGES_LIMIT=$((2 + 256))
   NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 3*16 ))
+  EXTRAPAR_NESTED_m0801="-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc won't work without 1st stage
 elif [[ ${BINFNAME} =~ ^(wm620|rc001)[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
@@ -386,6 +388,8 @@ if [ ! -z "${MODULE}" ]; then
     EXTRAPAR_NESTED=${EXTRAPAR_NESTED_m0901}
   elif [ "${MODULE}" == "0907" ] && [ ! -z "${EXTRAPAR_NESTED_m0907}" ]; then
     EXTRAPAR_NESTED=${EXTRAPAR_NESTED_m0907}
+  elif [ "${MODULE}" == "1301" ] && [ ! -z "${EXTRAPAR_NESTED_m1301}" ]; then
+    EXTRAPAR_NESTED=${EXTRAPAR_NESTED_m1301}
   else
     EXTRAPAR_NESTED=${EXTRAPAR}
   fi

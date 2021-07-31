@@ -35,6 +35,7 @@ V01.01.0203_P4P_dji_system.bin
 V01.00.1000_P4PV2_dji_system.bin
 V01.02.0500_I2_dji_system.bin
 V01.00.0900_Spark_dji_system.bin
+V01.00.0002_RC_Spark_fw.tar
 )
 
 declare -a FWPKG2_LIST=(
