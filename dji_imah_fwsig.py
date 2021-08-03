@@ -87,7 +87,10 @@ keys = {
     "TRIE":  bytes([ # TR Image Encryption key; published 2021-03-26 by Felix Domke
         0xf1, 0xe6, 0x30, 0x6d, 0x6c, 0x84, 0xf0, 0x9e, 0xd5, 0x59, 0x0f, 0x94, 0x73, 0xb1, 0x55, 0x26
     ]),
-    "TKIE":  bytes([ # TK Image Encryption key; published 2021-03-26 by Felix Domke
+    "TKIE-2019-11":  bytes([ # Trusted Kernel Image Encryption key; published 2021-03-26 by Felix Domke
+        # This key is used for images within m0100 module which store kernel and device tree
+        # first use on 2019-11-07; used for:
+        # WM160 FW V01.00.0200-V01.00.0500, WM161 FW V01.00.0000-V01.02.0300
         0xb6, 0x28, 0x6a, 0x05, 0xfc, 0x3a, 0x02, 0xf0, 0x36, 0x51, 0x11, 0xf0, 0x20, 0x45, 0x03, 0xa3
     ]),
     "TBIE-2020-04":  bytes([ # Trusted Boot Image Encryption key; published 2021-06-25 by OGs
