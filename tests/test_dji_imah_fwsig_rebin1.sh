@@ -127,7 +127,7 @@ elif [[ ${BINFNAME} =~ ^(wm620|rc001)[._].*[.]sig$ ]]; then
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc won't work without 1st stage
 elif [[ ${BINFNAME} =~ ^(wm230)[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-01 -k TBIE-2018-01"
-  EXTRAPAR_NESTED_m0801="-k PRAK-2018-01 -k TBIE-2018-01 -k FCIE-2018-04 -f" # TBIE and FCIE not published, forcing extract encrypted
+  EXTRAPAR_NESTED_m0801="-k PRAK-2018-01 -k TBIE-2018-01 -k FCIE-2018-04 -k TKIE-2018-04 -f" # TBIE, FCIE, TKIE not published, forcing extract encrypted
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   # nested files have more chunks, so allow more discrepencies for chunk padding
@@ -170,7 +170,7 @@ elif [[ ${BINFNAME} =~ ^(rc240)[._].*[.]sig$ ]]; then
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^wm160[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2019-09 -k UFIE-2019-11"
-  EXTRAPAR_NESTED_m0100="-k PRAK-2019-09 -k TBIE-2019-11"
+  EXTRAPAR_NESTED_m0100="-k PRAK-2019-09 -k TBIE-2019-11 -k TKIE-2019-11"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   # nested files have more chunks, so allow more discrepencies for chunk padding
@@ -178,7 +178,7 @@ elif [[ ${BINFNAME} =~ ^wm160[._].*[.]sig$ ]]; then
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^wm161[._].*[.]sig$ ]]; then
   EXTRAPAR="-k PRAK-2019-09 -k UFIE-2019-11"
-  EXTRAPAR_NESTED_m0100="-k PRAK-2019-09 -k TBIE-2019-11"
+  EXTRAPAR_NESTED_m0100="-k PRAK-2019-09 -k TBIE-2019-11 -k TKIE-2019-11"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   # nested files have more chunks, so allow more discrepencies for chunk padding
