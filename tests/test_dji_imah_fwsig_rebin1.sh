@@ -362,7 +362,7 @@ if [ ! -z "${MODULE}" ]; then
       for N in $(seq 0 $(( ${#IMAH_OFFSETS[@]} - 2 )) ); do
         IMAH_OFFSET=${IMAH_OFFSETS[$N]}
         IMAH_ENDOFF=${IMAH_OFFSETS[$((N + 1))]}
-        dd bs=4 skip=$((IMAH_OFFSET / 4)) count=$((IMAH_ENDOFF / 4)) \
+        dd bs=4 skip=$((IMAH_OFFSET / 4)) count=$(( ( IMAH_ENDOFF - IMAH_OFFSET ) / 4)) \
           if="${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img" \
           of="${TESTFILE%.*}_${MODULE}/${IMAH_NAME}_p${N}.img"
         NESTED_IMAH_LIST+=" ${TESTFILE%.*}_${MODULE}/${IMAH_NAME}_p${N}.img"
