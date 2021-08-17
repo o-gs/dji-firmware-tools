@@ -5,20 +5,26 @@ Utility for analyzing communication in DJI drone interfaces via [Wireshark](http
 ## Rationale
 
 This is a [packet dissector](https://www.wireshark.org/docs/wsdg_html_chunked/ChapterDissection.html) which allows you
-to view and analyze serial communication on interfaces within the DJI drones. It can also understand packets used
-within binary Flight Record DAT files. There is also a KML export plugin for visualizing the flight.
-The dissectors act as documentation on what is known about the DJI protocols, in form of simple LUA code.
+to view and analyze communication on interfaces within the DJI drones. The dissectors act as documentation on what is
+known about the DJI protocols, in form of simple LUA code.
 
 ## Overview
 
-Installing the dissectors to Wireshart allows analyzing the protocol commands in:
+What these dissectors can do:
+* Show fields within DUML packets captured from a drone
+* Show fields within packets stored in binary Flight Record DAT files
+* Export KML file for visualizing the flight
+
+Installing the dissectors to Wireshark allows analyzing the protocol commands in:
 * PCap files created from pure DUML streams, ie UART communication between chips
 * PCap files with dumps of USB/Ethernet communication with embedded DUML payloads, ie. WiFi connection between RC and a drone (for platforms which use that protocol)
 * PCap files generated from DAT flight logs
 
+Typically, you will capture the communication using either Wiresharks USB/ETH capture or using `comm_*2pcap.py` scripts. Then open the file in Wireshark.
+
 ## Setup
 
-A simple setup is required to use the new dissector.
+A simple setup is required to use the new dissectors.
 
 ### Copy the script files
 
@@ -67,11 +73,12 @@ You may also want to setup Wireshark’s main display columns:
 
 * Choose Edit | Preferences | Columns
 
-* Setup as shown below
+* Setup columns similar to how it is shown below:
 
 ![wireshark pref columns screenshot](img/wireshark-pref-columns.png)
 
-Having your own column definitions will greatly increase readability of the packets list.
+Having your own column definitions will greatly increase readability of the packets list,
+but you may want to wait until you know which columns you want.
  
 ## Usage
 
