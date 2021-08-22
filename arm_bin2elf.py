@@ -244,6 +244,9 @@ def armfw_bin2elf(po, fwpartfile):
   # detect position of each section in the binary file
   if (po.verbose > 1):
      print("{}: Searching for sections".format(po.fwpartfile))
+  # currently we only support 32-bit arm; we'd need to read e_machine from template
+  # and check if it's EM_AARCH64 in order to support the 64-bit spaces
+  is_arm64 = False
   # ARM exceprions index section is easy to find
   sectname = ".ARM.exidx"
   sect_align = po.expect_sect_align
@@ -333,9 +336,17 @@ def armfw_bin2elf(po, fwpartfile):
      if (po.verbose > 1):
         print("{}: Set '{:s}' section at file pos 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_pos[sectname],po.section_size[sectname]))
 
+  if is_arm64:
+      addrspace_limit = 2**64 - 1
+  else:
+      addrspace_limit = 2**32 - 1
+
   # Prepare list of sections in the order of position
   sections_order = []
   for sortpos in sorted(set(po.section_pos.values())):
+     if (sortpos > addrspace_limit):
+        eprint("{}: Warning: sections placed beyond address space limit, like at 0x{:x}, were not created".format(po.fwpartfile,sortpos))
+        break
      # First add sections with size equal zero
      for sectname, pos in po.section_pos.items():
         if pos == sortpos:
@@ -348,14 +359,19 @@ def armfw_bin2elf(po, fwpartfile):
            if sectname not in sections_order:
               sections_order.append(sectname)
   # Prepare list of section sizes
-  sectpos_next = po.addrspacelen # max size is larger than bin file size due to uninitialized sections (bss)
+  sectpos_next = po.addrspacelen + 1 # max size is larger than bin file size due to uninitialized sections (bss)
   for sectname in reversed(sections_order):
      sectpos_delta = sectpos_next - po.section_pos[sectname]
-     if (sectpos_delta < 0): sectpos_delta = 0xffffffff - po.section_pos[sectname]
+     # Distance between sorted sections cannot be negative
+     assert sectpos_delta >= 0
+     # Do not allow to exceed limit imposed by address space bit length
+     if (po.baseaddr + po.section_pos[sectname] + sectpos_delta > addrspace_limit + 1 - po.expect_sect_align):
+        sectpos_delta = addrspace_limit + 1 - po.expect_sect_align - po.baseaddr - po.section_pos[sectname]
+     assert sectpos_delta >= 0
      if sectname in po.section_size.keys():
         if (po.section_size[sectname] > sectpos_delta):
-           eprint("{}: Warning: section '{:s}' size reduced due to overlapping".format(po.fwpartfile,sectname))
-           po.section_size[sectname] = sectpos_next - po.section_pos[sectname]
+           eprint("{}: Warning: section '{:s}' size reduced to 0x{:x} due to overlapping".format(po.fwpartfile,sectname,sectpos_delta))
+           po.section_size[sectname] = sectpos_delta
      else:
         po.section_size[sectname] = sectpos_delta
      sectpos_next = po.section_pos[sectname]
