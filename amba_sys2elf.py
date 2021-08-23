@@ -76,7 +76,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -123,16 +123,18 @@ def main():
           help="Template ELF file to use header fields from (default is \"%(default)s\")")
 
   parser.add_argument('-l', '--addrspacelen', default=0x2000000, type=lambda x: int(x,0),
-          help='Set address space length; influences size of last section (defaults to 0x%(default)X)')
+          help="Set address space length after base; the tool will expect used " \
+            "addresses to end at baseaddr+addrspacelen, so it influences size " \
+            "of last section (defaults to 0x%(default)X)")
 
-  parser.add_argument("-s", "--section", action='append', metavar='SECT@POS:LEN', type=parse_section_param,
+  parser.add_argument("-s", "--section", action='append', metavar='SECT@ADDR:LEN', type=parse_section_param,
           help="Set section position and/or length; can be used to override " \
            "detection of sections; setting section .ARM.exidx will influence " \
            ".text and .data, moving them and sizing to fit one before and one " \
            "after the .ARM.exidx. Parameters are: " \
            "SECT - a text name of the section, as defined in elf template; multiple sections " \
            "can be cloned from the same template section by adding index at end (ie. .bss2); " \
-           "POS - is a position of the section within input file (not a memory address!); " \
+           "ADDR - is an address of the section within memory (not input file position); " \
            "LEN - is the length of the section (in both input file and memory, unless its " \
            "uninitialized section, in which case it is memory size as file size is 0)")
 
@@ -167,10 +169,10 @@ def main():
   if po.section is None:
       po.section = []
   # Flatten the sections we got in arguments
-  po.section_pos = {}
+  po.section_addr = {}
   po.section_size = {}
   for sect in po.section:
-      po.section_pos.update(sect["pos"])
+      po.section_addr.update(sect["addr"])
       po.section_size.update(sect["len"])
 
   po.basename = os.path.splitext(os.path.basename(po.fwpartfile))[0]
