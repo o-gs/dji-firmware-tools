@@ -219,19 +219,20 @@ In other words, position of the `.ARM.exidx` influences length of the `.text` se
 and starting offset of the `.data` section. If there is no `.ARM.exidx` section in
 the file, it will still be used as separator, just with zero size.
 After first look at the disassembly, it is good to check where the correct border
-between `.text` and `.data` sections is located. File offset of this location can
+between `.text` and `.data` sections is located. Memory address of this location can
 be used to generate better ELF file.
 
 Additional updates to the ELF after first look can include defining `.bss` sections.
-These sections represent uninitialized RAM used by the binary. It is tempting to just
-define one big section which covers whole RAM address range according to programming
-guide of the chip, but that results in huge memory usage and related slowdowns while
-disassembling the file.
+These sections represent uninitialized RAM and MMIO areasused by the binary. It is
+tempting to just define one big section which covers whole memory map address range
+according to programming guide of the chip, but that results in huge memory usage
+and related slowdowns while disassembling the file, while also making the file harder
+to navigate.
 
-Note that all section offsets are defined using start of the BIN file as reference,
-or in other words - they assume base address of 0x0. If you have found proper location
-of a section, remember to remove base address from the memory location before inserting
-to the command line of this tool.
+Note that all section offsets are defined using in-memory address, not the position
+within BIN file. If you have found proper location of a section within BIN file,
+remember to add base address to the file position before inserting to the command
+line of this tool.
 
 Base address can be often found in programming guide of the specific chip; sometimes it
 may be shifted from that location, if the binary is loaded by an additional bootloader.
@@ -240,27 +241,29 @@ binary is loaded at a bit higher base address.
 
 Optimized examples for specific firmwares:
 
-```./arm_bin2elf.py -vv -e -b 0x8020000 --section .ARM.exidx@0x085d34:0 --section .bss@0x07fe0000:0x0A000 --section .bss2@0x17fe0000:0x30000 --section .bss3@0x37fe0000:0x30000 -p P3X_FW_V01.07.0060_m0306.bin```
+```./arm_bin2elf.py -vv -e -b 0x8020000 --section .ARM.exidx@0x80A5D34:0 --section .bss@0x10000000:0x0A000 --section .bss2@0x20000000:0x30000 --section .bss3@0x40000000:0x30000 -p P3X_FW_V01.07.0060_m0306.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x000a000 --section .ARM.exidx@0x01ce50:0 --section .bss@0x0fff6000:0x08000 --section .bss2@0x3fff6000:0x50000 --section .bss3@0xdfff6000:0x10000 -p C1_FW_V01.06.0000_m1400.bin```
+```./arm_bin2elf.py -vv -e -b 0x000A000 --section .ARM.exidx@0x026E50:0 --section .bss@0x10000000:0x08000 --section .bss2@0x40000000:0x50000 --section .bss3@0xE0000000:0x10000 -p C1_FW_V01.06.0000_m1400.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x000a000 --section .ARM.exidx@0x0172e0:0 --section .bss@0x0fff6000:0x08000 --section .bss2@0x3fff6000:0x50000 --section .bss3@0xdfff6000:0x10000 -p C1_FW_v01.09.0200_m1400.bin```
+```./arm_bin2elf.py -vv -e -b 0x000A000 --section .ARM.exidx@0x0212E0:0 --section .bss@0x10000000:0x08000 --section .bss2@0x40000000:0x50000 --section .bss3@0xE0000000:0x10000 -p C1_FW_v01.09.0200_m1400.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x000a000 --section .ARM.exidx@0x0193E0:0 --section .bss@0x01ff6000:0x04000 --section .bss2@0x1ffe000:0x1000 --section .bss3@0x1bff6000:0x2400 --section .bss4@0x1c01a000:0x2400 --section .bss5@0x40022000:0x50000 --section .bss6@0x400ee000:0x200 --section .bss7@0xe0004000:0x1200 -p C1_FW_V01.06.0000_m1401.bin```
+```./arm_bin2elf.py -vv -e -b 0x000A000 --section .ARM.exidx@0x0233E0:0 --section .bss@0x02000000:0x04000 --section .bss2@0x2008000:0x1000 --section .bss3@0x1C000000:0x2400 --section .bss4@0x1c024000:0x2400 --section .bss5@0x4002C000:0x50000 --section .bss6@0x400F8000:0x200 --section .bss7@0xE000E000:0x1200 -p C1_FW_V01.06.0000_m1401.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x00D510:0 --section .bss@0x17FF7700:0x05A00 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x2200 --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p P3X_FW_V01.08.0080_m0900.bin```
+```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x8015510:0 --section .bss@0x1FFFF700:0x05A00 --section .bss2@0x40000000:0x6700 --section .bss3@0x40010000:0x5500 --section .bss4@0x40020000:0x2200 --section .bss5@0x42200000:0x100 --section .bss6@0x42420000:0x500 -p P3X_FW_V01.08.0080_m0900.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x0136D0:0 --section .bss@0x17FF7700:0x0C900 --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x7000 --section .bss5@0x48058800:0x100 -p P3X_FW_V01.11.0030_m0400.bin```
+```./arm_bin2elf.py -vv -e -b 0x8008000 --section .ARM.exidx@0x801B6D0:0 --section .bss@0x1FFFF700:0x0C900 --section .bss2@0x40000000:0x6700 --section .bss3@0x40010000:0x5500 --section .bss4@0x40020000:0x7000 --section .bss5@0x50060800:0x100 -p P3X_FW_V01.11.0030_m0400.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x0cdaf0:0 --section .bss@0x1ffe0000:0x40000 --section .bss4@0x41de0000:0x100 -p MATRICE600_FW_V02.00.00.21_m0306.bin```
+```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x4EDAF0:0 --section .bss@0x20400000:0x40000 --section .bss4@0x42200000:0x100 -p MATRICE600_FW_V02.00.00.21_m0306.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x0d0e00:0 --section .bss@0x1ffe0000:0x60100 --section .bss2@0x3fcc0000:0x2000 -p wm330_0306_v03.01.10.93_20160707.fw_0306.decrypted.bin```
+```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x4F0E00:0 --section .bss@0x20400000:0x60100 --section .bss2@0x400E0000:0x2000 -p wm330_0306_v03.01.10.93_20160707.fw_0306.decrypted.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x1077d0:0 --section .bss@0x1ffe0000:0x60000 --section .bss2@0x3fcc0000:0x1000 --section .bss3@0xdfbe0000:0x10000 -p wm100_0306_v03.02.43.20_20170920.pro.fw_0306.decrypted.bin```
+```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x5277d0:0 --section .bss@0x20400000:0x60000 --section .bss2@0x400E0000:0x1000 --section .bss3@0xE0000000:0x10000 -p wm100_0306_v03.02.43.20_20170920.pro.fw_0306.decrypted.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x1265d8:0 --section .bss@0x1ffe0000:0x60100 --section .bss2@0x3fcc0000:0x2000 -p wm220_0306_v03.02.35.05_20170525.pro.fw_0306.decrypted.bin```
+```./arm_bin2elf.py -vv -e -b 0x0420000 --section .ARM.exidx@0x5465d8:0 --section .bss@0x20400000:0x60100 --section .bss2@0x400E0000:0x2000 -p wm220_0306_v03.02.35.05_20170525.pro.fw_0306.decrypted.bin```
 
-```./arm_bin2elf.py -vv -e -b 0x7D000000 --section .ARM.exidx@0x356E0:0 --section .bss@0x4f380:0x3800 --section .bss2@0xf1900:0x200 -p wm230_0801_v10.00.07.12_20180126-recovery.img.TZOS.bin```
+```./arm_bin2elf.py -vv -e -b 0x7D000000 --section .ARM.exidx@0x7D0356E0:0 --section .bss@0x7D04f380:0x3800 --section .bss2@0x7D0f1900:0x200 -p wm230_0801_v10.00.07.12_20180126-recovery.img.TZOS.bin```
+
+```./arm_bin2elf.py -vv -e -b 0xFFFC0000 --section .ARM.exidx@0xFFFDA540:0x20  --section .bss@0xFFFE14D0:0x42B0 -p wm230_0801_v10.00.07.12_20180126.pro.fw_0801.bootarea_p0_BLLK.bin```
 
 This tool supports only conversion in direction of bin-to-elf. To convert an ELF
 file back to BIN (ie. after modifications), use `objcopy` utility for the
@@ -362,7 +365,7 @@ Example of importing values from JSON file back to ELF:
 ### dji_flyc_param_ed.py
 
 Flight Controller Firmware Parameters Array Editor finds an array of flight
-parameters within formware binary, and allows to extract the parameters to a JSON
+parameters within firmware binary, and allows to extract the parameters to a JSON
 format text file. This file can then easily be modified, and used to update
 binary firmware, changing attributes and limits of each parameter.
 
