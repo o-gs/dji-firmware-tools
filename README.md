@@ -286,15 +286,15 @@ pre-configured to specific firmware.
 
 Example: ```./amba_sys2elf.py -vv -e -l 0x6000000 -p P3X_FW_V01.08.0080_m0100_part_sys.a9s```
 
-All border adjusting rules explained for arm_bin2elf.py apply for this tool as well.
+All border adjusting rules explained for `arm_bin2elf.py` apply for this tool as well.
 
 Optimized examples for specific firmwares:
 
-```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x483E4C:0 -p P3X_FW_V01.08.0080_m0100_part_sys.a9s```
+```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0xEA83E4C:0 -p P3X_FW_V01.08.0080_m0100_part_sys.a9s```
 
-```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x482EC0:0 -p P3X_FW_V01.07.0060_m0100_part_sys.a9s```
+```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0xEA82EC0:0 -p P3X_FW_V01.07.0060_m0100_part_sys.a9s```
 
-```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0x464774:0 -p P3X_FW_V01.01.0008_m0100_part_sys.a9s```
+```./amba_sys2elf.py -vv -e -l 0x6000000 --section .ARM.exidx@0xEA64774:0 -p P3X_FW_V01.01.0008_m0100_part_sys.a9s```
 
 ### amba_sys_hardcoder.py
 
