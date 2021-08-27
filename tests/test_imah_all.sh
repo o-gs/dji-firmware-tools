@@ -40,6 +40,7 @@ V01.00.0002_RC_Spark_fw.tar
 
 declare -a FWPKG2_LIST=(
 V00.02.0026_Mavic_Air_dji_system.tar
+V01.00.0100_Mavic_Air_dji_system.tar
 V01.00.0500_Mavic_Air_dji_system.bin
 V01.00.0000_Mavic_Air_RC_dji_system.tar
 V01.00.0200_Mavic_Air_RC_dji_system.bin

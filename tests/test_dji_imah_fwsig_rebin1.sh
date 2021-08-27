@@ -352,20 +352,28 @@ if [ ! -z "${MODULE}" ]; then
   # Some nested images may consist of several files; we need to separate them
   for IMAH_NAME in "bootarea" "loader" "whole"; do
     if [ -f "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img" ]; then
-      IMAH_SEARCH_RES=$(grep -obaUP 'IM[*]H[\x01\x02]' "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img")
-      IMAH_OFFSETS=( )
-      for IMAH_POS in ${IMAH_SEARCH_RES}; do
-        IMAH_OFFSETS+=( ${IMAH_POS%%:*} )
+      # Use binwalk to find, but not to extract the files; we want to control size of each file
+      PART_SEARCH_RES=$(binwalk --signature --raw='IM\x2aH\x01' --raw='IM\x2aH\x02' -y filesystem -y raw "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img")
+      PART_OFFSETS=( 0 )
+      for PART_POS in $(echo "${PART_SEARCH_RES}" | sed -n 's/^\([0-9]\+\)[ ]\+\(0x[0-9A-F]\+\)[ ]\+\(.*\)$/\1/p'); do
+        PART_OFFSETS+=( ${PART_POS} )
       done
       FILESIZE=$(stat -c%s "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img")
-      IMAH_OFFSETS+=( ${FILESIZE} )
-      for N in $(seq 0 $(( ${#IMAH_OFFSETS[@]} - 2 )) ); do
-        IMAH_OFFSET=${IMAH_OFFSETS[$N]}
-        IMAH_ENDOFF=${IMAH_OFFSETS[$((N + 1))]}
-        dd bs=4 skip=$((IMAH_OFFSET / 4)) count=$(( ( IMAH_ENDOFF - IMAH_OFFSET ) / 4)) \
+      PART_OFFSETS+=( ${FILESIZE} )
+      for N in $(seq 0 $(( ${#PART_OFFSETS[@]} - 2 )) ); do
+        PART_OFFSET=${PART_OFFSETS[$N]}
+        PART_ENDOFF=${PART_OFFSETS[$((N + 1))]}
+        PART_TYPE=$(echo "${PART_SEARCH_RES}" | sed -n 's/^\('${PART_OFFSET}'\)[ ]\+\(0x[0-9A-F]\+\)[ ]\+\(.*\)$/\3/p')
+        if [[ ${PART_TYPE} =~ 'Raw signature (IM\x2aH' ]]; then
+          PART_EXT="img.sig"
+        elif [[ ${PART_TYPE} =~ 'Squashfs filesystem' ]]; then
+          PART_EXT="squashfs"
+        else
+          PART_EXT="bin"
+        fi
+        dd bs=4 skip=$((PART_OFFSET / 4)) count=$(( ( PART_ENDOFF - PART_OFFSET ) / 4)) \
           if="${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img" \
-          of="${TESTFILE%.*}_${MODULE}/${IMAH_NAME}_p${N}.img"
-        NESTED_IMAH_LIST+=" ${TESTFILE%.*}_${MODULE}/${IMAH_NAME}_p${N}.img"
+          of="${TESTFILE%.*}_${MODULE}/${IMAH_NAME}_p${N}.${PART_EXT}"
       done
     fi
   done
