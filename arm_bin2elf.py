@@ -322,8 +322,9 @@ def armfw_bin2elf(po, fwpartfile):
      if (po.verbose > 1):
         print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
   # Allow more .bss sections, as long as size is provided
-  for i in range(1,9):
-     sectname = ".bss"+str(i)
+  for sectname in po.section_size.keys():
+     if not re.search('^[.]bss[0-9]+$', sectname):
+        continue
      if (not sectname in po.section_size):
         break
      if (not sectname in po.section_addr):
