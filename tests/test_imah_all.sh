@@ -56,6 +56,7 @@ V01.00.0500_Mavic_Mini_dji_system.tar
 V01.00.0200_Mavic_Mini_dji_system.tar
 V01.00.0000_Mavic_Mini_2_dji_system.bin
 V01.02.0300_Mavic_Mini_2_dji_system.bin
+V01.01.0000_Mavic_Mini_2_SE_dji_system.bin
 V01.00.0600_FPV_Goggles_dji_system.bin
 V00.04.1009_FPV_Racer_dji_system.bin
 V01.01.0000_FPV_Racer_dji_system.bin
