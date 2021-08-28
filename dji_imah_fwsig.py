@@ -84,14 +84,28 @@ keys = {
         # used for: WM330 FW V00.01.0000-V01.02.0499, WM220 FW V00.01.0000-V01.03.0600
         0x70, 0xe0, 0x03, 0x08, 0xe0, 0x4b, 0x0a, 0xe2, 0xce, 0x8e, 0x07, 0xd4, 0xd6, 0x21, 0x4b, 0xb6
     ]),
-    "TRIE":  bytes([ # TR Image Encryption key; published 2021-03-26 by Felix Domke
+    "TRIE-2021-06":  bytes([ # TR Image Encryption key; published 2021-08-26 by OGs
+        # first use on 2021-06-15; used for: WM1605 FW
+        0xcb, 0x14, 0x0c, 0x12, 0x71, 0x03, 0x88, 0x34, 0xec, 0x0c, 0x0c, 0x3c, 0x2b, 0x69, 0x9d, 0xc2
+    ]),
+    "TRIE-2019-11":  bytes([ # TR Image Encryption key; published 2021-03-26 by Felix Domke
+        # first use on 2019-11-07; used for: WM160 FW, WM161 FW
         0xf1, 0xe6, 0x30, 0x6d, 0x6c, 0x84, 0xf0, 0x9e, 0xd5, 0x59, 0x0f, 0x94, 0x73, 0xb1, 0x55, 0x26
+    ]),
+    "TKIE-2021-06":  bytes([ # Trusted Kernel Image Encryption key; published 2021-08-26 by OGs
+        # This key is used for images within m0100 module which store kernel and device tree
+        # first use on 2021-06-15; used for: WM1605 FW V01.00.0000-V01.01.0000,
+        0xf8, 0xb4, 0x3c, 0x6b, 0x0d, 0xcd, 0x3f, 0x5e, 0x90, 0xfc, 0x08, 0xd4, 0xdd, 0xea, 0xf3, 0x58
     ]),
     "TKIE-2019-11":  bytes([ # Trusted Kernel Image Encryption key; published 2021-03-26 by Felix Domke
         # This key is used for images within m0100 module which store kernel and device tree
         # first use on 2019-11-07; used for:
         # WM160 FW V01.00.0200-V01.00.0500, WM161 FW V01.00.0000-V01.02.0300
         0xb6, 0x28, 0x6a, 0x05, 0xfc, 0x3a, 0x02, 0xf0, 0x36, 0x51, 0x11, 0xf0, 0x20, 0x45, 0x03, 0xa3
+    ]),
+    "TBIE-2021-06":  bytes([ # Trusted Boot Image Encryption key; published 2021-06-25 by OGs
+        # first use on 2021-06-15; used for: WM1605 FW V01.00.0000-V01.01.0000,
+        0x06, 0xdc, 0x7b, 0x70, 0x7f, 0xc1, 0xdb, 0x86, 0x49, 0x8c, 0xaa, 0xda, 0xde, 0xdf, 0x56, 0xa1
     ]),
     "TBIE-2020-04":  bytes([ # Trusted Boot Image Encryption key; published 2021-06-25 by OGs
         # first use on 2020-04-23; used for:
@@ -113,6 +127,10 @@ keys = {
         # WM246 FW V01.00.0000-V01.01.0800,
         # GL150 FW V01.00.0600, LT150 FW V01.00.0600,
         0xff, 0x94, 0x76, 0xf7, 0x8a, 0x89, 0xb9, 0x44, 0x9b, 0x6a, 0x90, 0x55, 0x64, 0x13, 0xb9, 0xc3
+    ]),
+    "UFIE-2021-06":  bytes([ # Update Firmware Image Encryption key; published 2021-08-26 by OGs
+        # first use on 2021-06-15; used for: WM1605 FW V01.00.0000-V01.01.0000,
+        0x84, 0x63, 0xf7, 0xb1, 0xa6, 0xaa, 0xa5, 0xec, 0xa3, 0x8a, 0x9a, 0xbc, 0x7b, 0x3d, 0x4b, 0xe2
     ]),
     "UFIE-2020-04":  bytes([ # UFI Encryption key; published 2021-06-20 by OGs
         # first use on 2020-04-24; used for:
