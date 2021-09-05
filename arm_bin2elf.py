@@ -52,7 +52,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -426,11 +426,23 @@ def armfw_bin2elf(po, fwpartfile):
   elfobj.header['e_entry'] = po.baseaddr
   # Update section sizes, including the uninitialized (.bss*) sections
   for sectname in sections_order:
+     # This function always returns a copy of section object, or newly created section object; so no need to copy it again
      sect = elfobj.get_section_by_name(sectname)
+     # If no such section found, maybe we've added number at end
+     sectname_m = None
      if sect is None:
-         sect = elfobj.get_section_by_name(sectname[:-1])
-         sect.name = sectname
-         elfobj.insert_section_after(sectname[:-1], sect)
+        sectname_m = re.search('^(?P<name>[.].*[^0-9])(?P<num>[0-9]+)$', sectname)
+        if sectname_m.group('name') is not None:
+           sect = elfobj.get_section_by_name(sectname_m.group('name'))
+        if sect is not None:
+           sect.name = sectname
+           sectname_prev = '{:s}{:d}'.format(sectname_m.group('name'), int(sectname_m.group('num'),10) - 1)
+           if elfobj.get_section_by_name(sectname_prev) is None:
+               sectname_prev = sectname_m.group('name')
+           sect_prev = elfobj.get_section_by_name(sectname_prev)
+           elfobj.insert_section_after(sectname_prev, sect)
+     if sect is None:
+           raise EOFError("Couldn't read section '{:s}' from binary file.".format(sectname))
      if (po.verbose > 0):
         print("{}: Preparing ELF section '{:s}' from binary pos 0x{:08x}".format(po.fwpartfile,sectname,sections_pos[sectname]))
      sect.header['sh_addr'] = po.section_addr[sectname]
