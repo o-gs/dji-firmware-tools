@@ -263,7 +263,7 @@ Optimized examples for specific firmwares:
 
 ```./arm_bin2elf.py -vv -e -b 0x7D000000 --section .ARM.exidx@0x7D0356E0:0 --section .bss@0x7D04f380:0x3800 --section .bss2@0x7D0f1900:0x200 -p wm230_0801_v10.00.07.12_20180126-recovery.img.TZOS.bin```
 
-```./arm_bin2elf.py -vv -e -b 0xFFFC0000 --section .ARM.exidx@0xFFFDA540:0x20  --section .bss@0xFFFE14D0:0x42B0 -p wm230_0801_v10.00.07.12_20180126.pro.fw_0801.bootarea_p0_BLLK.bin```
+```./arm_bin2elf.py -vv -e -b 0xFFFC0000 --section .ARM.exidx@0xFFFDA540:0x20 --section .bss@0xFFFE14D0:0x42B0 --section .bss1@0x0202000:0x20 --section .bss2@0x0402020:0x20 --section .bss3@0x0B00000:0x40 --section .bss4@0x2700000:0x40 --section .bss5@0x9000000:0x20 --section .bss6@0xF0440000:0x4500 --section .bss7@0xF0501200:0x200 --section .bss8@0xF0A09000:0x20 --section .bss9@0xF0A40000:0x1200 --section .bss10@0xF0A4D000:0x2100 --section .bss11@0xF0A61000:0x1200 --section .bss12@0xF0A72000:0x20 --section .bss13@0xF0D02000:0x20 --section .bss14@0xF0D04000:0x20 --section .bss15@0xF0E00A00:0xC0 --section .bss16@0xF0E08000:0x20 --section .bss17@0xF5001000:0x40 --section .bss18@0xF6409000:0x100 --section .bss19@0xF6800000:0x1100 --section .bss20@0xFA800000:0x100 --section .bss21@0xFAF01000:0x3500 --section .bss22@0xFB001000:0x2900 --section .bss23@0xFCC01000:0x2400 --section .bss24@0xFD001000:0x2D00 --section .bss25@0xFD400000:0x20 --section .bss26@0xFD501000:0x2400 --section .bss27@0xFF001000:0x1100 -p wm230_0801_v10.00.07.12_20180126.pro.fw_0801.bootarea_p0_BLLK.bin```
 
 This tool supports only conversion in direction of bin-to-elf. To convert an ELF
 file back to BIN (ie. after modifications), use `objcopy` utility for the
