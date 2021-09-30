@@ -4678,7 +4678,8 @@ class ChipMockBQ40(ChipMock):
         self.prep_static()
 
     def prep_dataflash(self):
-        # Prepare data flash, or at least a chunk of it
+        """ Prepare data flash, or at least a chunk of it
+        """
         df = bytearray(0x2000)
         df[0x000:0x010] = struct.pack('<hHHffh', 12146, 49158, 48942, 3.53481793, 1054300.5, 0) # Cell Gain, Pack Gain, BAT Gain, CC Gain, Capacity Gain, CC Offset
         df[0x010:0x019] = struct.pack('<Hhbbbbb', 64, 0, 0, 0, 0, 0, 0) # Coulomb Counter Offset Samples, Board Offset, Internal Temp Offset, External 0..3 Temp Offset

@@ -4485,8 +4485,16 @@ class ChipMockBQ30(ChipMock):
         self.cyc = 99
         self.t = 29.92
         self.atrate = 0
+        self.prep_dataflash()
         # Prepare static packets
         self.prep_static()
+
+    def prep_dataflash(self):
+        """ Prepare data flash, or at least a chunk of it
+        """
+        df = bytearray(0x2000)
+        # TODO: Simulate 'proper' values of Data Flash
+        self.dataflash = df
 
     def prep_static(self):
         """ Commands for simulated BQ30z55
