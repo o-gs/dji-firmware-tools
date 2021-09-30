@@ -139,7 +139,7 @@ elif [[ ${BINFNAME} =~ ^(rc230)[._].*[.]sig$ ]]; then
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^(wm170|wm231|wm232|gl170|pm430|ag500)[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2018-02 -k UFIE-2020-04 -f" # PRAK not published, forcing ignore signature fail
+  EXTRAPAR="-k PRAK-2020-01 -k UFIE-2020-04 -f" # PRAK not published, forcing ignore signature fail
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   # nested files have more chunks, so allow more discrepencies for chunk padding
@@ -388,8 +388,25 @@ if [ ! -z "${MODULE}" ]; then
   # Some nested IMaH files can be found on Andoid `system` and `vendor` partitions
   for IMAH_NAME in "system" "vendor"; do
     if [ -f "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.new.dat" ]; then
-      # TODO unpack ext4 fs in `system.new.dat` and `vendor.new.dat` partitions, find IMaHs inside
-      echo "No support made for ${IMAH_NAME}.new.dat"
+      if [ ! -f "./sdat2img/sdat2img.py" ]; then
+        echo "### WARN: No tool to reconstruct sparse images, skipping ###"
+        echo "### INFO: Use 'git clone https://github.com/xpirt/sdat2img.git' to get the tool ###"
+        break
+      fi
+      # Build raw `${IMAH_NAME}.img` based on `*.transfer.list` and `*.new.dat` files
+      ./sdat2img/sdat2img.py "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.transfer.list" \
+        "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.new.dat" \
+        "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img"
+      if [ ! -f "./ext4/ext4_cp.py" ]; then
+        echo "### WARN: No tool to extract ext4 filesystem images, skipping ###"
+        echo "### INFO: Use 'git clone https://github.com/mefistotelis/ext4.git' to get the tool ###"
+        continue
+      fi
+      mkdir -p "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.extracted"
+      (export MSYS2_ARG_CONV_EXCL=* # when using on Windows under MSYS2 shell, do not convert paths
+      ./ext4/ext4_cp.py -R -v "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img:." \
+        "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.extracted/"
+      )
     fi
   done
   # Some nested IMaH files can be recognized by name mask
