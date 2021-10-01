@@ -3284,10 +3284,12 @@ local function heuristic_dissector(buffer, pinfo, tree)
 end
 
 
--- A initialization routine
+-- An initialization routine
 function DJI_DUMLv1_PROTO.init ()
     -- Non-heuristic USB dissector registration would look like this
     --DissectorTable.get("usb.bulk"):add(0xffff, DJI_DUMLv1_PROTO)
+    -- Bluetooth dissector, used for DJI Osmo devices
+    DissectorTable.get("btatt.handle"):add(0x0018, DJI_DUMLv1_PROTO)
 end
 
 DJI_DUMLv1_PROTO:register_heuristic("usb.bulk", heuristic_dissector)
