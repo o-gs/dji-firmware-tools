@@ -162,7 +162,55 @@ keys = {
     ]),
 
     # RSA authentication keys
-    "PRAK-2019-09":  bytes.fromhex(( # Provisioning RSA Auth Key v3; published 2021-04-02 by Felix Domke
+    "PRAK-2018-01":  bytes.fromhex(( # Provisioning RSA Auth Key v8; published 2021-09-30 by Mefistotelis
+        # first use on 2021-02-03; used for:
+        # RCS231 FW V01.00.0000
+        # RC-N1-WM161b FW V01.00.0000
+        # RCJS170 FW V01.00.0000
+        # RCSS170 FW V01.00.0000
+        "400000008f73897091b44b1eeef365bc3b7bcca12798f87d0c1523cdca37eee2"
+        "5b83ef4750bc04025aeb0a929b9ed5e228242a866a7b5cfa3c0a9f2681553026"
+        "476976f9a31d72752b58a41ad4553bd007504dfa7247688140e130774d2d5952"
+        "48923396f571b2f7623d75dfa2901d18156e075f2fa176bb41dbeb2806600057"
+        "0f6f683e26c1afbe9b6f2d0e9928197d898665d318e21ab311e4fba035f65ed1"
+        "509ee505e0aa40a35e343ab5889113b03bfc2e5c4b6fefbe0445904e4c8a3cab"
+        "4379d45f24cefd7e05200a3e89c3fe5bfe7b13f4ef19f4ea747074cf2376e2f7"
+        "9b291b78e8840ee79fca2fd8f86bc41bedbbf8bd912c34aeb9168530f72aa54e"
+        "9f8d1c3bf5393d9de93e07ee517744ce5c94fc417ba10b462c653fe09fc656c3"
+        "5001af6ab59517f344899be9c1298688931c89d8eb941687bf6e11039ef93033"
+        "61c5ff4bad025f9dd6492c0b9fc61ec2b08bd3cfeb600f7cfb722911b15068a6"
+        "ae8cbeebcda57cebf2d6fc330528ca5bd14e8b70fb0d662d76470adb7fff076d"
+        "f3367534f3afd0604fc4714f730b3c63a59f995bef2df005f656be887d6369ca"
+        "b1614d66763b10ef50a7f6e3c6f55bd381d7c23924ecd6d3453902f8fbfb7ca5"
+        "2f63e44e6a3cb6193ec495527566387caaf3bb217725033b94352d925f5e94d4"
+        "d5005c48dda0e26a36a5a77efceef3eb2f3e55a996870c177f4d4d26163f04ba"
+        "c9d54d60bb162b5e03000000"
+    )),
+    "PRAK-2020-01":  bytes.fromhex(( # Provisioning RSA Auth Key v7; published 2021-09-30 by Mefistotelis
+        # first use on 2020-01-08; used for:
+        # WM170 FW V00.04.1009-V01.01.0000,
+        # GL170 FW V01.01.0000,
+        # WM231 FW V01.00.0113-V09.09.0902,
+        # WM232 FW V02.04.1640
+        "40000000c73fb7ba092e1fef4344b95a4ed80566b2a3aaaca69e3f7847a7e6d5"
+        "896cf3b9f64e771b6c44f32e3fab2e91ab5834e48bbf8e8ad38038e810ab3dd5"
+        "1f8b54f677eb5917e9df95fb0fd97445b2c40beedbb4256ac5a381c8ae16a99f"
+        "bcfcb66cb2a350e0e137e7cd77d069bf2c7567a2e292bdda3071376b4695a77e"
+        "4e6910b15f7a11edf48c1b4a3122f7ac623574864e292f0c16403d30322dfe32"
+        "7cef7c35b0c76a4947c50f67a7ad4b4afc64a02eada67325d6d278eb3ab6b7a3"
+        "3caea718f66b730d3f263b9395884910fe3567f7a0e149673634f49b6abea872"
+        "7fad4066a548a836f431326ec8cc1e682d697cc958cf4872be3343007c31d9e4"
+        "a3878d6cfa3987c96ce786073abcca064f5c6657ffd5701b5d0748f5b6c1863e"
+        "b620ad7ded26509e4e23cd9afac0e049f3ad2a066dd9bbf0293bb22e2859964f"
+        "292ce6ba206628aa50a0bc7422541540b7efb9433c94c865b322f8a7aebe91e5"
+        "d212da29e4f434a35173b0999a7f792cce3e7ef7c51274b8776ef1a743b77983"
+        "aeee0b3701814b8ee640e7ec18fa9c15a3bb59de1086517bec5c4f8940b1001e"
+        "b4dccdefc113d4db345c7c2e129c867794cb9c32a06255dfb8be68763b0a0940"
+        "71df74e113d24e749a4008b6372fc5c87fcd781319a71f6ac60f5fa5dc2b2ce9"
+        "71318b45ac83ee882a0dbf22d09ab1da28bc5e828a0080f35279dc3fb5a83d16"
+        "5a981f8574e41e2d01000100"
+    )),
+    "PRAK-2019-09":  bytes.fromhex(( # Provisioning RSA Auth Key v5; published 2021-04-02 by Felix Domke
         # first use on 2020-06-09; used for: WM161 FW V01.00.0000
         "40000000a1f987bf9fd539732277b64b32f178d7a62106d20336f2888292ee28"
         "3790524565232831d245919a3a88d92a754cafbb1b8ccaed67dec3a29e0f425b"
@@ -182,9 +230,39 @@ keys = {
         "ce0b43a199f27a59f8a80b7cb9c0f9c3cf168f9095b5f5d862f2e174e30ed61e"
         "4992e6594045d58001000100"
     )),
-    "PRAK-2018-01":  bytes.fromhex(( # Provisioning RSA Auth Key v2; published 2021-04-02 by Mefistotelis
-        # first use on 2018-01-26; used for: WM230 FW V00.02.0032,
-        # WM150 FW V01.00.0100, GL150 V01.00.0100-V01.00.0600,
+    "PRAK-2017-12":  bytes.fromhex(( # Provisioning RSA Auth Key v3; published 2021-09-30 by Mefistotelis
+        # first use on 2017-12-14; used for:
+        # RC230 FW V01.00.0000
+        # RC240 FW V01.00.0640,
+        # WM240 FW V00.06.0000-V01.00.0670 inside m090?,
+        # WM245 FW V01.01.0000-V01.01.0800 inside m090?,
+        # WM246 FW V01.00.0000-V01.01.0800 inside m090?,
+        "40000000c3151641157d30448fee8958d684332e8b28213cdb05c923e06afe2d"
+        "13371b4887c2872f7fd674490e250017183a9fcfb4109fddd86a555fc874b08d"
+        "6419c4b7fa7e03b8f106a08f571e8c26a532fc23e1dd0d7fe4d496523b08bc50"
+        "d9238a6baab57d37a13f3afd91284c8b98e2b45ecb87bdcbe691d8764f907729"
+        "0b236c0d8df4b2eb3ba2f36671967aeefb4ec263c9e4d75006d97f60a5eb8848"
+        "4b42707d0a28b9a116526acf8bc98e7e97aaa09aa5e2c8b6aaab7a2c21283c73"
+        "d668ecd7f024b8ebbaf278a587b6a064525d0703c5b62e8df7b6565913cb87ff"
+        "b96ee578d8a5329c93831cc1857104a4f2ba9d5b0055a50305c46f469ad4641a"
+        "1fa98f9492bdfd94e094cbfcd95ab04bd7f3400010deed20cfcd361ddb2f5fda"
+        "87ada7285afb9cd7521953dadb73b288edfb00ecdd769e78d2ca4294646590c1"
+        "8d5954b846d00bfd682e30f970e10d1fe960e724023a05474ea68cd9738d582f"
+        "cb3918563ac85ba6417964fffaf1710a3d2f5d870b5024764812c2ab6ff24cf8"
+        "0ee6d220c716a337a4bcd9c904e17b5e9f226ef6994a350635ee8c7a6f13d820"
+        "f9b87c1ef8ba206e7856e17e1d9a7ed6b7b23c7c14009d9622a775de575fdc1d"
+        "d19e57df90c65c81a80cb05fa7318080a61dff9b0d852267d6e8c6fd531e2787"
+        "bab7ff29818a38f2e6c2b41698f11c3b2a0c4ac66a966a42ce3bce7c8d5f1ecc"
+        "9543ff55f309df3b01000100"
+    )),
+    "PRAK-2017-08":  bytes.fromhex(( # Provisioning RSA Auth Key v2; published 2021-04-02 by Mefistotelis
+        # first use on 2017-08-24; used for:
+        # WM230 FW V00.02.0032-V01.00.0620,
+        # WM240 FW V00.06.0000-V01.00.0670 m0801,
+        # WM245 FW V01.01.0000-V01.01.0800 m0801,
+        # WM246 FW V01.00.0000-V01.01.0800 m0801,
+        # WM150 FW V01.00.0100,
+        # GL150 V01.00.0100-V01.00.0600,
         # LT150 V01.00.0600
         "40000000dbe15b5badcde418e2dbd9e253d2b9aded7f187824b5677f0ee6a6c3"
         "fcd2ea329421a5b0252c63af6df81ac0c6416ec926e2558f4f4460a4b3af3ecb"
