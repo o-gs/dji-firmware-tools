@@ -126,20 +126,20 @@ elif [[ ${BINFNAME} =~ ^(wm620|rc001)[._].*[.]sig$ ]]; then
   NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 3*16 ))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc won't work without 1st stage
 elif [[ ${BINFNAME} =~ ^(wm230)[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-01 -k TBIE-2018-01"
-  EXTRAPAR_NESTED_m0801="-k PRAK-2018-01 -k TBIE-2018-01 -k FCIE-2018-04 -k TKIE-2018-04 -f" # TBIE, FCIE, TKIE not published, forcing extract encrypted
+  EXTRAPAR="-k PRAK-2017-08 -k UFIE-2018-01 -k TBIE-2018-01"
+  EXTRAPAR_NESTED_m0801="-k PRAK-2017-08 -k TBIE-2018-01 -k FCIE-2018-04 -k TKIE-2018-04 -f" # TBIE, FCIE, TKIE not published, forcing extract encrypted
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   # nested files have more chunks, so allow more discrepencies for chunk padding
   NESTED_CHANGES_LIMIT=$(( HEAD_CHANGES_LIMIT + 6*16 ))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^(rc230)[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2018-02 -k UFIE-2018-01 -f" # PRAK not published, forcing ignore signature fail
+  EXTRAPAR="-k PRAK-2017-12 -k UFIE-2018-01"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^(wm170|wm231|wm232|gl170|pm430|ag500)[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2020-01 -k UFIE-2020-04 -f" # PRAK not published, forcing ignore signature fail
+  EXTRAPAR="-k PRAK-2020-01 -k UFIE-2020-04"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   # nested files have more chunks, so allow more discrepencies for chunk padding
@@ -151,20 +151,20 @@ elif [[ ${BINFNAME} =~ ^(rcss170|rcjs170|rcs231|rc-n1-wm161b)[._].*[.]sig$ ]]; t
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
   SUPPORTS_ANDR_TAR_BOOTIMG_ENC=1
-elif [[ ${BINFNAME} =~ ^(wm24[0-6])[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-07 -k TBIE-2018-07"
-  EXTRAPAR_NESTED_m0901="-k PRAK-2018-01 -f" # PRAK not published, forcing ignore signature fail; IAEK not published, forcing extract encrypted
+elif [[ ${BINFNAME} =~ ^(wm240|wm245|wm246)[._].*[.]sig$ ]]; then
+  EXTRAPAR="-k PRAK-2017-08 -k UFIE-2018-07 -k TBIE-2018-07"
+  EXTRAPAR_NESTED_m0901="-k PRAK-2017-12 -f" # m0901 uses different PRAK; IAEK not published, forcing extract encrypted
   EXTRAPAR_NESTED_m0907="${EXTRAPAR_NESTED_m0901}"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^(gl150|wm150|lt150)[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2018-01 -k UFIE-2018-07 -k TBIE-2018-07"
+  EXTRAPAR="-k PRAK-2017-08 -k UFIE-2018-07 -k TBIE-2018-07"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
 elif [[ ${BINFNAME} =~ ^(rc240)[._].*[.]sig$ ]]; then
-  EXTRAPAR="-k PRAK-2018-02 -k UFIE-2018-07 -f" # PRAK not published, forcing ignore signature fail
+  EXTRAPAR="-k PRAK-2017-12 -k UFIE-2018-07"
   # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
   HEAD_CHANGES_LIMIT=$((2 + 4 + 4 + 256 + 32+16))
   SUPPORTS_MVFC_ENC=0 # Decryption of 2nd lv FC enc not currently supported for this platform
@@ -411,6 +411,9 @@ if [ ! -z "${MODULE}" ]; then
   done
   # Some nested IMaH files can be recognized by name mask
   for IMAH_FNAME in $(find "${TESTFILE%.*}_${MODULE}" -name '*.sig'); do
+    # Skip some strange files stored within specific firmwares
+    #   Skip binary file incorrectly converted to UTF8 - has some chars replaced with 'EF BF BD ??'
+    if [[ "${IMAH_FNAME}" == *'/system.extracted/etc/gl150_gl.cfg.sig' ]]; then continue; fi
     NESTED_IMAH_LIST+=" ${IMAH_FNAME}"
   done
   if [ "${MODULE}" == "0100" ] && [ ! -z "${EXTRAPAR_NESTED_m0100}" ]; then
