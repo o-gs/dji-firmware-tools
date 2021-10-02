@@ -404,7 +404,7 @@ if [ ! -z "${MODULE}" ]; then
       fi
       mkdir -p "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.extracted"
       (export MSYS2_ARG_CONV_EXCL=* # when using on Windows under MSYS2 shell, do not convert paths
-      ./ext4/ext4_cp.py -R -v "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img:." \
+      ./ext4/ext4_cp.py -R -n -v "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img:." \
         "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.extracted/"
       )
     fi
@@ -505,7 +505,7 @@ if [ "${SKIP_CLEANUP}" -le "0" ]; then
   for MODULE in $MODULES; do
     if [ -d "${TESTFILE%.*}_${MODULE}" ]; then
       rm -rf "${TESTFILE%.*}_${MODULE}"
-      rm ${TESTFILE%.*}_${MODULE}.*.img
+      rm "${TESTFILE%.*}_${MODULE}."*".img"
     fi
   done
   rm "${TESTFILE}" ${TESTFILE%.*}_*.bin ${TESTFILE%.*}_*.ini
