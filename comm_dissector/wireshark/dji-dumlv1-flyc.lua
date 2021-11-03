@@ -2234,6 +2234,7 @@ local function flyc_config_command_table_get_or_exec_dissector(pkt_length, buffe
     offset = 0
 
     local cmd = payload(offset,2):le_int()
+    local cmd_uint = payload(offset,2):le_uint()
     local valuestring
     if cmd == -1 then
         valuestring = "Get command count"
@@ -2242,7 +2243,7 @@ local function flyc_config_command_table_get_or_exec_dissector(pkt_length, buffe
     else -- cmd > 0
         valuestring = string.format("Exec command %d", cmd)
     end
-    subtree:add_le (f.flyc_config_command_table_get_or_exec_cmd_type, payload(offset, 2), cmd, string.format("%s: %s (0x%02X)", "Command Type", valuestring, cmd))
+    subtree:add_le (f.flyc_config_command_table_get_or_exec_cmd_type, payload(offset, 2), cmd, string.format("%s: %s (0x%02X)", "Command Type", valuestring, cmd_uint))
     offset = offset + 2
 
     if (offset ~= 2) then subtree:add_expert_info(PI_MALFORMED,PI_ERROR,"Config Command Table Get or Exec: Offset does not match - internal inconsistency") end
