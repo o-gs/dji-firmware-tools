@@ -365,7 +365,10 @@ def armfw_bin2elf(po, fwpartfile):
   for sectname in reversed(sections_order):
      sectpos_delta = sectaddr_next - po.section_addr[sectname]
      # Distance between sorted sections cannot be negative
-     assert sectpos_delta >= 0, "Trusting addresses leads to negative distance after '{:s}'".format(sectname)
+     if sectname == sections_order[-1]:
+         assert sectpos_delta >= 0, "Address space length too small to fit section '{:s}'".format(sectname)
+     else:
+         assert sectpos_delta >= 0, "Trusting addresses leads to negative distance after '{:s}'".format(sectname)
      # Do not allow to exceed limit imposed by address space bit length
      if (po.section_addr[sectname] + sectpos_delta > addrspace_limit + 1 - po.expect_sect_align):
         sectpos_delta = addrspace_limit + 1 - po.expect_sect_align - po.section_addr[sectname]
