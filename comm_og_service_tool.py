@@ -32,7 +32,6 @@ import time
 import enum
 import types
 import struct
-import serial
 import select
 import hashlib
 import binascii
@@ -41,7 +40,7 @@ from ctypes import *
 
 sys.path.insert(0, './')
 from comm_serialtalk import (
-  do_send_request, do_receive_reply, SerialMock, openUsb
+  do_send_request, do_receive_reply, SerialMock, open_usb
 )
 from comm_mkdupc import *
 
@@ -147,9 +146,10 @@ def detect_serial_port(po):
 def open_serial_port(po):
     ser = None
     if po.bulk:
-        ser = openUsb(po)
+        ser = open_usb(po)
     else:
         # Open serial port
+        import serial
         if po.port == 'auto':
             port_name = detect_serial_port(po)
         else:
