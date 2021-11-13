@@ -41,7 +41,7 @@ from ctypes import *
 
 sys.path.insert(0, './')
 from comm_serialtalk import (
-  do_send_request, do_receive_reply, SerialMock
+  do_send_request, do_receive_reply, SerialMock, openUsb
 )
 from comm_mkdupc import *
 
@@ -78,6 +78,7 @@ class PRODUCT_CODE(DecoratedEnum):
     WM160  = 26 # Released 2019-10-30 Mavic Mini
     WM231  = 27 # Released 2020-04-28 Mavic Air 2
     WM232  = 28 # Released 2021-04-15 (MAVIC) AIR 2S
+    WM260  = 29 # Released 2021-11-05 (MAVIC) 3
 
 ALT_PRODUCT_CODE = {
     'S800': 'A2', # Released 2012-07-25 Hexacopter frame, often sold with Dji A2 Flight Controller
@@ -101,6 +102,7 @@ ALT_PRODUCT_CODE = {
     'MMINI': 'WM160',
     'MAVAIR2': 'WM231',
     'MAVAIR2S': 'WM232',
+    'MAV3': 'WM260',
 }
 
 class SERVICE_CMD(DecoratedEnum):
@@ -143,17 +145,21 @@ def detect_serial_port(po):
     return ''
 
 def open_serial_port(po):
-    # Open serial port
-    if po.port == 'auto':
-        port_name = detect_serial_port(po)
+    ser = None
+    if po.bulk:
+        ser = openUsb(po)
     else:
-        port_name = po.port
-    if not po.dry_test:
-        ser = serial.Serial(port_name, baudrate=po.baudrate, timeout=0)
-    else:
-        ser = SerialMock(port_name, baudrate=po.baudrate, timeout=0)
-    if (po.verbose > 0):
-        print("Opened {} at {}".format(ser.port, ser.baudrate))
+        # Open serial port
+        if po.port == 'auto':
+            port_name = detect_serial_port(po)
+        else:
+            port_name = po.port
+        if not po.dry_test:
+            ser = serial.Serial(port_name, baudrate=po.baudrate, timeout=0)
+        else:
+            ser = SerialMock(port_name, baudrate=po.baudrate, timeout=0)
+        if (po.verbose > 0):
+            print("Opened {} at {}".format(ser.port, ser.baudrate))
     return ser
 
 def get_unique_sequence_number(po):
@@ -501,7 +507,7 @@ def flyc_param_request_2017_write_param_value_by_index(po, ser, table_no, param_
     payload.table_no = table_no
     payload.unknown1 = 1
     payload.param_index = param_idx
-    
+
     if len(param_val) > 1:
         payload.param_value = (c_ubyte * sizeof(payload.param_value)).from_buffer_copy(param_val)
     else:
@@ -1519,8 +1525,13 @@ def main():
     """
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument('port', type=str,
-            help="the serial port to write to and read from")
+    subparser = parser.add_mutually_exclusive_group()
+
+    subparser.add_argument('-port', type=str,
+            help='the serial port to write to and read from')
+
+    subparser.add_argument('-bulk', action='store_true',
+            help='use usb bulk instead of serial connection')
 
     parser.add_argument('product', metavar='product', choices=[i.name for i in PRODUCT_CODE], type=parse_product_code,
             help="target product code name; one of: {:s}".format(','.join(i.name for i in PRODUCT_CODE)))
@@ -1618,6 +1629,10 @@ def main():
              "lead to inconsistent keys due to their read-only copy")
 
     po = parser.parse_args()
+
+    if (po.bulk is False and po.port is None):
+        print('Atleast one argument "-bulk" or "-port" is needed!')
+        sys.exit(0)
 
     po.product = PRODUCT_CODE.from_name(po.product)
     po.svcmd = SERVICE_CMD.from_name(po.svcmd)
