@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
@@ -34,6 +34,9 @@ import time
 import serial
 import select
 import argparse
+import usb.core
+import usb.util
+import usb.backend.libusb0 as myusb
 from ctypes import *
 
 sys.path.insert(0, './')
@@ -45,7 +48,7 @@ from comm_dat2pcap import (
 )
 from comm_mkdupc import (
   parse_module_ident, parse_module_type, parse_ack_type,
-  parse_encrypt_type, parse_packet_type, parse_cmd_set, 
+  parse_encrypt_type, parse_packet_type, parse_cmd_set,
   encode_command_packet_en, get_known_payload,
   DJICmdV1Header, PACKET_TYPE, COMM_DEV_TYPE,
 )
@@ -104,6 +107,75 @@ class SerialMock(io.RawIOBase):
         if len(self._rxData) < 1: return 0
         return len(self._rxData[0])
 
+
+class SerialBulkWrap():
+    def __init__( self, dev, ep_in, ep_out, timeout=100):
+        self.name = 'BULK'
+        self.dev = dev
+        self.ep_in = ep_in
+        self.ep_out = ep_out
+        self.timeout = timeout
+        self.port = None
+        self.baudrate = None
+        self.port_open = False
+
+    def write( self, btarr ):
+        self.ep_out.write(btarr)
+
+    def read( self, n=1):
+        btarr = self.ep_in.read(self.ep_in.wMaxPacketSize,self.timeout)
+        return btarr
+
+    def close(self):
+        pass
+
+    def reset_input_buffer(self):
+        pass
+
+    @property
+    def in_waiting(self):
+        return 1
+
+def findCorrectDevice(dev):
+    for d in dev:
+        for cfg in d:
+            for intf in cfg:
+                for endp in intf:
+                    if usb.util.endpoint_direction(endp.bEndpointAddress) == usb.util.ENDPOINT_IN:
+                        if endp.bEndpointAddress == 0x85:
+                            return d
+    return None
+
+def openUsb(po):
+    mybackend=myusb.get_backend()
+    dev = usb.core.find(idVendor=0x2ca3, idProduct=0x0022, find_all = True, backend=mybackend)
+    dev = findCorrectDevice(dev)
+
+    if dev:
+        cfg = dev.get_active_configuration()
+        intf = cfg[(0,0)]
+
+        ep_out = usb.util.find_descriptor(
+            intf,
+            # match the first OUT endpoint
+            custom_match = \
+            lambda e: \
+                usb.util.endpoint_direction(e.bEndpointAddress) == \
+                usb.util.ENDPOINT_OUT)
+
+        ep_in = usb.util.find_descriptor(
+            intf,
+            # match the first OUT endpoint
+            custom_match = \
+            lambda e: \
+                usb.util.endpoint_direction(e.bEndpointAddress) == \
+                usb.util.ENDPOINT_IN)
+
+    if dev and ep_in and ep_out:
+        return SerialBulkWrap(dev,ep_in,ep_out, po.timeout)
+    else:
+        sys.exit(0)
+
 def do_read_packets(ser, state, info):
     out = ListFormatter()
     num_bytes = ser.in_waiting
@@ -120,6 +192,8 @@ def do_read_packets(ser, state, info):
         if (is_packet_at_finish(state)):
             break;
         num_bytes = ser.in_waiting
+        if ser.name == 'BULK':
+            num_bytes = 0
     return state, out.pktlist, info
 
 def packet_header_is_reply_for_request(rplhdr, reqhdr, responsebit_check=False, seqnum_check=True):
@@ -214,8 +288,11 @@ def do_receive_reply(po, ser, pktreq, seqnum_check=True):
     return pktrpl
 
 def do_send_request_receive_reply(po):
-    # Open serial port
-    ser = serial.Serial(po.port, baudrate=po.baudrate, timeout=0)
+    if not po.bulk:
+        # Open serial port
+        ser = serial.Serial(po.port, baudrate=po.baudrate, timeout=0)
+    else:
+        ser = openUsb(po)
     if (po.verbose > 0):
         print("Opened {} at {}".format(ser.port, ser.baudrate))
 
@@ -247,8 +324,13 @@ def main():
     """
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument('port', type=str,
+    subparser = parser.add_mutually_exclusive_group()
+
+    subparser.add_argument('-port', type=str,
             help='the serial port to write to and read from')
+
+    subparser.add_argument('-bulk', action='store_true',
+            help='use usb bulk instead of serial connection')
 
     parser.add_argument('-b', '--baudrate', default=9600, type=int,
             help='the baudrate to use for the serial port (default is %(default)s)')
@@ -315,6 +397,10 @@ def main():
             help='provide binary payload directly (default payload is empty)')
 
     po = parser.parse_args();
+
+    if (po.bulk is False and po.port is None):
+        print('Atleast one argument "-bulk" or "-port" is needed!')
+        sys.exit(0)
 
     if (po.payload_hex is not None):
         po.payload = bytes.fromhex(po.payload_hex)
