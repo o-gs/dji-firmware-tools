@@ -443,7 +443,11 @@ in some drones. Parameter names are different between these two tools though.
 
 Example of asking Flight Controller for hardware and firmware version data (tested on Ph3):
 
-```./comm_serialtalk.py /dev/ttyUSB0 -vv --timeout=5000 --receiver_type=FlyController --seq_num=65280 --ack_type=No_ACK_Needed --cmd_set=General --cmd_id=1```
+```./comm_serialtalk.py -port /dev/ttyUSB0 -vv --timeout=5000 --receiver_type=FlyController --seq_num=65280 --ack_type=No_ACK_Needed --cmd_set=General --cmd_id=1```
+
+Example of asking Flight Controller for hardware and firmware version data (Mavic 3):
+
+```./comm_serialtalk.py -bulk -vv --timeout=5000 --receiver_type=FlyController --seq_num=65280 --ack_type=No_ACK_Needed --cmd_set=General --cmd_id=1```
 
 ### comm_og_service_tool.py
 
@@ -454,23 +458,27 @@ like `comm_serialtalk.py`, but provides easier interface for some important func
 
 Example of listing Flight Controller Parameters 200-300 on Ph3 Pro to CSV format:
 
-```./comm_og_service_tool.py /dev/ttyUSB0 P3X FlycParam list --start=200 --count=100 --fmt=csv```
+```./comm_og_service_tool.py -port /dev/ttyUSB0 P3X FlycParam list --start=200 --count=100 --fmt=csv```
 
 Example of getting value of Flight Controller Parameters on Spark:
 
-```./comm_og_service_tool.py /dev/ttyUSB0 -vv SPARK FlycParam get g_config.flying_limit.max_height_0 --fmt=2line```
+```./comm_og_service_tool.py -port /dev/ttyUSB0 -vv SPARK FlycParam get g_config.flying_limit.max_height_0 --fmt=2line```
 
 Example of setting value of Flight Controller Parameters on Spark:
 
-```./comm_og_service_tool.py /dev/ttyUSB0 -vv SPARK FlycParam set g_config.flying_limit.max_height_0 500```
+```./comm_og_service_tool.py -port /dev/ttyUSB0 -vv SPARK FlycParam set g_config.flying_limit.max_height_0 500```
 
 Example of performing service "joint coarse" calibration of Spark gimbal:
 
-```./comm_og_service_tool.py /dev/ttyUSB0 -vv SPARK GimbalCalib JointCoarse```
+```./comm_og_service_tool.py -port /dev/ttyUSB0 -vv SPARK GimbalCalib JointCoarse```
 
 Example of performing service "linear hall" calibration of Spark gimbal, using Windows host:
 
-```python3 comm_og_service_tool.py COM23 -vv SPARK GimbalCalib LinearHall```
+```python3 comm_og_service_tool.py -port COM23 -vv SPARK GimbalCalib LinearHall```
+
+Example of listing Flight Controller Parameters 200-300 on the Mavic 3 Pro to CSV format:
+
+```./comm_og_service_tool.py -bulk MAV3 FlycParam list --start=200 --count=100 --fmt=csv```
 
 ### comm_sbs_bqctrl.py
 

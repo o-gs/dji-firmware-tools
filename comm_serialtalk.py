@@ -31,12 +31,8 @@ import os
 import io
 import sys
 import time
-import serial
 import select
 import argparse
-import usb.core
-import usb.util
-import usb.backend.libusb0 as myusb
 from ctypes import *
 
 sys.path.insert(0, './')
@@ -136,7 +132,9 @@ class SerialBulkWrap():
     def in_waiting(self):
         return 1
 
-def findCorrectDevice(dev):
+def find_correct_device(dev):
+    # Ugly way of finding the correct bulk device.
+    import usb.util
     for d in dev:
         for cfg in d:
             for intf in cfg:
@@ -146,10 +144,13 @@ def findCorrectDevice(dev):
                             return d
     return None
 
-def openUsb(po):
+def open_usb(po):
+    import usb.core
+    import usb.util
+    import usb.backend.libusb0 as myusb
     mybackend=myusb.get_backend()
     dev = usb.core.find(idVendor=0x2ca3, idProduct=0x0022, find_all = True, backend=mybackend)
-    dev = findCorrectDevice(dev)
+    dev = find_correct_device(dev)
 
     if dev:
         cfg = dev.get_active_configuration()
@@ -290,9 +291,10 @@ def do_receive_reply(po, ser, pktreq, seqnum_check=True):
 def do_send_request_receive_reply(po):
     if not po.bulk:
         # Open serial port
+        import serial
         ser = serial.Serial(po.port, baudrate=po.baudrate, timeout=0)
     else:
-        ser = openUsb(po)
+        ser = open_usb(po)
     if (po.verbose > 0):
         print("Opened {} at {}".format(ser.port, ser.baudrate))
 
