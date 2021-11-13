@@ -447,7 +447,7 @@ Example of asking Flight Controller for hardware and firmware version data (test
 
 Example of asking Flight Controller for hardware and firmware version data (Mavic 3):
 
-```./comm_serialtalk.py -bulk -vv --timeout=5000 --receiver_type=FlyController --seq_num=65280 --ack_type=No_ACK_Needed --cmd_set=General --cmd_id=1```
+```./comm_serialtalk.py -bulk -vv --timeout=5000 --receiver_type=FlyController --seq_num=65280 --ack_type=ACK_After_Exec --cmd_set=General --cmd_id=1```
 
 ### comm_og_service_tool.py
 
