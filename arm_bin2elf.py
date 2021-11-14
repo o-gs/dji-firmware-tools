@@ -505,7 +505,8 @@ def main():
   parser.add_argument('-l', '--addrspacelen', default=0x2000000, type=lambda x: int(x,0),
           help="Set address space length after base; the tool will expect used " \
             "addresses to end at baseaddr+addrspacelen, so it influences size " \
-            "of last section (defaults to 0x%(default)X)")
+            "of last section (defaults to max of 0x%(default)X and section ends computed " \
+            "from '--section' params)")
 
   parser.add_argument('-b', '--baseaddr', default=0x1000000, type=lambda x: int(x,0),
           help="Set base address; first section from BIN file will start " \
@@ -550,6 +551,14 @@ def main():
   for sect in po.section:
       po.section_addr.update(sect["addr"])
       po.section_size.update(sect["len"])
+  # Getting end of last section, to update address space length if it is too small
+  if len(po.section_addr) > 0:
+      sect_last = max(po.section_addr, key=po.section_addr.get)
+      last_section_end = po.section_addr[sect_last] + po.section_size[sect_last] - po.baseaddr
+      if (last_section_end > po.addrspacelen):
+          po.addrspacelen = min(last_section_end, 0xFFFFFFFF)
+          if (po.verbose > 0):
+              print("{}: Address space length auto-expanded to 0x{:08X}".format(po.fwpartfile, po.addrspacelen))
 
   po.basename = os.path.splitext(os.path.basename(po.fwpartfile))[0]
   if len(po.fwpartfile) > 0 and (po.elffile is None or len(po.elffile) == 0):
