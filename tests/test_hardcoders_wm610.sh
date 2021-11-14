@@ -132,8 +132,8 @@ function exec_mod_for_m0306 {
   local FWMODL=$1
   set -x
   cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
-  ./arm_bin2elf.py -vvv -e -b 0x8020000 --section .ARM.exidx@0x085d34:0 --section .bss@0x07fe0000:0xA000 \
-   --section .bss2@0x17fe0000:0x30000 --section .bss3@0x37fe0000:0x30000 -p "${FWMODL}.bin"
+  ./arm_bin2elf.py -vvv -e -b 0x8020000 --section .ARM.exidx@0x80a5d34:0 --section .bss@0x10000000:0xA000 \
+   --section .bss2@0x20000000:0x30000 --section .bss3@0x40000000:0x30000 -p "${FWMODL}.bin"
   ./dji_flyc_hardcoder.py -vvv -x -e "${FWMODL}.elf"
 
   modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]min_alt_below_home" "-800.0"
@@ -156,9 +156,9 @@ function exec_mod_for_m0900 {
   local FWMODL=$1
   set -x
   cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
-  ./arm_bin2elf.py -vvv -e -b 0x8008000 --section .ARM.exidx@0x0D500:0 --section .bss@0x17FF7700:0x5A00 \
-   --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x2200 \
-   --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p "${FWMODL}.bin"
+  ./arm_bin2elf.py -vvv -e -b 0x8008000 --section .ARM.exidx@0x8015500:0 --section .bss@0x1ffff700:0x5a00 \
+   --section .bss2@0x40000000:0x6700 --section .bss3@0x40010000:0x5500 --section .bss4@0x40020000:0x2200 \
+   --section .bss5@0x42200000:0x100 --section .bss6@0x42420000:0x500 -p "${FWMODL}.bin"
   ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWMODL}.elf"
 
   modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override" "1"

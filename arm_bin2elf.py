@@ -273,8 +273,11 @@ def armfw_bin2elf(po, fwpartfile):
      print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
   # Make sure we will not realign sections by mistake; we will update alignment in file later
   sect_align = 1
-  # Now let's assume that the .ARM.exidx section is located after .text section. Also, the .text section
-  # is first because it contains interrupt table located at offset 0
+  # Now let's assume that the .ARM.exidx section is located after .text section. While the .text section
+  # usually contains interrupt table located at offset 0, it doesn't mean it's first - we can't assume that.
+  # This is because interrupt vector address can be changed on most platforms. So RAM or MMIO sections can be
+  # before .text. Anyway, if user did not provided any .bss params, there is no way for us to automatically
+  # find any sections before .text, and since most platforms don't have them, let's assume there are none.
   sectname = ".text"
   if (not sectname in po.section_addr):
      if (sect_pos > po.expect_func_align * 8):
@@ -505,7 +508,8 @@ def main():
   parser.add_argument('-l', '--addrspacelen', default=0x2000000, type=lambda x: int(x,0),
           help="Set address space length after base; the tool will expect used " \
             "addresses to end at baseaddr+addrspacelen, so it influences size " \
-            "of last section (defaults to 0x%(default)X)")
+            "of last section (defaults to max of 0x%(default)X and section ends computed " \
+            "from '--section' params)")
 
   parser.add_argument('-b', '--baseaddr', default=0x1000000, type=lambda x: int(x,0),
           help="Set base address; first section from BIN file will start " \
@@ -550,6 +554,14 @@ def main():
   for sect in po.section:
       po.section_addr.update(sect["addr"])
       po.section_size.update(sect["len"])
+  # Getting end of last section, to update address space length if it is too small
+  if len(po.section_addr) > 0:
+      sect_last = max(po.section_addr, key=po.section_addr.get)
+      last_section_end = po.section_addr[sect_last] + po.section_size[sect_last] - po.baseaddr
+      if (last_section_end > po.addrspacelen):
+          po.addrspacelen = min(last_section_end, 0xFFFFFFFF)
+          if (po.verbose > 0):
+              print("{}: Address space length auto-expanded to 0x{:08X}".format(po.fwpartfile, po.addrspacelen))
 
   po.basename = os.path.splitext(os.path.basename(po.fwpartfile))[0]
   if len(po.fwpartfile) > 0 and (po.elffile is None or len(po.elffile) == 0):

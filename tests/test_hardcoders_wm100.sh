@@ -75,13 +75,13 @@ function exec_mod_for_m0306 {
   cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
   if [[ "${FWMODL}" < "wm100_0306_v03.02.34.99" ]]; then
     # command optimized for  wm100_0306_v03.02.34.02
-    ./arm_bin2elf.py -vv -e -b 0x00420000 --section .ARM.exidx@0x0127e90:0 --section .bss@0x1ffe0000:0x60000 \
-     --section .bss2@0x3fcc0000:0x1000 --section .bss3@0xdfbe0000:0x10000 \
+    ./arm_bin2elf.py -vv -e -b 0x00420000 --section .ARM.exidx@0x0547e90:0 --section .bss@0x20400000:0x60000 \
+     --section .bss2@0x400e0000:0x1000 --section .bss3@0xe0000000:0x10000 \
      -p "${FWMODL}.bin"
   else
     # command optimized for  wm100_0306_v03.02.37.55
-    ./arm_bin2elf.py -vv -e -b 0x00420000 --section .ARM.exidx@0x0105a10:0 --section .bss@0x1ffe0000:0x60000 \
-     --section .bss2@0x3fcc0000:0x1000 --section .bss3@0xdfbe0000:0x10000 \
+    ./arm_bin2elf.py -vv -e -b 0x00420000 --section .ARM.exidx@0x0525a10:0 --section .bss@0x20400000:0x60000 \
+     --section .bss2@0x400e0000:0x1000 --section .bss3@0xe0000000:0x10000 \
      -p "${FWMODL}.bin"
   fi
 
@@ -114,7 +114,7 @@ for FWPKG in "${FWPKG_LIST[@]}"; do
   FWIMAH_LIST=$(tar -xvf "fw_imah1/${FWPKG}")
   FWIMAH_0306=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0306_v.*\)[.]fw[.]sig$/\1/p')
   set -x
-  ./dji_imah_fwsig.py -vv -u -i "${FWIMAH_0306}.fw.sig"
+  ./dji_imah_fwsig.py -vv -k PRAK-2017-01 -k PUEK-2017-07 -u -i "${FWIMAH_0306}.fw.sig"
   ./dji_mvfc_fwpak.py dec -i "${FWIMAH_0306}.fw_0306.bin"
   set +x
 

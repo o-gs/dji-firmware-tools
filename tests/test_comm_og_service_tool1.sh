@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-./comm_og_service_tool.py --dry-test -vvv /dev/ttyUSB1 p3x FlycParam list --start=100 --fmt=2line
+./comm_og_service_tool.py --dry-test -vvv --port /dev/ttyUSB1 p3x FlycParam list --start=100 --fmt=2line
 TEST_RESULT=$?
 
 if [ ${TEST_RESULT} == 0 ]; then
@@ -27,7 +27,7 @@ else
     exit 1
 fi
 
-./comm_og_service_tool.py --dry-test -vvv /dev/ttyUSB1 p3x FlycParam get g_config.flying_limit.max_height_0
+./comm_og_service_tool.py --dry-test -vvv --port /dev/ttyUSB1 p3x FlycParam get g_config.flying_limit.max_height_0
 TEST_RESULT=$?
 
 if [ ${TEST_RESULT} == 0 ]; then
@@ -37,7 +37,7 @@ else
     exit 1
 fi
 
-./comm_og_service_tool.py --dry-test -vvv /dev/ttyUSB1 p3x FlycParam set g_config.flying_limit.max_height_0 499
+./comm_og_service_tool.py --dry-test -vvv --port /dev/ttyUSB1 p3x FlycParam set g_config.flying_limit.max_height_0 499
 TEST_RESULT=$?
 
 if [ ${TEST_RESULT} == 0 ]; then
@@ -47,7 +47,7 @@ else
     exit 1
 fi
 
-./comm_og_service_tool.py --dry-test -vvv /dev/ttyUSB1 SPARK FlycParam set g_config.flying_limit.max_height_0 500
+./comm_og_service_tool.py --dry-test -vvv --port /dev/ttyUSB1 SPARK FlycParam set g_config.flying_limit.max_height_0 500
 TEST_RESULT=$?
 
 if [ ${TEST_RESULT} == 0 ]; then
@@ -57,7 +57,7 @@ else
     exit 1
 fi
 
-./comm_og_service_tool.py --dry-test -vvv /dev/ttyUSB1 SPARK GimbalCalib JointCoarse
+./comm_og_service_tool.py --dry-test -vvv --port /dev/ttyUSB1 SPARK GimbalCalib JointCoarse
 TEST_RESULT=$?
 
 if [ ${TEST_RESULT} == 0 ]; then
@@ -67,7 +67,7 @@ else
     exit 1
 fi
 
-./comm_og_service_tool.py --dry-test -vvv /dev/ttyUSB1 SPARK GimbalCalib LinearHall
+./comm_og_service_tool.py --dry-test -vvv --port /dev/ttyUSB1 SPARK GimbalCalib LinearHall
 TEST_RESULT=$?
 
 if [ ${TEST_RESULT} == 0 ]; then
