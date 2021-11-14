@@ -273,8 +273,11 @@ def armfw_bin2elf(po, fwpartfile):
      print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
   # Make sure we will not realign sections by mistake; we will update alignment in file later
   sect_align = 1
-  # Now let's assume that the .ARM.exidx section is located after .text section. Also, the .text section
-  # is first because it contains interrupt table located at offset 0
+  # Now let's assume that the .ARM.exidx section is located after .text section. While the .text section
+  # usually contains interrupt table located at offset 0, it doesn't mean it's first - we can't assume that.
+  # This is because interrupt vector address can be changed on most platforms. So RAM or MMIO sections can be
+  # before .text. Anyway, if user did not provided any .bss params, there is no way for us to automatically
+  # find any sections before .text, and since most platforms don't have them, let's assume there are none.
   sectname = ".text"
   if (not sectname in po.section_addr):
      if (sect_pos > po.expect_func_align * 8):
