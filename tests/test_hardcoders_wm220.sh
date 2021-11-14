@@ -74,23 +74,23 @@ function exec_mod_for_m0306 {
   cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
   if [[ "${FWMODL}" < "wm220_0306_v03.02.34.99" ]]; then
     # command optimized for  wm220_0306_v03.02.13.12
-    ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x0116000:0 --section .bss@0x1ffe0000:0x60100 \
-     --section .bss2@0x3fcc0000:0x2000 \
+    ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x0536000:0 --section .bss@0x20400000:0x60100 \
+     --section .bss2@0x400e0000:0x2000 \
      -p "${FWMODL}.bin"
   elif [[ "${FWMODL}" < "wm220_0306_v03.02.35.99" ]]; then
     # command optimized for wm220_0306_v03.02.35.05
-    ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x01265d8:0 --section .bss@0x1ffe0000:0x60100 \
-     --section .bss2@0x3fcc0000:0x2000 \
+    ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x05465d8:0 --section .bss@0x20400000:0x60100 \
+     --section .bss2@0x400e0000:0x2000 \
      -p "${FWMODL}.bin"
   elif [[ "${FWMODL}" < "wm220_0306_v03.02.43.99" ]]; then
     # command optimized for wm220_0306_v03.02.43.20
-    ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x01077d0:0 --section .bss@0x1ffe0000:0x60100 \
-     --section .bss2@0x3fcc0000:0x2000 \
+    ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x05277d0:0 --section .bss@0x20400000:0x60100 \
+     --section .bss2@0x400e0000:0x2000 \
      -p "${FWMODL}.bin"
   else
     # command optimized for wm220_0306_v03.02.44.07
-    ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x0105300:0 --section .bss@0x1ffe0000:0x60100 \
-     --section .bss2@0x3fcc0000:0x2000 \
+    ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x0525300:0 --section .bss@0x20400000:0x60100 \
+     --section .bss2@0x400e0000:0x2000 \
      -p "${FWMODL}.bin"
   fi
 
@@ -118,7 +118,7 @@ for FWPKG in "${FWPKG_LIST[@]}"; do
   FWIMAH_LIST=$(tar -xvf "fw_imah1/${FWPKG}")
   FWIMAH_0306=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0306_v.*\)[.]fw[.]sig$/\1/p')
   set -x
-  ./dji_imah_fwsig.py -vv -u -i "${FWIMAH_0306}.fw.sig"
+  ./dji_imah_fwsig.py -vv -k PRAK-2017-01 -k PUEK-2017-07 -u -i "${FWIMAH_0306}.fw.sig"
   ./dji_mvfc_fwpak.py dec -i "${FWIMAH_0306}.fw_0306.bin"
   set +x
 

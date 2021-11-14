@@ -70,8 +70,8 @@ function exec_mod_for_m0306 {
   local FWMODL=$1
   set -x
   cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
-  ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x0109f00:0 --section .bss@0x1ffe0000:0x60100 \
-   --section .bss2@0x3fcc0000:0x2000 -p "${FWMODL}.bin"
+  ./arm_bin2elf.py -vvv -e -b 0x420000 --section .ARM.exidx@0x0529f00:0 --section .bss@0x20400000:0x60100 \
+   --section .bss2@0x400e0000:0x2000 -p "${FWMODL}.bin"
   ./dji_flyc_hardcoder.py -vvv -x -e "${FWMODL}.elf"
 
   modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]flyc[.]min_alt_below_home" "-800.0"
@@ -95,9 +95,9 @@ function exec_mod_for_m0900 {
   local FWMODL=$1
   set -x
   cp "${FWMODL}.bin" "${FWMODL}.orig.bin"
-  ./arm_bin2elf.py -vvv -e -b 0x8008000 --section .ARM.exidx@0x0D500:0 --section .bss@0x17FF7700:0x5A00 \
-   --section .bss2@0x37ff8000:0x6700 --section .bss3@0x38008000:0x5500 --section .bss4@0x38018000:0x2200 \
-   --section .bss5@0x3a1f8000:0x100 --section .bss6@0x3a418000:0x500 -p "${FWMODL}.bin"
+  ./arm_bin2elf.py -vvv -e -b 0x8008000 --section .ARM.exidx@0x8015500:0 --section .bss@0x1ffff700:0x5a00 \
+   --section .bss2@0x40000000:0x6700 --section .bss3@0x40010000:0x5500 --section .bss4@0x40020000:0x2200 \
+   --section .bss5@0x42200000:0x100 --section .bss6@0x42420000:0x500 -p "${FWMODL}.bin"
   ./lightbridge_stm32_hardcoder.py -vvv -x -e "${FWMODL}.elf"
 
   modify_json_value_inplace "${FWMODL}.json" "og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override" "1"
@@ -120,10 +120,10 @@ for FWPKG in "${FWPKG_LIST[@]}"; do
   FWIMAH_0306=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0306_v.*\)[.]fw[.]sig$/\1/p')
   FWIMAH_0900=$(echo "${FWIMAH_LIST}" | sed -n 's/^\([a-z0-9]\+_0900_v.*\)[.]fw[.]sig$/\1/p')
   set -x
-  ./dji_imah_fwsig.py -vv -u -i "${FWIMAH_0100}.fw.sig"
-  ./dji_imah_fwsig.py -vv -u -i "${FWIMAH_0306}.fw.sig"
+  ./dji_imah_fwsig.py -vv -k PRAK-2017-01 -k PUEK-2017-07 -u -i "${FWIMAH_0100}.fw.sig"
+  ./dji_imah_fwsig.py -vv -u -k PRAK-2017-01 -k PUEK-2017-07 -i "${FWIMAH_0306}.fw.sig"
   ./dji_mvfc_fwpak.py dec -i "${FWIMAH_0306}.fw_0306.bin"
-  ./dji_imah_fwsig.py -vv -u -i "${FWIMAH_0900}.fw.sig"
+  ./dji_imah_fwsig.py -vv -k PRAK-2017-01 -k PUEK-2017-07 -u -i "${FWIMAH_0900}.fw.sig"
   set +x
 
   #exec_mod_for_m0100 "${FWIMAH_0100}.fw_0100"
