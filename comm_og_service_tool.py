@@ -1525,12 +1525,12 @@ def main():
     """
     parser = argparse.ArgumentParser(description=__doc__)
 
-    subparser = parser.add_mutually_exclusive_group()
+    subparser = parser.add_mutually_exclusive_group(required=True)
 
-    subparser.add_argument('-port', type=str,
+    subparser.add_argument('--port', type=str,
             help='the serial port to write to and read from')
 
-    subparser.add_argument('-bulk', action='store_true',
+    subparser.add_argument('--bulk', action='store_true',
             help='use usb bulk instead of serial connection')
 
     parser.add_argument('product', metavar='product', choices=[i.name for i in PRODUCT_CODE], type=parse_product_code,
@@ -1629,10 +1629,6 @@ def main():
              "lead to inconsistent keys due to their read-only copy")
 
     po = parser.parse_args()
-
-    if (po.bulk is False and po.port is None):
-        print('Atleast one argument "-bulk" or "-port" is needed!')
-        sys.exit(0)
 
     po.product = PRODUCT_CODE.from_name(po.product)
     po.svcmd = SERVICE_CMD.from_name(po.svcmd)

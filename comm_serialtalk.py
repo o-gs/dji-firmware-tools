@@ -326,12 +326,12 @@ def main():
     """
     parser = argparse.ArgumentParser(description=__doc__)
 
-    subparser = parser.add_mutually_exclusive_group()
+    subparser = parser.add_mutually_exclusive_group(required=True)
 
-    subparser.add_argument('-port', type=str,
+    subparser.add_argument('--port', type=str,
             help='the serial port to write to and read from')
 
-    subparser.add_argument('-bulk', action='store_true',
+    subparser.add_argument('--bulk', action='store_true',
             help='use usb bulk instead of serial connection')
 
     parser.add_argument('-b', '--baudrate', default=9600, type=int,
@@ -399,10 +399,6 @@ def main():
             help='provide binary payload directly (default payload is empty)')
 
     po = parser.parse_args();
-
-    if (po.bulk is False and po.port is None):
-        print('Atleast one argument "-bulk" or "-port" is needed!')
-        sys.exit(0)
 
     if (po.payload_hex is not None):
         po.payload = bytes.fromhex(po.payload_hex)
