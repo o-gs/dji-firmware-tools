@@ -154,7 +154,12 @@ def open_usb(po):
 
     if dev:
         cfg = dev.get_active_configuration()
-        intf = cfg[(0,0)]
+        
+        if sys.platform in ('win32', 'win64'):
+            intf = cfg[(0,0)]
+        else:
+            intf = cfg[(4,0)]
+            
 
         ep_out = usb.util.find_descriptor(
             intf,
