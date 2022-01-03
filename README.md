@@ -151,6 +151,9 @@ Example of signing previously un-signed FC firmware for *Mini 2* (requires `PRAK
 
 ```./dji_imah_fwsig.py -vv -k PRAK-2019-09 -s -i wm161_0306_v03.04.09.74_20210112.pro.fw.sig```
 
+For more examples of usage of the tool, as well as identifiers of keys for specific
+platforms, read the script used for testing it: `tests/test_dji_imah_fwsig_rebin1.sh`.
+
 ### dji_mvfc_fwpak.py
 
 DJI Mavic Flight Controller Firmware Decryptor tool; removes second layer encryption
