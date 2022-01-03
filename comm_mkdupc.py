@@ -924,7 +924,7 @@ def parse_packet_type(s):
 def parse_cmd_set(s):
     """ Parses command set string in known formats.
     """
-    pat = re.compile(r"^[0-9]{1}$")
+    pat = re.compile(r"^[0-9]{1-3}$")
     try:
         if re.search(pat, s):
             return CMD_SET_TYPE(int(s, 10))
