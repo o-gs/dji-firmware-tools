@@ -361,7 +361,7 @@ if [ ! -z "${MODULE}" ]; then
   for IMAH_NAME in "bootarea" "loader" "whole"; do
     if [ -f "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img" ]; then
       # Use binwalk to find, but not to extract the files; we want to control size of each file
-      PART_SEARCH_RES=$(binwalk --signature --raw='IM\x2aH\x01' --raw='IM\x2aH\x02' -y filesystem -y raw "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img")
+      PART_SEARCH_RES=$(binwalk --signature --raw='IM\x2aH\x01' --raw='IM\x2aH\x02' --raw='PL\x2aI\x00\x00\x00\x00' -y filesystem -y raw "${TESTFILE%.*}_${MODULE}/${IMAH_NAME}.img")
       PART_OFFSETS=( 0 )
       for PART_POS in $(echo "${PART_SEARCH_RES}" | sed -n 's/^\([0-9]\+\)[ ]\+\(0x[0-9A-F]\+\)[ ]\+\(.*\)$/\1/p'); do
         PART_OFFSETS+=( ${PART_POS} )
@@ -374,6 +374,8 @@ if [ ! -z "${MODULE}" ]; then
         PART_TYPE=$(echo "${PART_SEARCH_RES}" | sed -n 's/^\('${PART_OFFSET}'\)[ ]\+\(0x[0-9A-F]\+\)[ ]\+\(.*\)$/\3/p')
         if [[ ${PART_TYPE} =~ 'Raw signature (IM\x2aH' ]]; then
           PART_EXT="img.sig"
+        elif [[ ${PART_TYPE} =~ 'Raw signature (PL\x2aI' ]]; then
+          PART_EXT="partab"
         elif [[ ${PART_TYPE} =~ 'Squashfs filesystem' ]]; then
           PART_EXT="squashfs"
         else
