@@ -139,6 +139,7 @@ keys = {
         # WM231 FW V01.00.0113-V09.09.0902,
         # WM232 FW V02.04.1640,
         # PM430 FW, AG500 FW
+        # WM260 FW V01.00.0600
         0xba, 0xb3, 0xcd, 0x72, 0x36, 0xb2, 0xe1, 0xd8, 0x66, 0x49, 0x35, 0xc9, 0xc2, 0x58, 0x8f, 0x3c
     ]),
     "UFIE-2019-11":  bytes([ # Update Firmware Image Encryption key; published 2021-03-26 by Felix Domke
@@ -192,6 +193,7 @@ keys = {
         # GL170 FW V01.01.0000,
         # WM231 FW V01.00.0113-V09.09.0902,
         # WM232 FW V02.04.1640
+        # WM260 FW V01.00.0600
         "40000000c73fb7ba092e1fef4344b95a4ed80566b2a3aaaca69e3f7847a7e6d5"
         "896cf3b9f64e771b6c44f32e3fab2e91ab5834e48bbf8e8ad38038e810ab3dd5"
         "1f8b54f677eb5917e9df95fb0fd97445b2c40beedbb4256ac5a381c8ae16a99f"
