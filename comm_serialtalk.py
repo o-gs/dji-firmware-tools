@@ -134,14 +134,60 @@ class SerialBulkWrap():
 
 def find_correct_device(dev):
     # Ugly way of finding the correct bulk device.
+    # I truly wish this would be simpler.
     import usb.util
+
     for d in dev:
         for cfg in d:
-            for intf in cfg:
-                for endp in intf:
-                    if usb.util.endpoint_direction(endp.bEndpointAddress) == usb.util.ENDPOINT_IN:
-                        if endp.bEndpointAddress == 0x85:
-                            return d
+            # see if we can get the interface description.
+            interface_description = usb.util.get_string(d, cfg.iConfiguration)
+
+            if "," in interface_description:
+                # UAVs
+                # They may have multiple "bulk" intefaces (all with the same
+                # bInterfaceSubClass), so we need to look for the "ACM" one
+                # (which is the DUML BULK interface)
+                interface_descriptions = interface_description.split(",")
+                try:
+                    interface_for_acm = interface_descriptions.index("acm") + 1
+                except ValueError:
+                    print("no ACM (bulk) interface here.")
+                    continue
+                print("using bInterfaceNumber %d" % interface_for_acm)
+                for intf in cfg:
+                    if intf.bInterfaceNumber == interface_for_acm:
+                        assert intf.bInterfaceSubClass == 0x43, "we expect the ACM inteface to be of the right bInterfaceSubclass"
+                        return intf
+            elif "_" in interface_description:
+
+                # RM330: "mtp_bulk_adb"
+                #   Interface 0: mtp
+                #   Interface 1: bulk
+                #   Interface 2: adb
+
+                # but:
+                # RM510: "mtp_bulk_adb"
+                #   Interface 0: bulk
+                #   Interface 1: mtp
+                #   Interface 2: adb
+
+                # So we resort to look for a bulk interface based on subclass.
+                # (Same strategy doesn't work on e.g. wm260 because they
+                # have multiple bulk interfaces with the same subclass.)
+
+                interface_descriptions = interface_description.split("_")
+                if "bulk" in interface_descriptions:
+                    interface_for_acm = interface_descriptions.index("bulk")
+                    for intf in cfg:
+                        if intf.bInterfaceSubClass == 0x43:
+                            return intf
+                else:
+                    print("no BULK interface here.")
+                    continue
+            else:
+                print("can't parse", interface_descriptions)
+                continue
+
     return None
 
 def open_usb(po):
@@ -149,38 +195,32 @@ def open_usb(po):
     import usb.util
     import usb.backend.libusb0 as myusb
     mybackend=myusb.get_backend()
-    dev = usb.core.find(idVendor=0x2ca3, idProduct=0x0022, find_all = True, backend=mybackend)
-    dev = find_correct_device(dev)
 
-    if dev:
-        cfg = dev.get_active_configuration()
-        
-        if sys.platform in ('win32', 'win64'):
-            intf = cfg[(0,0)]
-        else:
-            intf = cfg[(4,0)]
-            
+    dev = usb.core.find(idVendor=0x2ca3, find_all = True, backend=mybackend)
+    intf = find_correct_device(dev)
 
-        ep_out = usb.util.find_descriptor(
-            intf,
-            # match the first OUT endpoint
-            custom_match = \
-            lambda e: \
-                usb.util.endpoint_direction(e.bEndpointAddress) == \
-                usb.util.ENDPOINT_OUT)
+    assert intf is not None, "Couldn't find any DJI BULK device"
 
-        ep_in = usb.util.find_descriptor(
-            intf,
-            # match the first OUT endpoint
-            custom_match = \
-            lambda e: \
-                usb.util.endpoint_direction(e.bEndpointAddress) == \
-                usb.util.ENDPOINT_IN)
+    ep_out = usb.util.find_descriptor(
+        intf,
+        # match the first OUT endpoint
+        custom_match = \
+        lambda e: \
+            usb.util.endpoint_direction(e.bEndpointAddress) == \
+            usb.util.ENDPOINT_OUT)
+
+    ep_in = usb.util.find_descriptor(
+        intf,
+        # match the first OUT endpoint
+        custom_match = \
+        lambda e: \
+            usb.util.endpoint_direction(e.bEndpointAddress) == \
+            usb.util.ENDPOINT_IN)
 
     if dev and ep_in and ep_out:
         return SerialBulkWrap(dev,ep_in,ep_out, po.timeout)
     else:
-        sys.exit(0)
+        assert False, "couldn't find endpoints for bulk interface"
 
 def do_read_packets(ser, state, info):
     out = ListFormatter()
