@@ -21,7 +21,7 @@ Replacing some components of the drone may require calibration. The tools are
 capable of triggering calibration in some devices, mostly gimbals with
 [Hall sensors](https://en.wikipedia.org/wiki/Hall_effect_sensor).
 
-It is albo possible to use them to send any custom packet to the drone, and
+It is also possible to use them to send any custom packet to the drone, and
 this way trigger factory functions like calibration or pairing - as long
 as you know how the packet should look like.
 
