@@ -72,9 +72,9 @@ def test_comm_sbs_bqctrl_chip_info_commands(capsys, chip_name, test_nth):
 
 
 @pytest.mark.parametrize("chip_name,test_nth", [
-  ("BQ30z55",3,),
-  ("BQ40z50",3,),
-  ("BQ40z307",3,),
+  ("BQ30z55",1,),
+  ("BQ40z50",1,),
+  ("BQ40z307",1,),
 ])
 def test_comm_sbs_bqctrl_chip_read_commands(capsys, chip_name, test_nth):
     """ Test read commands on a mock chip.
@@ -90,8 +90,10 @@ def test_comm_sbs_bqctrl_chip_read_commands(capsys, chip_name, test_nth):
     for cmd in read_commands:
         assert " " not in cmd, "Listed command has a space: {:s}".format(cmd)
     # Skip combinations not simulated properly ATM
-    if chip_name == "BQ40z50":
-        read_commands = [ cmd for cmd in read_commands if "Authenticate" not in cmd ]
+    if chip_name == "BQ30z55":
+        read_commands = [ cmd for cmd in read_commands if not (cmd.endswith("ManufacturerData") or cmd.endswith("ManufacturerInput")) ]
+    elif chip_name in ("BQ40z50", "BQ40z307",):
+        read_commands = [ cmd for cmd in read_commands if not (cmd in ("Authenticate",) or cmd.endswith("ManufacturerData")) ]
 
     # Run some of the commands
     for read_cmd in read_commands[::test_nth]:
@@ -101,6 +103,24 @@ def test_comm_sbs_bqctrl_chip_read_commands(capsys, chip_name, test_nth):
             comm_sbs_bqctrl_main()
         capstdout, _ = capsys.readouterr()
     pass
+
+
+@pytest.mark.parametrize("chip_name,test_nth", [
+  ("BQ30z55",3,),
+  ("BQ40z50",3,),
+  ("BQ40z307",3,),
+])
+def test_comm_sbs_bqctrl_chip_write_commands(capsys, chip_name, test_nth):
+    """ Test write commands on a mock chip.
+    """
+    # Capture a list of commands
+    command = [os.path.join(".", "comm_sbs_bqctrl.py"), "--dry-run", "--chip", chip_name, "write-list"]
+    LOGGER.info(' '.join(command))
+    with patch.object(sys, 'argv', command):
+        comm_sbs_bqctrl_main()
+    capstdout, _ = capsys.readouterr()
+    write_commands = list(capstdout.splitlines())
+    pytest.skip("no tests for write command as the command is unfinished")
 
 
 @pytest.mark.parametrize("chip_name,test_nth", [
