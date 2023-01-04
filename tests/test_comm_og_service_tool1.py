@@ -31,6 +31,7 @@ import pytest
 from unittest.mock import patch
 
 # Import the functions to be tested
+sys.path.insert(0, './')
 from comm_og_service_tool import main as comm_og_service_tool_main
 
 

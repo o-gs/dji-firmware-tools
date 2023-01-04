@@ -31,6 +31,7 @@ import pytest
 from unittest.mock import patch
 
 # Import the functions to be tested
+sys.path.insert(0, './')
 from comm_sbs_bqctrl import main as comm_sbs_bqctrl_main
 
 
