@@ -1249,6 +1249,9 @@ class SMBusMock(object):
     def write_word_data(self, i2c_addr, register, value, force=None):
         self.do_mock_write(i2c_addr, register, struct.pack('<H', value))
 
+    def write_dword_data(self, i2c_addr, register, value, force=None):
+        self.do_mock_write(i2c_addr, register, struct.pack('<L', value))
+
     def process_call(self, i2c_addr, register, value, force=None):
         pass
 
@@ -1707,6 +1710,35 @@ def smbus_write_word(bus, dev_addr, cmd, v, val_type, po):
         b = type_str_to_bytes(v, val_type, endian="le")
         if (po.verbose > 2):
             print("Write {}: CMD={:02x} WORD={}".format(cmd.name,
+              cmd.value, " ".join('{:02x}'.format(x) for x in b)))
+        if bus.pec:
+            whole_packet = smbus_recreate_write_packet_data(dev_addr, cmd, b)
+            pec = crc8_ccitt_compute(whole_packet)
+            b = bytes([cmd.value]) + b + bytes([pec])
+        else:
+            b = bytes([cmd.value]) + b
+        part_write = i2c_msg.write(dev_addr, b)
+        bus.i2c_rdwr(part_write)
+    else:
+        raise NotImplementedError("Unsupported bus API type '{}'".format(po.api_type))
+
+
+def smbus_write_long(bus, dev_addr, cmd, v, val_type, po):
+    if po.api_type == "smbus":
+        if val_type in ("int32",): # signed type support
+            if v < 0:
+                v += 0x100000000
+        if v < 0 or v > 0xFFFFFFFF:
+            raise ValueError((
+              "Value to write for command {} is beyond type {} bounds"
+              ).format(cmd.name,val_type))
+        if (po.verbose > 2):
+            print("Write {}: {:02x} LONG=0x{:x}".format(cmd.name, cmd.value, v))
+        bus.write_dword_data(dev_addr, cmd.value, v)
+    elif po.api_type == "i2c":
+        b = type_str_to_bytes(v, val_type, endian="le")
+        if (po.verbose > 2):
+            print("Write {}: CMD={:02x} LONG={}".format(cmd.name,
               cmd.value, " ".join('{:02x}'.format(x) for x in b)))
         if bus.pec:
             whole_packet = smbus_recreate_write_packet_data(dev_addr, cmd, b)
@@ -2931,11 +2963,12 @@ def smart_battery_system_last_error(bus, dev_addr, vals, po):
     """ Reads and prints value of last ERROR_CODE from the battery.
     """
     cmd = SBS_COMMAND.BatteryStatus
+    subcmd = None
     fld = SBS_FLAG_BATTERY_STATUS.ERROR_CODE
     fldinf = SBS_BATTERY_STATUS_INFO[fld]
     val = None
     try:
-        v, l, u, s = smbus_read(bus, dev_addr, cmd, {'subcmd': None,'retry_count':1}, vals, po)
+        v, l, u, s = smbus_read(bus, dev_addr, cmd, {'subcmd': subcmd,'retry_count':1}, vals, po)
         response = {'val':v,'list':l,'sinf':s,'uname':u,}
         vals[cmd if subcmd is None else subcmd] = response
         val = l[fld]['val']

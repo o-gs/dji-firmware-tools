@@ -35,6 +35,7 @@ __license__ = "GPL"
 
 import sys
 import argparse
+import errno
 import os
 import enum
 import struct
