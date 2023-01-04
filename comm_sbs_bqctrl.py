@@ -252,8 +252,84 @@ class MANUFACTURER_ACCESS_CMD_BQGENERIC(DecoratedEnum):
     FirmwareVersion			= 0x02
     HardwareVersion			= 0x03
 
+class SBS_FLAG_BATTERY_MODE(DecoratedEnum):
+    """ Flags used in BatteryMode command
+    """
+    INTERNAL_CHARGE_CONTROLLER	= 0
+    PRIMARY_BATTERY_SUPPORT		= 1
+    RESERVED2					= 2
+    RESERVED3					= 3
+    RESERVED4					= 4
+    RESERVED5					= 5
+    RESERVED6					= 6
+    CONDITION_FLAG				= 7
+    CHARGE_CONTROLLER_ENABLED	= 8
+    PRIMARY_BATTERY				= 9
+    RESERVED10					= 10
+    RESERVED11					= 11
+    RESERVED12					= 12
+    ALARM_MODE					= 13
+    CHARGER_MODE				= 14
+    CAPACITY_MODE				= 15
 
-MANUFACTURER_ACCESS_CMD_BQ_INFO = {
+class SBS_FLAG_BATTERY_STATUS(DecoratedEnum):
+    """ Flags used in BatteryStatus command
+    """
+    ERROR_CODE					= 0
+    FULLY_DISCHARGED			= 4
+    FULLY_CHARGED				= 5
+    DISCHARGING					= 6
+    INITIALIZED					= 7
+    REMAINING_TIME_ALARM		= 8
+    REMAINING_CAPACITY_ALARM	= 9
+    RESERVED10					= 10
+    TERMINATE_DISCHARGE_ALARM	= 11
+    OVERTEMPERATURE_ALARM		= 12
+    RESERVED13					= 13
+    TERMINATE_CHARGE_ALARM		= 14
+    OVER_CHARGED_ALARM			= 15
+
+class SBS_FLAG_SPECIFICATION_INFO(DecoratedEnum):
+    """ Flags used in SpecificationInfo command
+    """
+    Revision					= 0
+    Version						= 4
+    VScale						= 8
+    IPScale						= 12
+
+class MONITOR_GROUP(DecoratedEnum):
+    """ List of groups of commands/offsets.
+    """
+    DeviceInfo	= 0x00
+    UsageInfo	= 0x01
+    ComputedInfo= 0x02
+    StatusBits	= 0x03
+    AtRates		= 0x04
+    BQStatusBits	= 0x06
+    BQStatusBitsMA	= 0x07
+    BQCellVoltages	= 0x08
+    BQLifetimeData	= 0x09
+    BQLifetimeDataMA	= 0x0a
+    ImpedanceTrack	= 0x0b
+    ImpedanceTrackMA	= 0x0c
+    BQTurboMode	= 0x0f
+
+# Global variables, modified by chip drivers
+MANUFACTURER_ACCESS_CMD_BQ_INFO = {}
+MANUFACTURER_BLOCK_ACCESS_CMD_BQ_INFO = {}
+SBS_BATTERY_MODE_INFO = {}
+SBS_BATTERY_STATUS_INFO = {}
+SBS_SPECIFICATION_INFO = {}
+SBS_CMD_INFO = {}
+RAW_ADDRESS_SPACE_KIND_INFO = {}
+SBS_CMD_GROUPS = {}
+SBS_SEALING = {}
+
+def reset_default_driver(po):
+  """ Sets global variables to no chip-specific driver loaded state.
+  """
+  global MANUFACTURER_ACCESS_CMD_BQ_INFO
+  MANUFACTURER_ACCESS_CMD_BQ_INFO = {
     MANUFACTURER_ACCESS_CMD_BQGENERIC.ManufacturerData : {
         'type'	: "uint16",
         'unit'	: {'scale':1,'name':"hex"},
@@ -282,35 +358,14 @@ MANUFACTURER_ACCESS_CMD_BQ_INFO = {
         'access_per_seal'	: ("r","r","r",),
         'desc'	: ("The IC hardware revision."),
     },
+  }
 
-}
+  global MANUFACTURER_BLOCK_ACCESS_CMD_BQ_INFO
+  MANUFACTURER_BLOCK_ACCESS_CMD_BQ_INFO = {
+  }
 
-
-MANUFACTURER_BLOCK_ACCESS_CMD_BQ_INFO = {
-}
-
-
-class SBS_FLAG_BATTERY_MODE(DecoratedEnum):
-    """ Flags used in BatteryMode command
-    """
-    INTERNAL_CHARGE_CONTROLLER	= 0
-    PRIMARY_BATTERY_SUPPORT		= 1
-    RESERVED2					= 2
-    RESERVED3					= 3
-    RESERVED4					= 4
-    RESERVED5					= 5
-    RESERVED6					= 6
-    CONDITION_FLAG				= 7
-    CHARGE_CONTROLLER_ENABLED	= 8
-    PRIMARY_BATTERY				= 9
-    RESERVED10					= 10
-    RESERVED11					= 11
-    RESERVED12					= 12
-    ALARM_MODE					= 13
-    CHARGER_MODE				= 14
-    CAPACITY_MODE				= 15
-
-SBS_BATTERY_MODE_INFO = {
+  global SBS_BATTERY_MODE_INFO
+  SBS_BATTERY_MODE_INFO = {
     SBS_FLAG_BATTERY_MODE.INTERNAL_CHARGE_CONTROLLER : {
         # Data type associated with the field
         # For strings, it also contains expected length (which can be exceeeded,
@@ -504,27 +559,10 @@ SBS_BATTERY_MODE_INFO = {
             "whereas a linear supply is better represented by a constant "
             "current model."),
     },
-}
+  }
 
-
-class SBS_FLAG_BATTERY_STATUS(DecoratedEnum):
-    """ Flags used in BatteryStatus command
-    """
-    ERROR_CODE					= 0
-    FULLY_DISCHARGED			= 4
-    FULLY_CHARGED				= 5
-    DISCHARGING					= 6
-    INITIALIZED					= 7
-    REMAINING_TIME_ALARM		= 8
-    REMAINING_CAPACITY_ALARM	= 9
-    RESERVED10					= 10
-    TERMINATE_DISCHARGE_ALARM	= 11
-    OVERTEMPERATURE_ALARM		= 12
-    RESERVED13					= 13
-    TERMINATE_CHARGE_ALARM		= 14
-    OVER_CHARGED_ALARM			= 15
-
-SBS_BATTERY_STATUS_INFO = {
+  global SBS_BATTERY_STATUS_INFO
+  SBS_BATTERY_STATUS_INFO = {
     SBS_FLAG_BATTERY_STATUS.ERROR_CODE : {
         'type'	: "named_bitfield",
         'unit'	: {'scale':1,'name':"dec"},
@@ -654,17 +692,10 @@ SBS_BATTERY_STATUS_INFO = {
         'tiny_name'	: "OCA",
         'desc'	: ("Battery is fully charged. Stop charging."),
     },
-}
+  }
 
-class SBS_FLAG_SPECIFICATION_INFO(DecoratedEnum):
-    """ Flags used in SpecificationInfo command
-    """
-    Revision					= 0
-    Version						= 4
-    VScale						= 8
-    IPScale						= 12
-
-SBS_SPECIFICATION_INFO = {
+  global SBS_SPECIFICATION_INFO
+  SBS_SPECIFICATION_INFO = {
     SBS_FLAG_SPECIFICATION_INFO.Revision : {
         'type'	: "int_bitfield",
         'unit'	: {'scale':1,'name':"dec"},
@@ -703,10 +734,10 @@ SBS_SPECIFICATION_INFO = {
         'desc'	: ("Current/capacity scaling exp. Multiplies currents "
             "and capacities by 10 ^ IPScale."),
     },
-}
+  }
 
-
-SBS_CMD_INFO = {
+  global SBS_CMD_INFO
+  SBS_CMD_INFO = {
     SBS_COMMAND.ManufacturerAccess : {
         # Data type associated with the function
         'type'	: "uint16",
@@ -1061,31 +1092,13 @@ SBS_CMD_INFO = {
             "discharge, etc."),
         'getter'	: "simple",
     },
+  }
 
-}
+  global RAW_ADDRESS_SPACE_KIND_INFO
+  RAW_ADDRESS_SPACE_KIND_INFO = {}
 
-
-RAW_ADDRESS_SPACE_KIND_INFO = {}
-
-
-class MONITOR_GROUP(DecoratedEnum):
-    """ List of groups of commands/offsets.
-    """
-    DeviceInfo	= 0x00
-    UsageInfo	= 0x01
-    ComputedInfo= 0x02
-    StatusBits	= 0x03
-    AtRates		= 0x04
-    BQStatusBits	= 0x06
-    BQStatusBitsMA	= 0x07
-    BQCellVoltages	= 0x08
-    BQLifetimeData	= 0x09
-    BQLifetimeDataMA	= 0x0a
-    ImpedanceTrack	= 0x0b
-    ImpedanceTrackMA	= 0x0c
-    BQTurboMode	= 0x0f
-
-SBS_CMD_GROUPS = {
+  global SBS_CMD_GROUPS
+  SBS_CMD_GROUPS = {
     MONITOR_GROUP.DeviceInfo : (
         SBS_COMMAND.ManufactureDate,
         SBS_COMMAND.SerialNumber,
@@ -1127,8 +1140,12 @@ SBS_CMD_GROUPS = {
         SBS_COMMAND.AtRateToEmpty,
         SBS_COMMAND.AtRateOK,
     ),
-}
+  }
 
+  global SBS_SEALING
+  SBS_SEALING = {}
+
+  pass # reset_default_driver() ends
 
 class ChipMock(object):
     def __init__(self, bus, chip=None):
@@ -3596,6 +3613,8 @@ def main():
     if po.chip == CHIP_TYPE.AUTO:
         po.chip = smart_battery_detect(vals, po)
 
+    # Re-init global variables; then they are modified by specific chip driver
+    reset_default_driver(po)
     if po.chip in (CHIP_TYPE.BQ30z50, CHIP_TYPE.BQ30z55, CHIP_TYPE.BQ30z554,):
         fnames = ["comm_sbs_chips/{}.py".format("BQ30z554")]
     elif po.chip in (CHIP_TYPE.BQ40z50,):
