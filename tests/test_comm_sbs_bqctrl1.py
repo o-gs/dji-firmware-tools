@@ -41,11 +41,13 @@ def test_comm_sbs_bqctrl_chip_detect():
     """
     # Provide chip - should know not to contact the chip even w/o "--dry-run"
     command = [os.path.join(".", "comm_sbs_bqctrl.py"), "-v", "--chip", "BQ30z55", "read-list"]
+    LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         comm_sbs_bqctrl_main()
 
     # Do not provide chip - test auto-detect
     command = [os.path.join(".", "comm_sbs_bqctrl.py"), "-v", "--dry-run", "info-list"]
+    LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         comm_sbs_bqctrl_main()
     pass
