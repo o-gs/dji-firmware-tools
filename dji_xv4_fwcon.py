@@ -139,30 +139,44 @@ class FwPkgHeader(LittleEndianStructure):
     self.ver_rollbk_enc = 0x5127A564 ^ ver ^ self.timestamp;
 
   def get_format_version(self):
-    if self.magic == 0x12345678 and self.magic_ver == 0x0001:
-        if (self.ver_latest_enc == 0 and self.ver_rollbk_enc == 0):
-            return 2015
+    if self.magic == 0x12345678 and self.magic_ver == 0x0000:
+        # The versions are expected to be set properly for this magic_ver; that's surprising, as it means
+        # the values are invalid only for magic_ver == 1
+        if (self.ver_latest_enc != 0 and self.ver_rollbk_enc != 0):
+            return 201412
         else:
-            return 2016
-    elif self.magic == 0x12345678 and self.magic_ver == 0x1130:
-        return 2017
+            return 0
+    elif self.magic == 0x12345678 and self.magic_ver == 0x0001:
+        if (self.ver_latest_enc == 0 and self.ver_rollbk_enc == 0):
+            return 201502
+        else:
+            return 201507
+    # Higher magic_ver - allow any 16-bit, but hex digits must be within BCD range
+    elif self.magic == 0x12345678 and self.magic_ver >= 0x0002 and self.magic_ver <= 0xFFFF and \
+      all(((self.magic_ver >> n) & 0xF <= 9) for n in range(0,16,4)):
+        return 201608
     else:
         return 0
 
   def set_format_version(self, ver):
-    if ver == 2015:
+    if ver == 201412:
+        self.magic = 0x12345678
+        self.magic_ver = 0x0000
+        self.set_ver_latest(0)
+        self.set_ver_rollbk(0)
+    elif ver == 201502:
         self.magic = 0x12345678
         self.magic_ver = 0x0001
         self.ver_latest_enc = 0
         self.ver_rollbk_enc = 0
-    elif ver == 2016:
+    elif ver == 201507:
         self.magic = 0x12345678
         self.magic_ver = 0x0001
         self.set_ver_latest(0)
         self.set_ver_rollbk(0)
-    elif ver == 2017:
+    elif ver == 201608:
         self.magic = 0x12345678
-        self.magic_ver = 0x1130
+        self.magic_ver = 0x1130 # storing most common val; expected to be overwritten
         self.set_ver_latest(0)
         self.set_ver_rollbk(0)
     else:
@@ -186,6 +200,9 @@ class FwPkgHeader(LittleEndianStructure):
     fp.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
     varkey = 'pkg_format'
     fp.write("{:s}={:d}\n".format(varkey,self.get_format_version()))
+    if self.magic_ver >= 2:
+        varkey = 'magic_ver'
+        fp.write("{:s}={:04x}\n".format(varkey,self.magic_ver))
     varkey = 'manufacturer'
     fp.write("{:s}={:s}\n".format(varkey,d[varkey].decode("utf-8")))
     varkey = 'model'
@@ -363,6 +380,9 @@ def dji_read_fwpkg_head(po):
   # Set magic fields properly
   pkgformat = parser.get("asection", "pkg_format").encode("utf-8")
   pkghead.set_format_version(int(pkgformat))
+  if parser.has_option('asection', 'magic_ver'):
+      magicver_s = parser.get('asection', 'magic_ver')
+      pkghead.magic_ver = int(magicver_s,16)
   # Set the rest of the fields
   pkghead.manufacturer = parser.get("asection", "manufacturer").encode("utf-8")
   pkghead.model = parser.get("asection", "model").encode("utf-8")
