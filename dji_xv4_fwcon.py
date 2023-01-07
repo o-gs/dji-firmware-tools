@@ -140,9 +140,9 @@ class FwPkgHeader(LittleEndianStructure):
 
   def get_format_version(self):
     if self.magic == 0x12345678 and self.magic_ver == 0x0000:
-        # The versions are expected to be set properly for this magic_ver; that's surprising, as it means
-        # the values are invalid only for magic_ver == 1
-        if (self.ver_latest_enc != 0 and self.ver_rollbk_enc != 0):
+        # The versions are expected to be set properly for this magic_ver; that's surprising,
+        # as it means the values are invalid only for magic_ver == 1
+        if (self.ver_latest_enc != 0):
             return 201412
         else:
             return 0
@@ -562,8 +562,13 @@ def dji_create(po, fwpkgfile):
           hde = dji_read_fwentry_head(po, i, miname)
       pkgmodules.append(hde)
   # Write the unfinished headers
+  if (po.verbose > 2):
+      print("{}: File map: 0x{:08x} FwPkgHeader".format(po.fwpkg,fwpkgfile.tell()))
   fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
   for hde in pkgmodules:
+      if (po.verbose > 2):
+          print("{}: File map: 0x{:08x} FwPkgEntry[m{:02d}{:02d}]".format(po.fwpkg, fwpkgfile.tell(), \
+            getattr(hde, 'target') & 31, (getattr(hde, 'target') >> 5) & 7))
       fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
   fwpkgfile.write((c_ubyte * sizeof(c_ushort))())
   # Write module data
@@ -602,6 +607,9 @@ def dji_create(po, fwpkgfile):
               hde.set_encrypt_type(0)
               chksum_enctype = hde.get_encrypt_type()
       # Copy partition data and compute checksum
+      if (po.verbose > 2):
+          print("{}: File map: 0x{:08x} FwModuleData[m{:02d}{:02d}]".format(po.fwpkg, epos, \
+            getattr(hde, 'target') & 31, (getattr(hde, 'target') >> 5) & 7))
       fwitmfile = open(fname, "rb")
       stored_chksum = hashlib.md5()
       decrypted_chksum = hashlib.md5()
@@ -636,6 +644,8 @@ def dji_create(po, fwpkgfile):
           # If the file is not pre-encrypted, then we should just use the MD5 we've computed
           hde.decrypted_md5 = (c_ubyte * 16).from_buffer_copy(decrypted_chksum.digest())
       pkgmodules[i] = hde
+  if (po.verbose > 2):
+      print("{}: File map: 0x{:08x} FwDataEnd".format(po.fwpkg, fwpkgfile.tell()))
   # Write all headers again
   fwpkgfile.seek(0,os.SEEK_SET)
   fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
