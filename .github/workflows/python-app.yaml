@@ -42,7 +42,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pyserial pycryptodome # we do not have a package, so install manually
-        pip install flake8 pytest pytest-cov
+        pip install flake8 pytest pytest-cov pytest-order
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Lint with flake8
