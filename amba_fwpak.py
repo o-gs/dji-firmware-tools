@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """ Ambarella Firmware Packer tool
+
+Extracts and re-packs partitions from Ambarella firmware module.
 """
 
 # Copyright (C) 2016,2017 Mefistotelis <mefistotelis@gmail.com>
@@ -21,6 +23,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+__version__ = "0.1.1"
+__author__ = "Mefistotelis @ Original Gangsters"
+__license__ = "GPL"
+
 import sys
 if sys.version_info < (3, 0):
     # All checksums would have to be computed differently on Python 2.x
@@ -618,17 +624,17 @@ def amba_create(po, fwmdlfile):
     fwmdlfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
   fwmdlfile.write((c_ubyte * sizeof(modposthd)).from_buffer_copy(modposthd))
 
-def main(argv):
+def main():
   # Parse command line options
   po = ProgOptions()
   try:
-     opts, args = getopt.getopt(argv,"hxsabvf:t:m:",["help","version","extract","search","add","binhead","format=","fwmdl=","ptprefix="])
+     opts, args = getopt.getopt(sys.argv[1:],"hxsabvf:t:m:",["help","version","extract","search","add","binhead","format=","fwmdl=","ptprefix="])
   except getopt.GetoptError:
      print("Unrecognized options; check amba_fwpak.py --help")
      sys.exit(2)
   for opt, arg in opts:
      if opt in ("-h", "--help"):
-        print("Ambarella Firmware Packer tool")
+        print(__doc__)
         print("amba_fwpak.py <-x|-s|-a> [-v] -m <fwmdfile> [-t <ptprefix>]")
         print("  -m <fwmdfile> - name of the firmware module file")
         print("  -t <ptprefix> - file name prefix for the single decomposed partitions")
@@ -647,7 +653,7 @@ def main(argv):
         print("  -v - increases verbosity level; max level is set by -vvv")
         sys.exit()
      elif opt == "--version":
-        print("amba_fwpak.py version 0.1.1")
+        print("amba_fwpak.py {version} by {author}".format(version=__version__,author=__author__))
         sys.exit()
      elif opt == '-v':
         po.verbose += 1
@@ -706,4 +712,9 @@ def main(argv):
     raise NotImplementedError('Unsupported command.')
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    try:
+        main()
+    except Exception as ex:
+        eprint("Error: "+str(ex))
+        #raise
+        sys.exit(10)
