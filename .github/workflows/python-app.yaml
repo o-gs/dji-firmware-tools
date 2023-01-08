@@ -40,6 +40,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        sudo apt-get install -y binutils-arm-none-eabi # required to test bin2elf
         python -m pip install --upgrade pip
         pip install pyserial pycryptodome # we do not have a package, so install manually
         pip install flake8 pytest pytest-cov pytest-order
