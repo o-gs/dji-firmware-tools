@@ -75,12 +75,12 @@ def case_amba_fwpak_rebin(modl_inp_fn):
     pfx_out_fn = os.sep.join([modules_path1, "{:s}".format(inp_basename)]) # prefix for output files
     modl_out_fn = os.sep.join([out_path, "{:s}.repack.bin".format(inp_basename)])
     # Extract the package
-    command = [os.path.join(".", "amba_fwpak.py"), "-vvv", "-x", "-m", modl_inp_fn, "-t", pfx_out_fn]
+    command = [os.path.join(".", "amba_fwpak.py"), "-vv", "-x", "-m", modl_inp_fn, "-t", pfx_out_fn]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         amba_fwpak_main()
     # Re-pack the package
-    command = [os.path.join(".", "amba_fwpak.py"), "-vvv", "-a", "-t", pfx_out_fn, "-m", modl_out_fn]
+    command = [os.path.join(".", "amba_fwpak.py"), "-vv", "-a", "-t", pfx_out_fn, "-m", modl_out_fn]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         amba_fwpak_main()
@@ -97,7 +97,7 @@ def case_amba_fwpak_rebin(modl_inp_fn):
     pass
 
 # the extractor currently does not support the new LZ4-compressed files (ie. out/osmo_action-sport_cam, out/hg211-osmo_pocket_2)
-@pytest.mark.order(2)
+@pytest.mark.order(2) # must be run after test_dji_xv4_fwcon_rebin
 @pytest.mark.parametrize("modl_inp_dir", [
     'out/m600-matrice_600_hexacopter',
     'out/osmo_fc350z-osmo_zoom_z3_gimbal',
