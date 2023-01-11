@@ -51,13 +51,13 @@ def case_amba_sys2elf_rebin(modl_inp_fn):
     """
     LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
     # Most files we are able to recreate with full accuracy
-    expect_file_identical = True
+    expect_file_changes = 0
 
     # Special cases - ignoring differences for some specific files
     # Unused - no special cases required, as of now
     if (modl_inp_fn.endswith("XXX_m0100_part_sys.bin")):
         LOGGER.warning("Expected non-identical binary due to XXX differences: {:s}".format(modl_inp_fn))
-        expect_file_identical = False
+        expect_file_changes = 999999
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
     inp_path = pathlib.Path(inp_path)
@@ -77,16 +77,18 @@ def case_amba_sys2elf_rebin(modl_inp_fn):
     command = ["arm-none-eabi-objcopy", "-O", "binary", elf_out_fn, modl_out_fn]
     LOGGER.info(' '.join(command))
     subprocess.run(command)
-    if expect_file_identical:
-        # Compare repackaged file and the original byte-to-byte
+    if expect_file_changes == 0:
+        # Compare repackaged file and the original byte-to-byte, do not count differences
         match =  filecmp.cmp(modl_inp_fn, modl_out_fn, shallow=False)
         assert match, "Re-stripped file different: {:s}".format(modl_inp_fn)
-    else:
-        # Check if repackaged file size roughly matches the original
+    elif expect_file_changes == 999999:
+        # Check only if repackaged file size roughly matches the original
         modl_inp_fsize = os.path.getsize(modl_inp_fn)
         modl_out_fsize = os.path.getsize(modl_out_fn)
         assert modl_out_fsize >= int(modl_inp_fsize * 0.95), "Re-stripped file too small: {:s}".format(modl_inp_fn)
         assert modl_out_fsize <= int(modl_inp_fsize * 1.05), "Re-stripped file too large: {:s}".format(modl_inp_fn)
+    else:
+        assert 0, "Not implemented"
     pass
 
 #@pytest.mark.skip(reason="our pyelftools is outdated, requires rebase")
