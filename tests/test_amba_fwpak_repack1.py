@@ -39,6 +39,7 @@ from unittest.mock import patch
 
 # Import the functions to be tested
 sys.path.insert(0, './')
+import filediff
 from amba_fwpak import main as amba_fwpak_main
 
 
@@ -50,17 +51,17 @@ def case_amba_fwpak_rebin(modl_inp_fn):
     """
     LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
     # Most files we are able to recreate with full accuracy
-    expect_file_identical = True
+    expect_file_changes = 0
 
     # Special cases - ignoring differences for some specific files
     # Only application format is fully supported, the loader binaries will re-create with a few (8?) different bytes
     if (modl_inp_fn.endswith("_m0101.bin")):
         LOGGER.warning("Expected non-identical binary due to loader format differences: {:s}".format(modl_inp_fn))
-        expect_file_identical = False
+        expect_file_changes = 12
     # The padding in re-created file is different than in original
     if (modl_inp_fn.endswith("WM610_FW_V01.02.01.03_m0100.bin")):
         LOGGER.warning("Expected non-identical binary due to padding length differences: {:s}".format(modl_inp_fn))
-        expect_file_identical = False
+        expect_file_changes = 999999
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
     inp_path = pathlib.Path(inp_path)
@@ -84,16 +85,20 @@ def case_amba_fwpak_rebin(modl_inp_fn):
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         amba_fwpak_main()
-    if expect_file_identical:
-        # Compare repackaged file and the original byte-to-byte
+    if expect_file_changes == 0:
+        # Compare repackaged file and the original byte-to-byte, do not count differences
         match =  filecmp.cmp(modl_inp_fn, modl_out_fn, shallow=False)
         assert match, "Re-created file different: {:s}".format(modl_inp_fn)
-    else:
-        # Check if repackaged file size roughly matches the original
+    elif expect_file_changes == 999999:
+        # Check only if repackaged file size roughly matches the original
         modl_inp_fsize = os.path.getsize(modl_inp_fn)
         modl_out_fsize = os.path.getsize(modl_out_fn)
         assert modl_out_fsize >= int(modl_inp_fsize * 0.95), "Re-created file too small: {:s}".format(modl_inp_fn)
         assert modl_out_fsize <= int(modl_inp_fsize * 1.05), "Re-created file too large: {:s}".format(modl_inp_fn)
+    else:
+        # Count byte differences between repackaged file and the original
+        nchanges =  filediff.diffcount(modl_inp_fn, modl_out_fn)
+        assert nchanges <= expect_file_changes, "Re-created file exceeded differences ({:d}>{:d}): {:s}".format(nchanges, expect_file_changes, modl_inp_fn)
     pass
 
 # the extractor currently does not support the new LZ4-compressed files (ie. out/osmo_action-sport_cam, out/hg211-osmo_pocket_2)
