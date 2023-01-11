@@ -40,7 +40,7 @@ from unittest.mock import patch
 
 # Import the functions to be tested
 sys.path.insert(0, './')
-#from amba_sys2elf import main as amba_sys2elf_main # DISABLED - requires pyelftools update
+from amba_sys2elf import main as amba_sys2elf_main
 
 
 LOGGER = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ def case_amba_sys2elf_rebin(modl_inp_fn):
     expect_file_identical = True
 
     # Special cases - ignoring differences for some specific files
-    # The padding in re-created file is different than in original
+    # Unused - no special cases required, as of now
     if (modl_inp_fn.endswith("XXX_m0100_part_sys.bin")):
         LOGGER.warning("Expected non-identical binary due to XXX differences: {:s}".format(modl_inp_fn))
         expect_file_identical = False
@@ -89,7 +89,7 @@ def case_amba_sys2elf_rebin(modl_inp_fn):
         assert modl_out_fsize <= int(modl_inp_fsize * 1.05), "Re-stripped file too large: {:s}".format(modl_inp_fn)
     pass
 
-@pytest.mark.skip(reason="our pyelftools is outdated, requires rebase")
+#@pytest.mark.skip(reason="our pyelftools is outdated, requires rebase")
 @pytest.mark.order(3) # must be run after test_amba_fwpak_rebin
 @pytest.mark.parametrize("modl_inp_dir", [
     'out/m600-matrice_600_hexacopter',
@@ -110,7 +110,7 @@ def test_amba_sys2elf_rebin(modl_inp_dir):
     """ Test for ELF creation and stripping back to BIN files.
     """
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
-        "{}/*-split1/*-split1/*_m0100_part_sys.bin".format(modl_inp_dir),
+        "{}/*-split1/*-split1/*_m0100_part_sys.a9s".format(modl_inp_dir),
     ) ]) if os.path.isfile(fn)]
 
     if len(modl_inp_filenames) < 1:
