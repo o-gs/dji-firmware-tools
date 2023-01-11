@@ -30,8 +30,23 @@ jobs:
             python-version: "3.8"
           - os: ubuntu-20.04
             python-version: "3.10"
+    env:
+      working-directory: dji-firmware-tools
+    defaults:
+      run:
+        # All "run" actions will start in this subdirectory
+        working-directory: ${{ env.working-directory }}
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        path: dji-firmware-tools
+
+    - name: Checkout pyelftools
+      uses: actions/checkout@v3
+      with:
+        repository: mefistotelis/pyelftools
+        path: pyelftools
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -62,12 +77,12 @@ jobs:
     - name: Set ownership for downloaded files
       # downloaded files are owned by root; unzip has no permission
       run: |
-        sudo chown -R $(id -u):$(id -g) fw_packages-xv4-selected-ci-v1.zip
+        sudo chown -R $(id -u):$(id -g) ../fw_packages-xv4-selected-ci-v1.zip
 
     - name: Extract downloaded files
       run: |
         mkdir -p fw_packages
-        unzip -q fw_packages-xv4-selected-ci-v1.zip -d fw_packages
+        unzip -q ../fw_packages-xv4-selected-ci-v1.zip -d fw_packages
 
     - name: Test with pytest
       run: |
