@@ -238,240 +238,336 @@ def armfw_detect_empty_sect_ARMexidx(po, fwpartfile, memaddr_base, start_pos, fu
      return -1, 0
   return match_pos, 0
 
-def armfw_bin2elf(po, fwpartfile):
-  if (po.verbose > 0):
-     print("{}: Memory base address set to 0x{:08x}".format(po.fwpartfile,po.baseaddr))
-  # detect position of each section in the binary file
-  if (po.verbose > 1):
-     print("{}: Searching for sections".format(po.fwpartfile))
-  # currently we only support 32-bit arm; we'd need to read e_machine from template
-  # and check if it's EM_AARCH64 in order to support the 64-bit spaces
-  is_arm64 = False
-  # ARM exceptions index section is easy to find
-  sectname = ".ARM.exidx"
-  sect_align = po.expect_sect_align
-  if (not sectname in po.section_addr):
-     sect_pos, sect_len = armfw_detect_sect_ARMexidx(po, fwpartfile,  po.baseaddr, 0, po.expect_func_align, sect_align)
-     if (sect_pos < 0):
-        sect_align = (po.expect_sect_align >> 1)
+def armfw_bin2elf_settle_sect_ARMexidx(po, fwpartfile):
+    """ Find ARM exceptions index section and set it within `po`.
+
+    It is easy to find, if it has any entries.
+    """
+    sectname = ".ARM.exidx"
+    sect_align = po.expect_sect_align
+    if (not sectname in po.section_addr):
         sect_pos, sect_len = armfw_detect_sect_ARMexidx(po, fwpartfile,  po.baseaddr, 0, po.expect_func_align, sect_align)
-     if (sect_pos < 0):
-        sect_align = po.expect_sect_align
-        sect_pos, sect_len = armfw_detect_empty_sect_ARMexidx(po, fwpartfile,  po.baseaddr, 0, po.expect_func_align, sect_align)
-     if (sect_pos < 0):
-        raise EOFError("No matches found for section '{:s}' in binary file.".format(sectname))
-     po.section_addr[sectname] = po.baseaddr + sect_pos
-  else:
-     sect_pos = po.section_addr[sectname] - po.baseaddr
-     sect_len = po.expect_sect_align
-  if (not sectname in po.section_size):
-     po.section_size[sectname] = sect_len
-  else:
-     sect_len = po.section_size[sectname]
-  # Now we have position and length of the .ARM.exidx section
-  if (po.verbose > 1):
-     print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
-  # Make sure we will not realign sections by mistake; we will update alignment in file later
-  sect_align = 1
-  # Now let's assume that the .ARM.exidx section is located after .text section. While the .text section
-  # usually contains interrupt table located at offset 0, it doesn't mean it's first - we can't assume that.
-  # This is because interrupt vector address can be changed on most platforms. So RAM or MMIO sections can be
-  # before .text. Anyway, if user did not provided any .bss params, there is no way for us to automatically
-  # find any sections before .text, and since most platforms don't have them, let's assume there are none.
-  sectname = ".text"
-  if (not sectname in po.section_addr):
-     if (sect_pos > po.expect_func_align * 8):
-        po.section_addr[sectname] = po.baseaddr + 0x0
-     else:
-        raise EOFError("No place for '{:s}' section before the '{:s}' section in binary file.".format(sectname,".ARM.exidx"))
-  if (not sectname in po.section_size):
-     po.section_size[sectname] = sect_pos - (po.section_addr[sectname] - po.baseaddr)
-  if (po.verbose > 1):
-     print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
-  # After the .ARM.exidx section come .data section.
-  sectname = ".data"
-  if (not sectname in po.section_addr):
-     sect_pos += sect_len
-     if (sect_pos % sect_align) != 0:
-        sect_pos += sect_align - (sect_pos % sect_align)
-     po.section_addr[sectname] = po.baseaddr + sect_pos
-  else:
-     sect_pos = po.section_addr[sectname] - po.baseaddr
-  if (not sectname in po.section_size):
-     fwpartfile.seek(0, os.SEEK_END)
-     sect_len = fwpartfile.tell() - sect_pos
-     po.section_size[sectname] = sect_len
-  else:
-     sect_len = po.section_size[sectname]
-  if (po.verbose > 1):
-     print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
-  # Set position for .bss section too - to the place
-  # where it should be if it had the content stored
-  if True:
-     sectname = ".bss"
-     if (not sectname in po.section_addr):
-        sect_pos += sect_len
-        if (sect_pos % sect_align) != 0:
-           sect_pos += sect_align - (sect_pos % sect_align)
+        if (sect_pos < 0):
+            sect_align = (po.expect_sect_align >> 1)
+            sect_pos, sect_len = armfw_detect_sect_ARMexidx(po, fwpartfile,  po.baseaddr, 0, po.expect_func_align, sect_align)
+        if (sect_pos < 0):
+            if (po.verbose > 1):
+                eprint("{}: Warning: Real '{:s}' section not found, looking for empty one; consider manually providing its address"
+                  .format(po.fwpartfile,sectname))
+            sect_align = po.expect_sect_align
+            sect_pos, sect_len = armfw_detect_empty_sect_ARMexidx(po, fwpartfile,  po.baseaddr, 0, po.expect_func_align, sect_align)
+        if (sect_pos < 0):
+            raise EOFError("No matches found for section '{:s}' in binary file.".format(sectname))
         po.section_addr[sectname] = po.baseaddr + sect_pos
-     else:
+    else:
         sect_pos = po.section_addr[sectname] - po.baseaddr
-     if (not sectname in po.section_size):
-        sect_len = po.addrspacelen - sect_pos
-        if (sect_len < 0): sect_len = 0
+        sect_len = po.expect_sect_align
+    if (not sectname in po.section_size):
         po.section_size[sectname] = sect_len
-     else:
+    else:
         sect_len = po.section_size[sectname]
-     if (po.verbose > 1):
-        print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
-  # Allow more .bss sections, as long as size is provided
-  for sectname in po.section_size.keys():
-     if not re.search('^[.]bss[0-9]+$', sectname):
-        continue
-     if (not sectname in po.section_size):
-        break
-     if (not sectname in po.section_addr):
+    # Now we have position and length of the .ARM.exidx section within `po`
+    if (po.verbose > 1):
+        print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}"
+          .format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
+
+
+def armfw_bin2elf_settle_sect_text(po, fwpartfile):
+    """ Find ARM Target Executable section and set it within `po`.
+
+    Let's assume that the .ARM.exidx section is located after .text section. While the .text section
+    usually contains interrupt table located at offset 0, it doesn't mean it's first - we can't assume that.
+    This is because interrupt vector address can be changed on most platforms. So RAM or MMIO sections can be
+    before .text. Anyway, if user did not provided any .bss params, there is no way for us to automatically
+    find any sections before .text, and since most platforms don't have them, let's assume there are none.
+    """
+    sectname = ".ARM.exidx"
+    assert sectname in po.section_addr, "Settling '{:s}' not possible without '{:s}' settled".format(".text",sectname)
+    sect_pos = po.section_addr[sectname] - po.baseaddr
+    # Make sure we will not realign sections by mistake; we will update alignment in file later
+    sect_align = 1
+
+    sectname = ".text"
+    if (not sectname in po.section_addr):
+        if (sect_pos > po.expect_func_align * 8):
+            po.section_addr[sectname] = po.baseaddr + 0x0
+        else:
+            raise EOFError("No place for '{:s}' section before the '{:s}' section in binary file."
+              .format(sectname,".ARM.exidx"))
+    if (not sectname in po.section_size):
+        po.section_size[sectname] = sect_pos - (po.section_addr[sectname] - po.baseaddr)
+    if (po.verbose > 1):
+        print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}"
+          .format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
+
+
+def armfw_bin2elf_settle_sect_data(po, fwpartfile):
+    """ Find Data section and set it within `po`.
+
+    After the .ARM.exidx section come .data section.
+    """
+    sectname = ".ARM.exidx"
+    assert sectname in po.section_addr, "Settling '{:s}' not possible without '{:s}' settled".format(".data",sectname)
+    sect_pos = po.section_addr[sectname] - po.baseaddr
+    sect_len = po.section_size[sectname]
+    # Make sure we will not realign sections by mistake; we will update alignment in file later
+    sect_align = 1
+
+    sectname = ".data"
+    if (not sectname in po.section_addr):
         sect_pos += sect_len
         if (sect_pos % sect_align) != 0:
-           sect_pos += sect_align - (sect_pos % sect_align)
+            sect_pos += sect_align - (sect_pos % sect_align)
         po.section_addr[sectname] = po.baseaddr + sect_pos
-     else:
+    else:
         sect_pos = po.section_addr[sectname] - po.baseaddr
-     sect_len = po.section_size[sectname]
-     if (po.verbose > 1):
-        print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}".format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
+    if (not sectname in po.section_size):
+        fwpartfile.seek(0, os.SEEK_END)
+        sect_len = fwpartfile.tell() - sect_pos
+        po.section_size[sectname] = sect_len
+    else:
+        sect_len = po.section_size[sectname]
+    if (po.verbose > 1):
+        print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}"
+          .format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
 
-  if is_arm64:
-      addrspace_limit = 2**64 - 1
-  else:
-      addrspace_limit = 2**32 - 1
 
-  # Prepare list of sections in the order of position
-  sections_order = []
-  for sortaddr in sorted(set(po.section_addr.values())):
-     if (sortaddr > addrspace_limit):
-        eprint("{}: Warning: sections placed beyond address space limit, like at 0x{:x}, were not created".format(po.fwpartfile,sortaddr))
-        break
-     # First add sections with size equal zero
-     for sectname, addr in po.section_addr.items():
-        if addr == sortaddr:
-           if sectname in po.section_size.keys():
-              if (po.section_size[sectname] < 1):
-                 sections_order.append(sectname)
-     # The non-zero sized section should be last
-     for sectname, addr in po.section_addr.items():
-        if addr == sortaddr:
-           if sectname not in sections_order:
-              sections_order.append(sectname)
-  # Prepare list of section sizes
-  sectaddr_next = po.baseaddr + po.addrspacelen + 1 # max size is larger than bin file size due to uninitialized sections (bss)
-  for sectname in reversed(sections_order):
-     sectpos_delta = sectaddr_next - po.section_addr[sectname]
-     # Distance between sorted sections cannot be negative
-     if sectname == sections_order[-1]:
-         assert sectpos_delta >= 0, "Address space length too small to fit section '{:s}'".format(sectname)
-     else:
-         assert sectpos_delta >= 0, "Trusting addresses leads to negative distance after '{:s}'".format(sectname)
-     # Do not allow to exceed limit imposed by address space bit length
-     if (po.section_addr[sectname] + sectpos_delta > addrspace_limit + 1 - po.expect_sect_align):
-        sectpos_delta = addrspace_limit + 1 - po.expect_sect_align - po.section_addr[sectname]
-     assert sectpos_delta >= 0, "Trusting address limits leads to negative distance after '{:s}'".format(sectname)
-     if sectname in po.section_size.keys():
-        if (po.section_size[sectname] > sectpos_delta):
-           eprint("{}: Warning: section '{:s}' size reduced to 0x{:x} due to overlapping".format(po.fwpartfile,sectname,sectpos_delta))
-           po.section_size[sectname] = sectpos_delta
-     else:
-        po.section_size[sectname] = sectpos_delta
-     sectaddr_next = po.section_addr[sectname]
+def armfw_bin2elf_settle_sect_bss(po, fwpartfile):
+    """ Find Block Starting Symbol sections and set it within `po`.
 
-  # Copy an ELF template to destination file name
-  elf_templt = open(po.tmpltfile, "rb")
-  if not po.dry_run:
-     elf_fh = open(po.elffile, "wb")
-  n = 0
-  while (1):
-     copy_buffer = elf_templt.read(1024 * 1024)
-     if not copy_buffer:
-        break
-     n += len(copy_buffer)
-     if not po.dry_run:
-        elf_fh.write(copy_buffer)
-  elf_templt.close()
-  if not po.dry_run:
-     elf_fh.close()
-  if (po.verbose > 1):
-     print("{}: ELF template '{:s}' copied to '{:s}', {:d} bytes".format(po.fwpartfile,po.tmpltfile,po.elffile,n))
+    This section stores statically allocated variables that are declared
+    but have not been assigned a value - so its content is not stored.
+    We can use it for defining any hardware-mapped areas as well.
+    Set position for .bss to the place where it should be
+    if it had the content stored. Allow multiple such sections.
+    """
+    sectname = ".data"
+    assert sectname in po.section_addr, "Settling '{:s}' not possible without '{:s}' settled".format(".bss",sectname)
+    sect_pos = po.section_addr[sectname] - po.baseaddr
+    sect_len = po.section_size[sectname]
+    sect_align = 1
 
-  # Figure out alignment of sections
-  # Keep it near expected alignment, but adjust if the size does not meet expectations
-  sections_align = {}
-  for sectname in sections_order:
-     sect_align = (po.expect_sect_align << 1)
-     while (po.section_addr[sectname] % sect_align) != 0: sect_align = (sect_align >> 1)
-     sections_align[sectname] = sect_align
+    if True:
+       sectname = ".bss"
+       if (not sectname in po.section_addr):
+           sect_pos += sect_len
+           if (sect_pos % sect_align) != 0:
+               sect_pos += sect_align - (sect_pos % sect_align)
+           po.section_addr[sectname] = po.baseaddr + sect_pos
+       else:
+           sect_pos = po.section_addr[sectname] - po.baseaddr
+       if (not sectname in po.section_size):
+           sect_len = po.addrspacelen - sect_pos
+           if (sect_len < 0): sect_len = 0
+           po.section_size[sectname] = sect_len
+       else:
+           sect_len = po.section_size[sectname]
+       if (po.verbose > 1):
+           print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}"
+             .format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
+    # Allow more .bss sections, as long as size is provided
+    for sectname in po.section_size.keys():
+       if not re.search('^[.]bss[0-9]+$', sectname):
+           continue
+       if (not sectname in po.section_size):
+           break
+       if (not sectname in po.section_addr):
+           sect_pos += sect_len
+           if (sect_pos % sect_align) != 0:
+               sect_pos += sect_align - (sect_pos % sect_align)
+           po.section_addr[sectname] = po.baseaddr + sect_pos
+       else:
+           sect_pos = po.section_addr[sectname] - po.baseaddr
+       sect_len = po.section_size[sectname]
+       if (po.verbose > 1):
+           print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}"
+             .format(po.fwpartfile,sectname,po.section_addr[sectname],po.section_size[sectname]))
 
-  # Prepare array of file positions
-  # We have an array of target memory addresses; make them into an array of file offsets
-  # since BIN is a linear mem dump, addresses are the same as file offsets, only shifted by baseaddr
-  sections_pos = {}
-  for sectname in sections_order:
-     sect_pos = po.section_addr[sectname] - po.baseaddr
-     if (sect_pos < 0): sect_pos = 0
-     sections_pos[sectname] = sect_pos
-     if (po.verbose > 0):
-        print("{}: Section '{:s}' file position set to 0x{:08x}, alignment 0x{:02x}".format(po.fwpartfile,sectname,sections_pos[sectname],sections_align[sectname]))
 
-  # Update entry point in the ELF header
-  if (po.verbose > 0):
-     print("{}: Updating entry point and section headers".format(po.fwpartfile))
-  if not po.dry_run:
-     elf_fh = open(po.elffile, "r+b")
-  else:
-     elf_fh = open(po.tmpltfile, "rb")
-  elfobj = elftools.elf.elffile.ELFFile(elf_fh)
-  elfobj.header['e_entry'] = po.baseaddr
-  # Update section sizes, including the uninitialized (.bss*) sections
-  for sectname in sections_order:
-     # This function always returns a copy of section object, or newly created section object; so no need to copy it again
-     sect = elfobj.get_section_by_name(sectname)
-     # If no such section found, maybe we've added number at end
-     sectname_m = None
-     if sect is None:
-        sectname_m = re.search('^(?P<name>[.].*[^0-9])(?P<num>[0-9]+)$', sectname)
-        if sectname_m.group('name') is not None:
-           sect = elfobj.get_section_by_name(sectname_m.group('name'))
-        if sect is not None:
-           sect.name = sectname
-           sectname_prev = '{:s}{:d}'.format(sectname_m.group('name'), int(sectname_m.group('num'),10) - 1)
-           if elfobj.get_section_by_name(sectname_prev) is None:
-               sectname_prev = sectname_m.group('name')
-           sect_prev = elfobj.get_section_by_name(sectname_prev)
-           elfobj.insert_section_after(sectname_prev, sect)
-     if sect is None:
-           raise EOFError("Couldn't read section '{:s}' from binary file.".format(sectname))
-     if (po.verbose > 0):
-        print("{}: Preparing ELF section '{:s}' from binary pos 0x{:08x}".format(po.fwpartfile,sectname,sections_pos[sectname]))
-     sect.header['sh_addr'] = po.section_addr[sectname]
-     sect.header['sh_addralign'] = sections_align[sectname]
-     # for non-bss sections, size will be updated automatically when replacing data
-     if sect.header['sh_type'] == 'SHT_NOBITS':
-        sect.header['sh_size'] = po.section_size[sectname]
-     elif po.section_size[sectname] <= 0:
-        sect.set_data(b'')
-     else:
-        fwpartfile.seek(sections_pos[sectname], os.SEEK_SET)
-        data_buf = fwpartfile.read(po.section_size[sectname])
-        if not data_buf:
-           raise EOFError("Couldn't read section '{:s}' from binary file.".format(sectname))
-        sect.set_data(data_buf)
-     if (po.verbose > 2):
-        print("{}: Updating section '{:s}' and shifting subsequent sections".format(po.fwpartfile,sectname))
-     elfobj.set_section_by_name(sectname, sect)
-  if (po.verbose > 1):
-     print("{}: Writing changes to '{:s}'".format(po.fwpartfile,po.elffile))
-  if not po.dry_run:
-     elfobj.write_changes()
-  elf_fh.close()
+def armfw_bin2elf_get_sections_order(po, addrspace_limit):
+    """ Prepare list of sections in the order of position.
+    """
+    sections_order = []
+    for sortaddr in sorted(set(po.section_addr.values())):
+       if (sortaddr > addrspace_limit):
+           eprint("{}: Warning: sections placed beyond address space limit, like at 0x{:x}, were not created"
+             .format(po.fwpartfile,sortaddr))
+           break
+       # First add sections with size equal zero
+       for sectname, addr in po.section_addr.items():
+           if addr == sortaddr:
+               if sectname in po.section_size.keys():
+                   if (po.section_size[sectname] < 1):
+                       sections_order.append(sectname)
+       # The non-zero sized section should be last
+       for sectname, addr in po.section_addr.items():
+           if addr == sortaddr:
+               if sectname not in sections_order:
+                   sections_order.append(sectname)
+    return sections_order
+
+
+def armfw_bin2elf_copy_template(po):
+    """ Copy an ELF template to destination file name.
+    """
+    #TODO this is old, non-pythonic code; use shutil instead?
+    elf_templt = open(po.tmpltfile, "rb")
+    if not po.dry_run:
+        elf_fh = open(po.elffile, "wb")
+    n = 0
+    while (1):
+        copy_buffer = elf_templt.read(1024 * 1024)
+        if not copy_buffer:
+            break
+        n += len(copy_buffer)
+        if not po.dry_run:
+            elf_fh.write(copy_buffer)
+    elf_templt.close()
+    if not po.dry_run:
+        elf_fh.close()
+    if (po.verbose > 1):
+        print("{}: ELF template '{:s}' copied to '{:s}', {:d} bytes".format(po.fwpartfile,po.tmpltfile,po.elffile,n))
+
+
+def armfw_bin2elf_get_sections_align(po, sections_order):
+    """ Figure out alignment of sections.
+    """
+    # Keep it near expected alignment, but adjust if the size does not meet expectations
+    sections_align = {}
+    for sectname in sections_order:
+        sect_align = (po.expect_sect_align << 1)
+        while (po.section_addr[sectname] % sect_align) != 0: sect_align = (sect_align >> 1)
+        sections_align[sectname] = sect_align
+        if (po.verbose > 0):
+            print("{}: Section '{:s}' alignment set to 0x{:02x}".format(po.fwpartfile,sectname,sections_align[sectname]))
+    return sections_align
+
+
+def armfw_bin2elf_get_sections_pos(po, sections_order):
+    """ Prepare array of file positions.
+
+    We have an array of target memory addresses; make them into an array of file offsets. Since BIN
+    is a linear mem dump, addresses are the same as file offsets, only shifted by baseaddr.
+    """
+    sections_pos = {}
+    for sectname in sections_order:
+        sect_pos = po.section_addr[sectname] - po.baseaddr
+        if (sect_pos < 0): sect_pos = 0
+        sections_pos[sectname] = sect_pos
+        if (po.verbose > 0):
+            print("{}: Section '{:s}' file position set to 0x{:08x}".format(po.fwpartfile,sectname,sections_pos[sectname]))
+    return sections_pos
+
+
+def armfw_bin2elf_update_sect_sizes(po, sections_order, addrspace_limit):
+    """ Prepare list of section sizes.
+    """
+    sectaddr_next = po.baseaddr + po.addrspacelen + 1 # max size is larger than bin file size due to uninitialized sections (bss)
+    for sectname in reversed(sections_order):
+        sectpos_delta = sectaddr_next - po.section_addr[sectname]
+        # Distance between sorted sections cannot be negative
+        if sectname == sections_order[-1]:
+            assert sectpos_delta >= 0, "Address space length too small to fit section '{:s}'".format(sectname)
+        else:
+            assert sectpos_delta >= 0, "Trusting addresses leads to negative distance after '{:s}'".format(sectname)
+        # Do not allow to exceed limit imposed by address space bit length
+        if (po.section_addr[sectname] + sectpos_delta > addrspace_limit + 1 - po.expect_sect_align):
+            sectpos_delta = addrspace_limit + 1 - po.expect_sect_align - po.section_addr[sectname]
+        assert sectpos_delta >= 0, "Trusting address limits leads to negative distance after '{:s}'".format(sectname)
+        if sectname in po.section_size.keys():
+            if (po.section_size[sectname] > sectpos_delta):
+                eprint("{}: Warning: section '{:s}' size reduced to 0x{:x} due to overlapping".format(po.fwpartfile,sectname,sectpos_delta))
+                po.section_size[sectname] = sectpos_delta
+        else:
+            po.section_size[sectname] = sectpos_delta
+        sectaddr_next = po.section_addr[sectname]
+
+
+def armfw_bin2elf_update_elffile(po, elf_fh, fwpartfile, sections_order, sections_pos, sections_align):
+    """ Update the opened ELF template into a proper final ELF file.
+    """
+    # Update entry point in the ELF header
+    elfobj = elftools.elf.elffile.ELFFile(elf_fh)
+    elfobj.header['e_entry'] = po.baseaddr
+    # Update section sizes, including the uninitialized (.bss*) sections
+    for sectname in sections_order:
+        # This function always returns a copy of section object, or newly created section object; so no need to copy it again
+        sect = elfobj.get_section_by_name(sectname)
+        # If no such section found, maybe we've added number at end
+        sectname_m = None
+        if sect is None:
+            sectname_m = re.search('^(?P<name>[.].*[^0-9])(?P<num>[0-9]+)$', sectname)
+            if sectname_m.group('name') is not None:
+                sect = elfobj.get_section_by_name(sectname_m.group('name'))
+            if sect is not None:
+                sect.name = sectname
+                sectname_prev = '{:s}{:d}'.format(sectname_m.group('name'), int(sectname_m.group('num'),10) - 1)
+                if elfobj.get_section_by_name(sectname_prev) is None:
+                    sectname_prev = sectname_m.group('name')
+                sect_prev = elfobj.get_section_by_name(sectname_prev)
+                elfobj.insert_section_after(sectname_prev, sect)
+        if sect is None:
+            raise EOFError("Could not read section '{:s}' from binary file.".format(sectname))
+        if (po.verbose > 0):
+            print("{}: Preparing ELF section '{:s}' from binary pos 0x{:08x}".format(po.fwpartfile,sectname,sections_pos[sectname]))
+        sect.header['sh_addr'] = po.section_addr[sectname]
+        sect.header['sh_addralign'] = sections_align[sectname]
+        # for non-bss sections, size will be updated automatically when replacing data
+        if sect.header['sh_type'] == 'SHT_NOBITS':
+            sect.header['sh_size'] = po.section_size[sectname]
+        elif po.section_size[sectname] <= 0:
+            sect.set_data(b'')
+        else:
+            fwpartfile.seek(sections_pos[sectname], os.SEEK_SET)
+            data_buf = fwpartfile.read(po.section_size[sectname])
+            if not data_buf:
+                raise EOFError("Couldn't read section '{:s}' from binary file.".format(sectname))
+            sect.set_data(data_buf)
+        if (po.verbose > 2):
+            print("{}: Updating section '{:s}' and shifting subsequent sections".format(po.fwpartfile,sectname))
+        elfobj.set_section_by_name(sectname, sect)
+    if (po.verbose > 1):
+        print("{}: Writing changes to '{:s}'".format(po.fwpartfile,po.elffile))
+    if not po.dry_run:
+        elfobj.write_changes()
+
+
+def armfw_bin2elf(po, fwpartfile):
+    if (po.verbose > 0):
+        print("{}: Memory base address set to 0x{:08x}".format(po.fwpartfile,po.baseaddr))
+    # detect position of each section in the binary file
+    if (po.verbose > 1):
+        print("{}: Searching for sections".format(po.fwpartfile))
+    # currently we only support 32-bit arm; we'd need to read e_machine from template
+    # and check if it's EM_AARCH64 in order to support the 64-bit spaces
+    is_arm64 = False
+    # set addresses and sizes of sections within `po`
+    armfw_bin2elf_settle_sect_ARMexidx(po, fwpartfile)
+    armfw_bin2elf_settle_sect_text(po, fwpartfile)
+    armfw_bin2elf_settle_sect_data(po, fwpartfile)
+    armfw_bin2elf_settle_sect_bss(po, fwpartfile)
+
+    if is_arm64:
+        addrspace_limit = 2**64 - 1
+    else:
+        addrspace_limit = 2**32 - 1
+
+    sections_order = armfw_bin2elf_get_sections_order(po, addrspace_limit)
+    armfw_bin2elf_update_sect_sizes(po, sections_order, addrspace_limit)
+
+    sections_align = armfw_bin2elf_get_sections_align(po, sections_order)
+    sections_pos = armfw_bin2elf_get_sections_pos(po, sections_order)
+
+    # Create the ELF file from template
+    armfw_bin2elf_copy_template(po)
+    if (po.verbose > 0):
+        print("{}: Updating entry point and section headers".format(po.fwpartfile))
+    if not po.dry_run:
+        elf_fh = open(po.elffile, "r+b")
+    else:
+        elf_fh = open(po.tmpltfile, "rb")
+    armfw_bin2elf_update_elffile(po, elf_fh, fwpartfile, sections_order, sections_pos, sections_align)
+    elf_fh.close()
 
 
 def parse_section_param(s):
@@ -580,6 +676,7 @@ def main():
   else:
 
     raise NotImplementedError('Unsupported command.')
+
 
 if __name__ == "__main__":
     try:
