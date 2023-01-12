@@ -424,7 +424,7 @@ def main():
   subparser = parser.add_mutually_exclusive_group()
 
   parser.add_argument("-d", "--datfile", default="", type=str, required=True,
-          help="Input from dat file (Raw DUPC) of given name")
+          help="Input from dat file (Raw DUPC/DUML) of given name")
 
   subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
             .format(version=__version__,author=__author__),
@@ -446,7 +446,7 @@ def main():
   if (po.command == 'd'):
 
       if (po.verbose > 0):
-         print("{}: Opening Raw DUPC for conversion to PCap".format(po.datfile))
+         print("{}: Opening Raw DUPC/DUML for conversion to PCap".format(po.datfile))
       datfile = open(po.datfile, "rb")
       pcapfile = open(po.pcapfile, "wb")
 

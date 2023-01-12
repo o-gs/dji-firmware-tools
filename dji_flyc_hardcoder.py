@@ -3674,7 +3674,8 @@ def main():
           help="Input ELF firmware file name")
 
     parser.add_argument("-o", "--valfile", type=str,
-          help="Values list JSON file name")
+          help="directory and file name of JSON with values list " \
+           "(default is base name of elffile with extension switched to json, in working dir)")
 
     parser.add_argument("--dry-run", action="store_true",
           help="Do not write any files or do permanent changes")

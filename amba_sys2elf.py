@@ -154,7 +154,8 @@ def main():
           help="Executable ARM firmware binary module file")
 
     parser.add_argument("-o", "--elffile", type=str,
-          help="Output ELF file name (default is fwpartfile with elf extension appended)")
+          help="directory and file name of output ELF file " \
+           "(default is base name of fwpartfile with extension switched to elf, in working dir)")
 
     parser.add_argument("-t", "--tmpltfile", type=str, default="amba_sys2elf_template.elf",
           help="Template ELF file to use header fields from (default is \"%(default)s\")")
