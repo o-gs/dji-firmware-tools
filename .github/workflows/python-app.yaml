@@ -57,7 +57,9 @@ jobs:
       run: |
         sudo apt-get install -y binutils-arm-none-eabi # required to test bin2elf
         python -m pip install --upgrade pip
-        pip install pyserial pycryptodome # we do not have a package, so install manually
+        pip install pyserial # required to test comm_* tools
+        pip install pycryptodome # required to test FW package extraction
+        pip install capstone keystone-engine # required to test hardcoders
         pip install flake8 pytest pytest-cov pytest-order
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
