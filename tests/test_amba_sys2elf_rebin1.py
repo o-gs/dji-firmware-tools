@@ -55,7 +55,7 @@ def case_amba_sys2elf_rebin(modl_inp_fn):
 
     # Special cases - ignoring differences for some specific files
     # Unused - no special cases required, as of now
-    if (modl_inp_fn.endswith("XXX_m0100_part_sys.bin")):
+    if (modl_inp_fn.endswith("XXX_m0100_part_sys.a9s")):
         LOGGER.warning("Expected non-identical binary due to XXX differences: {:s}".format(modl_inp_fn))
         expect_file_changes = 999999
 
@@ -67,9 +67,9 @@ def case_amba_sys2elf_rebin(modl_inp_fn):
     else:
         out_path = "out"
     elf_out_fn = os.sep.join([out_path, "{:s}.elf".format(inp_basename)]) # prefix for output files
-    modl_out_fn = os.sep.join([out_path, "{:s}.rebin.bin".format(inp_basename)])
+    modl_out_fn = os.sep.join([out_path, "{:s}.rebin{:s}".format(inp_basename, modl_fileext)])
     # Extract the package
-    command = [os.path.join(".", "amba_sys2elf.py"), "-vv", "-e", "-p", modl_inp_fn, "-o", elf_out_fn]
+    command = [os.path.join(".", "amba_sys2elf.py"), "-vv", "-e", "-l", "0x6000000", "-p", modl_inp_fn, "-o", elf_out_fn]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         amba_sys2elf_main()
@@ -91,26 +91,28 @@ def case_amba_sys2elf_rebin(modl_inp_fn):
         assert 0, "Not implemented"
     pass
 
-#@pytest.mark.skip(reason="our pyelftools is outdated, requires rebase")
 @pytest.mark.order(3) # must be run after test_amba_fwpak_rebin
-@pytest.mark.parametrize("modl_inp_dir", [
-    'out/m600-matrice_600_hexacopter',
-    'out/osmo_fc350z-osmo_zoom_z3_gimbal',
-    'out/osmo_fc550-osmo_x5_gimbal',
-    'out/osmo_fc550r-osmo_x5raw_gimbal',
-    'out/osmo-osmo_x3_gimbal',
-    'out/p3c-phantom_3_std_quadcopter',
-    'out/p3se-phantom_3_se_quadcopter',
-    'out/p3s-phantom_3_adv_quadcopter',
-    'out/p3x-phantom_3_pro_quadcopter',
-    'out/p3xw-phantom_3_4k_quadcopter',
-    'out/wm610_fc350z-t600_inspire_1_z3_quadcopter',
-    'out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',
-    'out/wm610-t600_inspire_1_x3_quadcopter',
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/m600-matrice_600_hexacopter',1,),
+    ('out/osmo_fc350z-osmo_zoom_z3_gimbal',1,),
+    ('out/osmo_fc550-osmo_x5_gimbal',1,),
+    ('out/osmo_fc550r-osmo_x5raw_gimbal',1,),
+    ('out/osmo-osmo_x3_gimbal',1,),
+    ('out/p3c-phantom_3_std_quadcopter',1,),
+    ('out/p3se-phantom_3_se_quadcopter',1,),
+    ('out/p3s-phantom_3_adv_quadcopter',1,),
+    ('out/p3x-phantom_3_pro_quadcopter',1,),
+    ('out/p3xw-phantom_3_4k_quadcopter',1,),
+    ('out/wm610_fc350z-t600_inspire_1_z3_quadcopter',1,),
+    ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',1,),
+    ('out/wm610-t600_inspire_1_x3_quadcopter',1,),
   ] )
-def test_amba_sys2elf_rebin(modl_inp_dir):
+def test_amba_sys2elf_rebin(modl_inp_dir, test_nth):
     """ Test for ELF creation and stripping back to BIN files.
     """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
         "{}/*-split1/*-split1/*_m0100_part_sys.a9s".format(modl_inp_dir),
     ) ]) if os.path.isfile(fn)]
@@ -118,6 +120,6 @@ def test_amba_sys2elf_rebin(modl_inp_dir):
     if len(modl_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
 
-    for modl_inp_fn in modl_inp_filenames:
+    for modl_inp_fn in modl_inp_filenames[::test_nth]:
         case_amba_sys2elf_rebin(modl_inp_fn)
     pass
