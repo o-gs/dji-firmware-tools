@@ -62,6 +62,9 @@ def case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn):
     if (re.match(r'^.*C1_FW_V[0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE)):
         expect_json_changes = 8 # 1 x attenuation_override + 1 x attenuation_value + 6 x board_attenuation
         expect_file_changes = [2+6, 2*3 + 3*4]
+    elif (re.match(r'^.*C1_FW_V[0-9A-Z_.-]*_m1401[.]elf', elf_inp_fn, re.IGNORECASE)):
+        expect_json_changes = 6
+        expect_file_changes = [6, 2*3 + 3*4]
     elif (re.match(r'^.*P3S_FW_V[0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE) or
       re.match(r'^.*P3X_FW_V[0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE)):
         expect_json_changes = 6 # 3 x authority_level + 3 x vid_setting_bitrates
@@ -100,7 +103,11 @@ def case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn):
             nchanges += 1
             continue
         if re.match(r'^og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*$', par['name']):
-            par['setValue'] = "0"
+            par['setValue'] = 0
+            nchanges += 1
+            continue
+        if re.match(r'^og_hardcoded[.]lightbridge_stm32[.]power_zone_selection_override$', par['name']):
+            par['setValue'] = 1
             nchanges += 1
             continue
     with open(json_mod_fn, "w") as valfile:
@@ -142,10 +149,11 @@ def test_lightbridge_stm32_hardcoder_ckmod(elf_inp_dir, test_nth):
 
     elf_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
         "{}/*-split1/*_m1400.elf".format(elf_inp_dir),
-    #TODO add m0900, m1401
+        "{}/*-split1/*_m1401.elf".format(elf_inp_dir),
+    #TODO add m0900
     ) ]) if os.path.isfile(fn)]
 
-    # Remove unsupported files
+    # Remove unsupported m1400 files
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*MG1SRC_FW_V[0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*LB2_GND_V[0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*RC_[0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
@@ -153,6 +161,12 @@ def test_lightbridge_stm32_hardcoder_ckmod(elf_inp_dir, test_nth):
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*GL300E_V[0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*GL300E_RC_V[0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3C_FW_V[0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
+    # Remove unsupported m1401 files
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*HG910_RC_FW_V[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_33[0-3]_[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_v1400_[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_V00[.]01[.][0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM332_V2100_[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
 
     if len(elf_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
