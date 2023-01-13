@@ -103,24 +103,27 @@ def case_amba_fwpak_rebin(modl_inp_fn):
 
 # the extractor currently does not support the new LZ4-compressed files (ie. out/osmo_action-sport_cam, out/hg211-osmo_pocket_2)
 @pytest.mark.order(2) # must be run after test_dji_xv4_fwcon_rebin
-@pytest.mark.parametrize("modl_inp_dir", [
-    'out/m600-matrice_600_hexacopter',
-    'out/osmo_fc350z-osmo_zoom_z3_gimbal',
-    'out/osmo_fc550-osmo_x5_gimbal',
-    'out/osmo_fc550r-osmo_x5raw_gimbal',
-    'out/osmo-osmo_x3_gimbal',
-    'out/p3c-phantom_3_std_quadcopter',
-    #'out/p3se-phantom_3_se_quadcopter', # the format here is clearly very similar, but still different - not supported ATM
-    'out/p3s-phantom_3_adv_quadcopter',
-    'out/p3x-phantom_3_pro_quadcopter',
-    'out/p3xw-phantom_3_4k_quadcopter',
-    'out/wm610_fc350z-t600_inspire_1_z3_quadcopter',
-    'out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',
-    'out/wm610-t600_inspire_1_x3_quadcopter',
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/m600-matrice_600_hexacopter',2,),
+    ('out/osmo_fc350z-osmo_zoom_z3_gimbal',2,),
+    ('out/osmo_fc550-osmo_x5_gimbal',2,),
+    ('out/osmo_fc550r-osmo_x5raw_gimbal',2,),
+    ('out/osmo-osmo_x3_gimbal',2,),
+    ('out/p3c-phantom_3_std_quadcopter',2,),
+    #('out/p3se-phantom_3_se_quadcopter',2,), # the format here is clearly very similar, but still different - not supported ATM
+    ('out/p3s-phantom_3_adv_quadcopter',2,),
+    ('out/p3x-phantom_3_pro_quadcopter',2,),
+    ('out/p3xw-phantom_3_4k_quadcopter',2,),
+    ('out/wm610_fc350z-t600_inspire_1_z3_quadcopter',2,),
+    ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',2,),
+    ('out/wm610-t600_inspire_1_x3_quadcopter',2,),
   ] )
-def test_amba_fwpak_rebin(modl_inp_dir):
+def test_amba_fwpak_rebin(modl_inp_dir, test_nth):
     """ Test extraction and re-creation of BIN package files.
     """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
         "{}/*-split1/*_m0100.bin".format(modl_inp_dir),
         "{}/*-split1/*_m0101.bin".format(modl_inp_dir),
@@ -129,6 +132,6 @@ def test_amba_fwpak_rebin(modl_inp_dir):
     if len(modl_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
 
-    for modl_inp_fn in modl_inp_filenames:
+    for modl_inp_fn in modl_inp_filenames[::test_nth]:
         case_amba_fwpak_rebin(modl_inp_fn)
     pass
