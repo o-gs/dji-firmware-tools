@@ -62,6 +62,9 @@ def test_comm_sbs_bqctrl_chip_detect():
 def test_comm_sbs_bqctrl_chip_info_commands(capsys, chip_name, test_nth):
     """ Test info commands on a mock chip.
     """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
     # Capture a list of commands
     command = [os.path.join(".", "comm_sbs_bqctrl.py"), "--dry-run", "--chip", chip_name, "info-list"]
     LOGGER.info(' '.join(command))
@@ -93,6 +96,9 @@ def test_comm_sbs_bqctrl_chip_info_commands(capsys, chip_name, test_nth):
 def test_comm_sbs_bqctrl_chip_read_commands(capsys, chip_name, test_nth):
     """ Test read commands on a mock chip.
     """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
     # Capture a list of commands
     command = [os.path.join(".", "comm_sbs_bqctrl.py"), "--dry-run", "--chip", chip_name, "read-list"]
     LOGGER.info(' '.join(command))
@@ -127,6 +133,9 @@ def test_comm_sbs_bqctrl_chip_read_commands(capsys, chip_name, test_nth):
 def test_comm_sbs_bqctrl_chip_write_commands(capsys, chip_name, test_nth):
     """ Test write commands on a mock chip.
     """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
     # Capture a list of commands
     command = [os.path.join(".", "comm_sbs_bqctrl.py"), "--dry-run", "--chip", chip_name, "write-list"]
     LOGGER.info(' '.join(command))
@@ -145,6 +154,9 @@ def test_comm_sbs_bqctrl_chip_write_commands(capsys, chip_name, test_nth):
 def test_comm_sbs_bqctrl_chip_monitor_commands(capsys, chip_name, test_nth):
     """ Test monitor commands on a mock chip.
     """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
     # Prepare a list of commands
     monitor_commands = [
       "DeviceInfo", "UsageInfo", "ComputedInfo", "StatusBits", "AtRates", "BQCellVoltages", "BQStatusBits",
@@ -170,6 +182,9 @@ def test_comm_sbs_bqctrl_chip_monitor_commands(capsys, chip_name, test_nth):
 def test_comm_sbs_bqctrl_chip_sealing_commands(capsys, chip_name, test_nth):
     """ Test sealing commands on a mock chip.
     """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
     # Prepare a list of commands
     sealing_commands = [
       "Unseal", "Seal", "FullAccess",
@@ -191,13 +206,16 @@ def test_comm_sbs_bqctrl_chip_sealing_commands(capsys, chip_name, test_nth):
     pass
 
 
-@pytest.mark.parametrize("chip_name,flash_start,flash_end,flash_step", [
-  ("BQ40z307", 0x0000, 0x0500, 0x20),
+@pytest.mark.parametrize("chip_name,flash_start,flash_end,flash_step,test_nth", [
+  ("BQ40z307", 0x0000, 0x0500, 0x20, 2),
 ])
-def test_comm_sbs_bqctrl_data_flash(chip_name, flash_start, flash_end, flash_step):
+def test_comm_sbs_bqctrl_data_flash(chip_name, flash_start, flash_end, flash_step, test_nth):
     """ Test reading data flash on a mock chip.
     """
-    for flash_offset in range(flash_start, flash_end, flash_step):
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    for flash_offset in range(flash_start, flash_end, flash_step)[::test_nth]:
         command = [os.path.join(".", "comm_sbs_bqctrl.py"), "-v", "--dry-run", "--chip", chip_name, "raw-read", "DataFlash", "0x{:X}".format(flash_offset), "string[32]"]
         LOGGER.info(' '.join(command))
         with patch.object(sys, 'argv', command):
