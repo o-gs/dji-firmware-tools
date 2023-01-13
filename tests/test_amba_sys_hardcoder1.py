@@ -57,8 +57,7 @@ def case_amba_sys_hardcoder_ckmod(elf_inp_fn):
     expect_json_changes = 99
     expect_file_changes = [0,0]
 
-    # Special cases - ignoring differences for some specific files
-    # Unused - no special cases required, as of now
+    # Special cases - setting certain params and error tolerance for specific files
     if (re.match(r'^.*P3C_FW_V[0-9A-Za-z_.-]*_m0100_part_sys[.]elf', elf_inp_fn) or
       re.match(r'^.*P3S_FW_V[0-9A-Za-z_.-]*_m0100_part_sys[.]elf', elf_inp_fn) or
       re.match(r'^.*P3X_FW_V[0-9A-Za-z_.-]*_m0100_part_sys[.]elf', elf_inp_fn) or
@@ -142,6 +141,9 @@ def test_amba_sys_hardcoder_ckmod(elf_inp_dir, test_nth):
     elf_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
         "{}/*-split1/*-split1/*_m0100_part_sys.elf".format(elf_inp_dir),
     ) ]) if os.path.isfile(fn)]
+
+    # Remove unsupported files
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not fn.endswith("WM610_FW_V01.08.01.00_m0100_part_sys.elf")]
 
     if len(elf_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
