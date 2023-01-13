@@ -55,7 +55,20 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
     expect_file_changes = 0
 
     # Special cases - setting certain params and error tolerance for specific files
-    if (modl_inp_fn.endswith("_m1400.bin")):
+    if (modl_inp_fn.endswith("_m0900.bin")):
+        if (re.match(r'^.*P3X_FW_V[0-9A-Z_.-]*_m0900[.]bin', modl_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*P3S_FW_V[0-9A-Z_.-]*_m0900[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `P3X_FW_V01.08.0080_m0900.bin`
+            file_specific_cmdargs = ["-b", "0x8008000", "--section", ".ARM.exidx@0x8015510:0",
+              "--section", ".bss@0x1FFFF700:0x5A00", "--section", ".bss2@0x40000000:0x6700",
+              "--section", ".bss3@0x40010000:0x5500", "--section", ".bss4@0x40020000:0x2200",
+              "--section", ".bss5@0x42200000:0x100", "--section", ".bss6@0x42420000:0x500"]
+        else:
+            # Generic m0900 solution - detect the location of .ARM.exidx
+            file_specific_cmdargs = ["-b", "0x8008000",
+              "--section", ".bss@0x1FFFF700:0x5A00", "--section", ".bss2@0x40000000:0x23000",
+              "--section", ".bss3@0x42200000:0x500", "--section", ".bss4@0x42420000:0x500"]
+    elif (modl_inp_fn.endswith("_m1400.bin")):
         if (re.match(r'^.*C1_FW_V[0-9A-Z_.-]*_m1400[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Specific offsets for `C1_FW_V01.06.0000_m1400.bin`
             file_specific_cmdargs = ["-b", "0x0A000", "--section", ".ARM.exidx@0x01CE50:0",
@@ -161,6 +174,7 @@ def test_arm_bin2elf_rebin(modl_inp_dir, test_nth):
         pytest.skip("limited scope")
 
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
+        "{}/*-split1/*_m0900.bin".format(modl_inp_dir),
         "{}/*-split1/*_m1400.bin".format(modl_inp_dir),
         "{}/*-split1/*_m1401.bin".format(modl_inp_dir),
     ) ]) if os.path.isfile(fn)]
