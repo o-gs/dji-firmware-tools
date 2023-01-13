@@ -55,10 +55,35 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
     expect_file_changes = 0
 
     # Special cases - setting certain params and error tolerance for specific files
-    if (re.match(r'^.*MG1SRC_FW_V[0-9A-Za-z_.-]*_m1400[.]bin', modl_inp_fn)):
-        file_specific_cmdargs = ["-l", "0x6000000", "--section", ".ARM.exidx@0x100D3A0:0"]
-    elif (modl_inp_fn.endswith("_m1400.bin")):
-        file_specific_cmdargs = ["-l", "0x6000000"]
+    if (modl_inp_fn.endswith("_m1400.bin")):
+        if (re.match(r'^.*C1_FW_V[0-9A-Z_.-]*_m1400[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `C1_FW_V01.06.0000_m1400.bin`
+            file_specific_cmdargs = ["-b", "0x0A000", "--section", ".ARM.exidx@0x01CE50:0",
+              "--section", ".bss@0x10000000:0x8000", "--section", ".bss2@0x40000000:0x50000",
+              "--section", ".bss3@0xE0000000:0x10000"]
+        elif (re.match(r'^.*MG1SRC_FW_V[0-9A-Z_.-]*_m1400[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `MG1SRC_FW_V01.01.00.00_m1400.bin`
+            file_specific_cmdargs = ["-b", "0x0A000", "--section", ".ARM.exidx@0x0173A0:0",
+              "--section", ".bss@0x10000000:0x8000", "--section", ".bss2@0x40000000:0x50000",
+              "--section", ".bss3@0xE0000000:0x10000"]
+        else:
+            # Generic m1400 solution - detect the location of .ARM.exidx
+            file_specific_cmdargs = ["-b", "0x0A000",
+              "--section", ".bss@0x10000000:0x8000", "--section", ".bss2@0x40000000:0x50000",
+              "--section", ".bss3@0xE0000000:0x10000"]
+    elif (modl_inp_fn.endswith("_m1401.bin")):
+        if (re.match(r'^.*C1_FW_V[0-9A-Z_.-]*_m1401[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `C1_FW_V01.06.0000_m1401.bin`
+            file_specific_cmdargs = ["-b", "0x0A000", "--section", ".ARM.exidx@0x01CE50:0",
+              "--section", ".bss@0x20000000:0x9000", "--section", ".bss2@0x2C000000:0x20000",
+              "--section", ".bss3@0x40022000:0x50000", "--section", ".bss4@0x400EE000:0x200",
+              "--section", ".bss5@0xE0000000:0x8000"]
+        else:
+            # Generic m1401 solution - detect the location of .ARM.exidx
+            file_specific_cmdargs = ["-b", "0x0A000",
+              "--section", ".bss@0x10000000:0x8000", "--section", ".bss2@0x20000000:0x9000",
+              "--section", ".bss3@0x2C000000:0x20000", "--section", ".bss4@0x40000000:0xF0000",
+              "--section", ".bss5@0xE0000000:0x8000"]
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
     inp_path = pathlib.Path(inp_path)
