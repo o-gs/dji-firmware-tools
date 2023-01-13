@@ -96,45 +96,48 @@ def case_dji_xv4_fwcon_rebin(pkg_inp_fn):
 
 
 @pytest.mark.order(1)
-@pytest.mark.parametrize("pkg_inp_dir", [
-    'fw_packages/a3-flight_controller',
-    'fw_packages/ag405-agras_mg_1s_octocopter',
-    'fw_packages/ai900_agr-a3_based_multicopter_platform',
-    'fw_packages/am603-n3_based_multicopter_platform',
-    'fw_packages/d_rtk-mobile_station',
-    'fw_packages/ennn-esc',
-    'fw_packages/gl300abc-radio_control',
-    'fw_packages/gl300e-radio_control',
-    'fw_packages/hg211-osmo_pocket_2',
-    'fw_packages/hg300-osmo_mobile',
-    'fw_packages/hg301-osmo_mobile_2',
-    'fw_packages/hg910-ronin2_gimbal',
-    'fw_packages/lbtx-lightbridge_2_video_tx',
-    'fw_packages/m100-matrice_100_quadcopter',
-    'fw_packages/m600-matrice_600_hexacopter',
-    'fw_packages/m600pro-matrice_600_pro_hexacopter',
-    'fw_packages/n3-flight_controller',
-    'fw_packages/osmo-osmo_x3_gimbal',
-    'fw_packages/osmo_action-sport_cam',
-    'fw_packages/osmo_fc350z-osmo_zoom_z3_gimbal',
-    'fw_packages/osmo_fc550-osmo_x5_gimbal',
-    'fw_packages/osmo_fc550r-osmo_x5raw_gimbal',
-    'fw_packages/ot110-osmo_pocket_gimbal',
-    'fw_packages/p3c-phantom_3_std_quadcopter',
-    'fw_packages/p3s-phantom_3_adv_quadcopter',
-    'fw_packages/p3se-phantom_3_se_quadcopter',
-    'fw_packages/p3x-phantom_3_pro_quadcopter',
-    'fw_packages/p3xw-phantom_3_4k_quadcopter',
-    'fw_packages/swr60g-matrice_600_swr_60g',
-    'fw_packages/wind-a3_based_multicopter_platform',
-    'fw_packages/wm610-t600_inspire_1_x3_quadcopter',
-    'fw_packages/wm610_fc350z-t600_inspire_1_z3_quadcopter',
-    'fw_packages/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',
-    'fw_packages/zt300-datalink_pro',
+@pytest.mark.parametrize("pkg_inp_dir,test_nth", [
+    ('fw_packages/a3-flight_controller',1,),
+    ('fw_packages/ag405-agras_mg_1s_octocopter',1,),
+    ('fw_packages/ai900_agr-a3_based_multicopter_platform',1,),
+    ('fw_packages/am603-n3_based_multicopter_platform',1,),
+    ('fw_packages/d_rtk-mobile_station',1,),
+    ('fw_packages/ennn-esc',1,),
+    ('fw_packages/gl300abc-radio_control',1,),
+    ('fw_packages/gl300e-radio_control',1,),
+    ('fw_packages/hg211-osmo_pocket_2',1,),
+    ('fw_packages/hg300-osmo_mobile',1,),
+    ('fw_packages/hg301-osmo_mobile_2',1,),
+    ('fw_packages/hg910-ronin2_gimbal',1,),
+    ('fw_packages/lbtx-lightbridge_2_video_tx',1,),
+    ('fw_packages/m100-matrice_100_quadcopter',1,),
+    ('fw_packages/m600-matrice_600_hexacopter',1,),
+    ('fw_packages/m600pro-matrice_600_pro_hexacopter',1,),
+    ('fw_packages/n3-flight_controller',1,),
+    ('fw_packages/osmo-osmo_x3_gimbal',1,),
+    ('fw_packages/osmo_action-sport_cam',1,),
+    ('fw_packages/osmo_fc350z-osmo_zoom_z3_gimbal',1,),
+    ('fw_packages/osmo_fc550-osmo_x5_gimbal',1,),
+    ('fw_packages/osmo_fc550r-osmo_x5raw_gimbal',1,),
+    ('fw_packages/ot110-osmo_pocket_gimbal',1,),
+    ('fw_packages/p3c-phantom_3_std_quadcopter',1,),
+    ('fw_packages/p3s-phantom_3_adv_quadcopter',1,),
+    ('fw_packages/p3se-phantom_3_se_quadcopter',1,),
+    ('fw_packages/p3x-phantom_3_pro_quadcopter',1,),
+    ('fw_packages/p3xw-phantom_3_4k_quadcopter',1,),
+    ('fw_packages/swr60g-matrice_600_swr_60g',1,),
+    ('fw_packages/wind-a3_based_multicopter_platform',1,),
+    ('fw_packages/wm610-t600_inspire_1_x3_quadcopter',1,),
+    ('fw_packages/wm610_fc350z-t600_inspire_1_z3_quadcopter',1,),
+    ('fw_packages/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',1,),
+    ('fw_packages/zt300-datalink_pro',1,),
   ] )
-def test_dji_xv4_fwcon_rebin(pkg_inp_dir):
+def test_dji_xv4_fwcon_rebin(pkg_inp_dir, test_nth):
     """ Test extraction and re-creation of BIN package files.
     """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
     pkg_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
         "{}/*.bin".format(pkg_inp_dir),
       ) ]) if os.path.isfile(fn)]
@@ -142,6 +145,6 @@ def test_dji_xv4_fwcon_rebin(pkg_inp_dir):
     if len(pkg_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
 
-    for pkg_inp_fn in pkg_inp_filenames:
+    for pkg_inp_fn in pkg_inp_filenames[::test_nth]:
         case_dji_xv4_fwcon_rebin(pkg_inp_fn)
     pass
