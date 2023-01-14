@@ -37,7 +37,7 @@ from comm_sbs_bqctrl import main as comm_sbs_bqctrl_main
 
 LOGGER = logging.getLogger(__name__)
 
-def test_comm_sbs_bqctrl_chip_detect():
+def test_comm_sbs_bqctrl_chip_detect(capsys):
     """ Test detection on a mock chip.
     """
     # Provide chip - should know not to contact the chip even w/o "--dry-run"
@@ -45,12 +45,14 @@ def test_comm_sbs_bqctrl_chip_detect():
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         comm_sbs_bqctrl_main()
+    capstdout, _ = capsys.readouterr()
 
     # Do not provide chip - test auto-detect
     command = [os.path.join(".", "comm_sbs_bqctrl.py"), "-v", "--dry-run", "info-list"]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         comm_sbs_bqctrl_main()
+    capstdout, _ = capsys.readouterr()
     pass
 
 
@@ -209,7 +211,7 @@ def test_comm_sbs_bqctrl_chip_sealing_commands(capsys, chip_name, test_nth):
 @pytest.mark.parametrize("chip_name,flash_start,flash_end,flash_step,test_nth", [
   ("BQ40z307", 0x0000, 0x0500, 0x20, 2),
 ])
-def test_comm_sbs_bqctrl_data_flash(chip_name, flash_start, flash_end, flash_step, test_nth):
+def test_comm_sbs_bqctrl_data_flash(capsys, chip_name, flash_start, flash_end, flash_step, test_nth):
     """ Test reading data flash on a mock chip.
     """
     if test_nth < 1:
@@ -220,4 +222,5 @@ def test_comm_sbs_bqctrl_data_flash(chip_name, flash_start, flash_end, flash_ste
         LOGGER.info(' '.join(command))
         with patch.object(sys, 'argv', command):
             comm_sbs_bqctrl_main()
+        capstdout, _ = capsys.readouterr()
     pass
