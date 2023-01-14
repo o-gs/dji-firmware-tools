@@ -58,29 +58,56 @@ def case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn):
     expect_file_changes = [0,0]
 
     # Special cases - setting certain params and error tolerance for specific files
-    if (re.match(r'^.*P3S_FW_V01[.]0[0-4][.][0-9A-Z_.-]*_m0900[.]elf', elf_inp_fn, re.IGNORECASE) or
-      re.match(r'^.*P3X_FW_V01[.]0[0-4][0-9A-Z_.-]*_m0900[.]elf', elf_inp_fn, re.IGNORECASE)):
-        # P3S and P3X firmwares m0900 with package version number below V01.05
-        expect_json_changes = 2
-        expect_file_changes = [2, 2*4]
-    elif (re.match(r'^.*P3S_FW_V[0-9A-Z_.-]*_m0900[.]elf', elf_inp_fn, re.IGNORECASE) or
-      re.match(r'^.*P3X_FW_V[0-9A-Z_.-]*_m0900[.]elf', elf_inp_fn, re.IGNORECASE)):
-        # The rest of P3S and P3X firmwares m0900
-        expect_json_changes = 6 # 3 x authority_level + 3 x vid_setting_bitrates
-        expect_file_changes = [12, 12*4]
-    elif (re.match(r'^.*C1_FW_V[0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE)):
-        expect_json_changes = 8 # 1 x attenuation_override + 1 x attenuation_value + 6 x board_attenuation
-        expect_file_changes = [2+6, 2*3 + 3*4]
-    elif (re.match(r'^.*C1_FW_V[0-9A-Z_.-]*_m1401[.]elf', elf_inp_fn, re.IGNORECASE)):
-        expect_json_changes = 6
-        expect_file_changes = [6, 2*3 + 3*4]
-    elif (re.match(r'^.*P3S_FW_V[0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE) or
-      re.match(r'^.*P3X_FW_V[0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE)):
-        expect_json_changes = 6 # 3 x authority_level + 3 x vid_setting_bitrates
-        expect_file_changes = [6, 6*4]
-    elif (re.match(r'^.*WM610_FW_V[0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE)):
-        expect_json_changes = 2
-        expect_file_changes = [2, 2*4]
+    if (elf_inp_fn.endswith("_m0900.elf")):
+        if (re.match(r'^.*P3S_FW_V01[.]0[0-4][.][0-9A-Z_.-]*_m0900[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*P3S_FW_V01[.]05[.]00[0-1][0-9][0-9A-Z_.-]*_m0900[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*P3X_FW_V01[.]0[0-4][.][0-9A-Z_.-]*_m0900[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*P3X_FW_V01[.]05[.]00[0-1][0-9][0-9A-Z_.-]*_m0900[.]elf', elf_inp_fn, re.IGNORECASE)):
+            # P3S and P3X firmwares m0900 with package version number below V01.05
+            expect_json_changes = 2
+            expect_file_changes = [2, 2*4]
+        elif (re.match(r'^.*P3S_FW_V[0-9A-Z_.-]*_m0900[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*P3X_FW_V[0-9A-Z_.-]*_m0900[.]elf', elf_inp_fn, re.IGNORECASE)):
+            # The rest of P3S and P3X firmwares m0900
+            expect_json_changes = 6 # 3 x authority_level + 3 x vid_setting_bitrates
+            expect_file_changes = [12, 12*4]
+    elif (elf_inp_fn.endswith("_m1400.elf")):
+        if (re.match(r'^.*C1_FW_V01[.]0[0-3][.][0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE)):
+            # C1 RC firmwares m1400 with package version number below V01.04
+            expect_json_changes = 6
+            expect_file_changes = [6, 2*3 + 3*4]
+        elif (re.match(r'^.*C1_FW_V01[.]05[.]0072_m1400[.]elf', elf_inp_fn, re.IGNORECASE)):
+            # C1 RC firmwares m1400 with package version number V01.05.0072
+            expect_json_changes = 3
+            expect_file_changes = [3, 3*4]
+        elif (re.match(r'^.*C1_FW_V[0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE)):
+            # The rest of C1 RC firmwares m1400
+            expect_json_changes = 8 # 1 x attenuation_override + 1 x attenuation_value + 6 x board_attenuation
+            expect_file_changes = [2+6, 2*3 + 3*4]
+        elif (re.match(r'^.*P3S_FW_V01[.]0[0-2][.][0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*P3X_FW_V01[.]0[0-2][.][0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE)):
+            # P3S and P3X firmwares m1400 with package version number below V01.03
+            expect_json_changes = 2
+            expect_file_changes = [2, 2*4]
+        elif (re.match(r'^.*P3S_FW_V[0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*P3X_FW_V[0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 6 # 3 x authority_level + 3 x vid_setting_bitrates
+            expect_file_changes = [6, 6*4]
+        elif (re.match(r'^.*WM610_FW_V[0-9A-Z_.-]*_m1400[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 2
+            expect_file_changes = [2, 2*4]
+    elif (elf_inp_fn.endswith("_m1401.elf")):
+        if (re.match(r'^.*C1_FW_V01[.]05[.]0072_m1401[.]elf', elf_inp_fn, re.IGNORECASE)):
+            # C1 RC firmwares m1401 with package version number V01.05.0072
+            expect_json_changes = 3
+            expect_file_changes = [3, 3*4]
+        elif (re.match(r'^.*C1_FW_V[0-9A-Z_.-]*_m1401[.]elf', elf_inp_fn, re.IGNORECASE)):
+            # The rest of C1 RC firmwares m1401
+            expect_json_changes = 6
+            expect_file_changes = [6, 2*3 + 3*4]
+        elif (re.match(r'^.*P34_v[0-9A-Z_.-]*_m1401[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 7
+            expect_file_changes = [7, 2*3 + 4*4]
 
     inp_path, inp_filename = os.path.split(elf_inp_fn)
     inp_path = pathlib.Path(inp_path)
@@ -150,7 +177,7 @@ def case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn):
     #('out/p3xw-phantom_3_4k_quadcopter',1,), # no patterns recognized by the hardcoder
     ('out/wm610-t600_inspire_1_x3_quadcopter',3,),
   ] )
-def test_lightbridge_stm32_hardcoder_ckmod(elf_inp_dir, test_nth):
+def test_lightbridge_stm32_hardcoder_ckmod(capsys, elf_inp_dir, test_nth):
     """ Test extraction and re-applying of hard-coded properties within ELFs.
     """
     if test_nth < 1:
@@ -169,6 +196,14 @@ def test_lightbridge_stm32_hardcoder_ckmod(elf_inp_dir, test_nth):
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3C_FW_V[0-9A-Z_.-]*_m0900[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FW_V[0-9A-Z_.-]*_m0900[.]elf', fn, re.IGNORECASE)]
     # Remove unsupported m1400 files
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_FW_v00[.]00[.][0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_FW_v01[.]01[.]003[5-9][0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_FW_v01[.]01[.]00[4-9][0-9][0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_FW_v01[.]07[.]000[2-9][0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_FW_v01[.]07[.]00[1-6][0-9][0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_FW_v01[.]09[.][0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*IN1_v1780_[0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P34_v19[0-9][0-9]_[0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*MG1SRC_FW_V[0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*LB2_GND_V[0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*RC_[0-9A-Z_.-]*_m1400[.]elf', fn, re.IGNORECASE)]
@@ -179,8 +214,12 @@ def test_lightbridge_stm32_hardcoder_ckmod(elf_inp_dir, test_nth):
     # Remove unsupported m1401 files
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*HG910_RC_FW_V[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_33[0-3]_[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
-    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_v1400_[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_RC_v1[0-4]00_[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_v1400_[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)] # renamed - to be removed after xV4 zip update
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_FW_v00[.]00[.][0-9A-Z_.-]*m1401[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*C1_V00[.]01[.][0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*p4pRC_v1[.]0[.][0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P34_v1930_[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM332_V2100_[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
 
     if len(elf_inp_filenames) < 1:
@@ -188,4 +227,5 @@ def test_lightbridge_stm32_hardcoder_ckmod(elf_inp_dir, test_nth):
 
     for elf_inp_fn in elf_inp_filenames[::test_nth]:
         case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn)
+        capstdout, _ = capsys.readouterr()
     pass
