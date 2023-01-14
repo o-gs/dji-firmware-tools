@@ -107,7 +107,7 @@ def case_amba_sys2elf_rebin(modl_inp_fn):
     ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',1,),
     ('out/wm610-t600_inspire_1_x3_quadcopter',1,),
   ] )
-def test_amba_sys2elf_rebin(modl_inp_dir, test_nth):
+def test_amba_sys2elf_rebin(capsys, modl_inp_dir, test_nth):
     """ Test for ELF creation and stripping back to BIN files.
     """
     if test_nth < 1:
@@ -122,4 +122,5 @@ def test_amba_sys2elf_rebin(modl_inp_dir, test_nth):
 
     for modl_inp_fn in modl_inp_filenames[::test_nth]:
         case_amba_sys2elf_rebin(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
     pass
