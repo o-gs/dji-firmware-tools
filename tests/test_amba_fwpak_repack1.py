@@ -59,7 +59,8 @@ def case_amba_fwpak_rebin(modl_inp_fn):
         LOGGER.warning("Expected non-identical binary due to loader format differences: {:s}".format(modl_inp_fn))
         expect_file_changes = 12
     # The padding in re-created file is different than in original
-    if (modl_inp_fn.endswith("WM610_FW_V01.02.01.03_m0100.bin")):
+    if (modl_inp_fn.endswith("WM610_FW_V01.02.01.03_m0100.bin") or
+      modl_inp_fn.endswith("WM610_FW_V01.02.01.06_m0100.bin")):
         LOGGER.warning("Expected non-identical binary due to padding length differences: {:s}".format(modl_inp_fn))
         expect_file_changes = 999999
 
@@ -118,7 +119,7 @@ def case_amba_fwpak_rebin(modl_inp_fn):
     ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',2,),
     ('out/wm610-t600_inspire_1_x3_quadcopter',2,),
   ] )
-def test_amba_fwpak_rebin(modl_inp_dir, test_nth):
+def test_amba_fwpak_rebin(capsys, modl_inp_dir, test_nth):
     """ Test extraction and re-creation of BIN package files.
     """
     if test_nth < 1:
@@ -134,4 +135,5 @@ def test_amba_fwpak_rebin(modl_inp_dir, test_nth):
 
     for modl_inp_fn in modl_inp_filenames[::test_nth]:
         case_amba_fwpak_rebin(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
     pass
