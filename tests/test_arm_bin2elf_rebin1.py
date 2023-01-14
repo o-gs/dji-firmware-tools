@@ -69,7 +69,12 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
               "--section", ".bss@0x1FFFF700:0x5A00", "--section", ".bss2@0x40000000:0x23000",
               "--section", ".bss3@0x42200000:0x500", "--section", ".bss4@0x42420000:0x500"]
     elif (modl_inp_fn.endswith("_m1400.bin")):
-        if (re.match(r'^.*C1_FW_V[0-9A-Z_.-]*_m1400[.]bin', modl_inp_fn, re.IGNORECASE)):
+        if (re.match(r'^.*C1_FW_V00[][0-9A-Z_.-]*_m1400[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `C1_FW_v00.00.00.01_m1400.bin`
+            file_specific_cmdargs = ["-b", "0x0A000", "--section", ".ARM.exidx@0x023600:0",
+              "--section", ".bss@0x10000000:0x8000", "--section", ".bss2@0x40000000:0x50000",
+              "--section", ".bss3@0xE0000000:0x10000"]
+        elif (re.match(r'^.*C1_FW_V01[][0-9A-Z_.-]*_m1400[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Specific offsets for `C1_FW_V01.06.0000_m1400.bin`
             file_specific_cmdargs = ["-b", "0x0A000", "--section", ".ARM.exidx@0x01CE50:0",
               "--section", ".bss@0x10000000:0x8000", "--section", ".bss2@0x40000000:0x50000",
@@ -167,7 +172,7 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
     ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',1,),
     ('out/zt300-datalink_pro',1,),
   ] )
-def test_arm_bin2elf_rebin(modl_inp_dir, test_nth):
+def test_arm_bin2elf_rebin(capsys, modl_inp_dir, test_nth):
     """ Test for ELF creation and stripping back to BIN files.
     """
     if test_nth < 1:
@@ -184,4 +189,5 @@ def test_arm_bin2elf_rebin(modl_inp_dir, test_nth):
 
     for modl_inp_fn in modl_inp_filenames[::test_nth]:
         case_arm_bin2elf_rebin(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
     pass
