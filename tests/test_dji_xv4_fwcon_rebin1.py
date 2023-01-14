@@ -132,7 +132,7 @@ def case_dji_xv4_fwcon_rebin(pkg_inp_fn):
     ('fw_packages/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',1,),
     ('fw_packages/zt300-datalink_pro',1,),
   ] )
-def test_dji_xv4_fwcon_rebin(pkg_inp_dir, test_nth):
+def test_dji_xv4_fwcon_rebin(capsys, pkg_inp_dir, test_nth):
     """ Test extraction and re-creation of BIN package files.
     """
     if test_nth < 1:
@@ -147,4 +147,5 @@ def test_dji_xv4_fwcon_rebin(pkg_inp_dir, test_nth):
 
     for pkg_inp_fn in pkg_inp_filenames[::test_nth]:
         case_dji_xv4_fwcon_rebin(pkg_inp_fn)
+        capstdout, _ = capsys.readouterr()
     pass
