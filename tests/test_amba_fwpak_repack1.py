@@ -60,6 +60,7 @@ def case_amba_fwpak_rebin(modl_inp_fn):
         expect_file_changes = 12
     # The padding in re-created file is different than in original
     if (modl_inp_fn.endswith("WM610_FW_V01.02.01.03_m0100.bin") or
+      modl_inp_fn.endswith("WM610_FW_V01.02.01.03b_m0100.bin") or
       modl_inp_fn.endswith("WM610_FW_V01.02.01.06_m0100.bin")):
         LOGGER.warning("Expected non-identical binary due to padding length differences: {:s}".format(modl_inp_fn))
         expect_file_changes = 999999
