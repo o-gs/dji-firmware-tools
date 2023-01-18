@@ -164,7 +164,7 @@ def case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn):
         assert nchanges <= expect_file_changes[1], "Updated file differences above bounds ({:d}>{:d}): {:s}".format(nchanges, expect_file_changes[1], elf_inp_fn)
     pass
 
-@pytest.mark.order(4) # must be run after test_amba_sys2elf_rebin
+@pytest.mark.order(3) # must be run after test_arm_bin2elf_rebin
 @pytest.mark.parametrize("elf_inp_dir,test_nth", [
     #('out/ag405-agras_mg_1s_octocopter',1,), # no matching modules
     ('out/gl300abc-radio_control',3,),
