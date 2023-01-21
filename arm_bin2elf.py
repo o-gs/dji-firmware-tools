@@ -431,12 +431,15 @@ def armfw_bin2elf_copy_template(po):
 
 def armfw_bin2elf_get_sections_align(po, sections_order):
     """ Figure out alignment of sections.
+
+    Needs to be called after addresses and sizes of sections are settled.
     """
     # Keep it near expected alignment, but adjust if the size does not meet expectations
     sections_align = {}
     for sectname in sections_order:
         sect_align = (po.expect_sect_align << 1)
         while (po.section_addr[sectname] % sect_align) != 0: sect_align = (sect_align >> 1)
+        while (po.section_size[sectname] % sect_align) != 0: sect_align = (sect_align >> 1)
         sections_align[sectname] = sect_align
         if (po.verbose > 0):
             print("{}: Section '{:s}' alignment set to 0x{:02x}".format(po.fwpartfile,sectname,sections_align[sectname]))
