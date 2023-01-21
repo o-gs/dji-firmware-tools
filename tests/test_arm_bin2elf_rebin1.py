@@ -56,7 +56,11 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
 
     # Special cases - setting certain params and error tolerance for specific files
     if (modl_inp_fn.endswith("_m0306.bin")):
-        if (re.match(r'^.*A3_FW_[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE) or
+        if (re.match(r'^.*A3_FW_V02[.][0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `A3_FW_V02.00.00.01_m0306.bin`
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x512F74:0",
+              "--section", ".bss@0x20400000:0x46000", "--section", ".bss2@0x40000000:0x30000"]
+        elif (re.match(r'^.*A3_FW_[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE) or
           re.match(r'^.*A3_OFFICIAL_[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Generic offsets for `A3_FW_V??.??.??.??_m0306.bin`, auto-detection of .ARM.exidx works good enough for this
             file_specific_cmdargs = ["-b", "0x00420000",
