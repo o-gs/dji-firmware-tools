@@ -60,13 +60,28 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
     # Special cases - setting certain params and error tolerance for specific files
     if (elf_inp_fn.endswith("_m0306.elf")):
         if (re.match(r'^.*A3_FW_V01[.]0[1-6][.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
-            re.match(r'^.*A3_FW_V01[.]07[.]00[.]0[0-9][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
-            re.match(r'^.*A3_OFFICAL_1_7_6_[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
+          re.match(r'^.*A3_FW_V01[.]07[.]00[.]0[0-9][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*A3_OFFICAL_1_7_6_[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 2
+            expect_file_changes = [2, 2*4]
+        elif (re.match(r'^.*AI900_AGR_FW_V01[.]00[.]00[.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*AI900_FW_V01[.]05[.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*A3[_]?AGR_FW_V[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*A3_FW_V01[.]00[.]00[.]32[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
+          #re.match(r'^.*A3_FW_V01[.]06[.]00[.]10[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          #re.match(r'^.*A3_FW_V01[.]07[.]00[.]00[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
             expect_json_changes = 2
             expect_file_changes = [2, 2*4]
         elif (re.match(r'^.*A3_OFFICAL_1_7_5_[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
             expect_json_changes = 6
             expect_file_changes = [12, 12*4]
+        elif (re.match(r'^.*MG1S_FW_V01[.]01[.]00[.]00[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*MG1S_V3210_[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 2
+            expect_file_changes = [2, 2*4]
+        elif (re.match(r'^.*MG1S_FW_V01[.]00[.]00[.]02[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 6
+            expect_file_changes = [10, 12*4]
         else:
             expect_json_changes = 6
             expect_file_changes = [12, 12*4]
@@ -90,35 +105,35 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
     # Modify the JSON
     with open(json_ori_fn) as valfile:
         params_list = json.load(valfile)
-    nchanges = 0
+    props_changed = []
     for par in params_list:
         if re.match(r'^og_hardcoded[.]flyc[.]min_alt_below_home$', par['name']):
             par['setValue'] = -800.0
-            nchanges += 1
+            props_changed.append(str(par['name']))
             continue
         if re.match(r'^og_hardcoded[.]flyc[.]max_alt_above_home$', par['name']):
             par['setValue'] = 4000.0
-            nchanges += 1
+            props_changed.append(str(par['name']))
             continue
         if re.match(r'^og_hardcoded[.]flyc[.]max_wp_dist_to_home$', par['name']):
             par['setValue'] = 6000.0
-            nchanges += 1
+            props_changed.append(str(par['name']))
             continue
         if re.match(r'^og_hardcoded[.]flyc[.]max_mission_path_len$', par['name']):
             par['setValue'] = 40000.0
-            nchanges += 1
+            props_changed.append(str(par['name']))
             continue
         if re.match(r'^og_hardcoded[.]flyc[.]max_speed_pos$', par['name']):
             par['setValue'] = 25.0
-            nchanges += 1
+            props_changed.append(str(par['name']))
             continue
         if re.match(r'^og_hardcoded[.]flyc[.]max_speed_neg$', par['name']):
             par['setValue'] = -25.0
-            nchanges += 1
+            props_changed.append(str(par['name']))
             continue
     with open(json_mod_fn, "w") as valfile:
         valfile.write(json.dumps(params_list, indent=4))
-    assert nchanges >= expect_json_changes, "Performed too few JSON modifications ({:d}<{:d}): {:s}".format(nchanges, expect_json_changes, json_mod_fn)
+    assert len(props_changed) >= expect_json_changes, "Performed too few JSON modifications ({:d}<{:d}): {:s}".format(len(props_changed), expect_json_changes, json_mod_fn)
     # Make copy of the ELF file
     shutil.copyfile(elf_inp_fn, elf_out_fn)
     # Import json file back to elf
@@ -137,6 +152,8 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
 @pytest.mark.order(3) # must be run after test_arm_bin2elf_rebin
 @pytest.mark.parametrize("elf_inp_dir,test_nth", [
     ('out/a3-flight_controller',3,),
+    ('out/ag405-agras_mg_1s_octocopter',3,),
+    ('out/ai900_agr-a3_based_multicopter_platform',3,),
     ('out/p3c-phantom_3_std_quadcopter',3,),
     ('out/p3s-phantom_3_adv_quadcopter',3,),
     ('out/p3x-phantom_3_pro_quadcopter',3,),
