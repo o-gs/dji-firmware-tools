@@ -89,4 +89,5 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest tests -o log_cli=true
+        # use --durations=0 to get execution time for all unit tests
+        pytest tests -o log_cli=true --durations=0
