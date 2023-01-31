@@ -123,7 +123,8 @@ class SerialBulkWrap():
         return btarr
 
     def close(self):
-        pass
+        import usb.util
+        usb.util.dispose_resources(self.dev)
 
     def reset_input_buffer(self):
         pass
