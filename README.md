@@ -509,16 +509,26 @@ Example of unsealing BQ30z55 (enabling write capabilities), with default SHA-1 k
 
 ### tests
 
-The `tests` folder contains a few `bash` scripts which can be used to verify
+The `tests` folder contains a collection of scripts which can be used to verify
 whether the tools do their job correctly. Most tests will extract and re-pack
-a specific firmware, then compare the result to original to check whether
-no unintended changes were introduced to the file. Tools which communicate
-to a product are tested by injecting expected answers to their receive buffers,
-so they can be tested without the product as well.
+a firmware found in `fw_packages` directory, then compare the result to original
+to check whether no unintended changes were introduced to the file.
+Tools which communicate to a product are tested by injecting expected answers
+to their receive buffers, so they can be tested without the product as well.
 
 Besides testing your modifications, you can also use tests as source of more
 usage examples of the tools. They contain command lines to extract specific
 firmwares and execute specific commands on the products.
+
+There are `bash` and `pytest` tests, covering the same general functionalities.
+
+Example of executing the `pytest` tests:
+
+```pytest tests -rsx --full-scope -o log_cli=true --log-cli-level=INFO```
+
+The `--full-scope` option makes the tests execute on all known binaries, rather
+that on a selection used for continous integration. The CI tests are selective
+to make sure the automatic testing ends in reasonable time.
 
 ### comm_dissector
 
