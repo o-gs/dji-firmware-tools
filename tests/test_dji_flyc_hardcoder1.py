@@ -185,10 +185,16 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
     ('out/m100-matrice_100_quadcopter',0,),
     ('out/m600-matrice_600_hexacopter',0,),
     ('out/m600pro-matrice_600_pro_hexacopter',0,),
-    ('out/n3-flight_controller',3,),
+    ('out/n3-flight_controller',0,),
     ('out/p3c-phantom_3_std_quadcopter',3,),
+    ('out/p3se-phantom_3_se_quadcopter',0,),
     ('out/p3s-phantom_3_adv_quadcopter',3,),
     ('out/p3x-phantom_3_pro_quadcopter',3,),
+    ('out/p3xw-phantom_3_4k_quadcopter',0,),
+    ('out/wind-a3_based_multicopter_platform',0,),
+    ('out/wm610_fc350z-t600_inspire_1_z3_quadcopter',0,),
+    ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',0,),
+    ('out/wm610-t600_inspire_1_x3_quadcopter',0,),
   ] )
 def test_dji_flyc_hardcoder_ckmod(capsys, elf_inp_dir, test_nth):
     """ Test extraction and re-applying of hard-coded properties within ELFs.
@@ -211,6 +217,8 @@ def test_dji_flyc_hardcoder_ckmod(capsys, elf_inp_dir, test_nth):
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3S_FW_V01[.]05[.]00[0-2][0-9][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3C_FW_V01[.]0[0-4][.][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3C_FW_V01[.]05[.]00[0-2][0-9][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FC550_FW_V01[.]00[.]00[.]3[0-9][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FW_V01[.]02[.]01[.]03[0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
 
     if len(elf_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
