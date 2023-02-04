@@ -76,12 +76,22 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
             expect_json_changes = 6
             expect_file_changes = [12, 12*4]
         elif (re.match(r'^.*AM603_FW_V0[0-2][.][()0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
-          re.match(r'^.*N3_AGR_FW_V01[.]00[.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
-          re.match(r'^.*N3_FW_V01[.]0[0-7][.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
+          re.match(r'^.*N3_AGR_FW_V01[.]00[.]01[.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*N3_FW_V01[.]00[.]00[.][1-9][0-9][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*N3_FW_V01[.]00[.]01[.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*N3_FW_V01[.]0[1-6][.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*N3_FW_V01[.]07[.]00[.]0[0-9][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*N3_FW_V02[.]00[.]00[.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
             expect_json_changes = 2
             expect_file_changes = [2, 2*4]
-        elif (re.match(r'^.*MATRICE600_FW_V01[.]00[.]00[.]56[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
-            expect_json_changes = 6 # or 4 ???
+        elif (re.match(r'^.*N3_FW_V01[.]00[.]00[.]01[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*N3_FW_V01[.]07[.]00[.]10[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 6
+            expect_file_changes = [10, 12*4]
+        elif (re.match(r'^.*MATRICE600_FW_V01[.]00[.]00[.]56[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*MATRICE600PRO_FW_V01[.]00[.]01[.]2[1-9][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*MATRICE600PRO_FW_V01[.]00[.]01[.][3-9][0-9][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 6
             expect_file_changes = [10, 12*4]
         elif (re.match(r'^.*MATRICE600_FW_V01[.]00[.]00[.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
           re.match(r'^.*MATRICE600_FW_V01[.]00[.]01[.][0-1][0-9][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
@@ -168,12 +178,14 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
 
 @pytest.mark.order(3) # must be run after test_arm_bin2elf_rebin
 @pytest.mark.parametrize("elf_inp_dir,test_nth", [
-    ('out/a3-flight_controller',3,),
+    ('out/a3-flight_controller',0,),
     ('out/ag405-agras_mg_1s_octocopter',0,),
-    ('out/ai900_agr-a3_based_multicopter_platform',3,),
+    ('out/ai900_agr-a3_based_multicopter_platform',0,),
     ('out/am603-n3_based_multicopter_platform',0,),
-    ('out/m100-matrice_100_quadcopter',3,),
-    ('out/m600-matrice_600_hexacopter',3,),
+    ('out/m100-matrice_100_quadcopter',0,),
+    ('out/m600-matrice_600_hexacopter',0,),
+    ('out/m600pro-matrice_600_pro_hexacopter',0,),
+    ('out/n3-flight_controller',3,),
     ('out/p3c-phantom_3_std_quadcopter',3,),
     ('out/p3s-phantom_3_adv_quadcopter',3,),
     ('out/p3x-phantom_3_pro_quadcopter',3,),
@@ -190,8 +202,8 @@ def test_dji_flyc_hardcoder_ckmod(capsys, elf_inp_dir, test_nth):
 
     # Remove unsupported m0306 files
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*A3_FW_V02[.][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
-    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*MATRICE600_FW_V01[.]00[.]00[.]28[0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*MATRICE100_FW_V01[.]0[1-3][.][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*MATRICE600_FW_V01[.]00[.]00[.]28[0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*MATRICE600_FW_V02[.]00[.]00[.]95[(]polar[)][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3X_FW_V01[.]0[0-4][.][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3X_FW_V01[.]05[.]00[0-2][0-9][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
