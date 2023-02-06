@@ -179,7 +179,9 @@ def case_dji_imah_fwsig_rebin(modl_inp_fn):
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         dji_imah_fwsig_main()
-    # Modify head config to use authentication key which has private part
+    # We do not have private parts of auth keys used for signing - use OG community key instead
+    # Different signature means we will get up to 256 different bytes in the resulting file
+    # Additional 2 bytes of difference is the FourCC - two first bytes of it were changed
     modify_head_ini_option("{:s}_head.ini".format(pfx_out_fn), [('auth_key','SLAK',)])
     # Re-sign the module
     command = [os.path.join(".", "dji_imah_fwsig.py"), "-vv", *shlex.split(extra_cmdopts), "-s", "-m", pfx_out_fn, "-i", modl_out_fn]

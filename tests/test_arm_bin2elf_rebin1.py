@@ -195,7 +195,7 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
         assert 0, "Not implemented"
     pass
 
-@pytest.mark.order(2) # must be run after test_dji_xv4_fwcon_rebin
+@pytest.mark.order(3) # must be run after test_dji_xv4_fwcon_rebin
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/a3-flight_controller',1,),
     ('out/ag405-agras_mg_1s_octocopter',1,),
@@ -232,7 +232,7 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
     ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',1,),
     ('out/zt300-datalink_pro',1,),
   ] )
-def test_arm_bin2elf_rebin(capsys, modl_inp_dir, test_nth):
+def test_arm_bin2elf_xv4_rebin(capsys, modl_inp_dir, test_nth):
     """ Test for ELF creation and stripping back to BIN files.
     """
     if test_nth < 1:

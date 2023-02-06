@@ -119,7 +119,7 @@ def case_amba_sys_hardcoder_ckmod(elf_inp_fn):
         assert nchanges <= expect_file_changes[1], "Updated file differences above bounds ({:d}>{:d}): {:s}".format(nchanges, expect_file_changes[1], elf_inp_fn)
     pass
 
-@pytest.mark.order(4) # must be run after test_amba_sys2elf_rebin
+@pytest.mark.order(5) # must be run after test_amba_sys2elf_rebin
 @pytest.mark.parametrize("elf_inp_dir,test_nth", [
     #('out/m600-matrice_600_hexacopter',3,), # no patterns recognized by the hardcoder
     #('out/osmo_fc350z-osmo_zoom_z3_gimbal',3,), # no patterns recognized by the hardcoder

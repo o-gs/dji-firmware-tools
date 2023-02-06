@@ -91,7 +91,7 @@ def case_amba_sys2elf_rebin(modl_inp_fn):
         assert 0, "Not implemented"
     pass
 
-@pytest.mark.order(3) # must be run after test_amba_fwpak_rebin
+@pytest.mark.order(4) # must be run after test_amba_fwpak_rebin
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/m600-matrice_600_hexacopter',1,),
     ('out/osmo_fc350z-osmo_zoom_z3_gimbal',1,),
