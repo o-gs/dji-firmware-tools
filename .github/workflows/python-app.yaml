@@ -77,15 +77,23 @@ jobs:
       with:
         args: get https://mega.nz/file/cd0zCBYY#QNzUepD_8iia5uy6hMBTM1dv48yO7iQhSCPXkMr2p6c ${{ env.GITHUB_WORKSPACE }}
 
+    - name: Download IMaH1 firmware package files to test on
+      # Instead of the usual actions/download-artifact, we are downloading from Mega
+      uses: Difegue/action-megacmd@master
+      with:
+        args: get https://mega.nz/file/UNlS1Z5B#dyu_LoeoS2M3UmBvssdvSDwAhA_dsNNbFHwJ7VDZ9rE ${{ env.GITHUB_WORKSPACE }}
+
     - name: Set ownership for downloaded files
       # downloaded files are owned by root; unzip has no permission
       run: |
-        sudo chown -R $(id -u):$(id -g) ../fw_packages-xv4-selected-ci-v1.zip
+        sudo chown -cR $(id -u):$(id -g) ../fw_packages-*.zip
 
     - name: Extract downloaded files
       run: |
         mkdir -p fw_packages
         unzip -q ../fw_packages-xv4-selected-ci-v1.zip -d fw_packages
+        unzip -q ../fw_packages-imah1-selected-ci-v1.zip -d fw_packages
+        rm ../fw_packages-*.zip
 
     - name: Test with pytest
       run: |
