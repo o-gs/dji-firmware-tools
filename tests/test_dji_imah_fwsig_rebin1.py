@@ -212,7 +212,7 @@ def case_dji_imah_fwsig_rebin(modl_inp_fn):
     ('fw_packages/wm220-mavic',1,),
     ('fw_packages/wm330-phantom_4_std',1,),
     ('fw_packages/wm331-phantom_4_pro',1,),
-    ('fw_packages/wm351-phantom_4_pro_v2',1,),
+    ('fw_packages/wm335-phantom_4_pro_v2',1,),
     ('fw_packages/wm620-inspire_2',1,),
 
   ] )

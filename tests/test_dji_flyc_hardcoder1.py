@@ -204,7 +204,7 @@ def test_dji_flyc_hardcoder_ckmod(capsys, elf_inp_dir, test_nth):
 
     elf_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
         "{}/*-split1/*_m0306.elf".format(elf_inp_dir),
-    ) ]) if os.path.isfile(fn)]
+    ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
 
     # Remove unsupported m0306 files
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*A3_FW_V02[.][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]

@@ -195,6 +195,7 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
         assert 0, "Not implemented"
     pass
 
+
 @pytest.mark.order(3) # must be run after test_dji_xv4_fwcon_rebin
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/a3-flight_controller',1,),
@@ -243,7 +244,35 @@ def test_arm_bin2elf_xv4_rebin(capsys, modl_inp_dir, test_nth):
         "{}/*-split1/*_m0900.bin".format(modl_inp_dir),
         "{}/*-split1/*_m1400.bin".format(modl_inp_dir),
         "{}/*-split1/*_m1401.bin".format(modl_inp_dir),
-    ) ]) if os.path.isfile(fn)]
+    ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames[::test_nth]:
+        case_arm_bin2elf_rebin(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+
+@pytest.mark.order(3) # must be run after test_dji_mvfc_fwpak_rebin
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/wm100-spark',1,),
+    ('out/wm220-mavic',1,),
+    ('out/wm330-phantom_4_std',1,),
+    ('out/wm331-phantom_4_pro',1,),
+    ('out/wm335-phantom_4_pro_v2',1,),
+    ('out/wm620-inspire_2',1,),
+  ] )
+def test_arm_bin2elf_imah1_rebin(capsys, modl_inp_dir, test_nth):
+    """ Test for ELF creation and stripping back to BIN files.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
+        "{}/*/*_0306.decrypted.bin".format(modl_inp_dir),
+    ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")

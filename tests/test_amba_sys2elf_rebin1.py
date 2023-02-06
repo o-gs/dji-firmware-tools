@@ -115,7 +115,7 @@ def test_amba_sys2elf_rebin(capsys, modl_inp_dir, test_nth):
 
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
         "{}/*-split1/*-split1/*_m0100_part_sys.a9s".format(modl_inp_dir),
-    ) ]) if os.path.isfile(fn)]
+    ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
