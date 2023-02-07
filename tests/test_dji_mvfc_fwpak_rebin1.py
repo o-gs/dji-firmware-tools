@@ -24,16 +24,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import configparser
 import filecmp
 import glob
 import itertools
 import logging
 import os
 import re
-import shlex
 import sys
-import tarfile
 import pathlib
 import pytest
 from unittest.mock import patch

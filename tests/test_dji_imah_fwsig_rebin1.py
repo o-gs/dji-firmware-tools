@@ -214,7 +214,6 @@ def case_dji_imah_fwsig_rebin(modl_inp_fn):
     ('fw_packages/wm331-phantom_4_pro',1,),
     ('fw_packages/wm335-phantom_4_pro_v2',1,),
     ('fw_packages/wm620-inspire_2',1,),
-
   ] )
 def test_dji_imah_fwsig_rebin(capsys, pkg_inp_dir, test_nth):
     """ Test extraction and re-creation of signed modules from within BIN package files.
