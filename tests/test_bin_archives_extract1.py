@@ -31,9 +31,7 @@ import logging
 import os
 import re
 import sys
-import tarfile
 import pathlib
-import zipfile
 import pytest
 from unittest.mock import patch
 
@@ -49,6 +47,10 @@ def case_bin_archive_extract(modl_inp_fn):
     """ Test case for extraction check, and prepare data for tests which use the extracted files.
     """
     LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
+
+    import tarfile
+    import zipfile
+
     ignore_unknown_format = False
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
@@ -57,9 +59,11 @@ def case_bin_archive_extract(modl_inp_fn):
 
     # For some files, we may want to ignore unrecognized format because the files can be incorrectly decrypted (due to no key)
     if (re.match(r'^(wm100)[a]?_(0801|0905).*$', inp_basename, re.IGNORECASE)):
-        ignore_unknown_format = True # PUEK not published
+        ignore_unknown_format = True # PUEK-2017-09 not published
     if (re.match(r'^(wm620)_(0801|0802|0905).*$', inp_basename, re.IGNORECASE)):
-        ignore_unknown_format = True # PUEK not published
+        ignore_unknown_format = True # PUEK-2017-09 not published
+    if (re.match(r'^(wm335)_(0801|0802|0805|1301).*$', inp_basename, re.IGNORECASE)):
+        ignore_unknown_format = True # PUEK-2017-11 not published
 
     if len(inp_path.parts) > 1:
         out_path = os.sep.join(["out"] + list(inp_path.parts[1:]))
