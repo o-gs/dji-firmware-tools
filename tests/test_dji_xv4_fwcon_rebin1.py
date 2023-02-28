@@ -130,6 +130,8 @@ def case_dji_xv4_fwcon_rebin(pkg_inp_fn):
     ('fw_packages/wm610-t600_inspire_1_x3_quadcopter',1,),
     ('fw_packages/wm610_fc350z-t600_inspire_1_z3_quadcopter',1,),
     ('fw_packages/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',1,),
+    ('fw_packages/zs600a_crystalsky_5_5inch',1,),
+    ('fw_packages/zs600b-crystalsky_7_85inch',1,),
     ('fw_packages/zt300-datalink_pro',1,),
   ] )
 def test_dji_xv4_fwcon_rebin(capsys, pkg_inp_dir, test_nth):
