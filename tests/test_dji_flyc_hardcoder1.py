@@ -76,7 +76,7 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
             expect_json_changes = 6
             expect_file_changes = [12, 12*4]
         elif (re.match(r'^.*AM603_FW_V0[0-2][.][()0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
-          re.match(r'^.*N3_AGR_FW_V01[.]00[.]01[.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*N3_AGR_FW_V01[.]00[.]0[0-2][.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
           re.match(r'^.*N3_FW_V01[.]00[.]00[.][1-9][0-9][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
           re.match(r'^.*N3_FW_V01[.]00[.]01[.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
           re.match(r'^.*N3_FW_V01[.]0[1-6][.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
@@ -102,7 +102,8 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
         elif (re.match(r'^.*MATRICE600_FW_V02[.]00[.]00[.][()0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
             expect_json_changes = 4
             expect_file_changes = [4, 4*4]
-        elif (re.match(r'^.*MG1S_FW_V01[.]01[.]00[.]00[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+        elif (re.match(r'^.*MG1S_FW_V01[.]00[.]00[.]0[3-5][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*MG1S_FW_V01[.]01[.]00[.]00[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
           re.match(r'^.*MG1S_V3210_[0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE)):
             expect_json_changes = 2
             expect_file_changes = [2, 2*4]
@@ -211,6 +212,7 @@ def test_dji_flyc_hardcoder_ckmod(capsys, elf_inp_dir, test_nth):
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*MATRICE100_FW_V01[.]0[1-3][.][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*MATRICE600_FW_V01[.]00[.]00[.]28[0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*MATRICE600_FW_V02[.]00[.]00[.]95[(]polar[)][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*MG1S_FW_V01[.]00[.]00[.]03[0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3X_FW_V01[.]0[0-4][.][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3X_FW_V01[.]05[.]00[0-2][0-9][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3S_FW_V01[.]0[0-4][.][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
@@ -218,7 +220,7 @@ def test_dji_flyc_hardcoder_ckmod(capsys, elf_inp_dir, test_nth):
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3C_FW_V01[.]0[0-4][.][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3C_FW_V01[.]05[.]00[0-2][0-9][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FC550_FW_V01[.]00[.]00[.]3[0-9][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
-    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FW_V01[.]02[.]01[.]03[0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FW_V01[.]0[0-4][.][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
 
     if len(elf_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
