@@ -97,12 +97,34 @@ def case_bin_archive_extract(modl_inp_fn):
 
 @pytest.mark.order(2) # must be run after test_dji_imah_fwsig_rebin
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/ag406-agras_mg-1a',1,),
+    ('out/ag407-agras_mg-1p-rtk',1,),
+    ('out/ag408-agras_mg-unk',1,),
+    ('out/ag410-agras_t16',1,),
+    ('out/ag411-agras_t20',1,),
+    ('out/ag603-agras_unk_rtk',1,),
+    ('out/gl811-goggles_racing_ed',1,),
+    ('out/pm410-matrice200',1,),
+    ('out/pm420-matrice200_v2',1,),
+    ('out/rc001-inspire_2_rc',1,),
+    ('out/rc002-spark_rc',1,),
+    ('out/rc160-mavic_mini_rc',1,),
+    ('out/rc230-mavic_air_rc',1,),
+    ('out/rc240-mavic_2_rc',1,),
+    ('out/tp703-aeroscope',1,),
     ('out/wm100-spark',1,),
+    ('out/wm220-goggles_std',1,),
     ('out/wm220-mavic',1,),
+    ('out/wm222-mavic_sp',1,),
     ('out/wm330-phantom_4_std',1,),
     ('out/wm331-phantom_4_pro',1,),
+    ('out/wm332-phantom_4_adv',1,),
+    ('out/wm334-phantom_4_rtk',1,),
     ('out/wm335-phantom_4_pro_v2',1,),
+    ('out/wm336-phantom_4_mulspectral',1,),
     ('out/wm620-inspire_2',1,),
+    ('out/xw607-robomaster_s1',1,),
+    ('out/zv811-occusync_air_sys',1,),
   ] )
 def test_bin_archives_imah1_extract(capsys, modl_inp_dir, test_nth):
     """ Test if known archives are extracting correctly, and prepare data for tests which use the extracted files.
@@ -121,6 +143,9 @@ def test_bin_archives_imah1_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*_1407.bin".format(modl_inp_dir),
         "{}/*/*_2801.bin".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
+
+    # Direct `MA2x` Myriad firmware (but v02 has the `MA2x` within .tgz)
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*wm330_0802_v01[.][0-9A-Z_.-]*_0802.bin', fn, re.IGNORECASE)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no package files to test in this directory")
