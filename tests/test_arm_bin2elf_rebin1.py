@@ -259,9 +259,13 @@ def test_arm_bin2elf_xv4_rebin(capsys, modl_inp_dir, test_nth):
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/wm100-spark',1,),
     ('out/wm220-mavic',1,),
+    ('out/wm222-mavic_sp',1,),
     ('out/wm330-phantom_4_std',1,),
     ('out/wm331-phantom_4_pro',1,),
+    ('out/wm332-phantom_4_adv',1,),
+    ('out/wm334-phantom_4_rtk',1,),
     ('out/wm335-phantom_4_pro_v2',1,),
+    ('out/wm336-phantom_4_mulspectral',1,),
     ('out/wm620-inspire_2',1,),
   ] )
 def test_arm_bin2elf_imah1_rebin(capsys, modl_inp_dir, test_nth):
