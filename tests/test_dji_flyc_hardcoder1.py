@@ -197,7 +197,7 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
     ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',0,),
     ('out/wm610-t600_inspire_1_x3_quadcopter',0,),
   ] )
-def test_dji_flyc_hardcoder_ckmod(capsys, elf_inp_dir, test_nth):
+def test_dji_flyc_hardcoder_xv4_ckmod(capsys, elf_inp_dir, test_nth):
     """ Test extraction and re-applying of hard-coded properties within ELFs.
     """
     if test_nth < 1:

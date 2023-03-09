@@ -77,8 +77,30 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
     module_cmdopts = ""
     module_changes_limit = 0
     nested = {}
-    if (re.match(r'^.*(wm220)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
-        module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-07"
+    if (re.match(r'^.*(ag406|ag407|ag408|ag410|ag411)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-11"
+        # allow change of 2 bytes from auth key name, 256 from signature
+        module_changes_limit = 2 + 256
+    elif (re.match(r'^.*(ag603)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        pass # TODO
+    elif (re.match(r'^.*(tp703)([._].*)?[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11" # PUEK is not used
+        # allow change of 2 bytes from auth key name, 256 from signature
+        module_changes_limit = 2 + 256
+    elif (re.match(r'^.*(xw607)([._].*)?[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11"
+        # allow change of 2 bytes from auth key name, 256 from signature
+        module_changes_limit = 2 + 256
+    elif (re.match(r'^.*(gl811|glass_re|zv811_gl|zv811)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11"
+        # allow change of 2 bytes from auth key name, 256 from signature
+        module_changes_limit = 2 + 256
+    elif (re.match(r'^.*(pm410)([._].*)?[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11"
+        # allow change of 2 bytes from auth key name, 256 from signature
+        module_changes_limit = 2 + 256
+    elif (re.match(r'^.*(pm420)([._].*)?[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-07"
         # allow change of 2 bytes from auth key name, 256 from signature
         module_changes_limit = 2 + 256
     elif (re.match(r'^.*(wm330)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
@@ -97,14 +119,6 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
         # allow change of 2 bytes from auth key name, 4 from enc checksum, 256 from signature
         module_changes_limit = 2 + 4 + 256
-    elif (re.match(r'^.*(wm230)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
-        module_cmdopts = "-k PRAK-2017-08 -k UFIE-2018-01 -k TBIE-2018-01"
-        # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
-        module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (re.match(r'^.*(rc230)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
-        module_cmdopts = "-k PRAK-2017-12 -k UFIE-2018-01"
-        # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
-        module_changes_limit = 2 + 4 + 4 + 256 + 32+16
     elif (re.match(r'^.*(wm170|wm231|wm232|gl170|pm430|ag500)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
         module_cmdopts = "-k PRAK-2020-01 -k UFIE-2020-04 -k TBIE-2020-02" # TBIE not published, boot images decryption (m080?/280?) will fail
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
@@ -113,18 +127,14 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         module_cmdopts = "-k PRAK-2018-02 -k TBIE-2020-04 -f" # PRAK not published, forcing ignore signature fail; modules not encrypted, boot images encrypted
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (re.match(r'^.*(wm240|wm245|wm246)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
-        module_cmdopts = "-k PRAK-2017-08 -k UFIE-2018-07 -k TBIE-2018-07"
-        # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
-        module_changes_limit = 2 + 4 + 4 + 256 + 32+16
     elif (re.match(r'^.*(gl150|wm150|lt150)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
         module_cmdopts = "-k PRAK-2017-08 -k UFIE-2018-07 -k TBIE-2018-07"
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (re.match(r'^.*(rc240)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
-        module_cmdopts = "-k PRAK-2017-12 -k UFIE-2018-07"
-        # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
-        module_changes_limit = 2 + 4 + 4 + 256 + 32+16
+    elif (re.match(r'^.*(rc160)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11"
+        # allow change of 2 bytes from auth key name, 256 from signature
+        module_changes_limit = 2 + 256
     elif (re.match(r'^.*(wm160)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
         module_cmdopts = "-k PRAK-2019-09 -k UFIE-2019-11"
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
@@ -135,6 +145,30 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
     elif (re.match(r'^.*(wm161)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
         module_cmdopts = "-k PRAK-2019-09 -k UFIE-2019-11"
+        # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
+        module_changes_limit = 2 + 4 + 4 + 256 + 32+16
+    elif (re.match(r'^.*(wm220)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-07"
+        # allow change of 2 bytes from auth key name, 256 from signature
+        module_changes_limit = 2 + 256
+    elif (re.match(r'^.*(wm222)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-07" # PUEK is not used
+        # allow change of 2 bytes from auth key name, 256 from signature
+        module_changes_limit = 2 + 256
+    elif (re.match(r'^.*(rc230)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-12 -k UFIE-2018-01"
+        # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
+        module_changes_limit = 2 + 4 + 4 + 256 + 32+16
+    elif (re.match(r'^.*(wm230)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-08 -k UFIE-2018-01 -k TBIE-2018-01"
+        # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
+        module_changes_limit = 2 + 4 + 4 + 256 + 32+16
+    elif (re.match(r'^.*(rc240)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-12 -k UFIE-2018-07"
+        # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
+        module_changes_limit = 2 + 4 + 4 + 256 + 32+16
+    elif (re.match(r'^.*(wm240|wm245|wm246)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-08 -k UFIE-2018-07 -k TBIE-2018-07"
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
     else:
@@ -208,15 +242,37 @@ def case_dji_imah_fwsig_rebin(modl_inp_fn):
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize("pkg_inp_dir,test_nth", [
+    ('fw_packages/ag406-agras_mg-1a',1,),
+    ('fw_packages/ag407-agras_mg-1p-rtk',1,),
+    ('fw_packages/ag408-agras_mg-unk',1,),
+    ('fw_packages/ag410-agras_t16',1,),
+    ('fw_packages/ag411-agras_t20',1,),
+    #('fw_packages/ag603-agras_unk_rtk',1,), # had no time to look into
+    ('fw_packages/gl811-goggles_racing_ed',1,),
+    ('fw_packages/pm410-matrice200',1,),
+    ('fw_packages/pm420-matrice200_v2',1,),
+    ('fw_packages/rc001-inspire_2_rc',1,),
+    ('fw_packages/rc002-spark_rc',1,),
+    ('fw_packages/rc160-mavic_mini_rc',1,),
+    ('fw_packages/rc230-mavic_air_rc',1,),
+    ('fw_packages/rc240-mavic_2_rc',1,),
+    ('fw_packages/tp703-aeroscope',1,),
     ('fw_packages/wm100-spark',1,),
+    ('fw_packages/wm220-goggles_std',1,),
     ('fw_packages/wm220-mavic',1,),
+    ('fw_packages/wm222-mavic_sp',1,),
     ('fw_packages/wm330-phantom_4_std',1,),
     ('fw_packages/wm331-phantom_4_pro',1,),
+    ('fw_packages/wm332-phantom_4_adv',1,),
+    ('fw_packages/wm334-phantom_4_rtk',1,),
     ('fw_packages/wm335-phantom_4_pro_v2',1,),
+    ('fw_packages/wm336-phantom_4_mulspectral',1,),
     ('fw_packages/wm620-inspire_2',1,),
+    ('fw_packages/xw607-robomaster_s1',1,),
+    ('fw_packages/zv811-occusync_air_sys',1,),
   ] )
-def test_dji_imah_fwsig_rebin(capsys, pkg_inp_dir, test_nth):
-    """ Test extraction and re-creation of signed modules from within BIN package files.
+def test_dji_imah_fwsig_v1_rebin(capsys, pkg_inp_dir, test_nth):
+    """ Test extraction and re-creation of signed IMaH v1 modules from within BIN package files.
     """
     if test_nth < 1:
         pytest.skip("limited scope")
