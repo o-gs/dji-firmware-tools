@@ -164,6 +164,7 @@ def test_bin_archives_imah_v1_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*_0805.bin".format(modl_inp_dir),
         "{}/*/*_0905.bin".format(modl_inp_dir),
         "{}/*/*_0907.bin".format(modl_inp_dir),
+        "{}/*/*_1300.bin".format(modl_inp_dir),
         "{}/*/*_1301.bin".format(modl_inp_dir),
         "{}/*/*_1407.bin".format(modl_inp_dir),
         "{}/*/*_2801.bin".format(modl_inp_dir),
@@ -171,6 +172,41 @@ def test_bin_archives_imah_v1_extract(capsys, modl_inp_dir, test_nth):
 
     # Direct `MA2x` Myriad firmware (but v02 has the `MA2x` within .tgz)
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*wm330_0802_v01[.][0-9A-Z_.-]*_0802.bin', fn, re.IGNORECASE)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no package files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames:
+        case_bin_archive_extract(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+@pytest.mark.order(2) # must be run after test_dji_xv4_fwcon_rebin
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/gl300abc-radio_control',1,),
+    ('out/gl300e-radio_control',1,),
+    ('out/m600-matrice_600_hexacopter',1,),
+    ('out/osmo_fc550-osmo_x5_gimbal',1,),
+    ('out/osmo_fc550r-osmo_x5raw_gimbal',1,),
+    ('out/osmo-osmo_x3_gimbal',1,),
+    ('out/p3s-phantom_3_adv_quadcopter',1,),
+    ('out/p3x-phantom_3_pro_quadcopter',1,),
+    ('out/wm610-t600_inspire_1_x3_quadcopter',1,),
+    ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',1,),
+    ('out/zs600a_crystalsky_5_5inch',1,),
+    ('out/zs600b-crystalsky_7_85inch',1,),
+  ] )
+def test_bin_archives_xv4_extract(capsys, modl_inp_dir, test_nth):
+    """ Test if known archives are extracting correctly, and prepare data for tests which use the extracted files.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        # Some Android OTA/TGZ/TAR modules contain ELFs for hardcoders
+        "{}/*/*_m0800.bin".format(modl_inp_dir),
+        "{}/*/*_m1300.bin".format(modl_inp_dir),
+      ) ]) if os.path.isfile(fn)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no package files to test in this directory")
