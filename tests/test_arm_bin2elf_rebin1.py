@@ -268,7 +268,7 @@ def test_arm_bin2elf_xv4_rebin(capsys, modl_inp_dir, test_nth):
     ('out/wm336-phantom_4_mulspectral',1,),
     ('out/wm620-inspire_2',1,),
   ] )
-def test_arm_bin2elf_imah1_rebin(capsys, modl_inp_dir, test_nth):
+def test_arm_bin2elf_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
     """ Test for ELF creation and stripping back to BIN files.
     """
     if test_nth < 1:
