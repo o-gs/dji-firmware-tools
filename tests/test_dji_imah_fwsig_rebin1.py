@@ -107,10 +107,14 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-07"
         # allow change of 2 bytes from auth key name, 256 from signature
         module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(wm331|wm332|wm333|wm334|wm335|wm336)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (re.match(r'^.*(wm331|wm332|wm333|wm334|wm336)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
         module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
         # allow change of 2 bytes from auth key name, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 256 + 16+32
+    elif (re.match(r'^.*(wm335)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-07"
+        # allow change of 2 bytes from auth key name, 256 from signature
+        module_changes_limit = 2 + 256
     elif (re.match(r'^.*(wm100|rc002)[._a].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
         module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
         # allow change of 2 bytes from auth key name, 256 from signature
