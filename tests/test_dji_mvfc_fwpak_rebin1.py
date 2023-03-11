@@ -108,12 +108,22 @@ def case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn):
 
 @pytest.mark.order(2) # must be run after test_dji_imah_fwsig_rebin
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/ag407-agras_mg-1p-rtk',1,),
+    ('out/ag408-agras_mg-unk',1,),
+    ('out/ag410-agras_t16',1,),
+    ('out/pm410-matrice200',1,),
+    #('out/pm420-matrice200_v2',1,), # decrypting this is not currently supported
     ('out/wm100-spark',1,),
     ('out/wm220-mavic',1,),
+    ('out/wm222-mavic_sp',1,),
     ('out/wm330-phantom_4_std',1,),
     ('out/wm331-phantom_4_pro',1,),
+    ('out/wm332-phantom_4_adv',1,),
+    ('out/wm334-phantom_4_rtk',1,),
     #('out/wm335-phantom_4_pro_v2',1,), # decrypting this is not currently supported
+    #('out/wm336-phantom_4_mulspectral',1,), # decrypting this is not currently supported
     #('out/wm620-inspire_2',1,), # decrypting this is not currently supported
+    #('out/xw607-robomaster_s1',1,), # decrypting this is not currently supported
   ] )
 def test_dji_mvfc_fwpak_rebin(capsys, modl_inp_dir, test_nth):
     """ Test decryption and re-encryption of FC BIN module files.
@@ -125,6 +135,11 @@ def test_dji_mvfc_fwpak_rebin(capsys, modl_inp_dir, test_nth):
         "{}/*/*_0305.bin".format(modl_inp_dir),
         "{}/*/*_0306.bin".format(modl_inp_dir),
       ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
+
+    # Remove files not encrypted to start with
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag407_0306_v03[.]03[.]99[.]54.*[.]bin$', fn, re.IGNORECASE)]
+    # Some packages have multiple versions of specific modules, with only part of them not supported
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag410_0306_v.*_nk00.*[.]bin$', fn, re.IGNORECASE)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no fc module files to test in this directory")
