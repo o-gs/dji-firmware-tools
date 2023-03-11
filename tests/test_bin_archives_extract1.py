@@ -30,6 +30,7 @@ import itertools
 import logging
 import os
 import re
+import subprocess
 import sys
 import pathlib
 import pytest
@@ -42,6 +43,19 @@ from dji_imah_fwsig import main as dji_imah_fwsig_main
 
 
 LOGGER = logging.getLogger(__name__)
+
+def is_openssl_file(inp_fn):
+    with open(inp_fn, 'rb') as encfh:
+        return encfh.read(8) == b'Salted__'
+
+def tar_extractall_overwrite(tarfh, path='.'):
+    for f in tarfh:
+        try:
+            tarfh.extract(f, path, set_attrs=False, numeric_owner=False)
+        except IOError as e:
+            os.remove(os.sep.join([path, f.name]))
+            tarfh.extract(f, path, set_attrs=False, numeric_owner=False)
+    pass
 
 def case_bin_archive_extract(modl_inp_fn):
     """ Test case for extraction check, and prepare data for tests which use the extracted files.
@@ -69,22 +83,33 @@ def case_bin_archive_extract(modl_inp_fn):
         out_path = os.sep.join(["out"] + list(inp_path.parts[1:]))
     else:
         out_path = "out"
+
+    if is_openssl_file(modl_inp_fn):
+        real_inp_fn = os.sep.join([out_path, "{:s}.decrypted{:s}".format(inp_basename, modl_fileext)])
+        # Decrypt the file
+        command = ["openssl", "des3", "-md", "md5", "-d", "-k", "Dji123456", "-in", modl_inp_fn, "-out", real_inp_fn]
+        LOGGER.info(' '.join(command))
+        subprocess.run(command)
+    else:
+        real_inp_fn = modl_inp_fn
+
     modules_path1 = os.sep.join([out_path, "{:s}-extr1".format(inp_basename)])
     if not os.path.exists(modules_path1):
         os.makedirs(modules_path1)
 
-    if tarfile.is_tarfile(modl_inp_fn):
-        with tarfile.open(modl_inp_fn) as tarfh:
+    if tarfile.is_tarfile(real_inp_fn):
+        with tarfile.open(real_inp_fn) as tarfh:
             if type(tarfh.fileobj).__name__ == "GzipFile":
-                command = ["tar", "-zxf", modl_inp_fn, "--directory={}".format(modules_path1)]
+                command = ["tar", "-zxf", real_inp_fn, "--directory={}".format(modules_path1)]
             else:
-                command = ["tar", "-xf", modl_inp_fn, "--directory={}".format(modules_path1)]
+                command = ["tar", "-xf", real_inp_fn, "--directory={}".format(modules_path1)]
             LOGGER.info(' '.join(command))
             # extracting file
-            tarfh.extractall(modules_path1)
-    elif zipfile.is_zipfile(modl_inp_fn):
-        with zipfile.ZipFile(modl_inp_fn) as zipfh:
-            command = ["unzip", "-q", "-o", "-d", modules_path1,  modl_inp_fn]
+            tar_extractall_overwrite(tarfh, modules_path1)
+
+    elif zipfile.is_zipfile(real_inp_fn):
+        with zipfile.ZipFile(real_inp_fn) as zipfh:
+            command = ["unzip", "-q", "-o", "-d", modules_path1,  real_inp_fn]
             LOGGER.info(' '.join(command))
             # extracting file
             zipfh.extractall(modules_path1)
@@ -126,7 +151,7 @@ def case_bin_archive_extract(modl_inp_fn):
     ('out/xw607-robomaster_s1',1,),
     ('out/zv811-occusync_air_sys',1,),
   ] )
-def test_bin_archives_imah1_extract(capsys, modl_inp_dir, test_nth):
+def test_bin_archives_imah_v1_extract(capsys, modl_inp_dir, test_nth):
     """ Test if known archives are extracting correctly, and prepare data for tests which use the extracted files.
     """
     if test_nth < 1:
