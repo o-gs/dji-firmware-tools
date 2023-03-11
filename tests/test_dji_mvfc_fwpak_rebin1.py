@@ -125,7 +125,7 @@ def case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn):
     ('out/wm620-inspire_2',1,),
     #('out/xw607-robomaster_s1',1,), # not currently supported - '12345678' format
   ] )
-def test_dji_mvfc_fwpak_rebin(capsys, modl_inp_dir, test_nth):
+def test_dji_mvfc_fwpak_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
     """ Test decryption and re-encryption of FC BIN module files.
     """
     if test_nth < 1:
