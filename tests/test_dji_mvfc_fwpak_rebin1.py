@@ -112,7 +112,7 @@ def case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn):
     ('out/ag408-agras_mg-unk',1,),
     ('out/ag410-agras_t16',1,),
     ('out/pm410-matrice200',1,),
-    #('out/pm420-matrice200_v2',1,), # decrypting this is not currently supported
+    #('out/pm420-matrice200_v2',1,), # not currently supported - '12345678' format
     ('out/wm100-spark',1,),
     ('out/wm220-mavic',1,),
     ('out/wm222-mavic_sp',1,),
@@ -120,10 +120,10 @@ def case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn):
     ('out/wm331-phantom_4_pro',1,),
     ('out/wm332-phantom_4_adv',1,),
     ('out/wm334-phantom_4_rtk',1,),
-    #('out/wm335-phantom_4_pro_v2',1,), # decrypting this is not currently supported
-    #('out/wm336-phantom_4_mulspectral',1,), # decrypting this is not currently supported
-    #('out/wm620-inspire_2',1,), # decrypting this is not currently supported
-    #('out/xw607-robomaster_s1',1,), # decrypting this is not currently supported
+    ('out/wm335-phantom_4_pro_v2',1,),
+    #('out/wm336-phantom_4_mulspectral',1,), # not currently supported - '12345678' format
+    ('out/wm620-inspire_2',1,),
+    #('out/xw607-robomaster_s1',1,), # not currently supported - '12345678' format
   ] )
 def test_dji_mvfc_fwpak_rebin(capsys, modl_inp_dir, test_nth):
     """ Test decryption and re-encryption of FC BIN module files.
