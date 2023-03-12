@@ -55,7 +55,7 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
     expect_file_changes = 0
 
     # Special cases - setting certain params and error tolerance for specific files
-    if (modl_inp_fn.endswith("_m0306.bin")):
+    if (modl_inp_fn.endswith("_m0306.bin")): # FC modules from xV4 firmwares
         if (re.match(r'^.*A3_FW_V02[.][0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Specific offsets for `A3_FW_V02.00.00.01_m0306.bin`
             file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x512F74:0",
@@ -115,7 +115,7 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
             file_specific_cmdargs = ["-b", "0x8020000",
               "--section", ".bss@0x10000000:0xA000", "--section", ".bss2@0x20000000:0x30000",
               "--section", ".bss3@0x40000000:0x30000"]
-    elif (modl_inp_fn.endswith("_m0900.bin")):
+    elif (modl_inp_fn.endswith("_m0900.bin")): # LB air MCU modules from xV4 firmwares
         if (re.match(r'^.*P3X_FW_V[0-9A-Z_.-]*_m0900[.]bin', modl_inp_fn, re.IGNORECASE) or
           re.match(r'^.*P3S_FW_V[0-9A-Z_.-]*_m0900[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Specific offsets for `P3X_FW_V01.08.0080_m0900.bin`
@@ -128,7 +128,7 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
             file_specific_cmdargs = ["-b", "0x8008000",
               "--section", ".bss@0x1FFFF700:0x5A00", "--section", ".bss2@0x40000000:0x23000",
               "--section", ".bss3@0x42200000:0x500", "--section", ".bss4@0x42420000:0x500"]
-    elif (modl_inp_fn.endswith("_m1400.bin")):
+    elif (modl_inp_fn.endswith("_m1400.bin")): # LB ground MCU model 0 modules from xV4 firmwares
         if (re.match(r'^.*C1_FW_V00[][0-9A-Z_.-]*_m1400[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Specific offsets for `C1_FW_v00.00.00.01_m1400.bin`
             file_specific_cmdargs = ["-b", "0x0A000", "--section", ".ARM.exidx@0x023600:0",
@@ -149,7 +149,7 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
             file_specific_cmdargs = ["-b", "0x0A000",
               "--section", ".bss@0x10000000:0x8000", "--section", ".bss2@0x40000000:0x50000",
               "--section", ".bss3@0xE0000000:0x10000"]
-    elif (modl_inp_fn.endswith("_m1401.bin")):
+    elif (modl_inp_fn.endswith("_m1401.bin")): # LB ground MCU model 1 modules from xV4 firmwares
         if (re.match(r'^.*C1_FW_V[0-9A-Z_.-]*_m1401[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Specific offsets for `C1_FW_V01.06.0000_m1401.bin`
             file_specific_cmdargs = ["-b", "0x0A000", "--section", ".ARM.exidx@0x01CE50:0",
@@ -162,6 +162,8 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
               "--section", ".bss@0x10000000:0x8000", "--section", ".bss2@0x20000000:0x9000",
               "--section", ".bss3@0x2C000000:0x20000", "--section", ".bss4@0x40000000:0xF0000",
               "--section", ".bss5@0xE0000000:0x8000"]
+    elif (modl_inp_fn.endswith("_0306.decrypted.bin")): # FC modules from IMaH firmwares
+        pass
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
     inp_path = pathlib.Path(inp_path)
@@ -257,6 +259,10 @@ def test_arm_bin2elf_xv4_rebin(capsys, modl_inp_dir, test_nth):
 
 @pytest.mark.order(3) # must be run after test_dji_mvfc_fwpak_rebin
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/ag407-agras_mg-1p-rtk',1,),
+    ('out/ag408-agras_mg-unk',1,),
+    ('out/ag410-agras_t16',1,),
+    ('out/pm410-matrice200',1,),
     ('out/wm100-spark',1,),
     ('out/wm220-mavic',1,),
     ('out/wm222-mavic_sp',1,),
