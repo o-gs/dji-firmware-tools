@@ -28,6 +28,7 @@ import filecmp
 import glob
 import itertools
 import logging
+import mmap
 import os
 import re
 import sys
@@ -42,6 +43,23 @@ from dji_mvfc_fwpak import main as dji_mvfc_fwpak_main
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+def is_module_unsigned_encrypted(modl_inp_fn):
+    """ Identify if the module was extracted without full decryption.
+        If the module data is encrypted, invoking further tests on it makes no sense.
+    """
+    match = re.search(r'^(.*)_m?([0-9]{4})[.]bin$', modl_inp_fn, flags=re.IGNORECASE)
+    if not match:
+        return False
+    modl_part_fn = match.group(1)
+    modl_ini_fn = "{:s}_head.ini".format(modl_part_fn)
+    try:
+        with open(modl_ini_fn, 'rb') as fh:
+            mm = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
+            return mm.find(b"scramble_key_encrypted") != -1
+    except Exception:
+        return False
 
 
 def case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn):
@@ -140,6 +158,8 @@ def test_dji_mvfc_fwpak_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag407_0306_v03[.]03[.]99[.]54.*[.]bin$', fn, re.IGNORECASE)]
     # Some packages have multiple versions of specific modules, with only part of them not supported
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag410_0306_v.*_nk00.*[.]bin$', fn, re.IGNORECASE)]
+    # Skip the packages which were extracted in encrypted form (need non-public key)
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no fc module files to test in this directory")
