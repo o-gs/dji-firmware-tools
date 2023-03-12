@@ -147,7 +147,7 @@ def test_bin_archives_xv4_extract(capsys, modl_inp_dir, test_nth):
       ) ]) if os.path.isfile(fn)]
 
     # Remove unsupported files - 'RKFW' RockChip firmware images
-    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*GL300E_RC_User_v.*_m1300[.]bin$', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*GL300E_RC_User_v.*_m1300[.]bin$', fn, re.IGNORECASE)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no package files to test in this directory")
