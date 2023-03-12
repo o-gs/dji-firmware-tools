@@ -50,60 +50,46 @@ from dm3xx_encode_usb_hardcoder import main as dm3xx_encode_usb_hardcoder_main
 LOGGER = logging.getLogger(__name__)
 
 
-def case_dm3xx_encode_usb_hardcoder_ckmod(modl_inp_fn):
+def case_dm3xx_encode_usb_hardcoder_ckmod(elf_inp_fn):
     """ Test case for extraction and re-applying of hard-coded properties within ELFs.
     """
-    LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
+    LOGGER.info("Testcase file: {:s}".format(elf_inp_fn))
     # Most files we are able to recreate with full accuracy
     expect_json_changes = 99
     expect_file_changes = [0,0]
 
+    # We expect the input file to be in a folder which identifies the module
+    inp_path, elf_base_name = os.path.split(elf_inp_fn)
+    match = re.search(r'^(.*_m([0-9]{4}))[.-].*$', inp_path, flags=re.IGNORECASE)
+    assert match, "File path does not identify module: {:s}".format(elf_inp_fn)
+    inp_path = match.group(1)
+    inp_path, modl_base_name = os.path.split(inp_path)
+    inp_module = match.group(2)
+
     # Special cases - setting certain params and error tolerance for specific files
-    if (modl_inp_fn.endswith("_m0800.bin")):
-        elf_base_name = "encode_usb"
+    if inp_module == '0800' and elf_base_name == 'encode_usb':
         expect_json_changes = 1 # only startup_encrypt_check_always_pass
         expect_file_changes = [1, 16]
-    if (modl_inp_fn.endswith("_m1300.bin")):
+    elif inp_module == '1300' and elf_base_name == 'usbclient':
         # There are currently no supported cases for m1300
-        elf_base_name = "usbclient"
         expect_json_changes = 99
         expect_file_changes = [0, 0]
 
-    inp_path, inp_filename = os.path.split(modl_inp_fn)
     inp_path = pathlib.Path(inp_path)
-    inp_basename, modl_fileext = os.path.splitext(inp_filename)
     if len(inp_path.parts) > 1:
         out_path = os.sep.join(["out"] + list(inp_path.parts[1:]))
     else:
         out_path = "out"
-    tgz_inp_fn = os.sep.join([out_path, "{:s}.decrypted.tar.gz".format(inp_basename)])
-    elf_inp_fn = os.sep.join([out_path, "{:s}-{:s}.elf".format(inp_basename, elf_base_name)])
-    elf_out_fn = os.sep.join([out_path, "{:s}-{:s}.mod.elf".format(inp_basename, elf_base_name)])
-    json_ori_fn = os.sep.join([out_path, "{:s}-{:s}.json".format(inp_basename, elf_base_name)])
-    json_mod_fn = os.sep.join([out_path, "{:s}-{:s}.mod.json".format(inp_basename, elf_base_name)])
+    elf_cpy_fn = os.sep.join([out_path, "{:s}-{:s}.elf".format(modl_base_name, elf_base_name)])
+    elf_out_fn = os.sep.join([out_path, "{:s}-{:s}.mod.elf".format(modl_base_name, elf_base_name)])
+    json_ori_fn = os.sep.join([out_path, "{:s}-{:s}.json".format(modl_base_name, elf_base_name)])
+    json_mod_fn = os.sep.join([out_path, "{:s}-{:s}.mod.json".format(modl_base_name, elf_base_name)])
 
-    # Decrypt the TGZ file
-    command = ["openssl", "des3", "-md", "md5", "-d", "-k", "Dji123456", "-in", modl_inp_fn, "-out", tgz_inp_fn]
-    LOGGER.info(' '.join(command))
-    subprocess.run(command)
-
-    # Now we need to extract our ELF from that TGZ
-    # First, find the path and name of our encode_usb
-    command = ["tar", "-ztf", tgz_inp_fn]
-    LOGGER.info(' '.join(command))
-    procret = subprocess.run(command, capture_output=True, text=True)
-    match = re.search(r'^.*\/{:s}$'.format(elf_base_name), procret.stdout, flags=re.MULTILINE)
-    assert match, "File `{:s}` not found within TGZ content: {:s}".format(elf_base_name, tgz_inp_fn)
-    elf_raw_inp_fn = match.group(0)
-    # Extract the TGZ file
-    command = ["tar", "-zxf", tgz_inp_fn, "-C", out_path, elf_raw_inp_fn]
-    LOGGER.info(' '.join(command))
-    subprocess.run(command)
-    # Move the ELF file into proper place, and rename
-    shutil.move(os.sep.join([out_path, elf_raw_inp_fn]), elf_inp_fn)
+    # Copy the ELF file into better place, and rename
+    shutil.copy(elf_inp_fn, elf_cpy_fn)
 
     # Create json file with recognized hard-coded values
-    command = [os.path.join(".", "dm3xx_encode_usb_hardcoder.py"), "-vvv", "-x", "-e", elf_inp_fn, "-o", json_ori_fn]
+    command = [os.path.join(".", "dm3xx_encode_usb_hardcoder.py"), "-vvv", "-x", "-e", elf_cpy_fn, "-o", json_ori_fn]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         dm3xx_encode_usb_hardcoder_main()
@@ -122,7 +108,7 @@ def case_dm3xx_encode_usb_hardcoder_ckmod(modl_inp_fn):
     assert nchanges >= expect_json_changes, "Performed too few JSON modifications ({:d}<{:d}): {:s}".format(nchanges, expect_json_changes, json_mod_fn)
 
     # Make copy of the ELF file
-    shutil.copyfile(elf_inp_fn, elf_out_fn)
+    shutil.copyfile(elf_cpy_fn, elf_out_fn)
     # Import json file back to elf
     command = [os.path.join(".", "dm3xx_encode_usb_hardcoder.py"), "-vvv", "-u", "-o", json_mod_fn, "-e", elf_out_fn]
     LOGGER.info(' '.join(command))
@@ -131,12 +117,13 @@ def case_dm3xx_encode_usb_hardcoder_ckmod(modl_inp_fn):
 
     if True:
         # Count byte differences between repackaged file and the original
-        nchanges =  filediff.diffcount(elf_inp_fn, elf_out_fn)
+        nchanges =  filediff.diffcount(elf_cpy_fn, elf_out_fn)
         assert nchanges >= expect_file_changes[0], "Updated file differences below bounds ({:d}<{:d}): {:s}".format(nchanges, expect_file_changes[0], elf_inp_fn)
         assert nchanges <= expect_file_changes[1], "Updated file differences above bounds ({:d}>{:d}): {:s}".format(nchanges, expect_file_changes[1], elf_inp_fn)
     pass
 
-@pytest.mark.order(2) # must be run after test_dji_xv4_fwcon_rebin
+
+@pytest.mark.order(3) # must be run after test_bin_archives_xv4_extract
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     #('out/gl300abc-radio_control',3,), # Currently we do not have anything to extract from the m1300 modules in this directory
     #('out/gl300e-radio_control',1,), # There is m1300 in one of these firmwares, but it is not SSL'ed TGZ, but OTA ZIP file
@@ -155,21 +142,21 @@ def test_dm3xx_encode_usb_hardcoder_ckmod(capsys, modl_inp_dir, test_nth):
     if test_nth < 1:
         pytest.skip("limited scope")
 
-    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
-        "{}/*-split1/*_m0800.bin".format(modl_inp_dir),
-        "{}/*-split1/*_m1300.bin".format(modl_inp_dir),
+    elf_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
+        "{}/*-split1/*_m0800-extr1/**/bin/encode_usb".format(modl_inp_dir),
+        "{}/*-split1/*_m1300-extr1/**/bin/usbclient".format(modl_inp_dir),
     ) ]) if os.path.isfile(fn)]
 
     # Remove unsupported m1300 files
-    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*WM610_FW_V01[.]02[.]01[.][0-9A-Z_.-]*_m1300[.]bin', fn, re.IGNORECASE)]
-    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*WM610_FW_V01[.]03[.]00[.]00_m1300[.]bin', fn, re.IGNORECASE)]
-    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*P3X_FW_V01[.]0[1-4][.][0-9A-Z_.-]*_m1300[.]bin', fn, re.IGNORECASE)]
-    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*P3S_FW_V01[.]0[1-4][.][0-9A-Z_.-]*_m1300[.]bin', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FW_V01[.]02[.]01[.][0-9A-Z_.-]*_m1300-extr1.*$', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FW_V01[.]03[.]00[.]00_m1300-extr1.*$', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3X_FW_V01[.]0[1-4][.][0-9A-Z_.-]*_m1300-extr1.*$', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3S_FW_V01[.]0[1-4][.][0-9A-Z_.-]*_m1300-extr1.*$', fn, re.IGNORECASE)]
 
-    if len(modl_inp_filenames) < 1:
+    if len(elf_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
 
-    for modl_inp_fn in modl_inp_filenames[::test_nth]:
-        case_dm3xx_encode_usb_hardcoder_ckmod(modl_inp_fn)
+    for elf_inp_fn in elf_inp_filenames[::test_nth]:
+        case_dm3xx_encode_usb_hardcoder_ckmod(elf_inp_fn)
         capstdout, _ = capsys.readouterr()
     pass
