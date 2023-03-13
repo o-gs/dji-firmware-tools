@@ -8,7 +8,7 @@
     amount of changes.
 
     This test requires modules to already be extracted from their
-    packagges, and specific modules used here to be converted to ELF.
+    packages, and specific modules used here to be converted to ELF.
 """
 
 # Copyright (C) 2023 Mefistotelis <mefistotelis@gmail.com>
@@ -113,6 +113,13 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
         else:
             expect_json_changes = 6
             expect_file_changes = [12, 12*4]
+    elif (elf_inp_fn.endswith("_0306.decrypted.elf")):
+        if (re.match(r'^.*wm100_0306_v.*[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 6
+            expect_file_changes = [10, 12*4]
+        else:
+            expect_json_changes = 7
+            expect_file_changes = [14, 14*4]
 
     inp_path, inp_filename = os.path.split(elf_inp_fn)
     inp_path = pathlib.Path(inp_path)
@@ -159,6 +166,10 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
             par['setValue'] = -25.0
             props_changed.append(str(par['name']))
             continue
+        if re.match(r'^og_hardcoded[.]flyc[.]firmware_version$', par['name']):
+            par['setValue'] = "12.34.56.78"
+            props_changed.append(str(par['name']))
+            continue
     with open(json_mod_fn, "w") as valfile:
         valfile.write(json.dumps(params_list, indent=4))
     assert len(props_changed) >= expect_json_changes, "Performed too few JSON modifications ({:d}<{:d}): {:s}".format(len(props_changed), expect_json_changes, json_mod_fn)
@@ -177,7 +188,8 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
         assert nchanges <= expect_file_changes[1], "Updated file differences above bounds ({:d}>{:d}): {:s}".format(nchanges, expect_file_changes[1], elf_inp_fn)
     pass
 
-@pytest.mark.order(4) # must be run after test_arm_bin2elf_rebin
+
+@pytest.mark.order(4) # must be run after test_arm_bin2elf_xv4_rebin
 @pytest.mark.parametrize("elf_inp_dir,test_nth", [
     ('out/a3-flight_controller',0,),
     ('out/ag405-agras_mg_1s_octocopter',0,),
@@ -221,6 +233,43 @@ def test_dji_flyc_hardcoder_xv4_ckmod(capsys, elf_inp_dir, test_nth):
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P3C_FW_V01[.]05[.]00[0-2][0-9][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FC550_FW_V01[.]00[.]00[.]3[0-9][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FW_V01[.]0[0-4][.][0-9A-Z_.-]*_m0306.elf', fn, re.IGNORECASE)]
+
+    if len(elf_inp_filenames) < 1:
+        pytest.skip("no files to test in this directory")
+
+    for elf_inp_fn in elf_inp_filenames[::test_nth]:
+        case_dji_flyc_hardcoder_ckmod(elf_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+@pytest.mark.order(4) # must be run after test_arm_bin2elf_imah_v1_rebin
+@pytest.mark.parametrize("elf_inp_dir,test_nth", [
+    ('out/ag407-agras_mg-1p-rtk',0,),
+    ('out/ag408-agras_mg-unk',0,),
+    ('out/ag410-agras_t16',0,),
+    ('out/pm410-matrice200',0,),
+    ('out/pm420-matrice200_v2',0,),
+    ('out/wm100-spark',0,),
+    ('out/wm220-mavic',3,),
+    ('out/wm222-mavic_sp',0,),
+    ('out/wm330-phantom_4_std',0,),
+    ('out/wm331-phantom_4_pro',0,),
+    ('out/wm332-phantom_4_adv',0,),
+    ('out/wm334-phantom_4_rtk',0,),
+    ('out/wm335-phantom_4_pro_v2',0,),
+    ('out/wm336-phantom_4_mulspectral',0,),
+    ('out/wm620-inspire_2',0,),
+    ('out/xw607-robomaster_s1',0,),
+  ] )
+def test_dji_flyc_hardcoder_imah_v1_ckmod(capsys, elf_inp_dir, test_nth):
+    """ Test extraction and re-applying of hard-coded properties within ELFs.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    elf_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
+        "{}/*/*_0306.decrypted.elf".format(elf_inp_dir),
+    ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
 
     if len(elf_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
