@@ -77,105 +77,155 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
     module_cmdopts = ""
     module_changes_limit = 0
     nested = {}
-    if (re.match(r'^.*(ag406|ag407|ag408|ag410|ag411)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    if (m := re.match(r'^.*(ag406|ag407|ag408|ag410|ag411)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-11"
         # allow change of 2 bytes from auth key name, 256 from signature
         module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(ag603)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(ag603)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         pass # TODO
-    elif (re.match(r'^.*(tp703)([._].*)?[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(tp703)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11" # PUEK is not used
         # allow change of 2 bytes from auth key name, 256 from signature
         module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(xw607)([._].*)?[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(xw607)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11"
         # allow change of 2 bytes from auth key name, 256 from signature
         module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(gl811|glass_re|zv811_gl|zv811)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(gl811|glass_re|zv811_gl|zv811)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11"
         # allow change of 2 bytes from auth key name, 256 from signature
         module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(pm410)([._].*)?[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(pm410)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11"
         # allow change of 2 bytes from auth key name, 256 from signature
         module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(pm420)([._].*)?[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(pm420)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-07"
         # allow change of 2 bytes from auth key name, 256 from signature
         module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(wm330)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
-        module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-07"
-        # allow change of 2 bytes from auth key name, 256 from signature
-        module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(wm331|wm332|wm333|wm334|wm336)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(wm330)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
+        if (re.match(r'^.*{:s}_0801_.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
+            module_changes_limit = 2 + 256 + 3*16
+        else: # if first level module
+            module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-07"
+            # allow change of 2 bytes from auth key name, 256 from signature
+            module_changes_limit = 2 + 256
+    elif (m := re.match(r'^.*(wm331|wm332|wm333|wm334|wm336)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
         # allow change of 2 bytes from auth key name, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 256 + 16+32
-    elif (re.match(r'^.*(wm335)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(wm335)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-07"
         # allow change of 2 bytes from auth key name, 256 from signature
         module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(wm100|rc002)[._a].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
-        module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
-        # allow change of 2 bytes from auth key name, 256 from signature
-        module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(wm620|rc001)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(wm100|rc002)[a]?([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
+        if (re.match(r'^.*{:s}_0801_.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
+            module_changes_limit = 2 + 256 + 3*16
+        else: # if first level module
+            module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
+            # allow change of 2 bytes from auth key name, 256 from signature
+            module_changes_limit = 2 + 256
+    elif (m := re.match(r'^.*(wm620|rc001)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
         # allow change of 2 bytes from auth key name, 4 from enc checksum, 256 from signature
         module_changes_limit = 2 + 4 + 256
-    elif (re.match(r'^.*(wm170|wm231|wm232|gl170|pm430|ag500)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(wm170|wm231|wm232|gl170|pm430|ag500)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2020-01 -k UFIE-2020-04 -k TBIE-2020-02" # TBIE not published, boot images decryption (m080?/280?) will fail
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (re.match(r'^.*(rcss170|rcjs170|rcs231|rc-n1-wm161b)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(rcss170|rcjs170|rcs231|rc-n1-wm161b)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2018-02 -k TBIE-2020-04 -f" # PRAK not published, forcing ignore signature fail; modules not encrypted, boot images encrypted
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (re.match(r'^.*(gl150|wm150|lt150)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(gl150|wm150|lt150)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-08 -k UFIE-2018-07 -k TBIE-2018-07"
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (re.match(r'^.*(rc160)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(rc160)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11"
         # allow change of 2 bytes from auth key name, 256 from signature
         module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(wm160)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(wm160)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2019-09 -k UFIE-2019-11"
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (re.match(r'^.*(wm1605)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
-        module_cmdopts = "-k PRAK-2019-09 -k UFIE-2021-06"
-        # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
-        module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (re.match(r'^.*(wm161)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(wm1605)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
+        if (re.match(r'^.*{:s}_0100_.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2019-09 -k TBIE-2021-06 -k TKIE-2021-06"
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
+            module_changes_limit = 2 + 256 + 3*16
+        else:
+            module_cmdopts = "-k PRAK-2019-09 -k UFIE-2021-06"
+            # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
+            module_changes_limit = 2 + 4 + 4 + 256 + 32+16
+    elif (m := re.match(r'^.*(wm161)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2019-09 -k UFIE-2019-11"
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (re.match(r'^.*(wm220)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
-        module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-07"
-        # allow change of 2 bytes from auth key name, 256 from signature
-        module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(wm222)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(wm220)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
+        if (re.match(r'^.*{:s}_0801_.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
+            module_changes_limit = 2 + 256 + 3*16
+        elif (re.match(r'^.*{:s}_1301_.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding, 3x16 unknown additional
+            module_changes_limit = 2 + 256 + 3*16 + 3*16
+        else: # if first level module or nested in m0907
+            module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-07"
+            # allow change of 2 bytes from auth key name, 256 from signature
+            module_changes_limit = 2 + 256
+    elif (m := re.match(r'^.*(wm222)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-07" # PUEK is not used
         # allow change of 2 bytes from auth key name, 256 from signature
         module_changes_limit = 2 + 256
-    elif (re.match(r'^.*(rc230)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(rc230)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-12 -k UFIE-2018-01"
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (re.match(r'^.*(wm230)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(wm230)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-08 -k UFIE-2018-01 -k TBIE-2018-01"
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (re.match(r'^.*(rc240)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(rc240)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-12 -k UFIE-2018-07"
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (re.match(r'^.*(wm240|wm245|wm246)[._].*[.]sig$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(wm240|wm245|wm246)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
         module_cmdopts = "-k PRAK-2017-08 -k UFIE-2018-07 -k TBIE-2018-07"
         # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
     else:
+        platform = "unknown"
         module_cmdopts = ""
         module_changes_limit = 2 + 4 + 4 + 256
     return module_cmdopts, module_changes_limit, nested
@@ -294,4 +344,52 @@ def test_dji_imah_fwsig_v1_rebin(capsys, pkg_inp_dir, test_nth):
         for modl_inp_fn in modl_filenames:
             case_dji_imah_fwsig_rebin(os.sep.join([modl_path, modl_inp_fn]))
             capstdout, _ = capsys.readouterr()
+    pass
+
+
+@pytest.mark.order(4) # must be run after test_bin_archives_imah_v1_extract and test_bin_bootimg_imah_v1_extract
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    #TODO prepare key parameters, then enable
+    #('out/ag407-agras_mg-1p-rtk',1,),
+    #('out/ag408-agras_mg-unk',1,),
+    #('out/ag410-agras_t16',1,),
+    #('out/ag411-agras_t20',1,),
+    #('out/gl811-goggles_racing_ed',1,),
+    #('out/pm410-matrice200',1,),
+    #('out/pm420-matrice200_v2',1,),
+    #('out/rc240-mavic_2_rc',1,),
+    #('out/tp703-aeroscope',1,),
+    ('out/wm100-spark',1,),
+    #('out/wm220-goggles_std',1,),
+    ('out/wm220-mavic',1,),
+    #('out/wm222-mavic_sp',1,),
+    ('out/wm330-phantom_4_std',1,),
+    #('out/wm331-phantom_4_pro',1,),
+    #('out/wm332-phantom_4_adv',1,),
+    #('out/wm334-phantom_4_rtk',1,),
+    #('out/wm336-phantom_4_mulspectral',1,),
+    #('out/wm620-inspire_2',1,),
+    #('out/xw607-robomaster_s1',1,),
+    #('out/zv811-occusync_air_sys',1,),
+  ] )
+def test_dji_imah_fwsig_v1_nested_rebin(capsys, modl_inp_dir, test_nth):
+    """ Test extraction and re-creation of signed IMaH v1 images nested within other modules.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        # output from test_bin_archives_imah_v1_extract
+        "{}/*/**/normal.img".format(modl_inp_dir),
+        "{}/*/**/recovery.img".format(modl_inp_dir),
+        # output from test_bin_bootimg_imah_v1_extract
+        "{}/*/*-bootarea_p*.img.sig".format(modl_inp_dir),
+      ) ]) if os.path.isfile(fn)]
+
+    if len(modl_filenames) < 1:
+        pytest.skip("no package files to test in this directory")
+
+    for modl_inp_fn in modl_filenames:
+        case_dji_imah_fwsig_rebin(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
     pass
