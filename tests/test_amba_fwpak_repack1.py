@@ -7,7 +7,7 @@
     files are identical.
 
     This test requires modules to already be extracted from their
-    packagges.
+    packages.
 """
 
 # Copyright (C) 2023 Mefistotelis <mefistotelis@gmail.com>

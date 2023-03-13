@@ -8,7 +8,7 @@
     amount of changes.
 
     This test requires modules to already be extracted from their
-    packagges, and specific modules used here to be converted to ELF.
+    packages, and specific modules used here to be converted to ELF.
 """
 
 # Copyright (C) 2023 Mefistotelis <mefistotelis@gmail.com>

@@ -8,7 +8,7 @@
     amount of changes.
 
     This test requires modules to already be extracted from their
-    packagges, and specific modules used here to be converted to ELF.
+    packages, and specific modules used here to be converted to ELF.
 """
 
 # Copyright (C) 2023 Mefistotelis <mefistotelis@gmail.com>
@@ -163,6 +163,7 @@ def case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn):
         assert nchanges >= expect_file_changes[0], "Updated file differences below bounds ({:d}<{:d}): {:s}".format(nchanges, expect_file_changes[0], elf_inp_fn)
         assert nchanges <= expect_file_changes[1], "Updated file differences above bounds ({:d}>{:d}): {:s}".format(nchanges, expect_file_changes[1], elf_inp_fn)
     pass
+
 
 @pytest.mark.order(4) # must be run after test_arm_bin2elf_rebin
 @pytest.mark.parametrize("elf_inp_dir,test_nth", [
