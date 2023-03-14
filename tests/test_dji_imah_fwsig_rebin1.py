@@ -112,7 +112,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         module_changes_limit = 2 + 256
     elif (m := re.match(r'^.*(wm330)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
-        if (re.match(r'^.*{:s}_0801_.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+        if (re.match(r'^.*{:s}_0801_[^/]*[.]fw_0801.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
             module_changes_limit = 2 + 256 + 3*16
@@ -132,7 +132,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         module_changes_limit = 2 + 256
     elif (m := re.match(r'^.*(wm100|rc002)[a]?([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
-        if (re.match(r'^.*{:s}_0801_.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+        if (re.match(r'^.*{:s}_0801_[^/]*[.]fw_0801.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
             module_changes_limit = 2 + 256 + 3*16
@@ -172,7 +172,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
     elif (m := re.match(r'^.*(wm1605)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
-        if (re.match(r'^.*{:s}_0100_.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+        if (re.match(r'^.*{:s}_0100_[^/]*[.]fw_0100.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2019-09 -k TBIE-2021-06 -k TKIE-2021-06"
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
             module_changes_limit = 2 + 256 + 3*16
@@ -187,11 +187,11 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
     elif (m := re.match(r'^.*(wm220)([._].*)?[.](sig|bin|img)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
-        if (re.match(r'^.*{:s}_0801_.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+        if (re.match(r'^.*{:s}_0801_[^/]*[.]fw_0801.*$$'.format(platform), modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
             module_changes_limit = 2 + 256 + 3*16
-        elif (re.match(r'^.*{:s}_1301_.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+        elif (re.match(r'^.*{:s}_1301_[^/]*[.]fw_1301.*$$'.format(platform), modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding, 3x16 unknown additional
             module_changes_limit = 2 + 256 + 3*16 + 3*16
