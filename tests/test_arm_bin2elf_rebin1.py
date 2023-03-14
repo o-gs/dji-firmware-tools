@@ -110,6 +110,13 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
             file_specific_cmdargs = ["-b", "0x8020000", "--section", ".ARM.exidx@0x80A5D34:0",
               "--section", ".bss@0x10000000:0xA000", "--section", ".bss2@0x20000000:0x30000",
               "--section", ".bss3@0x40000000:0x30000"]
+        elif (re.match(r'^.*WM610_FW_V[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*WM610_FC350Z_FW_V[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*WM610_FC550_FW_V[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x8020000", "--section", ".ARM.exidx@0x80A5D34:0",
+              "--section", ".bss@0x10000000:0xA000", "--section", ".bss2@0x20000000:0x30000",
+              "--section", ".bss3@0x40000000:0x30000"]
         else:
             # Generic m0306 solution - detect the location of .ARM.exidx
             file_specific_cmdargs = ["-b", "0x8020000",
@@ -163,7 +170,92 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
               "--section", ".bss3@0x2C000000:0x20000", "--section", ".bss4@0x40000000:0xF0000",
               "--section", ".bss5@0xE0000000:0x8000"]
     elif (modl_inp_fn.endswith("_0306.decrypted.bin")): # FC modules from IMaH firmwares
-        pass
+        if (re.match(r'^.*ag407_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*ag408_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*ag410_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*pm410_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*pm420_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*wm100_0306_v03[.]02[.]3[0-4][0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `wm100_0306_v03.02.34.02_20170505.pro.fw_0306.decrypted.bin`
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0547E90:0",
+              "--section", ".bss@0x20400000:0x60000", "--section", ".bss2@0x400E0000:0x1000",
+              "--section", ".bss3@0xE0000000:0x10000"]
+        elif (re.match(r'^.*wm100_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `wm100_0306_v03.02.37.55_20170722.pro.fw_0306.decrypted.bin`
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0525A10:0",
+              "--section", ".bss@0x20400000:0x60000", "--section", ".bss2@0x400E0000:0x1000",
+              "--section", ".bss3@0xE0000000:0x10000"]
+        elif (re.match(r'^.*wm220_0306_v03[.]02[.][0-2][0-9][0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `wm220_0306_v03.02.13.12_20161209.pro.fw_0306.decrypted.bin`
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0536000:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*wm220_0306_v03[.]02[.]3[0-9][0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `wm220_0306_v03.02.35.05_20170525.pro.fw_0306.decrypted.bin`
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x05465D8:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*wm220_0306_v03[.]02[.]4[0-3][0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `wm220_0306_v03.02.43.20_2017????.pro.fw_0306.decrypted.bin`
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x05277D0:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*wm220_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `wm220_0306_v03.02.44.07_20171116.pro.fw_0306.decrypted.bin`
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0525300:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*wm222_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0525300:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*wm330_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*wm331_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*wm332_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*wm334_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*wm335_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*wm336_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*wm620_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `wm620_0306_v03.03.09.18_20180921.pro.fw_0306.bin`
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x536F60:0",
+              "--section", ".bss@0x20400000:0x46000", "--section", ".bss2@0x40000000:0x30000"]
+        elif (re.match(r'^.*xw607_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        else:
+            # Generic m0306 solution - detect the location of .ARM.exidx
+            file_specific_cmdargs = ["-b", "0x00420000",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
     inp_path = pathlib.Path(inp_path)
