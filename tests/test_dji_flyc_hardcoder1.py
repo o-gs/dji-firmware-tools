@@ -60,6 +60,8 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
     # Special cases - setting certain params and error tolerance for specific files
     # Most of these are firmwares which are not intentionally supported - they accidentally match
     # a small amount of patterns searched by the tool, allowing export of some parameters
+    # For file changes - most parameters modify 1..4 bytes, but there are exceptions, ie.
+    # firmware_version can modify 2..16
     if (elf_inp_fn.endswith("_m0306.elf")):
         if (re.match(r'^.*A3_FW_V01[.]0[1-6][.][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
           re.match(r'^.*A3_FW_V01[.]07[.]00[.]0[0-9][0-9A-Z_.-]*_m0306[.]elf', elf_inp_fn, re.IGNORECASE) or
@@ -114,9 +116,38 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
             expect_json_changes = 6
             expect_file_changes = [12, 12*4]
     elif (elf_inp_fn.endswith("_0306.decrypted.elf")):
-        if (re.match(r'^.*wm100_0306_v.*[.]elf', elf_inp_fn, re.IGNORECASE)):
+        if (re.match(r'^.*ag407_0306_v[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 2
+            expect_file_changes = [2, 2*4]
+        elif (re.match(r'^.*ag408_0306_v03[.]03[.]12[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 2
+            expect_file_changes = [2, 2*4]
+        elif (re.match(r'^.*ag410_0306_v03[.]04[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 1
+            expect_file_changes = [0 + 2, 0*4 + 16]
+        elif (re.match(r'^.*pm410_0306_v[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 2
+            expect_file_changes = [2, 2*4]
+        elif (re.match(r'^.*wm100_0306_v03[.]02[.]34[.]0[0-9][0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
             expect_json_changes = 6
             expect_file_changes = [10, 12*4]
+        elif (re.match(r'^.*wm100_0306_v[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 7
+            expect_file_changes = [14, 14*4]
+        elif (re.match(r'^.*wm331_0306_v03[.]02[.]15[.]14[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 3
+            expect_file_changes = [2 + 2, 2*4 + 16]
+        elif (re.match(r'^.*wm335_0306_v[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 2
+            expect_file_changes = [2, 2*4]
+        elif (re.match(r'^.*wm620_0306_v03[.]02[.]10[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE) or
+          re.match(r'^.*wm620_0306_v03[.]02[.]21[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 2
+            expect_file_changes = [2, 2*4]
+        elif (#re.match(r'^.*wm620_0306_v03[.]02[.][0-2][0-9][0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE) or
+              re.match(r'^.*wm620_0306_v03[.]03[.]09[.][0-1][0-9][0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 2
+            expect_file_changes = [2, 2*4]
         else:
             expect_json_changes = 7
             expect_file_changes = [14, 14*4]
@@ -270,6 +301,10 @@ def test_dji_flyc_hardcoder_imah_v1_ckmod(capsys, elf_inp_dir, test_nth):
     elf_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
         "{}/*/*_0306.decrypted.elf".format(elf_inp_dir),
     ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
+
+    # Remove unsupported m0306 files
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*ag407_0306_v03[.]03[.]03[.]8[0-9].*[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*wm334_0306_v03[.]03[.]06[.]57.*[.]elf', fn, re.IGNORECASE)]
 
     if len(elf_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
