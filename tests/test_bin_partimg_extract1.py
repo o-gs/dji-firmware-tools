@@ -116,6 +116,7 @@ def case_bin_bootimg_extract(img_inp_fn):
     ('out/gl811-goggles_racing_ed',1,),
     ('out/pm410-matrice200',1,),
     ('out/pm420-matrice200_v2',1,),
+    ('out/rc220-mavic_rc',1,),
     ('out/rc240-mavic_2_rc',1,),
     ('out/tp703-aeroscope',1,),
     ('out/wm100-spark',1,),

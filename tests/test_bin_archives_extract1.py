@@ -172,6 +172,7 @@ def test_bin_archives_xv4_extract(capsys, modl_inp_dir, test_nth):
     ('out/rc001-inspire_2_rc',1,),
     ('out/rc002-spark_rc',1,),
     ('out/rc160-mavic_mini_rc',1,),
+    ('out/rc220-mavic_rc',1,),
     ('out/rc230-mavic_air_rc',1,),
     ('out/rc240-mavic_2_rc',1,),
     ('out/tp703-aeroscope',1,),

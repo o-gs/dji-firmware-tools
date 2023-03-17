@@ -363,6 +363,7 @@ def test_arm_bin2elf_xv4_rebin(capsys, modl_inp_dir, test_nth):
     ('out/ag408-agras_mg-unk',1,),
     ('out/ag410-agras_t16',1,),
     ('out/pm410-matrice200',1,),
+    ('out/rc220-mavic_rc',1,),
     ('out/wm100-spark',1,),
     ('out/wm220-mavic',1,),
     ('out/wm222-mavic_sp',1,),
