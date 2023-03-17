@@ -125,7 +125,10 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
         elif (re.match(r'^.*ag410_0306_v03[.]04[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
             expect_json_changes = 1
             expect_file_changes = [0 + 2, 0*4 + 16]
-        elif (re.match(r'^.*pm410_0306_v[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
+        elif (re.match(r'^.*pm410_0306_v03[.]02[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 7
+            expect_file_changes = [14, 14*4]
+        elif (re.match(r'^.*pm410_0306_v03[.]03[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
             expect_json_changes = 2
             expect_file_changes = [2, 2*4]
         elif (re.match(r'^.*wm100_0306_v03[.]02[.]34[.]0[0-9][0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
