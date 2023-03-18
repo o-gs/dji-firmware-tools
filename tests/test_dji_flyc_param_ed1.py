@@ -34,6 +34,7 @@ import json
 import logging
 import os
 import re
+import shlex
 import shutil
 import sys
 import pathlib
@@ -49,35 +50,69 @@ from dji_flyc_param_ed import main as dji_flyc_param_ed_main
 LOGGER = logging.getLogger(__name__)
 
 
+def get_params_for_dji_flyc_param_ed(modl_inp_fn):
+    """ From given module file name, figure out required dji_flyc_param_ed cmd options.
+    """
+    module_cmdopts = ""
+    expect_json_changes = 99
+    if (modl_inp_fn.endswith("_m0306.bin")):
+        if (m := re.match(r'^.*(A3)_FW_V01[.]00[.]00[.][0-1][0-9][0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(P3X|P3S)_FW_V01[.]0[0-1].0[0-9][0-9][0-9][0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x8020000"
+            expect_json_changes = 16
+        elif (m := re.match(r'^.*(P3X|P3S)_FW_V01[.]01.[1-9][0-9][0-9][0-9][0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x8020000"
+            expect_json_changes = 33
+        elif (m := re.match(r'^.*(P3X|P3S)_FW_V[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x8020000"
+            expect_json_changes = 36
+        elif (m := re.match(r'^.*(P3C|P3SE|P3XW)_FW_V[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x8020000"
+            expect_json_changes = 42
+        elif (m := re.match(r'^.*(WM610|WM610_FC550|WM610_FC350Z)_FW_V01[.]02[.]01[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x8020000"
+            expect_json_changes = 14
+        elif (m := re.match(r'^.*(WM610|WM610_FC550|WM610_FC350Z)_FW_V01[.]03[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x8020000"
+            expect_json_changes = 42
+        elif (m := re.match(r'^.*(WM610|WM610_FC550|WM610_FC350Z)_FW_V[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x8020000"
+            expect_json_changes = 43
+        else:
+            platform = "unknown-xv4"
+            module_cmdopts = ""
+            #expect_json_changes = 16
+    elif (modl_inp_fn.endswith("_0306.decrypted.bin")):
+        if (m := re.match(r'^.*(XXX)TODO_0306_v.*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 6
+        else:
+            platform = "unknown-imah"
+            module_cmdopts = ""
+            expect_json_changes = 16
+
+    return module_cmdopts, expect_json_changes, platform
+
+
 def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
     """ Test case for extraction and re-applying of hard-coded properties within FC BIN module.
     """
     LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
-    # Most files we are able to recreate with full accuracy
-    expect_json_changes = 99
-    expect_file_changes = [0,0]
 
-    # Special cases - setting certain params and error tolerance for specific files
-    if (modl_inp_fn.endswith("_m0306.bin")):
-        if (re.match(r'^.*P3X_FW_V01[.]0[0-1].0[0-9][0-9][0-9][0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
-            expect_json_changes = 16
-            expect_file_changes = [16*2, 16*2*4]
-        elif (re.match(r'^.*P3X_FW_V01[.]01.[1-9][0-9][0-9][0-9][0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
-            expect_json_changes = 33
-            expect_file_changes = [33*2, 33*2*4]
-        elif (re.match(r'^.*P3X_FW_V[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
-            expect_json_changes = 36
-            expect_file_changes = [36*2, 36*2*4]
-        else:
-            expect_json_changes = 6
-            expect_file_changes = [6*2, 6*2*4]
-    elif (modl_inp_fn.endswith("_0306.decrypted.bin")):
-        if (re.match(r'^.*XXXTODO_0306_v.*[.]bin', modl_inp_fn, re.IGNORECASE)):
-            expect_json_changes = 6
-            expect_file_changes = [10, 12*4]
-        else:
-            expect_json_changes = 7
-            expect_file_changes = [14, 14*4]
+    # Get parameters for specific platforms
+    extra_cmdopts, expect_json_changes, platform = get_params_for_dji_flyc_param_ed(modl_inp_fn)
+    expect_file_changes = [expect_json_changes*2, expect_json_changes*2*4]
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
     inp_path = pathlib.Path(inp_path)
@@ -91,7 +126,7 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
     json_mod_fn = os.sep.join([out_path, "{:s}.flyc_param_infos.mod.json".format(inp_basename)])
 
     # Create json file with recognized hard-coded values
-    command = [os.path.join(".", "dji_flyc_param_ed.py"), "-vv", "-x", "-m", modl_inp_fn, "-i", json_ori_fn]
+    command = [os.path.join(".", "dji_flyc_param_ed.py"), "-vv", *shlex.split(extra_cmdopts), "-x", "-m", modl_inp_fn, "-i", json_ori_fn]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         dji_flyc_param_ed_main()
@@ -100,119 +135,124 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
         params_list = json.load(valfile)
     props_changed = []
     for par in params_list:
-        if re.match(r'^g_config[.]advanced_function[.]height_limit_enabled_0$', par['name']):
+        if re.match(r'^g_config[.](advanced_function|flying_limit)[.]height_limit_enabled[_0]*$', par['name']):
             par['defaultValue'] = 2
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]flying_limit[.]max_height_0$', par['name']):
+        if re.match(r'^(g_config[.]flying_limit[.]max_height|fly_limit_height)[_0]*$', par['name']):
             par['maxValue'] = 5000
             par['defaultValue'] = 5000
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]control[.]horiz_vel_atti_range_0$', par['name']):
+        if re.match(r'^g_config[.]control[.]horiz_vel_atti_range[_0]*$', par['name']):
             par['defaultValue'] = 55
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]control[.]horiz_emergency_brake_tilt_max_0$', par['name']):
+        if re.match(r'^g_config[.]control[.](horiz_emergency_brake_tilt_max|horiz_tilt_emergency_brake_limit)[_0]*$', par['name']):
             par['defaultValue'] = 58
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]control[.]atti_limit_0$', par['name']):
+        if re.match(r'^g_config[.]control[.]atti_limit[_0]*$', par['name']):
             par['maxValue'] = 9000
             par['defaultValue'] = 9000
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]control[.]atti_range_0$', par['name']):
+        if re.match(r'^g_config[.]control[.]atti_range[_0]*$', par['name']):
             par['defaultValue'] = 55
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]control[.]avoid_atti_range_0$', par['name']):
+        if re.match(r'^g_config[.]control[.]avoid_atti_range[_0]*$', par['name']):
             par['maxValue'] = 6000
             par['defaultValue'] = 3000
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]control[.]vert_up_vel_0$', par['name']):
+        if re.match(r'^g_config[.](control[.]vert_up_vel|mode_sport_cfg[.]vert_vel_up)[_0]*$', par['name']):
             par['maxValue'] = 20
             par['defaultValue'] = 20
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]control[.]vert_down_vel_0$', par['name']):
+        if re.match(r'^g_config[.]control[.]vert_down_vel[_0]*$', par['name']):
             par['defaultValue'] = 10
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]control[.]vert_vel_down_bat_limit_0$', par['name']):
+        if re.match(r'^g_config[.]mode_sport_cfg[.]vert_vel_down[_0]*$', par['name']):
+            par['minValue'] = -10.0
+            par['defaultValue'] = -10.0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^g_config[.]control[.]vert_vel_down_bat_limit[_0]*$', par['name']):
             par['maxValue'] = 10
             par['defaultValue'] = 10
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]serial_api_cfg[.]advance_function_enable_0$', par['name']):
+        if re.match(r'^g_config[.]serial_api_cfg[.]advance_function_enable[_0]*$', par['name']):
             par['defaultValue'] = 0
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]api_entry_cfg[.]value_sign_0$', par['name']):
+        if re.match(r'^g_config[.]api_entry_cfg[.]value_sign[_0]*$', par['name']):
             par['defaultValue'] = 1
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]api_entry_cfg[.]enable_api_0$', par['name']):
+        if re.match(r'^g_config[.]api_entry_cfg[.]enable_api[_0]*$', par['name']):
             par['defaultValue'] = 1
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]api_entry_cfg[.]enable_time_stamp_0$', par['name']):
+        if re.match(r'^g_config[.]api_entry_cfg[.]enable_time_stamp[_0]*$', par['name']):
             par['defaultValue'] = 1
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]api_entry_cfg[.](acc|gyro|alti|height)_data_type_0$', par['name']):
+        if re.match(r'^g_config[.]api_entry_cfg[.](acc|gyro|alti|height|pos)_data_type[_0]*$', par['name']):
             par['defaultValue'] = 5
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]api_entry_cfg[.]std_msg_frq\[[0-9]+\]_0$', par['name']):
+        if re.match(r'^g_config[.]api_entry_cfg[.]std_msg_frq\[[0-9]+\][_0]*$', par['name']):
             par['defaultValue'] = 5
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]api_entry_cfg[.]authority_level_0$', par['name']):
+        if re.match(r'^g_config[.]api_entry_cfg[.]authority_level[_0]*$', par['name']):
             par['defaultValue'] = 10
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]api_entry_cfg[.]api_authority_group[0]_0$', par['name']):
+        if re.match(r'^g_config[.]api_entry_cfg[.]api_authority_group[0][_0]*$', par['name']):
             par['defaultValue'] = 0
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]airport_limit_cfg[.]cfg_search_radius_0$', par['name']):
+        if re.match(r'^g_config[.]airport_limit_cfg[.]cfg_search_radius[_0]*$', par['name']):
             par['maxValue'] = 10
             par['defaultValue'] = 1
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]airport_limit_cfg[.]cfg_disable_airport_fly_limit_0$', par['name']):
+        if re.match(r'^g_config[.]airport_limit_cfg[.]cfg_disable_airport_fly_limit[_0]*$', par['name']):
             par['defaultValue'] = 255
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]airport_limit_cfg[.]cfg_debug_airport_enable_0$', par['name']):
+        if re.match(r'^g_config[.]airport_limit_cfg[.]cfg_debug_airport_enable[_0]*$', par['name']):
             par['defaultValue'] = 255
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]airport_limit_cfg[.]cfg_limit_data_0$', par['name']):
+        if re.match(r'^g_config[.]airport_limit_cfg[.]cfg_limit_data[_0]*$', par['name']):
             par['defaultValue'] = 20200910
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]misc_cfg[.]auto_landing_vel_L1_0$', par['name']):
+        if re.match(r'^g_config[.]misc_cfg[.]auto_landing_vel_L1[_0]*$', par['name']):
             par['defaultValue'] = -2.0
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]misc_cfg[.]auto_landing_vel_L2_0$', par['name']):
+        if re.match(r'^g_config[.]misc_cfg[.]auto_landing_vel_L2[_0]*$', par['name']):
             par['defaultValue'] = -8.0
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]followme_cfg[.]horiz_vel_limit_0$', par['name']):
+        if re.match(r'^g_config[.]followme_cfg[.]horiz_vel_limit[_0]*$', par['name']):
             par['maxValue'] = 30.0
             par['defaultValue'] = 30.0
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]waypoint_cfg[.]max_horiz_vel_0$', par['name']):
+        if re.match(r'^g_config[.]waypoint_cfg[.]max_horiz_vel[_0]*$', par['name']):
             par['maxValue'] = 30.0
             par['defaultValue'] = 30.0
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]fdi[.]gps_max_horizontal_vel_mod_0$', par['name']):
+        if re.match(r'^g_config[.]fdi[.]gps_max_horizontal_vel_mod[_0]*$', par['name']):
             par['defaultValue'] = 50.0
             props_changed.append(str(par['name']))
             continue
@@ -222,7 +262,7 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
     # Make copy of the BIN file
     shutil.copyfile(modl_inp_fn, modl_out_fn)
     # Import json file back to bin
-    command = [os.path.join(".", "dji_flyc_param_ed.py"), "-vv", "-u", "-i", json_mod_fn, "-m", modl_out_fn]
+    command = [os.path.join(".", "dji_flyc_param_ed.py"), "-vv", *shlex.split(extra_cmdopts), "-u", "-i", json_mod_fn, "-m", modl_out_fn]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         dji_flyc_param_ed_main()
@@ -245,15 +285,15 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
     #('out/m600-matrice_600_hexacopter',0,),
     #('out/m600pro-matrice_600_pro_hexacopter',0,),
     #('out/n3-flight_controller',0,),
-    #('out/p3c-phantom_3_std_quadcopter',3,),
-    #('out/p3se-phantom_3_se_quadcopter',0,),
-    #('out/p3s-phantom_3_adv_quadcopter',3,),
+    ('out/p3c-phantom_3_std_quadcopter',3,),
+    ('out/p3se-phantom_3_se_quadcopter',0,),
+    ('out/p3s-phantom_3_adv_quadcopter',3,),
     ('out/p3x-phantom_3_pro_quadcopter',3,),
-    #('out/p3xw-phantom_3_4k_quadcopter',0,),
-    #('out/wind-a3_based_multicopter_platform',0,),
-    #('out/wm610_fc350z-t600_inspire_1_z3_quadcopter',0,),
-    #('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',0,),
-    #('out/wm610-t600_inspire_1_x3_quadcopter',0,),
+    ('out/p3xw-phantom_3_4k_quadcopter',0,),
+    ('out/wind-a3_based_multicopter_platform',0,),
+    ('out/wm610_fc350z-t600_inspire_1_z3_quadcopter',0,),
+    ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',0,),
+    ('out/wm610-t600_inspire_1_x3_quadcopter',0,),
   ] )
 def test_dji_flyc_param_ed_xv4_ckmod(capsys, modl_inp_dir, test_nth):
     """ Test extraction and re-applying of hard-coded properties within FC BIN module.
