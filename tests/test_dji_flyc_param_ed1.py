@@ -56,14 +56,26 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
     module_cmdopts = ""
     expect_json_changes = 99
     if (modl_inp_fn.endswith("_m0306.bin")):
-        if (m := re.match(r'^.*(A3)_FW_V01[.]00[.]00[.][0-1][0-9][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+        if (m := re.match(r'^.*(A3)_FW_[A-Z0-9_]*V(01[.]00|01[.]0[2-6])[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
             expect_json_changes = 17
+        elif (m := re.match(r'^.*(A3)_FW_[A-Z0-9_]*V(01[.]0[7])[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 15
+        elif (m := re.match(r'^.*(A3)_OFFICAL_1_7_5[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(A3)_OFFICAL_1_7_6[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 2
         elif (m := re.match(r'^.*(A3)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 37
+            expect_json_changes = 36
         elif (m := re.match(r'^.*(MATRICE100)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
@@ -152,7 +164,10 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
 
     # Get parameters for specific platforms
     extra_cmdopts, expect_json_changes, platform = get_params_for_dji_flyc_param_ed(modl_inp_fn)
-    expect_file_changes = [expect_json_changes*2, expect_json_changes*2*4]
+    if expect_json_changes > 4:
+        expect_file_changes = [expect_json_changes*2, expect_json_changes*2*4]
+    else:
+        expect_file_changes = [expect_json_changes*1, expect_json_changes*2*4 + 4]
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
     inp_path = pathlib.Path(inp_path)
@@ -317,8 +332,8 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
 
 @pytest.mark.order(4) # must be run after test_arm_bin2elf_xv4_rebin
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
-    #('out/a3-flight_controller',0,),
-    #('out/ag405-agras_mg_1s_octocopter',0,),
+    ('out/a3-flight_controller',0,),
+    ('out/ag405-agras_mg_1s_octocopter',0,),
     #('out/ai900_agr-a3_based_multicopter_platform',0,),
     #('out/am603-n3_based_multicopter_platform',0,),
     ('out/m100-matrice_100_quadcopter',0,),
