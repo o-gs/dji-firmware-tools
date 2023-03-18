@@ -177,10 +177,26 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
             module_cmdopts = ""
             #expect_json_changes = 16
     elif (modl_inp_fn.endswith("_0306.decrypted.bin")):
-        if (m := re.match(r'^.*(XXX)TODO_0306_v.*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+        if (m := re.match(r'^.*(wm100)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 6
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(wm220)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(wm222)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(wm330)_0306_v03[.]02[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(wm330)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 36
         else:
             platform = "unknown-imah"
             module_cmdopts = ""
@@ -362,7 +378,7 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
     pass
 
 
-@pytest.mark.order(4) # must be run after test_arm_bin2elf_xv4_rebin
+@pytest.mark.order(3) # must be run after test_dji_xv4_fwcon_rebin
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/a3-flight_controller',0,),
     ('out/ag405-agras_mg_1s_octocopter',0,),
@@ -400,3 +416,40 @@ def test_dji_flyc_param_ed_xv4_ckmod(capsys, modl_inp_dir, test_nth):
         capstdout, _ = capsys.readouterr()
     pass
 
+
+@pytest.mark.order(3) # must be run after test_dji_mvfc_fwpak_rebin
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    #('out/ag407-agras_mg-1p-rtk',0,),
+    #('out/ag408-agras_mg-unk',0,),
+    #('out/ag410-agras_t16',0,),
+    #('out/pm410-matrice200',0,),
+    #('out/pm420-matrice200_v2',0,),
+    ('out/wm100-spark',3,),
+    ('out/wm220-mavic',3,),
+    ('out/wm222-mavic_sp',0,),
+    ('out/wm330-phantom_4_std',0,),
+    #('out/wm331-phantom_4_pro',0,),
+    #('out/wm332-phantom_4_adv',0,),
+    #('out/wm334-phantom_4_rtk',0,),
+    #('out/wm335-phantom_4_pro_v2',0,),
+    #('out/wm336-phantom_4_mulspectral',0,),
+    #('out/wm620-inspire_2',0,),
+    #('out/xw607-robomaster_s1',0,),
+  ] )
+def test_dji_flyc_param_ed_imah_v1_ckmod(capsys, modl_inp_dir, test_nth):
+    """ Test extraction and re-applying of hard-coded properties within FC BIN module.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
+        "{}/*/*_0306.decrypted.bin".format(modl_inp_dir),
+    ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames[::test_nth]:
+        case_dji_flyc_param_ed_ckmod(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
