@@ -56,35 +56,75 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
     module_cmdopts = ""
     expect_json_changes = 99
     if (modl_inp_fn.endswith("_m0306.bin")):
-        if (m := re.match(r'^.*(A3)_FW_V01[.]00[.]00[.][0-1][0-9][0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+        if (m := re.match(r'^.*(A3)_FW_V01[.]00[.]00[.][0-1][0-9][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
             expect_json_changes = 17
-        elif (m := re.match(r'^.*(P3X|P3S)_FW_V01[.]0[0-1].0[0-9][0-9][0-9][0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+        elif (m := re.match(r'^.*(A3)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 37
+        elif (m := re.match(r'^.*(MATRICE100)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 37
+        elif (m := re.match(r'^.*(MATRICE600)_FW_V01[.]00[.]00[.]([0-3][0-9]|[4][0-3])[\(\)0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 37
+        elif (m := re.match(r'^.*(MATRICE600|MATRICE600PRO)_FW_V01[.]00[.]00[.]([4][4-9]|[5-7][0-9])[\(\)0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(MATRICE600|MATRICE600PRO)_FW_V01[.]00[\(\)0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 15
+        elif (m := re.match(r'^.*(MATRICE600|MATRICE600PRO)_FW_V02[.]00[.]00[.]9[0-9][\(\)0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(MATRICE600|MATRICE600PRO)_FW_V[\(\)0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 37
+        elif (m := re.match(r'^.*(N3)_FW_V01[.](00[.]01[.]01|01[.]01[.]00)[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 15
+        elif (m := re.match(r'^.*(N3)_FW_V01[.]07[.]00[.]0[0-5][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 15
+        elif (m := re.match(r'^.*(N3)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(P3X|P3S)_FW_V01[.]0[0-1].0[0-9][0-9][0-9][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x8020000"
             expect_json_changes = 16
-        elif (m := re.match(r'^.*(P3X|P3S)_FW_V01[.]01.[1-9][0-9][0-9][0-9][0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+        elif (m := re.match(r'^.*(P3X|P3S)_FW_V01[.]01.[1-9][0-9][0-9][0-9][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x8020000"
             expect_json_changes = 33
-        elif (m := re.match(r'^.*(P3X|P3S)_FW_V[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+        elif (m := re.match(r'^.*(P3X|P3S)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x8020000"
             expect_json_changes = 36
-        elif (m := re.match(r'^.*(P3C|P3SE|P3XW)_FW_V[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+        elif (m := re.match(r'^.*(P3C|P3SE|P3XW)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x8020000"
             expect_json_changes = 42
-        elif (m := re.match(r'^.*(WM610|WM610_FC550|WM610_FC350Z)_FW_V01[.]02[.]01[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+        elif (m := re.match(r'^.*(WM610|WM610_FC550|WM610_FC350Z)_FW_V01[.]02[.]01[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x8020000"
             expect_json_changes = 14
-        elif (m := re.match(r'^.*(WM610|WM610_FC550|WM610_FC350Z)_FW_V01[.]03[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+        elif (m := re.match(r'^.*(WM610|WM610_FC550|WM610_FC350Z)_FW_V01[.]03[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x8020000"
             expect_json_changes = 42
-        elif (m := re.match(r'^.*(WM610|WM610_FC550|WM610_FC350Z)_FW_V[0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+        elif (m := re.match(r'^.*(WM610|WM610_FC550|WM610_FC350Z)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x8020000"
             expect_json_changes = 43
@@ -93,7 +133,7 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
             module_cmdopts = ""
             #expect_json_changes = 16
     elif (modl_inp_fn.endswith("_0306.decrypted.bin")):
-        if (m := re.match(r'^.*(XXX)TODO_0306_v.*[.]bin', modl_inp_fn, re.IGNORECASE)):
+        if (m := re.match(r'^.*(XXX)TODO_0306_v.*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
             expect_json_changes = 6
@@ -281,10 +321,10 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
     #('out/ag405-agras_mg_1s_octocopter',0,),
     #('out/ai900_agr-a3_based_multicopter_platform',0,),
     #('out/am603-n3_based_multicopter_platform',0,),
-    #('out/m100-matrice_100_quadcopter',0,),
-    #('out/m600-matrice_600_hexacopter',0,),
-    #('out/m600pro-matrice_600_pro_hexacopter',0,),
-    #('out/n3-flight_controller',0,),
+    ('out/m100-matrice_100_quadcopter',0,),
+    ('out/m600-matrice_600_hexacopter',0,),
+    ('out/m600pro-matrice_600_pro_hexacopter',0,),
+    ('out/n3-flight_controller',0,),
     ('out/p3c-phantom_3_std_quadcopter',3,),
     ('out/p3se-phantom_3_se_quadcopter',0,),
     ('out/p3s-phantom_3_adv_quadcopter',3,),
