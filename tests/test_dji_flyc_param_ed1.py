@@ -68,7 +68,11 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
             expect_json_changes = 15
-        elif (m := re.match(r'^.*(A3)_FW_[A-Z0-9_]*V01[.]0[2-6][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+        elif (m := re.match(r'^.*(A3)_FW_[A-Z0-9_]*V01[.]0[2-3][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 37
+        elif (m := re.match(r'^.*(A3)_FW_[A-Z0-9_]*V01[.]0[4-6][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
             expect_json_changes = 17
