@@ -91,6 +91,10 @@ If you can't understand how the tools work, you should not use them. If any
 warnings are shown, you must investigate the cause to make sure final firmware
 will not be damaged. You are using the tools on your own risk.
 
+If you don't know where to start, check the [tests](#tests). They will provide
+you with command lines to communicate to the drone, or to extract all the layers
+of a specific firmware (as long as you can place it correctly).
+
 # Firmware structure
 
 Since all the tools are available in source code form, it is easy to check details
@@ -510,25 +514,40 @@ Example of unsealing BQ30z55 (enabling write capabilities), with default SHA-1 k
 ### tests
 
 The `tests` folder contains a collection of scripts which can be used to verify
-whether the tools do their job correctly. Most tests will extract and re-pack
-a firmware found in `fw_packages` directory, then compare the result to original
-to check whether no unintended changes were introduced to the file.
-Tools which communicate to a product are tested by injecting expected answers
-to their receive buffers, so they can be tested without the product as well.
+whether the tools do their job correctly. There are two general types of tests
+there:
+
+* Communication tools tests, marked `comm`. These are for the scripts which normally
+ talk to real devices. The tests are injecting expected answers to receive
+ buffers, so they can be run without the product connected.
+
+* Firmware extraction tools tests, marked `fw_xv4`, `fw_imah_v1`, `fw_imah_v2`.
+ These extract and re-pack a firmware found in `fw_packages` directory, then
+ compare the resulting file to original to check whether no unintended changes
+ were introduced.
 
 Besides testing your modifications, you can also use tests as source of more
-usage examples of the tools. They contain command lines to extract specific
+usage examples of the tools. They log command lines used to extract specific
 firmwares and execute specific commands on the products.
 
-There are `bash` and `pytest` tests, covering the same general functionalities.
+The tests are prepared to be used with `pytest`. Example of executing all tests:
 
-Example of executing the `pytest` tests:
-
-```pytest tests -rsx --full-scope -o log_cli=true --log-cli-level=INFO```
+```pytest tests -rsx --full-scope --log-cli-level=INFO```
 
 The `--full-scope` option makes the tests execute on all known binaries, rather
 that on a selection used for continous integration. The CI tests are selective
 to make sure the automatic testing ends in reasonable time.
+
+Remeber that the tests will only run on binaries placed in proper sub-folder
+of the `fw_packages` folder. Valid names of sub-folders can be easily found
+within the test scripts. If no firmware binaries are put to the folder,
+all firmware extraction tests will be skipped.
+
+Besides running all tests, you can also run a specific one (with `-k`) or a group
+of tests with specific marking (with `-m`). Example of running `fw_xv4` tests only:
+
+```pytest tests -rsx --full-scope -m fw_xv4 --log-cli-level=DEBUG```
+
 
 ### comm_dissector
 
