@@ -97,15 +97,15 @@ def case_dm3xx_encode_usb_hardcoder_ckmod(elf_inp_fn):
     # Modify the JSON
     with open(json_ori_fn) as valfile:
         params_list = json.load(valfile)
-    nchanges = 0
+    props_changed = []
     for par in params_list:
         if re.match(r'^og_hardcoded[.]p3x_dm3xx[.]startup_encrypt_check_always_pass$', par['name']):
             par['setValue'] = 1
-            nchanges += 1
+            props_changed.append(str(par['name']))
             continue
     with open(json_mod_fn, "w") as valfile:
         valfile.write(json.dumps(params_list, indent=4))
-    assert nchanges >= expect_json_changes, "Performed too few JSON modifications ({:d}<{:d}): {:s}".format(nchanges, expect_json_changes, json_mod_fn)
+    assert len(props_changed) >= expect_json_changes, "Performed too few JSON modifications ({:d}<{:d}): {:s}".format(len(props_changed), expect_json_changes, json_mod_fn)
 
     # Make copy of the ELF file
     shutil.copyfile(elf_cpy_fn, elf_out_fn)

@@ -128,27 +128,27 @@ def case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn):
     # Modify the JSON
     with open(json_ori_fn) as valfile:
         params_list = json.load(valfile)
-    nchanges = 0
+    props_changed = []
     for par in params_list:
         if re.match(r'^og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_override$', par['name']):
             par['setValue'] = 1
-            nchanges += 1
+            props_changed.append(str(par['name']))
             continue
         if re.match(r'^og_hardcoded[.]lightbridge_stm32[.]packet_received_attenuation_value$', par['name']):
             par['setValue'] = 0
-            nchanges += 1
+            props_changed.append(str(par['name']))
             continue
         if re.match(r'^og_hardcoded[.]lightbridge_stm32[.]board_[a-z0-9]*_attenuation_[a-z0-9]*_[a-z0-9]*$', par['name']):
             par['setValue'] = 0
-            nchanges += 1
+            props_changed.append(str(par['name']))
             continue
         if re.match(r'^og_hardcoded[.]lightbridge_stm32[.]power_zone_selection_override$', par['name']):
             par['setValue'] = 1
-            nchanges += 1
+            props_changed.append(str(par['name']))
             continue
     with open(json_mod_fn, "w") as valfile:
         valfile.write(json.dumps(params_list, indent=4))
-    assert nchanges >= expect_json_changes, "Performed too few JSON modifications ({:d}<{:d}): {:s}".format(nchanges, expect_json_changes, json_mod_fn)
+    assert len(props_changed) >= expect_json_changes, "Performed too few JSON modifications ({:d}<{:d}): {:s}".format(len(props_changed), expect_json_changes, json_mod_fn)
     # Make copy of the ELF file
     shutil.copyfile(elf_inp_fn, elf_out_fn)
     # Import json file back to elf
@@ -165,7 +165,7 @@ def case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn):
     pass
 
 
-@pytest.mark.order(4) # must be run after test_arm_bin2elf_rebin
+@pytest.mark.order(4) # must be run after test_arm_bin2elf_xv4_rebin
 @pytest.mark.fw_xv4
 @pytest.mark.parametrize("elf_inp_dir,test_nth", [
     #('out/ag405-agras_mg_1s_octocopter',1,), # no matching modules
@@ -179,7 +179,7 @@ def case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn):
     #('out/p3xw-phantom_3_4k_quadcopter',1,), # no patterns recognized by the hardcoder
     ('out/wm610-t600_inspire_1_x3_quadcopter',3,),
   ] )
-def test_lightbridge_stm32_hardcoder_ckmod(capsys, elf_inp_dir, test_nth):
+def test_lightbridge_stm32_hardcoder_xv4_ckmod(capsys, elf_inp_dir, test_nth):
     """ Test extraction and re-applying of hard-coded properties within ELFs.
     """
     if test_nth < 1:
