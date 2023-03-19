@@ -87,7 +87,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding, 3x16 unknown additional
             module_changes_limit = 2 + 256 + 3*16 + 3*16
         else: # if first level module
-            module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-11"
+            module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
             # allow change of 2 bytes from auth key name, 256 from signature
             module_changes_limit = 2 + 256
     elif (m := re.match(r'^.*(ag603)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
@@ -114,7 +114,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
             module_changes_limit = 2 + 256 + 3*16
         else: # if first level module
-            module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11"
+            module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
             # allow change of 2 bytes from auth key name, 256 from signature
             module_changes_limit = 2 + 256
     elif (m := re.match(r'^.*(gl811|glass_re|zv811_gl|zv811)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
@@ -128,7 +128,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding, 3x16 unknown additional
             module_changes_limit = 2 + 256 + 3*16 + 3*16
         else: # if first level module
-            module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11"
+            module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
             # allow change of 2 bytes from auth key name, 256 from signature
             module_changes_limit = 2 + 256
     elif (m := re.match(r'^.*(pm410)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
@@ -138,7 +138,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding, 3x16 unknown additional
             module_changes_limit = 2 + 256 + 3*16 + 3*16
         else: # if first level module
-            module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11"
+            module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
             # allow change of 2 bytes from auth key name, 256 from signature
             module_changes_limit = 2 + 256
     elif (m := re.match(r'^.*(pm420)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
@@ -213,7 +213,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         module_changes_limit = 2 + 4 + 4 + 256 + 32+16
     elif (m := re.match(r'^.*(rc160)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
-        module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11"
+        module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
         # allow change of 2 bytes from auth key name, 256 from signature
         module_changes_limit = 2 + 256
     elif (m := re.match(r'^.*(wm160)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
