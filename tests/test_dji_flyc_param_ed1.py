@@ -177,7 +177,15 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
             module_cmdopts = ""
             #expect_json_changes = 16
     elif (modl_inp_fn.endswith("_0306.decrypted.bin")):
-        if (m := re.match(r'^.*(wm100)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+        if (m := re.match(r'^.*(pm410)_0306_v03[.]02[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(pm410)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 2
+        elif (m := re.match(r'^.*(wm100)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
             expect_json_changes = 17
@@ -197,6 +205,38 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
             expect_json_changes = 36
+        elif (m := re.match(r'^.*(wm331)_0306_v03[.]02[.]12[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(wm331)_0306_v03[.]02[.]15[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 15
+        elif (m := re.match(r'^.*(wm331)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(wm332)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(wm334)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 2
+        elif (m := re.match(r'^.*(wm335)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 2
+        elif (m := re.match(r'^.*(wm620)_0306_v03[.]02[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 17
+        elif (m := re.match(r'^.*(wm620)_0306_v03[.]03[.]09[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 2
         else:
             platform = "unknown-imah"
             module_cmdopts = ""
@@ -422,19 +462,19 @@ def test_dji_flyc_param_ed_xv4_ckmod(capsys, modl_inp_dir, test_nth):
     #('out/ag407-agras_mg-1p-rtk',0,),
     #('out/ag408-agras_mg-unk',0,),
     #('out/ag410-agras_t16',0,),
-    #('out/pm410-matrice200',0,),
-    #('out/pm420-matrice200_v2',0,),
+    ('out/pm410-matrice200',0,),
+    ('out/pm420-matrice200_v2',0,),
     ('out/wm100-spark',3,),
     ('out/wm220-mavic',3,),
     ('out/wm222-mavic_sp',0,),
     ('out/wm330-phantom_4_std',0,),
-    #('out/wm331-phantom_4_pro',0,),
-    #('out/wm332-phantom_4_adv',0,),
-    #('out/wm334-phantom_4_rtk',0,),
-    #('out/wm335-phantom_4_pro_v2',0,),
-    #('out/wm336-phantom_4_mulspectral',0,),
-    #('out/wm620-inspire_2',0,),
-    #('out/xw607-robomaster_s1',0,),
+    ('out/wm331-phantom_4_pro',0,),
+    ('out/wm332-phantom_4_adv',0,),
+    ('out/wm334-phantom_4_rtk',0,),
+    ('out/wm335-phantom_4_pro_v2',0,),
+    ('out/wm336-phantom_4_mulspectral',0,),
+    ('out/wm620-inspire_2',0,),
+    ('out/xw607-robomaster_s1',0,),
   ] )
 def test_dji_flyc_param_ed_imah_v1_ckmod(capsys, modl_inp_dir, test_nth):
     """ Test extraction and re-applying of hard-coded properties within FC BIN module.
