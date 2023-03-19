@@ -146,9 +146,6 @@ def test_bin_bootimg_imah_v1_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*_2801-extr1/bootarea.img".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
-    # Skip some files
-    img_inp_filenames = [fn for fn in img_inp_filenames if not re.match(r'^.*TODO[.][0-9A-Z_.-]*_0802.bin', fn, re.IGNORECASE)]
-
     if len(img_inp_filenames) < 1:
         pytest.skip("no package files to test in this directory")
 

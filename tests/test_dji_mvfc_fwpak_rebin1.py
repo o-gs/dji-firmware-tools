@@ -59,6 +59,7 @@ def is_module_unsigned_encrypted(modl_inp_fn):
             mm = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
             return mm.find(b"scramble_key_encrypted") != -1
     except Exception:
+        LOGGER.info("Could not check INI for: {:s}".format(modl_inp_fn))
         return False
 
 
