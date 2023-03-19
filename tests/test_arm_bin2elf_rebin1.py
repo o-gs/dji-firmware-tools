@@ -46,15 +46,14 @@ from arm_bin2elf import main as arm_bin2elf_main
 LOGGER = logging.getLogger(__name__)
 
 
-def case_arm_bin2elf_rebin(modl_inp_fn):
-    """ Test case for ELF creation and stripping back to BIN files.
+def get_params_for_arm_bin2elf(modl_inp_fn):
+    """ From given module file name, figure out required arm_bin2elf cmd options.
     """
-    LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
-    # Most files we are able to recreate with full accuracy
     file_specific_cmdargs = []
+    platform = "unknown"
+    # Most files we are able to recreate with full accuracy
     expect_file_changes = 0
 
-    # Special cases - setting certain params and error tolerance for specific files
     if (modl_inp_fn.endswith("_m0306.bin")): # FC modules from xV4 firmwares
         if (re.match(r'^.*A3_FW_V02[.][0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Specific offsets for `A3_FW_V02.00.00.01_m0306.bin`
@@ -270,6 +269,32 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
             # Generic m0306 solution - detect the location of .ARM.exidx
             file_specific_cmdargs = ["-b", "0x00420000",
               "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+    elif (modl_inp_fn.endswith("_0900.bin")): # LB air MCU modules from IMaH v1 firmwares
+        if (re.match(r'^.*wm330_0900_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Generic offsets, taken from similar module
+            file_specific_cmdargs = ["-b", "0x8008000", "--section", ".ARM.exidx@0x8015500:0",
+              "--section", ".bss@0x1FFFF700:0x5A00", "--section", ".bss2@0x40000000:0x6700",
+              "--section", ".bss3@0x40010000:0x5500", "--section", ".bss4@0x40020000:0x2200",
+              "--section", ".bss5@0x42200000:0x100", "--section", ".bss6@0x42420000:0x500"]
+        else:
+            # Generic m0900 solution - detect the location of .ARM.exidx
+            file_specific_cmdargs = ["-b", "0x8008000",
+              "--section", ".bss@0x1FFFF700:0x5A00", "--section", ".bss2@0x40000000:0x23000",
+              "--section", ".bss3@0x42200000:0x500", "--section", ".bss4@0x42420000:0x500"]
+
+    return file_specific_cmdargs, expect_file_changes, platform
+
+
+def case_arm_bin2elf_rebin(modl_inp_fn):
+    """ Test case for ELF creation and stripping back to BIN files.
+    """
+    LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
+    # Most files we are able to recreate with full accuracy
+    file_specific_cmdargs = []
+    expect_file_changes = 0
+
+    # Get certain params and error tolerance for specific files
+    file_specific_cmdargs, expect_file_changes, platform = get_params_for_arm_bin2elf(modl_inp_fn)
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
     inp_path = pathlib.Path(inp_path)
@@ -391,6 +416,7 @@ def test_arm_bin2elf_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
 
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
         "{}/*/*_0306.decrypted.bin".format(modl_inp_dir),
+        "{}/*/*_0900.bin".format(modl_inp_dir),
     ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
 
     if len(modl_inp_filenames) < 1:
