@@ -73,31 +73,61 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 ./*.py --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    - name: Download xV4 firmware package files to test on
-      # Instead of the usual actions/download-artifact, we are downloading from Mega
-      uses: Difegue/action-megacmd@master
-      with:
-        args: get https://mega.nz/file/cd0zCBYY#QNzUepD_8iia5uy6hMBTM1dv48yO7iQhSCPXkMr2p6c ${{ env.GITHUB_WORKSPACE }}
+    - name: Test communication tools - Run pyTest
+      run: |
+        # use --durations=0 to get execution time for all unit tests
+        pytest tests -m comm -o log_cli=true --durations=0
 
-    - name: Download IMaH1 firmware package files to test on
+    - name: Test IMaH v1 format - Download firmware package files
       # Instead of the usual actions/download-artifact, we are downloading from Mega
       uses: Difegue/action-megacmd@master
       with:
         args: get https://mega.nz/file/UNlS1Z5B#dyu_LoeoS2M3UmBvssdvSDwAhA_dsNNbFHwJ7VDZ9rE ${{ env.GITHUB_WORKSPACE }}
 
-    - name: Set ownership for downloaded files
+    - name: Test IMaH v1 format - Set ownership for downloaded files
       # downloaded files are owned by root; unzip has no permission
       run: |
         sudo chown -cR $(id -u):$(id -g) ../fw_packages-*.zip
 
-    - name: Extract downloaded files
+    - name: Test IMaH v1 format - Extract downloaded files
       run: |
         mkdir -p fw_packages
-        unzip -q ../fw_packages-xv4-selected-ci-v1.zip -d fw_packages
         unzip -q ../fw_packages-imah1-selected-ci-v1.zip -d fw_packages
         rm ../fw_packages-*.zip
 
-    - name: Test with pytest
+    - name: Test IMaH v1 format - Run pyTest
       run: |
         # use --durations=0 to get execution time for all unit tests
-        pytest tests -o log_cli=true --durations=0
+        pytest tests -m fw_imah_v1 -o log_cli=true --durations=0
+
+    - name: Test IMaH v1 format - Cleanup
+      run: |
+        rm -rf ./fw_packages/*
+        rm -rf ./out/*
+
+    - name: Test xV4 format - Download firmware package files
+      # Instead of the usual actions/download-artifact, we are downloading from Mega
+      uses: Difegue/action-megacmd@master
+      with:
+        args: get https://mega.nz/file/cd0zCBYY#QNzUepD_8iia5uy6hMBTM1dv48yO7iQhSCPXkMr2p6c ${{ env.GITHUB_WORKSPACE }}
+
+    - name: Test xV4 format - Set ownership for downloaded files
+      # downloaded files are owned by root; unzip has no permission
+      run: |
+        sudo chown -cR $(id -u):$(id -g) ../fw_packages-*.zip
+
+    - name: Test xV4 format - Extract downloaded files
+      run: |
+        mkdir -p fw_packages
+        unzip -q ../fw_packages-xv4-selected-ci-v1.zip -d fw_packages
+        rm ../fw_packages-*.zip
+
+    - name: Test xV4 format - Run pyTest
+      run: |
+        # use --durations=0 to get execution time for all unit tests
+        pytest tests -m fw_xv4 -o log_cli=true --durations=0
+
+    - name: Test xV4 format - Cleanup
+      run: |
+        rm -rf ./fw_packages/*
+        rm -rf ./out/*
