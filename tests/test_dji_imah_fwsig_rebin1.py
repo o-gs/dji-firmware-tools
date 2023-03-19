@@ -308,9 +308,14 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_changes_limit = 2 + 4 + 4 + 256 + 32+16
     elif (m := re.match(r'^.*(wm240|wm245|wm246)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
-        module_cmdopts = "-k PRAK-2017-08 -k UFIE-2018-07 -k TBIE-2018-07"
-        # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
-        module_changes_limit = 2 + 4 + 4 + 256 + 32+16
+        if (re.match(r'^.*V00.01.0852_Mavic2_dji_system/{:s}_[^/]*[.]sig$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k rrak-2018-03 -k ufie-2018-03 -f" # rrak and ufie (which are dev keys) not published, forcing extract encrypted
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding, 3x16 unknown additional
+            module_changes_limit = 2 + 256 + 3*16 + 3*16
+        else: # if first level module
+            module_cmdopts = "-k PRAK-2017-08 -k UFIE-2018-07 -k TBIE-2018-07"
+            # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
+            module_changes_limit = 2 + 4 + 4 + 256 + 32+16
     else:
         platform = "unknown"
         module_cmdopts = ""
@@ -485,4 +490,74 @@ def test_dji_imah_fwsig_v1_nested_rebin(capsys, modl_inp_dir, test_nth):
     for modl_inp_fn in modl_filenames:
         case_dji_imah_fwsig_rebin(modl_inp_fn)
         capstdout, _ = capsys.readouterr()
+    pass
+
+
+@pytest.mark.order(1)
+@pytest.mark.fw_imah_v2
+@pytest.mark.parametrize("pkg_inp_dir,test_nth", [
+    ('fw_packages/ac103-osmo_action_2',1,),
+    ('fw_packages/ag500-agras_t10',1,),
+    ('fw_packages/ag501-agras_t30',1,),
+    ('fw_packages/ag600-agras_t40_gimbal',1,),
+    ('fw_packages/ag601-agras_t40',1,),
+    ('fw_packages/ag700-agras_t25',1,),
+    ('fw_packages/ag701-agras_t50',1,),
+    ('fw_packages/asvl001-vid_transmission',1,),
+    ('fw_packages/ch320-battery_station',1,),
+    ('fw_packages/ec174-hassel_x1d_ii_50c_cam',1,),
+    ('fw_packages/gl150-goggles_fpv_v1',1,),
+    ('fw_packages/gl170-goggles_fpv_v2',1,),
+    ('fw_packages/hg330-ronin_4d',1,),
+    ('fw_packages/lt150-caddx_vis_air_unit_lt',1,),
+    ('fw_packages/pm320-matrice30',1,),
+    ('fw_packages/pm430-matrice300',1,),
+    ('fw_packages/rc-n1-wm161b-mini_2n3_rc',1,),
+    ('fw_packages/rc-n1-wm260-mavic_pro_3',1,),
+    ('fw_packages/rc430-matrice300_rc',1,),
+    ('fw_packages/rcjs170-racer_rc',1,),
+    ('fw_packages/rcs231-mavic_air_2_rc',1,),
+    ('fw_packages/rcss170-racer_rc_motion',1,),
+    ('fw_packages/rm330-mini_rc_wth_monitor',1,),
+    ('fw_packages/wm150-fpv_system',1,),
+    ('fw_packages/wm160-mavic_mini',1,),
+    ('fw_packages/wm1605-mini_se',1,),
+    ('fw_packages/wm161-mini_2',1,),
+    ('fw_packages/wm162-mini_3',1,),
+    ('fw_packages/wm169-avata',1,),
+    ('fw_packages/wm1695-o3_air_unit',1,),
+    ('fw_packages/wm170-fpv_racer',1,),
+    ('fw_packages/wm230-mavic_air',1,),
+    ('fw_packages/wm231-mavic_air_2',1,),
+    ('fw_packages/wm232-mavic_air_2s',1,),
+    ('fw_packages/wm240-mavic_2',1,),
+    ('fw_packages/wm245-mavic_2_enterpr',1,),
+    ('fw_packages/wm246-mavic_2_enterpr_dual',1,),
+    ('fw_packages/wm247-mavic_2_enterpr_rtk',1,),
+    ('fw_packages/wm260-mavic_pro_3',1,),
+    ('fw_packages/wm2605-mavic_3_classic',1,),
+    ('fw_packages/wm265e-mavic_pro_3_enterpr',1,),
+    ('fw_packages/wm265m-mavic_pro_3_mulspectr',1,),
+    ('fw_packages/wm265t-mavic_pro_3_thermal',1,),
+    ('fw_packages/zv900-goggles_2',1,),
+  ] )
+def test_dji_imah_fwsig_v2_rebin(capsys, pkg_inp_dir, test_nth):
+    """ Test extraction and re-creation of signed IMaH v2 modules from within BIN package files.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    pkg_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        "{}/*.bin".format(pkg_inp_dir),
+      ) ]) if os.path.isfile(fn)]
+
+    if len(pkg_inp_filenames) < 1:
+        pytest.skip("no package files to test in this directory")
+
+    for pkg_inp_fn in pkg_inp_filenames:
+        modl_filenames, modl_path = case_extract_tarfile(pkg_inp_fn[::test_nth])
+        assert len(modl_filenames) >= 2, "The package file contained {:d} files, expeted at least {:d}: {:s}".format(len(modl_filenames), 2, pkg_inp_fn)
+        for modl_inp_fn in modl_filenames:
+            case_dji_imah_fwsig_rebin(os.sep.join([modl_path, modl_inp_fn]))
+            capstdout, _ = capsys.readouterr()
     pass
