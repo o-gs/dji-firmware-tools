@@ -76,7 +76,7 @@ jobs:
     - name: Test communication tools - Run pyTest
       run: |
         # use --durations=0 to get execution time for all unit tests
-        pytest tests -m comm -o log_cli=true --durations=0
+        pytest tests -m comm --log-cli-level=INFO --durations=0
 
     - name: Test IMaH v1 format - Download firmware package files [1/2]
       # Instead of the usual actions/download-artifact, we are downloading from Mega
@@ -105,7 +105,7 @@ jobs:
     - name: Test IMaH v1 format - Run pyTest
       run: |
         # use --durations=0 to get execution time for all unit tests
-        pytest tests -m fw_imah_v1 -o log_cli=true --durations=0
+        pytest tests -m fw_imah_v1 --log-cli-level=INFO --durations=0
 
     - name: Test IMaH v1 format - Cleanup
       run: |
@@ -132,7 +132,7 @@ jobs:
     - name: Test xV4 format - Run pyTest
       run: |
         # use --durations=0 to get execution time for all unit tests
-        pytest tests -m fw_xv4 -o log_cli=true --durations=0
+        pytest tests -m fw_xv4 --log-cli-level=INFO --durations=0
 
     - name: Test xV4 format - Cleanup
       run: |
