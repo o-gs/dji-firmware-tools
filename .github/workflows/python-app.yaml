@@ -78,11 +78,17 @@ jobs:
         # use --durations=0 to get execution time for all unit tests
         pytest tests -m comm -o log_cli=true --durations=0
 
-    - name: Test IMaH v1 format - Download firmware package files
+    - name: Test IMaH v1 format - Download firmware package files [1/2]
       # Instead of the usual actions/download-artifact, we are downloading from Mega
       uses: Difegue/action-megacmd@master
       with:
-        args: get https://mega.nz/file/UNlS1Z5B#dyu_LoeoS2M3UmBvssdvSDwAhA_dsNNbFHwJ7VDZ9rE ${{ env.GITHUB_WORKSPACE }}
+        args: get https://mega.nz/file/Bd0xVLib#XrVx7J8EtbujL5XRqN_gUIV00yoZGvb2tsU54bmCuWQ ${{ env.GITHUB_WORKSPACE }}
+
+    - name: Test IMaH v1 format - Download firmware package files [2/2]
+      # Instead of the usual actions/download-artifact, we are downloading from Mega
+      uses: Difegue/action-megacmd@master
+      with:
+        args: get https://mega.nz/file/9ckSADpC#9ISTW1JNzu9WNin312Y0Sy8KcmopCbAT9AKSiCuA2Ko ${{ env.GITHUB_WORKSPACE }}
 
     - name: Test IMaH v1 format - Set ownership for downloaded files
       # downloaded files are owned by root; unzip has no permission
@@ -92,7 +98,8 @@ jobs:
     - name: Test IMaH v1 format - Extract downloaded files
       run: |
         mkdir -p fw_packages
-        unzip -q ../fw_packages-imah1-selected-ci-v1.zip -d fw_packages
+        unzip -q ../fw_packages-imah1-selected-ci-p1-v2.zip -d fw_packages
+        unzip -q ../fw_packages-imah1-selected-ci-p2-v2.zip -d fw_packages
         rm ../fw_packages-*.zip
 
     - name: Test IMaH v1 format - Run pyTest
