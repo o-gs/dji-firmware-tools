@@ -156,7 +156,7 @@ def test_dji_mvfc_fwpak_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
 
     # Remove files not encrypted to start with
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag407_0306_v03[.]03[.]99[.]54.*[.]bin$', fn, re.IGNORECASE)]
-    # Some packages have multiple versions of specific modules, with only part of them not supported
+    # Some packages have multiple versions of specific modules, with only part of them not supported - '12345678' format
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag410_0306_v.*_nk00.*[.]bin$', fn, re.IGNORECASE)]
     # Skip the packages which were extracted in encrypted form (need non-public key)
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
