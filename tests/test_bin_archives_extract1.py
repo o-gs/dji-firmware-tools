@@ -234,6 +234,9 @@ def test_bin_archives_imah_v1_extract(capsys, modl_inp_dir, test_nth):
     # Direct `MA2x` Myriad firmware (but v02 has the `MA2x` within .tgz)
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*wm330_0802_v01[.][0-9A-Z_.-]*_0802.bin', fn, re.IGNORECASE)]
 
+    # Skip the packages which were extracted in encrypted form (need non-public key)
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
+
     if len(modl_inp_filenames) < 1:
         pytest.skip("no package files to test in this directory")
 
