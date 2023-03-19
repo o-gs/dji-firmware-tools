@@ -37,6 +37,7 @@ from comm_og_service_tool import main as comm_og_service_tool_main
 
 LOGGER = logging.getLogger(__name__)
 
+@pytest.mark.comm
 def test_comm_og_service_tool_flyc_param_list():
     """ Test list function using typical answers.
     """
@@ -46,6 +47,7 @@ def test_comm_og_service_tool_flyc_param_list():
         comm_og_service_tool_main()
     pass
 
+@pytest.mark.comm
 def test_comm_og_service_tool_flyc_param_get(capsys):
     """ Test get function using typical answers.
     """
@@ -57,6 +59,7 @@ def test_comm_og_service_tool_flyc_param_get(capsys):
     assert "g_config.flying_limit.max_height_0 = 500" in capstdout
     pass
 
+@pytest.mark.comm
 def test_comm_og_service_tool_flyc_param_set(capsys):
     """ Test set function using typical answers.
     """
@@ -75,6 +78,7 @@ def test_comm_og_service_tool_flyc_param_set(capsys):
     assert "g_config.flying_limit.max_height_0 = " in capstdout
     pass
 
+@pytest.mark.comm
 def test_comm_og_service_tool_gimbal_calib(capsys):
     """ Test gimbal calibration function using typical answers.
     """

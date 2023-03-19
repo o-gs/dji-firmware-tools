@@ -120,6 +120,7 @@ def case_bin_archive_extract(modl_inp_fn):
 
 
 @pytest.mark.order(2) # must be run after test_dji_xv4_fwcon_rebin
+@pytest.mark.fw_xv4
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/gl300abc-radio_control',1,),
     ('out/gl300e-radio_control',1,),
@@ -159,6 +160,7 @@ def test_bin_archives_xv4_extract(capsys, modl_inp_dir, test_nth):
 
 
 @pytest.mark.order(2) # must be run after test_dji_imah_fwsig_rebin
+@pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/ag406-agras_mg-1a',1,),
     ('out/ag407-agras_mg-1p-rtk',1,),

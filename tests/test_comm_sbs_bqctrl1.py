@@ -37,6 +37,7 @@ from comm_sbs_bqctrl import main as comm_sbs_bqctrl_main
 
 LOGGER = logging.getLogger(__name__)
 
+@pytest.mark.comm
 def test_comm_sbs_bqctrl_chip_detect(capsys):
     """ Test detection on a mock chip.
     """
@@ -56,6 +57,7 @@ def test_comm_sbs_bqctrl_chip_detect(capsys):
     pass
 
 
+@pytest.mark.comm
 @pytest.mark.parametrize("chip_name,test_nth", [
   ("BQ30z55",3,),
   ("BQ40z50",3,),
@@ -90,6 +92,7 @@ def test_comm_sbs_bqctrl_chip_info_commands(capsys, chip_name, test_nth):
     pass
 
 
+@pytest.mark.comm
 @pytest.mark.parametrize("chip_name,test_nth", [
   ("BQ30z55",1,),
   ("BQ40z50",1,),
@@ -127,6 +130,7 @@ def test_comm_sbs_bqctrl_chip_read_commands(capsys, chip_name, test_nth):
     pass
 
 
+@pytest.mark.comm
 @pytest.mark.parametrize("chip_name,test_nth", [
   ("BQ30z55",3,),
   ("BQ40z50",3,),
@@ -148,6 +152,7 @@ def test_comm_sbs_bqctrl_chip_write_commands(capsys, chip_name, test_nth):
     pytest.skip("no tests for write command as the command is unfinished")
 
 
+@pytest.mark.comm
 @pytest.mark.parametrize("chip_name,test_nth", [
   ("BQ30z55",1,),
   ("BQ40z50",1,),
@@ -176,6 +181,7 @@ def test_comm_sbs_bqctrl_chip_monitor_commands(capsys, chip_name, test_nth):
     pass
 
 
+@pytest.mark.comm
 @pytest.mark.parametrize("chip_name,test_nth", [
   ("BQ30z55",1,),
   ("BQ40z50",1,),
@@ -208,6 +214,7 @@ def test_comm_sbs_bqctrl_chip_sealing_commands(capsys, chip_name, test_nth):
     pass
 
 
+@pytest.mark.comm
 @pytest.mark.parametrize("chip_name,flash_start,flash_end,flash_step,test_nth", [
   ("BQ40z307", 0x0000, 0x0500, 0x20, 2),
 ])

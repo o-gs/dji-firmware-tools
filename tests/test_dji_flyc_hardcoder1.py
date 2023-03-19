@@ -222,6 +222,7 @@ def case_dji_flyc_hardcoder_ckmod(elf_inp_fn):
 
 
 @pytest.mark.order(4) # must be run after test_arm_bin2elf_xv4_rebin
+@pytest.mark.fw_xv4
 @pytest.mark.parametrize("elf_inp_dir,test_nth", [
     ('out/a3-flight_controller',0,),
     ('out/ag405-agras_mg_1s_octocopter',0,),
@@ -275,6 +276,7 @@ def test_dji_flyc_hardcoder_xv4_ckmod(capsys, elf_inp_dir, test_nth):
     pass
 
 @pytest.mark.order(4) # must be run after test_arm_bin2elf_imah_v1_rebin
+@pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("elf_inp_dir,test_nth", [
     ('out/ag407-agras_mg-1p-rtk',0,),
     ('out/ag408-agras_mg-unk',0,),

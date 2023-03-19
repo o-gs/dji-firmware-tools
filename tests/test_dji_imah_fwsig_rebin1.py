@@ -76,7 +76,6 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
     """
     module_cmdopts = ""
     module_changes_limit = 0
-    nested = {}
     if (m := re.match(r'^.*(ag406|ag407|ag408|ag410|ag411)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
         if (re.match(r'^.*{:s}_0801_[^/]*[.]fw_0801.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
@@ -316,7 +315,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         platform = "unknown"
         module_cmdopts = ""
         module_changes_limit = 2 + 4 + 4 + 256
-    return module_cmdopts, module_changes_limit, nested
+    return module_cmdopts, module_changes_limit, platform
 
 
 def modify_head_ini_option(ini_fname, ini_options):
@@ -336,7 +335,7 @@ def case_dji_imah_fwsig_rebin(modl_inp_fn):
     LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
 
     # Get parameters for specific platforms
-    extra_cmdopts, expect_file_changes, nested = get_params_for_dji_imah_fwsig(modl_inp_fn)
+    extra_cmdopts, expect_file_changes, platform = get_params_for_dji_imah_fwsig(modl_inp_fn)
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
     inp_path = pathlib.Path(inp_path)
@@ -383,6 +382,7 @@ def case_dji_imah_fwsig_rebin(modl_inp_fn):
 
 
 @pytest.mark.order(1)
+@pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("pkg_inp_dir,test_nth", [
     ('fw_packages/ag406-agras_mg-1a',1,),
     ('fw_packages/ag407-agras_mg-1p-rtk',1,),
@@ -437,6 +437,7 @@ def test_dji_imah_fwsig_v1_rebin(capsys, pkg_inp_dir, test_nth):
 
 
 @pytest.mark.order(4) # must be run after test_bin_archives_imah_v1_extract and test_bin_bootimg_imah_v1_extract
+@pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/ag407-agras_mg-1p-rtk',1,),
     ('out/ag408-agras_mg-unk',1,),

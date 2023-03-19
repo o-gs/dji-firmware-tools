@@ -96,6 +96,7 @@ def case_dji_xv4_fwcon_rebin(pkg_inp_fn):
 
 
 @pytest.mark.order(1)
+@pytest.mark.fw_xv4
 @pytest.mark.parametrize("pkg_inp_dir,test_nth", [
     ('fw_packages/a3-flight_controller',1,),
     ('fw_packages/ag405-agras_mg_1s_octocopter',1,),

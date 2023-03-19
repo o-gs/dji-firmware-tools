@@ -108,6 +108,7 @@ def case_bin_bootimg_extract(img_inp_fn):
 
 
 @pytest.mark.order(3) # must be run after test_bin_archives_imah_v1_extract
+@pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/ag407-agras_mg-1p-rtk',1,),
     ('out/ag408-agras_mg-unk',1,),

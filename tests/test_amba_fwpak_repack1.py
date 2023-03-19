@@ -105,6 +105,7 @@ def case_amba_fwpak_rebin(modl_inp_fn):
 
 # the extractor currently does not support the new LZ4-compressed files (ie. out/osmo_action-sport_cam, out/hg211-osmo_pocket_2)
 @pytest.mark.order(2) # must be run after test_dji_xv4_fwcon_rebin
+@pytest.mark.fw_xv4
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/m600-matrice_600_hexacopter',2,),
     ('out/osmo_fc350z-osmo_zoom_z3_gimbal',2,),

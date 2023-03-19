@@ -166,6 +166,7 @@ def case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn):
 
 
 @pytest.mark.order(4) # must be run after test_arm_bin2elf_rebin
+@pytest.mark.fw_xv4
 @pytest.mark.parametrize("elf_inp_dir,test_nth", [
     #('out/ag405-agras_mg_1s_octocopter',1,), # no matching modules
     ('out/gl300abc-radio_control',3,),

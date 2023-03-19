@@ -124,6 +124,7 @@ def case_dm3xx_encode_usb_hardcoder_ckmod(elf_inp_fn):
 
 
 @pytest.mark.order(3) # must be run after test_bin_archives_xv4_extract
+@pytest.mark.fw_xv4
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     #('out/gl300abc-radio_control',3,), # Currently we do not have anything to extract from the m1300 modules in this directory
     #('out/gl300e-radio_control',1,), # There is m1300 in one of these firmwares, but it is not SSL'ed TGZ, but OTA ZIP file

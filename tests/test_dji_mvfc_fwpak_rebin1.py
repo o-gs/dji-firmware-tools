@@ -125,6 +125,7 @@ def case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn):
 
 
 @pytest.mark.order(2) # must be run after test_dji_imah_fwsig_rebin
+@pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/ag407-agras_mg-1p-rtk',1,),
     ('out/ag408-agras_mg-unk',1,),

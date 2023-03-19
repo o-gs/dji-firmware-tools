@@ -305,6 +305,7 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
 
 
 @pytest.mark.order(3) # must be run after test_dji_xv4_fwcon_rebin
+@pytest.mark.fw_xv4
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/a3-flight_controller',1,),
     ('out/ag405-agras_mg_1s_octocopter',1,),
@@ -364,6 +365,7 @@ def test_arm_bin2elf_xv4_rebin(capsys, modl_inp_dir, test_nth):
 
 
 @pytest.mark.order(3) # must be run after test_dji_mvfc_fwpak_rebin
+@pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/ag407-agras_mg-1p-rtk',1,),
     ('out/ag408-agras_mg-unk',1,),
