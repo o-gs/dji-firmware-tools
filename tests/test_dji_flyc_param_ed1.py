@@ -98,7 +98,7 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
             expect_json_changes = 15
         elif (m := re.match(r'^.*(MATRICE100)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
-            module_cmdopts = "-b 0x0420000"
+            module_cmdopts = "-b 0x8020000"
             expect_json_changes = 37
         elif (m := re.match(r'^.*(MATRICE600)_FW_V01[.]00[.]00[.]([0-3][0-9]|[4][0-3])[()0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)

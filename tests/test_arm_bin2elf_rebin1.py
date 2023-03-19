@@ -70,11 +70,18 @@ def get_params_for_arm_bin2elf(modl_inp_fn):
             # Generic offsets for `AI900_AGR_FW_V??.??.??.??_m0306.bin`, auto-detection of .ARM.exidx works good enough
             file_specific_cmdargs = ["-b", "0x00420000",
               "--section", ".bss@0x20400000:0x46000", "--section", ".bss2@0x40000000:0x30000"]
+
+        elif (re.match(r'^.*MATRICE100_FW_V01[.]02[()0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `MATRICE100_FW_V01.02.00.60_m0306.bin`
+            file_specific_cmdargs = ["-b", "0x8020000", "--section", ".ARM.exidx@0x80E4338:0",
+              "--section", ".bss@0x10000000:0x100", "--section", ".bss2@0x20000000:0x30000",
+              "--section", ".bss3@0x40000000:0x30000"]
         elif (re.match(r'^.*MATRICE100_FW_V[()0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Generic offsets for `MATRICE100_FW_V??.??.??.??_m0306.bin`, auto-detection of .ARM.exidx works good enough
             file_specific_cmdargs = ["-b", "0x8020000",
               "--section", ".bss@0x10000000:0xA000", "--section", ".bss2@0x20000000:0x30000",
               "--section", ".bss3@0x40000000:0x30000"]
+
         elif (re.match(r'^.*MATRICE600_FW_V[()0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE) or
           re.match(r'^.*MATRICE600PRO_FW_V[()0-9A-Z_.-]*_m0306[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Generic offsets for `MATRICE600_FW_V??.??.??.??_m0306.bin`, auto-detection of .ARM.exidx works good enough
