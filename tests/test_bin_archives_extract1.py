@@ -27,6 +27,7 @@ import filecmp
 import glob
 import itertools
 import logging
+import mmap
 import os
 import re
 import subprocess
@@ -42,6 +43,25 @@ from dji_imah_fwsig import main as dji_imah_fwsig_main
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+def is_module_unsigned_encrypted(modl_inp_fn):
+    """ Identify if the module was extracted without full decryption.
+        If the module data is encrypted, invoking further tests on it makes no sense.
+    """
+    match = re.search(r'^(.*)_m?([0-9]{4})[.]bin$', modl_inp_fn, flags=re.IGNORECASE)
+    if not match:
+        return False
+    modl_part_fn = match.group(1)
+    modl_ini_fn = "{:s}_head.ini".format(modl_part_fn)
+    try:
+        with open(modl_ini_fn, 'rb') as fh:
+            mm = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
+            return mm.find(b"scramble_key_encrypted") != -1
+    except Exception as e:
+        LOGGER.info("Could not check INI for: {:s}".format(modl_inp_fn))
+        return False
+
 
 def is_openssl_file(inp_fn):
     with open(inp_fn, 'rb') as encfh:
@@ -159,7 +179,7 @@ def test_bin_archives_xv4_extract(capsys, modl_inp_dir, test_nth):
     pass
 
 
-@pytest.mark.order(2) # must be run after test_dji_imah_fwsig_rebin
+@pytest.mark.order(2) # must be run after test_dji_imah_fwsig_v1_rebin
 @pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/ag406-agras_mg-1a',1,),
@@ -213,6 +233,85 @@ def test_bin_archives_imah_v1_extract(capsys, modl_inp_dir, test_nth):
 
     # Direct `MA2x` Myriad firmware (but v02 has the `MA2x` within .tgz)
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*wm330_0802_v01[.][0-9A-Z_.-]*_0802.bin', fn, re.IGNORECASE)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no package files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames:
+        case_bin_archive_extract(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+
+@pytest.mark.order(2) # must be run after test_dji_imah_fwsig_v2_rebin
+@pytest.mark.fw_imah_v2
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/ac103-osmo_action_2',1,),
+    ('out/ag500-agras_t10',1,),
+    ('out/ag501-agras_t30',1,),
+    ('out/ag600-agras_t40_gimbal',1,),
+    ('out/ag601-agras_t40',1,),
+    ('out/ag700-agras_t25',1,),
+    ('out/ag701-agras_t50',1,),
+    ('out/asvl001-vid_transmission',1,),
+    ('out/ch320-battery_station',1,),
+    ('out/ec174-hassel_x1d_ii_50c_cam',1,),
+    ('out/gl150-goggles_fpv_v1',1,),
+    ('out/gl170-goggles_fpv_v2',1,),
+    ('out/hg330-ronin_4d',1,),
+    ('out/lt150-caddx_vis_air_unit_lt',1,),
+    ('out/pm320-matrice30',1,),
+    ('out/pm430-matrice300',1,),
+    ('out/rc-n1-wm161b-mini_2n3_rc',1,),
+    ('out/rc-n1-wm260-mavic_pro_3',1,),
+    ('out/rc430-matrice300_rc',1,),
+    ('out/rcjs170-racer_rc',1,),
+    ('out/rcs231-mavic_air_2_rc',1,),
+    ('out/rcss170-racer_rc_motion',1,),
+    ('out/rm330-mini_rc_wth_monitor',1,),
+    ('out/wm150-fpv_system',1,),
+    ('out/wm160-mavic_mini',1,),
+    ('out/wm1605-mini_se',1,),
+    ('out/wm161-mini_2',1,),
+    ('out/wm162-mini_3',1,),
+    ('out/wm169-avata',1,),
+    ('out/wm1695-o3_air_unit',1,),
+    ('out/wm170-fpv_racer',1,),
+    ('out/wm230-mavic_air',1,),
+    ('out/wm231-mavic_air_2',1,),
+    ('out/wm232-mavic_air_2s',1,),
+    ('out/wm240-mavic_2',1,),
+    ('out/wm245-mavic_2_enterpr',1,),
+    ('out/wm246-mavic_2_enterpr_dual',1,),
+    ('out/wm247-mavic_2_enterpr_rtk',1,),
+    ('out/wm260-mavic_pro_3',1,),
+    ('out/wm2605-mavic_3_classic',1,),
+    ('out/wm265e-mavic_pro_3_enterpr',1,),
+    ('out/wm265m-mavic_pro_3_mulspectr',1,),
+    ('out/wm265t-mavic_pro_3_thermal',1,),
+    ('out/zv900-goggles_2',1,),
+  ] )
+def test_bin_archives_imah_v2_extract(capsys, modl_inp_dir, test_nth):
+    """ Test if known archives are extracting correctly, and prepare data for tests which use the extracted files.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        # Some Android OTA/TGZ/TAR modules contain boot images with another stage of IMaH encryption
+        "{}/*/*_0801.bin".format(modl_inp_dir),
+        "{}/*/*_0802.bin".format(modl_inp_dir),
+        "{}/*/*_0805.bin".format(modl_inp_dir),
+        "{}/*/*_0905.bin".format(modl_inp_dir),
+        "{}/*/*_0907.bin".format(modl_inp_dir),
+        "{}/*/*_1300.bin".format(modl_inp_dir),
+        "{}/*/*_1301.bin".format(modl_inp_dir),
+        "{}/*/*_1407.bin".format(modl_inp_dir),
+        "{}/*/*_2801.bin".format(modl_inp_dir),
+      ) ]) if os.path.isfile(fn)]
+
+    # Skip the packages which were extracted in encrypted form (need non-public key)
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no package files to test in this directory")
