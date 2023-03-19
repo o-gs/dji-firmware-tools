@@ -276,6 +276,12 @@ def get_params_for_arm_bin2elf(modl_inp_fn):
               "--section", ".bss@0x1FFFF700:0x5A00", "--section", ".bss2@0x40000000:0x6700",
               "--section", ".bss3@0x40010000:0x5500", "--section", ".bss4@0x40020000:0x2200",
               "--section", ".bss5@0x42200000:0x100", "--section", ".bss6@0x42420000:0x500"]
+        elif (re.match(r'^.*wm620_0900_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `wm620_0900_v01.07.00.00_20171101.pro.fw_0900.bin`
+            file_specific_cmdargs = ["-b", "0x8008000", "--section", ".ARM.exidx@0x80164C8:0",
+              "--section", ".bss@0x1FFFF700:0x5A00", "--section", ".bss2@0x40000000:0x6700",
+              "--section", ".bss3@0x40010000:0x5500", "--section", ".bss4@0x40020000:0x2200",
+              "--section", ".bss5@0x42200000:0x100", "--section", ".bss6@0x42420000:0x500"]
         else:
             # Generic m0900 solution - detect the location of .ARM.exidx
             file_specific_cmdargs = ["-b", "0x8008000",
