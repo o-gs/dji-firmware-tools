@@ -108,6 +108,10 @@ def case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn):
         elif (re.match(r'^.*P34_v[0-9A-Z_.-]*_m1401[.]elf', elf_inp_fn, re.IGNORECASE)):
             expect_json_changes = 7
             expect_file_changes = [7, 2*3 + 4*4]
+    elif (elf_inp_fn.endswith("_0900.elf")):
+        if (re.match(r'^.*wm330_0900_v[0-9a-z_.-]*[.]elf', elf_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 22
+            expect_file_changes = [22, 22*4]
 
     inp_path, inp_filename = os.path.split(elf_inp_fn)
     inp_path = pathlib.Path(inp_path)
@@ -223,6 +227,33 @@ def test_lightbridge_stm32_hardcoder_xv4_ckmod(capsys, elf_inp_dir, test_nth):
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*p4pRC_v1[.]0[.][0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*P34_v1930_[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM332_V2100_[0-9A-Z_.-]*_m1401[.]elf', fn, re.IGNORECASE)]
+
+    if len(elf_inp_filenames) < 1:
+        pytest.skip("no files to test in this directory")
+
+    for elf_inp_fn in elf_inp_filenames[::test_nth]:
+        case_lightbridge_stm32_hardcoder_ckmod(elf_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+@pytest.mark.order(4) # must be run after test_arm_bin2elf_imah_v1_rebin
+@pytest.mark.fw_imah_v1
+@pytest.mark.parametrize("elf_inp_dir,test_nth", [
+    #('out/pm410-matrice200',3,), # no patterns recognized by the hardcoder
+    ('out/wm330-phantom_4_std',3,),
+    #('out/wm331-phantom_4_pro',3,), # no patterns recognized by the hardcoder
+    #('out/wm332-phantom_4_adv',3,), # no patterns recognized by the hardcoder
+    #('out/wm620-inspire_2',3,), # no patterns recognized by the hardcoder
+  ] )
+def test_lightbridge_stm32_hardcoder_imah_v1_ckmod(capsys, elf_inp_dir, test_nth):
+    """ Test extraction and re-applying of hard-coded properties within ELFs.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    elf_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
+        "{}/*/*_0900.elf".format(elf_inp_dir),
+    ) ]) if os.path.isfile(fn)]
 
     if len(elf_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
