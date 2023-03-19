@@ -175,9 +175,33 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
         else:
             platform = "unknown-xv4"
             module_cmdopts = ""
-            #expect_json_changes = 16
+            expect_json_changes = 16
     elif (modl_inp_fn.endswith("_0306.decrypted.bin")):
-        if (m := re.match(r'^.*(pm410)_0306_v03[.]02[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+        if (m := re.match(r'^.*(ag407)_0306_v[0-9a-z_.-]*_head[.][0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420180"
+            expect_json_changes = 2
+        elif (m := re.match(r'^.*(ag407)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 2
+        elif (m := re.match(r'^.*(ag408)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420180"
+            expect_json_changes = 2
+        elif (m := re.match(r'^.*(ag410)_0306_v[0-9a-z_.-]*_fc00[.][0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 4
+        elif (m := re.match(r'^.*(ag410)_0306_v[0-9a-z_.-]*_head[.][0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420180"
+            expect_json_changes = 4
+        elif (m := re.match(r'^.*(ag410)_0306_v[0-9a-z_.-]*_nk00[.][0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 4
+        elif (m := re.match(r'^.*(pm410)_0306_v03[.]02[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
             expect_json_changes = 17
@@ -459,9 +483,9 @@ def test_dji_flyc_param_ed_xv4_ckmod(capsys, modl_inp_dir, test_nth):
 
 @pytest.mark.order(3) # must be run after test_dji_mvfc_fwpak_rebin
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
-    #('out/ag407-agras_mg-1p-rtk',0,),
-    #('out/ag408-agras_mg-unk',0,),
-    #('out/ag410-agras_t16',0,),
+    ('out/ag407-agras_mg-1p-rtk',0,),
+    ('out/ag408-agras_mg-unk',0,),
+    ('out/ag410-agras_t16',0,),
     ('out/pm410-matrice200',0,),
     ('out/pm420-matrice200_v2',0,),
     ('out/wm100-spark',3,),
