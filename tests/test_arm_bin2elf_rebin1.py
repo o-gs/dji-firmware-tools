@@ -170,21 +170,27 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
               "--section", ".bss3@0x2C000000:0x20000", "--section", ".bss4@0x40000000:0xF0000",
               "--section", ".bss5@0xE0000000:0x8000"]
     elif (modl_inp_fn.endswith("_0306.decrypted.bin")): # FC modules from IMaH firmwares
-        if (re.match(r'^.*ag407_0306_v03[.]03[.]03[.][0-6][0-9][0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+        if (re.match(r'^.*ag407_0306_v03[.]03[.]03[.][0-5][0-9][0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Specific offsets for `ag407_0306_v03.03.03.38_20180511.pro.fw_0306.decrypted.bin`
             file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0532950:0",
               "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
-        elif (re.match(r'^.*ag407_0306_v03[.]03[.]03[.]7[0-9][0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+        elif (re.match(r'^.*ag407_0306_v03[.]03[.]03[.][6][0-9][0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+            # Specific offsets for `ag407_0306_v03.03.03.64_20181023.pro.fw_0306.decrypted.bin`
+            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x053A638:0",
+              "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
+        elif (re.match(r'^.*ag407_0306_v[0-9a-z_.-]*_fc00[.][0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Specific offsets for `ag407_0306_v03.03.03.70_20181108_fc00.pro.fw_0306.decrypted.bin`
+            # Since FW package v01.05.0002, the FC firmware comes in two versions, with slightly different base
             file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x053ABA8:0",
               "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
-        elif (re.match(r'^.*ag407_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
+        elif (re.match(r'^.*ag407_0306_v[0-9a-z_.-]*_head[.][0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Specific offsets for `ag407_0306_v03.03.03.80_20190808_head.pro.fw_0306.decrypted.bin`
-            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x053C578:0",
+            # Since FW package v01.05.0002, 'head' variant was added to FC firmwares
+            file_specific_cmdargs = ["-b", "0x00420180", "--section", ".ARM.exidx@0x053C578:0",
               "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
         elif (re.match(r'^.*ag408_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Generic offsets, taken from similar module
-            file_specific_cmdargs = ["-b", "0x00420000", "--section", ".ARM.exidx@0x0529F00:0",
+            file_specific_cmdargs = ["-b", "0x00420180", "--section", ".ARM.exidx@0x0529F00:0",
               "--section", ".bss@0x20400000:0x60100", "--section", ".bss2@0x400E0000:0x2000"]
         elif (re.match(r'^.*ag410_0306_v[0-9a-z_.-]*[.]bin', modl_inp_fn, re.IGNORECASE)):
             # Generic offsets, taken from similar module
