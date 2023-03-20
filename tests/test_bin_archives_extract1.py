@@ -227,12 +227,16 @@ def test_bin_archives_imah_v1_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*_0907.bin".format(modl_inp_dir),
         "{}/*/*_1300.bin".format(modl_inp_dir),
         "{}/*/*_1301.bin".format(modl_inp_dir),
+        "{}/*/*_1401.bin".format(modl_inp_dir),
         "{}/*/*_1407.bin".format(modl_inp_dir),
         "{}/*/*_2801.bin".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
     # Direct `MA2x` Myriad firmware (but v02 has the `MA2x` within .tgz)
-    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*wm330_0802_v01[.][0-9A-Z_.-]*_0802.bin', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*wm330_0802_v01[.][0-9a-z_.-]*_0802[.]bin$', fn, re.IGNORECASE)]
+    # Simple linear uC binary, not an archive
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag406_1401_v[0-9a-z_.-]*[.]bin$', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*rc001_1401_v[0-9a-z_.-]*[.]bin$', fn, re.IGNORECASE)]
 
     # Skip the packages which were extracted in encrypted form (need non-public key)
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]

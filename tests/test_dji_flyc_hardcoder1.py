@@ -306,8 +306,8 @@ def test_dji_flyc_hardcoder_imah_v1_ckmod(capsys, elf_inp_dir, test_nth):
     ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
 
     # Remove unsupported m0306 files
-    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*ag407_0306_v03[.]03[.]03[.]8[0-9].*[.]elf', fn, re.IGNORECASE)]
-    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*wm334_0306_v03[.]03[.]06[.]57.*[.]elf', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*ag407_0306_v03[.]03[.]03[.]8[0-9][0-9a-z_.-]*[.]elf$', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*wm334_0306_v03[.]03[.]06[.]57[0-9a-z_.-]*[.]elf$', fn, re.IGNORECASE)]
 
     if len(elf_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")

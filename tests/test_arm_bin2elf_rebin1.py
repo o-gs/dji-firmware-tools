@@ -405,11 +405,13 @@ def test_arm_bin2elf_xv4_rebin(capsys, modl_inp_dir, test_nth):
 @pytest.mark.order(3) # must be run after test_dji_mvfc_fwpak_rebin
 @pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/ag406-agras_mg-1a',1,),
     ('out/ag407-agras_mg-1p-rtk',1,),
     ('out/ag408-agras_mg-unk',1,),
     ('out/ag410-agras_t16',1,),
     ('out/pm410-matrice200',1,),
     ('out/rc220-mavic_rc',1,),
+    ('out/tp703-aeroscope',1,),
     ('out/wm100-spark',1,),
     ('out/wm220-mavic',1,),
     ('out/wm222-mavic_sp',1,),
@@ -430,7 +432,13 @@ def test_arm_bin2elf_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
         "{}/*/*_0306.decrypted.bin".format(modl_inp_dir),
         "{}/*/*_0900.bin".format(modl_inp_dir),
+        "{}/*/*_1400.bin".format(modl_inp_dir),
+        "{}/*/*_1401.bin".format(modl_inp_dir),
     ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
+
+    # Remove unsupported files - modules which are not a simple uC firmware
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag410_1401_v[0-9a-f_.-]*[.]bin$', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag408_1401_v[0-9a-f_.-]*[.]bin$', fn, re.IGNORECASE)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
