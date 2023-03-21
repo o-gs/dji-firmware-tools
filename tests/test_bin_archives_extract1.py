@@ -152,8 +152,8 @@ def case_bin_archive_extract(modl_inp_fn):
     ('out/p3x-phantom_3_pro_quadcopter',1,),
     ('out/wm610-t600_inspire_1_x3_quadcopter',1,),
     ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',1,),
-    ('out/zs600a_crystalsky_5_5inch',1,),
-    ('out/zs600b-crystalsky_7_85inch',1,),
+    ('out/zs600a-crystalsky_5_5inch',1,),
+    ('out/zs600b-crystalsky_7_85in',1,),
   ] )
 def test_bin_archives_xv4_extract(capsys, modl_inp_dir, test_nth):
     """ Test if known archives are extracting correctly, and prepare data for tests which use the extracted files.
