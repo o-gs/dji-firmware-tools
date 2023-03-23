@@ -486,7 +486,7 @@ def test_dji_flyc_param_ed_xv4_ckmod(capsys, modl_inp_dir, test_nth):
     pass
 
 
-@pytest.mark.order(3) # must be run after test_dji_mvfc_fwpak_rebin
+@pytest.mark.order(3) # must be run after test_dji_mvfc_fwpak_imah_v1_rebin
 @pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/ag407-agras_mg-1p-rtk',0,),
