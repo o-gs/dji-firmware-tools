@@ -117,14 +117,14 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         if False:
             pass # no quirks
         else: # if first level module
-            module_cmdopts = "-f" # PRAK not published, UFIE not published
+            module_cmdopts = "-k PRAK-9999-99 -k UFIE-9999-99 -f" # PRAK not published, UFIE not published
             module_changes_limit = 2 + 256
     elif (m := re.match(r'^.*(ag700|ag701)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
         if False:
             pass # no quirks
         else: # if first level module
-            module_cmdopts = "-f" # PRAK not published, UFIE not published
+            module_cmdopts = "-k PRAK-9999-99 -k UFIE-9999-99 -f" # PRAK not published, UFIE not published
             # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 2*16 chunk padding, 32 payload digest
             module_changes_limit = 2 + 4 + 4 + 256 + 2*16 + 32
     elif (m := re.match(r'^.*(asvl01)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
@@ -442,7 +442,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
     elif (m := re.match(r'^.*(wm247|wm260|wm2605)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
         # specific first level modules with unsupported signature_size=384
-        if (re.match(r'^.*wm260_0802_v[0-9a-z_.-]*[.]pro[.]fw[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        if (re.match(r'^.*(wm260|wm2605)_0802_v[0-9a-z_.-]*[.]pro[.]fw[.]sig$', modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2020-01 -k UFIE-2020-04 -f"
             module_changes_limit = 999999 # we can not re-create signature
         # specific first level modules with encrypted data checksum verification issues
