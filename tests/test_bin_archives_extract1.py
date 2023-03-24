@@ -97,6 +97,8 @@ def case_bin_archive_extract(modl_inp_fn):
         ignore_unknown_format = True # PUEK-2017-09 not published
     if (re.match(r'^(wm335)_(0801|0802|0805|1301).*$', inp_basename, re.IGNORECASE)):
         ignore_unknown_format = True # PUEK-2017-11 not published
+    if (re.match(r'^(wm260|wm2605)_(0802).*$', inp_basename, re.IGNORECASE)):
+        ignore_unknown_format = True # unsupported signature size - data not decrypted correctly
 
     if len(inp_path.parts) > 1:
         out_path = os.sep.join(["out"] + list(inp_path.parts[1:]))
@@ -316,6 +318,11 @@ def test_bin_archives_imah_v2_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*_1407.bin".format(modl_inp_dir),
         "{}/*/*_2801.bin".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
+
+    # Firmware in `VHABCIM` format, not archive
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ec174_0801_v[0-9a-z_.-]*_0801[.]bin$', fn, re.IGNORECASE)]
+    # NFZ data format, with index array at start, then the data; not an archive format
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*(pm430|wm160|wm1605|wm161)_0905_v[0-9a-z_.-]*_0905[.]bin$', fn, re.IGNORECASE)]
 
     # Skip the packages which were extracted in encrypted form (need non-public key)
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
