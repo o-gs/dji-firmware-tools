@@ -125,7 +125,7 @@ def case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn):
     pass
 
 
-@pytest.mark.order(2) # must be run after test_dji_imah_fwsig_rebin
+@pytest.mark.order(2) # must be run after test_dji_imah_fwsig_v1_rebin
 @pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/ag407-agras_mg-1p-rtk',1,),
@@ -160,6 +160,35 @@ def test_dji_mvfc_fwpak_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag407_0306_v03[.]03[.]99[.]54.*[.]bin$', fn, re.IGNORECASE)]
     # Some packages have multiple versions of specific modules, with only part of them not supported - '12345678' format
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag410_0306_v.*_nk00.*[.]bin$', fn, re.IGNORECASE)]
+    # Skip the packages which were extracted in encrypted form (need non-public key)
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no fc module files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames:
+        case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn)
+    pass
+
+
+@pytest.mark.order(2) # must be run after test_dji_imah_fwsig_v2_rebin
+@pytest.mark.fw_imah_v2
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    #('out/wm1605-mini_se',1,), # not currently supported - '12345678' format
+    #('out/wm160-mavic_mini',1,), # not currently supported - '12345678' format
+    #('out/wm161-mini_2',1,), # not currently supported - '12345678' format
+  ] )
+def test_dji_mvfc_fwpak_imah_v2_rebin(capsys, modl_inp_dir, test_nth):
+    """ Test decryption and re-encryption of FC BIN module files.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        "{}/*/*_0305.bin".format(modl_inp_dir),
+        "{}/*/*_0306.bin".format(modl_inp_dir),
+      ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
+
     # Skip the packages which were extracted in encrypted form (need non-public key)
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
 
