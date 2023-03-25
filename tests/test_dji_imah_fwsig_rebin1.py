@@ -431,8 +431,8 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         platform = m.group(1)
         if (re.match(r'^.*{:s}_0801_[^/]*[.]fw_0801.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2017-08 -k TBIE-2018-01 -k FCIE-2018-04 -k TKIE-2018-04 -f" # TBIE, FCIE, TKIE not published, forcing extract encrypted
-            # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
-            module_changes_limit = 2 + 4 + 4 + 256 + 32+16
+            # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 4x16 chunk padding, 32 payload digest
+            module_changes_limit = 2 + 4 + 4 + 256 + 4*16 + 32
         else: # if first level module
             module_cmdopts = "-k PRAK-2017-08 -k UFIE-2018-01 -k TBIE-2018-01"
             # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
@@ -452,8 +452,8 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_changes_limit = 2 + 4 + 4 + 256 + 32+16
         elif (re.match(r'^.*{:s}_0907_[^/]*[.]fw_0907.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2017-12 -k PUEK-9999-99 -k IAEK-9999-99 -f" # m0907 uses different PRAK; IAEK not published, forcing extract encrypted
-            # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
-            module_changes_limit = 2 + 4 + 4 + 256 + 32+16
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 16 chunk padding, 32 payload digest
+            module_changes_limit = 2 + 4 + 4 + 256 + 16 + 32
         elif (re.match(r'^.*V00.01.0852_Mavic2_dji_system/{:s}_[^/]*[.]sig$'.format(platform), modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k rrak-2018-03 -k ufie-2018-03 -f" # rrak and ufie (which are dev keys) not published, forcing extract encrypted
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding, 3x16 unknown additional
@@ -462,7 +462,21 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_cmdopts = "-k PRAK-2017-08 -k UFIE-2018-07 -k TBIE-2018-07"
             # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
             module_changes_limit = 2 + 4 + 4 + 256 + 32+16
-    elif (m := re.match(r'^.*(wm247|wm260|wm2605)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*(wm247)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
+        platform = m.group(1)
+        if (re.match(r'^.*{:s}_0801_[^/]*[.]fw_0801.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2020-01 -k TBIE-2020-02"
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
+            module_changes_limit = 2 + 256 + 3*16
+        elif (re.match(r'^.*{:s}_0907_[^/]*[.]fw_0907.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11" # m0907 uses different PRAK
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 16 chunk padding, 32 payload digest
+            module_changes_limit = 2 + 4 + 4 + 256 + 16 + 32
+        else: # if first level module
+            module_cmdopts = "-k PRAK-2020-01 -k UFIE-2020-04"
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 16 chunk padding
+            module_changes_limit = 2 + 256 + 16
+    elif (m := re.match(r'^.*(wm260|wm2605)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
         # specific first level modules with unsupported signature_size=384
         if (re.match(r'^.*(wm260|wm2605)_0802_v[0-9a-z_.-]*[.]pro[.]fw[.]sig$', modl_inp_fn, re.IGNORECASE)):
