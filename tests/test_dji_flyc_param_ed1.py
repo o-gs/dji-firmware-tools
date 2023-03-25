@@ -523,3 +523,29 @@ def test_dji_flyc_param_ed_imah_v1_ckmod(capsys, modl_inp_dir, test_nth):
         case_dji_flyc_param_ed_ckmod(modl_inp_fn)
         capstdout, _ = capsys.readouterr()
     pass
+
+
+@pytest.mark.order(3) # must be run after test_dji_mvfc_fwpak_imah_v2_rebin
+@pytest.mark.fw_imah_v2
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/wm1605-mini_se',1,),
+    ('out/wm160-mavic_mini',1,),
+    ('out/wm161-mini_2',1,),
+  ] )
+def test_dji_flyc_param_ed_imah_v2_ckmod(capsys, modl_inp_dir, test_nth):
+    """ Test extraction and re-applying of hard-coded properties within FC BIN module.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
+        "{}/*/*_0306.decrypted.bin".format(modl_inp_dir),
+    ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames[::test_nth]:
+        case_dji_flyc_param_ed_ckmod(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
