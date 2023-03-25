@@ -153,3 +153,48 @@ def test_bin_bootimg_imah_v1_extract(capsys, modl_inp_dir, test_nth):
         case_bin_bootimg_extract(img_inp_fn)
         capstdout, _ = capsys.readouterr()
     pass
+
+
+@pytest.mark.order(3) # must be run after test_bin_archives_imah_v2_extract
+@pytest.mark.fw_imah_v2
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/ag500-agras_t10',1,),
+    ('out/ag501-agras_t30',1,),
+    ('out/ag600-agras_t40_gimbal',1,),
+    ('out/ag601-agras_t40',1,),
+    ('out/gl150-goggles_fpv_v1',1,),
+    ('out/lt150-caddx_vis_air_unit_lt',1,),
+    ('out/pm320-matrice30',1,),
+    ('out/pm430-matrice300',1,),
+    ('out/rc430-matrice300_rc',1,),
+    ('out/wm150-fpv_system',1,),
+    ('out/wm170-fpv_racer',1,),
+    ('out/wm230-mavic_air',1,),
+    ('out/wm231-mavic_air_2',1,),
+    ('out/wm232-mavic_air_2s',1,),
+    ('out/wm240-mavic_2',1,),
+    ('out/wm245-mavic_2_enterpr',1,),
+    ('out/wm246-mavic_2_enterpr_dual',1,),
+    ('out/wm247-mavic_2_enterpr_rtk',1,),
+  ] )
+def test_bin_bootimg_imah_v2_extract(capsys, modl_inp_dir, test_nth):
+    """ Test if boot images are extracting correctly, and prepare data for tests which use the extracted files.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    img_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        # Some Android OTA/TGZ/TAR modules contain boot images with another stage of IMaH encryption
+        "{}/*/*_0801-extr1/bootarea.img".format(modl_inp_dir),
+        "{}/*/*_0802-extr1/bootarea.img".format(modl_inp_dir),
+        "{}/*/*_1301-extr1/bootarea.img".format(modl_inp_dir),
+        "{}/*/*_2801-extr1/bootarea.img".format(modl_inp_dir),
+      ) ]) if os.path.isfile(fn)]
+
+    if len(img_inp_filenames) < 1:
+        pytest.skip("no package files to test in this directory")
+
+    for img_inp_fn in img_inp_filenames:
+        case_bin_bootimg_extract(img_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
