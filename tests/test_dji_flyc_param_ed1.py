@@ -297,7 +297,7 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
     json_mod_fn = os.sep.join([out_path, "{:s}.flyc_param_infos.mod.json".format(inp_basename)])
 
     # Create json file with recognized hard-coded values
-    command = [os.path.join(".", "dji_flyc_param_ed.py"), "-vv", *shlex.split(extra_cmdopts), "-x", "-m", modl_inp_fn, "-i", json_ori_fn]
+    command = [os.path.join(".", "dji_flyc_param_ed.py"), "-vv"] + shlex.split(extra_cmdopts) + ["-x", "-m", modl_inp_fn, "-i", json_ori_fn]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         dji_flyc_param_ed_main()
@@ -433,7 +433,7 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
     # Make copy of the BIN file
     shutil.copyfile(modl_inp_fn, modl_out_fn)
     # Import json file back to bin
-    command = [os.path.join(".", "dji_flyc_param_ed.py"), "-vv", *shlex.split(extra_cmdopts), "-u", "-i", json_mod_fn, "-m", modl_out_fn]
+    command = [os.path.join(".", "dji_flyc_param_ed.py"), "-vv"] + shlex.split(extra_cmdopts) + ["-u", "-i", json_mod_fn, "-m", modl_out_fn]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
         dji_flyc_param_ed_main()
