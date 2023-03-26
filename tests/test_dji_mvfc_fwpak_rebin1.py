@@ -174,9 +174,27 @@ def test_dji_mvfc_fwpak_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
 @pytest.mark.order(2) # must be run after test_dji_imah_fwsig_v2_rebin
 @pytest.mark.fw_imah_v2
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
-    #('out/wm1605-mini_se',1,), # not currently supported - '12345678' format
-    #('out/wm160-mavic_mini',1,), # not currently supported - '12345678' format
-    #('out/wm161-mini_2',1,), # not currently supported - '12345678' format
+    #('out/ag500-agras_t10',1,), # not supported - the m120[0-3] here requires a different key
+    #('out/ag501-agras_t30',1,), # not supported - the m120[0-5] here requires a different key
+    #('out/ag700-agras_t25',1,), # not supported - the m120[0-3] has 1st level decryption not public
+    #('out/ag701-agras_t50',1,), # not supported - the m120[0-7] has 1st level decryption not public
+    #('out/pm320-matrice30',1,), # not supported - the m120[0-3] here requires a different key
+    #('out/pm430-matrice300',1,), # not supported - the m120[0-3] here requires a different key
+    #('out/wm1605-mini_se',1,), # not currently supported - the m0306 in '12345678' format
+    #('out/wm160-mavic_mini',1,), # not currently supported - the m0306 in '12345678' format
+    #('out/wm161-mini_2',1,), # not currently supported - the m0306 in '12345678' format
+    #('out/wm162-mini_3',1,), # not supported - the m120[0-3] has 1st level decryption not public
+    #('out/wm169-avata',1,), # not supported - the m120[0-3] has 1st level decryption not public
+    #('out/wm231-mavic_air_2',1,), # not supported - the m120[0-3] here requires a different key
+    #('out/wm232-mavic_air_2s',1,), # not supported - the m1200/m1202 here requires a different key
+    #('out/wm240-mavic_2',1,), # not supported - the m120[0-3] here requires a different key
+    #('out/wm245-mavic_2_enterpr',1,), # not supported - the m120[0-3] here requires a different key
+    #('out/wm246-mavic_2_enterpr_dual',1,), # not supported - the m120[0-3] here requires a different key
+    #('out/wm2605-mavic_3_classic',1,), # not supported - the m1200/m1202 here requires a different key
+    #('out/wm260-mavic_pro_3',1,), # not supported - the m1200/m1202 here requires a different key
+    #('out/wm265e-mavic_pro_3_enterpr',1,), # not supported - the m120[0-3] has 1st level decryption not public
+    #('out/wm265m-mavic_pro_3_mulspectr',1,), # not supported - the m120[0-3] has 1st level decryption not public
+    #('out/wm265t-mavic_pro_3_thermal',1,), # not supported - the m120[0-3] has 1st level decryption not public
   ] )
 def test_dji_mvfc_fwpak_imah_v2_rebin(capsys, modl_inp_dir, test_nth):
     """ Test decryption and re-encryption of FC BIN module files.
@@ -187,8 +205,15 @@ def test_dji_mvfc_fwpak_imah_v2_rebin(capsys, modl_inp_dir, test_nth):
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
         "{}/*/*_0305.bin".format(modl_inp_dir),
         "{}/*/*_0306.bin".format(modl_inp_dir),
+        "{}/*/*_1200.bin".format(modl_inp_dir),
+        "{}/*/*_1201.bin".format(modl_inp_dir),
+        "{}/*/*_1202.bin".format(modl_inp_dir),
+        "{}/*/*_1203.bin".format(modl_inp_dir),
       ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
 
+    # Remove files not encrypted to start with
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*pm430_120[0-3]_v[0-9a-z_.-]*_mc02[.]pro[.]fw_120[0-3][.]bin$', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*wm231_120[0-3]_v[0-9a-z_.-]*_mc03[.]pro[.]fw_120[0-3][.]bin$', fn, re.IGNORECASE)]
     # Skip the packages which were extracted in encrypted form (need non-public key)
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
 
