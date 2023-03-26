@@ -188,8 +188,12 @@ def test_bin_bootimg_imah_v2_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*_0801-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_0802-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_1301-extr1/bootarea.img".format(modl_inp_dir),
+        "{}/*/*_2607.bin".format(modl_inp_dir), # in ag500 and ag501, this module is a bootarea.img as well
         "{}/*/*_2801-extr1/bootarea.img".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
+
+    # The m2607 is not a bootarea.img in many firmwares
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*(ag600|ag601|pm320|pm430|wm247)_2607_v[0-9a-z_.-]*_2607[.]bin$', fn, re.IGNORECASE)]
 
     if len(img_inp_filenames) < 1:
         pytest.skip("no package files to test in this directory")
