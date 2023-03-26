@@ -525,12 +525,26 @@ def test_dji_flyc_param_ed_imah_v1_ckmod(capsys, modl_inp_dir, test_nth):
     pass
 
 
-@pytest.mark.order(3) # must be run after test_dji_mvfc_fwpak_imah_v2_rebin
+@pytest.mark.order(5) # must be run after test_dji_mvfc_fwpak_imah_v2_rebin and test_dji_imah_fwsig_v2_nested_rebin
 @pytest.mark.fw_imah_v2
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/ag500-agras_t10',1,),
+    ('out/ag501-agras_t30',1,),
+    ('out/ag600-agras_t40_gimbal',1,),
+    ('out/ag601-agras_t40',1,),
+    ('out/pm320-matrice30',1,),
+    ('out/pm430-matrice300',1,),
     ('out/wm1605-mini_se',1,),
     ('out/wm160-mavic_mini',1,),
     ('out/wm161-mini_2',1,),
+    ('out/wm170-fpv_racer',1,),
+    ('out/wm230-mavic_air',1,),
+    ('out/wm231-mavic_air_2',1,),
+    ('out/wm232-mavic_air_2s',1,),
+    ('out/wm240-mavic_2',1,),
+    ('out/wm245-mavic_2_enterpr',1,),
+    ('out/wm246-mavic_2_enterpr_dual',1,),
+    ('out/wm247-mavic_2_enterpr_rtk',1,),
   ] )
 def test_dji_flyc_param_ed_imah_v2_ckmod(capsys, modl_inp_dir, test_nth):
     """ Test extraction and re-applying of hard-coded properties within FC BIN module.
@@ -540,6 +554,7 @@ def test_dji_flyc_param_ed_imah_v2_ckmod(capsys, modl_inp_dir, test_nth):
 
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
         "{}/*/*_0306.decrypted.bin".format(modl_inp_dir),
+        "{}/*/*_FCFW.bin".format(modl_inp_dir),
     ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
 
     if len(modl_inp_filenames) < 1:
