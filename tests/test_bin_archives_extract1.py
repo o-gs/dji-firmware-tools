@@ -99,6 +99,9 @@ def case_bin_archive_extract(modl_inp_fn):
         ignore_unknown_format = True # PUEK-2017-11 not published
     if (re.match(r'^(wm260|wm2605)_(0802).*$', inp_basename, re.IGNORECASE)):
         ignore_unknown_format = True # unsupported signature size - data not decrypted correctly
+    # There are also damaged files, where we expect the extraction to fail
+    if (re.match(r'^(ag600)_(2403)_v06[.]00[.]01[.]10_.*', inp_basename, re.IGNORECASE)):
+        ignore_unknown_format = True # truncated file
 
     if len(inp_path.parts) > 1:
         out_path = os.sep.join(["out"] + list(inp_path.parts[1:]))
@@ -308,19 +311,27 @@ def test_bin_archives_imah_v2_extract(capsys, modl_inp_dir, test_nth):
 
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
         # Some Android OTA/TGZ/TAR modules contain boot images with another stage of IMaH encryption
+        "{}/*/*_0104.bin".format(modl_inp_dir),
+        "{}/*/*_0701.bin".format(modl_inp_dir),
+        "{}/*/*_0702.bin".format(modl_inp_dir),
         "{}/*/*_0801.bin".format(modl_inp_dir),
         "{}/*/*_0802.bin".format(modl_inp_dir),
         "{}/*/*_0805.bin".format(modl_inp_dir),
+        "{}/*/*_0901.bin".format(modl_inp_dir),
         "{}/*/*_0905.bin".format(modl_inp_dir),
         "{}/*/*_0907.bin".format(modl_inp_dir),
         "{}/*/*_1300.bin".format(modl_inp_dir),
         "{}/*/*_1301.bin".format(modl_inp_dir),
         "{}/*/*_1407.bin".format(modl_inp_dir),
+        "{}/*/*_1502.bin".format(modl_inp_dir),
+        "{}/*/*_2403.bin".format(modl_inp_dir),
         "{}/*/*_2801.bin".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
-    # Firmware in `VHABCIM` format, not archive
+    # Firmware in `VHABCIM` format, not an archive
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ec174_0801_v[0-9a-z_.-]*_0801[.]bin$', fn, re.IGNORECASE)]
+    # Firmware in linear uC memory dump, not an archive
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*(ag500|ag501)_0104_v[0-9a-z_.-]*_0104[.]bin$', fn, re.IGNORECASE)]
     # NFZ data format, with index array at start, then the data; not an archive format
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*(pm430|wm160|wm1605|wm161)_0905_v[0-9a-z_.-]*_0905[.]bin$', fn, re.IGNORECASE)]
 
