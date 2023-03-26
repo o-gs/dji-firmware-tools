@@ -164,7 +164,11 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_changes_limit = 999999 # we can not re-create signature
     elif (m := re.match(r'^.*(pm320)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
-        if (re.match(r'^.*{:s}_0802_[^/]*[.]fw_0802.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+        if (re.match(r'^.*{:s}_0702_[^/]*[.]fw_0702.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2020-01 -k TBIE-2020-02"
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
+            module_changes_limit = 2 + 256 + 3*16
+        elif (re.match(r'^.*{:s}_0802_[^/]*[.]fw_0802.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2020-01 -k TBIE-2020-02"
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
             module_changes_limit = 2 + 256 + 3*16
@@ -468,6 +472,10 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_cmdopts = "-k PRAK-2020-01 -k TBIE-2020-02"
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
             module_changes_limit = 2 + 256 + 3*16
+        elif (re.match(r'^.*{:s}_0901_[^/]*[.]fw_0901.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11" # m0907 uses different PRAK
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 16 chunk padding, 32 payload digest
+            module_changes_limit = 2 + 4 + 4 + 256 + 16 + 32
         elif (re.match(r'^.*{:s}_0907_[^/]*[.]fw_0907.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2017-12 -k PUEK-2017-11" # m0907 uses different PRAK
             # allow change of 2 bytes from auth key name, 256 from signature, up to 16 chunk padding, 32 payload digest
@@ -792,6 +800,7 @@ def test_dji_imah_fwsig_v2_nested_rebin(capsys, modl_inp_dir, test_nth):
         # output from test_bin_archives_imah_v1_extract
         "{}/*/**/normal.img".format(modl_inp_dir),
         "{}/*/**/recovery.img".format(modl_inp_dir),
+        "{}/*/**/rtos.img".format(modl_inp_dir),
         "{}/*/**/modemarm.pro.fw".format(modl_inp_dir),
         "{}/*/**/modemdsp_gnd.pro.fw".format(modl_inp_dir),
         "{}/*/**/modemdsp_uav.pro.fw".format(modl_inp_dir),
