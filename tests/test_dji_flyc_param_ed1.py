@@ -269,6 +269,35 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
             platform = "unknown-imah"
             module_cmdopts = ""
             expect_json_changes = 16
+    elif (modl_inp_fn.endswith("_FCFW.bin")):
+        if (m := re.match(r'^.*(ag500|ag501|ag600|ag601)_0802_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x00"
+            expect_json_changes = 28
+        elif (m := re.match(r'^.*(pm320)_0802_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x00"
+            expect_json_changes = 29
+        elif (m := re.match(r'^.*(pm430)_0801_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x00"
+            expect_json_changes = 33
+        elif (m := re.match(r'^.*(wm170)_0802_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x00"
+            expect_json_changes = 27
+        elif (m := re.match(r'^.*(wm230)_0801_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x00"
+            expect_json_changes = 24 # 33
+        elif (m := re.match(r'^.*(wm231|wm232|wm240|wm245|wm246|wm247)_0801_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x00"
+            expect_json_changes = 33
+        else:
+            platform = "unknown-fcfw"
+            module_cmdopts = ""
+            expect_json_changes = 16
 
     return module_cmdopts, expect_json_changes, platform
 
@@ -342,6 +371,10 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
             par['defaultValue'] = 20
             props_changed.append(str(par['name']))
             continue
+        if re.match(r'^g_config[.]mode_tripod_cfg[.]vert_vel_up[_0]*$', par['name']):
+            par['defaultValue'] = 1.5
+            props_changed.append(str(par['name']))
+            continue
         if re.match(r'^g_config[.]control[.]vert_down_vel[_0]*$', par['name']):
             par['defaultValue'] = 10
             props_changed.append(str(par['name']))
@@ -349,6 +382,10 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
         if re.match(r'^g_config[.]mode_sport_cfg[.]vert_vel_down[_0]*$', par['name']):
             par['minValue'] = -10.0
             par['defaultValue'] = -10.0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^g_config[.]mode_tripod_cfg[.]vert_vel_down[_0]*$', par['name']):
+            par['defaultValue'] = -1.5
             props_changed.append(str(par['name']))
             continue
         if re.match(r'^g_config[.]control[.]vert_vel_down_bat_limit[_0]*$', par['name']):
@@ -393,7 +430,7 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
             par['defaultValue'] = 1
             props_changed.append(str(par['name']))
             continue
-        if re.match(r'^g_config[.]airport_limit_cfg[.]cfg_disable_airport_fly_limit[_0]*$', par['name']):
+        if re.match(r'^(g_config[.]airport_limit_cfg[.]|)cfg_disable_airport_fly_limit[_0]*$', par['name']):
             par['defaultValue'] = 255
             props_changed.append(str(par['name']))
             continue
@@ -402,7 +439,7 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
             props_changed.append(str(par['name']))
             continue
         if re.match(r'^g_config[.]airport_limit_cfg[.]cfg_limit_data[_0]*$', par['name']):
-            par['defaultValue'] = 20200910
+            par['defaultValue'] = 20250910
             props_changed.append(str(par['name']))
             continue
         if re.match(r'^g_config[.]misc_cfg[.]auto_landing_vel_L1[_0]*$', par['name']):
@@ -425,6 +462,83 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
             continue
         if re.match(r'^g_config[.]fdi[.]gps_max_horizontal_vel_mod[_0]*$', par['name']):
             par['defaultValue'] = 50.0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^limit_height[_0]*$', par['name']):
+            par['defaultValue'] = 0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^limit_height_abs[_0]*$', par['name']):
+            par['defaultValue'] = 10000.0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^limit_height_abs_without_gps[_0]*$', par['name']):
+            par['defaultValue'] = 10000.0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^limit_height_rel[_0]*$', par['name']):
+            par['defaultValue'] = 10000.0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^(g_config[.]go_home[.]|)avoid_ascending_height_limit_disable[_0]*$', par['name']):
+            par['defaultValue'] = 1
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^g_config[.]flying_limit[.](viechle|driver)_license_limit_enable[_0]*$', par['name']):
+            par['defaultValue'] = 0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^motor_no_start_motor_check[_0]*$', par['name']):
+            par['defaultValue'] = 1
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^g_config[.]fdi_open[.]close_auto_stop_motor_check[_0]*$', par['name']):
+            par['defaultValue'] = 1
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^(g_config[.]avoid_cfg[.]avoid|avoid_cfg)_tors_rate_range[_0]*$', par['name']):
+            par['defaultValue'] = 70.0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^g_config[.]mode_normal_cfg[.]tors_gyro_range[_0]*$', par['name']):
+            par['defaultValue'] = 150.0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^g_config[.]mode_sport_cfg[.]tors_gyro_range[_0]*$', par['name']):
+            par['defaultValue'] = 250.0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^CM_tors_range[_0]*$', par['name']):
+            par['defaultValue'] = 52.0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^g_config[.]mode_tripod_cfg[.]tors_gyro_range[_0]*$', par['name']):
+            par['defaultValue'] = 60.0
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^(dji_bat_level_1|g_config[.]voltage2[.]level_1_voltage)[_0]*$', par['name']):
+            par['minValue'] = 0
+            par['maxValue'] = 100
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^(dji_bat_level_2|g_config[.]voltage2[.]level_2_voltage)[_0]*$', par['name']):
+            par['minValue'] = 0
+            par['maxValue'] = 100
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^(tilt_sensitive_gain|g_config[.]control[.]rc_tilt_sensitivity)[_0]*$', par['name']):
+            par['minValue'] = 1
+            par['maxValue'] = 100
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^yaw_sensitive_gain[_0]*$', par['name']):
+            par['minValue'] = 1
+            par['maxValue'] = 100
+            props_changed.append(str(par['name']))
+            continue
+        if re.match(r'^rc_throttle_sensitivity[_0]*$', par['name']):
+            par['minValue'] = 1
+            par['maxValue'] = 100
             props_changed.append(str(par['name']))
             continue
     with open(json_mod_fn, "w") as valfile:
