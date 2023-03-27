@@ -637,12 +637,19 @@ def get_key_data(po, pkghead, enc_k_fourcc):
 def imah_get_crypto_params(po, pkghead):
     # Get the encryption key
     enc_k_str = pkghead.enc_key.decode("utf-8")
-    enc_key = get_key_data(po, pkghead, enc_k_str)
+    if enc_k_str != '':
+        enc_key = get_key_data(po, pkghead, enc_k_str)
+    else:
+        enc_key = bytes()
     if enc_key is None:
         eprint("{}: Warning: Cannot find enc_key '{:s}'".format(po.sigfile,enc_k_str))
         return (None, None, None)
     # Prepare initial values for AES
-    if   pkghead.header_version == 2:
+    if len(enc_key) == 0:
+        crypt_mode = AES.MODE_CBC
+        crypt_key = enc_key
+        crypt_iv = bytes(pkghead.scram_key)
+    elif pkghead.header_version == 2:
         if (po.verbose > 3):
             print("Key encryption key:\n{:s}".format(' '.join("{:02X}".format(x) for x in enc_key)))
         crypt_mode = AES.MODE_CTR
@@ -774,7 +781,8 @@ def imah_read_fwsig_head(po):
             scramble_key = bytes.fromhex(parser.get("asection", "scramble_key_encrypted"))
 
         if scramble_key is not None:
-            pkghead.scram_key = (c_ubyte * len(scramble_key)).from_buffer_copy(scramble_key)
+            if len(scramble_key) > 0:
+                pkghead.scram_key = (c_ubyte * len(scramble_key)).from_buffer_copy(scramble_key)
         else:
             eprint("{}: Warning: Scramble key not found in header and not set to ramdom; zeros will be used.".format(po.sigfile))
 
@@ -792,7 +800,7 @@ def imah_read_fwsig_head(po):
         enc_k_str = pkghead.enc_key.decode("utf-8")
         enc_key = get_key_data(po, pkghead, enc_k_str)
         if enc_key is None:
-            eprint("{}: Warning: Cannot find enc_key '{:s}'; scramble key left unencrypted.".format(fwsigfile.name,enc_k_str))
+            eprint("{}: Warning: Cannot find enc_key '{:s}'; scramble key left unencrypted.".format(po.sigfile,enc_k_str))
         else:
             cipher = AES.new(enc_key, AES.MODE_CBC, bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
             crypt_key_enc = cipher.encrypt(bytes(pkghead.scram_key))
