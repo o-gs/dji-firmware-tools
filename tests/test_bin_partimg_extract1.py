@@ -52,11 +52,14 @@ def case_bin_bootimg_extract(img_inp_fn):
 
     ignore_unknown_format = False
 
-    # We expect the input file to be in a folder which identifies the module
     inp_path, inp_filename = os.path.split(img_inp_fn)
     img_base_name, img_fileext = os.path.splitext(inp_filename)
-    match = re.search(r'^(.*_m?([0-9]{4}))[.-].*$', inp_path, flags=re.IGNORECASE)
-    assert match, "File path does not identify module: {:s}".format(img_inp_fn)
+    # Check if the input file identifies the module
+    match = re.search(r'^(.*_m?([0-9]{4}))[.-].*$', inp_filename, flags=re.IGNORECASE)
+    if not match:
+        # Check if the input file is in a folder which identifies the module
+        match = re.search(r'^(.*_m?([0-9]{4}))[.-].*$', inp_path, flags=re.IGNORECASE)
+    assert match, "Neither File name nor path does not identify module: {:s}".format(img_inp_fn)
     inp_path = match.group(1)
     inp_path, modl_base_name = os.path.split(inp_path)
     inp_module = match.group(2)
@@ -193,7 +196,7 @@ def test_bin_bootimg_imah_v2_extract(capsys, modl_inp_dir, test_nth):
       ) ]) if os.path.isfile(fn)]
 
     # The m2607 is not a bootarea.img in many firmwares
-    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*(ag600|ag601|pm320|pm430|wm247)_2607_v[0-9a-z_.-]*_2607[.]bin$', fn, re.IGNORECASE)]
+    img_inp_filenames = [fn for fn in img_inp_filenames if not re.match(r'^.*(ag600|ag601|pm320|pm430|wm247)_2607_v[0-9a-z_.-]*_2607[.]bin$', fn, re.IGNORECASE)]
 
     if len(img_inp_filenames) < 1:
         pytest.skip("no package files to test in this directory")
