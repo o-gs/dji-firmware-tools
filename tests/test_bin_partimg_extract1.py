@@ -56,13 +56,16 @@ def case_bin_bootimg_extract(img_inp_fn):
     img_base_name, img_fileext = os.path.splitext(inp_filename)
     # Check if the input file identifies the module
     match = re.search(r'^(.*_m?([0-9]{4}))[.-].*$', inp_filename, flags=re.IGNORECASE)
-    if not match:
+    if match:
+        modl_base_name = match.group(1)
+        inp_module = match.group(2)
+    else:
         # Check if the input file is in a folder which identifies the module
         match = re.search(r'^(.*_m?([0-9]{4}))[.-].*$', inp_path, flags=re.IGNORECASE)
-    assert match, "Neither File name nor path does not identify module: {:s}".format(img_inp_fn)
-    inp_path = match.group(1)
-    inp_path, modl_base_name = os.path.split(inp_path)
-    inp_module = match.group(2)
+        assert match, "Neither File name nor path does not identify module: {:s}".format(img_inp_fn)
+        inp_path = match.group(1)
+        inp_path, modl_base_name = os.path.split(inp_path)
+        inp_module = match.group(2)
 
     inp_path = pathlib.Path(inp_path)
     if len(inp_path.parts) > 1:
