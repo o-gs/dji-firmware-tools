@@ -142,9 +142,6 @@ def test_amba_sys_hardcoder_ckmod(capsys, elf_inp_dir, test_nth):
     if test_nth < 1:
         pytest.skip("limited scope")
 
-    if True: # TODO fix the script, then re-enable testing (issue: JSON has `vid_setting_bitrates` instead of `vid_setting_bitrates_00`)
-        pytest.skip("regression on some platforms - vid_setting_bitrates not seen as array; FIXME")
-
     elf_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
         "{}/*-split1/*-split1/*_m0100_part_sys.elf".format(elf_inp_dir),
     ) ]) if os.path.isfile(fn)]
