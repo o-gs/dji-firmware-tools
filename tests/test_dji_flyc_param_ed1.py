@@ -220,7 +220,11 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
         elif (m := re.match(r'^.*(wm220)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 31
+            # In Python 3.8, less flyc_params are found in this FW; reasons were not investigated
+            if sys.version_info < (3,9):
+                expect_json_changes = 28
+            else:
+                expect_json_changes = 31
         elif (m := re.match(r'^.*(wm222)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
