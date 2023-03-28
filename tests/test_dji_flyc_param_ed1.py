@@ -220,7 +220,7 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
         elif (m := re.match(r'^.*(wm220)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 17
+            expect_json_changes = 31
         elif (m := re.match(r'^.*(wm222)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
@@ -302,37 +302,7 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
     return module_cmdopts, expect_json_changes, platform
 
 
-def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
-    """ Test case for extraction and re-applying of hard-coded properties within FC BIN module.
-    """
-    LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
-
-    # Get parameters for specific platforms
-    extra_cmdopts, expect_json_changes, platform = get_params_for_dji_flyc_param_ed(modl_inp_fn)
-    if expect_json_changes > 4:
-        expect_file_changes = [expect_json_changes*2, expect_json_changes*2*4]
-    else:
-        expect_file_changes = [expect_json_changes*1, expect_json_changes*2*4 + 4]
-
-    inp_path, inp_filename = os.path.split(modl_inp_fn)
-    inp_path = pathlib.Path(inp_path)
-    inp_basename, modl_fileext = os.path.splitext(inp_filename)
-    if len(inp_path.parts) > 1:
-        out_path = os.sep.join(["out"] + list(inp_path.parts[1:]))
-    else:
-        out_path = "out"
-    modl_out_fn = os.sep.join([out_path, "{:s}.mod.bin".format(inp_basename)])
-    json_ori_fn = os.sep.join([out_path, "{:s}.flyc_param_infos.json".format(inp_basename)])
-    json_mod_fn = os.sep.join([out_path, "{:s}.flyc_param_infos.mod.json".format(inp_basename)])
-
-    # Create json file with recognized hard-coded values
-    command = [os.path.join(".", "dji_flyc_param_ed.py"), "-vv"] + shlex.split(extra_cmdopts) + ["-x", "-m", modl_inp_fn, "-i", json_ori_fn]
-    LOGGER.info(' '.join(command))
-    with patch.object(sys, 'argv', command):
-        dji_flyc_param_ed_main()
-    # Modify the JSON
-    with open(json_ori_fn) as valfile:
-        params_list = json.load(valfile)
+def modify_flyc_params(params_list):
     props_changed = []
     for par in params_list:
         if re.match(r'^g_config[.](advanced_function|flying_limit)[.]height_limit_enabled[_0]*$', par['name']):
@@ -541,6 +511,43 @@ def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
             par['maxValue'] = 100
             props_changed.append(str(par['name']))
             continue
+    return props_changed
+
+
+def case_dji_flyc_param_ed_ckmod(modl_inp_fn):
+    """ Test case for extraction and re-applying of hard-coded properties within FC BIN module.
+    """
+    LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
+
+    # Get parameters for specific platforms
+    extra_cmdopts, expect_json_changes, platform = get_params_for_dji_flyc_param_ed(modl_inp_fn)
+    if expect_json_changes > 4:
+        expect_file_changes = [expect_json_changes*2, expect_json_changes*2*4]
+    else:
+        expect_file_changes = [expect_json_changes*1, expect_json_changes*2*4 + 4]
+
+    inp_path, inp_filename = os.path.split(modl_inp_fn)
+    inp_path = pathlib.Path(inp_path)
+    inp_basename, modl_fileext = os.path.splitext(inp_filename)
+    if len(inp_path.parts) > 1:
+        out_path = os.sep.join(["out"] + list(inp_path.parts[1:]))
+    else:
+        out_path = "out"
+    modl_out_fn = os.sep.join([out_path, "{:s}.mod.bin".format(inp_basename)])
+    json_ori_fn = os.sep.join([out_path, "{:s}.flyc_param_infos.json".format(inp_basename)])
+    json_mod_fn = os.sep.join([out_path, "{:s}.flyc_param_infos.mod.json".format(inp_basename)])
+
+    # Create json file with recognized hard-coded values
+    command = [os.path.join(".", "dji_flyc_param_ed.py"), "-vv"] + shlex.split(extra_cmdopts) + ["-x", "-m", modl_inp_fn, "-i", json_ori_fn]
+    LOGGER.info(' '.join(command))
+    with patch.object(sys, 'argv', command):
+        dji_flyc_param_ed_main()
+    # Modify the JSON
+    with open(json_ori_fn) as valfile:
+        params_list = json.load(valfile)
+
+    props_changed = modify_flyc_params(params_list)
+
     with open(json_mod_fn, "w") as valfile:
         valfile.write(json.dumps(params_list, indent=4))
     assert len(props_changed) >= expect_json_changes, "Performed too few JSON modifications ({:d}<{:d}): {:s}".format(len(props_changed), expect_json_changes, json_mod_fn)
