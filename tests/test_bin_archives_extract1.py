@@ -67,6 +67,7 @@ def is_openssl_file(inp_fn):
     with open(inp_fn, 'rb') as encfh:
         return encfh.read(8) == b'Salted__'
 
+
 def tar_extractall_overwrite(tarfh, path='.'):
     for f in tarfh:
         try:
@@ -75,6 +76,7 @@ def tar_extractall_overwrite(tarfh, path='.'):
             os.remove(os.sep.join([path, f.name]))
             tarfh.extract(f, path, set_attrs=False, numeric_owner=False)
     pass
+
 
 def case_bin_archive_extract(modl_inp_fn):
     """ Test case for extraction check, and prepare data for tests which use the extracted files.

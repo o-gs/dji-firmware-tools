@@ -236,6 +236,7 @@ def test_lightbridge_stm32_hardcoder_xv4_ckmod(capsys, elf_inp_dir, test_nth):
         capstdout, _ = capsys.readouterr()
     pass
 
+
 @pytest.mark.order(4) # must be run after test_arm_bin2elf_imah_v1_rebin
 @pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("elf_inp_dir,test_nth", [
