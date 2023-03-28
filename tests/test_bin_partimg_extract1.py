@@ -173,6 +173,11 @@ def test_bin_bootimg_imah_v1_extract(capsys, modl_inp_dir, test_nth):
     ('out/pm320-matrice30',1,),
     ('out/pm430-matrice300',1,),
     ('out/rc430-matrice300_rc',1,),
+    ('out/rcjs170-racer_rc',1,),
+    ('out/rc-n1-wm161b-mini_2n3_rc',1,),
+    ('out/rc-n1-wm260-mavic_pro_3',1,),
+    ('out/rcs231-mavic_air_2_rc',1,),
+    ('out/rcss170-racer_rc_motion',1,),
     ('out/wm150-fpv_system',1,),
     ('out/wm170-fpv_racer',1,),
     ('out/wm230-mavic_air',1,),
@@ -194,6 +199,7 @@ def test_bin_bootimg_imah_v2_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*_0801-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_0802-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_1301-extr1/bootarea.img".format(modl_inp_dir),
+        "{}/*/*_1301-extr1/loader.img".format(modl_inp_dir),
         "{}/*/*_2607.bin".format(modl_inp_dir), # in ag500 and ag501, this module is a bootarea.img as well
         "{}/*/*_2801-extr1/bootarea.img".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
