@@ -402,7 +402,7 @@ def test_arm_bin2elf_xv4_rebin(capsys, modl_inp_dir, test_nth):
     pass
 
 
-@pytest.mark.order(3) # must be run after test_dji_mvfc_fwpak_rebin
+@pytest.mark.order(3) # must be run after test_dji_mvfc_fwpak_imah_v1_rebin
 @pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/ag406-agras_mg-1a',1,),
