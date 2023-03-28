@@ -46,6 +46,7 @@ from dji_imah_fwsig import main as dji_imah_fwsig_main
 
 LOGGER = logging.getLogger(__name__)
 
+
 def case_extract_tarfile(pkg_inp_fn):
     """ Extract TAR package file with firmware modules.
 
@@ -70,6 +71,7 @@ def case_extract_tarfile(pkg_inp_fn):
         tarfh.extractall(modules_path1)
 
     return modl_fnames, modules_path1
+
 
 def get_params_for_dji_imah_fwsig(modl_inp_fn):
     """ From given module file name, figure out required dji_imah_fwsig cmd options.
@@ -270,7 +272,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
         platform = m.group(1)
         if False:
             pass # no quirks
-        else: # if first level module
+        else: # if first level module or nested within m1301
             module_cmdopts = "-k PRAK-2018-01 -k TBIE-2020-04"
             # allow change of 2 bytes from auth key name, 256 from signature, up to 16 chunk padding
             module_changes_limit = 2 + 256 + 16
@@ -534,7 +536,8 @@ def case_dji_imah_fwsig_rebin(modl_inp_fn):
     extra_cmdopts, expect_file_changes, platform = get_params_for_dji_imah_fwsig(modl_inp_fn)
     # Ignore padding in images which we have divided into parts
     ignore_inp_end_padding = False
-    if re.match(r'^.*-bootarea_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE):
+    if (re.match(r'^.*-bootarea_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE) or
+     re.match(r'^.*-loader_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE)):
         ignore_inp_end_padding = True
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
@@ -780,6 +783,11 @@ def test_dji_imah_fwsig_v2_rebin(capsys, pkg_inp_dir, test_nth):
     ('out/pm320-matrice30',1,),
     ('out/pm430-matrice300',1,),
     ('out/rc430-matrice300_rc',1,),
+    ('out/rcjs170-racer_rc',1,),
+    ('out/rc-n1-wm161b-mini_2n3_rc',1,),
+    ('out/rc-n1-wm260-mavic_pro_3',1,),
+    ('out/rcs231-mavic_air_2_rc',1,),
+    ('out/rcss170-racer_rc_motion',1,),
     ('out/wm150-fpv_system',1,),
     ('out/wm170-fpv_racer',1,),
     ('out/wm230-mavic_air',1,),
@@ -797,15 +805,18 @@ def test_dji_imah_fwsig_v2_nested_rebin(capsys, modl_inp_dir, test_nth):
         pytest.skip("limited scope")
 
     modl_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
-        # output from test_bin_archives_imah_v1_extract
+        # output from test_bin_archives_imah_v2_extract
+        "{}/*/**/ap.img".format(modl_inp_dir),
+        "{}/*/**/cp.img".format(modl_inp_dir),
         "{}/*/**/normal.img".format(modl_inp_dir),
         "{}/*/**/recovery.img".format(modl_inp_dir),
         "{}/*/**/rtos.img".format(modl_inp_dir),
         "{}/*/**/modemarm.pro.fw".format(modl_inp_dir),
         "{}/*/**/modemdsp_gnd.pro.fw".format(modl_inp_dir),
         "{}/*/**/modemdsp_uav.pro.fw".format(modl_inp_dir),
-        # output from test_bin_bootimg_imah_v1_extract
+        # output from test_bin_bootimg_imah_v2_extract
         "{}/*/*-bootarea_p*.img.sig".format(modl_inp_dir),
+        "{}/*/*-loader_p*.img.sig".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
     if len(modl_filenames) < 1:
