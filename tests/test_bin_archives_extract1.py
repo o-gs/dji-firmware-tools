@@ -42,6 +42,8 @@ import filediff
 from dji_imah_fwsig import main as dji_imah_fwsig_main
 
 
+BUFSIZE = 8*1024
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -66,6 +68,20 @@ def is_module_unsigned_encrypted(modl_inp_fn):
 def is_openssl_file(inp_fn):
     with open(inp_fn, 'rb') as encfh:
         return encfh.read(8) == b'Salted__'
+
+
+def is_lzmafile(inp_fn):
+    with open(inp_fn, 'rb') as encfh:
+        head = encfh.read(5)
+        compress_mode = int.from_bytes(head[3:5], byteorder='little')
+        return (head[0:3] == b'\x5D\x00\x00') and (compress_mode.bit_count() == 1)
+
+
+def is_lz4file(inp_fn):
+    with open(inp_fn, 'rb') as encfh:
+        head = encfh.read(5)
+        frame_flg = int.from_bytes(head[4:5], byteorder='little')
+        return (head[0:4] == b'\x04\x22\x4D\x18') and ((frame_flg & 0xC0) == 0x40)
 
 
 def tar_extractall_overwrite(tarfh, path='.'):
@@ -146,6 +162,47 @@ def case_bin_archive_extract(modl_inp_fn):
     pass
 
 
+def case_bin_single_decompress(modl_inp_fn):
+    """ Test case for extraction check, and prepare data for tests which use the extracted file.
+    """
+    LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
+
+    import lzma
+    import lz4.frame
+
+    bufsize = BUFSIZE
+    ignore_unknown_format = False
+
+    inp_path, inp_filename = os.path.split(modl_inp_fn)
+    inp_path = pathlib.Path(inp_path)
+    inp_basename, elf_fileext = os.path.splitext(inp_filename)
+    if len(inp_path.parts) > 1:
+        out_path = os.sep.join(["out"] + list(inp_path.parts[1:]))
+    else:
+        out_path = "out"
+    modl_out_fn = os.sep.join([out_path, "{:s}.unpack.bin".format(inp_basename)])
+
+    if is_lzmafile(modl_inp_fn):
+        with lzma.open(modl_inp_fn) as lzmafh:
+            command = ["lzma", "-d ", "-c", modl_inp_fn, ">", modl_out_fn]
+            LOGGER.info(' '.join(command))
+            with open(modl_out_fn, "wb") as unpfh:
+                while file_content := lzmafh.read(bufsize):
+                    unpfh.write(file_content)
+    elif is_lz4file(modl_inp_fn):
+        with lz4.frame.open(modl_inp_fn) as lz4fh:
+            command = ["lz4", "-d",  modl_inp_fn, modl_out_fn]
+            LOGGER.info(' '.join(command))
+            with open(modl_out_fn, "wb") as unpfh:
+                while file_content := lz4fh.read(size=bufsize):
+                    unpfh.write(file_content)
+    else:
+        if not ignore_unknown_format:
+            assert False, "Unrecognized archive format of the module file: {:s}".format(modl_inp_fn)
+        LOGGER.warning("Unrecognized archive format of the module file: {:s}".format(modl_inp_fn))
+    pass
+
+
 @pytest.mark.order(2) # must be run after test_dji_xv4_fwcon_rebin
 @pytest.mark.fw_xv4
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
@@ -182,6 +239,34 @@ def test_bin_archives_xv4_extract(capsys, modl_inp_dir, test_nth):
 
     for modl_inp_fn in modl_inp_filenames:
         case_bin_archive_extract(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+
+@pytest.mark.order(2) # must be run after test_dji_xv4_fwcon_rebin
+@pytest.mark.fw_xv4
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/hg211-osmo_pocket_2',1,),
+    ('out/osmo_action-sport_cam',1,),
+    ('out/ot110-osmo_pocket_gimbal',1,),
+  ] )
+def test_bin_single_compressed_xv4_extract(capsys, modl_inp_dir, test_nth):
+    """ Test if known single compressed files are extracting correctly, and prepare data for tests which use the extracted files.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        # Some Android OTA/TGZ/TAR modules contain ELFs for hardcoders
+        "{}/*/*_m0100.bin".format(modl_inp_dir),
+        "{}/*/*_m0107.bin".format(modl_inp_dir),
+      ) ]) if os.path.isfile(fn)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no package files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames:
+        case_bin_single_decompress(modl_inp_fn)
         capstdout, _ = capsys.readouterr()
     pass
 
