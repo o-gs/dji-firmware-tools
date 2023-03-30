@@ -1,0 +1,101 @@
+# This workflow will install Python dependencies, run tests and lint with some versions of Python
+# Based on: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Conduct IMaH v2 CI tests part2
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+    paths:
+      - tests/**
+      - '**.py'
+      - .github/**
+
+permissions:
+  contents: read
+
+jobs:
+  ubuntu-tests-imahv2-pt2:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, ubuntu-latest]
+        python-version: ["3.8", "3.10"]
+        # No need to test any python version on multiple Ubuntu versions, the Ubuntu version is
+        # only to provide best matching environment for the Python.
+        exclude:
+          - os: ubuntu-latest
+            python-version: "3.8"
+          - os: ubuntu-20.04
+            python-version: "3.10"
+    env:
+      working-directory: dji-firmware-tools
+    defaults:
+      run:
+        # All "run" actions will start in this subdirectory
+        working-directory: ${{ env.working-directory }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        path: dji-firmware-tools
+
+    - name: Checkout pyelftools
+      uses: actions/checkout@v3
+      with:
+        repository: mefistotelis/pyelftools
+        path: pyelftools
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y binutils-arm-none-eabi # required to test bin2elf
+        python -m pip install --upgrade pip
+        pip install lz4 # required to extract compressed files within the FW modules
+        pip install pycryptodome # required to test FW package extraction
+        pip install capstone keystone-engine # required to test hardcoders
+        pip install pytest pytest-cov pytest-order
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Test IMaH v2 format - Download firmware package files [1/2]
+      # Instead of the usual actions/download-artifact, we are downloading from Mega
+      uses: Difegue/action-megacmd@master
+      with:
+        args: get https://mega.nz/file/EFUmnDqK#jfWnmmNbutnSQ08v624tQKDzyslYVwds1vVKncMFOLk ${{ env.GITHUB_WORKSPACE }}
+
+    - name: Test IMaH v2 format - Download firmware package files [2/2]
+      # Instead of the usual actions/download-artifact, we are downloading from Mega
+      uses: Difegue/action-megacmd@master
+      with:
+        args: get https://mega.nz/file/kVlhEKqA#_RL44RV0p0jmrr2iyuDMa6ElaayAoC8TeU6RZDftIEg ${{ env.GITHUB_WORKSPACE }}
+
+    - name: Test IMaH v2 format - Set ownership for downloaded files
+      # downloaded files are owned by root; unzip has no permission
+      run: |
+        sudo chown -cR $(id -u):$(id -g) ../fw_packages-*.zip
+
+    - name: Test IMaH v2 format - Extract downloaded files
+      run: |
+        mkdir -p fw_packages
+        unzip -q ../fw_packages-imah2-selected-ci-p3-v1.zip -d fw_packages
+        unzip -q ../fw_packages-imah2-selected-ci-p4-v1.zip -d fw_packages
+        rm ../fw_packages-*.zip
+
+    - name: Test IMaH v2 format - Run pyTest
+      run: |
+        # use --durations=0 to get execution time for all unit tests
+        pytest tests -m fw_imah_v2 --log-cli-level=INFO --durations=0
+
+    - name: Test IMaH v2 format - Cleanup
+      run: |
+        rm -rf ./fw_packages/*
+        rm -rf ./out/*
