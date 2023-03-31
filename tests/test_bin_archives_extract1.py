@@ -257,7 +257,6 @@ def test_bin_single_compressed_xv4_extract(capsys, modl_inp_dir, test_nth):
         pytest.skip("limited scope")
 
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
-        # Some Android OTA/TGZ/TAR modules contain ELFs for hardcoders
         "{}/*/*_m0100.bin".format(modl_inp_dir),
         "{}/*/*_m0107.bin".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
@@ -338,6 +337,42 @@ def test_bin_archives_imah_v1_extract(capsys, modl_inp_dir, test_nth):
 
     for modl_inp_fn in modl_inp_filenames:
         case_bin_archive_extract(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+
+@pytest.mark.order(2) # must be run after test_dji_imah_fwsig_v1_rebin
+@pytest.mark.fw_imah_v1
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/pm410-matrice200',1,),
+    ('out/wm220-mavic',1,),
+    ('out/wm330-phantom_4_std',1,),
+    ('out/wm331-phantom_4_pro',1,),
+    ('out/wm332-phantom_4_adv',1,),
+    ('out/wm334-phantom_4_rtk',1,),
+    ('out/wm335-phantom_4_pro_v2',1,),
+    ('out/wm336-phantom_4_mulspectral',1,),
+    ('out/wm620-inspire_2',1,),
+  ] )
+def test_bin_single_compressed_imah_v1_extract(capsys, modl_inp_dir, test_nth):
+    """ Test if known single compressed files are extracting correctly, and prepare data for tests which use the extracted files.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        "{}/*/*_0100.bin".format(modl_inp_dir),
+        "{}/*/*_0101.bin".format(modl_inp_dir),
+      ) ]) if os.path.isfile(fn)]
+
+    # Skip the packages which were extracted in encrypted form (need non-public key)
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no package files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames:
+        case_bin_single_decompress(modl_inp_fn)
         capstdout, _ = capsys.readouterr()
     pass
 
@@ -430,5 +465,34 @@ def test_bin_archives_imah_v2_extract(capsys, modl_inp_dir, test_nth):
 
     for modl_inp_fn in modl_inp_filenames:
         case_bin_archive_extract(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+
+@pytest.mark.order(2) # must be run after test_dji_imah_fwsig_v2_rebin
+@pytest.mark.fw_imah_v2
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/wm160-mavic_mini',1,),
+    ('out/wm1605-mini_se',1,),
+    ('out/wm161-mini_2',1,),
+  ] )
+def test_bin_single_compressed_imah_v2_extract(capsys, modl_inp_dir, test_nth):
+    """ Test if known single compressed files are extracting correctly, and prepare data for tests which use the extracted files.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        "{}/*/*_0100.bin".format(modl_inp_dir),
+      ) ]) if os.path.isfile(fn)]
+
+    # Skip the packages which were extracted in encrypted form (need non-public key)
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no package files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames:
+        case_bin_single_decompress(modl_inp_fn)
         capstdout, _ = capsys.readouterr()
     pass
