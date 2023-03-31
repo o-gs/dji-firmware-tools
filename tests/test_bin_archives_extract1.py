@@ -74,7 +74,7 @@ def is_lzmafile(inp_fn):
     with open(inp_fn, 'rb') as encfh:
         head = encfh.read(5)
         compress_mode = int.from_bytes(head[3:5], byteorder='little')
-        return (head[0:3] == b'\x5D\x00\x00') and (compress_mode.bit_count() == 1)
+        return (head[0:3] == b'\x5D\x00\x00') and (bin(compress_mode).count("1") == 1)
 
 
 def is_lz4file(inp_fn):
