@@ -50,28 +50,43 @@ def case_bin_bootimg_extract(img_inp_fn):
 
     import mmap
 
-    ignore_unknown_format = False
-
     inp_path, inp_filename = os.path.split(img_inp_fn)
     img_base_name, img_fileext = os.path.splitext(inp_filename)
-    # Check if the input file identifies the module
-    match = re.search(r'^(.*_m?([0-9]{4}))[.-].*$', inp_filename, flags=re.IGNORECASE)
-    if match:
-        modl_base_name = match.group(1)
-        inp_module = match.group(2)
-    else:
+    if True:
+        # Check if the input file identifies the module and adds a custom sub-name
+        match = re.search(r'^(.*_m?([0-9]{4}))[.-]([0-9a-z_.-]*)$', img_base_name, flags=re.IGNORECASE)
+        if match:
+            modl_base_name = match.group(1)
+            inp_module = match.group(2)
+            img_base_name = match.group(3)
+    if not match:
+        # Check if the input file identifies the module but without any sub-name
+        match = re.search(r'^(.*_m?([0-9]{4}))$', img_base_name, flags=re.IGNORECASE)
+        if match:
+            modl_base_name = match.group(1)
+            inp_module = match.group(2)
+            img_base_name = "part"
+    if not match:
         # Check if the input file is in a folder which identifies the module
         match = re.search(r'^(.*_m?([0-9]{4}))[.-].*$', inp_path, flags=re.IGNORECASE)
-        assert match, "Neither File name nor path does not identify module: {:s}".format(img_inp_fn)
-        inp_path = match.group(1)
-        inp_path, modl_base_name = os.path.split(inp_path)
-        inp_module = match.group(2)
+        if match:
+            inp_path = match.group(1)
+            inp_path, modl_base_name = os.path.split(inp_path)
+            inp_module = match.group(2)
+    assert match, "Neither File name nor path does not identify module: {:s}".format(img_inp_fn)
 
     inp_path = pathlib.Path(inp_path)
     if len(inp_path.parts) > 1:
         out_path = os.sep.join(["out"] + list(inp_path.parts[1:]))
     else:
         out_path = "out"
+
+    # Depending on module, there is different alignment of the parts we search for
+    # Search with specific alignments to avoid catching false division points
+    if inp_module in ("0100","0101"):
+        required_align = 0x04
+    else:
+        required_align = 0x10
 
     magic_defs = [
       ("img.sig",  b'IM\x2aH\x01', 0,),
@@ -89,7 +104,7 @@ def case_bin_bootimg_extract(img_inp_fn):
                 offs = mm.find(magic_val, offs)
                 if offs < 0: break
                 # Accept only aligned chunks
-                if (offs - magic_pos) & 0xf != 0:
+                if (offs - magic_pos) & (required_align - 1) != 0:
                     offs += len(magic_val)
                     continue
                 chunks.append( (offs - magic_pos, magic_ext,) )
@@ -134,6 +149,7 @@ def case_bin_bootimg_extract(img_inp_fn):
     ('out/wm331-phantom_4_pro',1,),
     ('out/wm332-phantom_4_adv',1,),
     ('out/wm334-phantom_4_rtk',1,),
+    ('out/wm335-phantom_4_pro_v2',1,),
     ('out/wm336-phantom_4_mulspectral',1,),
     ('out/wm620-inspire_2',1,),
     ('out/xw607-robomaster_s1',1,),
@@ -147,6 +163,8 @@ def test_bin_bootimg_imah_v1_extract(capsys, modl_inp_dir, test_nth):
 
     img_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
         # Some Android OTA/TGZ/TAR modules contain boot images with another stage of IMaH encryption
+        "{}/*/*_0100.unpack.bin".format(modl_inp_dir),
+        "{}/*/*_0101.unpack.bin".format(modl_inp_dir),
         "{}/*/*_0801-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_1301-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_2801-extr1/bootarea.img".format(modl_inp_dir),
@@ -179,6 +197,9 @@ def test_bin_bootimg_imah_v1_extract(capsys, modl_inp_dir, test_nth):
     ('out/rcs231-mavic_air_2_rc',1,),
     ('out/rcss170-racer_rc_motion',1,),
     ('out/wm150-fpv_system',1,),
+    ('out/wm160-mavic_mini',1,),
+    ('out/wm1605-mini_se',1,),
+    ('out/wm161-mini_2',1,),
     ('out/wm170-fpv_racer',1,),
     ('out/wm230-mavic_air',1,),
     ('out/wm231-mavic_air_2',1,),
@@ -196,6 +217,7 @@ def test_bin_bootimg_imah_v2_extract(capsys, modl_inp_dir, test_nth):
 
     img_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
         # Some Android OTA/TGZ/TAR modules contain boot images with another stage of IMaH encryption
+        "{}/*/*_0100.unpack.bin".format(modl_inp_dir),
         "{}/*/*_0801-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_0802-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_1301-extr1/bootarea.img".format(modl_inp_dir),
