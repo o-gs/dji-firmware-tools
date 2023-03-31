@@ -1052,6 +1052,8 @@ def imah_unsign(po, fwsigfile):
         if (po.verbose > 1):
             print("{}: Decrypted chunks checksum 0x{:08X}, expected 0x{:08X}.".format(fwsigfile.name, checksum_dec, pkghead.plain_cksum))
         raise_or_warn(po, ValueError("Decrypted chunks checksum verification failed."))
+    if num_skipped > 0:
+        raise_or_warn(po, ValueError("Some chunks were not extracted correctly."))
 
 def imah_sign(po, fwsigfile):
     # Read headers from INI files
