@@ -366,8 +366,8 @@ def test_bin_single_compressed_imah_v1_extract(capsys, modl_inp_dir, test_nth):
       ) ]) if os.path.isfile(fn)]
 
     # Skip images in Ambarella format which are not compressed
-    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*wm220_0100_v[0-9a-z_.-]_ca02[.]pro[.]fw_0100[.]bin$', fn, re.IGNORECASE)]
-    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*wm220_0101_v[0-9a-z_.-]_ca02[.]pro[.]fw_0101[.]bin$', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*wm220_0100_v[0-9a-z_.-]*_ca02[.]pro[.]fw_0100[.]bin$', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*wm220_0101_v[0-9a-z_.-]*_ca02[.]pro[.]fw_0101[.]bin$', fn, re.IGNORECASE)]
 
     # Skip the packages which were extracted in encrypted form (need non-public key)
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
