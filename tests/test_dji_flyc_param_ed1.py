@@ -50,6 +50,24 @@ from dji_flyc_param_ed import main as dji_flyc_param_ed_main
 LOGGER = logging.getLogger(__name__)
 
 
+def is_module_unsigned_encrypted(modl_inp_fn):
+    """ Identify if the module was extracted without full decryption.
+        If the module data is encrypted, invoking further tests on it makes no sense.
+    """
+    match = re.search(r'^(.*)_m?([0-9]{4})[.]bin$', modl_inp_fn, flags=re.IGNORECASE)
+    if not match:
+        return False
+    modl_part_fn = match.group(1)
+    modl_ini_fn = "{:s}_head.ini".format(modl_part_fn)
+    try:
+        with open(modl_ini_fn, 'rb') as fh:
+            mm = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
+            return mm.find(b"scramble_key_encrypted") != -1
+    except Exception as e:
+        LOGGER.info("Could not check INI for: {:s}".format(modl_inp_fn))
+        return False
+
+
 def get_params_for_dji_flyc_param_ed(modl_inp_fn):
     """ From given module file name, figure out required dji_flyc_param_ed cmd options.
     """
@@ -681,6 +699,9 @@ def test_dji_flyc_param_ed_imah_v2_ckmod(capsys, modl_inp_dir, test_nth):
         "{}/*/*_0306.decrypted.bin".format(modl_inp_dir),
         "{}/*/*_FCFW.bin".format(modl_inp_dir),
     ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
+
+    # Skip the packages which were extracted in encrypted form (need non-public key)
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
