@@ -32,6 +32,7 @@ import glob
 import itertools
 import json
 import logging
+import mmap
 import os
 import re
 import shlex
