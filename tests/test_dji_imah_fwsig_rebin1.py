@@ -716,6 +716,8 @@ def test_dji_imah_fwsig_v1_nested_rebin(capsys, modl_inp_dir, test_nth):
         "{}/*/**/modemdsp_uav.pro.fw".format(modl_inp_dir),
         # output from test_bin_bootimg_imah_v1_extract
         "{}/*/*-bootarea_p*.img.sig".format(modl_inp_dir),
+        "{}/*/*-unpack_p*.img.sig".format(modl_inp_dir),
+        "{}/*/*-part_p*.img.sig".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
     if len(modl_filenames) < 1:
@@ -846,6 +848,8 @@ def test_dji_imah_fwsig_v2_nested_rebin(capsys, modl_inp_dir, test_nth):
         # output from test_bin_bootimg_imah_v2_extract
         "{}/*/*-bootarea_p*.img.sig".format(modl_inp_dir),
         "{}/*/*-loader_p*.img.sig".format(modl_inp_dir),
+        "{}/*/*-unpack_p*.img.sig".format(modl_inp_dir),
+        "{}/*/*-part_p*.img.sig".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
     if len(modl_filenames) < 1:
