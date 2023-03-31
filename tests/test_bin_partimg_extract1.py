@@ -92,7 +92,7 @@ def case_bin_bootimg_extract(img_inp_fn):
       ("img.sig",  b'IM\x2aH\x01', 0,),
       ("img.sig",  b'IM\x2aH\x02', 0,),
       ("partab",   b'PL\x2aI\x00\x00\x00\x00', 0,),
-      ("squashfs", b'sqsh', 0,),
+      ("squashfs", b'hsqs', 0,),
     ]
     with open(img_inp_fn, "r+b") as wfh:
         chunks = []
