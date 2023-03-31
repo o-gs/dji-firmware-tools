@@ -565,7 +565,9 @@ def case_dji_imah_fwsig_rebin(modl_inp_fn):
     # Ignore padding in images which we have divided into parts
     ignore_inp_end_padding = False
     if (re.match(r'^.*-bootarea_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE) or
-     re.match(r'^.*-loader_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE)):
+     re.match(r'^.*-loader_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE) or
+     re.match(r'^.*-unpack_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE) or
+     re.match(r'^.*-part_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE)):
         ignore_inp_end_padding = True
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
