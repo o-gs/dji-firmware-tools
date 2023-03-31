@@ -279,7 +279,7 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
         elif (m := re.match(r'^.*(wm335)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 2
+            expect_json_changes = 18 # from wm335_0306_v03.03.04.10
         elif (m := re.match(r'^.*(wm620)_0306_v03[.]02[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
@@ -312,7 +312,7 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
         elif (m := re.match(r'^.*(wm230)_0801_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x00"
-            expect_json_changes = 24 # 33
+            expect_json_changes = 24
         elif (m := re.match(r'^.*(wm231|wm232|wm240|wm245|wm246|wm247)_0801_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x00"

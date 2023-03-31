@@ -298,7 +298,11 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_changes_limit = 2 + 256 + 16+32
     elif (m := re.match(r'^.*(wm335)([._].*)?[.](sig|bin|fw|img)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
-        if (re.match(r'^.*{:s}_0801_[^/]*[.]fw_0801.*$'.format(platform), modl_inp_fn, re.IGNORECASE) or
+        if (re.match(r'^.*{:s}_0100_[^/]*[.]fw_0100.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k RRAK -k RAEK-9999-99 -f" # RAEK not published, forcing extract encrypted
+            # allow change of 2 bytes from auth key name, 256 from signature
+            module_changes_limit = 2 + 256
+        elif (re.match(r'^.*{:s}_0801_[^/]*[.]fw_0801.*$'.format(platform), modl_inp_fn, re.IGNORECASE) or
           re.match(r'^.*{:s}_1301_[^/]*[.]fw_1301.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2017-01 -k IAEK-9999-99 -f" # TODO verify
             # allow change of 2 bytes from auth key name, 256 from signature
