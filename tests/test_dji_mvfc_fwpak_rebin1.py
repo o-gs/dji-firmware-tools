@@ -49,7 +49,7 @@ def is_module_unsigned_encrypted(modl_inp_fn):
     """ Identify if the module was extracted without full decryption.
         If the module data is encrypted, invoking further tests on it makes no sense.
     """
-    match = re.search(r'^(.*)_m?([0-9]{4})[.]bin$', modl_inp_fn, flags=re.IGNORECASE)
+    match = re.search(r'^(.*)_m?([0-9A-Z]{4})[.]bin$', modl_inp_fn, flags=re.IGNORECASE)
     if not match:
         return False
     modl_part_fn = match.group(1)
