@@ -76,49 +76,60 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
     expect_json_changes = 99
     if (modl_inp_fn.endswith("_m0306.bin")):
         if (m := re.match(r'^.*(A3)_FW_V01[.]00[.]00[.]32[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # AI900 FW masquerading as A3
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 15
-        elif (m := re.match(r'^.*(A3)_FW_[A-Z0-9_]*V01[.]00[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 25
+        elif (m := re.match(r'^.*(A3)_FW_[A-Z0-9]+_V01[.]00[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # version incompletely labelled, the FUCHONG9 files seem to be circa V01.07
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 17
-        elif (m := re.match(r'^.*(A3)_FW_V01[.]06[.]00[.]10[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 28
+        elif (m := re.match(r'^.*(A3)_FW_V01[.]00[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # ie. A3_FW_V01.00.00.99
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 15
-        elif (m := re.match(r'^.*(A3)_FW_[A-Z0-9_]*V01[.]0[2-3][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 28
+        elif (m := re.match(r'^.*(A3)_FW_V01[.]0[2-3][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
             expect_json_changes = 37
-        elif (m := re.match(r'^.*(A3)_FW_[A-Z0-9_]*V01[.]0[4-6][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+        elif (m := re.match(r'^.*(A3)_FW_V01[.]06[.]00[.]10[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # AI900 FW masquerading as A3
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 17
-        elif (m := re.match(r'^.*(A3)_FW_[A-Z0-9_]*V(01[.]0[7])[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 25
+        elif (m := re.match(r'^.*(A3)_FW_V01[.]0[4-6][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 15
+            expect_json_changes = 26
+        elif (m := re.match(r'^.*(A3)_FW_V01[.]07[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # ie. A3_FW_V01.07.00.03tx
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 25
         elif (m := re.match(r'^.*(A3)_OFFICAL_1_7_5[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 17
+            expect_json_changes = 28
         elif (m := re.match(r'^.*(A3)_OFFICAL_1_7_6[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 2
+            expect_json_changes = 21
         elif (m := re.match(r'^.*(A3)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
             expect_json_changes = 36
         elif (m := re.match(r'^.*(AI900|AI900_AGR|A3[_]?AGR)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # ie. A3AGR_FW_V01.00.01.05
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 15
+            expect_json_changes = 25
         elif (m := re.match(r'^.*(AM603|N3_AGR)_FW_V[()0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # ie. AM603_FW_V01.00.00.43
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 15
+            expect_json_changes = 26
         elif (m := re.match(r'^.*(MATRICE100)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x8020000"
@@ -128,45 +139,57 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
             module_cmdopts = "-b 0x0420000"
             expect_json_changes = 37
         elif (m := re.match(r'^.*(MATRICE600|MATRICE600PRO)_FW_V01[.]00[.]00[.]([4][4-9]|[5-7][0-9])[()0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # ie. MATRICE600_FW_V01.00.00.44
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 17
+            expect_json_changes = 25
         elif (m := re.match(r'^.*(MATRICE600|MATRICE600PRO)_FW_V01[.]00[()0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # ie. MATRICE600_FW_V01.00.00.80
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 15
+            expect_json_changes = 24
         elif (m := re.match(r'^.*(MATRICE600|MATRICE600PRO)_FW_V02[.]00[.]00[.]9[0-9][()0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # ie. MATRICE600_FW_V02.00.00.95
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 17
+            expect_json_changes = 25
         elif (m := re.match(r'^.*(MATRICE600|MATRICE600PRO)_FW_V[()0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
             expect_json_changes = 37
         elif (m := re.match(r'^.*(MG1S)_FW_V01[.]01[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # ie. MG1S_FW_V01.01.00.00
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 15
+            expect_json_changes = 25
+        elif (m := re.match(r'^.*(MG1S)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # ie. MG1S_FW_V01.00.00.02
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 27
         elif (m := re.match(r'^.*(MG1S)_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 2
-        elif (m := re.match(r'^.*(MG1S)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
-            platform = m.group(1)
-            module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 17
+            expect_json_changes = 20
         elif (m := re.match(r'^.*(N3)_FW_V01[.](00[.]01[.]01|01[.]01[.]00)[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 15
+            expect_json_changes = 25
         elif (m := re.match(r'^.*(N3)_FW_V01[.]07[.]00[.]0[0-5][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # ie. N3_FW_V01.07.00.00
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 15
+            expect_json_changes = 25
+        elif (m := re.match(r'^.*(N3)_FW_V01[.]00[.]00[.][0-1][0-9][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # ie. N3_FW_V01.00.00.01
+            platform = m.group(1)
+            module_cmdopts = "-b 0x0420000"
+            expect_json_changes = 28
         elif (m := re.match(r'^.*(N3)_FW_V[0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            # ie. N3_FW_V01.00.00.22
             platform = m.group(1)
             module_cmdopts = "-b 0x0420000"
-            expect_json_changes = 17
+            expect_json_changes = 27
         elif (m := re.match(r'^.*(P3X|P3S)_FW_V01[.]0[0-1].0[0-9][0-9][0-9][0-9A-Z_.-]*_m0306[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x8020000"
