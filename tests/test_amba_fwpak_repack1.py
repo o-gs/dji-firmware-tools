@@ -103,6 +103,33 @@ def case_amba_fwpak_rebin(modl_inp_fn):
         assert nchanges <= expect_file_changes, "Re-created file exceeded differences ({:d}>{:d}): {:s}".format(nchanges, expect_file_changes, modl_inp_fn)
     pass
 
+
+def case_amba_fwpak_search_extract(modl_inp_fn):
+    """ Test case for searching partitions in not fully supported Ambarella BIN package files.
+    """
+    LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
+    # Most files we are able to recreate with full accuracy
+    expect_file_changes = 0
+
+    inp_path, inp_filename = os.path.split(modl_inp_fn)
+    inp_path = pathlib.Path(inp_path)
+    inp_basename, modl_fileext = os.path.splitext(inp_filename)
+    if len(inp_path.parts) > 1:
+        out_path = os.sep.join(["out"] + list(inp_path.parts[1:]))
+    else:
+        out_path = "out"
+    modules_path1 = os.sep.join([out_path, "{:s}-split1".format(inp_basename)])
+    if not os.path.exists(modules_path1):
+        os.makedirs(modules_path1)
+    pfx_out_fn = os.sep.join([modules_path1, "{:s}".format(inp_basename)]) # prefix for output files
+    # Extract the package
+    command = [os.path.join(".", "amba_fwpak.py"), "-vv", "-s", "-m", modl_inp_fn, "-t", pfx_out_fn]
+    LOGGER.info(' '.join(command))
+    with patch.object(sys, 'argv', command):
+        amba_fwpak_main()
+    pass
+
+
 # the extractor currently does not support the new LZ4-compressed files (ie. out/osmo_action-sport_cam, out/hg211-osmo_pocket_2)
 @pytest.mark.order(2) # must be run after test_dji_xv4_fwcon_rebin
 @pytest.mark.fw_xv4
@@ -121,7 +148,7 @@ def case_amba_fwpak_rebin(modl_inp_fn):
     ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',2,),
     ('out/wm610-t600_inspire_1_x3_quadcopter',2,),
   ] )
-def test_amba_fwpak_rebin(capsys, modl_inp_dir, test_nth):
+def test_amba_fwpak_xv4_rebin(capsys, modl_inp_dir, test_nth):
     """ Test extraction and re-creation of BIN package files.
     """
     if test_nth < 1:
@@ -137,5 +164,57 @@ def test_amba_fwpak_rebin(capsys, modl_inp_dir, test_nth):
 
     for modl_inp_fn in modl_inp_filenames[::test_nth]:
         case_amba_fwpak_rebin(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+
+@pytest.mark.order(3) # must be run after test_bin_single_compressed_xv4_extract
+@pytest.mark.fw_xv4
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/hg211-osmo_pocket_2',2,),
+    ('out/osmo_action-sport_cam',2,),
+    ('out/ot110-osmo_pocket_gimbal',2,),
+  ] )
+def test_amba_fwpak_xv4_unpacked_search_extract(capsys, modl_inp_dir, test_nth):
+    """ Test search-based extraction of BIN package files with not fully supported Ambarella format.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
+        "{}/*-split1/*_m0100.unpack.bin".format(modl_inp_dir),
+        "{}/*-split1/*_m0101.unpack.bin".format(modl_inp_dir),
+    ) ]) if os.path.isfile(fn)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames[::test_nth]:
+        case_amba_fwpak_search_extract(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+
+@pytest.mark.order(2) # must be run after test_dji_xv4_fwcon_rebin
+@pytest.mark.fw_xv4
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/p3se-phantom_3_se_quadcopter',2,),
+  ] )
+def test_amba_fwpak_xv4_search_extract(capsys, modl_inp_dir, test_nth):
+    """ Test search-based extraction of BIN package files with not fully supported Ambarella format.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e) for e in (
+        "{}/*-split1/*_m0100.bin".format(modl_inp_dir),
+        "{}/*-split1/*_m0101.bin".format(modl_inp_dir),
+    ) ]) if os.path.isfile(fn)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames[::test_nth]:
+        case_amba_fwpak_search_extract(modl_inp_fn)
         capstdout, _ = capsys.readouterr()
     pass
