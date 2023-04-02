@@ -95,6 +95,9 @@ def case_bin_bootimg_extract(img_inp_fn):
       ("squashfs", b'hsqs', 0,),
     ]
     with open(img_inp_fn, "r+b") as wfh:
+        # We're not using any external command here, but just to show the user how he can achive the same with cmdline
+        command = ["binwalk", "--signature", "--raw='IM\\x2aH\\x01'", "--raw='IM\\x2aH\\x02'", "--raw='PL\\x2aI\\x00\\x00\\x00\\x00'", "-y", "filesystem", "-y", "raw", img_inp_fn]
+        LOGGER.info(' '.join(command))
         chunks = []
         mm = mmap.mmap(wfh.fileno(), 0)
         # Find chunks
