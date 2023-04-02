@@ -48,6 +48,15 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
+def raise_or_warn(po, ex):
+    """ Raise exception, unless force-continue parameter was used.
+    """
+    if (po.force_continue):
+        eprint("{:s}: Warning: {:s} Continuing anyway.".format(po.fwmdlfile,str(ex)))
+    else:
+        raise ex
+
+
 part_entry_type_id = ["sys", "dsp_fw", "rom_fw", "lnx", "rfs"]
 part_entry_type_name = ["System Software", "DSP uCode", "System ROM Data", "Linux Kernel", "Linux Root FS"]
 
@@ -384,7 +393,7 @@ def amba_extract(po, fwmdlfile):
         if (sizeof(modhead)+i*sizeof(hde)+hde.dt_len >= fwmdlfile_len):
             if (po.verbose > 1):
                 print("{}: Detection finished with entry larger than file; expecting {:d} entries".format(po.fwmdlfile,len(modentries)))
-            eprint("{}: Warning: Detection finished with unusual condition, verify files".format(po.fwmdlfile))
+            raise_or_warn(po, ValueError("Detection finished with unusual entry sizes, verify files."))
             fwmdlfile.seek(-sizeof(hde),os.SEEK_CUR)
             break
         modentries.append(hde)
@@ -426,16 +435,16 @@ def amba_extract(po, fwmdlfile):
         if n != sizeof(e):
             raise EOFError("Could not read firmware package partition header, got {:d} out of {:d}.".format(n,sizeof(e)))
         if e.magic != 0xA324EB90:
-            eprint("{}: Warning: Invalid magic value in partition {:d} header; will try to extract anyway.".format(po.fwmdlfile,i))
+            raise_or_warn(po, ValueError("Invalid magic value in partition {:d} header.".format(i)))
         if (po.verbose > 1):
             print("{}: Entry {}".format(po.fwmdlfile,i))
             print(e)
         hdcrc = amba_calculate_crc32h_part((c_ubyte * sizeof(e)).from_buffer_copy(e), hdcrc)
         if (e.dt_len < 16) or (e.dt_len > 128*1024*1024):
-            eprint("{}: Warning: entry at {:d} has bad size, {:d} bytes".format(po.fwmdlfile,epos,e.dt_len))
+            raise_or_warn(po, ValueError("Entry at {:d} has bad size, {:d} bytes".format(epos,e.dt_len)))
         # Warn if no more module entries were expected
         if (i >= len(modentries)):
-            eprint("{}: Warning: Data continues after parsing all {:d} known partitions; header inconsistent.".format(po.fwmdlfile,i))
+            raise_or_warn(po, ValueError("Data continues after parsing all {:d} known partitions; header inconsistent.".format(i)))
         print("{}: Extracting entry {:2d}, pos {:8d}, len {:8d} bytes".format(po.fwmdlfile,i,epos,e.dt_len))
         ptyp = amba_a9_part_entry_type_id(i)
         amba_extract_part_head(po, e, i, ptyp)
@@ -457,27 +466,27 @@ def amba_extract(po, fwmdlfile):
             hdcrc = amba_calculate_crc32h_part(copy_buffer, hdcrc)
         fwpartfile.close()
         if (n < e.dt_len):
-            eprint("{}: Warning: partition {:d} truncated, {:d} out of {:d} bytes".format(po.fwmdlfile,i,n,e.dt_len))
+            raise_or_warn(po, ValueError("Partition {:d} truncated, {:d} out of {:d} bytes".format(i,n,e.dt_len)))
         if (ptcrc != e.crc32):
-            eprint("{}: Warning: Entry {:d} data checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,i,ptcrc,e.crc32))
+            raise_or_warn(po, ValueError("Entry {:d} data checksum mismatch; got {:08X}, expected {:08X}.".format(i,ptcrc,e.crc32)))
         elif (po.verbose > 1):
             print("{}: Entry {:2d} data checksum {:08X} matched OK".format(po.fwmdlfile,i,ptcrc))
         if (hdcrc != hde.crc32):
-            eprint("{}: Warning: Entry {:d} cummulative checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,i,hdcrc,hde.crc32))
+            raise_or_warn(po, ValueError("Entry {:d} cummulative checksum mismatch; got {:08X}, expected {:08X}.".format(i,hdcrc,hde.crc32)))
         elif (po.verbose > 1):
             print("{}: Entry {:2d} cummulative checksum {:08X} matched OK".format(po.fwmdlfile,i,hdcrc))
         # Check if the date makes sense
         if (e.build_date_year() < 1970) or (e.build_date_month() < 1) or (e.build_date_month() > 12) or (e.build_date_day() < 1) or (e.build_date_day() > 31):
-            eprint("{}: Warning: Entry {:d} date makes no sense.".format(po.fwmdlfile,i))
+            raise_or_warn(po, ValueError("Entry {:d} date makes no sense.".format(i)))
         elif (e.build_date_year() < 2004):
-            eprint("{}: Warning: Entry {:d} date is from before Ambarella formed as company.".format(po.fwmdlfile,i))
+            raise_or_warn(po, ValueError("Entry {:d} date is from before Ambarella formed as company.".format(i)))
         # verify if padding area is completely filled with 0x00000000
         if (e.padding[0] != 0x00000000) or (len(set(e.padding)) != 1):
-            eprint("{}: Warning: partition {:d} header uses values from padded area in an unknown manner.".format(po.fwmdlfile,i))
+            raise_or_warn(po, ValueError("Partition {:d} header uses values from padded area in an unknown manner.".format(i)))
     # Now verify checksum in main header
     hdcrc = hdcrc ^ 0xffffffff
     if (hdcrc != modhead.crc32):
-        eprint("{}: Warning: Total cummulative checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,hdcrc,modhead.crc32))
+        raise_or_warn(po, ValueError("Total cummulative checksum mismatch; got {:08X}, expected {:08X}.".format(hdcrc,modhead.crc32)))
     elif (po.verbose > 1):
         print("{}: Total cummulative checksum {:08X} matched OK".format(po.fwmdlfile,hdcrc))
     return
@@ -503,7 +512,7 @@ def amba_search_extract(po, fwmdlfile):
             continue
         print("{}: Extracting entry {:2d}, pos {:8d}, len {:8d} bytes".format(po.fwmdlfile,i,epos,e.dt_len))
         if (prev_dtpos+prev_dtlen > epos):
-            eprint("{}: Partition {:d} overlaps with previous by {:d} bytes".format(po.fwmdlfile,i,prev_dtpos+prev_dtlen - epos))
+            raise_or_warn(po, ValueError("Partition {:d} overlaps with previous by {:d} bytes".format(i,prev_dtpos+prev_dtlen - epos)))
         ptyp = "{:02d}".format(i)
         amba_extract_part_head(po, e, i, ptyp)
         fwpartfile = open("{:s}_part_{:s}.a9s".format(po.ptprefix,ptyp), "wb")
@@ -511,7 +520,7 @@ def amba_search_extract(po, fwmdlfile):
         fwpartfile.close()
         crc = amba_calculate_crc32(fwmdlmm[epos+sizeof(FwModPartHeader):epos+sizeof(FwModPartHeader)+e.dt_len])
         if (crc != e.crc32):
-            eprint("{}: Warning: Entry {:d} checksum mismatch; got {:08X}, expected {:08X}.".format(po.fwmdlfile,i,crc,e.crc32))
+            raise_or_warn(po, ValueError("Entry {:d} checksum mismatch; got {:08X}, expected {:08X}.".format(i,crc,e.crc32)))
         if (po.verbose > 1):
             print("{}: Entry {:2d} checksum {:08X}".format(po.fwmdlfile,i,crc))
         prev_dtlen = e.dt_len
@@ -560,7 +569,7 @@ def amba_create(po, fwmdlfile):
             continue
         # Also skip nonexisting ones
         if (os.stat(fname).st_size < 1):
-            eprint("{}: Warning: partition {:d} marked as existing but empty".format(po.fwmdlfile,i))
+            raise_or_warn(po, ValueError("Partition {:d} marked as existing but empty".format(i)))
             e = FwModPartHeader()
             part_heads.append(e)
             continue
@@ -653,6 +662,9 @@ def main():
            "this leaves the original binary header before each partition" \
            "on extraction, and uses that header on module file creation;" \
            "you normally should have no need to use it")
+
+    parser.add_argument("-f", "--force-continue", action="store_true",
+          help="force continuing execution despite warning signs of issues")
 
     parser.add_argument("-v", "--verbose", action='count', default=0,
           help="increases verbosity level; max level is set by `-vvv`")
