@@ -23,10 +23,11 @@ Extracts and re-packs partitions from Ambarella firmware module.
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
+import argparse
 import sys
 if sys.version_info < (3, 0):
     # All checksums would have to be computed differently on Python 2.x
@@ -45,16 +46,6 @@ from time import gmtime, strftime
 
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
-
-class ProgOptions:
-  fwmdlfile = ''
-  ptprefix = ''
-  verbose = 0
-  binhead = False
-  binfmt = 'auto'
-  extract = False
-  search = False
-  add = False
 
 
 part_entry_type_id = ["sys", "dsp_fw", "rom_fw", "lnx", "rfs"]
@@ -310,6 +301,7 @@ def amba_extract_part_head(po, e, i, ptyp):
   e.ini_export(fwpartfile, i)
   fwpartfile.close()
 
+
 def amba_read_part_head(po, i, ptyp):
   e = FwModPartHeader()
   e.magic = 0xA324EB90
@@ -338,6 +330,7 @@ def amba_extract_mod_head(po, modhead, ptyp_names, modposthd):
   modposthd.ini_export(fwpartfile)
   fwpartfile.close()
 
+
 def amba_read_mod_head(po):
   modhead = FwModA9Header()
   modposthd = FwModA9PostHeader()
@@ -357,6 +350,7 @@ def amba_read_mod_head(po):
     modposthd.part_size[i] = n
   del parser
   return (modhead, ptyp_names, modposthd)
+
 
 def amba_extract(po, fwmdlfile):
   modhead = FwModA9Header()
@@ -484,6 +478,7 @@ def amba_extract(po, fwmdlfile):
   elif (po.verbose > 1):
       print("{}: Total cummulative checksum {:08X} matched OK".format(po.fwmdlfile,hdcrc))
 
+
 def amba_search_extract(po, fwmdlfile):
   fwmdlmm = mmap.mmap(fwmdlfile.fileno(), length=0, access=mmap.ACCESS_READ)
   epos = -sizeof(FwModPartHeader)
@@ -518,6 +513,7 @@ def amba_search_extract(po, fwmdlfile):
     prev_dtlen = e.dt_len
     prev_dtpos = dtpos
     i += 1
+
 
 def amba_create(po, fwmdlfile):
   # Read headers from INI files
@@ -627,55 +623,55 @@ def amba_create(po, fwmdlfile):
     fwmdlfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
   fwmdlfile.write((c_ubyte * sizeof(modposthd)).from_buffer_copy(modposthd))
 
+
 def main():
-  # Parse command line options
-  po = ProgOptions()
-  try:
-     opts, args = getopt.getopt(sys.argv[1:],"hxsabvf:t:m:",["help","version","extract","search","add","binhead","format=","fwmdl=","ptprefix="])
-  except getopt.GetoptError:
-     print("Unrecognized options; check amba_fwpak.py --help")
-     sys.exit(2)
-  for opt, arg in opts:
-     if opt in ("-h", "--help"):
-        print(__doc__)
-        print("amba_fwpak.py <-x|-s|-a> [-v] -m <fwmdfile> [-t <ptprefix>]")
-        print("  -m <fwmdfile> - name of the firmware module file")
-        print("  -t <ptprefix> - file name prefix for the single decomposed partitions")
-        print("                  defaults to base name of firmware module file")
-        print("  -x - extract firmware module file into partitions")
-        print("  -s - search for partitions within firmware module and extract them")
-        print("       (works similar to -x, but uses brute-force search for partitions)")
-        print("  -a - add partition files to firmware module file")
-        print("       (works only on data created with -x; the -s is insufficient)")
-        #print("  -f - set binary format version; default is to detect it (-fauto)")
-        #print("       valid formats are 2014 and 2016")
-        print("  -b - leave (-x) or use (-a) binary header in front of partition")
-        print("       this leaves the original binary header before each partition")
-        print("       on extraction, and uses that header on module file creation;")
-        print("       you normally should have no need to use it")
-        print("  -v - increases verbosity level; max level is set by -vvv")
-        sys.exit()
-     elif opt == "--version":
-        print("amba_fwpak.py {version} by {author}".format(version=__version__,author=__author__))
-        sys.exit()
-     elif opt == '-v':
-        po.verbose += 1
-     elif opt in ("-b", "--binhead"):
-        po.binhead = True
-     elif opt in ("-f", "--format"):
-        po.binfmt = arg
-     elif opt in ("-m", "--fwmdl"):
-        po.fwmdlfile = arg
-     elif opt in ("-t", "--ptprefix"):
-        po.ptprefix = arg
-     elif opt in ("-x", "--extract"):
-        po.extract = True
-     elif opt in ("-s", "--search"):
-        po.search = True
-     elif opt in ("-a", "--add"):
-        po.add = True
-  if True: # indentiation fix
-    if len(po.fwmdlfile) > 0 and len(po.ptprefix) == 0:
+    """ Main executable function.
+
+    Its task is to parse command line options and call a function which performs requested command.
+    """
+
+    parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
+
+    parser.add_argument("-m", "--fwmdlfile", type=str, required=True,
+          help="name of the firmware module file")
+
+    parser.add_argument("-t", "--ptprefix", type=str,
+          help="file name prefix for the single decomposed partitions " \
+           "(defaults to base name of firmware module file)")
+
+    parser.add_argument("--binfmt", type=str, default='auto',
+          help="set binary format version" \
+           "(default is to detect it (auto); valid formats are 2014 and 2016)")
+
+    parser.add_argument("--binhead", action='store_true',
+          help="leave (`-x`) or use (`-a`) binary header in front of partition" \
+           "this leaves the original binary header before each partition" \
+           "on extraction, and uses that header on module file creation;" \
+           "you normally should have no need to use it")
+
+    parser.add_argument("-v", "--verbose", action='count', default=0,
+          help="increases verbosity level; max level is set by `-vvv`")
+
+    subparser = parser.add_mutually_exclusive_group(required=True)
+
+    subparser.add_argument("-x", "--extract", action='store_true',
+          help="extract firmware module file into partitions")
+
+    subparser.add_argument("-s", "--search", action='store_true',
+          help="search for partitions within firmware module and extract them " \
+           "(works similar to `-x`, but uses brute-force search for partitions)")
+
+    subparser.add_argument("-a", "--add", action='store_true',
+          help="add partition files to firmware module file " \
+           "(works only on data created with `-x`; the `-s` is insufficient)")
+
+    subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+            .format(version=__version__,author=__author__),
+          help="display version information and exit")
+
+    po = parser.parse_args()
+
+    if len(po.fwmdlfile) > 0 and po.ptprefix is None:
         po.ptprefix = os.path.splitext(os.path.basename(po.fwmdlfile))[0]
 
     if po.extract:
@@ -714,6 +710,7 @@ def main():
     else:
 
         raise NotImplementedError('Unsupported command.')
+
 
 if __name__ == "__main__":
     try:
