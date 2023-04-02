@@ -56,17 +56,16 @@ def case_amba_fwpak_rebin(modl_inp_fn):
     extra_cmdopts = ""
 
     # Special cases - ignoring differences for some specific files
-    # Only application format is fully supported, the loader binaries will re-create with a few (8?) different bytes
     if (re.match(r'^.*_m0101[.]bin', modl_inp_fn, re.IGNORECASE)):
+        # Only application format is fully supported, the loader binaries will re-create with a few (8?) different bytes
         LOGGER.warning("Expected non-identical binary due to loader format differences: {:s}".format(modl_inp_fn))
         expect_file_changes = 12
-        extra_cmdopts = "-f"
-    # The padding in re-created file is different than in original
-    if (modl_inp_fn.endswith("WM610_FW_V01.02.01.03_m0100.bin") or
-      modl_inp_fn.endswith("WM610_FW_V01.02.01.03b_m0100.bin") or
-      modl_inp_fn.endswith("WM610_FW_V01.02.01.06_m0100.bin")):
+        extra_cmdopts = "-f" # Some checksums do not match
+    elif (re.match(r'^.*WM610_FW_V01[.]02[.]01[.]0[3-6][0-9a-z_.-]*_m0100[.]bin', modl_inp_fn, re.IGNORECASE)):
+        # The padding in re-created file is different than in original
         LOGGER.warning("Expected non-identical binary due to padding length differences: {:s}".format(modl_inp_fn))
         expect_file_changes = 999999
+        extra_cmdopts = "-f" # Some checksums do not match
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
     inp_path = pathlib.Path(inp_path)
