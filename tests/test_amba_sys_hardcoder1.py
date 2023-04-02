@@ -58,13 +58,19 @@ def case_amba_sys_hardcoder_ckmod(elf_inp_fn):
     expect_file_changes = [0,0]
 
     # Special cases - setting certain params and error tolerance for specific files
-    if (re.match(r'^.*P3C_FW_V[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn, re.IGNORECASE) or
+    if (re.match(r'^.*P3C_FW_V01[.]00[.]0014[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn, re.IGNORECASE) or
+      re.match(r'^.*P3S_FW_V01[.]01[.]0008[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn, re.IGNORECASE) or
+      re.match(r'^.*P3X_FW_V01[.]01[.]0006[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn, re.IGNORECASE) or
+      re.match(r'^.*P3XW_FW_V01[.]00[.]0010[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn, re.IGNORECASE)):
+        expect_json_changes = 3 # 3 x authority_level
+        expect_file_changes = [3*2, 3*4]
+    elif (re.match(r'^.*P3C_FW_V[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn, re.IGNORECASE) or
       re.match(r'^.*P3S_FW_V[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn, re.IGNORECASE) or
       re.match(r'^.*P3X_FW_V[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn, re.IGNORECASE) or
-      re.match(r'^.*P3XW_FW_V[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn), re.IGNORECASE):
+      re.match(r'^.*P3XW_FW_V[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn, re.IGNORECASE)):
         expect_json_changes = 6 # 3 x authority_level + 3 x vid_setting_bitrates
         expect_file_changes = [2+6, 2*3 + 3*4] # one authority_level change is to default which decreases min
-    if (re.match(r'^.*WM610_FW_V[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn, re.IGNORECASE) or
+    elif (re.match(r'^.*WM610_FW_V[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn, re.IGNORECASE) or
       re.match(r'^.*WM610_FC550_FW_V[0-9A-Z_.-]*_m0100_part_sys[.]elf', elf_inp_fn, re.IGNORECASE)):
         expect_json_changes = 3 # 3 x vid_setting_bitrates
         expect_file_changes = [3*2, 3*4]
@@ -147,8 +153,10 @@ def test_amba_sys_hardcoder_ckmod(capsys, elf_inp_dir, test_nth):
     ) ]) if os.path.isfile(fn)]
 
     # Remove unsupported files
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FW_V01[.]02[.]01[.]03[0-9a-z_.-]*_m0100_part_sys[.]elf$', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FW_V01[.]0[5-9][.][0-9][0-9][.][0-9a-z_.-]*_m0100_part_sys[.]elf$', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FW_V01[.]1[0-1][.][0-9][0-9][.][0-9a-z_.-]*_m0100_part_sys[.]elf$', fn, re.IGNORECASE)]
+    elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FC550_FW_V01[.]01[.]00[.]40_m0100_part_sys[.]elf$', fn, re.IGNORECASE)]
     elf_inp_filenames = [fn for fn in elf_inp_filenames if not re.match(r'^.*WM610_FC550_FW_V01[.]08[.]01[.]00_m0100_part_sys[.]elf$', fn, re.IGNORECASE)]
 
     # For some files the hardcoded patterns are not properly extracted on Linux, but work on Windows - very curious
