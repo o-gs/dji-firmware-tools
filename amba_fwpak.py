@@ -52,7 +52,10 @@ class ProgOptions:
   verbose = 0
   binhead = False
   binfmt = 'auto'
-  command = ''
+  extract = False
+  search = False
+  add = False
+
 
 part_entry_type_id = ["sys", "dsp_fw", "rom_fw", "lnx", "rfs"]
 part_entry_type_name = ["System Software", "DSP uCode", "System ROM Data", "Linux Kernel", "Linux Root FS"]
@@ -666,50 +669,51 @@ def main():
      elif opt in ("-t", "--ptprefix"):
         po.ptprefix = arg
      elif opt in ("-x", "--extract"):
-        po.command = 'x'
+        po.extract = True
      elif opt in ("-s", "--search"):
-        po.command = 's'
+        po.search = True
      elif opt in ("-a", "--add"):
-        po.command = 'a'
-  if len(po.fwmdlfile) > 0 and len(po.ptprefix) == 0:
-      po.ptprefix = os.path.splitext(os.path.basename(po.fwmdlfile))[0]
+        po.add = True
+  if True: # indentiation fix
+    if len(po.fwmdlfile) > 0 and len(po.ptprefix) == 0:
+        po.ptprefix = os.path.splitext(os.path.basename(po.fwmdlfile))[0]
 
-  if (po.command == 'x'):
+    if po.extract:
 
-    if (po.verbose > 0):
-      print("{}: Opening for extraction".format(po.fwmdlfile))
-    fwmdlfile = open(po.fwmdlfile, "rb")
+        if (po.verbose > 0):
+            print("{}: Opening for extraction".format(po.fwmdlfile))
+        fwmdlfile = open(po.fwmdlfile, "rb")
 
-    if po.binfmt == 'auto':
-      po.binfmt = amba_detect_format(po,fwmdlfile)
+        if po.binfmt == 'auto':
+            po.binfmt = amba_detect_format(po,fwmdlfile)
 
-    amba_extract(po,fwmdlfile)
+        amba_extract(po,fwmdlfile)
 
-    fwmdlfile.close();
+        fwmdlfile.close();
 
-  elif (po.command == 's'):
+    elif po.search:
 
-    if (po.verbose > 0):
-      print("{}: Opening for search".format(po.fwmdlfile))
-    fwmdlfile = open(po.fwmdlfile, "rb")
+        if (po.verbose > 0):
+            print("{}: Opening for search".format(po.fwmdlfile))
+        fwmdlfile = open(po.fwmdlfile, "rb")
 
-    amba_search_extract(po,fwmdlfile)
+        amba_search_extract(po,fwmdlfile)
 
-    fwmdlfile.close();
+        fwmdlfile.close();
 
-  elif (po.command == 'a'):
+    elif po.add:
 
-    if (po.verbose > 0):
-      print("{}: Opening for creation".format(po.fwmdlfile))
-    fwmdlfile = open(po.fwmdlfile, "wb")
+        if (po.verbose > 0):
+            print("{}: Opening for creation".format(po.fwmdlfile))
+        fwmdlfile = open(po.fwmdlfile, "wb")
 
-    amba_create(po,fwmdlfile)
+        amba_create(po,fwmdlfile)
 
-    fwmdlfile.close();
+        fwmdlfile.close();
 
-  else:
+    else:
 
-    raise NotImplementedError('Unsupported command.')
+        raise NotImplementedError('Unsupported command.')
 
 if __name__ == "__main__":
     try:
