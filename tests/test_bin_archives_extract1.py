@@ -80,6 +80,11 @@ def is_rockchip_rkfw_file(inp_fn):
         return encfh.read(4) == b'RKFW'
 
 
+def is_rockchip_rkaf_file(inp_fn):
+    with open(inp_fn, 'rb') as encfh:
+        return encfh.read(4) == b'RKAF'
+
+
 def is_lzmafile(inp_fn):
     with open(inp_fn, 'rb') as encfh:
         head = encfh.read(5)
@@ -177,10 +182,12 @@ def case_bin_archive_extract(modl_inp_fn):
             LOGGER.info(' '.join(command))
             # extracting file level 1
             subprocess.run(command, cwd=modules_path1)
+            assert is_rockchip_rkaf_file(os.path.join(modules_path1, "embedded-update.img"))
             command = [os.path.join(os.getcwd(), "rkflashtool", "rkunpack"),  "embedded-update.img"]
             LOGGER.info(' '.join(command))
             # extracting file level 2
             subprocess.run(command, cwd=modules_path1)
+            assert is_android_bootimg_file(os.path.join(modules_path1, "Image-out", "boot.img"))
     else:
         if not ignore_unknown_format:
             assert False, "Unrecognized archive format of the module file: {:s}".format(modl_inp_fn)
@@ -257,9 +264,6 @@ def test_bin_archives_xv4_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*_m1300.bin".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
-    # Remove unsupported files - 'RKFW' RockChip firmware images
-    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*GL300E_RC_User_v.*_m1300[.]bin$', fn, re.IGNORECASE)]
-
     if len(modl_inp_filenames) < 1:
         pytest.skip("no package files to test in this directory")
 
@@ -283,9 +287,12 @@ def test_bin_archives_xv4_nested_extract(capsys, modl_inp_dir, test_nth):
         pytest.skip("limited scope")
 
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
-        # The mkbootimg `ANDROID!` images
+        # The mkbootimg `ANDROID!` images extracted from OTA archives
         "{}/*/*-extr1/boot.img".format(modl_inp_dir),
         "{}/*/*-extr1/recovery.img".format(modl_inp_dir),
+        # The mkbootimg `ANDROID!` images extracted by `rkunpack`
+        "{}/*/*-extr1/Image-out/boot.img".format(modl_inp_dir),
+        "{}/*/*-extr1/Image-out/recovery.img".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
     if len(modl_inp_filenames) < 1:
