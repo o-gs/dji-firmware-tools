@@ -75,6 +75,11 @@ def is_android_bootimg_file(inp_fn):
         return encfh.read(8) == b'ANDROID!'
 
 
+def is_rockchip_rkfw_file(inp_fn):
+    with open(inp_fn, 'rb') as encfh:
+        return encfh.read(4) == b'RKFW'
+
+
 def is_lzmafile(inp_fn):
     with open(inp_fn, 'rb') as encfh:
         head = encfh.read(5)
@@ -166,6 +171,16 @@ def case_bin_archive_extract(modl_inp_fn):
             LOGGER.info(' '.join(command))
             # extracting file
             subprocess.run(command)
+    elif is_rockchip_rkfw_file(real_inp_fn):
+        if True:
+            command = [os.path.join(os.getcwd(), "rkflashtool", "rkunpack"),  os.path.join(os.getcwd(), real_inp_fn)]
+            LOGGER.info(' '.join(command))
+            # extracting file level 1
+            subprocess.run(command, cwd=modules_path1)
+            command = [os.path.join(os.getcwd(), "rkflashtool", "rkunpack"),  "embedded-update.img"]
+            LOGGER.info(' '.join(command))
+            # extracting file level 2
+            subprocess.run(command, cwd=modules_path1)
     else:
         if not ignore_unknown_format:
             assert False, "Unrecognized archive format of the module file: {:s}".format(modl_inp_fn)
