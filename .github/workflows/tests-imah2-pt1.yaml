@@ -45,10 +45,25 @@ jobs:
         path: dji-firmware-tools
 
     - name: Checkout pyelftools
+      # These are neccessary to convert BIN back to ELF, and in turn for all hardcoders
       uses: actions/checkout@v3
       with:
         repository: mefistotelis/pyelftools
         path: pyelftools
+
+    - name: Checkout sdat2img
+      # We use `sdat2img.py` from there to consolidate sparse Android data images
+      uses: actions/checkout@v3
+      with:
+        repository: xpirt/sdat2img
+        path: dji-firmware-tools/sdat2img
+
+    - name: Checkout ext4 extractor
+      # We use `ext4_cp.py` from there to extract Linux Ext filesystems
+      uses: actions/checkout@v3
+      with:
+        repository: mefistotelis/ext4
+        path: dji-firmware-tools/ext4
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
