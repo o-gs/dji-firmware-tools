@@ -45,10 +45,25 @@ jobs:
         path: dji-firmware-tools
 
     - name: Checkout pyelftools
+      # These are neccessary to convert BIN back to ELF, and in turn for all hardcoders
       uses: actions/checkout@v3
       with:
         repository: mefistotelis/pyelftools
         path: pyelftools
+
+    - name: Checkout mkbootimg
+      # We use `unpackbootimg` from there to extract some generic Android images
+      uses: actions/checkout@v3
+      with:
+        repository: osm0sis/mkbootimg
+        path: dji-firmware-tools/mkbootimg
+
+    - name: Checkout rkflashtool
+      # We use `rkunpack` from there to extract some Rockchip Android images
+      uses: actions/checkout@v3
+      with:
+        repository: linux-rockchip/rkflashtool
+        path: dji-firmware-tools/rkflashtool
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -66,6 +81,18 @@ jobs:
         pip install capstone keystone-engine # required to test hardcoders
         pip install flake8 pytest pytest-cov pytest-order
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Build mkbootimg
+      run: |
+        cd mkbootimg
+        make
+        cd -
+
+    - name: Build rkflashtool
+      run: |
+        cd rkflashtool
+        make
+        cd -
 
     - name: Lint with flake8
       run: |
