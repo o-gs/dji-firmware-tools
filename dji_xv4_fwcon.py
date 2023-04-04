@@ -22,7 +22,6 @@ Extract and creates the firmware package files.
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
 __version__ = "0.3.2"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
@@ -690,7 +689,7 @@ def main():
           help="add module files to firmware package")
 
   subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
-            .format(version=__version__,author=__author__),
+            .format(version=__version__, author=__author__),
           help="display version information and exit")
 
   po = parser.parse_args();
