@@ -52,7 +52,6 @@ og_hardcoded.p3x_dm3xx.startup_encrypt_check_always_pass -
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
 __version__ = "0.0.2"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
@@ -535,7 +534,7 @@ def main():
           help="export known symbols to map file")
 
     subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
-            .format(version=__version__,author=__author__),
+            .format(version=__version__, author=__author__),
           help="Display version information and exit")
 
     po = parser.parse_args()
