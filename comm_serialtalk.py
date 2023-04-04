@@ -411,7 +411,7 @@ def main():
             help='increases verbosity level; max level is set by -vvv')
 
     parser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
-              .format(version=__version__,author=__author__),
+              .format(version=__version__, author=__author__),
             help="display version information and exit")
 
     subparser = parser.add_mutually_exclusive_group()

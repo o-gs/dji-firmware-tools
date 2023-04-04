@@ -207,7 +207,7 @@ def main():
             help='Write output to a file instead of stdout')
 
     subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
-              .format(version=__version__,author=__author__),
+              .format(version=__version__, author=__author__),
             help="Display version information and exit")
 
     options = parser.parse_args();

@@ -3467,7 +3467,7 @@ def main():
             help="explain each value by providing description from spec")
 
     parser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
-              .format(version=__version__,author=__author__),
+              .format(version=__version__, author=__author__),
             help="display version information and exit")
 
 
