@@ -55,7 +55,6 @@ og_hardcoded.p3x_ambarella.vid_setting_bitrates_* -
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
 __version__ = "0.0.3"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
@@ -641,26 +640,26 @@ def elf_march_to_asm_config(elfobj, submode=None):
     asm_modes = []
     if march == "x64":
         asm_arch = get_asm_arch_by_name("x86")
-        asm_modes.append( get_asm_mode_by_name(asm_arch, "64b") )
+        asm_modes.append(get_asm_mode_by_name(asm_arch, "64b"))
     elif march == "x86":
         asm_arch = get_asm_arch_by_name("x86")
-        asm_modes.append( get_asm_mode_by_name(asm_arch, "32b") )
+        asm_modes.append(get_asm_mode_by_name(asm_arch, "32b"))
     elif march == "ARM":
         asm_arch = get_asm_arch_by_name("arm")
         if elfobj.little_endian:
-            asm_modes.append( get_asm_mode_by_name(asm_arch, "le") )
+            asm_modes.append(get_asm_mode_by_name(asm_arch, "le"))
         else:
-            asm_modes.append( get_asm_mode_by_name(asm_arch, "be") )
+            asm_modes.append(get_asm_mode_by_name(asm_arch, "be"))
     elif march == "MIPS":
         asm_arch = get_asm_arch_by_name("mips")
-        asm_modes.append( get_asm_mode_by_name(asm_arch, "32b") )
+        asm_modes.append(get_asm_mode_by_name(asm_arch, "32b"))
         if elfobj.little_endian:
-            asm_modes.append( get_asm_mode_by_name(asm_arch, "le") )
+            asm_modes.append(get_asm_mode_by_name(asm_arch, "le"))
         else:
-            asm_modes.append( get_asm_mode_by_name(asm_arch, "be") )
-    if submode != None:
-        asm_modes.append( get_asm_mode_by_name(asm_arch, submode) )
-    return (asm_arch, asm_modes)
+            asm_modes.append(get_asm_mode_by_name(asm_arch, "be"))
+    if submode is not None:
+        asm_modes.append(get_asm_mode_by_name(asm_arch, submode))
+    return (asm_arch, asm_modes,)
 
 
 def get_arm_vma_relative_to_pc_register(asm_arch, section, address, size, offset_str):
@@ -999,7 +998,7 @@ def value_type_is_known_address(var_def):
     """
     if var_def['type'] in (VarType.RELATIVE_ADDR_TO_CODE, VarType.RELATIVE_ADDR_TO_PTR_TO_CODE,
             VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA,):
-        if not 'baseaddr' in var_def: return False
+        if 'baseaddr' not in var_def: return False
         return var_def['baseaddr'] in ("PC+","PC-",)
     return var_def['type'] in (VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA,
         VarType.DIRECT_LINE_OF_CODE,)
@@ -1942,13 +1941,13 @@ def armfw_elf_whole_section_search(po, asm_arch, elf_sections, cs, sect_name, pa
             return []
         elif patterns['multiple'] == "depend":
             # convert public vars from subsequent matches to depend
-            for match in search['full_matches'][1:]:
+            for i, match in enumerate(search['full_matches'][1:]):
                 for var_name, var_info in match['vars'].items():
                     if value_needs_global_name(var_name, var_info):
                         del match['vars'][var_name]
                         if 'public' in var_info and 'depend' not in var_info:
                             var_info['depend'] = var_name
-                        var_name = "{:s}_match{:02d}".format(var_name,i)
+                        var_name = "{:s}_match{:02d}".format(var_name, i+1)
                         match['vars'][var_name] = var_info
 
     return search['full_matches']
@@ -2253,7 +2252,6 @@ def armfw_elf_get_value_switching_patterns_update_bytes(po, asm_arch, elf_sectio
         raise ValueError("Compiled code size different than previous (got {:d} instead of {:d} bytes) - internal error.".format(len(bt_enc_data),bt_size_previous))
     valbt = {}
     valbt['sect'] = var_sect
-    section = elf_sections[valbt['sect']]
     valbt['offs'] = var_offs
     valbt['data'] = bt_enc_data
     valbts.append(valbt)
@@ -2385,10 +2383,10 @@ def armfw_elf_paramvals_extract_list(po, elffh, re_list, asm_submode=None):
     # Check if expected sections are there
     expect_sections = ['.text', '.data']
     for re_item in re_list:
-        if not re_item['sect'] in expect_sections:
+        if re_item['sect'] not in expect_sections:
             expect_sections.append(re_item['sect'])
     for sect_name in expect_sections:
-        if not sect_name in elf_sections:
+        if sect_name not in elf_sections:
             raise ValueError("ELF does not contain expected section '{:s}'.".format(sect_name))
 
     # prepare list of parameter values
@@ -2498,11 +2496,11 @@ def armfw_elf_paramvals_export_json(po, params_list, valfile):
             valfile.write(",\n")
             valfile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,par_info[ppname]))
         for ppname in ('hint1','hint2','hint3','hint4','hint5'):
-            if not ppname in par_info: continue
+            if ppname not in par_info: continue
             valfile.write(",\n")
             valfile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,par_info[ppname]))
         for ppname in ('minValue', 'maxValue', 'defaultValue'):
-            if not ppname in par_info: continue
+            if ppname not in par_info: continue
             valfile.write(",\n")
             if re.fullmatch(r"^(0[Xx][0-9a-fA-F]+|[0-9-]+|[0-9-]*[.][0-9]+)$", par_info['str_value']):
                 valfile.write("\t\t\"{:s}\" : {:s}".format(ppname,par_info[ppname]))
@@ -2619,7 +2617,7 @@ def armfw_elf_paramvals_update_list(po, asm_arch, re_list, pub_params_list, glob
                 depend_names_list.append(par_info['depend'])
 
     for nxpar in nxparams_list:
-        if not nxpar['name'] in pub_params_list:
+        if nxpar['name'] not in pub_params_list:
             eprint("{:s}: Value '{:s}' not found in ELF file.".format(po.elffile,nxpar['name']))
             continue
         par_info = pub_params_list[nxpar['name']]
@@ -2714,7 +2712,7 @@ def main():
           help="export known symbols to map file")
 
     subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
-            .format(version=__version__,author=__author__),
+            .format(version=__version__, author=__author__),
           help="Display version information and exit")
 
     po = parser.parse_args()
