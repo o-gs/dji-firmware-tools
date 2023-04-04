@@ -51,7 +51,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
 __version__ = "0.3.1"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
@@ -59,9 +58,6 @@ __license__ = "GPL"
 import sys
 import argparse
 import os
-import hashlib
-import mmap
-import zlib
 import re
 from ctypes import *
 
@@ -638,7 +634,7 @@ def main():
           help="make ELF file from a binary image")
 
   subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
-            .format(version=__version__,author=__author__),
+            .format(version=__version__, author=__author__),
           help="Display version information and exit")
 
   po = parser.parse_args()
