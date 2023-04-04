@@ -75,7 +75,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
 __version__ = "0.4.0"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
@@ -184,7 +183,7 @@ def main():
 
     subparser = parser.add_mutually_exclusive_group()
 
-    subparser.add_argument( "--inifile", type=str,
+    subparser.add_argument("--inifile", type=str,
           help="INI file name with base address (default is fwpartfile with a9h extension appended)")
 
     subparser.add_argument('-b', '--baseaddr', type=lambda x: int(x,0),
@@ -196,7 +195,7 @@ def main():
           help="make ELF file from a binary image")
 
     subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
-            .format(version=__version__,author=__author__),
+            .format(version=__version__, author=__author__),
           help="Display version information and exit")
 
     po = parser.parse_args()
@@ -229,7 +228,7 @@ def main():
         if po.baseaddr is None:
             po.baseaddr = syssw_read_base_address(po, po.inifile)
         fwpartfile = open(po.fwpartfile, "rb")
-        if not ".ARM.exidx" in po.section_addr:
+        if ".ARM.exidx" not in po.section_addr:
             sectname = ".ARM.exidx"
             bound_pos = amba_find_default_code_data_bound(po, fwpartfile)
             if bound_pos is not None:
