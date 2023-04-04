@@ -121,7 +121,6 @@ og_hardcoded.lightbridge_stm32.power_zone_selection_override -
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
 __version__ = "0.0.2"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
@@ -5037,7 +5036,7 @@ def armfw_elf_lbstm32_update(po, elffh):
         section['data'] = bytearray(section['data'])
     update_count = armfw_elf_paramvals_update_list(po, asm_arch, re_general_list, pub_params_list, glob_params_list, elf_sections, nxparams_list)
     if (po.verbose > 0):
-        print("{:s}: Updated {:d} out of {:d} hardcoded values".format(po.elffile,update_count,len(pub_params_list)))
+        print("{:s}: Updated {:d} out of {:d} hardcoded values".format(po.elffile, update_count, len(pub_params_list)))
     # Now update the ELF file
     for section_name, section in elf_sections.items():
         elfsect = elfobj.get_section_by_name(section_name)
@@ -5085,7 +5084,7 @@ def main():
           help="export known symbols to map file")
 
     subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
-            .format(version=__version__,author=__author__),
+            .format(version=__version__, author=__author__),
           help="Display version information and exit")
 
     po = parser.parse_args()
@@ -5104,7 +5103,7 @@ def main():
 
         armfw_elf_generic_objdump(po, elffh, 'thumb')
 
-        elffh.close();
+        elffh.close()
 
     elif po.list:
 
@@ -5115,7 +5114,7 @@ def main():
 
         armfw_elf_lbstm32_list(po, elffh)
 
-        elffh.close();
+        elffh.close()
 
     elif po.mapfile:
 
@@ -5126,7 +5125,7 @@ def main():
 
         armfw_elf_lbstm32_mapfile(po, elffh)
 
-        elffh.close();
+        elffh.close()
 
     elif po.extract:
 
@@ -5137,7 +5136,7 @@ def main():
 
         armfw_elf_lbstm32_extract(po, elffh)
 
-        elffh.close();
+        elffh.close()
 
     elif po.update:
 
@@ -5148,11 +5147,12 @@ def main():
 
         armfw_elf_lbstm32_update(po, elffh)
 
-        elffh.close();
+        elffh.close()
 
     else:
 
         raise NotImplementedError('Unsupported command.')
+
 
 if __name__ == "__main__":
     try:
