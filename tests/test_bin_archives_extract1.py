@@ -372,6 +372,7 @@ def test_bin_archives_imah_v1_extract(capsys, modl_inp_dir, test_nth):
 
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
         # Some Android OTA/TGZ/TAR modules contain boot images with another stage of IMaH encryption
+        "{}/*/*_0205.bin".format(modl_inp_dir),
         "{}/*/*_0801.bin".format(modl_inp_dir),
         "{}/*/*_0802.bin".format(modl_inp_dir),
         "{}/*/*_0805.bin".format(modl_inp_dir),
@@ -498,7 +499,9 @@ def test_bin_archives_imah_v2_extract(capsys, modl_inp_dir, test_nth):
 
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
         # Some Android OTA/TGZ/TAR modules contain boot images with another stage of IMaH encryption
+        "{}/*/wm230_0001_v*_0001.bin".format(modl_inp_dir), # probably just incorrectly marked, only in one FW of wm230
         "{}/*/*_0104.bin".format(modl_inp_dir),
+        "{}/*/*_0205.bin".format(modl_inp_dir),
         "{}/*/*_0701.bin".format(modl_inp_dir),
         "{}/*/*_0702.bin".format(modl_inp_dir),
         "{}/*/*_0801.bin".format(modl_inp_dir),
