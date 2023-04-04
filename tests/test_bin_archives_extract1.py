@@ -99,6 +99,14 @@ def is_lz4file(inp_fn):
         return (head[0:4] == b'\x04\x22\x4D\x18') and ((frame_flg & 0xC0) == 0x40)
 
 
+def is_ext4file(inp_fn):
+    with open(inp_fn, 'rb') as encfh:
+        encfh.seek(0x400)
+        superblock = encfh.read(0x40)
+        s_magic = int.from_bytes(superblock[0x38:0x3A], byteorder='little')
+        return (s_magic == 0xEF53)
+
+
 def tar_extractall_overwrite(tarfh, path='.'):
     for f in tarfh:
         try:
