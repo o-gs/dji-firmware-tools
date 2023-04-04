@@ -35,7 +35,6 @@ from unittest.mock import patch
 # Import the functions to be tested
 # Use 'git clone https://github.com/xpirt/sdat2img.git' to get the sparse images tool
 sys.path.insert(0, './')
-from sdat2img.sdat2img import main as sdat2img_main
 
 
 LOGGER = logging.getLogger(__name__)
@@ -45,6 +44,7 @@ def case_bin_sparseimg_solidify(img_inp_fn):
     """ Test case for solidification of sparse images so that they can be later extracted.
     """
     LOGGER.info("Testcase file: {:s}".format(img_inp_fn))
+    from sdat2img.sdat2img import main as sdat2img_main
 
     inp_path, inp_filename = os.path.split(img_inp_fn)
     inp_path = pathlib.Path(inp_path)
