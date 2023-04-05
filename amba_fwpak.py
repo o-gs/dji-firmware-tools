@@ -571,26 +571,42 @@ def get_amba_max_modentry(po, ptyp_names):
     return modentry_max
 
 
-def amba_partition_data_filename(po, i, ptyp):
-    """ Returns file name which stores partition data for given index and type.
-
-    If no file is associated to that partition, returns None.
+def amba_partition_exists(po, i, ptyp, ptyp_names):
+    """ Checks if there are any partition data for given index and type.
     """
     fname = "{:s}_part_{:s}.a9s".format(po.ptprefix, ptyp)
     # Skip unused modentries
     if ptyp not in ptyp_names:
         if (po.verbose > 1):
             print("{}: Entry {:2d} empty".format(po.fwmdlfile, i))
-        e = FwModPartHeader()
-        part_heads.append(e)
-        return None
+        return False
     # Also skip nonexisting ones
     if (os.stat(fname).st_size < 1):
         raise_or_warn(po, ValueError("Partition {:d} marked as existing but empty".format(i)))
-        e = FwModPartHeader()
-        part_heads.append(e)
-        return None
-    return fname
+        return False
+    return True
+
+def amba_merge_partition_data(po, fwmdlfile, e, i, ptyp):
+    """ Opens the partition file for given `ptyp`, and copies the data to `fwmdlfile`.
+
+    This also updates properties within the `e` entry class.
+    """
+    fname = "{:s}_part_{:s}.a9s".format(po.ptprefix, ptyp)
+    fwpartfile = open(fname, "rb")
+    ptcrc = 0
+    n = 0
+    while True:
+        copy_buffer = fwpartfile.read(1024 * 1024)
+        if not copy_buffer:
+            break
+        n += len(copy_buffer)
+        fwmdlfile.write(copy_buffer)
+        ptcrc = amba_calculate_crc32b_part(copy_buffer, ptcrc)
+    e.dt_len = n
+    e.crc32 = ptcrc
+    if (po.verbose > 1):
+        print("{}: Entry {:2d} checksum {:08X}".format(po.fwmdlfile, i, ptcrc))
+    return
 
 
 def amba_create(po, fwmdlfile):
@@ -617,34 +633,23 @@ def amba_create(po, fwmdlfile):
             break
         hde = modentries[i]
         ptyp = amba_a9_part_entry_type_id(i)
-        fname = amba_partition_data_filename(po, i, ptyp)
-        if fname is None:
+        if not amba_partition_exists(po, i, ptyp, ptyp_names):
+            e = FwModPartHeader()
+            part_heads.append(e)
             continue
         e = amba_read_part_head(po, i, ptyp)
         epos = fwmdlfile.tell()
-        # Wrie unfinished header
+        # Write unfinished header
         fwmdlfile.write((c_ubyte * sizeof(e)).from_buffer_copy(e))
         # Copy partition data and compute CRC
-        fwpartfile = open(fname, "rb")
-        ptcrc = 0
-        n = 0
-        while True:
-            copy_buffer = fwpartfile.read(1024 * 1024)
-            if not copy_buffer:
-                break
-            n += len(copy_buffer)
-            fwmdlfile.write(copy_buffer)
-            ptcrc = amba_calculate_crc32b_part(copy_buffer, ptcrc)
-        e.dt_len = n
-        e.crc32 = ptcrc
-        if (po.verbose > 1):
-            print("{}: Entry {:2d} checksum {:08X}".format(po.fwmdlfile, i, ptcrc))
+        amba_merge_partition_data(po, fwmdlfile, e, i, ptyp)
         part_heads.append(e)
-        # Write final header
+        # Write final partition header
         npos = fwmdlfile.tell()
         fwmdlfile.seek(epos, os.SEEK_SET)
         fwmdlfile.write((c_ubyte * sizeof(e)).from_buffer_copy(e))
         fwmdlfile.seek(npos, os.SEEK_SET)
+        # Store file beginning header
         hde.dt_len = sizeof(e) + e.dt_len
         modentries[i] = hde
     # Compute cummulative CRC32
