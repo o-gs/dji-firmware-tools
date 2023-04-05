@@ -1744,6 +1744,46 @@ def armfw_elf_offset_or_value_to_value_bytes(asm_arch, elf_sections, var_info, p
     return prop_bytes
 
 
+def armfw_elf_section_search_get_direct_int_or_offs(po, search, elf_sections, address, size, var_name, var_info, var_val, prop_size, prop_count):
+    """ For given variable, get direct int value or offset to value.
+    """
+    if var_info['type'] in (VarType.DIRECT_INT_VALUE,):
+        # for direct values, count is used
+        # we may alco encounter a string
+        if var_info['variety'] in (DataVariety.CHAR,):
+            prop_ofs_val = [ord(sing_var) for sing_var in var_val]
+            #prop_ofs_val = var_val
+        else:
+            if prop_count <= 1:
+                prop_ofs_val = int(var_val, 0)
+            else:
+                prop_ofs_val = [int(sing_var.strip(), 0) for sing_var in var_val.split(',')]
+    elif var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_OFFSET,):
+        prop_ofs_val = int(var_val, 0)
+    elif var_info['type'] in (VarType.RELATIVE_ADDR_TO_CODE, VarType.RELATIVE_ADDR_TO_GLOBAL_DATA,) and var_info['baseaddr'] in ("PC+","PC-",):
+        if var_info['baseaddr'].endswith('-'):
+            prop_ofs_val = get_arm_vma_subtracted_from_pc_register(search['asm_arch'], search['section'], address, size, var_val)
+        else:
+            prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
+    elif var_info['type'] in (VarType.RELATIVE_ADDR_TO_PTR_TO_CODE,VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA,) and var_info['baseaddr'] in ("PC+","PC-",):
+        if var_info['baseaddr'].endswith('-'):
+            prop_ofs_val = get_arm_vma_subtracted_from_pc_register(search['asm_arch'], search['section'], address, size, var_val)
+        else:
+            prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
+        var_sect, var_offs = get_section_and_offset_from_address(search['asm_arch'], elf_sections, prop_ofs_val)
+        if var_sect is not None:
+            var_data = elf_sections[var_sect]['data']
+            prop_ofs_val = int.from_bytes(var_data[var_offs:var_offs+4], byteorder=search['asm_arch']['byteorder'], signed=False)
+        else:
+            raise ValueError("Address to uninitialized data found (0x{:06x}) in var '{:s}'.".format(prop_ofs_val, var_name))
+    elif var_info['type'] in (VarType.DIRECT_OPERAND,):
+        prop_ofs_val = var_val
+    else:
+        raise NotImplementedError("Unexpected var '{:s}' type found while processing vars, '{:s}'."
+          .format(var_name, var_info['type'].name))
+    return prop_ofs_val
+
+
 def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, address, size, re_code):
     """ Process variable values from a code line and add them to search results.
     """
@@ -1753,40 +1793,7 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
         prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
 
         # Get direct int value or offset to value
-        if var_info['type'] in (VarType.DIRECT_INT_VALUE,):
-            # for direct values, count is used
-            # we may alco encounter a string
-            if var_info['variety'] in (DataVariety.CHAR,):
-                prop_ofs_val = [ord(sing_var) for sing_var in var_val]
-                #prop_ofs_val = var_val
-            else:
-                if prop_count <= 1:
-                    prop_ofs_val = int(var_val, 0)
-                else:
-                    prop_ofs_val = [int(sing_var.strip(), 0) for sing_var in var_val.split(',')]
-        elif var_info['type'] in (VarType.ABSOLUTE_ADDR_TO_CODE, VarType.ABSOLUTE_ADDR_TO_GLOBAL_DATA, VarType.RELATIVE_OFFSET,):
-            prop_ofs_val = int(var_val, 0)
-        elif var_info['type'] in (VarType.RELATIVE_ADDR_TO_CODE, VarType.RELATIVE_ADDR_TO_GLOBAL_DATA,) and var_info['baseaddr'] in ("PC+","PC-",):
-            if var_info['baseaddr'].endswith('-'):
-                prop_ofs_val = get_arm_vma_subtracted_from_pc_register(search['asm_arch'], search['section'], address, size, var_val)
-            else:
-                prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
-        elif var_info['type'] in (VarType.RELATIVE_ADDR_TO_PTR_TO_CODE,VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA,) and var_info['baseaddr'] in ("PC+","PC-",):
-            if var_info['baseaddr'].endswith('-'):
-                prop_ofs_val = get_arm_vma_subtracted_from_pc_register(search['asm_arch'], search['section'], address, size, var_val)
-            else:
-                prop_ofs_val = get_arm_vma_relative_to_pc_register(search['asm_arch'], search['section'], address, size, var_val)
-            var_sect, var_offs = get_section_and_offset_from_address(search['asm_arch'], elf_sections, prop_ofs_val)
-            if var_sect is not None:
-                var_data = elf_sections[var_sect]['data']
-                prop_ofs_val = int.from_bytes(var_data[var_offs:var_offs+4], byteorder=search['asm_arch']['byteorder'], signed=False)
-            else:
-                raise ValueError("Address to uninitialized data found (0x{:06x}) in var '{:s}'.".format(prop_ofs_val, var_name))
-        elif var_info['type'] in (VarType.DIRECT_OPERAND,):
-            prop_ofs_val = var_val
-        else:
-            raise NotImplementedError("Unexpected var '{:s}' type found while processing vars, '{:s}'."
-              .format(var_name, var_info['type'].name))
+        prop_ofs_val = armfw_elf_section_search_get_direct_int_or_offs(po, search, elf_sections, address, size, var_name, var_info, var_val, prop_size, prop_count)
 
         # Either convert the direct value to bytes, or get bytes from offset
         prop_bytes = armfw_elf_offset_or_value_to_value_bytes(search['asm_arch'], elf_sections, var_info, prop_ofs_val)
