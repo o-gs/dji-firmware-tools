@@ -121,13 +121,16 @@ class VarType(enum.Enum):
     ABSOLUTE_ADDR_TO_GLOBAL_DATA = enum.auto()
     # Variable contains address to a code chunk relative to some base address
     RELATIVE_ADDR_TO_CODE = enum.auto()
-    # Variable contains relative address to a global variable which contains absolute address to the code chunk
+    # Variable contains relative address to a global variable which contains
+    # absolute address to the code chunk
     RELATIVE_ADDR_TO_PTR_TO_CODE = enum.auto()
     # Variable contains address to a global variable relative to some base address
     RELATIVE_ADDR_TO_GLOBAL_DATA = enum.auto()
-    # Variable contains relative address to a global variable which contains absolute address to the real value
+    # Variable contains relative address to a global variable which contains
+    # absolute address to the real value
     RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA = enum.auto()
-    # Variable contains offset in unknown relation to some address, ie field position within a struct; obsolete - use the above instead
+    # Variable contains offset in unknown relation to some address, ie
+    # field position within a struct; obsolete - use the above instead
     RELATIVE_OFFSET = enum.auto()
     # Variable contains data not directly bound to any input offset
     DETACHED_DATA = enum.auto()
@@ -161,8 +164,8 @@ class CodeVariety(enum.Enum):
 
 
 class DummyStruct(LittleEndianStructure):
-  _pack_ = 1
-  _fields_ = [('unk', c_uint8)]
+    _pack_ = 1
+    _fields_ = [('unk', c_uint8)]
 
 
 # List of architectures
@@ -987,19 +990,19 @@ def armfw_elf_section_search_get_next_search_pos(search, sect_offs):
 
 
 def variety_is_signed_int(var_variety):
-    return  var_variety in (DataVariety.INT8_T, DataVariety.INT16_T, DataVariety.INT32_T, DataVariety.INT64_T,)
+    return var_variety in (DataVariety.INT8_T, DataVariety.INT16_T, DataVariety.INT32_T, DataVariety.INT64_T,)
 
 
 def variety_is_unsigned_int(var_variety):
-    return  var_variety in (DataVariety.UINT8_T, DataVariety.UINT16_T, DataVariety.UINT32_T, DataVariety.UINT64_T,)
+    return var_variety in (DataVariety.UINT8_T, DataVariety.UINT16_T, DataVariety.UINT32_T, DataVariety.UINT64_T,)
 
 
 def variety_is_string(var_variety):
-    return  var_variety in (DataVariety.CHAR,)
+    return var_variety in (DataVariety.CHAR,)
 
 
 def variety_is_float(var_variety):
-    return  var_variety in (DataVariety.FLOAT, DataVariety.DOUBLE,)
+    return var_variety in (DataVariety.FLOAT, DataVariety.DOUBLE,)
 
 
 def armfw_elf_section_search_get_value_variety_size(var_variety):
@@ -1474,13 +1477,13 @@ def get_matching_variable_from_patterns(patterns, var_type=None, var_variety=Non
         if var_depend is not None:
             if 'depend' in var_info:
                 # True means - any value, but must be set
-                if var_depend == True:
+                if var_depend is True:
                     pass
                 elif var_info['depend'] != var_depend:
                     continue
             else:
                 # False means - must not be set
-                if var_depend == False:
+                if var_depend is False:
                     pass
                 else:
                     continue
@@ -2853,7 +2856,7 @@ def main():
 
         armfw_elf_generic_objdump(po, elffh)
 
-        elffh.close();
+        elffh.close()
 
     elif po.list:
 
@@ -2864,7 +2867,7 @@ def main():
 
         armfw_elf_ambavals_list(po, elffh)
 
-        elffh.close();
+        elffh.close()
 
     elif po.mapfile:
 
@@ -2875,7 +2878,7 @@ def main():
 
         armfw_elf_ambavals_mapfile(po, elffh)
 
-        elffh.close();
+        elffh.close()
 
     elif po.extract:
 
@@ -2886,7 +2889,7 @@ def main():
 
         armfw_elf_ambavals_extract(po, elffh)
 
-        elffh.close();
+        elffh.close()
 
     elif po.update:
 
@@ -2897,7 +2900,7 @@ def main():
 
         armfw_elf_ambavals_update(po, elffh)
 
-        elffh.close();
+        elffh.close()
 
     else:
 
