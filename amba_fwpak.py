@@ -41,6 +41,7 @@ import itertools
 from ctypes import c_char, c_ubyte, c_uint, sizeof, LittleEndianStructure
 from time import gmtime, strftime
 
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
