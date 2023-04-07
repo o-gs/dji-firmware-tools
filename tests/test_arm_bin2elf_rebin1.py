@@ -437,8 +437,8 @@ def test_arm_bin2elf_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
     ) ]) if (os.path.isfile(fn) and os.stat(fn).st_size > 0)]
 
     # Remove unsupported files - modules which are not a simple uC firmware
-    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag410_1401_v[0-9a-f_.-]*[.]bin$', fn, re.IGNORECASE)]
-    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag408_1401_v[0-9a-f_.-]*[.]bin$', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag410_1401_v[0-9a-z_.-]*[.]bin$', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag408_1401_v[0-9a-z_.-]*[.]bin$', fn, re.IGNORECASE)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no files to test in this directory")
