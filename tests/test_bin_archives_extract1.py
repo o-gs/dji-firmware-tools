@@ -411,6 +411,35 @@ def test_bin_archives_imah_v1_extract(capsys, modl_inp_dir, test_nth):
     pass
 
 
+@pytest.mark.order(3) # must be run after test_bin_archives_imah_v1_extract
+@pytest.mark.fw_imah_v1
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/ag406-agras_mg-1a',1,),
+    ('out/ag408-agras_mg-unk',1,),
+    ('out/ag410-agras_t16',1,),
+    ('out/ag411-agras_t20',1,),
+  ] )
+def test_bin_archives_imah_v1_nested_extract(capsys, modl_inp_dir, test_nth):
+    """ Test if known archives are extracting correctly, and prepare data for tests which use the extracted files.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        # The mkbootimg `ANDROID!` images extracted from OTA archives
+        "{}/*/*-extr1/boot.img".format(modl_inp_dir),
+        "{}/*/*-extr1/recovery.img".format(modl_inp_dir),
+      ) ]) if os.path.isfile(fn)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no package files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames:
+        case_bin_archive_extract(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+
 @pytest.mark.order(2) # must be run after test_dji_imah_fwsig_v1_rebin
 @pytest.mark.fw_imah_v1
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
