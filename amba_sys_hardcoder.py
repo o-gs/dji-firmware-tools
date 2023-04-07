@@ -632,7 +632,7 @@ def get_asm_arch_by_name(arname):
     global elf_archs
     for arch in elf_archs:
         if arch['name'] == arname:
-            return arch
+            return arch.copy()
     return None
 
 
@@ -716,7 +716,7 @@ def get_arm_offset_val_relative_to_pc_register(asm_arch, address, size, vma):
 
 
 def get_section_and_offset_from_address(asm_arch, elf_sections, address):
-    """ Gets Virtual Memory Address associated with offet given within an asm instruction.
+    """ Gets Virtual Memory Address associated with offset given within an asm instruction.
     """
     for sect_name, sect in elf_sections.items():
         offset = address - sect['addr']
