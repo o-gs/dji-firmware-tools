@@ -431,6 +431,13 @@ def test_bin_archives_imah_v1_nested_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*-extr1/recovery.img".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
+    # Remove modules which are in IMaH format
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag408_0801_v[0-9a-z_.-]*/[0-9a-z_.-]*[.]img$', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag408_1301_v[0-9a-z_.-]*/[0-9a-z_.-]*[.]img$', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag410_0801_v[0-9a-z_.-]*/[0-9a-z_.-]*[.]img$', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag410_1301_v[0-9a-z_.-]*/[0-9a-z_.-]*[.]img$', fn, re.IGNORECASE)]
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag411_1301_v[0-9a-z_.-]*/[0-9a-z_.-]*[.]img$', fn, re.IGNORECASE)]
+
     if len(modl_inp_filenames) < 1:
         pytest.skip("no package files to test in this directory")
 
