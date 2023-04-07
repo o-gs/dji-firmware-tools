@@ -222,124 +222,145 @@ def get_params_for_dji_flyc_param_ed(modl_inp_fn):
             platform = "unknown-xv4"
             module_cmdopts = ""
             expect_json_changes = 16
+
     elif (modl_inp_fn.endswith("_0306.decrypted.bin")):
         if (m := re.match(r'^.*(ag407)_0306_v[0-9a-z_.-]*_head[.][0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420180"
-            expect_json_changes = 2
+            expect_json_changes = 20
         elif (m := re.match(r'^.*(ag407)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 2
+            expect_json_changes = 20
+
         elif (m := re.match(r'^.*(ag408)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420180"
-            expect_json_changes = 2
+            expect_json_changes = 21
+
         elif (m := re.match(r'^.*(ag410)_0306_v[0-9a-z_.-]*_fc00[.][0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 4
+            expect_json_changes = 20
         elif (m := re.match(r'^.*(ag410)_0306_v[0-9a-z_.-]*_head[.][0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420180"
-            expect_json_changes = 4
+            expect_json_changes = 20 # from ag410_0306_v03.04.05.35_20191220_head
         elif (m := re.match(r'^.*(ag410)_0306_v[0-9a-z_.-]*_nk00[.][0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
             expect_json_changes = 4
+
         elif (m := re.match(r'^.*(pm410)_0306_v03[.]02[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 17
+            expect_json_changes = 31
         elif (m := re.match(r'^.*(pm410)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 2
+            expect_json_changes = 24 # from pm410_0306_v03.03.10.04
+
         elif (m := re.match(r'^.*(wm100)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 17
+            expect_json_changes = 29
+
+        elif (m := re.match(r'^.*(wm220)_0306_v03[.]02[.][0-1][0-9][.][0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 28
+        elif (m := re.match(r'^.*(wm220)_0306_v03[.]02[.][2-3][0-9][.][0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            platform = m.group(1)
+            module_cmdopts = "-b 0x420000"
+            expect_json_changes = 30
         elif (m := re.match(r'^.*(wm220)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            # In Python 3.8, less flyc_params are found in this FW; reasons were not investigated
-            if sys.version_info < (3,9):
-                expect_json_changes = 28
-            else:
-                expect_json_changes = 31
+            expect_json_changes = 31
+
         elif (m := re.match(r'^.*(wm222)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 17
-        elif (m := re.match(r'^.*(wm330)_0306_v03[.]02[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 29
+
+        elif (m := re.match(r'^.*(wm330)_0306_v03[.]0[0-1][.][0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 17
+            expect_json_changes = 39
         elif (m := re.match(r'^.*(wm330)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 36
-        elif (m := re.match(r'^.*(wm331)_0306_v03[.]02[.]12[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
+            expect_json_changes = 26
+
+        elif (m := re.match(r'^.*(wm331)_0306_v03[.]02[.]1[2-5][0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 17
-        elif (m := re.match(r'^.*(wm331)_0306_v03[.]02[.]15[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
-            platform = m.group(1)
-            module_cmdopts = "-b 0x420000"
-            expect_json_changes = 15
+            expect_json_changes = 21
         elif (m := re.match(r'^.*(wm331)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 17
+            expect_json_changes = 24
+
         elif (m := re.match(r'^.*(wm332)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 17
+            expect_json_changes = 24
+
         elif (m := re.match(r'^.*(wm334)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 2
+            expect_json_changes = 17 # from wm334_0306_v03.03.06.57
+
         elif (m := re.match(r'^.*(wm335)_0306_v[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
             expect_json_changes = 18 # from wm335_0306_v03.03.04.10
+
         elif (m := re.match(r'^.*(wm620)_0306_v03[.]02[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 17
+            expect_json_changes = 26 # from wm620_0306_v03.02.10.83
         elif (m := re.match(r'^.*(wm620)_0306_v03[.]03[.]09[0-9a-z_.-]*[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x420000"
-            expect_json_changes = 2
+            expect_json_changes = 23 # from wm620_0306_v03.03.09.09
+
         else:
             platform = "unknown-imah"
             module_cmdopts = ""
             expect_json_changes = 16
+
     elif (modl_inp_fn.endswith("_FCFW.bin")):
         if (m := re.match(r'^.*(ag500|ag501|ag600|ag601)_0802_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x00"
             expect_json_changes = 28
+
         elif (m := re.match(r'^.*(pm320)_0802_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x00"
             expect_json_changes = 29
+
         elif (m := re.match(r'^.*(pm430)_0801_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x00"
             expect_json_changes = 33
+
         elif (m := re.match(r'^.*(wm170)_0802_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x00"
             expect_json_changes = 27
+
         elif (m := re.match(r'^.*(wm230)_0801_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x00"
             expect_json_changes = 24
+
         elif (m := re.match(r'^.*(wm231|wm232|wm240|wm245|wm246|wm247)_0801_v[0-9a-z_.-]*_FCFW[.]bin$', modl_inp_fn, re.IGNORECASE)):
             platform = m.group(1)
             module_cmdopts = "-b 0x00"
             expect_json_changes = 33
+
         else:
             platform = "unknown-fcfw"
             module_cmdopts = ""
