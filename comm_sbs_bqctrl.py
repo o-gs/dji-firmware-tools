@@ -92,7 +92,7 @@ import hashlib
 import argparse
 
 def eprint(*args, **kwargs):
-  print(*args, file=sys.stderr, **kwargs)
+    print(*args, file=sys.stderr, **kwargs)
 
 class DecoratedEnum(enum.Enum):
     @classmethod
@@ -3451,7 +3451,7 @@ def main():
             type=parse_chip_type,  default=CHIP_TYPE.AUTO.name,
             help="target chip model; one of: {:s} (defaults to '%(default)s')".format(', '.join(i.name for i in CHIP_TYPE)))
 
-    parser.add_argument("--dry-run", action="store_true",
+    parser.add_argument("--dry-run", action='store_true',
             help="do not use real smbus device or do permanent changes")
 
     parser.add_argument('-v', '--verbose', action='count', default=0,
@@ -3459,14 +3459,14 @@ def main():
 
     subparser = parser.add_mutually_exclusive_group()
 
-    subparser.add_argument('-s', '--short', action="store_true",
+    subparser.add_argument('-s', '--short', action='store_true',
             help="display only minimal description of values; to be used by "
               "experienced users, who have no need for additional info")
 
-    subparser.add_argument('-e', '--explain', action="store_true",
+    subparser.add_argument('-e', '--explain', action='store_true',
             help="explain each value by providing description from spec")
 
-    parser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+    parser.add_argument('--version', action='version', version="%(prog)s {version} by {author}"
               .format(version=__version__, author=__author__),
             help="display version information and exit")
 
@@ -3548,7 +3548,7 @@ def main():
             help="address within the space to read from")
 
     subpar_raw_read.add_argument('dttype', metavar='datatype', type=parse_addrspace_datatype,
-            help="Data type at target offset; one of: {:s}".format(', '.join(addrspace_datatypes)))
+            help="data type at target offset; one of: {:s}".format(', '.join(addrspace_datatypes)))
 
 
     subpar_raw_read_list = subparsers.add_parser('raw-read-list',
@@ -3606,7 +3606,8 @@ def main():
             help=("monitor value of a group of commands/offsets; "
               "just reads all of the values from a group"))
 
-    subpar_monitor.add_argument('cmdgroup', metavar='group', choices=[i.name for i in MONITOR_GROUP], type=parse_monitor_group,
+    subpar_monitor.add_argument('cmdgroup', metavar='group',
+            choices=[i.name for i in MONITOR_GROUP], type=parse_monitor_group,
             help="group of commands/offsets; one of: {:s}".format(', '.join(i.name for i in MONITOR_GROUP)))
 
 
@@ -3722,7 +3723,7 @@ def main():
                 po.i32key = 0x36720414
         smart_battery_system_sealing(po.sealstate, vals, po)
     else:
-        raise NotImplementedError('Unsupported command.')
+        raise NotImplementedError("Unsupported command.")
 
     if not po.offline_mode:
         smbus_close()
@@ -3733,5 +3734,5 @@ if __name__ == '__main__':
         main()
     except Exception as ex:
         eprint("Error: "+str_exception_with_type(ex))
-        raise
+        if 0: raise
         sys.exit(10)
