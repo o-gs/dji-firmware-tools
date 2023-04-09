@@ -35,12 +35,14 @@ from ctypes import *
 import json
 
 def eprint(*args, **kwargs):
-  print(*args, file=sys.stderr, **kwargs)
+    print(*args, file=sys.stderr, **kwargs)
+
 
 class NoFlyStorage:
   none = 0x0
   zone = 0x1
   cord = 0x2
+
 
 class FlycNoFlyZone(LittleEndianStructure):
   _pack_ = 1
@@ -64,15 +66,18 @@ class FlycNoFlyZone(LittleEndianStructure):
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
+
 class FlycNoFlyCoords(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('latitude', c_int),
               ('longitude', c_int)]
 
+
 def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
   """ Equivalent to math.isclose(); use it if the script needs to work on Python < 3.5
   """
   return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
 
 def flyc_nofly_is_proper_zone_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_align, data_align, pos, entry_pos):
   """ Checks whether given FlycNoFlyZone object stores a proper entry of
@@ -97,6 +102,7 @@ def flyc_nofly_is_proper_zone_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_
      return False
   return flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_align, data_align, pos, entry_pos)
 
+
 def flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfcord, func_align, data_align, pos, entry_pos):
   """ Checks whether given FlycNoFlyCoords object stores a proper entry of
       flight controller no fly coordinates array.
@@ -117,6 +123,7 @@ def flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfcord, func_
         print("Rejected at {:06x} on longitude coord limit check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
      return False
   return True
+
 
 def flyc_nofly_zone_pos_search(po, fwmdlfile, start_pos, func_align, data_align, min_match_accepted):
   """ Finds position of flight controller no fly zones in the binary.
@@ -163,6 +170,7 @@ def flyc_nofly_zone_pos_search(po, fwmdlfile, start_pos, func_align, data_align,
   if (match_count < 1):
      return -1, 0
   return match_pos, match_entries
+
 
 def flyc_nofly_cord_pos_search(po, fwmdlfile, start_pos, func_align, data_align, min_match_accepted):
   """ Finds position of flight controller no fly coords in the binary.
@@ -213,6 +221,7 @@ def flyc_nofly_cord_pos_search(po, fwmdlfile, start_pos, func_align, data_align,
      return -1, 0
   return match_pos, match_entries
 
+
 def flyc_nofly_zone_template(po):
   # Set coords at north pole; they should never stay at default value after all
   # Set 'level' at 2; definition is: WARNING(0), CAN_UNLIMIT(1), CAN_NOT_UNLIMIT(2, 4), STRONG_WARNING(3)
@@ -220,6 +229,7 @@ def flyc_nofly_zone_template(po):
       'warning':0,'level':2,'disable':0,'updated_at':1447945800,'begin_at':0,'end_at':0,
       'name':"",'country':0,'city':"",'storage':NoFlyStorage.none,'points':None}
   return parprop
+
 
 def flyc_nofly_zone_get(po, fwmdlfile, index):
   """ Returns array with properties of given no fly zone.
@@ -240,6 +250,7 @@ def flyc_nofly_zone_get(po, fwmdlfile, index):
   parprop['storage'] |= NoFlyStorage.zone
   return parprop
 
+
 def flyc_nofly_cord_get(po, fwmdlfile, index):
   """ Returns array with properties of given no fly coords.
   """
@@ -251,6 +262,7 @@ def flyc_nofly_cord_get(po, fwmdlfile, index):
   parprop['lat'] = enfcord.latitude/1000000.0
   parprop['lng'] = enfcord.longitude/1000000.0
   return parprop
+
 
 def flyc_nofly_merged_zones_array(po, fwmdlfile):
   if (po.verbose > 0):
@@ -274,6 +286,7 @@ def flyc_nofly_merged_zones_array(po, fwmdlfile):
     #print("{:5d} {:10.6f} {:11.6f}".format(i,parcord['lat'],parcord['lng']))
   return sorted(nfzones, key=lambda k: -k['lat'])
 
+
 def flyc_nofly_list(po, fwmdlfile):
   """ Lists all flight controller no fly zones from firmware on screen table.
   """
@@ -290,6 +303,7 @@ def flyc_nofly_list(po, fwmdlfile):
        "c" if (parprop['storage'] & NoFlyStorage.cord) != 0 else " ",parprop['type'],parprop['begin_at'],parprop['end_at']))
   if (po.verbose > 0):
      print("{}: Done listing.".format(po.mdlfile))
+
 
 def flyc_nofly_extract(po, fwmdlfile):
   """ Extracts all flight controller no fly zones from firmware to JSON format text file.
@@ -337,6 +351,7 @@ def flyc_nofly_extract(po, fwmdlfile):
   inffile.close()
   if (po.verbose > 0):
      print("{}: Done exporting.".format(po.mdlfile))
+
 
 def flyc_nofly_update(po, fwmdlfile):
   """ Updates all flight controller no fly zones in firmware from JSON format text file.
@@ -428,96 +443,83 @@ def flyc_nofly_update(po, fwmdlfile):
   if (po.verbose > 0):
       print("{}: Updated {:d} no fly zone entries and {:d} no fly coord entries".format(po.mdlfile,update_zone_count,update_cord_count))
 
+
 def main():
-  """ Main executable function.
+    """ Main executable function.
 
-  Its task is to parse command line options and call a function which performs requested command.
-  """
-  # Parse command line options
+    Its task is to parse command line options and call a function which performs requested command.
+    """
+    parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
-  parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-m', '--mdlfile', type=str, required=True,
+          help="flight controller firmware binary module file")
 
-  parser.add_argument("-m", "--mdlfile", type=str, required=True,
-          help="Flight controller firmware binary module file")
-
-  parser.add_argument("-i", "--inffile", type=str, default="flyc_forbid_areas.json",
+    parser.add_argument('-i', '--inffile', type=str, default="flyc_forbid_areas.json",
           help="No Fly Zone Areas JSON file name (default is \"%(default)s\")")
 
-  #parser.add_argument("-b", "--baseaddr", default=0x8020000, type=lambda x: int(x,0),
-  #        help="Set base address; crucial for finding the array (default is 0x%(default)X)")
+    #parser.add_argument('-b', '--baseaddr', default=0x8020000, type=lambda x: int(x,0),
+    #      help="set base address; crucial for finding the array (default is 0x%(default)X)")
 
-  #parser.add_argument("--bssaddr", default=0x20000000, type=lambda x: int(x,0),
-  #        help="Set .bss start address; set to address where RAM starts (default is 0x%(default)X)")
+    #parser.add_argument('--bssaddr', default=0x20000000, type=lambda x: int(x,0),
+    #      help="set .bss start address; set to address where RAM starts (default is 0x%(default)X)")
 
-  #parser.add_argument("--bsslen", default=0x4400000, type=lambda x: int(x,0),
-  #        help="Set .bss length; set to size of RAM (default is 0x%(default)X)")
+    #parser.add_argument('--bsslen', default=0x4400000, type=lambda x: int(x,0),
+    #      help="set .bss length; set to size of RAM (default is 0x%(default)X)")
 
-  parser.add_argument("-v", "--verbose", action="count", default=0,
-          help="Increases verbosity level; max level is set by -vvv")
+    parser.add_argument('-v', '--verbose', action='count', default=0,
+          help="increases verbosity level; max level is set by -vvv")
 
-  subparser = parser.add_mutually_exclusive_group()
+    subparser = parser.add_mutually_exclusive_group()
 
-  subparser.add_argument("-l", "--list", action="store_true",
+    subparser.add_argument('-l', '--list', action='store_true',
           help="list no fly zones stored in the firmware")
 
-  subparser.add_argument("-x", "--extract", action="store_true",
-          help="Extract no fly zones array to json text file")
+    subparser.add_argument('-x', '--extract', action='store_true',
+          help="extract no fly zones array to json text file")
 
-  subparser.add_argument("-u", "--update", action="store_true",
-          help="Update no fly zones array in binary fw from areas json text file")
+    subparser.add_argument('-u', '--update', action='store_true',
+          help="update no fly zones array in binary fw from areas json text file")
 
-  subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+    subparser.add_argument('--version', action='version', version="%(prog)s {version} by {author}"
             .format(version=__version__, author=__author__),
-          help="Display version information and exit")
+          help="display version information and exit")
 
-  po = parser.parse_args()
+    po = parser.parse_args()
 
-  po.expect_func_align = 4
-  po.expect_data_align = 2
-  po.min_match_accepted = 60
-  po.nfzone_pos = -1
-  po.nfzone_count = 0
-  po.nfcord_pos = -1
-  po.nfcord_count = 0
+    po.expect_func_align = 4
+    po.expect_data_align = 2
+    po.min_match_accepted = 60
+    po.nfzone_pos = -1
+    po.nfzone_count = 0
+    po.nfcord_pos = -1
+    po.nfcord_count = 0
 
-  if po.list:
+    if po.list:
+        if (po.verbose > 0):
+            print("{}: Opening for list display".format(po.mdlfile))
+        with open(po.mdlfile, 'rb') as fwmdlfile:
+            flyc_nofly_list(po,fwmdlfile)
 
-    if (po.verbose > 0):
-      print("{}: Opening for list display".format(po.mdlfile))
-    fwmdlfile = open(po.mdlfile, "rb")
+    elif po.extract:
+        if (po.verbose > 0):
+            print("{}: Opening for extraction".format(po.mdlfile))
+        with open(po.mdlfile, 'rb') as fwmdlfile:
+            flyc_nofly_extract(po,fwmdlfile)
 
-    flyc_nofly_list(po,fwmdlfile)
+    elif po.update:
+        if (po.verbose > 0):
+            print("{}: Opening for update".format(po.mdlfile))
+        with open(po.mdlfile, 'r+b') as fwmdlfile:
+            flyc_nofly_update(po,fwmdlfile)
 
-    fwmdlfile.close();
+    else:
+        raise NotImplementedError("Unsupported command.")
 
-  elif po.extract:
 
-    if (po.verbose > 0):
-      print("{}: Opening for extraction".format(po.mdlfile))
-    fwmdlfile = open(po.mdlfile, "rb")
-
-    flyc_nofly_extract(po,fwmdlfile)
-
-    fwmdlfile.close();
-
-  elif po.update:
-
-    if (po.verbose > 0):
-      print("{}: Opening for update".format(po.mdlfile))
-    fwmdlfile = open(po.mdlfile, "r+b")
-
-    flyc_nofly_update(po,fwmdlfile)
-
-    fwmdlfile.close();
-
-  else:
-
-    raise NotImplementedError('Unsupported command.')
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
         main()
     except Exception as ex:
         eprint("Error: "+str(ex))
-        #raise
+        if 0: raise
         sys.exit(10)
