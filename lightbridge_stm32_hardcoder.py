@@ -132,7 +132,8 @@ import re
 import io
 import json
 
-from ctypes import *
+from ctypes import c_char, c_int, c_ubyte, c_ushort, c_uint, c_ulonglong, c_float
+from ctypes import memmove, addressof, sizeof, Array, LittleEndianStructure
 
 sys.path.insert(0, './')
 from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
@@ -3595,7 +3596,7 @@ init_fpga_config:
   movs	(r4|r5), #0
   movs	(r5|r6), #0
   movs	(r6|r4), #0
-  nop	
+  nop
   b	#(?P<loc_label35>[0-9a-fx]+)
 loc_label01:
   movs	r6, #0
@@ -3614,7 +3615,7 @@ loc_label06:
 loc_label08:
   b	#(?P<loc_label03>[0-9a-fx]+)
 loc_label09:
-  nop	
+  nop
   movs	r2, #0
   movs	r1, #0x29
   movs	r0, #0x14 ; AD9363_REG_ENSM_CONFIG_1
@@ -3665,14 +3666,14 @@ loc_label17:
   movs	r0, #1 ; FPGA_REG_UNKN_01
   bl	#(?P<spi_fpga_raw_write>[0-9a-fx]+)
   bl	#(?P<sub_800D7B8>[0-9a-fx]+)
-  nop	
-  nop	
+  nop
+  nop
   movs	r0, #1
 loc_label_ret1:
   pop.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,12}), pc}
 loc_label34:
-  nop	
-  nop	
+  nop
+  nop
   adds	r0, r7, #1
   uxtb	r7, r0
 loc_label35:
@@ -3717,7 +3718,7 @@ init_fpga_config:
   movs	(r5|r4), #0
   movs	(r6|r5), #0
   movs	(r4|r6), #0
-  nop	
+  nop
   b	#(?P<loc_label35>[0-9a-fx]+)
 loc_label01:
   movs	r4, #0
@@ -3766,7 +3767,7 @@ loc_label07:
 loc_label08:
   b	#(?P<loc_label03>[0-9a-fx]+)
 loc_label09:
-  nop	
+  nop
   bl	#(?P<get_board_version>[0-9a-fx]+)
   cmp	r0, #4
   beq	#(?P<loc_label10>[0-9a-fx]+)
@@ -3794,7 +3795,7 @@ loc_label14:
 loc_label31:
   b	#(?P<loc_label32>[0-9a-fx]+)
 loc_label33:
-  nop	
+  nop
 loc_board_check_9:
   bl	#(?P<get_board_version>[0-9a-fx]+)
   bl	#(?P<get_board_version>[0-9a-fx]+)
@@ -3979,14 +3980,14 @@ loc_label21:
   bl	#(?P<sub_800D414>[0-9a-fx]+)
   bl	#(?P<sub_800D7B8>[0-9a-fx]+)
 loc_label22:
-  nop	
-  nop	
+  nop
+  nop
   movs	r0, #1
 loc_label_ret1:
   pop.w	{(?P<regsA>(r[0-9]+[, ]*|[a-z][a-z][, ]*){3,12}), pc}
 loc_label34:
-  nop	
-  nop	
+  nop
+  nop
   adds	r0, r7, #1
   uxtb	r7, r0
 loc_label35:
@@ -5002,7 +5003,8 @@ def armfw_elf_lbstm32_list(po, elffh):
 
 
 def armfw_elf_lbstm32_mapfile(po, elffh):
-    _, params_list, elf_sections, _, _, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
+    _, params_list, elf_sections, _, _, asm_arch = \
+      armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
     armfw_elf_paramvals_export_mapfile(po, params_list, elf_sections, asm_arch, sys.stdout)
 
 
@@ -5023,7 +5025,8 @@ def armfw_elf_lbstm32_extract(po, elffh):
 def armfw_elf_lbstm32_update(po, elffh):
     """ Updates all hardcoded values in firmware from JSON format text file.
     """
-    pub_params_list, glob_params_list, elf_sections, cs, elfobj, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
+    pub_params_list, glob_params_list, elf_sections, cs, elfobj, asm_arch = \
+      armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
     if len(pub_params_list) <= 0:
         raise ValueError("No known values found in ELF file.")
     with open(po.valfile) as valfile:
@@ -5031,9 +5034,11 @@ def armfw_elf_lbstm32_update(po, elffh):
     # Change section data buffers to bytearrays, so we can change them easily
     for section_name, section in elf_sections.items():
         section['data'] = bytearray(section['data'])
-    update_count = armfw_elf_paramvals_update_list(po, asm_arch, re_general_list, pub_params_list, glob_params_list, elf_sections, nxparams_list)
+    update_count = armfw_elf_paramvals_update_list(po, asm_arch,
+      re_general_list, pub_params_list, glob_params_list, elf_sections, nxparams_list)
     if (po.verbose > 0):
-        print("{:s}: Updated {:d} out of {:d} hardcoded values".format(po.elffile, update_count, len(pub_params_list)))
+        print("{:s}: Updated {:d} out of {:d} hardcoded values"
+          .format(po.elffile, update_count, len(pub_params_list)))
     # Now update the ELF file
     for section_name, section in elf_sections.items():
         elfsect = elfobj.get_section_by_name(section_name)

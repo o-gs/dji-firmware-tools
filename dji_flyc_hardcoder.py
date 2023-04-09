@@ -67,17 +67,12 @@ __version__ = "0.0.1"
 __author__ = "Mefistotelis, Matioupi @ Original Gangsters"
 __license__ = "GPL"
 
-import sys
 import argparse
+import io
+import json
 import os
 import re
-import io
-import collections.abc
-import itertools
-import enum
-import json
-
-from ctypes import *
+import sys
 
 sys.path.insert(0, './')
 from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
@@ -92,15 +87,15 @@ from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
 
 def version_string_to_int_getter(val):
   ver = re.search(r'^([0-9]+)[.]([0-9]+)[.]([0-9]+)[.]([0-9]+)$', val)
-  ver_major = int(ver.group(1),10)
-  ver_minor = int(ver.group(2),10)
-  ver_mmtnc = int(ver.group(3),10)
-  ver_revsn = int(ver.group(4),10)
+  ver_major = int(ver.group(1), 10)
+  ver_minor = int(ver.group(2), 10)
+  ver_mmtnc = int(ver.group(3), 10)
+  ver_revsn = int(ver.group(4), 10)
   return (ver_major << 24) + (ver_minor << 16) + (ver_mmtnc << 8) + (ver_revsn)
 
-def version_string_to_parts_getter(val,grp):
+def version_string_to_parts_getter(val, grp):
   ver = re.search(r'^([0-9]+)[.]([0-9]+)[.]([0-9]+)[.]([0-9]+)$', val)
-  return int(ver.group(grp),10)
+  return int(ver.group(grp), 10)
 
 
 re_func_wp_check_input_mission_validity_P3X_V01_05_0030 = {
@@ -273,19 +268,18 @@ loc_806429C:
   'sub_8086F86':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'loc_80640E2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_8064122':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_8064142':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_80641D6':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_80641E0':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_806423A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_806421C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
+  'loc_806423A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_8064248':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_806426A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_8064298':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_806429C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_806432E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_806438A':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_8064142':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_80642D2':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
-  'loc_806421C':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'undefined_varlen_2':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (32,48)},
   'undefined_varlen_3':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (24,40)},
   'byte_200084A4':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
@@ -734,8 +728,6 @@ loc_8064642:
   'loc_8064652':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'sub_808B480':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'sub_8086F86':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'sub_808B480':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
-  'sub_8086F86':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'flight_rec_printf_send_c0E':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'undefined_varlen_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT16_T, 'array': (176,200)},
   'regsA':	{'type': VarType.DIRECT_OPERAND, 'variety': DataVariety.UNKNOWN},
@@ -756,8 +748,6 @@ loc_8064642:
   'cstr_mission_info_data_invalid':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'dbl_just_pi':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.DOUBLE},
   'dbl_minus_pi':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.DOUBLE},
-  'rel_dword_20005E20':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
-  'rel_byte_20005E24':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'max_speed_pos':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.FLOAT,
     'public': "og_hardcoded.flyc", 'minValue': "1.0", 'maxValue': "1000000.0", 'defaultValue': "15.0",
     'description': "Max speed (positive value); in meters per second [m/s]"},
@@ -1523,7 +1513,7 @@ loc_51090C:
   'cstr_req_real':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_sdk_version_error':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'dword_20430DD0':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
-  'g_real__aircraft_status':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+  'g_real__aircraft_status':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct},
   'rel_g_real__config__api_entry_cfg__cheat_backdoor':	{'type': VarType.RELATIVE_OFFSET, 'baseaddr': "g_real__aircraft_status+", 'variety': DataVariety.UNKNOWN},
   #'rel_ctrl_tick':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'rel_dword_2040436C':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
@@ -2133,8 +2123,8 @@ loc_528032:
   'cstr_warn_local_imu_id_error2':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'byte_20404E10':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT8_T},
   #'constval_2FA0000':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
-  'hal_stru_164C':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
-  'imu_groups':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+  'hal_stru_164C':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct},
+  'imu_groups':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct},
   # this is the pointer to `imu_groups`, same as above; but it gets misinterpreted by 4 bytes, so we define separate var as workaround:
   'imu_groups_p4':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'unkstru_r4_field_14':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT16_T},
@@ -2479,7 +2469,7 @@ loc_4E7D8E:
   'dword_20404358':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
   'dword_20404E48':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
   'dword_514C70':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
-  'hal_stru_164C':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+  'hal_stru_164C':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct},
   'rel_byte_204397E0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UINT8_T},
   'unk_20405C9C':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
   'unk_204397A0':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
@@ -2503,7 +2493,7 @@ hal_push_mc_version:
   bx	lr
 """,
 'vars': {
-  'dword_2001C99C':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+  'dword_2001C99C':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct},
   'hal_push_mc_version':	{'type': VarType.DIRECT_LINE_OF_CODE, 'variety': CodeVariety.FUNCTION},
   'hal_push_version':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'rel_mc_version':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UINT32_T},
@@ -3150,7 +3140,7 @@ locret_45FEE6:
   'const_loop_limit_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'byte_20402ECE':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'pvstru_D61C':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+",
-    'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+    'variety': DataVariety.STRUCT, 'struct': DummyStruct},
   'rel_byte_20402ECF':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
 },
 }
@@ -3561,7 +3551,7 @@ loc_4601B0:
   'const_loop_limit_1':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.UINT32_T},
   'byte_20402ECE':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
   'pvstru_D61C':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+",
-    'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+    'variety': DataVariety.STRUCT, 'struct': DummyStruct},
   'rel_byte_20402ED0':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'rel_simulator_running':	{'type': VarType.RELATIVE_OFFSET, 'variety': DataVariety.UNKNOWN},
   'unkval_9DE8':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
@@ -3614,13 +3604,15 @@ re_general_list = [
 ]
 
 def armfw_elf_flyc_list(po, elffh):
-    params_list, _, _, _, _, _ = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
+    params_list, _, _, _, _, _ = \
+      armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
     # print list of parameter values
     armfw_elf_paramvals_export_simple_list(po, params_list, sys.stdout)
 
 
 def armfw_elf_flyc_mapfile(po, elffh):
-    _, params_list, elf_sections, _, _, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
+    _, params_list, elf_sections, _, _, asm_arch = \
+      armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
     armfw_elf_paramvals_export_mapfile(po, params_list, elf_sections, asm_arch, sys.stdout)
 
 
@@ -3641,7 +3633,8 @@ def armfw_elf_flyc_extract(po, elffh):
 def armfw_elf_flyc_update(po, elffh):
     """ Updates all hardcoded values in firmware from JSON format text file.
     """
-    pub_params_list, glob_params_list, elf_sections, cs, elfobj, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
+    pub_params_list, glob_params_list, elf_sections, cs, elfobj, asm_arch = \
+      armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'thumb')
     if len(pub_params_list) <= 0:
         raise ValueError("No known values found in ELF file.")
     with open(po.valfile) as valfile:
@@ -3649,9 +3642,11 @@ def armfw_elf_flyc_update(po, elffh):
     # Change section data buffers to bytearrays, so we can change them easily
     for section_name, section in elf_sections.items():
         section['data'] = bytearray(section['data'])
-    update_count = armfw_elf_paramvals_update_list(po, asm_arch, re_general_list, pub_params_list, glob_params_list, elf_sections, nxparams_list)
+    update_count = armfw_elf_paramvals_update_list(po, asm_arch, re_general_list, \
+      pub_params_list, glob_params_list, elf_sections, nxparams_list)
     if (po.verbose > 0):
-        print("{:s}: Updated {:d} out of {:d} hardcoded values".format(po.elffile,update_count,len(pub_params_list)))
+        print("{:s}: Updated {:d} out of {:d} hardcoded values"
+          .format(po.elffile, update_count, len(pub_params_list)))
     # Now update the ELF file
     for section_name, section in elf_sections.items():
         elfsect = elfobj.get_section_by_name(section_name)

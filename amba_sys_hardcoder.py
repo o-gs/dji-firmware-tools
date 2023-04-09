@@ -73,7 +73,9 @@ from ctypes import c_ubyte, c_uint8, c_int, sizeof, LittleEndianStructure
 
 try:
     import capstone
-    from capstone import *
+    from capstone import CS_ARCH_ARM, CS_ARCH_ARM64, CS_ARCH_X86, CS_ARCH_MIPS
+    from capstone import CS_MODE_ARM, CS_MODE_V8, CS_MODE_32, CS_MODE_64, CS_MODE_MIPS32, CS_MODE_MIPS64
+    from capstone import CS_MODE_THUMB, CS_MODE_LITTLE_ENDIAN, CS_MODE_BIG_ENDIAN
     if not callable(getattr(capstone, "Cs", None)):
         raise ImportError("The capstone library provided is incorrect - lacks Cs")
 except ImportError:
@@ -83,7 +85,10 @@ except ImportError:
 
 try:
     import keystone
-    from keystone.keystone_const import *
+    from keystone.keystone_const import KS_ARCH_ARM, KS_ARCH_ARM64, KS_ARCH_X86, KS_ARCH_MIPS
+    from keystone.keystone_const import KS_MODE_ARM, KS_MODE_V8, KS_MODE_32, KS_MODE_64, KS_MODE_MIPS32, KS_MODE_MIPS64
+    from keystone.keystone_const import KS_MODE_THUMB, KS_MODE_LITTLE_ENDIAN, KS_MODE_BIG_ENDIAN
+    from keystone.keystone_const import KsError
     if not callable(getattr(keystone, "Ks", None)):
         raise ImportError("The keystone library provided is incorrect - lacks Ks")
 except ImportError:
@@ -471,7 +476,7 @@ loc_label06:
   'memset_0':		{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.FUNCTION},
   'cstr_fmt_text1':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
   'cstr_func_name':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.CHAR, 'array': "null_term"},
-  'dji_msg_mutex':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+  'dji_msg_mutex':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct},
   'msg_adjust_task_finished':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
   'printk_log_level':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UINT32_T},
   'encrypt_query_fail_authority_level':	{'type': VarType.DIRECT_INT_VALUE, 'variety': DataVariety.INT32_T,
@@ -612,7 +617,7 @@ loc_label07:
   'loc_label07':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'loc_label08':	{'type': VarType.ABSOLUTE_ADDR_TO_CODE, 'variety': CodeVariety.CHUNK},
   'unk_var01':	{'type': VarType.RELATIVE_ADDR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.UNKNOWN},
-  'vid_settings_ust':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct,},
+  'vid_settings_ust':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'struct': DummyStruct},
   'vid_setting_bitrates':	{'type': VarType.RELATIVE_ADDR_TO_PTR_TO_GLOBAL_DATA, 'baseaddr': "PC+", 'variety': DataVariety.STRUCT, 'array': 27,
     'struct': AmbaP3XBitrateTableEntry,
     'public': "og_hardcoded.p3x_ambarella", 'minValue': "1000000 1000000 1000000", 'maxValue': "64000000 64000000 64000000",
@@ -761,10 +766,10 @@ def armfw_elf_generic_objdump(po, elffh, asm_submode=None):
             print("{:s}: Found section {:s}".format(po.elffile, esection.name))
 
         section = {
-              'index' : i,
-              'name' : esection.name,
-              'addr' : esection['sh_addr'],
-              'data' : esection.data(),
+              'index': i,
+              'name': esection.name,
+              'addr': esection['sh_addr'],
+              'data': esection.data(),
         }
         elf_sections[section.name] = section
 
@@ -807,7 +812,7 @@ def armfw_asm_search_strings_to_re_list(re_patterns):
     re_lines = re_patterns.split(sep="\n")
     re_labels = {}
     # Remove comments
-    re_lines = [s.split(";",1)[0]  if ";" in s else s for s in re_lines]
+    re_lines = [s.split(";",1)[0] if ";" in s else s for s in re_lines]
     # Remove labels
     for i, s in enumerate(re_lines):
         re_label = re.search(r'^([a-zA-Z0-9_]+):(.*)$', s)
@@ -1146,6 +1151,7 @@ def armfw_elf_create_dummy_single_param_for_patterns_with_best_match(asm_arch, v
         var_info['value'] = prop_ofs_val
 
     return var_info
+
 
 def armfw_elf_create_dummy_params_list_for_patterns_with_best_match(asm_arch, patterns_list, pattern_vars):
     dummy_patt_base = 0x10000
@@ -1612,7 +1618,7 @@ def armfw_asm_parse_data_definition(asm_arch, asm_line):
         if dt_btitem is None:
             raise ValueError("Cannot convert data def part to bytes: \"{:s}\".".format(dt_item))
         dt_bytes += dt_btitem
-    return {'variety': dt_variety, 'item_size': single_len, 'value': dt_bytes }
+    return {'variety': dt_variety, 'item_size': single_len, 'value': dt_bytes}
 
 
 def armfw_elf_data_definition_from_bytes(po, asm_arch, bt_data, bt_addr, pat_line, var_defs, var_size_inc=0):
@@ -1796,7 +1802,8 @@ def armfw_elf_section_search_process_vars_from_code(po, search, elf_sections, ad
         prop_size, prop_count = armfw_elf_section_search_get_value_size(search['asm_arch'], var_info)
 
         # Get direct int value or offset to value
-        prop_ofs_val = armfw_elf_section_search_get_direct_int_or_offs(po, search, elf_sections, address, size, var_name, var_info, var_val, prop_size, prop_count)
+        prop_ofs_val = armfw_elf_section_search_get_direct_int_or_offs(po, search,
+              elf_sections, address, size, var_name, var_info, var_val, prop_size, prop_count)
 
         # Either convert the direct value to bytes, or get bytes from offset
         prop_bytes = armfw_elf_offset_or_value_to_value_bytes(search['asm_arch'], elf_sections, var_info, prop_ofs_val)
@@ -1877,7 +1884,8 @@ def armfw_elf_section_search_block(po, search, sect_offs, elf_sections, cs, bloc
                     search = armfw_elf_section_search_varlen_point_mark(search, address, max_size - size)
                 instruction_str = "{:s}\t{:s}".format(mnemonic, op_str).strip()
                 if (po.verbose > 3) and (search['match_lines'] > 1):
-                    print("Current vs pattern {:3d} `{:s}` `{:s}`".format(search['match_lines'], instruction_str, curr_pattern))
+                    print("Current vs pattern {:3d} `{:s}` `{:s}`"
+                      .format(search['match_lines'], instruction_str, curr_pattern))
                 re_code = re.search(curr_pattern, instruction_str)
                 # The block below is exactly the same as for normal instruction
                 match_ok = (re_code is not None)
@@ -2447,7 +2455,7 @@ def armfw_elf_get_value_update_bytes(po, asm_arch, elf_sections, re_list, glob_p
 
     for valbt in valbts:
         section = elf_sections[valbt['sect']]
-        if (valbt['offs'] < 0) or (valbt['offs'] + len (valbt['data']) > len(section['data'])):
+        if (valbt['offs'] < 0) or (valbt['offs'] + len(valbt['data']) > len(section['data'])):
             raise ValueError("Got past section '{:s}' border - internal error.".format(valbt['sect']))
     return valbts
 
@@ -2758,17 +2766,20 @@ def armfw_elf_paramvals_update_list(po, asm_arch, re_list, pub_params_list, glob
         if True:
             depparams_list = armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, nxpar['setValue'])
             for deppar in depparams_list:
-                armfw_elf_value_pre_update_call(po, asm_arch, elf_sections, re_list, glob_params_list, deppar, deppar['setValue'])
+                armfw_elf_value_pre_update_call(po, asm_arch,
+                      elf_sections, re_list, glob_params_list, deppar, deppar['setValue'])
 
     update_count = 0
     # Update the params from priority lists
     for nxpar in update_list_a + update_list_b + update_list_c:
         par_info = pub_params_list[nxpar['name']]
-        update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_list, glob_params_list, par_info, nxpar['setValue'])
+        update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections,
+          re_list, glob_params_list, par_info, nxpar['setValue'])
         if update_performed:
             depparams_list = armfw_elf_paramvals_get_depend_list(glob_params_list, par_info, nxpar['setValue'])
             for deppar in depparams_list:
-                update_performed = armfw_elf_publicval_update(po, asm_arch, elf_sections, re_list, glob_params_list, deppar, deppar['setValue'])
+                update_performed = armfw_elf_publicval_update(po, asm_arch,
+                  elf_sections, re_list, glob_params_list, deppar, deppar['setValue'])
             update_count += 1
 
     return update_count

@@ -66,7 +66,8 @@ import itertools
 import enum
 import json
 
-from ctypes import *
+from ctypes import c_char, c_int, c_ubyte, c_ushort, c_uint, c_ulonglong, c_float
+from ctypes import memmove, addressof, sizeof, Array, LittleEndianStructure
 
 sys.path.insert(0, './')
 from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
