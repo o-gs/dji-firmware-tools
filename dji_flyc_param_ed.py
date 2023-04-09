@@ -110,9 +110,10 @@ class FlycExportLimitF2017(LittleEndianStructure):
 
 class FlycExportLimitI2017(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('deflt', c_int),
-              ('min', c_int),
-              ('max', c_int),
+  _fields_ = [
+        ('deflt', c_int),
+        ('min', c_int),
+        ('max', c_int),
   ]
 
 
