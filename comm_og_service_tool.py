@@ -1509,7 +1509,7 @@ def do_camera_calib_request_p3x_encryptpair(po, ser):
 
     print("WARNING: Do not use this command unless you know what you're doing! If SHA204 chip in your " \
         "gimbal has Config Zone locked (and all drones have it locked during production), this command " \
-        "will just make encryption config inconsistent between the Camera and the SHA204 chip. " + \
+        "will just make encryption config inconsistent between the Camera and the SHA204 chip. " \
         "The camera will then enter Authority Level 0 and will ignore most commands.\n")
 
     # Camera ChipState contains board serial numbersfor all 3 components

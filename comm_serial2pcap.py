@@ -206,8 +206,8 @@ def main():
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-F', '--fifo',
-            help="write output to a fifo instead of stdout; the fifo is created " + \
-              "if needed and capturing does not start until the other side of the fifo is opened")
+            help=("write output to a fifo instead of stdout; the fifo is created "
+              "if needed and capturing does not start until the other side of the fifo is opened"))
 
     subparser.add_argument('-w', '--write-file',
             help="write output to a file instead of stdout")
