@@ -96,7 +96,7 @@ def case_amba_romfs_rebin(part_inp_fn):
     pass
 
 
-@pytest.mark.order(2) # must be run after test_dji_xv4_fwcon_rebin
+@pytest.mark.order(3) # must be run after test_amba_fwpak_xv4_rebin
 @pytest.mark.fw_xv4
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/m600-matrice_600_hexacopter',2,),
