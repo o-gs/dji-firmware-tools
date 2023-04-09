@@ -366,7 +366,7 @@ def amba_read_mod_head(po):
       ((int(ver_info_m.group("major") , 10) & 0xff) << 24) +
       ((int(ver_info_m.group("minor"), 10) % 0xff) << 16) +
       (int(ver_info_m.group("svn") , 16) % 0xffff) )
-    for i,n in enumerate(part_sizes):
+    for i, n in enumerate(part_sizes):
         modposthd.part_size[i] = n
     del parser
     return (modhead, ptyp_names, modposthd)
@@ -452,7 +452,8 @@ def amba_extract(po, fwmdlfile):
             break
         if (sizeof(modhead) + i * sizeof(hde) + hde.dt_len >= fwmdlfile_len):
             if (po.verbose > 1):
-                print("{}: Detection finished with entry larger than file; expecting {:d} entries".format(po.fwmdlfile, len(modentries)))
+                print("{}: Detection finished with entry larger than file; expecting {:d} entries"
+                  .format(po.fwmdlfile, len(modentries)))
             raise_or_warn(po, ValueError("Detection finished with unusual entry sizes, verify files."))
             fwmdlfile.seek(-sizeof(hde), os.SEEK_CUR)
             break
@@ -493,7 +494,8 @@ def amba_extract(po, fwmdlfile):
             # End Of File, correct ending
             break
         if n != sizeof(e):
-            raise EOFError("Could not read firmware package partition header, got {:d} out of {:d}.".format(n, sizeof(e)))
+            raise EOFError("Could not read firmware package partition header, got {:d} out of {:d}."
+              .format(n, sizeof(e)))
         if e.magic != 0xA324EB90:
             raise_or_warn(po, ValueError("Invalid magic value in partition {:d} header.".format(i)))
         if (po.verbose > 1):
@@ -510,11 +512,13 @@ def amba_extract(po, fwmdlfile):
         amba_extract_partition_head(po, e, i, ptyp)
         hdcrc = amba_extract_partition_data(po, fwmdlfile, e, i, ptyp, hdcrc)
         if (hdcrc != hde.crc32):
-            raise_or_warn(po, ValueError("Entry {:d} cummulative checksum mismatch; got {:08X}, expected {:08X}.".format(i, hdcrc, hde.crc32)))
+            raise_or_warn(po, ValueError("Entry {:d} cummulative checksum mismatch; got {:08X}, expected {:08X}."
+              .format(i, hdcrc, hde.crc32)))
         elif (po.verbose > 1):
             print("{}: Entry {:2d} cummulative checksum {:08X} matched OK".format(po.fwmdlfile, i, hdcrc))
         # Check if the date makes sense
-        if (e.build_date_year() < 1970) or (e.build_date_month() < 1) or (e.build_date_month() > 12) or (e.build_date_day() < 1) or (e.build_date_day() > 31):
+        if ((e.build_date_year() < 1970) or (e.build_date_month() < 1) or
+          (e.build_date_month() > 12) or (e.build_date_day() < 1) or (e.build_date_day() > 31)):
             raise_or_warn(po, ValueError("Entry {:d} date makes no sense.".format(i)))
         elif (e.build_date_year() < 2004):
             raise_or_warn(po, ValueError("Entry {:d} date is from before Ambarella formed as company.".format(i)))
@@ -540,17 +544,18 @@ def amba_search_extract(po, fwmdlfile):
         epos = fwmdlmm.find(b'\x90\xEB\x24\xA3', epos+sizeof(FwModPartHeader))
         if (epos < 0):
             break
-        epos -= 24 # pos of 'magic' within FwModPartHeader
+        epos -= 24  # pos of 'magic' within FwModPartHeader
         if (epos < 0):
             continue
         dtpos = epos + sizeof(FwModPartHeader)
-        e = FwModPartHeader.from_buffer_copy(fwmdlmm[epos:dtpos]);
+        e = FwModPartHeader.from_buffer_copy(fwmdlmm[epos:dtpos])
         if (e.dt_len < 16) or (e.dt_len > 128*1024*1024) or (e.dt_len > fwmdlmm.size()-dtpos):
             print("{}: False positive - entry at {:d} has bad size, {:d} bytes".format(po.fwmdlfile, epos, e.dt_len))
             continue
         print("{}: Extracting entry {:2d}, pos {:8d}, len {:8d} bytes".format(po.fwmdlfile, i, epos, e.dt_len))
         if (prev_dtpos+prev_dtlen > epos):
-            raise_or_warn(po, ValueError("Partition {:d} overlaps with previous by {:d} bytes".format(i, prev_dtpos + prev_dtlen - epos)))
+            raise_or_warn(po, ValueError("Partition {:d} overlaps with previous by {:d} bytes"
+              .format(i, prev_dtpos + prev_dtlen - epos)))
         ptyp = "{:02d}".format(i)
         amba_extract_partition_head(po, e, i, ptyp)
         amba_extract_partition_data_mm(po, fwmdlmm, epos, e, i, ptyp, None)

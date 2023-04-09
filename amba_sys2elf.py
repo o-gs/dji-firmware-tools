@@ -79,12 +79,11 @@ __version__ = "0.4.0"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
-import sys
 import argparse
-import os
-import re
 import configparser
 import itertools
+import os
+import sys
 
 sys.path.insert(0, './')
 from arm_bin2elf import eprint, armfw_bin2elf, parse_section_param
@@ -97,12 +96,12 @@ def syssw_read_base_address(po, fname):
     mem_addr = 0
     # Do not use basename - a9h file is in the same folder where a9s was
     if (po.verbose > 1):
-        print("{}: Opening {:s}".format(po.fwpartfile,fname))
+        print("{}: Opening {:s}".format(po.fwpartfile, fname))
     parser = configparser.ConfigParser()
     with open(fname, "r") as lines:
         lines = itertools.chain(("[asection]",), lines) # This line adds section header to ini
         parser.read_file(lines)
-        mem_addr = int(parser.get("asection", "mem_addr"),16)
+        mem_addr = int(parser.get("asection", "mem_addr"), 16)
     del parser
     return mem_addr
 

@@ -28,11 +28,11 @@ import argparse
 import configparser
 import itertools
 import sys
-import getopt
 import mmap
 import os
 import re
-from ctypes import *
+from ctypes import c_char, c_char_p, c_ubyte, c_uint
+from ctypes import cast, sizeof, LittleEndianStructure
 from time import gmtime, strftime
 
 
@@ -67,6 +67,7 @@ class ROMFSPartitionHeader(LittleEndianStructure):
     from pprint import pformat
     return pformat(d, indent=4, width=1)
 
+
 class ROMFSFileEntry(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('filename', c_char * 116),
@@ -91,8 +92,8 @@ class ROMFSFileEntry(LittleEndianStructure):
 
 def romfs_padded_size(content_offs):
     # if (content_offs % 2048) != 0: - no, padding is not done this way
-    return content_offs + 2048 - (content_offs % 2048);
-  
+    return content_offs + 2048 - (content_offs % 2048)
+
 
 def romfs_extract_filesystem_head(po, fshead, fsentries):
     fname = "{:s}/{:s}".format(po.snglfdir, "_header.a9t")
@@ -140,7 +141,7 @@ def romfs_recompute_filesystem_offsets(po, fshead, fsentries):
     # ROMFSPartitionHeader is already padded, no need for action
     content_offs = romfs_padded_size(content_offs + len(fsentries) * sizeof(ROMFSFileEntry))
     for i, fe in enumerate(fsentries):
-        fe.offset = content_offs;
+        fe.offset = content_offs
         content_offs = romfs_padded_size(content_offs + fe.length)
     fshead.file_count = len(fsentries)
     return fshead, fsentries
@@ -246,7 +247,7 @@ def romfs_search_extract(po, fwpartfile):
         epos -= 124 # pos of 'magic' within FwModPartHeader
         if (epos < 0):
             continue
-        fe = ROMFSFileEntry.from_buffer_copy(fwpartmm[epos:epos+sizeof(ROMFSFileEntry)]);
+        fe = ROMFSFileEntry.from_buffer_copy(fwpartmm[epos:epos+sizeof(ROMFSFileEntry)])
         dtpos = fe.offset
         if (fe.length < 0) or (fe.length > 128*1024*1024) or (fe.length > fwpartmm.size()-dtpos):
             print("{}: False positive - entry at {:d} has bad size, {:d} bytes".format(po.fwpartfile, epos, fe.length))

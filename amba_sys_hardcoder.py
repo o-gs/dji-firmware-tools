@@ -88,7 +88,7 @@ try:
     from keystone.keystone_const import KS_ARCH_ARM, KS_ARCH_ARM64, KS_ARCH_X86, KS_ARCH_MIPS
     from keystone.keystone_const import KS_MODE_ARM, KS_MODE_V8, KS_MODE_32, KS_MODE_64, KS_MODE_MIPS32, KS_MODE_MIPS64
     from keystone.keystone_const import KS_MODE_THUMB, KS_MODE_LITTLE_ENDIAN, KS_MODE_BIG_ENDIAN
-    from keystone.keystone_const import KsError
+    from keystone import KsError
     if not callable(getattr(keystone, "Ks", None)):
         raise ImportError("The keystone library provided is incorrect - lacks Ks")
 except ImportError:
