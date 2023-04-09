@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" Ambarella Firmware ROMFS tool
+""" Ambarella Firmware ROMFS tool.
 """
 
 # Copyright (C) 2016,2017 Mefistotelis <mefistotelis@gmail.com>
@@ -20,26 +20,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
-import getopt
-import os
-import mmap
-import re
+__version__ = "0.0.2"
+__author__ = "Mefistotelis @ Original Gangsters"
+__license__ = "GPL"
+
+import argparse
 import configparser
 import itertools
+import sys
+import getopt
+import mmap
+import os
+import re
 from ctypes import *
 from time import gmtime, strftime
 
-def eprint(*args, **kwargs):
-  print(*args, file=sys.stderr, **kwargs)
 
-class ProgOptions:
-  fwpartfile = ''
-  snglfdir = ''
-  verbose = 0
-  extract = False
-  search = False
-  add = False
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 
 # The ROMFS file consists of 3 sections:
@@ -271,93 +269,91 @@ def romfs_search_extract(po, fwpartfile):
 
 
 def romfs_create(po, fwpartfile):
-  fshead, fsentries = romfs_read_filesystem_head(po)
-  if (po.verbose > 2):
-      print("{}: Entries:".format(po.fwpartfile))
-      print(fsentries)
-  fshead, fsentries = romfs_recompute_filesystem_lengths(po, fshead, fsentries)
-  fshead, fsentries = romfs_recompute_filesystem_offsets(po, fshead, fsentries)
-  if fwpartfile.write(fshead) != sizeof(fshead):
-    raise EOFError("Couldn't write ROMFS partition file main header.")
-  for i, fe in enumerate(fsentries):
-    if fwpartfile.write(fe) != sizeof(fe):
-      raise EOFError("Couldn't write ROMFS partition file entry header.")
-  for i, fe in enumerate(fsentries):
-    romfs_write_filesystem_entry(po, fwpartfile, i, fe)
+    fshead, fsentries = romfs_read_filesystem_head(po)
+    if (po.verbose > 2):
+        print("{}: Entries:".format(po.fwpartfile))
+        print(fsentries)
+    fshead, fsentries = romfs_recompute_filesystem_lengths(po, fshead, fsentries)
+    fshead, fsentries = romfs_recompute_filesystem_offsets(po, fshead, fsentries)
+    if fwpartfile.write(fshead) != sizeof(fshead):
+        raise EOFError("Couldn't write ROMFS partition file main header.")
+    for i, fe in enumerate(fsentries):
+        if fwpartfile.write(fe) != sizeof(fe):
+          raise EOFError("Couldn't write ROMFS partition file entry header.")
+    for i, fe in enumerate(fsentries):
+        romfs_write_filesystem_entry(po, fwpartfile, i, fe)
 
 
-def main(argv):
-  # Parse command line options
-  po = ProgOptions()
-  try:
-     opts, args = getopt.getopt(argv, "hxsavd:p:",["help","version","extract","search","add","fwpart=","snglfdir="])
-  except getopt.GetoptError:
-     print("Unrecognized options; check amba_romfs.py --help")
-     sys.exit(2)
-  for opt, arg in opts:
-     if opt in ("-h", "--help"):
-        print("Ambarella Firmware ROMFS tool")
-        print("amba_romfs.py <-x|-s|-a> [-v] -m <fwmdfile> [-t <snglfdir>]")
-        print("  -p <fwpartfile> - name of the firmware partition file")
-        print("  -d <snglfdir> - directory for the single extracted files")
-        print("                  defaults to base name of firmware partition file")
-        print("  -x - extract partition file into single files")
-        print("  -s - search for files within partition and extract them")
-        print("       (works similar to -x, but uses brute-force search for file entries)")
-        print("  -a - add single files to partition file")
-        print("  -v - increases verbosity level; max level is set by -vvv")
-        sys.exit()
-     elif opt == "--version":
-        print("amba_romfs.py version 0.1.1")
-        sys.exit()
-     elif opt == '-v':
-        po.verbose += 1
-     elif opt in ("-p", "--fwpart"):
-        po.fwpartfile = arg
-     elif opt in ("-d", "--snglfdir"):
-        po.snglfdir = arg
-     elif opt in ("-x", "--extract"):
-        po.extract = True
-     elif opt in ("-s", "--search"):
-        po.search = True
-     elif opt in ("-a", "--add"):
-        po.add = True
-  if len(po.fwpartfile) > 0 and len(po.snglfdir) == 0:
-      po.snglfdir = os.path.splitext(os.path.basename(po.fwpartfile))[0]
+def main():
+    """ Main executable function.
 
-  if po.extract:
+    Its task is to parse command line options and call a function which performs requested command.
+    """
+    parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
-    if (po.verbose > 0):
-      print("{}: Opening for extraction".format(po.fwpartfile))
-    fwpartfile = open(po.fwpartfile, "rb")
+    parser.add_argument('-p', '--fwpartfile', type=str, required=True,
+          help="name of the firmware partition file")
 
-    romfs_extract(po, fwpartfile)
+    parser.add_argument('-d', '--snglfdir', type=str,
+          help=("directory for the single extracted files "
+           "(defaults to base name of firmware partition file)"))
 
-    fwpartfile.close();
+    parser.add_argument('--dry-run', action='store_true',
+          help="do not write any files or do permanent changes")
 
-  elif po.search:
+    parser.add_argument('-v', '--verbose', action='count', default=0,
+          help="increases verbosity level; max level is set by -vvv")
 
-    if (po.verbose > 0):
-      print("{}: Opening for search".format(po.fwpartfile))
-    fwpartfile = open(po.fwpartfile, "rb")
+    subparser = parser.add_mutually_exclusive_group(required=True)
 
-    romfs_search_extract(po, fwpartfile)
+    #subparser.add_argument('-l', '--list', action='store_true',
+    #      help="list single files stored within partition file")
 
-    fwpartfile.close();
+    subparser.add_argument('-x', '--extract', action='store_true',
+          help="extract partition file into single files")
 
-  elif po.add:
+    subparser.add_argument('-s', '--search', action='store_true',
+          help=("search for files within partition and extract them "
+            "(works similar to -x, but uses brute-force search for file entries)"))
 
-    if (po.verbose > 0):
-      print("{}: Opening for creation".format(po.fwpartfile))
-    fwpartfile = open(po.fwpartfile, "wb")
+    subparser.add_argument('-a', '--add', action='store_true',
+          help="add single files to partition file")
 
-    romfs_create(po, fwpartfile)
+    subparser.add_argument('--version', action='version', version="%(prog)s {version} by {author}"
+            .format(version=__version__, author=__author__),
+          help="display version information and exit")
 
-    fwpartfile.close();
+    po = parser.parse_args()
 
-  else:
+    if len(po.fwpartfile) > 0 and len(po.snglfdir) == 0:
+        po.snglfdir = os.path.splitext(os.path.basename(po.fwpartfile))[0]
 
-    raise NotImplementedError('Unsupported command.')
+    if po.extract:
+        if (po.verbose > 0):
+            print("{}: Opening for extraction".format(po.fwpartfile))
+        with open(po.fwpartfile, 'rb') as fwpartfile:
+            romfs_extract(po, fwpartfile)
 
-if __name__ == "__main__":
-   main(sys.argv[1:])
+    elif po.search:
+        if (po.verbose > 0):
+            print("{}: Opening for search".format(po.fwpartfile))
+        with open(po.fwpartfile, 'rb') as fwpartfile:
+            romfs_search_extract(po, fwpartfile)
+
+    elif po.add:
+        if (po.verbose > 0):
+            print("{}: Opening for creation".format(po.fwpartfile))
+        with open(po.fwpartfile, 'wb') as fwpartfile:
+            romfs_create(po, fwpartfile)
+
+    else:
+        raise NotImplementedError("Unsupported command.")
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception as ex:
+        eprint("Error: "+str(ex))
+        if 0: raise
+        sys.exit(10)
