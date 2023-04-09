@@ -28,13 +28,12 @@ __version__ = "0.5.0"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
-import os
 import sys
-import select
 import argparse
 import enum
 import re
-from ctypes import *
+from ctypes import c_char, c_int, c_ubyte, c_ushort, c_uint, c_float
+from ctypes import sizeof, addressof, byref, memmove, LittleEndianStructure
 from collections import OrderedDict
 
 sys.path.insert(0, './')
@@ -42,6 +41,7 @@ from comm_dat2pcap import (
   calc_pkt55_hdr_checksum, calc_pkt55_checksum,
   eprint,
 )
+
 
 class DecoratedEnum(enum.Enum):
     @classmethod
@@ -314,21 +314,25 @@ class DJIPayload_General_ChipRebootRe(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
              ]
 
+
 class DJIPayload_General_EncryptCmd(DecoratedEnum):
     GetChipState = 1
     GetModuleState = 2
     Config = 3
     DoEncrypt = 4
 
+
 class DJIPayload_General_EncryptOperType(DecoratedEnum):
     WriteTarget = 0
     WriteSH204 = 1
     WriteAll = 2
 
+
 class DJIPayload_General_EncryptGetStateRq(DJIPayload_Base):
   # Matches both GetChipState and GetModuleState
   _fields_ = [('command', c_ubyte),
              ]
+
 
 class DJIPayload_General_EncryptConfigRq(DJIPayload_Base):
   # Matches only Config command
@@ -340,6 +344,7 @@ class DJIPayload_General_EncryptConfigRq(DJIPayload_Base):
               ('key', c_ubyte * 32),
               ('secure_num', c_ubyte * 16),
              ]
+
 
 class DJIPayload_General_EncryptConfig3Rq(DJIPayload_Base):
   # Matches only Config command
@@ -360,12 +365,14 @@ class DJIPayload_General_EncryptConfig3Rq(DJIPayload_Base):
               ('m08_secure_num', c_ubyte * 16),
              ]
 
+
 class DJIPayload_General_EncryptDoEncryptRq(DJIPayload_Base):
   # Matches only DoEncrypt command
   _fields_ = [('command', c_ubyte),
               ('mod_type', c_ubyte),
               ('data', c_ubyte * 32),
              ]
+
 
 class DJIPayload_General_EncryptGetChipStateRe(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
@@ -375,10 +382,12 @@ class DJIPayload_General_EncryptGetChipStateRe(DJIPayload_Base):
               ('m08_boardsn', c_ubyte * 10),
              ]
 
+
 class DJIPayload_General_EncryptGetModuleStateRe(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
               ('state_flags', c_ubyte),
              ]
+
 
 class DJIPayload_General_EncryptConfigRe(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
@@ -389,6 +398,7 @@ class DJIPayload_FlyController_AssistantUnlockRq(DJIPayload_Base):
   _fields_ = [('lock_state', c_uint),
              ]
 
+
 class DJIPayload_FlyController_AssistantUnlockRe(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
              ]
@@ -398,12 +408,15 @@ class DJIPayload_FlyController_GetParamInfoByIndex2015Rq(DJIPayload_Base):
   _fields_ = [('param_index', c_ushort),
              ]
 
+
 class DJIPayload_FlyController_GetParamInfoByHash2015Rq(DJIPayload_Base):
   _fields_ = [('param_hash', c_uint),
              ]
 
+
 # We cannot define property name with variable size, so let's make const size one
 DJIPayload_FlyController_ParamMaxLen = 160
+
 
 class DJIPayload_FlyController_ParamType(DecoratedEnum):
     ubyte = 0x0
@@ -419,9 +432,11 @@ class DJIPayload_FlyController_ParamType(DecoratedEnum):
     array = 0xa
     bool = 0xb
 
+
 class DJIPayload_FlyController_GetParamInfoEOL2015Re(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
              ]
+
 
 class DJIPayload_FlyController_GetParamInfoU2015Re(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
@@ -434,6 +449,7 @@ class DJIPayload_FlyController_GetParamInfoU2015Re(DJIPayload_Base):
               ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
              ]
 
+
 class DJIPayload_FlyController_GetParamInfoI2015Re(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
               ('type_id', c_ushort),
@@ -444,6 +460,7 @@ class DJIPayload_FlyController_GetParamInfoI2015Re(DJIPayload_Base):
               ('limit_def', c_int),
               ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
              ]
+
 
 class DJIPayload_FlyController_GetParamInfoF2015Re(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
@@ -461,6 +478,7 @@ class DJIPayload_FlyController_ReadParamValByHash2015Rq(DJIPayload_Base):
   _fields_ = [('param_hash', c_uint),
              ]
 
+
 class DJIPayload_FlyController_ReadParamValByHash2015Re(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
               ('param_hash', c_uint),
@@ -473,6 +491,7 @@ class DJIPayload_FlyController_ReadParamValByIndex2017Rq(DJIPayload_Base):
               ('unknown1', c_ushort),
               ('param_index', c_ushort),
              ]
+
 
 class DJIPayload_FlyController_ReadParamValByIndex2017Re(DJIPayload_Base):
   _fields_ = [('status', c_ushort),
@@ -489,12 +508,14 @@ class DJIPayload_FlyController_WriteParamVal1ByIndex2017Rq(DJIPayload_Base):
               ('param_value', c_ubyte),
              ]
 
+
 class DJIPayload_FlyController_WriteParamVal2ByIndex2017Rq(DJIPayload_Base):
   _fields_ = [('table_no', c_ushort),
               ('unknown1', c_ushort),
               ('param_index', c_ushort),
               ('param_value', c_ubyte * 2),
              ]
+
 
 class DJIPayload_FlyController_WriteParamVal4ByIndex2017Rq(DJIPayload_Base):
   _fields_ = [('table_no', c_ushort),
@@ -503,12 +524,14 @@ class DJIPayload_FlyController_WriteParamVal4ByIndex2017Rq(DJIPayload_Base):
               ('param_value', c_ubyte * 4),
              ]
 
+
 class DJIPayload_FlyController_WriteParamVal8ByIndex2017Rq(DJIPayload_Base):
   _fields_ = [('table_no', c_ushort),
               ('unknown1', c_ushort),
               ('param_index', c_ushort),
               ('param_value', c_ubyte * 8),
              ]
+
 
 class DJIPayload_FlyController_WriteParamVal16ByIndex2017Rq(DJIPayload_Base):
   _fields_ = [('table_no', c_ushort),
@@ -517,12 +540,14 @@ class DJIPayload_FlyController_WriteParamVal16ByIndex2017Rq(DJIPayload_Base):
               ('param_value', c_ubyte * 16),
              ]
 
+
 class DJIPayload_FlyController_WriteParamValAnyByIndex2017Rq(DJIPayload_Base):
   _fields_ = [('table_no', c_ushort),
               ('unknown1', c_ushort),
               ('param_index', c_ushort),
               ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
              ]
+
 
 class DJIPayload_FlyController_WriteParamValByIndex2017Re(DJIPayload_Base):
   _fields_ = [('status', c_ushort),
@@ -537,30 +562,36 @@ class DJIPayload_FlyController_WriteParamVal1ByHash2015Rq(DJIPayload_Base):
               ('param_value', c_ubyte * 1),
              ]
 
+
 class DJIPayload_FlyController_WriteParamVal2ByHash2015Rq(DJIPayload_Base):
   _fields_ = [('param_hash', c_uint),
               ('param_value', c_ubyte * 2),
              ]
+
 
 class DJIPayload_FlyController_WriteParamVal4ByHash2015Rq(DJIPayload_Base):
   _fields_ = [('param_hash', c_uint),
               ('param_value', c_ubyte * 4),
              ]
 
+
 class DJIPayload_FlyController_WriteParamVal8ByHash2015Rq(DJIPayload_Base):
   _fields_ = [('param_hash', c_uint),
               ('param_value', c_ubyte * 8),
              ]
+
 
 class DJIPayload_FlyController_WriteParamVal16ByHash2015Rq(DJIPayload_Base):
   _fields_ = [('param_hash', c_uint),
               ('param_value', c_ubyte * 16),
              ]
 
+
 class DJIPayload_FlyController_WriteParamValAnyByHash2015Rq(DJIPayload_Base):
   _fields_ = [('param_hash', c_uint),
               ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
              ]
+
 
 class DJIPayload_FlyController_WriteParamValByHash2015Re(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
@@ -580,6 +611,7 @@ class DJIPayload_FlyController_GetTblAttribute2017Re(DJIPayload_Base):
               ('entries_num', c_uint),
              ]
 
+
 class DJIPayload_FlyController_GetTblAttributeEOL2017Re(DJIPayload_Base):
   _fields_ = [('status', c_ushort),
              ]
@@ -590,9 +622,11 @@ class DJIPayload_FlyController_GetParamInfoByIndex2017Rq(DJIPayload_Base):
               ('param_index', c_ushort),
              ]
 
+
 class DJIPayload_FlyController_GetParamInfoEOL2017Re(DJIPayload_Base):
   _fields_ = [('status', c_ushort),
              ]
+
 
 class DJIPayload_FlyController_GetParamInfoU2017Re(DJIPayload_Base):
   _fields_ = [('status', c_ushort),
@@ -606,6 +640,7 @@ class DJIPayload_FlyController_GetParamInfoU2017Re(DJIPayload_Base):
               ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
              ]
 
+
 class DJIPayload_FlyController_GetParamInfoI2017Re(DJIPayload_Base):
   _fields_ = [('status', c_ushort),
               ('table_no', c_ushort),
@@ -617,6 +652,7 @@ class DJIPayload_FlyController_GetParamInfoI2017Re(DJIPayload_Base):
               ('limit_max', c_int),
               ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
              ]
+
 
 class DJIPayload_FlyController_GetParamInfoF2017Re(DJIPayload_Base):
   _fields_ = [('status', c_ushort),
@@ -635,9 +671,11 @@ class DJIPayload_Gimbal_CalibCmd(DecoratedEnum):
     JointCoarse = 1
     LinearHall = 2
 
+
 class DJIPayload_Gimbal_CalibRq(DJIPayload_Base):
   _fields_ = [('command', c_ubyte),
              ]
+
 
 class DJIPayload_Gimbal_CalibRe(DJIPayload_Base):
   _fields_ = [('status1', c_ubyte),
@@ -649,6 +687,7 @@ class DJIPayload_HDLink_WriteHardwareRegisterRq(DJIPayload_Base):
   _fields_ = [('reg_address', c_ushort),
               ('reg_value', c_ubyte),
              ]
+
 
 class DJIPayload_HDLink_WriteHardwareRegisterRe(DJIPayload_Base):
   _fields_ = [('status', c_ubyte),
@@ -666,15 +705,18 @@ def flyc_parameter_compute_hash(po, parname):
       parhash = (tmpval + ncode) % 0xfffffffb
   return parhash
 
+
 def flyc_parameter_is_signed(type_id):
   """ Returns whether flight param of given type is signed - should use "I" versions of packets.
   """
   return (type_id >= DJIPayload_FlyController_ParamType.byte.value) and (type_id <= DJIPayload_FlyController_ParamType.longlong.value)
 
+
 def flyc_parameter_is_float(type_id):
   """ Returns whether flight param of given type is float - should use "F" versions of packets.
   """
   return (type_id == DJIPayload_FlyController_ParamType.float.value) or (type_id == DJIPayload_FlyController_ParamType.double.value)
+
 
 def encode_command_packet(sender_type, sender_index, receiver_type, receiver_index, seq_num, pack_type, ack_type, encrypt_type, cmd_set, cmd_id, payload):
     """ Encodes command packet with given header fields and payload into c_ubyte array.
@@ -703,6 +745,7 @@ def encode_command_packet(sender_type, sender_index, receiver_type, receiver_ind
     memmove(addressof(enc_data) + sizeof(pkthead) + sizeof(pktpayload), byref(pktfoot), sizeof(pktfoot))
     return enc_data
 
+
 def encode_command_packet_en(sender_type, sender_index, receiver_type, receiver_index, seq_num, pack_type, ack_type, encrypt_type, cmd_set, cmd_id, payload):
     """ Encodes command packet with given header fields and payload into c_ubyte array.
 
@@ -710,6 +753,7 @@ def encode_command_packet_en(sender_type, sender_index, receiver_type, receiver_
     """
     return encode_command_packet(sender_type.value, sender_index, receiver_type.value, receiver_index,
       seq_num, pack_type.value, ack_type.value, encrypt_type.value, cmd_set.value, cmd_id, payload)
+
 
 def get_known_payload(pkthead, payload):
     if pkthead.cmd_set == CMD_SET_TYPE.GENERAL.value and pkthead.packet_type == 0:
@@ -851,10 +895,12 @@ def get_known_payload(pkthead, payload):
 
     return None
 
+
 def do_build_packet(options):
     pkt = encode_command_packet_en(options.sender_type, options.sender_index, options.receiver_type, options.receiver_index,
       options.seq_num, options.pack_type, options.ack_type, options.encrypt_type, options.cmd_set, options.cmd_id, options.payload)
     print(' '.join('{:02x}'.format(x) for x in pkt))
+
 
 def parse_module_ident(s):
     """ Parses module identification string in known formats.
@@ -864,6 +910,7 @@ def parse_module_ident(s):
     if out is None:
         raise argparse.ArgumentTypeError("No 4-byte module ident")
     return out
+
 
 def parse_module_type(s):
     """ Parses module type string in known formats.
@@ -879,6 +926,7 @@ def parse_module_type(s):
     except:
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
+
 def parse_ack_type(s):
     """ Parses ack type string in known formats.
     """
@@ -892,6 +940,7 @@ def parse_ack_type(s):
         return ACK_TYPE.from_name(s.upper())
     except:
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
+
 
 def parse_encrypt_type(s):
     """ Parses encrypt type string in known formats.
@@ -907,6 +956,7 @@ def parse_encrypt_type(s):
     except:
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
+
 def parse_packet_type(s):
     """ Parses packet type string in known formats.
     """
@@ -920,6 +970,7 @@ def parse_packet_type(s):
         return PACKET_TYPE.from_name(s.upper())
     except:
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
+
 
 def parse_cmd_set(s):
     """ Parses command set string in known formats.
@@ -935,67 +986,68 @@ def parse_cmd_set(s):
     except:
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
+
 def main():
     """ Main executable function.
 
       Its task is to parse command line options and call a function which performs a task.
     """
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
     parser.add_argument('-n', '--seq_num', default=0, type=int,
-            help='Sequence number of the packet (default is %(default)s)')
+            help="sequence number of the packet (default is %(default)s)")
 
     parser.add_argument('-u', '--pack_type', default="Request", type=parse_packet_type,
-            help='Packet Type, either name or number (default is %(default)s)')
+            help="packet Type, either name or number (default is %(default)s)")
 
     parser.add_argument('-a', '--ack_type', default="No_ACK_Needed", type=parse_ack_type,
-            help='Acknowledgement type, either name or number (default is %(default)s)')
+            help="acknowledgement type, either name or number (default is %(default)s)")
 
     parser.add_argument('-e', '--encrypt_type', default="NO_ENC", type=parse_encrypt_type,
-            help='Encryption type, either name or number (default is %(default)s)')
+            help="encryption type, either name or number (default is %(default)s)")
 
     parser.add_argument('-s', '--cmd_set', default="GENERAL", type=parse_cmd_set,
-            help='Command Set, either name or number (default is %(default)s)')
+            help="command Set, either name or number (default is %(default)s)")
 
     parser.add_argument('-i', '--cmd_id', default=0, type=int,
-            help='Command ID (default is %(default)s)')
+            help="command ID (default is %(default)s)")
 
     parser.add_argument('-v', '--verbose', action='count', default=0,
-            help='Increases verbosity level; max level is set by -vvv')
+            help="increases verbosity level; max level is set by -vvv")
 
-    parser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+    parser.add_argument('--version', action='version', version="%(prog)s {version} by {author}"
               .format(version=__version__, author=__author__),
-            help="Display version information and exit")
+            help="display version information and exit")
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-t', '--sender', type=parse_module_ident,
-            help='Sender Type and Index, in TTII form')
+            help="sender Type and Index, in TTII form")
 
     subparser.add_argument('-tt', '--sender_type', default="PC", type=parse_module_type,
-            help='Sender(transmitter) Type, either name or number (default is %(default)s)')
+            help="sender(transmitter) Type, either name or number (default is %(default)s)")
 
     parser.add_argument('-ti', '--sender_index', default=0, type=int,
-            help='Sender(transmitter) Index (default is %(default)s)')
+            help="sender(transmitter) Index (default is %(default)s)")
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-r', '--receiver', type=parse_module_ident,
-            help='Receiver Type and Index, in TTII form (ie. 0300)')
+            help="receiver Type and Index, in TTII form (ie. 0300)")
 
     subparser.add_argument('-rt', '--receiver_type', default="ANY", type=parse_module_type,
-            help='Receiver Type, either name or number (default is %(default)s)')
+            help="receiver Type, either name or number (default is %(default)s)")
 
     parser.add_argument('-ri', '--receiver_index', default=0, type=int,
-            help='Receiver index (default is %(default)s)')
+            help="receiver index (default is %(default)s)")
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-x', '--payload_hex', type=str,
-            help='Provide payload as hex string')
+            help="provide payload as hex string")
 
     subparser.add_argument('-p', '--payload_bin', default="", type=str,
-            help='Provide binary payload directly (default payload is empty)')
+            help="provide binary payload directly (default payload is empty)")
 
     options = parser.parse_args();
 
@@ -1019,5 +1071,5 @@ if __name__ == '__main__':
         main()
     except Exception as ex:
         eprint("Error: "+str(ex))
-        #raise
+        if 0: raise
         sys.exit(10)
