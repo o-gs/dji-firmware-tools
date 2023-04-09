@@ -30,9 +30,9 @@ __license__ = "GPL"
 import sys
 import argparse
 import os
-import math
-from ctypes import *
 import json
+from ctypes import c_int, c_ubyte, c_ushort, c_uint
+from ctypes import sizeof, LittleEndianStructure
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -56,15 +56,15 @@ class FlycNoFlyZone(LittleEndianStructure):
               ('end_at', c_ubyte)]
 
   def dict_export(self):
-    d = dict()
-    for (varkey, vartype) in self._fields_:
-        d[varkey] = getattr(self, varkey)
-    return d
+      d = dict()
+      for (varkey, vartype) in self._fields_:
+          d[varkey] = getattr(self, varkey)
+      return d
 
   def __repr__(self):
-    d = self.dict_export()
-    from pprint import pformat
-    return pformat(d, indent=4, width=1)
+      d = self.dict_export()
+      from pprint import pformat
+      return pformat(d, indent=4, width=1)
 
 
 class FlycNoFlyCoords(LittleEndianStructure):
@@ -74,161 +74,163 @@ class FlycNoFlyCoords(LittleEndianStructure):
 
 
 def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
-  """ Equivalent to math.isclose(); use it if the script needs to work on Python < 3.5
-  """
-  return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+    """ Equivalent to math.isclose(); use it if the script needs to work on Python < 3.5
+    """
+    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
 
 
 def flyc_nofly_is_proper_zone_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_align, data_align, pos, entry_pos):
-  """ Checks whether given FlycNoFlyZone object stores a proper entry of
-      flight controller no fly zones array.
-  """
-  if (enfzone.begin_at != 0) or (enfzone.end_at != 0):
-     if (po.verbose > 2):
-        print("Rejected at {:06x} on begin_at/end_at check ({:d},{:d})".format(entry_pos,enfzone.begin_at,enfzone.end_at))
-     return False
-  if (enfzone.radius < 30) or (enfzone.radius > 50000):
-     if (po.verbose > 2):
-        print("Rejected at {:06x} on radius check ({:d})".format(entry_pos,enfzone.radius))
-     return False
-  if (enfzone.country_code > 2000):
-     if (po.verbose > 2):
-        print("Rejected at {:06x} on country check ({:d})".format(entry_pos,enfzone.country_code))
-     return False
-  #if (enfzone.class_id < 30) or (enfzone.class_id > 30000):
-  if (enfzone.area_id <= 0):
-     if (po.verbose > 2):
-        print("Rejected at {:06x} on area_id check ({:d})".format(entry_pos,enfzone.area_id))
-     return False
-  return flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_align, data_align, pos, entry_pos)
+    """ Checks whether given FlycNoFlyZone object stores a proper entry of
+        flight controller no fly zones array.
+    """
+    if (enfzone.begin_at != 0) or (enfzone.end_at != 0):
+        if (po.verbose > 2):
+            print("Rejected at {:06x} on begin_at/end_at check ({:d},{:d})".format(entry_pos,enfzone.begin_at,enfzone.end_at))
+        return False
+    if (enfzone.radius < 30) or (enfzone.radius > 50000):
+        if (po.verbose > 2):
+            print("Rejected at {:06x} on radius check ({:d})".format(entry_pos,enfzone.radius))
+        return False
+    if (enfzone.country_code > 2000):
+        if (po.verbose > 2):
+            print("Rejected at {:06x} on country check ({:d})".format(entry_pos,enfzone.country_code))
+        return False
+    #if (enfzone.class_id < 30) or (enfzone.class_id > 30000):
+    if (enfzone.area_id <= 0):
+        if (po.verbose > 2):
+            print("Rejected at {:06x} on area_id check ({:d})".format(entry_pos,enfzone.area_id))
+        return False
+    return flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_align, data_align, pos, entry_pos)
 
 
 def flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfcord, func_align, data_align, pos, entry_pos):
-  """ Checks whether given FlycNoFlyCoords object stores a proper entry of
-      flight controller no fly coordinates array.
-  """
-  # Check if we're at ocean around (0.0,0.0), that is within rectangle (-8.0,-6.7) to (4.7,5.5)
-  if (enfcord.latitude >= -8000000) and (enfcord.latitude <= 4700000):
-     if (enfcord.longitude >= -6700000) and (enfcord.longitude <= 5500000):
+    """ Checks whether given FlycNoFlyCoords object stores a proper entry of
+        flight controller no fly coordinates array.
+    """
+    # Check if we're at ocean around (0.0,0.0), that is within rectangle (-8.0,-6.7) to (4.7,5.5)
+    if (enfcord.latitude >= -8000000) and (enfcord.latitude <= 4700000):
+        if (enfcord.longitude >= -6700000) and (enfcord.longitude <= 5500000):
+            if (po.verbose > 2):
+                print("Rejected at {:06x} on low coord ocean check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
+            return False
+    # Check if coords are within valid angular range
+    if (enfcord.latitude < -90000000) or (enfcord.latitude > 90000000):
         if (po.verbose > 2):
-           print("Rejected at {:06x} on low coord ocean check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
+            print("Rejected at {:06x} on latitude coord limit check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
         return False
-  # Check if coords are within valid angular range
-  if (enfcord.latitude < -90000000) or (enfcord.latitude > 90000000):
-     if (po.verbose > 2):
-        print("Rejected at {:06x} on latitude coord limit check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
-     return False
-  if (enfcord.longitude < -180000000) or (enfcord.longitude > 180000000):
-     if (po.verbose > 2):
-        print("Rejected at {:06x} on longitude coord limit check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
-     return False
-  return True
+    if (enfcord.longitude < -180000000) or (enfcord.longitude > 180000000):
+        if (po.verbose > 2):
+            print("Rejected at {:06x} on longitude coord limit check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
+        return False
+    return True
 
 
 def flyc_nofly_zone_pos_search(po, fwmdlfile, start_pos, func_align, data_align, min_match_accepted):
-  """ Finds position of flight controller no fly zones in the binary.
-  """
-  fwmdlfile.seek(0, os.SEEK_END)
-  fwmdlfile_len = fwmdlfile.tell()
-  enfzone = FlycNoFlyZone()
-  match_count = 0
-  match_pos = -1
-  match_entries = 0
-  reached_eof = False
-  pos = start_pos
-  while (True):
-     # Check how many correct zone entries we have
-     entry_count = 0
-     entry_pos = pos
-     while (True):
-        fwmdlfile.seek(entry_pos, os.SEEK_SET)
-        if fwmdlfile.readinto(enfzone) != sizeof(enfzone):
-           reached_eof = True
-           break
-        if not flyc_nofly_is_proper_zone_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_align, data_align, pos, entry_pos):
-           break
-        entry_count += 1
-        entry_pos += sizeof(enfzone)
-     # Do not allow entry at EOF
-     if (reached_eof):
-        break
-     # If entry is ok, consider it a match
-     if entry_count > min_match_accepted:
-        if (po.verbose > 1):
-           print("{}: Matching zones array at 0x{:08x}: {:d} entries".format(po.mdlfile,pos,entry_count))
-        if (entry_count >= match_entries):
-           match_pos = pos
-           match_entries = entry_count
-        match_count += 1
-     # Set position to search for next entry
-     if entry_count >= min_match_accepted:
-        pos += entry_count * sizeof(enfzone)
-     else:
-        pos += data_align - (pos%data_align)
-  if (match_count > 1):
-     eprint("{}: Warning: multiple ({:d}) matches found for fly zones array with alignment 0x{:02x}".format(po.mdlfile,match_count,data_align))
-  if (match_count < 1):
-     return -1, 0
-  return match_pos, match_entries
+    """ Finds position of flight controller no fly zones in the binary.
+    """
+    fwmdlfile.seek(0, os.SEEK_END)
+    fwmdlfile_len = fwmdlfile.tell()
+    enfzone = FlycNoFlyZone()
+    match_count = 0
+    match_pos = -1
+    match_entries = 0
+    reached_eof = False
+    pos = start_pos
+    while (True):
+        # Check how many correct zone entries we have
+        entry_count = 0
+        entry_pos = pos
+        while (True):
+            fwmdlfile.seek(entry_pos, os.SEEK_SET)
+            if fwmdlfile.readinto(enfzone) != sizeof(enfzone):
+                reached_eof = True
+                break
+            if not flyc_nofly_is_proper_zone_entry(po, fwmdlfile, fwmdlfile_len, enfzone, func_align, data_align, pos, entry_pos):
+                break
+            entry_count += 1
+            entry_pos += sizeof(enfzone)
+        # Do not allow entry at EOF
+        if (reached_eof):
+            break
+        # If entry is ok, consider it a match
+        if entry_count > min_match_accepted:
+            if (po.verbose > 1):
+                print("{}: Matching zones array at 0x{:08x}: {:d} entries".format(po.mdlfile,pos,entry_count))
+            if (entry_count >= match_entries):
+                match_pos = pos
+                match_entries = entry_count
+            match_count += 1
+        # Set position to search for next entry
+        if entry_count >= min_match_accepted:
+            pos += entry_count * sizeof(enfzone)
+        else:
+            pos += data_align - (pos%data_align)
+    if (match_count > 1):
+        eprint("{}: Warning: multiple ({:d}) matches found for fly zones array with alignment 0x{:02x}"
+          .format(po.mdlfile, match_count, data_align))
+    if (match_count < 1):
+        return -1, 0
+    return match_pos, match_entries
 
 
 def flyc_nofly_cord_pos_search(po, fwmdlfile, start_pos, func_align, data_align, min_match_accepted):
-  """ Finds position of flight controller no fly coords in the binary.
-  """
-  fwmdlfile.seek(0, os.SEEK_END)
-  fwmdlfile_len = fwmdlfile.tell()
-  enfcord = FlycNoFlyCoords()
-  match_count = 0
-  match_pos = -1
-  match_entries = 0
-  reached_eof = False
-  pos = start_pos
-  while (True):
-     # Check how many correct zone entries we have
-     entry_count = 0
-     entry_pos = pos
-     while (True):
-        fwmdlfile.seek(entry_pos, os.SEEK_SET)
-        if fwmdlfile.readinto(enfcord) != sizeof(enfcord):
-           reached_eof = True
-           break
-        # The array ends with int value storing its size
-        if (entry_count >= min_match_accepted) and (enfcord.latitude == entry_count):
-           break
-        if not flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfcord, func_align, data_align, pos, entry_pos):
-           break
-        entry_count += 1
-        entry_pos += sizeof(enfcord)
-     # Do not allow entry at EOF
-     if (reached_eof):
-        break
-     # If entry is ok, consider it a match
-     if entry_count > min_match_accepted:
-        if (po.verbose > 1):
-           print("{}: Matching coords array at 0x{:08x}: {:d} entries".format(po.mdlfile,pos,entry_count))
-        if (entry_count >= match_entries):
-           match_pos = pos
-           match_entries = entry_count
-        match_count += 1
-     # Set position to search for next entry
-     if entry_count >= min_match_accepted:
-        pos += entry_count * sizeof(enfcord)
-     else:
-        pos += data_align - (pos%data_align)
-  if (match_count > 1):
-     eprint("{}: Warning: multiple ({:d}) matches found for fly coords array with alignment 0x{:02x}".format(po.mdlfile,match_count,data_align))
-  if (match_count < 1):
-     return -1, 0
-  return match_pos, match_entries
+    """ Finds position of flight controller no fly coords in the binary.
+    """
+    fwmdlfile.seek(0, os.SEEK_END)
+    fwmdlfile_len = fwmdlfile.tell()
+    enfcord = FlycNoFlyCoords()
+    match_count = 0
+    match_pos = -1
+    match_entries = 0
+    reached_eof = False
+    pos = start_pos
+    while (True):
+        # Check how many correct zone entries we have
+        entry_count = 0
+        entry_pos = pos
+        while (True):
+            fwmdlfile.seek(entry_pos, os.SEEK_SET)
+            if fwmdlfile.readinto(enfcord) != sizeof(enfcord):
+                reached_eof = True
+                break
+            # The array ends with int value storing its size
+            if (entry_count >= min_match_accepted) and (enfcord.latitude == entry_count):
+                break
+            if not flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfcord, func_align, data_align, pos, entry_pos):
+                break
+            entry_count += 1
+            entry_pos += sizeof(enfcord)
+        # Do not allow entry at EOF
+        if (reached_eof):
+            break
+        # If entry is ok, consider it a match
+        if entry_count > min_match_accepted:
+            if (po.verbose > 1):
+                print("{}: Matching coords array at 0x{:08x}: {:d} entries".format(po.mdlfile, pos, entry_count))
+            if (entry_count >= match_entries):
+                match_pos = pos
+                match_entries = entry_count
+            match_count += 1
+        # Set position to search for next entry
+        if entry_count >= min_match_accepted:
+            pos += entry_count * sizeof(enfcord)
+        else:
+            pos += data_align - (pos%data_align)
+    if (match_count > 1):
+        eprint("{}: Warning: multiple ({:d}) matches found for fly coords array with alignment 0x{:02x}"
+          .format(po.mdlfile, match_count, data_align))
+    if (match_count < 1):
+        return -1, 0
+    return match_pos, match_entries
 
 
 def flyc_nofly_zone_template(po):
-  # Set coords at north pole; they should never stay at default value after all
-  # Set 'level' at 2; definition is: WARNING(0), CAN_UNLIMIT(1), CAN_NOT_UNLIMIT(2, 4), STRONG_WARNING(3)
-  parprop = {'area_id':60000,'type':0,'shape':0,'lat':90.0,'lng':0.0,'radius':30,
-      'warning':0,'level':2,'disable':0,'updated_at':1447945800,'begin_at':0,'end_at':0,
-      'name':"",'country':0,'city':"",'storage':NoFlyStorage.none,'points':None}
-  return parprop
+    # Set coords at north pole; they should never stay at default value after all
+    # Set 'level' at 2; definition is: WARNING(0), CAN_UNLIMIT(1), CAN_NOT_UNLIMIT(2, 4), STRONG_WARNING(3)
+    parprop = {'area_id':60000,'type':0,'shape':0,'lat':90.0,'lng':0.0,'radius':30,
+        'warning':0,'level':2,'disable':0,'updated_at':1447945800,'begin_at':0,'end_at':0,
+        'name':"",'country':0,'city':"",'storage':NoFlyStorage.none,'points':None}
+    return parprop
 
 
 def flyc_nofly_zone_get(po, fwmdlfile, index):

@@ -35,7 +35,8 @@ import binascii
 import time
 import argparse
 from Crypto.Cipher import AES
-from ctypes import *
+from ctypes import c_char, c_int, c_ubyte, c_ushort, c_uint, c_ulonglong, c_float
+from ctypes import memmove, addressof, sizeof, Array, LittleEndianStructure
 from os.path import basename
 
 encrypt_key = bytes([0x96, 0x70, 0x9a, 0xD3, 0x26, 0x67, 0x4A, 0xC3, 0x82, 0xB6, 0x69, 0x27, 0xE6, 0xd8, 0x84, 0x21])
@@ -46,16 +47,18 @@ def eprint(*args, **kwargs):
 
 class EncHeader(LittleEndianStructure):
     _pack_ = 1
-    _fields_ = [('target', c_ubyte),                #0
-                ('unk0', c_uint),                   #1  Always 0x01000001
-                ('version', c_ubyte * 4),           #5
-                ('unk1', c_ubyte),                  #9  Always 0x01
-                ('size', c_uint),                   #10
-                ('unk2', c_uint),                   #14 Always 0x00000000
-                ('time', c_uint),                   #18
-                ('unk3', c_ubyte),                  #22 Always 0x04
-                ('md5', c_ubyte * 16),              #23
-                ('crc16', c_ushort)]                #39 end is 41
+    _fields_ = [
+        ('target', c_ubyte),           # 0
+        ('unk0', c_uint),              # 1  Always 0x01000001
+        ('version', c_ubyte * 4),      # 5
+        ('unk1', c_ubyte),             # 9  Always 0x01
+        ('size', c_uint),              # 10
+        ('unk2', c_uint),              # 14 Always 0x00000000
+        ('time', c_uint),              # 18
+        ('unk3', c_ubyte),             # 22 Always 0x04
+        ('md5', c_ubyte * 16),         # 23
+        ('crc16', c_ushort),           # 39 end is 41
+    ]
 
     def __init__(self):
         self.unk0 = 0x01000001

@@ -34,13 +34,16 @@ import binascii
 import argparse
 import configparser
 import itertools
-from ctypes import *
+from ctypes import c_char, c_int, c_ubyte, c_ushort, c_uint
+from ctypes import sizeof, LittleEndianStructure
 from time import gmtime, strftime, strptime
 from calendar import timegm
 from Crypto.Cipher import AES
 
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
+
 
 class DjiModuleTarget():
     "Stores identification info on module for specific target"
@@ -49,6 +52,7 @@ class DjiModuleTarget():
         self.model = model
         self.name = name
         self.desc = desc
+
 
 dji_targets = [
     DjiModuleTarget( 1,-1, "CAM",     "camera"),
@@ -132,10 +136,10 @@ class FwPkgHeader(LittleEndianStructure):
               ('padding', c_ubyte * 10)]
 
   def set_ver_latest(self, ver):
-    self.ver_latest_enc = 0x5127A564 ^ ver ^ self.timestamp;
+    self.ver_latest_enc = 0x5127A564 ^ ver ^ self.timestamp
 
   def set_ver_rollbk(self, ver):
-    self.ver_rollbk_enc = 0x5127A564 ^ ver ^ self.timestamp;
+    self.ver_rollbk_enc = 0x5127A564 ^ ver ^ self.timestamp
 
   def get_format_version(self):
     if self.magic == 0x12345678 and self.magic_ver == 0x0000:
@@ -186,9 +190,9 @@ class FwPkgHeader(LittleEndianStructure):
     for (varkey, vartype) in self._fields_:
         d[varkey] = getattr(self, varkey)
     varkey = 'ver_latest'
-    d[varkey] = d['timestamp'] ^ d[varkey+"_enc"]  ^ 0x5127A564;
+    d[varkey] = d['timestamp'] ^ d[varkey+"_enc"] ^ 0x5127A564
     varkey = 'ver_rollbk'
-    d[varkey] = d['timestamp'] ^ d[varkey+"_enc"]  ^ 0x5127A564;
+    d[varkey] = d['timestamp'] ^ d[varkey+"_enc"] ^ 0x5127A564
     varkey = 'padding'
     d[varkey] = "".join("{:02X}".format(x) for x in d[varkey])
     return d
@@ -237,13 +241,13 @@ class FwPkgEntry(LittleEndianStructure):
       return (self.spcoding >> 4) & 0x0F
 
   def set_encrypt_type(self, enctype):
-      self.spcoding  = (self.spcoding & 0x0F) | ((enctype & 0x0F) << 4)
+      self.spcoding = (self.spcoding & 0x0F) | ((enctype & 0x0F) << 4)
 
   def get_splvalue(self):
       return (self.spcoding) & 0x0F
 
   def set_splvalue(self, splval):
-      self.spcoding  = (self.spcoding & 0xF0) | (splval & 0x0F)
+      self.spcoding = (self.spcoding & 0xF0) | (splval & 0x0F)
 
   def target_name(self):
     tg_kind = getattr(self, 'target') & 31
@@ -697,7 +701,7 @@ def main():
             .format(version=__version__, author=__author__),
           help="display version information and exit")
 
-    po = parser.parse_args();
+    po = parser.parse_args()
 
     if len(po.fwpkg) > 0 and len(po.mdprefix) == 0:
         po.mdprefix = os.path.splitext(os.path.basename(po.fwpkg))[0]

@@ -63,150 +63,164 @@ from ctypes import c_uint, sizeof, LittleEndianStructure
 
 sys.path.insert(0, '../pyelftools')
 try:
-  import elftools.elf.elffile
-  import elftools.elf.sections
-  if not callable(getattr(elftools.elf.elffile.ELFFile, "write_changes", None)):
-     raise ImportError("The pyelftools library provided has no write support")
+    import elftools.elf.elffile
+    import elftools.elf.sections
+    if not callable(getattr(elftools.elf.elffile.ELFFile, "write_changes", None)):
+       raise ImportError("The pyelftools library provided has no write support")
 except ImportError:
-  print("Warning:")
-  print("This tool requires version of pyelftools with ELF write support.")
-  print("Get it from https://github.com/mefistotelis/pyelftools.git")
-  print("clone to upper level folder, '../pyelftools'.")
-  raise
+    print("Warning:")
+    print("This tool requires version of pyelftools with ELF write support.")
+    print("Get it from https://github.com/mefistotelis/pyelftools.git")
+    print("clone to upper level folder, '../pyelftools'.")
+    raise
 
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
+
 class ExIdxEntry(LittleEndianStructure):
-  _pack_ = 1
-  _fields_ = [('tboffs', c_uint),
-              ('entry', c_uint)]
-  def dict_export(self):
-     d = dict()
-     for (varkey, vartype) in self._fields_:
-        val = getattr(self, varkey)
-        d[varkey] = "{:08X}".format(val)
-     return d
-  def __repr__(self):
-     d = self.dict_export()
-     from pprint import pformat
-     return pformat(d, indent=4, width=1)
+    _pack_ = 1
+    _fields_ = [
+      ('tboffs', c_uint),
+      ('entry', c_uint)
+    ]
+
+    def dict_export(self):
+        d = dict()
+        for (varkey, vartype) in self._fields_:
+            val = getattr(self, varkey)
+            d[varkey] = "{:08X}".format(val)
+        return d
+
+    def __repr__(self):
+        d = self.dict_export()
+        from pprint import pformat
+        return pformat(d, indent=4, width=1)
+
 
 def sign_extend(value, bits):
-  """ Sign-extend an integer value from given amount of bits to full Python int
-  """
-  sign_bit = 1 << (bits - 1)
-  return (value & (sign_bit - 1)) - (value & sign_bit)
+    """ Sign-extend an integer value from given amount of bits to full Python int
+    """
+    sign_bit = 1 << (bits - 1)
+    return (value & (sign_bit - 1)) - (value & sign_bit)
 
-def prel31_to_addr(ptr,refptr):
-  """ Convert a prel31 symbol to an absolute address
-  """
-  offset = sign_extend(ptr, 31)
-  return c_uint(refptr + offset).value
+
+def prel31_to_addr(ptr, refptr):
+    """ Convert a prel31 symbol to an absolute address
+    """
+    offset = sign_extend(ptr, 31)
+    return c_uint(refptr + offset).value
+
 
 def armfw_is_proper_ARMexidx_entry(po, fwpartfile, eexidx, memaddr_base, func_align, arr_pos, ent_pos):
-  """ Checks whether given ExIdxEntry object stores a proper entry of 
-      .ARM.exidx section. The entries are described in detail in
-      "Exception Handling ABI for the ARM Architecture" document.
-      The function assumes that .text section with code is located before
-      the .ARM.exidx section, starting at memaddr_base.
-  """
-  sectname = ".ARM.exidx"
-  # Spec states clearly this offset is "with bit 31 clear"
-  if (eexidx.tboffs == 0) or (eexidx.tboffs & 0x80000000):
-     return False
-  glob_offs = prel31_to_addr(eexidx.tboffs, memaddr_base+ent_pos)
-  # Check if first word offset falls into ".text" section and can be a function start
-  if (glob_offs <= memaddr_base) or (glob_offs >= memaddr_base+arr_pos) or ((glob_offs % func_align) != 0):
-     return False
-  #TODO we could also check if the handling function starts with STORE/STM instruction; it is very unlikely to start in different way
-  # Second word can be one of 3 things: table entry offset, exception entry itself or EXIDX_CANTUNWIND
-  # Check if second word contains EXIDX_CANTUNWIND value (0x01)
-  if (eexidx.entry == 0x01):
-     if (po.verbose > 2):
-        print("{}: Matching '{:s}' entry at 0x{:08x}: 0x{:08x} 0x{:08x} [CANTUNWIND]".format(po.fwpartfile,sectname,ent_pos,glob_offs,eexidx.entry))
-     return True
-  # Check if second word contains exception handling entry itself
-  if (eexidx.entry & 0x80000000):
-     # According to specs, bits 30-28 should be zeros; personality routine and index are stored on lower bits
-     if (eexidx.entry & 0x70000000):
+    """ Checks whether given ExIdxEntry object stores a proper entry of
+        .ARM.exidx section. The entries are described in detail in
+        "Exception Handling ABI for the ARM Architecture" document.
+        The function assumes that .text section with code is located before
+        the .ARM.exidx section, starting at memaddr_base.
+    """
+    sectname = ".ARM.exidx"
+    # Spec states clearly this offset is "with bit 31 clear"
+    if (eexidx.tboffs == 0) or (eexidx.tboffs & 0x80000000):
         return False
-     if (po.verbose > 2):
-        print("{}: Matching '{:s}' entry at 0x{:08x}: 0x{:08x} 0x{:08x} [handling entry, idx 0x{:02x}]".format(po.fwpartfile,sectname,ent_pos,glob_offs,eexidx.entry,(eexidx.entry >> 24) & 7))
-     return True
-  # Check if second word contains table entry start offset
-  # the offset is not to the .data segment, but to a separate .ARM.extab segment
-  # Let's assume this segment is somewhere adjacent to our .ARM.exidx segment
-  # Size of the table entry which is being pointed at is no less than 4 bytes
-  tbent_offs = prel31_to_addr(eexidx.entry, memaddr_base+ent_pos)
-  if ((tbent_offs >= memaddr_base+arr_pos-po.expect_sect_align*0x10) and (tbent_offs <= memaddr_base+arr_pos-4) or
+    glob_offs = prel31_to_addr(eexidx.tboffs, memaddr_base+ent_pos)
+    # Check if first word offset falls into ".text" section and can be a function start
+    if (glob_offs <= memaddr_base) or (glob_offs >= memaddr_base+arr_pos) or ((glob_offs % func_align) != 0):
+        return False
+    #TODO we could also check if the handling function starts with STORE/STM instruction; it is very unlikely to start in different way
+    # Second word can be one of 3 things: table entry offset, exception entry itself or EXIDX_CANTUNWIND
+    # Check if second word contains EXIDX_CANTUNWIND value (0x01)
+    if (eexidx.entry == 0x01):
+        if (po.verbose > 2):
+            print("{}: Matching '{:s}' entry at 0x{:08x}: 0x{:08x} 0x{:08x} [CANTUNWIND]"
+              .format(po.fwpartfile, sectname, ent_pos, glob_offs, eexidx.entry))
+        return True
+    # Check if second word contains exception handling entry itself
+    if (eexidx.entry & 0x80000000):
+        # According to specs, bits 30-28 should be zeros; personality routine and index are stored on lower bits
+        if (eexidx.entry & 0x70000000):
+            return False
+        if (po.verbose > 2):
+            print("{}: Matching '{:s}' entry at 0x{:08x}: 0x{:08x} 0x{:08x} [handling entry, idx 0x{:02x}]"
+              .format(po.fwpartfile, sectname, ent_pos, glob_offs, eexidx.entry, (eexidx.entry >> 24) & 7))
+        return True
+    # Check if second word contains table entry start offset
+    # the offset is not to the .data segment, but to a separate .ARM.extab segment
+    # Let's assume this segment is somewhere adjacent to our .ARM.exidx segment
+    # Size of the table entry which is being pointed at is no less than 4 bytes
+    tbent_offs = prel31_to_addr(eexidx.entry, memaddr_base+ent_pos)
+    if ((tbent_offs >= memaddr_base+arr_pos-po.expect_sect_align*0x10) and (tbent_offs <= memaddr_base+arr_pos-4) or
       (tbent_offs < memaddr_base+ent_pos+po.expect_sect_align*0x20) and (tbent_offs >= memaddr_base+ent_pos+sizeof(eexidx))):
-     # We can assume the table is aligned; we don't know the size of the entry, but it is multiplication of 4
-     if ((tbent_offs % 4) != 0):
-           return False
-     # Try to read at that offset - it should start with function address (so-called personality routine)
-     fwpartfile.seek(tbent_offs-memaddr_base, os.SEEK_SET)
-     pers_routine_offs = c_uint(0)
-     if fwpartfile.readinto(pers_routine_offs) != sizeof(pers_routine_offs):
-        return False
-     if (pers_routine_offs.value <= memaddr_base) or (pers_routine_offs.value >= memaddr_base+arr_pos) or ((pers_routine_offs.value % func_align) != 0):
-        return False
-     if (po.verbose > 2):
-        print("{}: Matching '{:s}' entry at 0x{:08x}: 0x{:08x} 0x{:08x} [table entry offs 0x{:08x}]".format(po.fwpartfile,sectname,ent_pos,glob_offs,eexidx.entry,tbent_offs))
-     return True
-  return False
+        # We can assume the table is aligned; we don't know the size of the entry, but it is multiplication of 4
+        if ((tbent_offs % 4) != 0):
+            return False
+        # Try to read at that offset - it should start with function address (so-called personality routine)
+        fwpartfile.seek(tbent_offs-memaddr_base, os.SEEK_SET)
+        pers_routine_offs = c_uint(0)
+        if fwpartfile.readinto(pers_routine_offs) != sizeof(pers_routine_offs):
+            return False
+        if (pers_routine_offs.value <= memaddr_base) or (pers_routine_offs.value >= memaddr_base+arr_pos) or ((pers_routine_offs.value % func_align) != 0):
+            return False
+        if (po.verbose > 2):
+            print("{}: Matching '{:s}' entry at 0x{:08x}: 0x{:08x} 0x{:08x} [table entry offs 0x{:08x}]"
+              .format(po.fwpartfile, sectname, ent_pos, glob_offs, eexidx.entry, tbent_offs))
+        return True
+    return False
+
 
 def armfw_detect_sect_ARMexidx(po, fwpartfile, memaddr_base, start_pos, func_align, sect_align):
-  """ Finds position and size of .ARM.exidx section. That section contains entries
-      used for exception handling, and have a particular structure that is quite easy
-      to detect, with minimal amount of false positives.
-  """
-  sectname = ".ARM.exidx"
-  eexidx = ExIdxEntry()
-  match_count = 0
-  match_pos = -1
-  match_entries = 0
-  reached_eof = False
-  pos = start_pos
-  assert sect_align >= sizeof(ExIdxEntry), "Section alignment exceeds .ARM.exidx entry size"
-  while (True):
-     # Check how many correct exception entries we have
-     entry_count = 0
-     entry_pos = pos
-     while (True):
-        fwpartfile.seek(entry_pos, os.SEEK_SET)
-        if fwpartfile.readinto(eexidx) != sizeof(eexidx):
-           reached_eof = True
-           break
-        if not armfw_is_proper_ARMexidx_entry(po, fwpartfile, eexidx, memaddr_base, func_align, pos, entry_pos):
-           break
-        entry_count += 1
-        entry_pos += sizeof(eexidx)
-     # Do not allow entry at EOF
-     if (reached_eof):
-        break
-     # verify if padding area is completely filled with 0x00
-     if (entry_count > 0):
-        if ((entry_pos % sect_align) > 0):
-           fwpartfile.seek(entry_pos, os.SEEK_SET)
-           padding = fwpartfile.read(sect_align - (entry_pos % sect_align))
-           if (padding[0] != 0x00) or (len(set(padding)) > 1):
-              entry_count = 0
-     # If entry is ok, consider it a match
-     if entry_count > 0:
-        if (po.verbose > 1):
-           print("{}: Matching '{:s}' section at 0x{:08x}: {:d} exception entries".format(po.fwpartfile,sectname,pos,entry_count))
-        match_pos = pos
-        match_entries = entry_count
-        match_count += 1
-     # Set position to search for next entry
-     pos += sect_align
-  if (match_count > 1):
-     eprint("{}: Warning: multiple ({:d}) matches found for section '{:s}' with alignment 0x{:02x}".format(po.fwpartfile,match_count,sectname,sect_align))
-  if (match_count < 1):
-     return -1, 0
-  return match_pos, match_entries * sizeof(ExIdxEntry)
+    """ Finds position and size of .ARM.exidx section. That section contains entries
+        used for exception handling, and have a particular structure that is quite easy
+        to detect, with minimal amount of false positives.
+    """
+    sectname = ".ARM.exidx"
+    eexidx = ExIdxEntry()
+    match_count = 0
+    match_pos = -1
+    match_entries = 0
+    reached_eof = False
+    pos = start_pos
+    assert sect_align >= sizeof(ExIdxEntry), "Section alignment exceeds .ARM.exidx entry size"
+    while (True):
+        # Check how many correct exception entries we have
+        entry_count = 0
+        entry_pos = pos
+        while (True):
+            fwpartfile.seek(entry_pos, os.SEEK_SET)
+            if fwpartfile.readinto(eexidx) != sizeof(eexidx):
+                reached_eof = True
+                break
+            if not armfw_is_proper_ARMexidx_entry(po, fwpartfile, eexidx, memaddr_base, func_align, pos, entry_pos):
+                break
+            entry_count += 1
+            entry_pos += sizeof(eexidx)
+        # Do not allow entry at EOF
+        if (reached_eof):
+            break
+        # verify if padding area is completely filled with 0x00
+        if (entry_count > 0):
+            if ((entry_pos % sect_align) > 0):
+                fwpartfile.seek(entry_pos, os.SEEK_SET)
+                padding = fwpartfile.read(sect_align - (entry_pos % sect_align))
+                if (padding[0] != 0x00) or (len(set(padding)) > 1):
+                    entry_count = 0
+        # If entry is ok, consider it a match
+        if entry_count > 0:
+            if (po.verbose > 1):
+                print("{}: Matching '{:s}' section at 0x{:08x}: {:d} exception entries".format(po.fwpartfile,sectname,pos,entry_count))
+            match_pos = pos
+            match_entries = entry_count
+            match_count += 1
+        # Set position to search for next entry
+        pos += sect_align
+    if (match_count > 1):
+        eprint("{}: Warning: multiple ({:d}) matches found for section '{:s}' with alignment 0x{:02x}"
+          .format(po.fwpartfile,match_count,sectname,sect_align))
+    if (match_count < 1):
+        return -1, 0
+    return match_pos, match_entries * sizeof(ExIdxEntry)
+
 
 def armfw_detect_empty_sect_ARMexidx(po, fwpartfile, memaddr_base, start_pos, func_align, sect_align):
     """ Finds position of empty .ARM.exidx section. This is a last resort solution, when the
@@ -233,6 +247,7 @@ def armfw_detect_empty_sect_ARMexidx(po, fwpartfile, memaddr_base, start_pos, fu
     if (match_count < 1):
         return -1, 0
     return match_pos, 0
+
 
 def armfw_bin2elf_settle_sect_ARMexidx(po, fwpartfile):
     """ Find ARM exceptions index section and set it within `po`.
@@ -290,7 +305,7 @@ def armfw_bin2elf_settle_sect_text(po, fwpartfile):
         else:
             raise EOFError("No place for '{:s}' section before the '{:s}' section in binary file."
               .format(sectname,".ARM.exidx"))
-    if (not sectname in po.section_size):
+    if (sectname not in po.section_size):
         po.section_size[sectname] = sect_pos - (po.section_addr[sectname] - po.baseaddr)
     if (po.verbose > 1):
         print("{}: Set '{:s}' section at mem addr 0x{:08x}, size 0x{:08x}"
@@ -303,7 +318,7 @@ def armfw_bin2elf_settle_sect_data(po, fwpartfile):
     After the .ARM.exidx section come .data section.
     """
     sectname = ".ARM.exidx"
-    assert sectname in po.section_addr, "Settling '{:s}' not possible without '{:s}' settled".format(".data",sectname)
+    assert sectname in po.section_addr, "Settling '{:s}' not possible without '{:s}' settled".format(".data", sectname)
     sect_pos = po.section_addr[sectname] - po.baseaddr
     sect_len = po.section_size[sectname]
     # Make sure we will not realign sections by mistake; we will update alignment in file later
@@ -338,7 +353,7 @@ def armfw_bin2elf_settle_sect_bss(po, fwpartfile):
     if it had the content stored. Allow multiple such sections.
     """
     sectname = ".data"
-    assert sectname in po.section_addr, "Settling '{:s}' not possible without '{:s}' settled".format(".bss",sectname)
+    assert sectname in po.section_addr, "Settling '{:s}' not possible without '{:s}' settled".format(".bss", sectname)
     sect_pos = po.section_addr[sectname] - po.baseaddr
     sect_len = po.section_size[sectname]
     sect_align = 1
@@ -422,7 +437,8 @@ def armfw_bin2elf_copy_template(po):
     if not po.dry_run:
         elf_fh.close()
     if (po.verbose > 1):
-        print("{}: ELF template '{:s}' copied to '{:s}', {:d} bytes".format(po.fwpartfile,po.tmpltfile,po.elffile,n))
+        print("{}: ELF template '{:s}' copied to '{:s}', {:d} bytes"
+          .format(po.fwpartfile, po.tmpltfile, po.elffile, n))
 
 
 def armfw_bin2elf_get_sections_align(po, sections_order):
@@ -438,7 +454,7 @@ def armfw_bin2elf_get_sections_align(po, sections_order):
         while (po.section_size[sectname] % sect_align) != 0: sect_align = (sect_align >> 1)
         sections_align[sectname] = sect_align
         if (po.verbose > 0):
-            print("{}: Section '{:s}' alignment set to 0x{:02x}".format(po.fwpartfile,sectname,sections_align[sectname]))
+            print("{}: Section '{:s}' alignment set to 0x{:02x}".format(po.fwpartfile, sectname, sections_align[sectname]))
     return sections_align
 
 
@@ -454,7 +470,8 @@ def armfw_bin2elf_get_sections_pos(po, sections_order):
         if (sect_pos < 0): sect_pos = 0
         sections_pos[sectname] = sect_pos
         if (po.verbose > 0):
-            print("{}: Section '{:s}' file position set to 0x{:08x}".format(po.fwpartfile,sectname,sections_pos[sectname]))
+            print("{}: Section '{:s}' file position set to 0x{:08x}"
+              .format(po.fwpartfile, sectname, sections_pos[sectname]))
     return sections_pos
 
 
@@ -475,7 +492,8 @@ def armfw_bin2elf_update_sect_sizes(po, sections_order, addrspace_limit):
         assert sectpos_delta >= 0, "Trusting address limits leads to negative distance after '{:s}'".format(sectname)
         if sectname in po.section_size.keys():
             if (po.section_size[sectname] > sectpos_delta):
-                eprint("{}: Warning: section '{:s}' size reduced to 0x{:x} due to overlapping".format(po.fwpartfile,sectname,sectpos_delta))
+                eprint("{}: Warning: section '{:s}' size reduced to 0x{:x} due to overlapping"
+                  .format(po.fwpartfile, sectname, sectpos_delta))
                 po.section_size[sectname] = sectpos_delta
         else:
             po.section_size[sectname] = sectpos_delta
@@ -500,14 +518,15 @@ def armfw_bin2elf_update_elffile(po, elf_fh, fwpartfile, sections_order, section
                 sect = elfobj.get_section_by_name(sectname_m.group('name'))
             if sect is not None:
                 sect.name = sectname
-                sectname_prev = '{:s}{:d}'.format(sectname_m.group('name'), int(sectname_m.group('num'),10) - 1)
+                sectname_prev = '{:s}{:d}'.format(sectname_m.group('name'), int(sectname_m.group('num'), 10) - 1)
                 if elfobj.get_section_by_name(sectname_prev) is None:
                     sectname_prev = sectname_m.group('name')
                 elfobj.insert_section_after(sectname_prev, sect)
         if sect is None:
             raise EOFError("Could not read section '{:s}' from binary file.".format(sectname))
         if (po.verbose > 0):
-            print("{}: Preparing ELF section '{:s}' from binary pos 0x{:08x}".format(po.fwpartfile,sectname,sections_pos[sectname]))
+            print("{}: Preparing ELF section '{:s}' from binary pos 0x{:08x}"
+              .format(po.fwpartfile, sectname, sections_pos[sectname]))
         sect.header['sh_addr'] = po.section_addr[sectname]
         sect.header['sh_addralign'] = sections_align[sectname]
         # for non-bss sections, size will be updated automatically when replacing data
@@ -522,7 +541,7 @@ def armfw_bin2elf_update_elffile(po, elf_fh, fwpartfile, sections_order, section
                 raise EOFError("Couldn't read section '{:s}' from binary file.".format(sectname))
             sect.set_data(data_buf)
         if (po.verbose > 2):
-            print("{}: Updating section '{:s}' and shifting subsequent sections".format(po.fwpartfile,sectname))
+            print("{}: Updating section '{:s}' and shifting subsequent sections".format(po.fwpartfile, sectname))
         elfobj.set_section_by_name(sectname, sect)
     if (po.verbose > 1):
         print("{}: Writing changes to '{:s}'".format(po.fwpartfile,po.elffile))

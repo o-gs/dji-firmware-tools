@@ -32,7 +32,6 @@ import sys
 import re
 import os
 import argparse
-import binascii
 import configparser
 import itertools
 from Crypto.Cipher import AES
@@ -41,12 +40,11 @@ from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Signature import pss
-from ctypes import *
+from ctypes import c_char, c_int, c_ubyte, c_uint, c_ulonglong
+from ctypes import memmove, sizeof, addressof, Array, LittleEndianStructure
 from collections import OrderedDict
 from time import gmtime, strftime, strptime
-from calendar import timegm
 from copy import copy
-from os.path import basename
 
 # All found keys
 keys = {
@@ -383,14 +381,18 @@ RwjPBAdCSsU/99luMlK77z0=
 -----END PRIVATE KEY-----""",
 }
 
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
+
 
 class PlainCopyCipher:
     def encrypt(self, plaintext):
         return plaintext
+
     def decrypt(self, ciphertext):
         return ciphertext
+
 
 class ImgPkgHeader(LittleEndianStructure):
     _pack_ = 1
@@ -1051,7 +1053,7 @@ def imah_unsign(po, fwsigfile):
 
     print("{}: Un-signed {:d} chunks, skipped/truncated {:d} chunks.".format(fwsigfile.name,len(chunks)-num_skipped, num_skipped))
     if pkgformat < 2018:
-        pass # No checksums are used in these formats
+        pass  # No checksums are used in these formats
     elif pkghead.plain_cksum == checksum_dec:
         if (po.verbose > 1):
             print("{}: Decrypted chunks checksum 0x{:08X} matches.".format(fwsigfile.name, checksum_dec))
@@ -1083,7 +1085,7 @@ def imah_sign(po, fwsigfile):
     crypt_key, crypt_mode, crypt_iv = imah_get_crypto_params(po, pkghead)
     # Write module data
     checksum_dec = 0
-    single_cipher = None # IMaH v1 creates a new cipher for each chunk, IMaH v2 reuses a single cipher
+    single_cipher = None  # IMaH v1 creates a new cipher for each chunk, IMaH v2 reuses a single cipher
     payload_digest = SHA256.new()
     for i, miname in enumerate(minames):
         chunk = chunks[i]
@@ -1099,7 +1101,7 @@ def imah_sign(po, fwsigfile):
                 print("{}: Packing plaintext chunk '{:s}'...".format(fwsigfile.name,minames[i]))
             can_decrypt = True
 
-        elif crypt_key != None: # Encrypted chunk (have key as well)
+        elif crypt_key is not None: # Encrypted chunk (have key as well)
             if crypt_mode == AES.MODE_CTR:
                 if single_cipher is None:
                     init_cf = int.from_bytes(crypt_iv[12:16], byteorder='big')
@@ -1162,7 +1164,7 @@ def imah_sign(po, fwsigfile):
         # Update size of the chunk in header; skip that if the chunk was pre-encrypted and correct size was stored in INI
         if can_decrypt or chunk.size == 0:
             chunk.size = decrypted_n
-        elif  (decrypted_n <= chunk.size) or (decrypted_n >= chunk.size + dji_block_size):
+        elif (decrypted_n <= chunk.size) or (decrypted_n >= chunk.size + dji_block_size):
             eprint("{}: Warning: Chunk '{:s}' size from INI is incorrect, ignoring".format(fwsigfile.name,minames[i]))
             chunk.size = decrypted_n
         chunks[i] = chunk

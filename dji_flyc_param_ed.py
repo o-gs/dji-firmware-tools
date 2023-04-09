@@ -28,12 +28,15 @@ import sys
 import argparse
 import os
 import math
-from ctypes import *
 import re
 import json
+from ctypes import c_char, c_int, c_ubyte, c_ushort, c_uint, c_float
+from ctypes import sizeof, LittleEndianStructure
+
 
 def eprint(*args, **kwargs):
-  print(*args, file=sys.stderr, **kwargs)
+    print(*args, file=sys.stderr, **kwargs)
+
 
 class Limits:
   byte_min  = - (2 ** 7)
@@ -53,6 +56,7 @@ class Limits:
   ulonglong_min = 0
   ulonglong_max = (2 ** 64) - 1
 
+
 class ParamType:
   ubyte = 0x0
   ushort = 0x1
@@ -67,221 +71,260 @@ class ParamType:
   array = 0xa
   bool = 0xb
 
+
 class FlycExportLimitF2015(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('min', c_float),
-              ('max', c_float),
-              ('deflt', c_float)]
+  _fields_ = [
+        ('min', c_float),
+        ('max', c_float),
+        ('deflt', c_float),
+  ]
+
 
 class FlycExportLimitI2015(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('min', c_int),
-              ('max', c_int),
-              ('deflt', c_int)]
+  _fields_ = [
+        ('min', c_int),
+        ('max', c_int),
+        ('deflt', c_int),
+  ]
+
 
 class FlycExportLimitU2015(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('min', c_uint),
-              ('max', c_uint),
-              ('deflt', c_uint)]
+  _fields_ = [
+        ('min', c_uint),
+        ('max', c_uint),
+        ('deflt', c_uint),
+  ]
+
 
 class FlycExportLimitF2017(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('deflt', c_float),
-              ('min', c_float),
-              ('max', c_float)]
+  _fields_ = [
+        ('deflt', c_float),
+        ('min', c_float),
+        ('max', c_float),
+  ]
+
 
 class FlycExportLimitI2017(LittleEndianStructure):
   _pack_ = 1
   _fields_ = [('deflt', c_int),
               ('min', c_int),
-              ('max', c_int)]
+              ('max', c_int),
+  ]
+
 
 class FlycExportLimitU2017(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('deflt', c_uint),
-              ('min', c_uint),
-              ('max', c_uint)]
+  _fields_ = [
+        ('deflt', c_uint),
+        ('min', c_uint),
+        ('max', c_uint),
+  ]
+
 
 class FlycExportParam2015(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('nameptr', c_uint), # Pointer to the name string of this parameter
-              ('valptr', c_uint), # Pointer to where current value of the parameter is
-              ('valsize', c_uint),
-              ('type_id', c_uint),
-              ('limit_f', FlycExportLimitF2015),
-              ('limit_i', FlycExportLimitI2015),
-              ('limit_u', FlycExportLimitU2015),
-              ('attribute', c_uint),
-              ('callback', c_uint)]
+  _fields_ = [
+        ('nameptr', c_uint),  # Pointer to the name string of this parameter
+        ('valptr', c_uint),  # Pointer to where current value of the parameter is
+        ('valsize', c_uint),
+        ('type_id', c_uint),
+        ('limit_f', FlycExportLimitF2015),
+        ('limit_i', FlycExportLimitI2015),
+        ('limit_u', FlycExportLimitU2015),
+        ('attribute', c_uint),
+        ('callback', c_uint),
+  ]
+
 
 class FlycExportParam2017(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('nameptr', c_uint), # Pointer to the name string of this parameter
-              ('valptr', c_uint), # Pointer to where current value of the parameter is
-              ('valsize', c_ushort),
-              ('type_id', c_ushort),
-              ('limit_f', FlycExportLimitF2017),
-              ('limit_i', FlycExportLimitI2017),
-              ('limit_u', FlycExportLimitU2017),
-              ('attribute', c_uint),
-              ('callback', c_uint)]
+  _fields_ = [
+        ('nameptr', c_uint),  # Pointer to the name string of this parameter
+        ('valptr', c_uint),  # Pointer to where current value of the parameter is
+        ('valsize', c_ushort),
+        ('type_id', c_ushort),
+        ('limit_f', FlycExportLimitF2017),
+        ('limit_i', FlycExportLimitI2017),
+        ('limit_u', FlycExportLimitU2017),
+        ('attribute', c_uint),
+        ('callback', c_uint),
+  ]
+
 
 class FlycExportParam2018(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('nameptr', c_uint), # Pointer to the name string of this block
-              ('aliasptr', c_uint),
-              ('field_8', c_ushort),
-              ('valsize', c_ubyte),
-              ('field_B', c_ubyte),
-              ('attribute', c_ubyte),
-              ('field_D', c_ubyte),
-              ('type_id', c_ubyte),
-              ('field_F', c_ubyte),
-              ('limit_f', FlycExportLimitF2017),
-              ('limit_i', FlycExportLimitI2017),
-              ('limit_u', FlycExportLimitU2017)]
+  _fields_ = [
+        ('nameptr', c_uint),  # Pointer to the name string of this block
+        ('aliasptr', c_uint),
+        ('field_8', c_ushort),
+        ('valsize', c_ubyte),
+        ('field_B', c_ubyte),
+        ('attribute', c_ubyte),
+        ('field_D', c_ubyte),
+        ('type_id', c_ubyte),
+        ('field_F', c_ubyte),
+        ('limit_f', FlycExportLimitF2017),
+        ('limit_i', FlycExportLimitI2017),
+        ('limit_u', FlycExportLimitU2017),
+  ]
+
 
 class FlycParamBlock2018(LittleEndianStructure):
   """ The 2018 generation of drones introduced grouping of parameters into independent Blocks.
       Each Block structure has its name, and points to an array of ExportParam entries.
   """
   _pack_ = 1
-  _fields_ = [('nameptr', c_uint), # Pointer to the name string of this block
-              ('blockid', c_uint),
-              ('field_8', c_uint),
-              ('params', c_uint), # Pointer to parameters array
-              ('cmds', c_uint), # Pointer to commands array
-              ('param_count', c_ushort),
-              ('cmd_count', c_ushort),
-              ('callback', c_uint)]
+  _fields_ = [
+        ('nameptr', c_uint),  # Pointer to the name string of this block
+        ('blockid', c_uint),
+        ('field_8', c_uint),
+        ('params', c_uint),  # Pointer to parameters array
+        ('cmds', c_uint),  # Pointer to commands array
+        ('param_count', c_ushort),
+        ('cmd_count', c_ushort),
+        ('callback', c_uint),
+  ]
+
 
 def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
-  """ Equivalent to math.isclose(); use it if the script needs to work on Python < 3.5
-  """
-  return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+    """ Equivalent to math.isclose(); use it if the script needs to work on Python < 3.5
+    """
+    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
 
 def FlycExportParamFactory(ver):
-  if ver == 2015:
-      eexpar = FlycExportParam2015()
-  elif ver == 2017:
-      eexpar = FlycExportParam2017()
-  elif ver == 2018:
-      eexpar = FlycExportParam2018()
-  else:
-      raise ValueError("Unsupported flyc parameters format version.")
-  return eexpar
+    if ver == 2015:
+        eexpar = FlycExportParam2015()
+    elif ver == 2017:
+        eexpar = FlycExportParam2017()
+    elif ver == 2018:
+        eexpar = FlycExportParam2018()
+    else:
+        raise ValueError("Unsupported flyc parameters format version.")
+    return eexpar
+
 
 def export_param_instance_to_ver(instn):
-  if isinstance(instn, FlycExportParam2015):
-      ver = 2015
-  elif isinstance(instn, FlycExportParam2017):
-      ver = 2017
-  elif isinstance(instn, FlycExportParam2018):
-      ver = 2018
-  else:
-      raise ValueError("Unsupported flyc parameters format version.")
-  return ver
+    if isinstance(instn, FlycExportParam2015):
+        ver = 2015
+    elif isinstance(instn, FlycExportParam2017):
+        ver = 2017
+    elif isinstance(instn, FlycExportParam2018):
+        ver = 2018
+    else:
+        raise ValueError("Unsupported flyc parameters format version.")
+    return ver
+
 
 def flyc_param_limit_to_type(po, ver, type_id, fltval):
-  if (type_id == ParamType.ubyte):
-     if (fltval < Limits.ubyte_min):
-        return Limits.ubyte_min
-     elif (fltval > Limits.ubyte_max):
-        return Limits.ubyte_max
-     else:
-        return int(fltval) # DJI does not use round() here
-  if (type_id == ParamType.ushort):
-     if (fltval < Limits.ushort_min):
-        return Limits.ushort_min
-     elif (fltval > Limits.ushort_max):
-        return Limits.ushort_max
-     else:
-        return int(fltval) # DJI does not use round() here
-  if (type_id == ParamType.ulong):
-     if (fltval < Limits.ulong_min):
-        return Limits.ulong_min
-     elif (fltval > Limits.ulong_max):
-        return Limits.ulong_max
-     else:
-        return int(fltval) # DJI does not use round() here
-  if (type_id == ParamType.ulonglong):
-     if (fltval < Limits.ulonglong_min):
-        return Limits.ulonglong_min
-     elif (fltval > Limits.ulonglong_max):
-        return Limits.ulonglong_max
-     else:
-        return int(fltval) # DJI does not use round() here
-  if (type_id == ParamType.byte):
-     if (ver == 2017):
-         if (fltval < Limits.byte_min):
-            return Limits.byte_min
-         elif (fltval > Limits.ubyte_max): # This is alarming, but that's how it's really done
+    if (type_id == ParamType.ubyte):
+        if (fltval < Limits.ubyte_min):
+            return Limits.ubyte_min
+        elif (fltval > Limits.ubyte_max):
             return Limits.ubyte_max
-         else:
+        else:
             return int(fltval) # DJI does not use round() here
-     else:
-         if (fltval < Limits.byte_min):
-            return Limits.byte_min
-         elif (fltval > Limits.byte_max):
-            return Limits.byte_max
-         else:
+    if (type_id == ParamType.ushort):
+        if (fltval < Limits.ushort_min):
+            return Limits.ushort_min
+        elif (fltval > Limits.ushort_max):
+            return Limits.ushort_max
+        else:
             return int(fltval) # DJI does not use round() here
-  if (type_id == ParamType.short):
-     if (fltval < Limits.short_min):
-        return Limits.short_min
-     elif (fltval > Limits.short_max):
-        return Limits.short_max
-     else:
-        return int(fltval) # DJI does not use round() here
-  if (type_id == ParamType.long):
-     if (fltval < Limits.long_min):
-        return Limits.long_min
-     elif (fltval > Limits.long_max):
-        return Limits.long_max
-     else:
-        return int(fltval) # DJI does not use round() here
-  if (type_id == ParamType.longlong):
-     if (fltval < Limits.longlong_min):
-        return Limits.longlong_min
-     elif (fltval > Limits.longlong_max):
-        return Limits.longlong_max
-     else:
-        return int(fltval) # DJI does not use round() here
-  return fltval
+    if (type_id == ParamType.ulong):
+        if (fltval < Limits.ulong_min):
+            return Limits.ulong_min
+        elif (fltval > Limits.ulong_max):
+            return Limits.ulong_max
+        else:
+            return int(fltval) # DJI does not use round() here
+    if (type_id == ParamType.ulonglong):
+        if (fltval < Limits.ulonglong_min):
+            return Limits.ulonglong_min
+        elif (fltval > Limits.ulonglong_max):
+            return Limits.ulonglong_max
+        else:
+            return int(fltval) # DJI does not use round() here
+    if (type_id == ParamType.byte):
+        if (ver == 2017):
+            if (fltval < Limits.byte_min):
+                return Limits.byte_min
+            elif (fltval > Limits.ubyte_max): # This is alarming, but that's how it's really done
+                return Limits.ubyte_max
+            else:
+                return int(fltval) # DJI does not use round() here
+        else:
+            if (fltval < Limits.byte_min):
+                return Limits.byte_min
+            elif (fltval > Limits.byte_max):
+                return Limits.byte_max
+            else:
+                return int(fltval) # DJI does not use round() here
+    if (type_id == ParamType.short):
+        if (fltval < Limits.short_min):
+            return Limits.short_min
+        elif (fltval > Limits.short_max):
+            return Limits.short_max
+        else:
+            return int(fltval) # DJI does not use round() here
+    if (type_id == ParamType.long):
+        if (fltval < Limits.long_min):
+            return Limits.long_min
+        elif (fltval > Limits.long_max):
+            return Limits.long_max
+        else:
+            return int(fltval) # DJI does not use round() here
+    if (type_id == ParamType.longlong):
+        if (fltval < Limits.longlong_min):
+            return Limits.longlong_min
+        elif (fltval > Limits.longlong_max):
+            return Limits.longlong_max
+        else:
+            return int(fltval) # DJI does not use round() here
+    return fltval
+
 
 def flyc_param_limit_unsigned_int(po, eexpar):
-  return (eexpar.type_id == ParamType.ubyte) or \
-     (eexpar.type_id == ParamType.ushort) or \
-     (eexpar.type_id == ParamType.ulong) or \
-     (eexpar.type_id == ParamType.ulonglong)
+    return (eexpar.type_id == ParamType.ubyte) or \
+       (eexpar.type_id == ParamType.ushort) or \
+       (eexpar.type_id == ParamType.ulong) or \
+       (eexpar.type_id == ParamType.ulonglong)
+
 
 def flyc_param_limit_signed_int(po, eexpar):
-  return (eexpar.type_id == ParamType.byte) or \
-     (eexpar.type_id == ParamType.short) or \
-     (eexpar.type_id == ParamType.long) or \
-     (eexpar.type_id == ParamType.longlong)
+    return (eexpar.type_id == ParamType.byte) or \
+       (eexpar.type_id == ParamType.short) or \
+       (eexpar.type_id == ParamType.long) or \
+       (eexpar.type_id == ParamType.longlong)
+
 
 def flyc_param_get_proper_limit_min(po, eexpar):
-  if flyc_param_limit_unsigned_int(po, eexpar):
-     return eexpar.limit_u.min
-  if flyc_param_limit_signed_int(po, eexpar):
-     return eexpar.limit_i.min
-  return eexpar.limit_f.min
+    if flyc_param_limit_unsigned_int(po, eexpar):
+        return eexpar.limit_u.min
+    if flyc_param_limit_signed_int(po, eexpar):
+        return eexpar.limit_i.min
+    return eexpar.limit_f.min
+
 
 def flyc_param_get_proper_limit_max(po, eexpar):
-  if flyc_param_limit_unsigned_int(po, eexpar):
-     return eexpar.limit_u.max
-  if flyc_param_limit_signed_int(po, eexpar):
-     return eexpar.limit_i.max
-  return eexpar.limit_f.max
+    if flyc_param_limit_unsigned_int(po, eexpar):
+        return eexpar.limit_u.max
+    if flyc_param_limit_signed_int(po, eexpar):
+        return eexpar.limit_i.max
+    return eexpar.limit_f.max
+
 
 def flyc_param_get_proper_limit_deflt(po, eexpar):
-  if flyc_param_limit_unsigned_int(po, eexpar):
-     return eexpar.limit_u.deflt
-  if flyc_param_limit_signed_int(po, eexpar):
-     return eexpar.limit_i.deflt
-  return eexpar.limit_f.deflt
+    if flyc_param_limit_unsigned_int(po, eexpar):
+        return eexpar.limit_u.deflt
+    if flyc_param_limit_signed_int(po, eexpar):
+        return eexpar.limit_i.deflt
+    return eexpar.limit_f.deflt
+
 
 def address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, ptraddr):
   """ Checks whether given value can be treated as a valid pointer to either code or initialized data.
@@ -293,6 +336,7 @@ def address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, ptraddr):
      return False
   return True
 
+
 def address_is_pointer_to_bss(po, fwmdlfile, fwmdlfile_len, ptraddr):
   """ Checks whether given value can be treated as a valid pointer to uninitialized data.
   """
@@ -302,6 +346,7 @@ def address_is_pointer_to_bss(po, fwmdlfile, fwmdlfile_len, ptraddr):
   if (ptraddr < 128):
      return False
   return True
+
 
 def flyc_parameter_entry_type_matches_size(po, eexpar):
   if (eexpar.type_id == ParamType.ushort):
@@ -335,6 +380,7 @@ def flyc_parameter_entry_type_matches_size(po, eexpar):
      return False
   return True
 
+
 def flyc_parameter_limits_check_int_values_match_float_values(po, ver, eexpar):
   if (flyc_param_limit_unsigned_int(po, eexpar)):
      # Min unsigned vs Float
@@ -342,21 +388,24 @@ def flyc_parameter_limits_check_int_values_match_float_values(po, ver, eexpar):
      treshold = abs(limit_ftoi / 10000000) # ignore differences beyond 32bit float precision
      if (abs(limit_ftoi - eexpar.limit_u.min) > treshold):
         if (po.verbose > 3):
-           print("{}: Rejection on min U-F {:d} {:d} {:f}".format(po.mdlfile,limit_ftoi,eexpar.limit_u.min,eexpar.limit_f.min))
+           print("{}: Rejection on min U-F {:d} {:d} {:f}"
+             .format(po.mdlfile,limit_ftoi,eexpar.limit_u.min,eexpar.limit_f.min))
         return False
      # Max unsigned vs Float
      limit_ftoi = flyc_param_limit_to_type(po, ver, eexpar.type_id, eexpar.limit_f.max)
      treshold = abs(limit_ftoi / 10000000) # ignore differences beyond 32bit float precision
      if (abs(limit_ftoi - eexpar.limit_u.max) > treshold):
         if (po.verbose > 3):
-           print("{}: Rejection on max U-F {:d} {:d} {:f}".format(po.mdlfile,limit_ftoi,eexpar.limit_u.max,eexpar.limit_f.max))
+           print("{}: Rejection on max U-F {:d} {:d} {:f}"
+             .format(po.mdlfile,limit_ftoi,eexpar.limit_u.max,eexpar.limit_f.max))
         return False
      # Default unsigned vs Float
      limit_ftoi = flyc_param_limit_to_type(po, ver, eexpar.type_id, eexpar.limit_f.deflt)
      treshold = abs(limit_ftoi / 10000000) # ignore differences beyond 32bit float precision
      if (abs(limit_ftoi - eexpar.limit_u.deflt) > treshold):
         if (po.verbose > 3):
-           print("{}: Rejection on deflt U-F {:d} {:d} {:f}".format(po.mdlfile,limit_ftoi,eexpar.limit_u.deflt,eexpar.limit_f.deflt))
+           print("{}: Rejection on deflt U-F {:d} {:d} {:f}"
+             .format(po.mdlfile,limit_ftoi,eexpar.limit_u.deflt,eexpar.limit_f.deflt))
         return False
   elif (flyc_param_limit_signed_int(po, eexpar)):
      # Min signed vs Float
@@ -364,51 +413,60 @@ def flyc_parameter_limits_check_int_values_match_float_values(po, ver, eexpar):
      treshold = abs(limit_ftoi / 10000000) # ignore differences beyond 32bit float precision
      if (abs(limit_ftoi - eexpar.limit_i.min) > treshold):
         if (po.verbose > 3):
-           print("{}: Rejection on min I-F {:d} {:d} {:f}".format(po.mdlfile,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
+           print("{}: Rejection on min I-F {:d} {:d} {:f}"
+             .format(po.mdlfile,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
         return False
      # Max signed vs Float
      limit_ftoi = flyc_param_limit_to_type(po, ver, eexpar.type_id, eexpar.limit_f.max)
      treshold = abs(limit_ftoi / 10000000) # ignore differences beyond 32bit float precision
      if (abs(limit_ftoi - eexpar.limit_i.max) > treshold):
         if (po.verbose > 3):
-           print("{}: Rejection on max I-F {:d} {:d} {:f}".format(po.mdlfile,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
+           print("{}: Rejection on max I-F {:d} {:d} {:f}"
+             .format(po.mdlfile,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
         return False
      # Default signed vs Float
      limit_ftoi = flyc_param_limit_to_type(po, ver, eexpar.type_id, eexpar.limit_f.deflt)
      treshold = abs(limit_ftoi / 10000000) # ignore differences beyond 32bit float precision
      if (abs(limit_ftoi - eexpar.limit_i.deflt) > treshold):
         if (po.verbose > 3):
-           print("{}: Rejection on deflt I-F {:d} {:d} {:f}".format(po.mdlfile,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
+           print("{}: Rejection on deflt I-F {:d} {:d} {:f}"
+             .format(po.mdlfile,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
         return False
   else: # in case of other types, int params are storing 32-bit signed value
      # Min signed vs Float
      limit_ftoi = flyc_param_limit_to_type(po, ver, ParamType.long, eexpar.limit_f.min)
      if (limit_ftoi != eexpar.limit_i.min):
         if (po.verbose > 3):
-           print("{}: Rejection on min O-F {:d} {:d} {:f}".format(po.mdlfile,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
+           print("{}: Rejection on min O-F {:d} {:d} {:f}"
+             .format(po.mdlfile,limit_ftoi,eexpar.limit_i.min,eexpar.limit_f.min))
         return False
      # Max signed vs Float
      limit_ftoi = flyc_param_limit_to_type(po, ver, ParamType.long, eexpar.limit_f.max)
      if (limit_ftoi != eexpar.limit_i.max):
         if (po.verbose > 3):
-           print("{}: Rejection on max O-F {:d} {:d} {:f}".format(po.mdlfile,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
+           print("{}: Rejection on max O-F {:d} {:d} {:f}"
+             .format(po.mdlfile,limit_ftoi,eexpar.limit_i.max,eexpar.limit_f.max))
         return False
      # Default signed vs Float
      limit_ftoi = flyc_param_limit_to_type(po, ver, ParamType.long, eexpar.limit_f.deflt)
      if (abs(limit_ftoi - eexpar.limit_i.deflt) > 127):
         if (po.verbose > 3):
-           print("{}: Rejection on deflt O-F {:d} {:d} {:f}".format(po.mdlfile,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
+           print("{}: Rejection on deflt O-F {:d} {:d} {:f}"
+             .format(po.mdlfile,limit_ftoi,eexpar.limit_i.deflt,eexpar.limit_f.deflt))
         return False
   return True
+
 
 def flyc_parameter_limits_check_minmax_relations(po, ver, eexpar):
   if math.isnan(eexpar.limit_f.min) or math.isnan(eexpar.limit_f.max) or math.isnan(eexpar.limit_f.deflt):
       if (po.verbose > 3):
-         print("{}: Rejection on valid float check ({:f} {:f} {:f})".format(po.mdlfile,eexpar.limit_f.min,eexpar.limit_f.deflt,eexpar.limit_f.max))
+         print("{}: Rejection on valid float check ({:f} {:f} {:f})"
+           .format(po.mdlfile,eexpar.limit_f.min,eexpar.limit_f.deflt,eexpar.limit_f.max))
       return False
   if (eexpar.limit_f.min > eexpar.limit_f.max):
       if (po.verbose > 3):
-         print("{}: Rejection on float min:max relation check ({:f}:{:f})".format(po.mdlfile,eexpar.limit_f.min,eexpar.limit_f.max))
+         print("{}: Rejection on float min:max relation check ({:f}:{:f})"
+           .format(po.mdlfile,eexpar.limit_f.min,eexpar.limit_f.max))
       return False
   # That would be a nice check, but the original parameters have errors and some of them would fail this test
   #if (eexpar.limit_f.min > eexpar.limit_f.deflt):
@@ -422,22 +480,27 @@ def flyc_parameter_limits_check_minmax_relations(po, ver, eexpar):
   #    return False
   return True
 
+
 def flyc_parameter_limits_check_int_bitwise_identical(po, ver, eexpar):
   """ limit_u and limit_i are bitwise identical; cast them to compare
   """
   if (c_uint(eexpar.limit_i.min).value != eexpar.limit_u.min):
       if (po.verbose > 3):
-         print("{}: Rejection on bitwise identical min I-U ({:d} {:d})".format(po.mdlfile,eexpar.limit_i.min,eexpar.limit_u.min))
+         print("{}: Rejection on bitwise identical min I-U ({:d} {:d})"
+           .format(po.mdlfile,eexpar.limit_i.min,eexpar.limit_u.min))
       return False
   if (c_uint(eexpar.limit_i.max).value != eexpar.limit_u.max):
       if (po.verbose > 3):
-         print("{}: Rejection on bitwise identical max I-U ({:d} {:d})".format(po.mdlfile,eexpar.limit_i.max,eexpar.limit_u.max))
+         print("{}: Rejection on bitwise identical max I-U ({:d} {:d})"
+           .format(po.mdlfile,eexpar.limit_i.max,eexpar.limit_u.max))
       return False
   if (c_uint(eexpar.limit_i.deflt).value != eexpar.limit_u.deflt):
       if (po.verbose > 3):
-         print("{}: Rejection on bitwise identical deflt I-U ({:d} {:d})".format(po.mdlfile,eexpar.limit_i.deflt,eexpar.limit_u.deflt))
+         print("{}: Rejection on bitwise identical deflt I-U ({:d} {:d})"
+           .format(po.mdlfile,eexpar.limit_i.deflt,eexpar.limit_u.deflt))
       return False
   return True
+
 
 def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_align, data_align, pos, entry_pos):
   """ Checks whether given FlycExportParam object stores a proper entry of
@@ -452,7 +515,8 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
   # Address to const string
   if not address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, eexpar.nameptr):
       if (po.verbose > 2):
-          print("{}: At 0x{:08x}, rejected type {:d} on name pointer check (0x{:x})".format(po.mdlfile,entry_pos,eexpar.type_id,eexpar.nameptr))
+          print("{}: At 0x{:08x}, rejected type {:d} on name pointer check (0x{:x})"
+            .format(po.mdlfile, entry_pos, eexpar.type_id, eexpar.nameptr))
       return False
 
   if hasattr(eexpar, 'valptr'):
@@ -460,7 +524,8 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
       if not address_is_pointer_to_bss(po, fwmdlfile, fwmdlfile_len, eexpar.valptr):
           if (eexpar.valptr != 0): # Value pointer can be NULL
               if (po.verbose > 2):
-                  print("{}: At 0x{:08x}, rejected type {:d} on value pointer check (0x{:x})".format(po.mdlfile,entry_pos,eexpar.type_id,eexpar.valptr))
+                  print("{}: At 0x{:08x}, rejected type {:d} on value pointer check (0x{:x})"
+                    .format(po.mdlfile, entry_pos, eexpar.type_id, eexpar.valptr))
               return False
 
   if hasattr(eexpar, 'aliasptr'):
@@ -468,19 +533,22 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
       if not address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, eexpar.aliasptr):
           if (eexpar.aliasptr != 0): # Alias pointer can be NULL
               if (po.verbose > 2):
-                  print("{}: At 0x{:08x}, rejected type {:d} on alias pointer check (0x{:x})".format(po.mdlfile,entry_pos,eexpar.type_id,eexpar.aliasptr))
+                  print("{}: At 0x{:08x}, rejected type {:d} on alias pointer check (0x{:x})"
+                    .format(po.mdlfile, entry_pos, eexpar.type_id, eexpar.aliasptr))
               return False
 
   # Size and type
   if not flyc_parameter_entry_type_matches_size(po, eexpar):
       if (po.verbose > 2):
-          print("{}: At 0x{:08x}, rejected type {:d} on size check ({:d})".format(po.mdlfile,entry_pos,eexpar.type_id,eexpar.valsize))
+          print("{}: At 0x{:08x}, rejected type {:d} on size check ({:d})"
+            .format(po.mdlfile, entry_pos, eexpar.type_id, eexpar.valsize))
       return False
 
   # Attribute used range
   if (eexpar.attribute > 255):
       if (po.verbose > 2):
-          print("{}: At 0x{:08x}, rejected type {:d} on attribute check ({:d})".format(po.mdlfile,entry_pos,eexpar.type_id,eexpar.attribute))
+          print("{}: At 0x{:08x}, rejected type {:d} on attribute check ({:d})"
+            .format(po.mdlfile, entry_pos, eexpar.type_id, eexpar.attribute))
       return False
 
   # Address to callback func
@@ -488,24 +556,29 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
       if not address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, eexpar.callback):
           if (eexpar.callback != 0): # Callback pointer can be NULL
               if (po.verbose > 2):
-                  print("{}: At 0x{:08x}, rejected type {:d} on callback address check ({:d})".format(po.mdlfile,entry_pos,eexpar.type_id,eexpar.callback))
+                  print("{}: At 0x{:08x}, rejected type {:d} on callback address check ({:d})"
+                    .format(po.mdlfile, entry_pos, eexpar.type_id, eexpar.callback))
               return False
 
   # Limits
   if not flyc_parameter_limits_check_minmax_relations(po, ver, eexpar):
       if (po.verbose > 2):
-          print("{}: At 0x{:08x}, rejected type {:d} on min:default:max relation check".format(po.mdlfile,entry_pos,eexpar.type_id))
+          print("{}: At 0x{:08x}, rejected type {:d} on min:default:max relation check"
+            .format(po.mdlfile, entry_pos, eexpar.type_id))
       return False
   if not flyc_parameter_limits_check_int_values_match_float_values(po, ver, eexpar):
       if (po.verbose > 2):
-          print("{}: At 0x{:08x}, rejected type {:d} on integer-vs-float similarity check".format(po.mdlfile,entry_pos,eexpar.type_id))
+          print("{}: At 0x{:08x}, rejected type {:d} on integer-vs-float similarity check"
+            .format(po.mdlfile, entry_pos, eexpar.type_id))
       return False
 
   if not flyc_parameter_limits_check_int_bitwise_identical(po, ver, eexpar):
       if (po.verbose > 2):
-          print("{}: At 0x{:08x}, rejected type {:d} on signed-unsigned bitwise same check".format(po.mdlfile,entry_pos,eexpar.type_id))
+          print("{}: At 0x{:08x}, rejected type {:d} on signed-unsigned bitwise same check"
+            .format(po.mdlfile, entry_pos, eexpar.type_id))
       return False
   return True
+
 
 def flyc_is_proper_parameter_block(po, fwmdlfile, fwmdlfile_len, eparblk, func_align, data_align, pos):
   """ Checks whether given FlycParamBlock object stores a proper entry of
@@ -539,6 +612,7 @@ def flyc_is_proper_parameter_block(po, fwmdlfile, fwmdlfile_len, eparblk, func_a
 
   return True
 
+
 def flyc_check_parameter_array_at(po, fwmdlfile, fwmdlfile_len, start_pos, func_align, data_align, ver):
   """ Assuming given position is a parameter array, this function will return how many
       proper entries it has.
@@ -552,18 +626,21 @@ def flyc_check_parameter_array_at(po, fwmdlfile, fwmdlfile_len, start_pos, func_
       if fwmdlfile.readinto(eexpar) != sizeof(eexpar):
           break
       # Check if struct is valid
-      if not flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_align, data_align, start_pos, entry_pos):
+      if not flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len,
+        eexpar, func_align, data_align, start_pos, entry_pos):
           break
       # If struct seem correct, check for its name string
       fwmdlfile.seek(eexpar.nameptr - po.baseaddr, os.SEEK_SET)
       eexpar_name_btarr = fwmdlfile.read(256).split(b'\0',1)[0]
       if (len(eexpar_name_btarr) < 2):
           if (po.verbose > 3):
-              print("{}: At 0x{:08x}, rejected type {:d} on name len check ({:d})".format(po.mdlfile,entry_pos,eexpar.type_id,len(eexpar_name_btarr)))
+              print("{}: At 0x{:08x}, rejected type {:d} on name len check ({:d})"
+                .format(po.mdlfile, entry_pos, eexpar.type_id, len(eexpar_name_btarr)))
           break
       if not re.match(b'^[0-9a-zA-z\[\]\(\)\{\} .,:*#_-]+$', eexpar_name_btarr):
           if (po.verbose > 3):
-              print("{}: At 0x{:08x}, rejected type {:d} on name regex check".format(po.mdlfile,entry_pos,eexpar.type_id))
+              print("{}: At 0x{:08x}, rejected type {:d} on name regex check"
+                .format(po.mdlfile, entry_pos, eexpar.type_id))
           break
       if (po.verbose > 2):
           print("{}: Found entry '{:s}'".format(po.mdlfile,eexpar_name_btarr.decode('UTF-8')))
@@ -571,6 +648,7 @@ def flyc_check_parameter_array_at(po, fwmdlfile, fwmdlfile_len, start_pos, func_
       entry_count += 1
       entry_pos += sizeof(eexpar)
   return entry_count
+
 
 def flyc_parameter_array_pos_search(po, fwmdlfile, start_pos, func_align, data_align, ver):
   """ Finds position of flight controller parameters in the binary.
@@ -589,7 +667,8 @@ def flyc_parameter_array_pos_search(po, fwmdlfile, start_pos, func_align, data_a
       # If entry is ok, consider it a match
       if entry_count > 0:
           if (po.verbose > 1):
-              print("{}: Matching parameters array at 0x{:08x}: {:d} entries, format {:d}".format(po.mdlfile,pos,entry_count,ver))
+              print("{}: Matching parameters array at 0x{:08x}: {:d} entries, format {:d}"
+                .format(po.mdlfile, pos, entry_count, ver))
           if (entry_count > match_entries):
               match_pos = pos
               match_entries = entry_count
@@ -603,10 +682,12 @@ def flyc_parameter_array_pos_search(po, fwmdlfile, start_pos, func_align, data_a
       if (pos + sizeof(eexpar) > fwmdlfile_len):
           break
   if (match_count > 1):
-      eprint("{}: Warning: multiple ({:d}) matches found for parameters array with alignment 0x{:02x}".format(po.mdlfile,match_count,data_align))
+      eprint("{}: Warning: multiple ({:d}) matches found for parameters array with alignment 0x{:02x}"
+        .format(po.mdlfile, match_count, data_align))
   if (match_count < 1):
       return {}, 0
   return {match_pos: match_entries}, match_entries
+
 
 def flyc_check_parameter_block_at(po, fwmdlfile, fwmdlfile_len, start_pos, func_align, data_align, ver):
   """ Assuming given position is a parameter block, this function will read it and verify content.
@@ -633,6 +714,7 @@ def flyc_check_parameter_block_at(po, fwmdlfile, fwmdlfile_len, start_pos, func_
       print("{}: Found entry '{:s}'".format(po.mdlfile,eparblk_name_btarr.decode('UTF-8')))
   return eparblk
 
+
 def flyc_parameter_blocks_pos_search(po, fwmdlfile, start_pos, func_align, data_align, ver):
   """ Finds position of flight controller parameter blocks in the binary.
       Searches only for specific version of the parameters format.
@@ -652,12 +734,14 @@ def flyc_parameter_blocks_pos_search(po, fwmdlfile, start_pos, func_align, data_
           # If entry is ok, add it to the list
           if entry_count >= eparblk.param_count:
               if (po.verbose > 1):
-                  print("{}: Matching parameter block at 0x{:08x}: {:d} entries, format {:d}".format(po.mdlfile,pos,entry_count,ver))
+                  print("{}: Matching parameter block at 0x{:08x}: {:d} entries, format {:d}"
+                    .format(po.mdlfile, pos, entry_count, ver))
               matches[match_pos] = entry_count
               match_entries += entry_count
           elif entry_count > 0:
               if (po.verbose > 1):
-                  print("{}: Skipped parameter block at 0x{:08x} which was close to matching, format {:d}".format(po.mdlfile,pos,ver))
+                  print("{}: Skipped parameter block at 0x{:08x} which was close to matching, format {:d}"
+                    .format(po.mdlfile, pos, ver))
               entry_count = 0
       # Set position to search for next entry
       if entry_count > 0:
@@ -670,6 +754,7 @@ def flyc_parameter_blocks_pos_search(po, fwmdlfile, start_pos, func_align, data_
   if (len(matches) > 1):
       eprint("{}: Found {:d} parameter blocks with alignment 0x{:02x}".format(po.mdlfile,len(matches),data_align))
   return matches, match_entries
+
 
 def flyc_parameter_array_pos_search_any(po, fwmdlfile, start_pos, func_align, data_align):
   """ Finds position of flight controller parameters in the binary, in any version.
@@ -687,6 +772,7 @@ def flyc_parameter_array_pos_search_any(po, fwmdlfile, start_pos, func_align, da
       poslist = poslist_2018
       count = count_2018
   return poslist, ver
+
 
 def flyc_param_get(po, fwmdlfile, param_pos, index, ver):
   """ Returns array with properties of given flight parameter.
@@ -724,10 +810,12 @@ def flyc_param_get(po, fwmdlfile, param_pos, index, ver):
       parprop['modify'] = True
   return parprop
 
+
 def flyc_param_set_type(po, fwmdlfile, param_pos, index, parprop, ver):
   """ Updates parameter of given index with type from given parprop array.
   """
   raise NotImplementedError('Changing variable type is dangerous; this is not supported.')
+
 
 def flyc_param_set_attribs(po, fwmdlfile, param_pos, index, parprop, ver):
   """ Updates parameter of given index with attribs from given parprop array.
@@ -739,6 +827,7 @@ def flyc_param_set_attribs(po, fwmdlfile, param_pos, index, parprop, ver):
   eexpar.attribute = parprop['attribute']
   fwmdlfile.seek(param_pos+sizeof(eexpar)*index, os.SEEK_SET)
   fwmdlfile.write((c_ubyte * sizeof(eexpar)).from_buffer_copy(eexpar))
+
 
 def flyc_param_set_limits(po, fwmdlfile, param_pos, index, parprop, ver):
   """ Updates parameter of given index with limits from given parprop array.
@@ -798,8 +887,10 @@ def flyc_param_set_limits(po, fwmdlfile, param_pos, index, parprop, ver):
   fwmdlfile.seek(param_pos+sizeof(eexpar)*index, os.SEEK_SET)
   fwmdlfile.write((c_ubyte * sizeof(eexpar)).from_buffer_copy(eexpar))
 
+
 def flyc_list(po, fwmdlfile):
-  (po.param_poslist, po.param_ver) = flyc_parameter_array_pos_search_any(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
+  (po.param_poslist, po.param_ver) = \
+    flyc_parameter_array_pos_search_any(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
   if len(po.param_poslist) <= 0:
       raise ValueError("Flight controller parameters array signature not detected in input file.")
   full_index = 0
@@ -809,59 +900,66 @@ def flyc_list(po, fwmdlfile):
       for i in range(0,param_count):
         parprop = flyc_param_get(po, fwmdlfile, param_pos, i, po.param_ver)
         parprop['index'] = full_index
-        print("{:3d} {:40s} {:2d} {:2d} 0x{:x} {:6.1f} {:6.1f} {:6.1f}".format(parprop['index'],parprop['name'],parprop['typeID'],parprop['size'],parprop['attribute'],parprop['minValue'],parprop['maxValue'],parprop['defaultValue']))
+        print("{:3d} {:40s} {:2d} {:2d} 0x{:x} {:6.1f} {:6.1f} {:6.1f}".format(
+          parprop['index'], parprop['name'], parprop['typeID'], parprop['size'],
+          parprop['attribute'], parprop['minValue'], parprop['maxValue'], parprop['defaultValue']))
         full_index += 1
 
+
 def flyc_extract(po, fwmdlfile):
-  """ Extracts all flight controller parameters from firmware to JSON format text file.
-  """
-  (po.param_poslist, po.param_ver) = flyc_parameter_array_pos_search_any(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
-  if len(po.param_poslist) <= 0:
-      raise ValueError("Flight controller parameters array signature not detected in input file.")
-  inffile = open(po.inffile, "w")
-  inffile.write("[\n")
-  full_index = 0
-  for param_pos, param_count in po.param_poslist.items():
-      if (po.verbose > 1):
-          print("{}: Extracting parameters array at 0x{:08x}: {:d} entries".format(po.mdlfile,param_pos,param_count))
-      for i in range(0,param_count):
-          parprop = flyc_param_get(po, fwmdlfile, param_pos, i, po.param_ver)
-          parprop['index'] = full_index
-          if (full_index != 0):
-              inffile.write(",\n")
-          inffile.write("\t{\n")
-          for ppname in ('index',):
-              inffile.write("\t\t\"{:s}\" : {:d}".format(ppname,parprop[ppname]))
-          for ppname in ('typeID', 'size', 'attribute'):
-              inffile.write(",\n")
-              inffile.write("\t\t\"{:s}\" : {:d}".format(ppname,parprop[ppname]))
-          for ppname in ('minValue', 'maxValue', 'defaultValue'):
-              inffile.write(",\n")
-              if (isinstance(parprop[ppname], float)):
-                  inffile.write("\t\t\"{:s}\" : {:.06f}".format(ppname,parprop[ppname]))
-              else:
-                  inffile.write("\t\t\"{:s}\" : {:d}".format(ppname,parprop[ppname]))
-          for ppname in ('name',):
-              inffile.write(",\n")
-              inffile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,parprop[ppname]))
-          for ppname in ('alias',):
-              if not ppname in parprop: continue
-              inffile.write(",\n")
-              inffile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,parprop[ppname]))
-          if parprop['modify']:
-              inffile.write(",\n")
-              inffile.write("\t\t\"{:s}\" : {:s}".format('modify','true'))
-          inffile.write("\n")
-          inffile.write("\t}")
-          full_index += 1
-  inffile.write("\n")
-  inffile.write("]\n")
-  inffile.close()
+    """ Extracts all flight controller parameters from firmware to JSON format text file.
+    """
+    (po.param_poslist, po.param_ver) = \
+      flyc_parameter_array_pos_search_any(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
+    if len(po.param_poslist) <= 0:
+        raise ValueError("Flight controller parameters array signature not detected in input file.")
+    inffile = open(po.inffile, "w")
+    inffile.write("[\n")
+    full_index = 0
+    for param_pos, param_count in po.param_poslist.items():
+        if (po.verbose > 1):
+            print("{}: Extracting parameters array at 0x{:08x}: {:d} entries"
+              .format(po.mdlfile,param_pos,param_count))
+        for i in range(0,param_count):
+            parprop = flyc_param_get(po, fwmdlfile, param_pos, i, po.param_ver)
+            parprop['index'] = full_index
+            if (full_index != 0):
+                inffile.write(",\n")
+            inffile.write("\t{\n")
+            for ppname in ('index',):
+                inffile.write("\t\t\"{:s}\" : {:d}".format(ppname,parprop[ppname]))
+            for ppname in ('typeID', 'size', 'attribute'):
+                inffile.write(",\n")
+                inffile.write("\t\t\"{:s}\" : {:d}".format(ppname,parprop[ppname]))
+            for ppname in ('minValue', 'maxValue', 'defaultValue'):
+                inffile.write(",\n")
+                if (isinstance(parprop[ppname], float)):
+                    inffile.write("\t\t\"{:s}\" : {:.06f}".format(ppname,parprop[ppname]))
+                else:
+                    inffile.write("\t\t\"{:s}\" : {:d}".format(ppname,parprop[ppname]))
+            for ppname in ('name',):
+                inffile.write(",\n")
+                inffile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,parprop[ppname]))
+            for ppname in ('alias',):
+                if ppname not in parprop: continue
+                inffile.write(",\n")
+                inffile.write("\t\t\"{:s}\" : \"{:s}\"".format(ppname,parprop[ppname]))
+            if parprop['modify']:
+                inffile.write(",\n")
+                inffile.write("\t\t\"{:s}\" : {:s}".format('modify','true'))
+            inffile.write("\n")
+            inffile.write("\t}")
+            full_index += 1
+    inffile.write("\n")
+    inffile.write("]\n")
+    inffile.close()
+
 
 def flyc_update(po, fwmdlfile):
   """ Updates all flight controller parameters in firmware from JSON format text file.
   """
-  (po.param_poslist, po.param_ver) = flyc_parameter_array_pos_search_any(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
+  (po.param_poslist, po.param_ver) = \
+    flyc_parameter_array_pos_search_any(po, fwmdlfile, 0, po.expect_func_align, po.expect_data_align)
   if len(po.param_poslist) <= 0:
       raise ValueError("Flight controller parameters array signature not detected in input file.")
   with open(po.inffile) as inffile:
@@ -871,7 +969,8 @@ def flyc_update(po, fwmdlfile):
   param_pos_start_index = 0
   for param_pos, param_count in po.param_poslist.items():
       if (po.verbose > 1):
-          print("{}: Updating parameters array at 0x{:08x}: {:d} entries".format(po.mdlfile,param_pos,param_count))
+          print("{}: Updating parameters array at 0x{:08x}: {:d} entries"
+            .format(po.mdlfile,param_pos,param_count))
       # Remember full index which corresponds to param_pos
       param_pos_start_index = full_index
       for i in range(0, param_count):
@@ -885,7 +984,8 @@ def flyc_update(po, fwmdlfile):
                   nxparprop = parprop
                   break
           if (nxparprop is None):
-              eprint("{}: Warning: parameter not found in fw: \"{:s}\"".format(po.mdlfile,pvparprop['name']))
+              eprint("{}: Warning: parameter not found in fw: \"{:s}\""
+                .format(po.mdlfile,pvparprop['name']))
               continue
           # compare properties to check what we want to update
           update_type = False
@@ -909,7 +1009,9 @@ def flyc_update(po, fwmdlfile):
                       update_limits = True
           if (update_type or update_attrib or update_limits):
               if (po.verbose > 1):
-                  print("{}: Updating \"{:s}\" {:s}{:s}{:s}".format(po.mdlfile,pvparprop['name']," type," if update_type else ""," attribs," if update_attrib else ""," limits," if update_limits else ""))
+                  print("{}: Updating \"{:s}\" {:s}{:s}{:s}".format(po.mdlfile,
+                    pvparprop['name'], " type," if update_type else "",
+                    " attribs," if update_attrib else "", " limits," if update_limits else ""))
               update_count += 1
           # use index local to block, not the global index stored within property
           pvparprop_i = pvparprop['index'] - param_pos_start_index
@@ -923,6 +1025,7 @@ def flyc_update(po, fwmdlfile):
           full_index += 1
   if (po.verbose > 0):
       print("{}: Updated {:d} parameter entries".format(po.mdlfile,update_count))
+
 
 def main():
     """ Main executable function.
