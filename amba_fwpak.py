@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" Ambarella Firmware Packer tool
+""" Ambarella Firmware Packer tool.
 
 Extracts and re-packs partitions from Ambarella firmware module.
 """
@@ -586,13 +586,14 @@ def amba_partition_exists(po, i, ptyp, ptyp_names):
         return False
     return True
 
+
 def amba_merge_partition_data(po, fwmdlfile, e, i, ptyp):
     """ Opens the partition file for given `ptyp`, and copies the data to `fwmdlfile`.
 
     This also updates properties within the `e` entry class.
     """
     fname = "{:s}_part_{:s}.a9s".format(po.ptprefix, ptyp)
-    fwpartfile = open(fname, "rb")
+    fwpartfile = open(fname, 'rb')
     ptcrc = 0
     n = 0
     while True:
@@ -666,7 +667,7 @@ def amba_create(po, fwmdlfile):
         fname = "{:s}_part_{:s}.a9s".format(po.ptprefix, ptyp)
         if (hde.dt_len < 1):
             continue
-        fwpartfile = open(fname, "rb")
+        fwpartfile = open(fname, 'rb')
         e = part_heads[i]
         hdcrc = amba_calculate_crc32h_part((c_ubyte * sizeof(e)).from_buffer_copy(e), hdcrc)
         n = 0
@@ -695,46 +696,45 @@ def main():
 
     Its task is to parse command line options and call a function which performs requested command.
     """
-
     parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
-    parser.add_argument("-m", "--fwmdlfile", type=str, required=True,
+    parser.add_argument('-m', '--fwmdlfile', type=str, required=True,
           help="name of the firmware module file")
 
-    parser.add_argument("-t", "--ptprefix", type=str,
-          help="file name prefix for the single decomposed partitions " \
-           "(defaults to base name of firmware module file)")
+    parser.add_argument('-t', '--ptprefix', type=str,
+          help=("file name prefix for the single decomposed partitions "
+           "(defaults to base name of firmware module file)"))
 
-    parser.add_argument("--binfmt", type=str, default='auto',
-          help="set binary format version" \
-           "(default is to detect it (auto); valid formats are 2014 and 2016)")
+    parser.add_argument('--binfmt', type=str, default='auto',
+          help=("set binary format version"
+           "(default is to detect it (auto); valid formats are 2014 and 2016)"))
 
-    parser.add_argument("--binhead", action='store_true',
-          help="leave (`-x`) or use (`-a`) binary header in front of partition" \
-           "this leaves the original binary header before each partition" \
-           "on extraction, and uses that header on module file creation;" \
-           "you normally should have no need to use it")
+    parser.add_argument('--binhead', action='store_true',
+          help=("leave (`-x`) or use (`-a`) binary header in front of partition"
+           "this leaves the original binary header before each partition"
+           "on extraction, and uses that header on module file creation;"
+           "you normally should have no need to use it"))
 
-    parser.add_argument("-f", "--force-continue", action="store_true",
+    parser.add_argument('-f', '--force-continue', action='store_true',
           help="force continuing execution despite warning signs of issues")
 
-    parser.add_argument("-v", "--verbose", action='count', default=0,
+    parser.add_argument('-v', '--verbose', action='count', default=0,
           help="increases verbosity level; max level is set by `-vvv`")
 
     subparser = parser.add_mutually_exclusive_group(required=True)
 
-    subparser.add_argument("-x", "--extract", action='store_true',
+    subparser.add_argument('-x', '--extract', action='store_true',
           help="extract firmware module file into partitions")
 
-    subparser.add_argument("-s", "--search", action='store_true',
-          help="search for partitions within firmware module and extract them " \
-           "(works similar to `-x`, but uses brute-force search for partitions)")
+    subparser.add_argument('-s', '--search', action='store_true',
+          help=("search for partitions within firmware module and extract them "
+           "(works similar to `-x`, but uses brute-force search for partitions)"))
 
-    subparser.add_argument("-a", "--add", action='store_true',
-          help="add partition files to firmware module file " \
-           "(works only on data created with `-x`; the `-s` is insufficient)")
+    subparser.add_argument('-a', '--add', action='store_true',
+          help=("add partition files to firmware module file "
+           "(works only on data created with `-x`; the `-s` is insufficient)"))
 
-    subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+    subparser.add_argument('--version', action='version', version="%(prog)s {version} by {author}"
             .format(version=__version__, author=__author__),
           help="display version information and exit")
 
@@ -744,47 +744,33 @@ def main():
         po.ptprefix = os.path.splitext(os.path.basename(po.fwmdlfile))[0]
 
     if po.extract:
-
         if (po.verbose > 0):
             print("{}: Opening for extraction".format(po.fwmdlfile))
-        fwmdlfile = open(po.fwmdlfile, "rb")
-
-        if po.binfmt == 'auto':
-            po.binfmt = amba_detect_format(po, fwmdlfile)
-
-        amba_extract(po, fwmdlfile)
-
-        fwmdlfile.close()
+        with open(po.fwmdlfile, 'rb') as fwmdlfile:
+            if po.binfmt == 'auto':
+                po.binfmt = amba_detect_format(po, fwmdlfile)
+            amba_extract(po, fwmdlfile)
 
     elif po.search:
-
         if (po.verbose > 0):
             print("{}: Opening for search".format(po.fwmdlfile))
-        fwmdlfile = open(po.fwmdlfile, "rb")
-
-        amba_search_extract(po, fwmdlfile)
-
-        fwmdlfile.close()
+        with open(po.fwmdlfile, 'rb') as fwmdlfile:
+            amba_search_extract(po, fwmdlfile)
 
     elif po.add:
-
         if (po.verbose > 0):
             print("{}: Opening for creation".format(po.fwmdlfile))
-        fwmdlfile = open(po.fwmdlfile, "wb")
-
-        amba_create(po, fwmdlfile)
-
-        fwmdlfile.close()
+        with open(po.fwmdlfile, 'wb') as fwmdlfile:
+            amba_create(po, fwmdlfile)
 
     else:
+        raise NotImplementedError("Unsupported command.")
 
-        raise NotImplementedError('Unsupported command.')
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
         main()
     except Exception as ex:
         eprint("Error: "+str(ex))
-        #raise
+        if 0: raise
         sys.exit(10)
