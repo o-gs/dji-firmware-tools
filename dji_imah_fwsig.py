@@ -24,7 +24,6 @@ to decrypt its content.
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
 __version__ = "0.3.1"
 __author__ = "Freek van Tienen, Jan Dumon, Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
@@ -634,6 +633,7 @@ def get_key_data(po, pkghead, enc_k_fourcc):
         enc_key = None
     return enc_key
 
+
 def imah_get_crypto_params(po, pkghead):
     # Get the encryption key
     enc_k_str = pkghead.enc_key.decode("utf-8")
@@ -674,6 +674,7 @@ def imah_get_crypto_params(po, pkghead):
         crypt_iv = bytes(pkghead.scram_key)
     return (crypt_key, crypt_mode, crypt_iv)
 
+
 def imah_get_auth_params(po, pkghead):
     # Get the key
     auth_k_str = pkghead.auth_key.decode("utf-8")
@@ -693,6 +694,7 @@ def imah_get_auth_params(po, pkghead):
         return (None)
     return (auth_key)
 
+
 def imah_compute_checksum(po, buf, start = 0):
     cksum = start
     for i in range(0, len(buf) // 4):
@@ -705,6 +707,7 @@ def imah_compute_checksum(po, buf, start = 0):
         v = int.from_bytes(last_buf[:4], byteorder='little')
         cksum += v
     return (cksum) & ((2 ** 32) - 1)
+
 
 def imah_write_fwsig_head(po, pkghead, minames):
     fname = "{:s}_head.ini".format(po.mdprefix)
@@ -723,6 +726,7 @@ def imah_write_fwsig_head(po, pkghead, minames):
     # Store list of modules/chunks to include
     fwheadfile.write("{:s}={:s}\n".format('modules',' '.join(minames)))
     fwheadfile.close()
+
 
 def imah_read_fwsig_head(po):
     pkghead = ImgPkgHeader()
@@ -808,6 +812,7 @@ def imah_read_fwsig_head(po):
 
     return (pkghead, minames, pkgformat)
 
+
 def imah_write_fwentry_head(po, i, e, miname, can_decrypt):
     fname = "{:s}_{:s}.ini".format(po.mdprefix,miname)
     fwheadfile = open(fname, "w")
@@ -815,6 +820,7 @@ def imah_write_fwentry_head(po, i, e, miname, can_decrypt):
     if not can_decrypt: # If we're exporting without decryption, we must retain decrypted size
         fwheadfile.write("{:s}={:s}\n".format('size',"{:d}".format(e.size)))
     fwheadfile.close()
+
 
 def imah_read_fwentry_head(po, i, miname):
     chunk = ImgChunkHeader()
@@ -835,6 +841,7 @@ def imah_read_fwentry_head(po, i, miname):
     chunk.address = int(address_s, 16)
     del parser
     return (chunk)
+
 
 def imah_unsign(po, fwsigfile):
 
@@ -1055,6 +1062,7 @@ def imah_unsign(po, fwsigfile):
     if num_skipped > 0:
         raise_or_warn(po, ValueError("Some chunks were not extracted correctly."))
 
+
 def imah_sign(po, fwsigfile):
     # Read headers from INI files
     (pkghead, minames, pkgformat) = imah_read_fwsig_head(po)
@@ -1224,40 +1232,39 @@ def main():
 
     Its task is to parse command line options and call a function which performs requested command.
     """
+    parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-i', '--sigfile', default="", type=str,
+          help=("directory and file name of signed and encrypted IM*H firmware module "
+            "(default is base name of mdprefix with extension sig appended, in working dir)"))
 
-    parser.add_argument("-i", "--sigfile", default="", type=str,
-          help="directory and file name of signed and encrypted IM*H firmware module " \
-           "(default is base name of mdprefix with extension sig appended, in working dir)")
+    parser.add_argument('-m', '--mdprefix', default="", type=str,
+          help=("directory and file name prefix for the single un-signed and unencrypted firmware module "
+            "(default is base name of sigfile with extension stripped, in working dir)"))
 
-    parser.add_argument("-m", "--mdprefix", default="", type=str,
-          help="directory and file name prefix for the single un-signed and unencrypted firmware module " \
-           "(default is base name of sigfile with extension stripped, in working dir)")
-
-    parser.add_argument("-f", "--force-continue", action="store_true",
+    parser.add_argument('-f', '--force-continue', action='store_true',
           help="force continuing execution despite warning signs of issues")
 
-    parser.add_argument("-r", "--random-scramble", action="store_true",
+    parser.add_argument('-r', '--random-scramble', action='store_true',
           help="while signing, use random scramble vector instead of from INI")
 
-    parser.add_argument("-k", "--key-select", default=[], action='append',
+    parser.add_argument('-k', '--key-select', default=[], action='append',
           help=("select a specific key to be used for given four character code, "
-          "if multiple keys match this fourcc"))
+            "if multiple keys match this fourcc"))
 
-    parser.add_argument("-v", "--verbose", action="count", default=0,
+    parser.add_argument('-v', '--verbose', action='count', default=0,
           help="increases verbosity level; max level is set by -vvv")
 
     subparser = parser.add_mutually_exclusive_group(required=True)
 
-    subparser.add_argument("-u", "--unsign", action="store_true",
+    subparser.add_argument('-u', '--unsign', action='store_true',
           help="un-sign and decrypt the firmware module")
 
-    subparser.add_argument("-s", "--sign", action="store_true",
+    subparser.add_argument('-s', '--sign', action='store_true',
           help="sign and encrypt the firmware module")
 
-    subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
-            .format(version=__version__,author=__author__),
+    subparser.add_argument('--version', action='version', version="%(prog)s {version} by {author}"
+            .format(version=__version__, author=__author__),
           help="display version information and exit")
 
     po = parser.parse_args()
@@ -1269,33 +1276,25 @@ def main():
     po.show_multiple_keys_warn = True
 
     if po.unsign:
-
         if (po.verbose > 0):
             print("{}: Opening for extraction and un-signing".format(po.sigfile))
-        fwsigfile = open(po.sigfile, "rb")
-
-        imah_unsign(po, fwsigfile)
-
-        fwsigfile.close();
+        with open(po.sigfile, 'rb') as fwsigfile:
+            imah_unsign(po, fwsigfile)
 
     elif po.sign:
-
         if (po.verbose > 0):
             print("{}: Opening for creation and signing".format(po.sigfile))
-        fwsigfile = open(po.sigfile, "w+b")
-
-        imah_sign(po, fwsigfile)
-
-        fwsigfile.close();
+        with open(po.sigfile, 'w+b') as fwsigfile:
+            imah_sign(po, fwsigfile)
 
     else:
+        raise NotImplementedError("Unsupported command.")
 
-        raise NotImplementedError('Unsupported command.')
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
         main()
     except Exception as ex:
         eprint("Error: "+str(ex))
-        #raise
+        if 0: raise
         sys.exit(10)
