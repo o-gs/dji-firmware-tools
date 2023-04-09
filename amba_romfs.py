@@ -326,7 +326,7 @@ def main():
 
     po = parser.parse_args()
 
-    if len(po.fwpartfile) > 0 and len(po.snglfdir) == 0:
+    if len(po.fwpartfile) > 0 and po.snglfdir is None:
         po.snglfdir = os.path.splitext(os.path.basename(po.fwpartfile))[0]
 
     if po.extract:
