@@ -66,6 +66,7 @@ from comm_dat2pcap import (
   eprint,
 )
 
+
 def open_fifo(options, name):
     try:
         os.mkfifo(name);
@@ -79,6 +80,7 @@ def open_fifo(options, name):
     # This blocks until the other side of the fifo is opened
     return open(name, 'wb')
 
+
 def setup_output(options):
     if options.fifo:
         return PcapFormatter(open_fifo(options, options.fifo))
@@ -86,6 +88,7 @@ def setup_output(options):
         return PcapFormatter(open(options.write_file, 'wb'))
     else:
         return HumanFormatter(sys.stdout)
+
 
 def do_packetiser(ser, state, out, info):
     num_bytes = ser.inWaiting()
@@ -106,6 +109,7 @@ def do_packetiser(ser, state, out, info):
             break;
         num_bytes = ser.inWaiting()
     return state, info
+
 
 def do_sniff_once(options):
     # This might block until the other side of the fifo is opened
@@ -168,47 +172,49 @@ def do_sniff_once(options):
         print("Captured {:d} packets ({:d}b), dropped {:d} fragments ({:d}b)".format(info.count_ok,
             info.bytes_ok, info.count_bad, info.bytes_bad))
 
+
 def main():
     """ Main executable function.
 
       Its task is to parse command line options and call a function which performs sniffing.
     """
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
     parser.add_argument('port1', type=str,
-            help='The first serial port to read from')
+            help="the first serial port to read from")
 
     parser.add_argument('port2', type=str,
-            help='The second serial port to read from')
+            help="the second serial port to read from")
 
     parser.add_argument('-b', '--baudrate', default=115200, type=int,
-            help='The baudrate to use for both serial ports (defaults to %(default)s)')
+            help="the baudrate to use for both serial ports (defaults to %(default)s)")
 
     parser.add_argument('-u', '--userdlt', default=0, type=int,
-            help='The data link type of the PCap DLT_USER protocol (defaults to %(default)s)')
+            help="the data link type of the PCap DLT_USER protocol (defaults to %(default)s)")
 
     parser.add_argument('-e', '--storebad', action='store_true',
-            help='Enables storing bad packets (ie. with bad checksums)')
+            help="enables storing bad packets (ie. with bad checksums)")
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-q', '--quiet', action='store_true',
-            help='Do not output any informational messages')
+            help="do not output any informational messages")
 
     subparser.add_argument('-v', '--verbose', action='count', default=0,
-            help='Increases verbosity level; max level is set by -vvv')
+            help="increases verbosity level; max level is set by -vvv")
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-F', '--fifo',
-            help='Write output to a fifo instead of stdout. The fifo is created if needed and capturing does not start until the other side of the fifo is opened.')
+            help="write output to a fifo instead of stdout; the fifo is created " + \
+              "if needed and capturing does not start until the other side of the fifo is opened")
 
     subparser.add_argument('-w', '--write-file',
-            help='Write output to a file instead of stdout')
+            help="write output to a file instead of stdout")
 
-    subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+    subparser.add_argument('--version', action='version', version="%(prog)s {version} by {author}"
               .format(version=__version__, author=__author__),
-            help="Display version information and exit")
+            help="display version information and exit")
 
     options = parser.parse_args();
 
@@ -219,10 +225,11 @@ def main():
     except KeyboardInterrupt:
         pass
 
+
 if __name__ == '__main__':
     try:
         main()
     except Exception as ex:
         eprint("Error: "+str(ex))
-        #raise
+        if 0: raise
         sys.exit(10)
