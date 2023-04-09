@@ -44,8 +44,10 @@ from comm_serialtalk import (
 )
 from comm_mkdupc import *
 
+
 def eprint(*args, **kwargs):
-  print(*args, file=sys.stderr, **kwargs)
+    print(*args, file=sys.stderr, **kwargs)
+
 
 class PRODUCT_CODE(DecoratedEnum):
     A2     =  0 # Released 2013-09-04 A2 Flight Controller
@@ -80,6 +82,7 @@ class PRODUCT_CODE(DecoratedEnum):
     WM260  = 29 # Released 2021-11-05 (MAVIC) 3
     WM247  = 30 # Released 2020-12-15 Mavic 2 Enterprise Advanced 
 
+
 ALT_PRODUCT_CODE = {
     'S800': 'A2', # Released 2012-07-25 Hexacopter frame, often sold with Dji A2 Flight Controller
     'S1000': 'A2', # Released 2014-02-24 Octocopter frame, often sold with Dji A2 Flight Controller
@@ -106,23 +109,28 @@ ALT_PRODUCT_CODE = {
     'MAV3': 'WM260',
 }
 
+
 class SERVICE_CMD(DecoratedEnum):
     FlycParam = 0
     GimbalCalib = 1
     CameraCalib = 2
+
 
 class FLYC_PARAM_CMD(DecoratedEnum):
     LIST = 0
     GET = 1
     SET = 2
 
+
 class GIMBAL_CALIB_CMD(DecoratedEnum):
     JOINTCOARSE = 0
     LINEARHALL = 1
 
+
 class CAMERA_CALIB_CMD(DecoratedEnum):
     ENCRYPTCHECK = 0
     ENCRYPTPAIR = 1
+
 
 class CAMERA_ENCRYPT_PAIR_TARGET(DecoratedEnum):
     ALL = 0
@@ -136,6 +144,7 @@ default_32byte_key = bytes([ # Default key
     0x30, 0x72, 0x31, 0x67, 0x31, 0x6E, 0x61, 0x6C, 0x47, 0x61, 0x6E, 0x39, 0x73, 0x74, 0x61, 0x60,
     ])
 
+
 def detect_serial_port(po):
     """ Detects the serial port device name of a Dji product.
     """
@@ -144,6 +153,7 @@ def detect_serial_port(po):
     for comport in serial.tools.list_ports.comports():
         print(comport.device)
     return ''
+
 
 def open_serial_port(po):
     ser = None
@@ -164,11 +174,13 @@ def open_serial_port(po):
             print("Opened {} at {}".format(ser.port, ser.baudrate))
     return ser
 
+
 def get_unique_sequence_number(po):
     """ Returns a sequence number for packet.
     """
     # This will be unique as long as we do 10ms delay between packets
     return int(time.time()*100) & 0xffff
+
 
 def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_type, cmd_set, cmd_id, payload, seqnum_check=True, retry_num=3):
     global last_seq_num
@@ -217,6 +229,7 @@ def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_t
             print(' '.join('{:02x}'.format(x) for x in pktrpl))
 
     return pktrpl, pktreq
+
 
 def receive_reply_for_request(po, ser, pktreq, seqnum_check=True):
     """ Receives and returns response for given request packet.
@@ -273,6 +286,7 @@ def flyc_request_assistant_unlock(po, ser, val):
 
     return rplpayload
 
+
 def flyc_param_request_2017_get_table_attribs(po, ser, table_no):
     payload = DJIPayload_FlyController_GetTblAttribute2017Rq()
     payload.table_no = table_no
@@ -306,6 +320,7 @@ def flyc_param_request_2017_get_table_attribs(po, ser, table_no):
         print(rplpayload)
 
     return rplpayload
+
 
 def flyc_param_request_2017_get_param_info_by_index(po, ser, table_no, param_idx):
     payload = DJIPayload_FlyController_GetParamInfoByIndex2017Rq()
@@ -341,6 +356,7 @@ def flyc_param_request_2017_get_param_info_by_index(po, ser, table_no, param_idx
 
     return paraminfo
 
+
 def flyc_param_request_2015_get_param_info_by_index(po, ser, param_idx):
     payload = DJIPayload_FlyController_GetParamInfoByIndex2015Rq()
     payload.param_index = param_idx
@@ -374,6 +390,7 @@ def flyc_param_request_2015_get_param_info_by_index(po, ser, param_idx):
 
     return paraminfo
 
+
 def flyc_param_request_2015_get_param_info_by_hash(po, ser, param_name):
     payload = DJIPayload_FlyController_GetParamInfoByHash2015Rq()
     payload.param_hash = flyc_parameter_compute_hash(po,param_name)
@@ -406,6 +423,7 @@ def flyc_param_request_2015_get_param_info_by_hash(po, ser, param_name):
         print(paraminfo)
 
     return paraminfo
+
 
 def flyc_param_request_2015_read_param_value_by_hash(po, ser, param_name):
     payload = DJIPayload_FlyController_ReadParamValByHash2015Rq()
@@ -443,6 +461,7 @@ def flyc_param_request_2015_read_param_value_by_hash(po, ser, param_name):
 
     return rplpayload
 
+
 def flyc_param_request_2017_read_param_value_by_index(po, ser, table_no, param_idx):
     payload = DJIPayload_FlyController_ReadParamValByIndex2017Rq()
     payload.table_no = table_no
@@ -478,6 +497,7 @@ def flyc_param_request_2017_read_param_value_by_index(po, ser, table_no, param_i
 
     return rplpayload
 
+
 def do_assistant_unlock(po, ser):
     try:
         rplpayload = flyc_request_assistant_unlock(po, ser, 1)
@@ -492,6 +512,7 @@ def do_assistant_unlock(po, ser):
         return False
 
     return True
+
 
 def flyc_param_request_2017_write_param_value_by_index(po, ser, table_no, param_idx, param_val):
     if len(param_val) > 16:
@@ -547,6 +568,7 @@ def flyc_param_request_2017_write_param_value_by_index(po, ser, table_no, param_
 
     return rplpayload
 
+
 def flyc_param_request_2015_write_param_value_by_hash(po, ser, param_name, param_val):
     if len(param_val) > 16:
         payload = DJIPayload_FlyController_WriteParamValAnyByHash2015Rq()
@@ -595,6 +617,7 @@ def flyc_param_request_2015_write_param_value_by_hash(po, ser, param_name, param
 
     return rplpayload
 
+
 def flyc_param_info_limits_to_str(po, paraminfo):
     if (isinstance(paraminfo, DJIPayload_FlyController_GetParamInfoU2015Re) or
       isinstance(paraminfo, DJIPayload_FlyController_GetParamInfoU2017Re)):
@@ -616,6 +639,7 @@ def flyc_param_info_limits_to_str(po, paraminfo):
         limit_max = "n/a"
         limit_def = "n/a"
     return (limit_min, limit_max, limit_def)
+
 
 def flyc_param_value_to_str(po, paraminfo, param_value):
     if (paraminfo.type_id == DJIPayload_FlyController_ParamType.ubyte.value):
@@ -652,6 +676,7 @@ def flyc_param_value_to_str(po, paraminfo, param_value):
         value_str = ' '.join('{:02x}'.format(x) for x in param_bs)
     return value_str
 
+
 def flyc_param_str_to_value(po, paraminfo, value_str):
     if (paraminfo.type_id == DJIPayload_FlyController_ParamType.ubyte.value):
         param_val = struct.pack("<B", int(value_str,0))
@@ -676,6 +701,7 @@ def flyc_param_str_to_value(po, paraminfo, value_str):
     else: # array or future type
         param_val = bytes.fromhex(value_str)
     return param_val
+
 
 def flyc_param_request_2015_print_response(po, idx, paraminfo, rplpayload):
     if paraminfo is None:
@@ -745,6 +771,7 @@ def flyc_param_request_2015_print_response(po, idx, paraminfo, rplpayload):
                 print("{:s} default = {:s} range = < {:s} .. {:s} >".format(paraminfo.name.decode("utf-8"), limit_def, limit_min, limit_max))
             else:
                 print("{:s} = {:s} range = < {:s} .. {:s} >".format(paraminfo.name.decode("utf-8"), param_val, limit_min, limit_max))
+
 
 def flyc_param_request_2017_print_response(po, idx, paraminfo, rplpayload):
     if paraminfo is None:
@@ -819,6 +846,7 @@ def flyc_param_request_2017_print_response(po, idx, paraminfo, rplpayload):
             else:
                 print("{:s} = {:s} range = < {:s} .. {:s} >".format(paraminfo.name.decode("utf-8"), param_val, limit_min, limit_max))
 
+
 def do_flyc_param_request_2015_list(po, ser):
     """ List flyc parameters on platforms with single, linear parameters table.
 
@@ -838,6 +866,7 @@ def do_flyc_param_request_2015_list(po, ser):
         # Print the result data
         flyc_param_request_2015_print_response(po, idx, rplpayload, None)
 
+
 def do_flyc_param_request_2015_get(po, ser):
     """ Get flyc parameter value on platforms with single, linear parameters table.
 
@@ -851,6 +880,7 @@ def do_flyc_param_request_2015_get(po, ser):
     # Print the result data
     flyc_param_request_2015_print_response(po, None, None, True)
     flyc_param_request_2015_print_response(po, None, paraminfo, rplpayload)
+
 
 def do_flyc_param_request_2015_set(po, ser):
     """ Set new value of flyc parameter on platforms with single, linear parameters table.
@@ -866,6 +896,7 @@ def do_flyc_param_request_2015_set(po, ser):
     # Print the result data
     flyc_param_request_2015_print_response(po, None, None, True)
     flyc_param_request_2015_print_response(po, None, paraminfo, rplpayload)
+
 
 def do_flyc_param_request_2017_list(po, ser):
     """ List flyc parameters on platforms with multiple parameter tables.
@@ -900,6 +931,7 @@ def do_flyc_param_request_2017_list(po, ser):
                     flyc_param_request_2017_print_response(po, idx, rplpayload, None)
             idx += 1
 
+
 def do_flyc_param_request_2017_get(po, ser):
     """ Get flyc parameter value on platforms with multiple parameter tables.
 
@@ -914,6 +946,7 @@ def do_flyc_param_request_2017_get(po, ser):
     # Print the result data
     flyc_param_request_2015_print_response(po, None, None, True)
     flyc_param_request_2015_print_response(po, None, paraminfo, rplpayload)
+
 
 def flyc_param_request_2017_get_param_info_by_name_search(po, ser, param_name):
     # Get info on tables first, so we can flatten them
@@ -939,6 +972,7 @@ def flyc_param_request_2017_get_param_info_by_name_search(po, ser, param_name):
     raise LookupError("Parameter not found during parameter info by name search request.")
     return None # unreachble
 
+
 def do_flyc_param_request_2017_get_alt(po, ser):
     """ Get flyc parameter value on platforms with multiple parameter tables, alternative way.
 
@@ -953,6 +987,7 @@ def do_flyc_param_request_2017_get_alt(po, ser):
     # Print the result data
     flyc_param_request_2017_print_response(po, None, None, True)
     flyc_param_request_2017_print_response(po, None, paraminfo, rplpayload)
+
 
 def do_flyc_param_request_2017_set(po, ser):
     """ Set new value of flyc parameter on platforms with multiple parameter tables.
@@ -970,6 +1005,7 @@ def do_flyc_param_request_2017_set(po, ser):
     flyc_param_request_2015_print_response(po, None, None, True)
     flyc_param_request_2015_print_response(po, None, paraminfo, rplpayload)
 
+
 def do_flyc_param_request_2017_set_alt(po, ser):
     """ Set new value of flyc parameter on platforms with multiple parameter tables, alternative way.
 
@@ -985,6 +1021,7 @@ def do_flyc_param_request_2017_set_alt(po, ser):
     # Print the result data
     flyc_param_request_2017_print_response(po, None, None, True)
     flyc_param_request_2017_print_response(po, None, paraminfo, rplpayload)
+
 
 def do_flyc_param_request(po):
     ser = open_serial_port(po)
@@ -1015,6 +1052,7 @@ def do_flyc_param_request(po):
             raise ValueError("Unrecognized {:s} command: {:s}.".format(po.svcmd.name, po.subcmd.name))
 
     ser.close()
+
 
 def gimbal_calib_request_spark(po, ser, cmd):
     payload = DJIPayload_Gimbal_CalibRq()
@@ -1067,6 +1105,7 @@ def gimbal_calib_request_spark_receive_progress(po, ser, pktreq):
         print(rplpayload)
 
     return rplpayload
+
 
 def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload, pktreq, expect_duration, pass_values):
     if po.dry_test:
@@ -1165,6 +1204,7 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
 
     gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq, 30000, [40, 1])
 
+
 def gimbal_calib_request_p3x(po, ser):
     # We don't really need any payload, but that one byte won't influence anything, so we may keep it
     payload = DJIPayload_Gimbal_CalibRq()
@@ -1203,6 +1243,7 @@ def gimbal_calib_request_p3x(po, ser):
 
     return rplpayload, pktreq
 
+
 def do_gimbal_calib_request_p3x_autocal(po, ser):
     """ Initiates Phantom 3 Gimbal Automatic Calibration.
 
@@ -1223,6 +1264,7 @@ def do_gimbal_calib_request_p3x_autocal(po, ser):
     print("Calibration process started; do not touch the drone for 15 seconds.")
     time.sleep(5)
     print("Monitoring the progress is only possibe from a mobile app, so exiting.")
+
 
 def do_gimbal_calib_request(po):
     ser = open_serial_port(po)
@@ -1290,6 +1332,7 @@ def general_encrypt_get_state_request_p3x(po, ser, receiver_type, cmd):
 
     return rplpayload, pktreq
 
+
 def general_encrypt_configure_request_p3x(po, ser, receiver_type, target_type, boardsn, enckey):
     """ Sends Encrypt Pair/Configure request.
     """
@@ -1339,6 +1382,7 @@ def general_encrypt_configure_request_p3x(po, ser, receiver_type, target_type, b
         print(rplpayload)
 
     return rplpayload, pktreq
+
 
 def general_encrypt_configure_triple_request_p3x(po, ser, receiver_type, m01_boardsn, m01_enckey, m04_boardsn, m04_enckey, m08_boardsn, m08_enckey):
     """ Sends Triple Encrypt Pair/Configure request.
@@ -1400,6 +1444,7 @@ def general_encrypt_configure_triple_request_p3x(po, ser, receiver_type, m01_boa
 
     return rplpayload, pktreq
 
+
 def do_camera_calib_request_p3x_encryptcheck(po, ser):
     """ Verifies Phantom 3 Camera Encryption Pairing.
 
@@ -1450,6 +1495,7 @@ def do_camera_calib_request_p3x_encryptcheck(po, ser):
     else:
         print("Encryption pairing NEEDED.")
 
+
 def do_camera_calib_request_p3x_encryptpair(po, ser):
     """ Initiates Phantom 3 Camera Encryption Pairing.
 
@@ -1490,6 +1536,7 @@ def do_camera_calib_request_p3x_encryptpair(po, ser):
 
     print("Pairing complete; try EncryptCheck command to verify.")
 
+
 def do_camera_calib_request(po):
     ser = open_serial_port(po)
 
@@ -1520,23 +1567,26 @@ def parse_product_code(s):
         s = ALT_PRODUCT_CODE[s]
     return s
 
+
 def main():
     """ Main executable function.
 
       Its task is to parse command line options and call a function which performs serial communication.
     """
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
     subparser = parser.add_mutually_exclusive_group(required=True)
 
     subparser.add_argument('--port', type=str,
-            help='the serial port to write to and read from')
+            help="the serial port to write to and read from")
 
     subparser.add_argument('--bulk', action='store_true',
-            help='use usb bulk instead of serial connection')
+            help="use usb bulk instead of serial connection")
 
-    parser.add_argument('product', metavar='product', choices=[i.name for i in PRODUCT_CODE], type=parse_product_code,
-            help="target product code name; one of: {:s}".format(','.join(i.name for i in PRODUCT_CODE)))
+    parser.add_argument('product', metavar='product',
+            choices=[i.name for i in PRODUCT_CODE], type=parse_product_code,
+            help="target product code name; one of: {:s}"
+              .format(','.join(i.name for i in PRODUCT_CODE)))
 
     parser.add_argument('-b', '--baudrate', default=9600, type=int,
             help="the baudrate to use for the serial port (default is %(default)s)")
@@ -1545,7 +1595,8 @@ def main():
             help="how long to wait for answer, in miliseconds (default is %(default)s)")
 
     parser.add_argument('--dry-test', action='store_true',
-            help="internal testing mode; do not use real serial interface and use template answers from the drone.")
+            help=("internal testing mode; do not use real serial interface "
+              "and use template answers from the drone"))
 
     parser.add_argument('-v', '--verbose', action='count', default=0,
             help="increases verbosity level; max level is set by -vvv")
@@ -1558,7 +1609,7 @@ def main():
             help="service command")
 
     subpar_flycpar = subparsers.add_parser('FlycParam',
-            help="Flight Controller Parameters handling")
+            help="flight controller parameters handling")
 
     subpar_flycpar_subcmd = subpar_flycpar.add_subparsers(dest='subcmd',
             help="Flyc Param Command")
@@ -1596,39 +1647,40 @@ def main():
             help="output format")
 
     subpar_gimbcal = subparsers.add_parser('GimbalCalib',
-            help="Gimbal Calibration options")
+            help="gimbal calibration options")
 
     subpar_gimbcal_subcmd = subpar_gimbcal.add_subparsers(dest='subcmd',
-            help="Gimbal Calibration Command")
+            help="gimbal calibration command")
 
     subpar_gimbcal_coarse = subpar_gimbcal_subcmd.add_parser('JointCoarse',
-            help="gimbal Joint Coarse calibration; to be performed after " \
-             "gimbal has been fixed or replaced, or is not straight")
+            help=("gimbal Joint Coarse calibration; to be performed after "
+              "gimbal has been fixed or replaced, or is not straight"))
 
     subpar_gimbcal_hall = subpar_gimbcal_subcmd.add_parser('LinearHall',
-            help="gimbal Linear Hall calibration; to be performed always " \
-             "after JointCoarse calibration")
+            help=("gimbal Linear Hall calibration; to be performed always "
+              "after JointCoarse calibration"))
 
     subpar_camcal = subparsers.add_parser('CameraCalib',
-            help="Camera Calibration options")
+            help="camera calibration options")
 
     subpar_camcal_subcmd = subpar_camcal.add_subparsers(dest='subcmd',
-            help="Camera Calibration Command")
+            help="camera calibration Command")
 
     subpar_camcal_encryptcheck = subpar_camcal_subcmd.add_parser('EncryptCheck',
-            help="verify encryption pairing between Camera, Gimbal and DM3xx; " \
-             "returns whether pairing is required")
+            help=("verify encryption pairing between Camera, Gimbal and DM3xx; "
+              "returns whether pairing is required"))
 
     subpar_camcal_encryptpair = subpar_camcal_subcmd.add_parser('EncryptPair',
-            help="set encryption key to pair the Camera, Gimbal or DM3xx; " \
-             "to be performed after replacing software in any of these chips; UNTESTED - may not work")
+            help=("set encryption key to pair the Camera, Gimbal or DM3xx; "
+              "to be performed after replacing software in any of these chips; "
+              "UNTESTED - may not work"))
 
     subpar_camcal_encryptpair.add_argument('-k', '--pairkey', type=bytes.fromhex,
-            help="Provide 32-byte pairing key as hex string")
+            help="provide 32-byte pairing key as hex string")
 
     subpar_camcal_encryptpair.add_argument('--force', action='store_true',
-            help="forces the keys to be written, even if this could " \
-             "lead to inconsistent keys due to their read-only copy")
+            help=("forces the keys to be written, even if this could "
+              "lead to inconsistent keys due to their read-only copy"))
 
     po = parser.parse_args()
 
@@ -1645,10 +1697,11 @@ def main():
         po.subcmd = CAMERA_CALIB_CMD.from_name(po.subcmd.upper())
         do_camera_calib_request(po)
 
+
 if __name__ == '__main__':
     try:
         main()
     except Exception as ex:
         eprint("Error: "+str(ex))
-        #raise
+        if 0: raise
         sys.exit(10)
