@@ -978,7 +978,7 @@ def main():
             flyc_list(po,fwmdlfile)
 
     elif po.extract:
-       if (po.verbose > 0):
+        if (po.verbose > 0):
             print("{}: Opening for extraction".format(po.mdlfile))
         with open(po.mdlfile, 'rb') as fwmdlfile:
             flyc_extract(po,fwmdlfile)

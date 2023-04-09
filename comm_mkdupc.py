@@ -33,7 +33,7 @@ import argparse
 import enum
 import re
 from ctypes import c_char, c_int, c_ubyte, c_ushort, c_uint, c_float
-from ctypes import sizeof, addressof, byref, memmove, LittleEndianStructure
+from ctypes import sizeof, addressof, byref, memmove, Array, LittleEndianStructure
 from collections import OrderedDict
 
 sys.path.insert(0, './')
