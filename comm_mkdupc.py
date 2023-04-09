@@ -161,16 +161,17 @@ class PacketProperties:
 
 class DJICmdV1Header(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('sof', c_ubyte), # Start Of Field
-              ('ver_length_tag', c_ushort), # Protocol version and packet length
-              ('header_crc8', c_ubyte), # Checksum of preceding bytes
-              ('sender_info', c_ubyte), # Sender module identificator
-              ('receiver_info', c_ubyte), # Receiver module identificator
-              ('seq_num', c_ushort), # Sequence number of this command id
-              ('cmd_type_data', c_ubyte), # Packet type, required acknowledgement, encryption
-              ('cmd_set', c_ubyte), # Command Set selection
-              ('cmd_id', c_ubyte), # Specific command selection
-             ]
+  _fields_ = [
+        ('sof', c_ubyte), # Start Of Field
+        ('ver_length_tag', c_ushort), # Protocol version and packet length
+        ('header_crc8', c_ubyte), # Checksum of preceding bytes
+        ('sender_info', c_ubyte), # Sender module identificator
+        ('receiver_info', c_ubyte), # Receiver module identificator
+        ('seq_num', c_ushort), # Sequence number of this command id
+        ('cmd_type_data', c_ubyte), # Packet type, required acknowledgement, encryption
+        ('cmd_set', c_ubyte), # Command Set selection
+        ('cmd_id', c_ubyte), # Specific command selection
+  ]
 
   def __init__(self):
     self.sof = 0x55
@@ -263,8 +264,9 @@ class DJICmdV1Header(LittleEndianStructure):
 
 class DJICmdV1Footer(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('crc16', c_ushort), # Whole packet checksum
-             ]
+  _fields_ = [
+        ('crc16', c_ushort),  # Whole packet checksum
+  ]
 
   def dict_export(self):
     d = dict()
@@ -300,19 +302,21 @@ class DJIPayload_Base(LittleEndianStructure):
 
 
 class DJIPayload_General_VersionInquiryRe(DJIPayload_Base):
-  _fields_ = [('unknown0', c_ubyte),
-              ('unknown1', c_ubyte),
-              ('hw_version', c_char * 16),
-              ('ldr_version', c_uint),
-              ('app_version', c_uint),
-              ('unknown1A', c_uint),
-              ('unknown1E', c_ubyte),
-             ]
+  _fields_ = [
+        ('unknown0', c_ubyte),
+        ('unknown1', c_ubyte),
+        ('hw_version', c_char * 16),
+        ('ldr_version', c_uint),
+        ('app_version', c_uint),
+        ('unknown1A', c_uint),
+        ('unknown1E', c_ubyte),
+  ]
 
 
 class DJIPayload_General_ChipRebootRe(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-             ]
+  _fields_ = [
+        ('status', c_ubyte),
+  ]
 
 
 class DJIPayload_General_EncryptCmd(DecoratedEnum):
@@ -330,88 +334,99 @@ class DJIPayload_General_EncryptOperType(DecoratedEnum):
 
 class DJIPayload_General_EncryptGetStateRq(DJIPayload_Base):
   # Matches both GetChipState and GetModuleState
-  _fields_ = [('command', c_ubyte),
-             ]
+  _fields_ = [
+        ('command', c_ubyte),
+  ]
 
 
 class DJIPayload_General_EncryptConfigRq(DJIPayload_Base):
   # Matches only Config command
-  _fields_ = [('command', c_ubyte),
-              ('oper_type', c_ubyte),
-              ('config_magic', c_ubyte * 8),
-              ('mod_type', c_ubyte),
-              ('board_sn', c_ubyte * 10),
-              ('key', c_ubyte * 32),
-              ('secure_num', c_ubyte * 16),
-             ]
+  _fields_ = [
+        ('command', c_ubyte),
+        ('oper_type', c_ubyte),
+        ('config_magic', c_ubyte * 8),
+        ('mod_type', c_ubyte),
+        ('board_sn', c_ubyte * 10),
+        ('key', c_ubyte * 32),
+        ('secure_num', c_ubyte * 16),
+  ]
 
 
 class DJIPayload_General_EncryptConfig3Rq(DJIPayload_Base):
   # Matches only Config command
-  _fields_ = [('command', c_ubyte),
-              ('oper_type', c_ubyte),
-              ('config_magic', c_ubyte * 8),
-              ('m01_mod_type', c_ubyte),
-              ('m01_board_sn', c_ubyte * 10),
-              ('m01_key', c_ubyte * 32),
-              ('m01_secure_num', c_ubyte * 16),
-              ('m04_mod_type', c_ubyte),
-              ('m04_board_sn', c_ubyte * 10),
-              ('m04_key', c_ubyte * 32),
-              ('m04_secure_num', c_ubyte * 16),
-              ('m08_mod_type', c_ubyte),
-              ('m08_board_sn', c_ubyte * 10),
-              ('m08_key', c_ubyte * 32),
-              ('m08_secure_num', c_ubyte * 16),
-             ]
+  _fields_ = [
+        ('command', c_ubyte),
+        ('oper_type', c_ubyte),
+        ('config_magic', c_ubyte * 8),
+        ('m01_mod_type', c_ubyte),
+        ('m01_board_sn', c_ubyte * 10),
+        ('m01_key', c_ubyte * 32),
+        ('m01_secure_num', c_ubyte * 16),
+        ('m04_mod_type', c_ubyte),
+        ('m04_board_sn', c_ubyte * 10),
+        ('m04_key', c_ubyte * 32),
+        ('m04_secure_num', c_ubyte * 16),
+        ('m08_mod_type', c_ubyte),
+        ('m08_board_sn', c_ubyte * 10),
+        ('m08_key', c_ubyte * 32),
+        ('m08_secure_num', c_ubyte * 16),
+  ]
 
 
 class DJIPayload_General_EncryptDoEncryptRq(DJIPayload_Base):
   # Matches only DoEncrypt command
-  _fields_ = [('command', c_ubyte),
-              ('mod_type', c_ubyte),
-              ('data', c_ubyte * 32),
-             ]
+  _fields_ = [
+      ('command', c_ubyte),
+      ('mod_type', c_ubyte),
+      ('data', c_ubyte * 32),
+  ]
 
 
 class DJIPayload_General_EncryptGetChipStateRe(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-              ('state_flags', c_ubyte),
-              ('m01_boardsn', c_ubyte * 10),
-              ('m04_boardsn', c_ubyte * 10),
-              ('m08_boardsn', c_ubyte * 10),
-             ]
+  _fields_ = [
+        ('status', c_ubyte),
+        ('state_flags', c_ubyte),
+        ('m01_boardsn', c_ubyte * 10),
+        ('m04_boardsn', c_ubyte * 10),
+        ('m08_boardsn', c_ubyte * 10),
+  ]
 
 
 class DJIPayload_General_EncryptGetModuleStateRe(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-              ('state_flags', c_ubyte),
-             ]
+  _fields_ = [
+        ('status', c_ubyte),
+        ('state_flags', c_ubyte),
+  ]
 
 
 class DJIPayload_General_EncryptConfigRe(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-             ]
+  _fields_ = [
+        ('status', c_ubyte),
+  ]
 
 
 class DJIPayload_FlyController_AssistantUnlockRq(DJIPayload_Base):
-  _fields_ = [('lock_state', c_uint),
-             ]
+  _fields_ = [
+        ('lock_state', c_uint),
+  ]
 
 
 class DJIPayload_FlyController_AssistantUnlockRe(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-             ]
+  _fields_ = [
+        ('status', c_ubyte),
+  ]
 
 
 class DJIPayload_FlyController_GetParamInfoByIndex2015Rq(DJIPayload_Base):
-  _fields_ = [('param_index', c_ushort),
-             ]
+  _fields_ = [
+        ('param_index', c_ushort),
+  ]
 
 
 class DJIPayload_FlyController_GetParamInfoByHash2015Rq(DJIPayload_Base):
-  _fields_ = [('param_hash', c_uint),
-             ]
+  _fields_ = [
+        ('param_hash', c_uint),
+  ]
 
 
 # We cannot define property name with variable size, so let's make const size one
@@ -434,237 +449,267 @@ class DJIPayload_FlyController_ParamType(DecoratedEnum):
 
 
 class DJIPayload_FlyController_GetParamInfoEOL2015Re(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-             ]
+  _fields_ = [
+        ('status', c_ubyte),
+  ]
 
 
 class DJIPayload_FlyController_GetParamInfoU2015Re(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-              ('type_id', c_ushort),
-              ('size', c_ushort),
-              ('attribute', c_ushort),
-              ('limit_min', c_uint),
-              ('limit_max', c_uint),
-              ('limit_def', c_uint),
-              ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
-             ]
+  _fields_ = [
+        ('status', c_ubyte),
+        ('type_id', c_ushort),
+        ('size', c_ushort),
+        ('attribute', c_ushort),
+        ('limit_min', c_uint),
+        ('limit_max', c_uint),
+        ('limit_def', c_uint),
+        ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
+  ]
 
 
 class DJIPayload_FlyController_GetParamInfoI2015Re(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-              ('type_id', c_ushort),
-              ('size', c_ushort),
-              ('attribute', c_ushort),
-              ('limit_min', c_int),
-              ('limit_max', c_int),
-              ('limit_def', c_int),
-              ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
-             ]
+  _fields_ = [
+        ('status', c_ubyte),
+        ('type_id', c_ushort),
+        ('size', c_ushort),
+        ('attribute', c_ushort),
+        ('limit_min', c_int),
+        ('limit_max', c_int),
+        ('limit_def', c_int),
+        ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
+  ]
 
 
 class DJIPayload_FlyController_GetParamInfoF2015Re(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-              ('type_id', c_ushort),
-              ('size', c_ushort),
-              ('attribute', c_ushort),
-              ('limit_min', c_float),
-              ('limit_max', c_float),
-              ('limit_def', c_float),
-              ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
-             ]
+  _fields_ = [
+        ('status', c_ubyte),
+        ('type_id', c_ushort),
+        ('size', c_ushort),
+        ('attribute', c_ushort),
+        ('limit_min', c_float),
+        ('limit_max', c_float),
+        ('limit_def', c_float),
+        ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
+  ]
 
 
 class DJIPayload_FlyController_ReadParamValByHash2015Rq(DJIPayload_Base):
-  _fields_ = [('param_hash', c_uint),
-             ]
+  _fields_ = [
+        ('param_hash', c_uint),
+  ]
 
 
 class DJIPayload_FlyController_ReadParamValByHash2015Re(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-              ('param_hash', c_uint),
-              ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
-             ]
+  _fields_ = [
+        ('status', c_ubyte),
+        ('param_hash', c_uint),
+        ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
+  ]
 
 
 class DJIPayload_FlyController_ReadParamValByIndex2017Rq(DJIPayload_Base):
-  _fields_ = [('table_no', c_ushort),
-              ('unknown1', c_ushort),
-              ('param_index', c_ushort),
-             ]
+  _fields_ = [
+        ('table_no', c_ushort),
+        ('unknown1', c_ushort),
+        ('param_index', c_ushort),
+  ]
 
 
 class DJIPayload_FlyController_ReadParamValByIndex2017Re(DJIPayload_Base):
-  _fields_ = [('status', c_ushort),
-              ('unknown1', c_ushort),
-              ('param_index', c_ushort),
-              ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
-             ]
+  _fields_ = [
+        ('status', c_ushort),
+        ('unknown1', c_ushort),
+        ('param_index', c_ushort),
+        ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamVal1ByIndex2017Rq(DJIPayload_Base):
-  _fields_ = [('table_no', c_ushort),
-              ('unknown1', c_ushort),
-              ('param_index', c_ushort),
-              ('param_value', c_ubyte),
-             ]
+  _fields_ = [
+        ('table_no', c_ushort),
+        ('unknown1', c_ushort),
+        ('param_index', c_ushort),
+        ('param_value', c_ubyte),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamVal2ByIndex2017Rq(DJIPayload_Base):
-  _fields_ = [('table_no', c_ushort),
-              ('unknown1', c_ushort),
-              ('param_index', c_ushort),
-              ('param_value', c_ubyte * 2),
-             ]
+  _fields_ = [
+        ('table_no', c_ushort),
+        ('unknown1', c_ushort),
+        ('param_index', c_ushort),
+        ('param_value', c_ubyte * 2),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamVal4ByIndex2017Rq(DJIPayload_Base):
-  _fields_ = [('table_no', c_ushort),
-              ('unknown1', c_ushort),
-              ('param_index', c_ushort),
-              ('param_value', c_ubyte * 4),
-             ]
+  _fields_ = [
+        ('table_no', c_ushort),
+        ('unknown1', c_ushort),
+        ('param_index', c_ushort),
+        ('param_value', c_ubyte * 4),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamVal8ByIndex2017Rq(DJIPayload_Base):
-  _fields_ = [('table_no', c_ushort),
-              ('unknown1', c_ushort),
-              ('param_index', c_ushort),
-              ('param_value', c_ubyte * 8),
-             ]
+  _fields_ = [
+        ('table_no', c_ushort),
+        ('unknown1', c_ushort),
+        ('param_index', c_ushort),
+        ('param_value', c_ubyte * 8),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamVal16ByIndex2017Rq(DJIPayload_Base):
-  _fields_ = [('table_no', c_ushort),
-              ('unknown1', c_ushort),
-              ('param_index', c_ushort),
-              ('param_value', c_ubyte * 16),
-             ]
+  _fields_ = [
+        ('table_no', c_ushort),
+        ('unknown1', c_ushort),
+        ('param_index', c_ushort),
+        ('param_value', c_ubyte * 16),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamValAnyByIndex2017Rq(DJIPayload_Base):
-  _fields_ = [('table_no', c_ushort),
-              ('unknown1', c_ushort),
-              ('param_index', c_ushort),
-              ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
-             ]
+  _fields_ = [
+        ('table_no', c_ushort),
+        ('unknown1', c_ushort),
+        ('param_index', c_ushort),
+        ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamValByIndex2017Re(DJIPayload_Base):
-  _fields_ = [('status', c_ushort),
-              ('table_no', c_ushort),
-              ('param_index', c_ushort),
-              ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
-             ]
+  _fields_ = [
+        ('status', c_ushort),
+        ('table_no', c_ushort),
+        ('param_index', c_ushort),
+        ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamVal1ByHash2015Rq(DJIPayload_Base):
-  _fields_ = [('param_hash', c_uint),
-              ('param_value', c_ubyte * 1),
-             ]
+  _fields_ = [
+        ('param_hash', c_uint),
+        ('param_value', c_ubyte * 1),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamVal2ByHash2015Rq(DJIPayload_Base):
-  _fields_ = [('param_hash', c_uint),
-              ('param_value', c_ubyte * 2),
-             ]
+  _fields_ = [
+        ('param_hash', c_uint),
+        ('param_value', c_ubyte * 2),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamVal4ByHash2015Rq(DJIPayload_Base):
-  _fields_ = [('param_hash', c_uint),
-              ('param_value', c_ubyte * 4),
-             ]
+  _fields_ = [
+        ('param_hash', c_uint),
+        ('param_value', c_ubyte * 4),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamVal8ByHash2015Rq(DJIPayload_Base):
-  _fields_ = [('param_hash', c_uint),
-              ('param_value', c_ubyte * 8),
-             ]
+  _fields_ = [
+        ('param_hash', c_uint),
+        ('param_value', c_ubyte * 8),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamVal16ByHash2015Rq(DJIPayload_Base):
-  _fields_ = [('param_hash', c_uint),
-              ('param_value', c_ubyte * 16),
-             ]
+  _fields_ = [
+        ('param_hash', c_uint),
+        ('param_value', c_ubyte * 16),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamValAnyByHash2015Rq(DJIPayload_Base):
-  _fields_ = [('param_hash', c_uint),
-              ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
-             ]
+  _fields_ = [
+        ('param_hash', c_uint),
+        ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
+  ]
 
 
 class DJIPayload_FlyController_WriteParamValByHash2015Re(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-              ('param_hash', c_uint),
-              ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
-             ]
+  _fields_ = [
+        ('status', c_ubyte),
+        ('param_hash', c_uint),
+        ('param_value', c_ubyte * DJIPayload_FlyController_ParamMaxLen),
+  ]
 
 
 class DJIPayload_FlyController_GetTblAttribute2017Rq(DJIPayload_Base):
-  _fields_ = [('table_no', c_ushort),
-             ]
+  _fields_ = [
+        ('table_no', c_ushort),
+  ]
 
 class DJIPayload_FlyController_GetTblAttribute2017Re(DJIPayload_Base):
-  _fields_ = [('status', c_ushort),
-              ('table_no', c_ushort),
-              ('entries_crc', c_uint),
-              ('entries_num', c_uint),
-             ]
+  _fields_ = [
+        ('status', c_ushort),
+        ('table_no', c_ushort),
+        ('entries_crc', c_uint),
+        ('entries_num', c_uint),
+  ]
 
 
 class DJIPayload_FlyController_GetTblAttributeEOL2017Re(DJIPayload_Base):
-  _fields_ = [('status', c_ushort),
-             ]
+  _fields_ = [
+        ('status', c_ushort),
+  ]
 
 
 class DJIPayload_FlyController_GetParamInfoByIndex2017Rq(DJIPayload_Base):
-  _fields_ = [('table_no', c_ushort),
-              ('param_index', c_ushort),
-             ]
+  _fields_ = [
+        ('table_no', c_ushort),
+        ('param_index', c_ushort),
+  ]
 
 
 class DJIPayload_FlyController_GetParamInfoEOL2017Re(DJIPayload_Base):
-  _fields_ = [('status', c_ushort),
-             ]
+  _fields_ = [
+        ('status', c_ushort),
+  ]
 
 
 class DJIPayload_FlyController_GetParamInfoU2017Re(DJIPayload_Base):
-  _fields_ = [('status', c_ushort),
-              ('table_no', c_ushort),
-              ('param_index', c_ushort),
-              ('type_id', c_ushort),
-              ('size', c_ushort),
-              ('limit_def', c_uint),
-              ('limit_min', c_uint),
-              ('limit_max', c_uint),
-              ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
-             ]
+  _fields_ = [
+        ('status', c_ushort),
+        ('table_no', c_ushort),
+        ('param_index', c_ushort),
+        ('type_id', c_ushort),
+        ('size', c_ushort),
+        ('limit_def', c_uint),
+        ('limit_min', c_uint),
+        ('limit_max', c_uint),
+        ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
+  ]
 
 
 class DJIPayload_FlyController_GetParamInfoI2017Re(DJIPayload_Base):
-  _fields_ = [('status', c_ushort),
-              ('table_no', c_ushort),
-              ('param_index', c_ushort),
-              ('type_id', c_ushort),
-              ('size', c_ushort),
-              ('limit_def', c_int),
-              ('limit_min', c_int),
-              ('limit_max', c_int),
-              ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
-             ]
+  _fields_ = [
+        ('status', c_ushort),
+        ('table_no', c_ushort),
+        ('param_index', c_ushort),
+        ('type_id', c_ushort),
+        ('size', c_ushort),
+        ('limit_def', c_int),
+        ('limit_min', c_int),
+        ('limit_max', c_int),
+        ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
+  ]
 
 
 class DJIPayload_FlyController_GetParamInfoF2017Re(DJIPayload_Base):
-  _fields_ = [('status', c_ushort),
-              ('table_no', c_ushort),
-              ('param_index', c_ushort),
-              ('type_id', c_ushort),
-              ('size', c_ushort),
-              ('limit_def', c_float),
-              ('limit_min', c_float),
-              ('limit_max', c_float),
-              ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
-             ]
+  _fields_ = [
+        ('status', c_ushort),
+        ('table_no', c_ushort),
+        ('param_index', c_ushort),
+        ('type_id', c_ushort),
+        ('size', c_ushort),
+        ('limit_def', c_float),
+        ('limit_min', c_float),
+        ('limit_max', c_float),
+        ('name', c_char * DJIPayload_FlyController_ParamMaxLen),
+  ]
 
 
 class DJIPayload_Gimbal_CalibCmd(DecoratedEnum):
@@ -673,49 +718,55 @@ class DJIPayload_Gimbal_CalibCmd(DecoratedEnum):
 
 
 class DJIPayload_Gimbal_CalibRq(DJIPayload_Base):
-  _fields_ = [('command', c_ubyte),
-             ]
+  _fields_ = [
+        ('command', c_ubyte),
+  ]
 
 
 class DJIPayload_Gimbal_CalibRe(DJIPayload_Base):
-  _fields_ = [('status1', c_ubyte),
-              ('status2', c_ubyte),
-             ]
+  _fields_ = [
+        ('status1', c_ubyte),
+        ('status2', c_ubyte),
+  ]
 
 
 class DJIPayload_HDLink_WriteHardwareRegisterRq(DJIPayload_Base):
-  _fields_ = [('reg_address', c_ushort),
-              ('reg_value', c_ubyte),
-             ]
+  _fields_ = [
+        ('reg_address', c_ushort),
+        ('reg_value', c_ubyte),
+  ]
 
 
 class DJIPayload_HDLink_WriteHardwareRegisterRe(DJIPayload_Base):
-  _fields_ = [('status', c_ubyte),
-             ]
+  _fields_ = [
+        ('status', c_ubyte),
+  ]
 
 
 def flyc_parameter_compute_hash(po, parname):
-  """ Computes hash from given flyc parameter name. Parameters are recognized by the FC by the hash.
-  """
-  parhash = 0
-  parbt = parname.encode('gbk') # seriously, they should already know the world uses UTF now
-  for i in range(0, len(parname)):
-      ncode = parbt[i]
-      tmpval = (parhash & 0xffffffff) << 8
-      parhash = (tmpval + ncode) % 0xfffffffb
-  return parhash
+    """ Computes hash from given flyc parameter name. Parameters are recognized by the FC by the hash.
+    """
+    parhash = 0
+    parbt = parname.encode('gbk') # seriously, they should already know the world uses UTF now
+    for i in range(0, len(parname)):
+        ncode = parbt[i]
+        tmpval = (parhash & 0xffffffff) << 8
+        parhash = (tmpval + ncode) % 0xfffffffb
+    return parhash
 
 
 def flyc_parameter_is_signed(type_id):
-  """ Returns whether flight param of given type is signed - should use "I" versions of packets.
-  """
-  return (type_id >= DJIPayload_FlyController_ParamType.byte.value) and (type_id <= DJIPayload_FlyController_ParamType.longlong.value)
+    """ Returns whether flight param of given type is signed - should use "I" versions of packets.
+    """
+    return (type_id >= DJIPayload_FlyController_ParamType.byte.value) and \
+          (type_id <= DJIPayload_FlyController_ParamType.longlong.value)
 
 
 def flyc_parameter_is_float(type_id):
-  """ Returns whether flight param of given type is float - should use "F" versions of packets.
-  """
-  return (type_id == DJIPayload_FlyController_ParamType.float.value) or (type_id == DJIPayload_FlyController_ParamType.double.value)
+    """ Returns whether flight param of given type is float - should use "F" versions of packets.
+    """
+    return (type_id == DJIPayload_FlyController_ParamType.float.value) or \
+          (type_id == DJIPayload_FlyController_ParamType.double.value)
 
 
 def encode_command_packet(sender_type, sender_index, receiver_type, receiver_index, seq_num, pack_type, ack_type, encrypt_type, cmd_set, cmd_id, payload):
@@ -1049,7 +1100,7 @@ def main():
     subparser.add_argument('-p', '--payload_bin', default="", type=str,
             help="provide binary payload directly (default payload is empty)")
 
-    options = parser.parse_args();
+    options = parser.parse_args()
 
     if (options.payload_hex is not None):
         options.payload = bytes.fromhex(options.payload_hex)
