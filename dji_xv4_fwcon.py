@@ -673,8 +673,8 @@ def main():
           help="name of the firmware package file")
 
     parser.add_argument('-m', '--mdprefix', default="", type=str,
-          help="directory and file name prefix for the single decomposed firmware modules " \
-           "(default is base name of fwpkg with extension stripped, in working dir)")
+          help=("directory and file name prefix for the single decomposed firmware modules "
+           "(default is base name of fwpkg with extension stripped, in working dir)"))
 
     parser.add_argument('-f', '--force-continue', action='store_true',
           help="force continuing execution despite warning signs of issues")
