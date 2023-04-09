@@ -206,21 +206,21 @@ def pack(args):
         raise ValueError("Unknown target: '{}'".format(args.target))
 
     # Timestamp
-    if args.time == None:
+    if args.time is None:
         header.time = int(time.time())
     else:
         if args.time.isdigit():
             t = int(args.time, 10)
         else:
             t = time.strptime(args.time, '%Y-%m-%d %H:%M:%S')
-            if t == None:
+            if t is None:
                 raise ValueError("Wrong format for time: '{}'".format(args.time))
             t = int(time.mktime(t))
 
         header.time = t
 
     ver = re.search('^v(\d+).(\d+).(\d+).(\d+)$', args.fwver)
-    if ver == None:
+    if ver is None:
         raise ValueError("Wrong firmware version string format (vAA.BB.CC.DD): '{}'".format(args.fwver))
 
     # Store module version
@@ -277,74 +277,80 @@ def main():
 
     Its task is to parse command line options and call a function which performs requested command.
     """
-    # Parse command line options
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
     subparsers = parser.add_subparsers(dest='cmd')
 
-    parser.add_argument("-v", "--verbose", action="count", default=0,
+    parser.add_argument('-v', '--verbose', action='count', default=0,
           help="increases verbosity level; max level is set by -vvv")
 
-    parser.add_argument("-f", "--force-continue", action="store_true",
-            help="force continuing execution despite warning signs of issues")
+    parser.add_argument('-f', '--force-continue', action='store_true',
+          help="force continuing execution despite warning signs of issues")
 
-    parser_dec = subparsers.add_parser('dec', help='Decrypt')
+    parser_dec = subparsers.add_parser('dec',
+          help="decrypt")
     parser_dec.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'),
-            help='name of the input encrypted FC firmware file')
+          help="name of the input encrypted FC firmware file")
     parser_dec.add_argument('-o', '--output', type=argparse.FileType('wb'),
-            help='name of the output decrypted firmware file')
+          help="name of the output decrypted firmware file")
 
-    parser_enc = subparsers.add_parser('enc', help='Encrypt')
+    parser_enc = subparsers.add_parser('enc',
+          help="encrypt")
     parser_enc.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'),
-            help='name of the input unencrypted FC firmware file')
+          help="name of the input unencrypted FC firmware file")
     parser_enc.add_argument('-o', '--output', type=argparse.FileType('wb'),
-            help='name of the output encrypted firmware file')
+          help="name of the output encrypted firmware file")
     parser_enc.add_argument('-T', '--time',
-            help='Timestamp. If omitted the current time will be used. The timestamp ' + \
-             'is either a number (seconds since epoch) or in the following format: ' + \
-             '"year-month-day hour:min:sec"' )
+          help=("timestamp; if omitted, the current time will be used; the timestamp "
+             "is either a number (seconds since epoch) or in the following format: "
+             "\"year-month-day hour:min:sec\""))
     parser_enc.add_argument('-V', '--fwver', required=True,
-            help='firmware version string in the form "vAA.BB.CC.DD"')
+          help="firmware version string in the form \"vAA.BB.CC.DD\"")
     parser_enc.add_argument('-t', '--target', required=True,
-            help='either 0305 or 0306')
+          help="either 0305 or 0306")
 
     parser_inf = subparsers.add_parser('info',
-            help='show header information')
+          help="show header information")
     parser_inf.add_argument('-i', '--input', required=True, type=argparse.FileType('rb'),
-            help='input file')
+          help="input file")
+
     args = parser.parse_args()
 
     if args.cmd == 'info':
         if (args.verbose > 0):
             print("{}: Opening for info display".format(args.input.name))
         unpack(args)
+
     elif args.cmd == 'dec':
         if (args.verbose > 0):
             print("{}: Opening for decryption".format(args.input.name))
-        if args.output == None:
+        if args.output is None:
             if ".encrypted." in basename(args.input.name):
                 file_out = basename(args.input.name).replace(".encrypted", "")
             else:
-                file_out = os.path.splitext(basename(args.input.name))[0] + '.decrypted.bin'
-            args.output = open(file_out, "wb")
+                file_out = os.path.splitext(basename(args.input.name))[0] + ".decrypted.bin"
+            args.output = open(file_out, 'wb')
         unpack(args)
+
     elif args.cmd == 'enc':
         if (args.verbose > 0):
             print("{}: Opening for encryption".format(args.input.name))
-        if args.output == None:
+        if args.output is None:
             if ".decrypted." in basename(args.input.name):
                 file_out = basename(args.input.name).replace(".decrypted", "")
             else:
-                file_out = os.path.splitext(basename(args.input.name))[0] + '.encrypted.bin'
-            args.output = open(file_out, "wb")
+                file_out = os.path.splitext(basename(args.input.name))[0] + ".encrypted.bin"
+            args.output = open(file_out, 'wb')
         pack(args)
+
     else:
         raise NotImplementedError("Unknown command: '{}'.".format(args.cmd))
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     try:
         main()
     except Exception as ex:
         eprint("Error: "+str(ex))
-        #raise
+        if 0: raise
         sys.exit(10)
