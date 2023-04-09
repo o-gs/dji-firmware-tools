@@ -154,6 +154,7 @@ class CHIP_TYPE(DecoratedEnum):
     BQ4050		= 0x019e34 # hw marking bq9000;
     BQ769x2		= 0x017692 # hw marking bq7692; BQ76942/BQ76952
 
+
 CHIP_TYPE.AUTO.__doc__		= "Automatic detection of the chip"
 CHIP_TYPE.SBS.__doc__		= "Generic chip with SBS support"
 CHIP_TYPE.BQGENERIC.__doc__	= "Unidentified chip from TI BQ family"
@@ -191,6 +192,7 @@ CHIP_TYPE.BQ40z60.__doc__	= "Texas Instruments BQ40z60 chip"
 CHIP_TYPE.BQ40z80.__doc__	= "Texas Instruments BQ40z70/BQ40z80 chip"
 CHIP_TYPE.BQ4050.__doc__	= "Texas Instruments BQ4050 chip"
 CHIP_TYPE.BQ769x2.__doc__	= "Texas Instruments BQ76942/BQ76952 chip"
+
 
 class SBS_COMMAND(DecoratedEnum):
     """ Smart Battery Data Specification 1.1 commands list
@@ -252,6 +254,7 @@ class MANUFACTURER_ACCESS_CMD_BQGENERIC(DecoratedEnum):
     FirmwareVersion			= 0x02
     HardwareVersion			= 0x03
 
+
 class SBS_FLAG_BATTERY_MODE(DecoratedEnum):
     """ Flags used in BatteryMode command
     """
@@ -272,6 +275,7 @@ class SBS_FLAG_BATTERY_MODE(DecoratedEnum):
     CHARGER_MODE				= 14
     CAPACITY_MODE				= 15
 
+
 class SBS_FLAG_BATTERY_STATUS(DecoratedEnum):
     """ Flags used in BatteryStatus command
     """
@@ -289,6 +293,7 @@ class SBS_FLAG_BATTERY_STATUS(DecoratedEnum):
     TERMINATE_CHARGE_ALARM		= 14
     OVER_CHARGED_ALARM			= 15
 
+
 class SBS_FLAG_SPECIFICATION_INFO(DecoratedEnum):
     """ Flags used in SpecificationInfo command
     """
@@ -296,6 +301,7 @@ class SBS_FLAG_SPECIFICATION_INFO(DecoratedEnum):
     Version						= 4
     VScale						= 8
     IPScale						= 12
+
 
 class MONITOR_GROUP(DecoratedEnum):
     """ List of groups of commands/offsets.
@@ -314,6 +320,7 @@ class MONITOR_GROUP(DecoratedEnum):
     ImpedanceTrackMA	= 0x0c
     BQTurboMode	= 0x0f
 
+
 # Global variables, modified by chip drivers
 MANUFACTURER_ACCESS_CMD_BQ_INFO = {}
 MANUFACTURER_BLOCK_ACCESS_CMD_BQ_INFO = {}
@@ -324,6 +331,7 @@ SBS_CMD_INFO = {}
 RAW_ADDRESS_SPACE_KIND_INFO = {}
 SBS_CMD_GROUPS = {}
 SBS_SEALING = {}
+
 
 def reset_default_driver(po):
   """ Sets global variables to no chip-specific driver loaded state.
@@ -567,7 +575,7 @@ def reset_default_driver(po):
         'type'	: "named_bitfield",
         'unit'	: {'scale':1,'name':"dec"},
         'nbits'	: 4,
-        'value_names'	: ["OK", "Busy", "Reserved Cmd", "Unsupported Cmd", 
+        'value_names'	: ["OK", "Busy", "Reserved Cmd", "Unsupported Cmd",
             "Access Denied", "Over/Underflow", "Bad Size", "Unknown Error"],
         'access'	: "r",
         'tiny_name'	: "EC",
@@ -1346,7 +1354,7 @@ class SMBusMock(object):
 def crc8_ccitt_byte(crc, dt):
     """ Add one byte to smbus PEC crc-8 calculation
     """
-    ncrc = crc ^ dt;
+    ncrc = crc ^ dt
     for i in range(8):
         if ( ncrc & 0x80 ) != 0:
             ncrc <<= 1
@@ -3626,7 +3634,7 @@ def main():
               "(defaults to 0x{:08x} for FullAccess, otherwise to 0x{:08x})"
               ).format(0xffffffff,0x36720414))
 
-    po = parser.parse_args();
+    po = parser.parse_args()
 
     vals = {}
 

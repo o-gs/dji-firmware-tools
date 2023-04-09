@@ -26,23 +26,23 @@ __version__ = "0.0.7"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
-import os
 import sys
 import time
-import enum
-import types
 import struct
-import select
 import hashlib
-import binascii
 import argparse
-from ctypes import *
+from ctypes import c_ubyte, sizeof
 
 sys.path.insert(0, './')
 from comm_serialtalk import (
   do_send_request, do_receive_reply, SerialMock, open_usb
 )
-from comm_mkdupc import *
+from comm_mkdupc import (
+  COMM_DEV_TYPE, PACKET_TYPE, ENCRYPT_TYPE, ACK_TYPE, CMD_SET_TYPE,
+  DecoratedEnum, PacketProperties, DJICmdV1Header,
+  get_known_payload, flyc_parameter_compute_hash,
+)
+import comm_mkdupc as dupc  # for access to all the DJIPayload_* structs
 
 
 def eprint(*args, **kwargs):
@@ -80,7 +80,7 @@ class PRODUCT_CODE(DecoratedEnum):
     WM231  = 27 # Released 2020-04-28 Mavic Air 2
     WM232  = 28 # Released 2021-04-15 (MAVIC) AIR 2S
     WM260  = 29 # Released 2021-11-05 (MAVIC) 3
-    WM247  = 30 # Released 2020-12-15 Mavic 2 Enterprise Advanced 
+    WM247  = 30 # Released 2020-12-15 Mavic 2 Enterprise Advanced
 
 
 ALT_PRODUCT_CODE = {
@@ -184,7 +184,7 @@ def get_unique_sequence_number(po):
 
 def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_type, cmd_set, cmd_id, payload, seqnum_check=True, retry_num=3):
     global last_seq_num
-    if not 'last_seq_num' in globals():
+    if 'last_seq_num' not in globals():
         last_seq_num = get_unique_sequence_number(po)
 
     pktprop = PacketProperties()
@@ -254,7 +254,7 @@ def receive_reply_for_request(po, ser, pktreq, seqnum_check=True):
 def flyc_request_assistant_unlock(po, ser, val):
     if (po.verbose > 0):
         print("Sending Assistant Unlock request.")
-    payload = DJIPayload_FlyController_AssistantUnlockRq()
+    payload = dupc.DJIPayload_FlyController_AssistantUnlockRq()
     payload.lock_state = val
 
     if (po.verbose > 2):
@@ -288,7 +288,7 @@ def flyc_request_assistant_unlock(po, ser, val):
 
 
 def flyc_param_request_2017_get_table_attribs(po, ser, table_no):
-    payload = DJIPayload_FlyController_GetTblAttribute2017Rq()
+    payload = dupc.DJIPayload_FlyController_GetTblAttribute2017Rq()
     payload.table_no = table_no
 
     if (po.verbose > 2):
@@ -323,7 +323,7 @@ def flyc_param_request_2017_get_table_attribs(po, ser, table_no):
 
 
 def flyc_param_request_2017_get_param_info_by_index(po, ser, table_no, param_idx):
-    payload = DJIPayload_FlyController_GetParamInfoByIndex2017Rq()
+    payload = dupc.DJIPayload_FlyController_GetParamInfoByIndex2017Rq()
     payload.table_no = table_no
     payload.param_index = param_idx
 
@@ -333,7 +333,9 @@ def flyc_param_request_2017_get_param_info_by_index(po, ser, table_no, param_idx
 
     if po.dry_test:
         # use to test the code without a drone
-        ser.mock_data_for_read(bytes.fromhex("55 48 04 57 03 0a 1b 70 80 03 e1 00 00 00 00 82 00 08 00 04 00 5c 8f da 40 0a d7 23 3c 00 00 c8 42 67 5f 63 6f 6e 66 69 67 2e 6d 72 5f 63 72 61 66 74 2e 72 6f 74 6f 72 5f 36 5f 63 66 67 2e 74 68 72 75 73 74 00 8f a6"))
+        ser.mock_data_for_read(bytes.fromhex("55 48 04 57 03 0a 1b 70 80 03 e1 00 00 00 00 82 "
+              "00 08 00 04 00 5c 8f da 40 0a d7 23 3c 00 00 c8 42 67 5f 63 6f 6e 66 69 67 2e 6d 72 5f 63 72 61 "
+              "66 74 2e 72 6f 74 6f 72 5f 36 5f 63 66 67 2e 74 68 72 75 73 74 00 8f a6"))
 
     pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
@@ -358,7 +360,7 @@ def flyc_param_request_2017_get_param_info_by_index(po, ser, table_no, param_idx
 
 
 def flyc_param_request_2015_get_param_info_by_index(po, ser, param_idx):
-    payload = DJIPayload_FlyController_GetParamInfoByIndex2015Rq()
+    payload = dupc.DJIPayload_FlyController_GetParamInfoByIndex2015Rq()
     payload.param_index = param_idx
 
     if (po.verbose > 2):
@@ -367,7 +369,8 @@ def flyc_param_request_2015_get_param_info_by_index(po, ser, param_idx):
 
     if po.dry_test:
         # use to test the code without a drone
-        ser.mock_data_for_read(bytes.fromhex("55 2e 04 a7 03 0a 77 45 80 03 f0 00 0a 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 67 6c 6f 62 61 6c 2e 73 74 61 74 75 73 00 79 ac"))
+        ser.mock_data_for_read(bytes.fromhex("55 2e 04 a7 03 0a 77 45 80 03 f0 00 0a 00 10 00 "
+              "00 00 00 00 00 00 00 00 00 00 00 00 00 00 67 6c 6f 62 61 6c 2e 73 74 61 74 75 73 00 79 ac"))
 
     pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
@@ -392,7 +395,7 @@ def flyc_param_request_2015_get_param_info_by_index(po, ser, param_idx):
 
 
 def flyc_param_request_2015_get_param_info_by_hash(po, ser, param_name):
-    payload = DJIPayload_FlyController_GetParamInfoByHash2015Rq()
+    payload = dupc.DJIPayload_FlyController_GetParamInfoByHash2015Rq()
     payload.param_hash = flyc_parameter_compute_hash(po,param_name)
 
     if (po.verbose > 2):
@@ -401,7 +404,9 @@ def flyc_param_request_2015_get_param_info_by_hash(po, ser, param_name):
 
     if po.dry_test:
         # use to test the code without a drone
-        ser.mock_data_for_read(bytes.fromhex("55 43 04 74 03 0a ff 7c 80 03 f7 00 01 00 02 00 0b 00 14 00 00 00 f4 01 00 00 78 00 00 00 67 5f 63 6f 6e 66 69 67 2e 66 6c 79 69 6e 67 5f 6c 69 6d 69 74 2e 6d 61 78 5f 68 65 69 67 68 74 5f 30 00 5d 71"))
+        ser.mock_data_for_read(bytes.fromhex("55 43 04 74 03 0a ff 7c 80 03 f7 00 01 00 02 00 "
+              "0b 00 14 00 00 00 f4 01 00 00 78 00 00 00 67 5f 63 6f 6e 66 69 67 2e 66 6c 79 69 6e 67 5f 6c 69 "
+              "6d 69 74 2e 6d 61 78 5f 68 65 69 67 68 74 5f 30 00 5d 71"))
 
     pktrpl, _ = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.FLYCONTROLLER, 0,
@@ -426,7 +431,7 @@ def flyc_param_request_2015_get_param_info_by_hash(po, ser, param_name):
 
 
 def flyc_param_request_2015_read_param_value_by_hash(po, ser, param_name):
-    payload = DJIPayload_FlyController_ReadParamValByHash2015Rq()
+    payload = dupc.DJIPayload_FlyController_ReadParamValByHash2015Rq()
     payload.param_hash = flyc_parameter_compute_hash(po,param_name)
 
     if (po.verbose > 2):
@@ -463,7 +468,7 @@ def flyc_param_request_2015_read_param_value_by_hash(po, ser, param_name):
 
 
 def flyc_param_request_2017_read_param_value_by_index(po, ser, table_no, param_idx):
-    payload = DJIPayload_FlyController_ReadParamValByIndex2017Rq()
+    payload = dupc.DJIPayload_FlyController_ReadParamValByIndex2017Rq()
     payload.table_no = table_no
     payload.unknown1 = 1
     payload.param_index = param_idx
@@ -516,17 +521,17 @@ def do_assistant_unlock(po, ser):
 
 def flyc_param_request_2017_write_param_value_by_index(po, ser, table_no, param_idx, param_val):
     if len(param_val) > 16:
-        payload = DJIPayload_FlyController_WriteParamValAnyByIndex2017Rq()
+        payload = dupc.DJIPayload_FlyController_WriteParamValAnyByIndex2017Rq()
     elif len(param_val) > 8:
-        payload = DJIPayload_FlyController_WriteParamVal16ByIndex2017Rq()
+        payload = dupc.DJIPayload_FlyController_WriteParamVal16ByIndex2017Rq()
     elif len(param_val) > 4:
-        payload = DJIPayload_FlyController_WriteParamVal8ByIndex2017Rq()
+        payload = dupc.DJIPayload_FlyController_WriteParamVal8ByIndex2017Rq()
     elif len(param_val) > 2:
-        payload = DJIPayload_FlyController_WriteParamVal4ByIndex2017Rq()
+        payload = dupc.DJIPayload_FlyController_WriteParamVal4ByIndex2017Rq()
     elif len(param_val) > 1:
-        payload = DJIPayload_FlyController_WriteParamVal2ByIndex2017Rq()
+        payload = dupc.DJIPayload_FlyController_WriteParamVal2ByIndex2017Rq()
     else:
-        payload = DJIPayload_FlyController_WriteParamVal1ByIndex2017Rq()
+        payload = dupc.DJIPayload_FlyController_WriteParamVal1ByIndex2017Rq()
     payload.table_no = table_no
     payload.unknown1 = 1
     payload.param_index = param_idx
@@ -571,18 +576,18 @@ def flyc_param_request_2017_write_param_value_by_index(po, ser, table_no, param_
 
 def flyc_param_request_2015_write_param_value_by_hash(po, ser, param_name, param_val):
     if len(param_val) > 16:
-        payload = DJIPayload_FlyController_WriteParamValAnyByHash2015Rq()
+        payload = dupc.DJIPayload_FlyController_WriteParamValAnyByHash2015Rq()
     elif len(param_val) > 8:
-        payload = DJIPayload_FlyController_WriteParamVal16ByHash2015Rq()
+        payload = dupc.DJIPayload_FlyController_WriteParamVal16ByHash2015Rq()
     elif len(param_val) > 4:
-        payload = DJIPayload_FlyController_WriteParamVal8ByHash2015Rq()
+        payload = dupc.DJIPayload_FlyController_WriteParamVal8ByHash2015Rq()
     elif len(param_val) > 2:
-        payload = DJIPayload_FlyController_WriteParamVal4ByHash2015Rq()
+        payload = dupc.DJIPayload_FlyController_WriteParamVal4ByHash2015Rq()
     elif len(param_val) > 1:
-        payload = DJIPayload_FlyController_WriteParamVal2ByHash2015Rq()
+        payload = dupc.DJIPayload_FlyController_WriteParamVal2ByHash2015Rq()
     else:
-        payload = DJIPayload_FlyController_WriteParamVal1ByHash2015Rq()
-    payload.param_hash = flyc_parameter_compute_hash(po,param_name)
+        payload = dupc.DJIPayload_FlyController_WriteParamVal1ByHash2015Rq()
+    payload.param_hash = flyc_parameter_compute_hash(po, param_name)
     payload.param_value = (c_ubyte * sizeof(payload.param_value)).from_buffer_copy(param_val)
 
     if (po.verbose > 2):
@@ -619,18 +624,18 @@ def flyc_param_request_2015_write_param_value_by_hash(po, ser, param_name, param
 
 
 def flyc_param_info_limits_to_str(po, paraminfo):
-    if (isinstance(paraminfo, DJIPayload_FlyController_GetParamInfoU2015Re) or
-      isinstance(paraminfo, DJIPayload_FlyController_GetParamInfoU2017Re)):
+    if (isinstance(paraminfo, dupc.DJIPayload_FlyController_GetParamInfoU2015Re) or
+      isinstance(paraminfo, dupc.DJIPayload_FlyController_GetParamInfoU2017Re)):
         limit_min = '{:d}'.format(paraminfo.limit_min)
         limit_max = '{:d}'.format(paraminfo.limit_max)
         limit_def = '{:d}'.format(paraminfo.limit_def)
-    elif (isinstance(paraminfo, DJIPayload_FlyController_GetParamInfoI2015Re) or
-      isinstance(paraminfo, DJIPayload_FlyController_GetParamInfoI2017Re)):
+    elif (isinstance(paraminfo, dupc.DJIPayload_FlyController_GetParamInfoI2015Re) or
+      isinstance(paraminfo, dupc.DJIPayload_FlyController_GetParamInfoI2017Re)):
         limit_min = '{:d}'.format(paraminfo.limit_min)
         limit_max = '{:d}'.format(paraminfo.limit_max)
         limit_def = '{:d}'.format(paraminfo.limit_def)
-    elif (isinstance(paraminfo, DJIPayload_FlyController_GetParamInfoF2015Re) or
-      isinstance(paraminfo, DJIPayload_FlyController_GetParamInfoF2017Re)):
+    elif (isinstance(paraminfo, dupc.DJIPayload_FlyController_GetParamInfoF2015Re) or
+      isinstance(paraminfo, dupc.DJIPayload_FlyController_GetParamInfoF2017Re)):
         limit_min = '{:f}'.format(paraminfo.limit_min)
         limit_max = '{:f}'.format(paraminfo.limit_max)
         limit_def = '{:f}'.format(paraminfo.limit_def)
@@ -642,34 +647,34 @@ def flyc_param_info_limits_to_str(po, paraminfo):
 
 
 def flyc_param_value_to_str(po, paraminfo, param_value):
-    if (paraminfo.type_id == DJIPayload_FlyController_ParamType.ubyte.value):
+    if (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.ubyte.value):
         param_bs = bytes(param_value[:1])
         value_str = "{:d}".format(struct.unpack("<B", param_bs)[0])
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.ushort.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.ushort.value):
         param_bs = bytes(param_value[:2])
         value_str = "{:d}".format(struct.unpack("<H", param_bs)[0])
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.ulong.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.ulong.value):
         param_bs = bytes(param_value[:4])
         value_str = "{:d}".format(struct.unpack("<L", param_bs)[0])
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.ulonglong.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.ulonglong.value):
         param_bs = bytes(param_value[:8])
         value_str = "{:d}".format(struct.unpack("<Q", param_bs)[0])
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.byte.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.byte.value):
         param_bs = bytes(param_value[:1])
         value_str = "{:d}".format(struct.unpack("<b", param_bs)[0])
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.short.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.short.value):
         param_bs = bytes(param_value[:2])
         value_str = "{:d}".format(struct.unpack("<h", param_bs)[0])
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.long.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.long.value):
         param_bs = bytes(param_value[:4])
         value_str = "{:d}".format(struct.unpack("<l", param_bs)[0])
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.longlong.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.longlong.value):
         param_bs = bytes(param_value[:8])
         value_str = "{:d}".format(struct.unpack("<q", param_bs)[0])
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.float.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.float.value):
         param_bs = bytes(param_value[:4])
         value_str = "{:f}".format(struct.unpack("<f", param_bs)[0])
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.double.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.double.value):
         param_bs = bytes(param_value[:8])
         value_str = "{:f}".format(struct.unpack("<d", param_bs)[0])
     else: # array or future type
@@ -678,25 +683,25 @@ def flyc_param_value_to_str(po, paraminfo, param_value):
 
 
 def flyc_param_str_to_value(po, paraminfo, value_str):
-    if (paraminfo.type_id == DJIPayload_FlyController_ParamType.ubyte.value):
+    if (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.ubyte.value):
         param_val = struct.pack("<B", int(value_str,0))
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.ushort.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.ushort.value):
         param_val = struct.pack("<H", int(value_str,0))
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.ulong.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.ulong.value):
         param_val = struct.pack("<L", int(value_str,0))
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.ulonglong.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.ulonglong.value):
         param_val = struct.pack("<Q", int(value_str,0))
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.byte.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.byte.value):
         param_val = struct.pack("<b", int(value_str,0))
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.short.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.short.value):
         param_val = struct.pack("<h", int(value_str,0))
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.long.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.long.value):
         param_val = struct.pack("<l", int(value_str,0))
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.longlong.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.longlong.value):
         param_val = struct.pack("<q", int(value_str,0))
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.float.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.float.value):
         param_val = struct.pack("<f", float(value_str))
-    elif (paraminfo.type_id == DJIPayload_FlyController_ParamType.double.value):
+    elif (paraminfo.type_id == dupc.DJIPayload_FlyController_ParamType.double.value):
         param_val = struct.pack("<d", float(value_str))
     else: # array or future type
         param_val = bytes.fromhex(value_str)
@@ -768,9 +773,11 @@ def flyc_param_request_2015_print_response(po, idx, paraminfo, rplpayload):
               limit_min, limit_max, limit_def, param_val))
         else: # po.fmt == 'simple':
             if rplpayload is None:
-                print("{:s} default = {:s} range = < {:s} .. {:s} >".format(paraminfo.name.decode("utf-8"), limit_def, limit_min, limit_max))
+                print("{:s} default = {:s} range = < {:s} .. {:s} >"
+                  .format(paraminfo.name.decode("utf-8"), limit_def, limit_min, limit_max))
             else:
-                print("{:s} = {:s} range = < {:s} .. {:s} >".format(paraminfo.name.decode("utf-8"), param_val, limit_min, limit_max))
+                print("{:s} = {:s} range = < {:s} .. {:s} >"
+                  .format(paraminfo.name.decode("utf-8"), param_val, limit_min, limit_max))
 
 
 def flyc_param_request_2017_print_response(po, idx, paraminfo, rplpayload):
@@ -842,9 +849,11 @@ def flyc_param_request_2017_print_response(po, idx, paraminfo, rplpayload):
               limit_min, limit_max, limit_def, param_val))
         else: # po.fmt == 'simple':
             if rplpayload is None:
-                print("{:s} default = {:s} range = < {:s} .. {:s} >".format(paraminfo.name.decode("utf-8"), limit_def, limit_min, limit_max))
+                print("{:s} default = {:s} range = < {:s} .. {:s} >"
+                  .format(paraminfo.name.decode("utf-8"), limit_def, limit_min, limit_max))
             else:
-                print("{:s} = {:s} range = < {:s} .. {:s} >".format(paraminfo.name.decode("utf-8"), param_val, limit_min, limit_max))
+                print("{:s} = {:s} range = < {:s} .. {:s} >"
+                  .format(paraminfo.name.decode("utf-8"), param_val, limit_min, limit_max))
 
 
 def do_flyc_param_request_2015_list(po, ser):
@@ -1055,7 +1064,7 @@ def do_flyc_param_request(po):
 
 
 def gimbal_calib_request_spark(po, ser, cmd):
-    payload = DJIPayload_Gimbal_CalibRq()
+    payload = dupc.DJIPayload_Gimbal_CalibRq()
     payload.command = cmd.value
 
     if (po.verbose > 2):
@@ -1182,7 +1191,7 @@ def do_gimbal_calib_request_spark_joint_coarse(po, ser):
 
     print("\nInfo: The Gimbal will move through its boundary positions, then it will fine-tune its central position. It will take around 15 seconds.\n")
 
-    rplpayload, pktreq = gimbal_calib_request_spark(po, ser, DJIPayload_Gimbal_CalibCmd.JointCoarse)
+    rplpayload, pktreq = gimbal_calib_request_spark(po, ser, dupc.DJIPayload_Gimbal_CalibCmd.JointCoarse)
 
     print("Calibration process started; monitoring progress.")
 
@@ -1198,7 +1207,7 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
 
     print("\nInfo: The Gimbal will slowly move through all positions in all axes, several times. It will take around 30 seconds.\n")
 
-    rplpayload, pktreq = gimbal_calib_request_spark(po, ser, DJIPayload_Gimbal_CalibCmd.LinearHall)
+    rplpayload, pktreq = gimbal_calib_request_spark(po, ser, dupc.DJIPayload_Gimbal_CalibCmd.LinearHall)
 
     print("Calibration process started; monitoring progress.")
 
@@ -1207,7 +1216,7 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
 
 def gimbal_calib_request_p3x(po, ser):
     # We don't really need any payload, but that one byte won't influence anything, so we may keep it
-    payload = DJIPayload_Gimbal_CalibRq()
+    payload = dupc.DJIPayload_Gimbal_CalibRq()
     payload.command = 0
 
     if (po.verbose > 2):
@@ -1256,8 +1265,11 @@ def do_gimbal_calib_request_p3x_autocal(po, ser):
         None
     """
 
-    print("\nInfo: The Gimbal will average its readings without movement, then it will move Yaw arm through its boundary positions. " \
-        "Then it will do limited pitch movement. End of calibration will be marked by two beeps from gimbal motors. It will take around 15 seconds.\n")
+    print("\nInfo: The Gimbal will average its readings without movement, "
+          "then it will move Yaw arm through its boundary positions. "
+          "Then it will do limited pitch movement. "
+          "End of calibration will be marked by two beeps from gimbal motors. "
+          "It will take around 15 seconds.\n")
 
     rplpayload, pktreq = gimbal_calib_request_p3x(po, ser)
 
@@ -1292,7 +1304,7 @@ def do_gimbal_calib_request(po):
 def general_encrypt_get_state_request_p3x(po, ser, receiver_type, cmd):
     """ Sends Encrypt GetChipState or Encrypt GetoduleState request.
     """
-    payload = DJIPayload_General_EncryptGetStateRq()
+    payload = dupc.DJIPayload_General_EncryptGetStateRq()
     payload.command = cmd.value
 
     if (po.verbose > 2):
@@ -1301,9 +1313,10 @@ def general_encrypt_get_state_request_p3x(po, ser, receiver_type, cmd):
 
     if po.dry_test:
         # use to test the code without a drone
-        if cmd == DJIPayload_General_EncryptCmd.GetChipState:
-            ser.mock_data_for_read(bytes.fromhex("55 2d 04 f2 01 0a e9 ab c0 00 30 00 07 30 34 38 4c 41 41 31 45 4a 51 30 34 38 4c 41 41 31 45 4a 51 30 34 38 4c 41 41 31 45 4a 51 94 fd"))
-        else: # DJIPayload_General_EncryptCmd.GetModuleState
+        if cmd == dupc.DJIPayload_General_EncryptCmd.GetChipState:
+            ser.mock_data_for_read(bytes.fromhex("55 2d 04 f2 01 0a e9 ab c0 00 30 00 07 30 34 38 "
+                  "4c 41 41 31 45 4a 51 30 34 38 4c 41 41 31 45 4a 51 30 34 38 4c 41 41 31 45 4a 51 94 fd"))
+        else: # dupc.DJIPayload_General_EncryptCmd.GetModuleState
             if receiver_type == COMM_DEV_TYPE.CAMERA:
                 ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 01 0a ad 00 c0 00 30 00 03 84 5b"))
             elif receiver_type == COMM_DEV_TYPE.GIMBAL:
@@ -1336,9 +1349,9 @@ def general_encrypt_get_state_request_p3x(po, ser, receiver_type, cmd):
 def general_encrypt_configure_request_p3x(po, ser, receiver_type, target_type, boardsn, enckey):
     """ Sends Encrypt Pair/Configure request.
     """
-    payload = DJIPayload_General_EncryptConfigRq()
-    payload.command = DJIPayload_General_EncryptCmd.Config.value
-    payload.oper_type = DJIPayload_General_EncryptOperType.WriteAll.value
+    payload = dupc.DJIPayload_General_EncryptConfigRq()
+    payload.command = dupc.DJIPayload_General_EncryptCmd.Config.value
+    payload.oper_type = dupc.DJIPayload_General_EncryptOperType.WriteAll.value
     payload.config_magic = (c_ubyte * 8).from_buffer_copy(bytes([0xF0, 0xBD, 0xE3, 0x06, 0x81, 0x3E, 0x85, 0xCB]))
     payload.mod_type = target_type.value
     payload.board_sn = (c_ubyte * 10).from_buffer_copy(boardsn)
@@ -1387,9 +1400,9 @@ def general_encrypt_configure_request_p3x(po, ser, receiver_type, target_type, b
 def general_encrypt_configure_triple_request_p3x(po, ser, receiver_type, m01_boardsn, m01_enckey, m04_boardsn, m04_enckey, m08_boardsn, m08_enckey):
     """ Sends Triple Encrypt Pair/Configure request.
     """
-    payload = DJIPayload_General_EncryptConfig3Rq()
-    payload.command = DJIPayload_General_EncryptCmd.Config.value
-    payload.oper_type = DJIPayload_General_EncryptOperType.WriteAll.value
+    payload = dupc.DJIPayload_General_EncryptConfig3Rq()
+    payload.command = dupc.DJIPayload_General_EncryptCmd.Config.value
+    payload.oper_type = dupc.DJIPayload_General_EncryptOperType.WriteAll.value
     payload.config_magic = (c_ubyte * 8).from_buffer_copy(bytes([0xF0, 0xBD, 0xE3, 0x06, 0x81, 0x3E, 0x85, 0xCB]))
     payload.m01_mod_type = COMM_DEV_TYPE.CAMERA.value
     payload.m01_board_sn = (c_ubyte * 10).from_buffer_copy(m01_boardsn)
@@ -1455,7 +1468,8 @@ def do_camera_calib_request_p3x_encryptcheck(po, ser):
     result = True
     # Get module states; if state_flags 0x01 and 0x02 are set, then that module has working encryption
 
-    modulestate, _ = general_encrypt_get_state_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, DJIPayload_General_EncryptCmd.GetModuleState)
+    modulestate, _ = general_encrypt_get_state_request_p3x(po, ser,
+          COMM_DEV_TYPE.CAMERA, dupc.DJIPayload_General_EncryptCmd.GetModuleState)
 
     if (modulestate.state_flags & (0x01|0x02)) == (0x01|0x02):
         print("Confirmed proper key storage within {:s}.".format(COMM_DEV_TYPE.CAMERA.name))
@@ -1466,19 +1480,24 @@ def do_camera_calib_request_p3x_encryptcheck(po, ser):
         print("Uninitialized key verification system within {:s}.".format(COMM_DEV_TYPE.CAMERA.name))
         result = False
 
-    # When LB_DM3XX_SKY receives GetModuleState command, it sends DoEncrypt to CAMERA and compares result with encryption using local key.bin
-    modulestate, _ = general_encrypt_get_state_request_p3x(po, ser, COMM_DEV_TYPE.LB_DM3XX_SKY, DJIPayload_General_EncryptCmd.GetModuleState)
+    # When LB_DM3XX_SKY receives GetModuleState command, it sends DoEncrypt to
+    # CAMERA and compares result with encryption using local key.bin
+    modulestate, _ = general_encrypt_get_state_request_p3x(po, ser,
+          COMM_DEV_TYPE.LB_DM3XX_SKY, dupc.DJIPayload_General_EncryptCmd.GetModuleState)
 
     if (modulestate.state_flags & (0x01|0x02)) == (0x01|0x02):
-        print("Confirmed proper communication between {:s} and {:s}.".format(COMM_DEV_TYPE.LB_DM3XX_SKY.name, COMM_DEV_TYPE.CAMERA.name))
+        print("Confirmed proper communication between {:s} and {:s}."
+          .format(COMM_DEV_TYPE.LB_DM3XX_SKY.name, COMM_DEV_TYPE.CAMERA.name))
     elif (modulestate.state_flags & (0x01|0x02)) == (0x01):
-        print("Inconsistent key encountered between {:s} and {:s}.".format(COMM_DEV_TYPE.LB_DM3XX_SKY.name, COMM_DEV_TYPE.CAMERA.name))
+        print("Inconsistent key encountered between {:s} and {:s}."
+          .format(COMM_DEV_TYPE.LB_DM3XX_SKY.name, COMM_DEV_TYPE.CAMERA.name))
         result = False
     else: # This means no flag set (it is impossible to get only 0x02 without 0x01)
         print("No key file stored within {:s}.".format(COMM_DEV_TYPE.LB_DM3XX_SKY.name))
         result = False
 
-    modulestate, _ = general_encrypt_get_state_request_p3x(po, ser, COMM_DEV_TYPE.GIMBAL, DJIPayload_General_EncryptCmd.GetModuleState)
+    modulestate, _ = general_encrypt_get_state_request_p3x(po, ser,
+          COMM_DEV_TYPE.GIMBAL, dupc.DJIPayload_General_EncryptCmd.GetModuleState)
 
     if (modulestate.state_flags & (0x01|0x02)) == (0x01|0x02):
         print("Confirmed proper key storage within {:s}.".format(COMM_DEV_TYPE.GIMBAL.name))
@@ -1504,35 +1523,43 @@ def do_camera_calib_request_p3x_encryptpair(po, ser):
     """
 
     print("\nInfo: The tool will retrieve Board Serial Numbers of {:s}, {:s} and {:s}; ".format(
-            COMM_DEV_TYPE.CAMERA.name, COMM_DEV_TYPE.GIMBAL.name, COMM_DEV_TYPE.LB_DM3XX_SKY.name) + \
+            COMM_DEV_TYPE.CAMERA.name, COMM_DEV_TYPE.GIMBAL.name, COMM_DEV_TYPE.LB_DM3XX_SKY.name) +
         "then it will write new encryption key to some of them. It will take around 1 second.\n")
 
-    print("WARNING: Do not use this command unless you know what you're doing! If SHA204 chip in your " \
-        "gimbal has Config Zone locked (and all drones have it locked during production), this command " \
-        "will just make encryption config inconsistent between the Camera and the SHA204 chip. " \
+    print("WARNING: Do not use this command unless you know what you're doing! If SHA204 chip in your "
+        "gimbal has Config Zone locked (and all drones have it locked during production), this command "
+        "will just make encryption config inconsistent between the Camera and the SHA204 chip. "
         "The camera will then enter Authority Level 0 and will ignore most commands.\n")
 
     # Camera ChipState contains board serial numbersfor all 3 components
-    chipstate, _ = general_encrypt_get_state_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, DJIPayload_General_EncryptCmd.GetChipState)
+    chipstate, _ = general_encrypt_get_state_request_p3x(po, ser,
+          COMM_DEV_TYPE.CAMERA, dupc.DJIPayload_General_EncryptCmd.GetChipState)
 
     if not po.force:
         raise ValueError("Use '--force' parameter if you really want to write new keys to the device.")
 
     print("Retrieved Board Serial Numbers; flashing new encryption key.")
 
-    rplpayload, pktreq = general_encrypt_configure_triple_request_p3x(po, ser, COMM_DEV_TYPE.CAMERA, chipstate.m01_boardsn, po.pairkey, chipstate.m04_boardsn, po.pairkey, chipstate.m08_boardsn, po.pairkey)
+    rplpayload, pktreq = general_encrypt_configure_triple_request_p3x(po, ser,
+          COMM_DEV_TYPE.CAMERA, chipstate.m01_boardsn, po.pairkey, chipstate.m04_boardsn,
+          po.pairkey, chipstate.m08_boardsn, po.pairkey)
     if rplpayload.status != 0:
-        raise ValueError("Failure status {:d} returned from {:s} during Triple Encrypt Pair request.".format(rplpayload.status,COMM_DEV_TYPE.CAMERA.name))
+        raise ValueError("Failure status {:d} returned from {:s} during Triple Encrypt Pair request."
+          .format(rplpayload.status,COMM_DEV_TYPE.CAMERA.name))
 
     if False: # Do NOT send EncryptConfig to gimbal - camera should have sent it already
-        rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.GIMBAL, COMM_DEV_TYPE.GIMBAL, chipstate.m04_boardsn, po.pairkey)
+        rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser,
+              COMM_DEV_TYPE.GIMBAL, COMM_DEV_TYPE.GIMBAL, chipstate.m04_boardsn, po.pairkey)
         if rplpayload.status != 0:
-            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.GIMBAL.name,COMM_DEV_TYPE.GIMBAL.name))
+            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request."
+              .format(rplpayload.status,COMM_DEV_TYPE.GIMBAL.name,COMM_DEV_TYPE.GIMBAL.name))
 
     if False: # Do NOT send EncryptConfig to DaVinci - camera should have sent it
-        rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser, COMM_DEV_TYPE.LB_DM3XX_SKY, COMM_DEV_TYPE.LB_DM3XX_SKY, chipstate.m08_boardsn, po.pairkey)
+        rplpayload, pktreq = general_encrypt_configure_request_p3x(po, ser,
+              COMM_DEV_TYPE.LB_DM3XX_SKY, COMM_DEV_TYPE.LB_DM3XX_SKY, chipstate.m08_boardsn, po.pairkey)
         if rplpayload.status != 0:
-            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request.".format(rplpayload.status,COMM_DEV_TYPE.LB_DM3XX_SKY.name,COMM_DEV_TYPE.LB_DM3XX_SKY.name))
+            raise ValueError("Failure status {:d} returned from {:s} during Encrypt Pair {:s} request."
+              .format(rplpayload.status,COMM_DEV_TYPE.LB_DM3XX_SKY.name,COMM_DEV_TYPE.LB_DM3XX_SKY.name))
 
     print("Pairing complete; try EncryptCheck command to verify.")
 

@@ -27,13 +27,11 @@ __version__ = "0.6.0"
 __author__ = "Mefistotelis @ Original Gangsters"
 __license__ = "GPL"
 
-import os
+import argparse
 import io
 import sys
 import time
-import select
-import argparse
-from ctypes import *
+from ctypes import sizeof
 
 sys.path.insert(0, './')
 from comm_dat2pcap import (
@@ -81,7 +79,7 @@ class SerialMock(io.RawIOBase):
         self._txData.append(btarr)
 
     def read( self, n=1 ):
-        if time.time() < self._wait_time: return  b""
+        if time.time() < self._wait_time: return b""
         self._wait_time = time.time() + 0.05
         if len(self._rxData) < 1: return b""
         btarr = self._rxData[0][0:n]
@@ -202,7 +200,7 @@ def open_usb(po):
     dev = usb.core.find(idVendor=0x2ca3, find_all = True, backend=mybackend)
     intf = find_correct_device(dev)
 
-    assert intf is not None, "Couldn't find any DJI BULK device"
+    assert intf is not None, "Could not find any DJI BULK device"
 
     ep_out = usb.util.find_descriptor(
         intf,
@@ -223,7 +221,7 @@ def open_usb(po):
     if dev and ep_in and ep_out:
         return SerialBulkWrap(dev,ep_in,ep_out, po.timeout)
     else:
-        assert False, "couldn't find endpoints for bulk interface"
+        assert False, "Could not find endpoints for bulk interface"
 
 
 def do_read_packets(ser, state, info):
@@ -240,7 +238,7 @@ def do_read_packets(ser, state, info):
             elif (is_packet_damaged(state)):
                 state = drop_packet(state)
         if (is_packet_at_finish(state)):
-            break;
+            break
         num_bytes = ser.in_waiting
         if ser.name == 'BULK':
             num_bytes = 0
@@ -309,7 +307,7 @@ def do_receive_reply(po, ser, pktreq, seqnum_check=True):
 
     info = PktInfo()
 
-    state = PktState();
+    state = PktState()
     state.verbose = po.verbose
     state.pname = ser.port
     pktrpl = None
@@ -453,7 +451,7 @@ def main():
     subparser.add_argument('-p', '--payload_bin', default="", type=str,
             help="provide binary payload directly (default payload is empty)")
 
-    po = parser.parse_args();
+    po = parser.parse_args()
 
     if (po.payload_hex is not None):
         po.payload = bytes.fromhex(po.payload_hex)

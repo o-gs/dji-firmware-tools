@@ -69,7 +69,7 @@ from comm_dat2pcap import (
 
 def open_fifo(options, name):
     try:
-        os.mkfifo(name);
+        os.mkfifo(name)
     except FileExistsError:
         pass
     except:
@@ -106,7 +106,7 @@ def do_packetiser(ser, state, out, info):
                 else:
                     state = drop_packet(state)
         if (is_packet_at_finish(state)):
-            break;
+            break
         num_bytes = ser.inWaiting()
     return state, info
 
@@ -137,11 +137,11 @@ def do_sniff_once(options):
         poll.register(sys.stdin, select.POLLIN)
     poll.register(out, select.POLLERR)
 
-    state1 = PktState();
-    state1.verbose = 0 if options.quiet else max(options.verbose,1)
+    state1 = PktState()
+    state1.verbose = 0 if options.quiet else max(options.verbose, 1)
     state1.pname = options.port1
-    state2 = PktState();
-    state2.verbose = 0 if options.quiet else max(options.verbose,1)
+    state2 = PktState()
+    state2.verbose = 0 if options.quiet else max(options.verbose, 1)
     state2.pname = options.port2
 
     while True:
@@ -216,7 +216,7 @@ def main():
               .format(version=__version__, author=__author__),
             help="display version information and exit")
 
-    options = parser.parse_args();
+    options = parser.parse_args()
 
     try:
         # If the fifo got closed, just start over again
