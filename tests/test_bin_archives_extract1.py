@@ -23,7 +23,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import filecmp
 import glob
 import itertools
 import logging
@@ -38,8 +37,6 @@ from unittest.mock import patch
 
 # Import the functions to be tested
 sys.path.insert(0, './')
-import filediff
-from dji_imah_fwsig import main as dji_imah_fwsig_main
 
 
 BUFSIZE = 8*1024
@@ -196,6 +193,14 @@ def case_bin_archive_extract(modl_inp_fn):
             # extracting file level 2
             subprocess.run(command, cwd=modules_path1)
             assert is_android_bootimg_file(os.path.join(modules_path1, "Image-out", "boot.img"))
+    elif is_ext4file(real_inp_fn):
+        from ext4.ext4_cp import main as ext4_cp_main
+        if True:
+            command = ["./ext4/ext4_cp.py", "-R", "-n", "-v", "{:s}:.".format(real_inp_fn), modules_path1]
+            LOGGER.info(' '.join(command))
+            # extracting file
+            with patch.object(sys, 'argv', command):
+                ext4_cp_main()
     else:
         if not ignore_unknown_format:
             assert False, "Unrecognized archive format of the module file: {:s}".format(modl_inp_fn)
