@@ -40,7 +40,7 @@ from calendar import timegm
 from Crypto.Cipher import AES
 
 def eprint(*args, **kwargs):
-  print(*args, file=sys.stderr, **kwargs)
+    print(*args, file=sys.stderr, **kwargs)
 
 class DjiModuleTarget():
     "Stores identification info on module for specific target"
@@ -342,6 +342,7 @@ def dji_calculate_crc16_part(buf, pcrc):
       crc = crc16_tab[(crc ^ octet) & 0xff] ^ (crc >> 8)
   return crc & 0xffff
 
+
 def dji_decrypt_block(cipher_buf, enc_key, enc_iv):
   """ Decrypts a buffer with AES in a DJI way. """
   block_sz = 256
@@ -351,6 +352,7 @@ def dji_decrypt_block(cipher_buf, enc_key, enc_iv):
       crypto = AES.new(enc_key, AES.MODE_CBC, enc_iv)
       plain_buf += crypto.decrypt(cipher_buf[cbpos:cbpos+block_sz])
   return plain_buf, enc_iv
+
 
 def dji_encrypt_block(cipher_buf, enc_key, enc_iv):
   """ Encrypts a buffer with AES in a DJI way. """
@@ -362,12 +364,14 @@ def dji_encrypt_block(cipher_buf, enc_key, enc_iv):
       plain_buf += crypto.encrypt(cipher_buf[cbpos:cbpos+block_sz])
   return plain_buf, enc_iv
 
+
 def dji_write_fwpkg_head(po, pkghead, minames):
   fname = "{:s}_head.ini".format(po.mdprefix)
   fwheadfile = open(fname, "w")
   pkghead.ini_export(fwheadfile)
   fwheadfile.write("{:s}={:s}\n".format("modules",' '.join(minames)))
   fwheadfile.close()
+
 
 def dji_read_fwpkg_head(po):
   pkghead = FwPkgHeader()
@@ -399,11 +403,13 @@ def dji_read_fwpkg_head(po):
   del parser
   return (pkghead, minames)
 
+
 def dji_write_fwentry_head(po, i, e, miname):
   fname = "{:s}_{:s}.ini".format(po.mdprefix,miname)
   fwheadfile = open(fname, "w")
   e.ini_export(fwheadfile)
   fwheadfile.close()
+
 
 def dji_read_fwentry_head(po, i, miname):
   hde = FwPkgEntry()
@@ -655,76 +661,67 @@ def dji_create(po, fwpkgfile):
   pkghead_checksum = c_ushort(curhead_checksum)
   fwpkgfile.write((c_ubyte * sizeof(c_ushort)).from_buffer_copy(pkghead_checksum))
 
+
 def main():
-  """ Main executable function.
+    """ Main executable function.
 
-  Its task is to parse command line options and call a function which performs requested command.
-  """
-  # Parse command line options
+    Its task is to parse command line options and call a function which performs requested command.
+    """
+    parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
-  parser = argparse.ArgumentParser(description=__doc__)
-
-  parser.add_argument("-p", "--fwpkg", default="", type=str, required=True,
+    parser.add_argument('-p', '--fwpkg', default="", type=str, required=True,
           help="name of the firmware package file")
 
-  parser.add_argument("-m", "--mdprefix", default="", type=str,
+    parser.add_argument('-m', '--mdprefix', default="", type=str,
           help="directory and file name prefix for the single decomposed firmware modules " \
            "(default is base name of fwpkg with extension stripped, in working dir)")
 
-  parser.add_argument("-f", "--force-continue", action="store_true",
+    parser.add_argument('-f', '--force-continue', action='store_true',
           help="force continuing execution despite warning signs of issues")
 
-  parser.add_argument("-c", "--no-crypto", action="store_true",
+    parser.add_argument('-c', '--no-crypto', action='store_true',
           help="disable cryptography - do not encrypt/decrypt modules")
 
-  parser.add_argument("-v", "--verbose", action="count", default=0,
+    parser.add_argument('-v', '--verbose', action='count', default=0,
           help="increases verbosity level; max level is set by -vvv")
 
-  subparser = parser.add_mutually_exclusive_group()
+    subparser = parser.add_mutually_exclusive_group()
 
-  subparser.add_argument("-x", "--extract", action="store_true",
+    subparser.add_argument('-x', '--extract', action='store_true',
           help="extract firmware package into modules")
 
-  subparser.add_argument("-a", "--add", action="store_true",
+    subparser.add_argument('-a', '--add', action='store_true',
           help="add module files to firmware package")
 
-  subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+    subparser.add_argument('--version', action='version', version="%(prog)s {version} by {author}"
             .format(version=__version__, author=__author__),
           help="display version information and exit")
 
-  po = parser.parse_args();
+    po = parser.parse_args();
 
-  if len(po.fwpkg) > 0 and len(po.mdprefix) == 0:
-      po.mdprefix = os.path.splitext(os.path.basename(po.fwpkg))[0]
+    if len(po.fwpkg) > 0 and len(po.mdprefix) == 0:
+        po.mdprefix = os.path.splitext(os.path.basename(po.fwpkg))[0]
 
-  if po.extract:
+    if po.extract:
+        if (po.verbose > 0):
+            print("{}: Opening for extraction".format(po.fwpkg))
+        with open(po.fwpkg, 'rb') as fwpkgfile:
+            dji_extract(po,fwpkgfile)
 
-      if (po.verbose > 0):
-        print("{}: Opening for extraction".format(po.fwpkg))
-      fwpkgfile = open(po.fwpkg, "rb")
+    elif po.add:
+        if (po.verbose > 0):
+            print("{}: Opening for creation".format(po.fwpkg))
+        with open(po.fwpkg, 'wb') as fwpkgfile:
+            dji_create(po,fwpkgfile)
 
-      dji_extract(po,fwpkgfile)
+    else:
+        raise NotImplementedError("Unsupported command.")
 
-      fwpkgfile.close()
 
-  elif po.add:
-
-      if (po.verbose > 0):
-        print("{}: Opening for creation".format(po.fwpkg))
-      fwpkgfile = open(po.fwpkg, "wb")
-
-      dji_create(po,fwpkgfile)
-
-      fwpkgfile.close()
-
-  else:
-
-      raise NotImplementedError('Unsupported command.')
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
         main()
     except Exception as ex:
         eprint("Error: "+str(ex))
-        #raise
+        if 0: raise
         sys.exit(10)
