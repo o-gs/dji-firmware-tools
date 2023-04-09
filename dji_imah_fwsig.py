@@ -396,34 +396,35 @@ class PlainCopyCipher:
 
 class ImgPkgHeader(LittleEndianStructure):
     _pack_ = 1
-    _fields_ = [('magic', c_char * 4),              #0 'IM*H'
-                ('header_version', c_uint),         #4
-                ('size', c_uint),                   #8
-                ('reserved', c_ubyte * 4),          #12
-                ('header_size', c_uint),            #16 Length of this header and following chunk headers
-                ('signature_size', c_uint),         #20 Length of RSA signature located after chunk headers
-                ('payload_size', c_uint),           #24 Length of the area after signature which contains data of all chunks
-                ('target_size', c_uint),            #28
-                ('os', c_ubyte),                    #32
-                ('arch', c_ubyte),                  #33
-                ('compression', c_ubyte),           #34
-                ('anti_version', c_ubyte),          #35
-                ('auth_alg', c_uint),               #36
-                ('auth_key', c_char * 4),           #40 Auth key identifier
-                ('enc_key', c_char * 4),            #44 Encryption key identifier
-                ('scram_key', c_ubyte * 16),        #48 Encrypted Scramble key; used in versions > 0
-                ('name', c_char * 32),              #64 Target Module name
-                ('type', c_char * 4),               #96 Target Module type identifier; used in versions > 1
-                ('version', c_uint),                #100
-                ('date', c_uint),                   #104
-                ('encr_cksum', c_uint),             #108 Checksum of encrypted data; used in versions > 1
-                ('reserved2', c_ubyte * 16),        #112
-                ('userdata', c_char * 16),          #128
-                ('entry', c_ubyte * 8),             #144
-                ('plain_cksum', c_uint),            #152 Checksum of decrypted (plaintext) data; used in versions > 1
-                ('chunk_num', c_uint),              #156 Amount of chunks
-                ('payload_digest', c_ubyte * 32),   #160 SHA256 of the payload
-               ]                                    #192 is the end; chunk headers start after that
+    _fields_ = [
+        ('magic', c_char * 4),              # 0 'IM*H'
+        ('header_version', c_uint),         # 4
+        ('size', c_uint),                   # 8
+        ('reserved', c_ubyte * 4),          # 12
+        ('header_size', c_uint),            # 16 Length of this header and following chunk headers
+        ('signature_size', c_uint),         # 20 Length of RSA signature located after chunk headers
+        ('payload_size', c_uint),           # 24 Length of the area after signature which contains data of all chunks
+        ('target_size', c_uint),            # 28
+        ('os', c_ubyte),                    # 32
+        ('arch', c_ubyte),                  # 33
+        ('compression', c_ubyte),           # 34
+        ('anti_version', c_ubyte),          # 35
+        ('auth_alg', c_uint),               # 36
+        ('auth_key', c_char * 4),           # 40 Auth key identifier
+        ('enc_key', c_char * 4),            # 44 Encryption key identifier
+        ('scram_key', c_ubyte * 16),        # 48 Encrypted Scramble key; used in versions > 0
+        ('name', c_char * 32),              # 64 Target Module name
+        ('type', c_char * 4),               # 96 Target Module type identifier; used in versions > 1
+        ('version', c_uint),                # 100
+        ('date', c_uint),                   # 104
+        ('encr_cksum', c_uint),             # 108 Checksum of encrypted data; used in versions > 1
+        ('reserved2', c_ubyte * 16),        # 112
+        ('userdata', c_char * 16),          # 128
+        ('entry', c_ubyte * 8),             # 144
+        ('plain_cksum', c_uint),            # 152 Checksum of decrypted (plaintext) data; used in versions > 1
+        ('chunk_num', c_uint),              # 156 Amount of chunks
+        ('payload_digest', c_ubyte * 32),   # 160 SHA256 of the payload
+    ]                                       # 192 is the end; chunk headers start after that
 
     def get_format_version(self):
         if self.magic != bytes("IM*H", "utf-8"):
@@ -518,13 +519,14 @@ class ImgPkgHeader(LittleEndianStructure):
 
 class ImgChunkHeader(LittleEndianStructure):
     _pack_ = 1
-    _fields_ = [('id', c_char * 4),          #0
-                ('offset', c_uint),          #4
-                ('size', c_uint),            #8
-                ('attrib', c_uint),          #12
-                ('address', c_ulonglong),    #16
-                ('reserved', c_ubyte * 8),   #24
-               ]                             #32 is the end
+    _fields_ = [
+        ('id', c_char * 4),          # 0
+        ('offset', c_uint),          # 4
+        ('size', c_uint),            # 8
+        ('attrib', c_uint),          # 12
+        ('address', c_ulonglong),    # 16
+        ('reserved', c_ubyte * 8),   # 24
+    ]                                # 32 is the end
 
     def dict_export(self):
         d = OrderedDict()
@@ -561,12 +563,13 @@ class ImgChunkHeader(LittleEndianStructure):
 
 class ImgRSAPublicKey(LittleEndianStructure):
     _pack_ = 1
-    _fields_ = [('len', c_int),      # 0: Length of n[] in number of uint32_t
-                ('n0inv', c_uint),   # 4: -1 / n[0] mod 2^32
-                ('n', c_uint * 64),  # 8: modulus as little endian array
-                ('rr', c_uint * 64), # 264: R^2 as little endian array
-                ('exponent', c_int)] # 520: 3 or 65537
-
+    _fields_ = [
+        ('len', c_int),      # 0: Length of n[] in number of uint32_t
+        ('n0inv', c_uint),   # 4: -1 / n[0] mod 2^32
+        ('n', c_uint * 64),  # 8: modulus as little endian array
+        ('rr', c_uint * 64), # 264: R^2 as little endian array
+        ('exponent', c_int), # 520: 3 or 65537
+    ]
 
 def raise_or_warn(po, ex):
     """ Raise exception, unless force-continue parameter was used.
