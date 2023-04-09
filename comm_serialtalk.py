@@ -133,6 +133,7 @@ class SerialBulkWrap():
     def in_waiting(self):
         return 1
 
+
 def find_correct_device(dev):
     # Ugly way of finding the correct bulk device.
     # I truly wish this would be simpler.
@@ -191,6 +192,7 @@ def find_correct_device(dev):
 
     return None
 
+
 def open_usb(po):
     import usb.core
     import usb.util
@@ -223,6 +225,7 @@ def open_usb(po):
     else:
         assert False, "couldn't find endpoints for bulk interface"
 
+
 def do_read_packets(ser, state, info):
     out = ListFormatter()
     num_bytes = ser.in_waiting
@@ -242,6 +245,7 @@ def do_read_packets(ser, state, info):
         if ser.name == 'BULK':
             num_bytes = 0
     return state, out.pktlist, info
+
 
 def packet_header_is_reply_for_request(rplhdr, reqhdr, responsebit_check=False, seqnum_check=True):
     if (rplhdr.version != 1):
@@ -264,6 +268,7 @@ def packet_header_is_reply_for_request(rplhdr, reqhdr, responsebit_check=False, 
     #    return False
     return True
 
+
 def find_reply_for_request(po, pktlist, pktreq, seqnum_check=True):
     if len(pktlist) == 0:
         return None
@@ -276,6 +281,7 @@ def find_reply_for_request(po, pktlist, pktreq, seqnum_check=True):
             print("Received unrelated packet:")
             print(' '.join('{:02x}'.format(x) for x in pktrpl))
     return None
+
 
 def do_send_request(po, ser, pktprop):
     pktreq = encode_command_packet_en(pktprop.sender_type, pktprop.sender_index,
@@ -292,6 +298,7 @@ def do_send_request(po, ser, pktprop):
     ser.write(pktreq)
 
     return pktreq
+
 
 def do_receive_reply(po, ser, pktreq, seqnum_check=True):
     """ Receive reply after sending packet pktreq to interface ser.
@@ -334,6 +341,7 @@ def do_receive_reply(po, ser, pktreq, seqnum_check=True):
 
     return pktrpl
 
+
 def do_send_request_receive_reply(po):
     if not po.bulk:
         # Open serial port
@@ -365,84 +373,85 @@ def do_send_request_receive_reply(po):
 
     ser.close()
 
+
 def main():
     """ Main executable function.
 
       Its task is to parse command line options and call a function which performs serial communication.
     """
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
     subparser = parser.add_mutually_exclusive_group(required=True)
 
     subparser.add_argument('--port', type=str,
-            help='the serial port to write to and read from')
+            help="the serial port to write to and read from")
 
     subparser.add_argument('--bulk', action='store_true',
-            help='use usb bulk instead of serial connection')
+            help="use usb bulk instead of serial connection")
 
     parser.add_argument('-b', '--baudrate', default=9600, type=int,
-            help='the baudrate to use for the serial port (default is %(default)s)')
+            help="the baudrate to use for the serial port (default is %(default)s)")
 
     parser.add_argument('-n', '--seq_num', default=0, type=int,
-            help='Sequence number of the packet (default is %(default)s)')
+            help="sequence number of the packet (default is %(default)s)")
 
     parser.add_argument('-u', '--pack_type', default="Request", type=parse_packet_type,
-            help='Packet Type, either name or number (default is %(default)s)')
+            help="packet Type, either name or number (default is %(default)s)")
 
     parser.add_argument('-a', '--ack_type', default="No_ACK_Needed", type=parse_ack_type,
-            help='Acknowledgement type, either name or number (default is %(default)s)')
+            help="acknowledgement type, either name or number (default is %(default)s)")
 
     parser.add_argument('-e', '--encrypt_type', default="NO_ENC", type=parse_encrypt_type,
-            help='Encryption type, either name or number (default is %(default)s)')
+            help="encryption type, either name or number (default is %(default)s)")
 
     parser.add_argument('-s', '--cmd_set', default="GENERAL", type=parse_cmd_set,
-            help='Command Set, either name or number (default is %(default)s)')
+            help="command Set, either name or number (default is %(default)s)")
 
     parser.add_argument('-i', '--cmd_id', default=0, type=int,
-            help='Command ID (default is %(default)s)')
+            help="command ID (default is %(default)s)")
 
     parser.add_argument('-w', '--timeout', default=2000, type=int,
-            help='how long to wait for answer, in miliseconds (default is %(default)s)')
+            help="how long to wait for answer, in miliseconds (default is %(default)s)")
 
     parser.add_argument('--loose-response', action="store_true",
-            help='use loosen criteria when searching for response to the packet')
+            help="use loosen criteria when searching for response to the packet")
 
     parser.add_argument('-v', '--verbose', action='count', default=0,
-            help='increases verbosity level; max level is set by -vvv')
+            help="increases verbosity level; max level is set by -vvv")
 
-    parser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+    parser.add_argument('--version', action='version', version="%(prog)s {version} by {author}"
               .format(version=__version__, author=__author__),
             help="display version information and exit")
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-t', '--sender', type=parse_module_ident,
-            help='Sender Type and Index, in TTII form')
+            help="sender Type and Index, in TTII form")
 
     subparser.add_argument('-tt', '--sender_type', default="PC", type=parse_module_type,
-            help='Sender(transmitter) Type, either name or number (default is %(default)s)')
+            help="sender(transmitter) Type, either name or number (default is %(default)s)")
 
     parser.add_argument('-ti', '--sender_index', default=0, type=int,
-            help='Sender(transmitter) Index (default is %(default)s)')
+            help="sender(transmitter) Index (default is %(default)s)")
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-r', '--receiver', type=parse_module_ident,
-            help='Receiver Type and Index, in TTII form (ie. 0300)')
+            help="receiver Type and Index, in TTII form (ie. 0300)")
 
     subparser.add_argument('-rt', '--receiver_type', default="ANY", type=parse_module_type,
-            help='Receiver Type, either name or number (default is %(default)s)')
+            help="receiver Type, either name or number (default is %(default)s)")
 
     parser.add_argument('-ri', '--receiver_index', default=0, type=int,
-            help='Receiver index (default is %(default)s)')
+            help="receiver index (default is %(default)s)")
 
     subparser = parser.add_mutually_exclusive_group()
 
     subparser.add_argument('-x', '--payload_hex', type=str,
-            help='provide payload as hex string')
+            help="provide payload as hex string")
 
     subparser.add_argument('-p', '--payload_bin', default="", type=str,
-            help='provide binary payload directly (default payload is empty)')
+            help="provide binary payload directly (default payload is empty)")
 
     po = parser.parse_args();
 
@@ -461,10 +470,11 @@ def main():
 
     do_send_request_receive_reply(po)
 
+
 if __name__ == '__main__':
     try:
         main()
     except Exception as ex:
         eprint("Error: "+str(ex))
-        #raise
+        if 0: raise
         sys.exit(10)
