@@ -3666,42 +3666,41 @@ def main():
 
     Its task is to parse command line options and call a function which performs requested command.
     """
-
     parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
-    parser.add_argument("-e", "--elffile", type=str, required=True,
-          help="Input ELF firmware file name")
+    parser.add_argument('-e', '--elffile', type=str, required=True,
+          help="input ELF firmware file name")
 
-    parser.add_argument("-o", "--valfile", type=str,
+    parser.add_argument('-o', '--valfile', type=str,
           help="directory and file name of JSON with values list " \
            "(default is base name of elffile with extension switched to json, in working dir)")
 
-    parser.add_argument("--dry-run", action="store_true",
-          help="Do not write any files or do permanent changes")
+    parser.add_argument('--dry-run', action='store_true',
+          help="do not write any files or do permanent changes")
 
-    parser.add_argument("-v", "--verbose", action="count", default=0,
-          help="Increases verbosity level; max level is set by -vvv")
+    parser.add_argument('-v', '--verbose', action='count', default=0,
+          help="increases verbosity level; max level is set by -vvv")
 
     subparser = parser.add_mutually_exclusive_group(required=True)
 
-    subparser.add_argument("-l", "--list", action="store_true",
+    subparser.add_argument('-l', '--list', action='store_true',
           help="list values stored in the firmware")
 
-    subparser.add_argument("-x", "--extract", action="store_true",
-          help="Extract values to infos json text file")
+    subparser.add_argument('-x', '--extract', action='store_true',
+          help="extract values to infos json text file")
 
-    subparser.add_argument("-u", "--update", action="store_true",
-          help="Update values in binary fw from infos text file")
+    subparser.add_argument('-u', '--update', action='store_true',
+          help="update values in binary fw from infos text file")
 
-    subparser.add_argument("-d", "--objdump", action="store_true",
+    subparser.add_argument('-d', '--objdump', action='store_true',
           help="display asm like slightly primitive objdump")
 
-    subparser.add_argument("--mapfile", action="store_true",
+    subparser.add_argument('--mapfile', action='store_true',
           help="export known symbols to map file")
 
-    subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+    subparser.add_argument('--version', action='version', version="%(prog)s {version} by {author}"
             .format(version=__version__, author=__author__),
-          help="Display version information and exit")
+          help="display version information and exit")
 
     po = parser.parse_args()
 
@@ -3711,68 +3710,43 @@ def main():
         po.valfile = po.basename + ".json"
 
     if po.objdump:
-
         if (po.verbose > 0):
             print("{}: Opening for objdump".format(po.elffile))
-
-        elffh = open(po.elffile, "rb")
-
-        armfw_elf_generic_objdump(po, elffh, 'thumb')
-
-        elffh.close();
+        with open(po.elffile, 'rb') as elffh:
+            armfw_elf_generic_objdump(po, elffh, 'thumb')
 
     elif po.list:
-
         if (po.verbose > 0):
             print("{}: Opening for list".format(po.elffile))
-
-        elffh = open(po.elffile, "rb")
-
-        armfw_elf_flyc_list(po, elffh)
-
-        elffh.close();
+        with open(po.elffile, 'rb') as elffh:
+            armfw_elf_flyc_list(po, elffh)
 
     elif po.mapfile:
-
         if (po.verbose > 0):
             print("{}: Opening for mapfile generation".format(po.elffile))
-
-        elffh = open(po.elffile, "rb")
-
-        armfw_elf_flyc_mapfile(po, elffh)
-
-        elffh.close();
+        with open(po.elffile, 'rb') as elffh:
+            armfw_elf_flyc_mapfile(po, elffh)
 
     elif po.extract:
-
         if (po.verbose > 0):
             print("{}: Opening for extract".format(po.elffile))
-
-        elffh = open(po.elffile, "rb")
-
-        armfw_elf_flyc_extract(po, elffh)
-
-        elffh.close();
+        with open(po.elffile, 'rb') as elffh:
+            armfw_elf_flyc_extract(po, elffh)
 
     elif po.update:
-
         if (po.verbose > 0):
             print("{}: Opening for update".format(po.elffile))
-
-        elffh = open(po.elffile, "r+b")
-
-        armfw_elf_flyc_update(po, elffh)
-
-        elffh.close();
+        with open(po.elffile, 'r+b') as elffh:
+            armfw_elf_flyc_update(po, elffh)
 
     else:
+        raise NotImplementedError("Unsupported command.")
 
-        raise NotImplementedError('Unsupported command.')
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
         main()
     except Exception as ex:
         eprint("Error: "+str(ex))
-        #raise
+        if 0: raise
         sys.exit(10)
