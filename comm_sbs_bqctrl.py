@@ -1534,7 +1534,7 @@ def smbus_write_raw(bus, dev_addr, b, po):
                 (v,) = struct.unpack('<H', bytearray(bytes(b[1:]) + b'\0')[0:2])
                 bus.write_word_data(dev_addr, b[0], v)
             else:
-                raise NotImplementedError(\
+                raise NotImplementedError(
                   "No way of sending such raw data via smbus api")
         finally:
             bus.pec = orig_pec
@@ -1565,7 +1565,7 @@ def smbus_read_word(bus, dev_addr, cmd, resp_type, po):
         bus.i2c_rdwr(part_write, part_read)
         b = bytes(part_read)
         if (po.verbose > 2):
-            print("Raw {} response: {}".format(cmd.name, \
+            print("Raw {} response: {}".format(cmd.name,
               " ".join('{:02x}'.format(x) for x in b)))
         if len(b) > 2:
             whole_packet = smbus_recreate_read_packet_data(dev_addr, cmd, b[0:2])
@@ -1576,8 +1576,8 @@ def smbus_read_word(bus, dev_addr, cmd, resp_type, po):
                   ).format(resp_type,cmd.name))
         v = bytes_to_type_str(b[0:2], resp_type)
     else:
-        raise NotImplementedError(("Unsupported bus API type '{}'"
-          ).format(po.api_type))
+        raise NotImplementedError("Unsupported bus API type '{}'"
+          .format(po.api_type))
     return v
 
 
@@ -1592,11 +1592,11 @@ def smbus_read_long(bus, dev_addr, cmd, resp_type, po):
         bus.i2c_rdwr(part_write, part_read)
         b = bytes(part_read)
     else:
-        raise NotImplementedError(("Unsupported bus API type '{}'"
-          ).format(po.api_type))
+        raise NotImplementedError("Unsupported bus API type '{}'"
+          .format(po.api_type))
 
     if (po.verbose > 2):
-        print("Raw {} response: {}".format(cmd.name, \
+        print("Raw {} response: {}".format(cmd.name,
           " ".join('{:02x}'.format(x) for x in b)))
 
     if len(b) > 4:
@@ -1658,24 +1658,24 @@ def smbus_read_block_for_basecmd(bus, dev_addr, cmd, basecmd_name, resp_type, po
         bus.i2c_rdwr(part_write, part_read)
         b = bytes(part_read)
     else:
-        raise NotImplementedError(("Unsupported bus API type '{}'"
-          ).format(po.api_type))
+        raise NotImplementedError("Unsupported bus API type '{}'"
+          .format(po.api_type))
 
     if (po.verbose > 2):
         print("Raw {} response: {}".format(basecmd_name, \
           " ".join('{:02x}'.format(x) for x in b)))
 
     if len(b) < b[0] + 1:
-        raise ValueError(("Received {} from command {} has invalid length"
-          ).format(resp_type,basecmd_name))
+        raise ValueError("Received {} from command {} has invalid length"
+          .format(resp_type,basecmd_name))
 
     # check PEC crc-8 byte (unless the packet was so long that we didn't receive it)
     if len(b) >= b[0] + 2:
         whole_packet = smbus_recreate_read_packet_data(dev_addr, cmd, b[0:b[0]+1])
         pec = crc8_ccitt_compute(whole_packet)
         if b[b[0]+1] != pec:
-            raise ValueError(("Received {} from command {} with wrong PEC checksum"
-              ).format(resp_type,basecmd_name))
+            raise ValueError("Received {} from command {} with wrong PEC checksum"
+              .format(resp_type,basecmd_name))
 
     # prepare data part of the message
     v = bytes(b[1:b[0]+1])
@@ -1916,7 +1916,7 @@ def smbus_perform_unseal_bq_2word_sckey(bus, dev_addr, cmd, resp_wait, sec_key_w
     # sent within 4 sec.
     subcmdinf = {
         'type'	: "void",
-        'unit'	: {'scale':None,'name':"hex"},
+        'unit'	: {'scale':None, 'name':"hex"},
         'tiny_name'	: "SKeyUD",
         'desc'	: "Word of Security key.",
     }
@@ -2250,7 +2250,7 @@ def parse_sbs_command_value(cmd, subcmdinf, v, u, po):
 
 
 def is_printable_value_unit(uname):
-    return uname not in ("boolean","hex","hexver","dec","dec02","dec04","date547","str","bitfields","struct",)
+    return uname not in ("boolean", "hex", "hexver", "dec", "dec02", "dec04", "date547", "str", "bitfields", "struct",)
 
 
 def command_value_to_string(cmdinf, subcmdinf, u, v, po):
@@ -2431,8 +2431,8 @@ def sbs_command_add_shift(cmd, cmdinf, cmd_shift, po):
         raise ValueError("Tried to add shift to non-array command '{}'".format(cmd.name))
     cmd_array_len = cmdinf['cmd_array']
     if (cmd_shift < 0) or (cmd_shift >= cmd_array_len):
-        raise ValueError("Command {} array shift {} out of bounds".format(cmd.name,cmd_shift))
-    return ImprovisedCommand(value=cmd.value+cmd_shift, name="{}{}".format(cmd.name,cmd_shift))
+        raise ValueError("Command {} array shift {} out of bounds".format(cmd.name, cmd_shift))
+    return ImprovisedCommand(value=cmd.value+cmd_shift, name="{}{}".format(cmd.name, cmd_shift))
 
 
 def sbs_subcommand_get_info(cmd, subcmd):
@@ -2520,20 +2520,24 @@ def smbus_write_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdi
             else:
                 v = v // stor_unit['scale']
         else:
-            raise ValueError("Cannot apply scaling to non-numeric value of {}.{} command".format(cmd.name,subcmd.name))
+            raise ValueError("Cannot apply scaling to non-numeric value of {}.{} command"
+              .format(cmd.name,subcmd.name))
 
 
     if (stor_type.startswith("byte[") or stor_type.startswith("string") or
       stor_type.endswith("_blk") or stor_type in ("void",)):
-        smbus_write_block_val_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po)
+        smbus_write_block_val_by_writing_word_subcmd_first(bus, dev_addr,
+          cmd, subcmd, v, stor_type, stor_cmd, stor_wait, po)
     else:
-        raise ValueError("Command {}.{} type {} not supported in sub-command write".format(cmd.name,subcmd.name,stor_type))
+        raise ValueError("Command {}.{} type {} not supported in sub-command write"
+          .format(cmd.name, subcmd.name, stor_type))
 
     return stor_unit['name']
 
 
 def smbus_read_macblk_by_writing_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdinf, po):
-    """ Reads value of a sub-command by writing the subcmd index, then reading response which starts with the sub-command.
+    """ Reads value of a sub-command by writing the subcmd index,
+    then reading response which starts with the sub-command.
 
     This is used to access ManufacturerBlockAccess sub-commands of the battery.
     Handles value scaling and its conversion to bytes. Handles retries as well.
@@ -2552,9 +2556,11 @@ def smbus_read_macblk_by_writing_block_subcmd_first(bus, dev_addr, cmd, subcmd, 
         bus.prep_mock_read(cmd, subcmd)
 
     if (resp_type.startswith("byte[") or resp_type.startswith("string") or resp_type.endswith("_blk")):
-        v = smbus_read_macblock_val_by_writing_block_subcmd_first(bus, dev_addr, cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
+        v = smbus_read_macblock_val_by_writing_block_subcmd_first(bus, dev_addr,
+          cmd, subcmd, resp_type, resp_cmd, resp_wait, po)
     else:
-        raise ValueError("Command {}.{} type {} not supported in block sub-command read".format(cmd.name,subcmd.name,resp_type))
+        raise ValueError("Command {}.{} type {} not supported in block sub-command read"
+          .format(cmd.name,subcmd.name,resp_type))
 
     resp_unit = subcmdinf['unit']
     if (resp_unit['scale'] is not None) and (resp_unit['scale'] != 1):
@@ -2587,14 +2593,17 @@ def smbus_write_macblk_with_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcm
             else:
                 v = v // stor_unit['scale']
         else:
-            raise ValueError("Cannot apply scaling to non-numeric value of {}.{} command".format(cmd.name,subcmd.name))
+            raise ValueError("Cannot apply scaling to non-numeric value of {}.{} command"
+              .format(cmd.name,subcmd.name))
 
 
     if (stor_type.startswith("byte[") or stor_type.startswith("string") or
       stor_type.endswith("_blk") or stor_type in ("void",)):
-        smbus_write_macblock_val_adding_block_subcmd_first(bus, dev_addr, cmd, subcmd, v, stor_type, stor_wait, po)
+        smbus_write_macblock_val_adding_block_subcmd_first(bus, dev_addr,
+          cmd, subcmd, v, stor_type, stor_wait, po)
     else:
-        raise ValueError("Command {}.{} type {} not supported in block sub-command write".format(cmd.name,subcmd.name,stor_type))
+        raise ValueError("Command {}.{} type {} not supported in block sub-command write"
+          .format(cmd.name,subcmd.name,stor_type))
 
     return stor_unit['name']
 
@@ -2612,7 +2621,8 @@ def smbus_read(bus, dev_addr, cmd, opts, vals, po):
         retry_count = 3
 
     if (po.verbose > 1):
-        print("Reading {} command at addr=0x{:x}, cmd=0x{:x}, type={}, opts={}".format(cmdinf['getter'], dev_addr, cmd.value, cmdinf['type'], opts))
+        print("Reading {} command at addr=0x{:x}, cmd=0x{:x}, type={}, opts={}"
+          .format(cmdinf['getter'], dev_addr, cmd.value, cmdinf['type'], opts))
 
     # If reading from array-like command, hand-craft our own which includes the shift
     if 'cmd_shift' in opts:
@@ -3015,7 +3025,8 @@ def smart_battery_system_info(cmd_str, vals, po):
         if len(set(aps)) <= 1:
             print("  Always '{}'".format(aps[0].upper()))
         else:
-            print("  Sealed '{}'; Unsealed  '{}'; Full Access  '{}'".format(aps[0].upper(),aps[1].upper(),aps[2].upper()))
+            print("  Sealed '{}'; Unsealed  '{}'; Full Access  '{}'"
+              .format(aps[0].upper(), aps[1].upper(), aps[2].upper()))
         gtr = subcmdinf['getter'] if 'getter' in subcmdinf else cmdinf['getter']
 
         if gtr == "simple":
@@ -3322,15 +3333,18 @@ def smart_battery_system_sealing(seal_str, vals, po):
 
     if auth == "SHA-1/HMAC":
         time.sleep(0.35)
-        smbus_perform_unseal_bq_sha1_hmac(bus, po.dev_address, cmd, subcmd, resp_type, resp_cmd, resp_wait, po.sha1key, po)
+        smbus_perform_unseal_bq_sha1_hmac(bus, po.dev_address,
+          cmd, subcmd, resp_type, resp_cmd, resp_wait, po.sha1key, po)
         time.sleep(0.35)
     elif auth == "2-Word SCKey": # Two word key, where first word is written as MAC sub-command
         time.sleep(0.35)
-        smbus_perform_unseal_bq_2word_sckey(bus, po.dev_address, cmd, resp_wait, (po.i32key) & 0xffff, (po.i32key>>16) & 0xffff, vals, po)
+        smbus_perform_unseal_bq_2word_sckey(bus, po.dev_address,
+          cmd, resp_wait, (po.i32key) & 0xffff, (po.i32key>>16) & 0xffff, vals, po)
         time.sleep(0.35)
     else: # No auth required - sealing or checking status
         if resp_type == "void":
-            smbus_write_raw_block_by_writing_word_subcmd(bus, po.dev_address, cmd, subcmd, b'', resp_type, resp_cmd, resp_wait, po)
+            smbus_write_raw_block_by_writing_word_subcmd(bus, po.dev_address,
+              cmd, subcmd, b'', resp_type, resp_cmd, resp_wait, po)
         else:
             raise ValueError("No auth, but not void command; not sure what to do")
 
@@ -3457,7 +3471,8 @@ def main():
 
     parser.add_argument('-c', '--chip', metavar='model', choices=[i.name for i in CHIP_TYPE],
             type=parse_chip_type,  default=CHIP_TYPE.AUTO.name,
-            help="target chip model; one of: {:s} (defaults to '%(default)s')".format(', '.join(i.name for i in CHIP_TYPE)))
+            help="target chip model; one of: {:s} (defaults to '%(default)s')"
+              .format(', '.join(i.name for i in CHIP_TYPE)))
 
     parser.add_argument("--dry-run", action='store_true',
             help="do not use real smbus device or do permanent changes")
