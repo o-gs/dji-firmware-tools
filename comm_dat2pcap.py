@@ -42,8 +42,10 @@ import time
 import datetime
 import binascii
 
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
+
 
 class StateId(enum.Enum):
     NO_PACKET = 0
@@ -54,11 +56,13 @@ class StateId(enum.Enum):
     DAMAGED = 5 # No longer used - packet is damaged when done_packet is set
     FINISH = 6
 
+
 class PktInfo:
     count_ok = 0
     count_bad = 0
     bytes_ok = 0
     bytes_bad = 0
+
 
 class PktState:
     id = StateId.NO_PACKET
@@ -66,6 +70,7 @@ class PktState:
     done_packet = None
     verbose = 0
     pname = "2pcap"
+
 
 def calc_pkt55_checksum(packet, plength):
     crc =[0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
@@ -138,6 +143,7 @@ def calc_pkt55_hdr_checksum(seed, packet, plength):
         chksum = arr_2A103[((packet[i] ^ chksum) & 0xFF)];
     return chksum
 
+
 def calc_pktAB_checksum(cnst, packet, length):
 
     result = packet[0]
@@ -169,6 +175,7 @@ class Formatter:
     def close(self):
         self.out.close()
 
+
 class PcapFormatter(Formatter):
     def __init__(self, out):
         Formatter.__init__(self, out)
@@ -199,6 +206,7 @@ class PcapFormatter(Formatter):
         self.out.write(data)
         self.out.flush()
 
+
 class HumanFormatter(Formatter):
     def write_header(self):
         pass
@@ -208,20 +216,24 @@ class HumanFormatter(Formatter):
         self.out.write("\n")
         self.out.flush()
 
+
 def is_packet_ready(state):
     """ Returns whether a packet within the state is ready for storing.
     """
     return (state.id == StateId.READY) and (len(state.packet) > 0);
+
 
 def is_packet_damaged(state):
     """ Returns whether a packet within the state is ready but damaged.
     """
     return (state.done_packet is not None)
 
+
 def is_packet_at_finish(state):
     """ Returns whether the state informs processing should finish.
     """
     return (state.id == StateId.FINISH);
+
 
 def store_packet(out, state):
     """ Write packet from given state into given output stream.
@@ -242,6 +254,7 @@ def store_packet(out, state):
     state.done_packet = None
     return state
 
+
 def drop_packet(state):
     """ Drop packet from given state without storing it.
 
@@ -254,6 +267,7 @@ def drop_packet(state):
     else:
         state.done_packet = None
     return state
+
 
 def do_packetise_byte(byte, state, info):
   """ Add byte to the packetize effort represented by state
@@ -358,112 +372,108 @@ def do_packetise_byte(byte, state, info):
 
   return state, info
 
+
 def do_dat2pcap(po, datfile, pcapfile):
-  """ Reads raw packets from datfile and writes them into pcapfile with proper headers.
-  """
-  # This might block until the other side of the fifo is opened
-  out = PcapFormatter(pcapfile)
-  out.userdlt = po.userdlt
-  out.write_header()
+    """ Reads raw packets from datfile and writes them into pcapfile with proper headers.
+    """
+    # This might block until the other side of the fifo is opened
+    out = PcapFormatter(pcapfile)
+    out.userdlt = po.userdlt
+    out.write_header()
 
-  if (po.verbose > 1):
-    print("{}: Copying packets into {} ...".format(po.datfile,po.pcapfile))
+    if (po.verbose > 1):
+        print("{}: Copying packets into {} ...".format(po.datfile,po.pcapfile))
 
-  info = PktInfo()
-  state = PktState()
-  state.verbose = po.verbose
-  state.pname = po.datfile
-  count = 0
+    info = PktInfo()
+    state = PktState()
+    state.verbose = po.verbose
+    state.pname = po.datfile
+    count = 0
 
-  while True:
-      # The read() function in Python is ridiculously slow; instead of using it
-      # many times to read one byte, let's call it once for considerable buffer
-      btarr = datfile.read(4096)
-      if len(btarr) < 1: # eof
-          break
-      for bt in btarr:
-          count += 1
-          state, info = do_packetise_byte(bt, state, info)
-          if (is_packet_ready(state)):
-              state = store_packet(out, state)
-          elif (is_packet_damaged(state)):
-              if (po.storebad):
-                  state = store_packet(out, state)
-              else:
-                  state = drop_packet(state)
-      if (is_packet_at_finish(state)):
-          break;
-      if (po.verbose > 2) and (count & 0xffff) == 0:
-          print("{}: Packets encountered: {:d} valid ({:d}b), {:d} damaged ({:d}b)".format(
-              state.pname, info.count_ok, info.bytes_ok, info.count_bad, info.bytes_bad))
+    while True:
+        # The read() function in Python is ridiculously slow; instead of using it
+        # many times to read one byte, let's call it once for considerable buffer
+        btarr = datfile.read(4096)
+        if len(btarr) < 1: # eof
+            break
+        for bt in btarr:
+            count += 1
+            state, info = do_packetise_byte(bt, state, info)
+            if (is_packet_ready(state)):
+                state = store_packet(out, state)
+            elif (is_packet_damaged(state)):
+                if (po.storebad):
+                    state = store_packet(out, state)
+                else:
+                    state = drop_packet(state)
+        if (is_packet_at_finish(state)):
+            break;
+        if (po.verbose > 2) and (count & 0xffff) == 0:
+            print("{}: Packets encountered: {:d} valid ({:d}b), {:d} damaged ({:d}b)".format(
+                state.pname, info.count_ok, info.bytes_ok, info.count_bad, info.bytes_bad))
 
-  if (po.verbose > 0):
-      print("{}: Packets encountered: {:d} valid ({:d}b), {:d} damaged ({:d}b)".format(
-          state.pname, info.count_ok, info.bytes_ok, info.count_bad, info.bytes_bad))
+    if (po.verbose > 0):
+        print("{}: Packets encountered: {:d} valid ({:d}b), {:d} damaged ({:d}b)".format(
+            state.pname, info.count_ok, info.bytes_ok, info.count_bad, info.bytes_bad))
+
 
 def main():
-  """ Main executable function.
+    """ Main executable function.
 
-  Its task is to parse command line options and call a function which performs requested command.
-  """
-  # Parse command line options
+    Its task is to parse command line options and call a function which performs requested command.
+    """
+    parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
 
-  parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-p', '--pcapfile', default="", type=str,
+          help="output to pcap file of given name")
 
-  parser.add_argument("-p", "--pcapfile", default="", type=str,
-          help="Output to pcap file of given name")
+    parser.add_argument('-u', '--userdlt', default=0, type=int,
+          help=("sets specific data link type of the DLT_USER protocol "
+            "(default is %(default)d; change it for complex wireshark configs)"))
 
-  parser.add_argument("-u", "--userdlt", default=0, type=int,
-          help="Sets specific data link type of the DLT_USER protocol (default is %(default)d; change it for complex wireshark configs)")
+    parser.add_argument('-e', '--storebad', action='store_true',
+          help="enables storing bad packets (ie. with bad checksums)")
 
-  parser.add_argument("-e", "--storebad", action="store_true",
-          help="Enables storing bad packets (ie. with bad checksums)")
+    parser.add_argument('-v', '--verbose', action='count', default=0,
+          help="increases verbosity level; max level is set by -vvv")
 
-  parser.add_argument("-v", "--verbose", action="count", default=0,
-          help="Increases verbosity level; max level is set by -vvv")
+    subparser = parser.add_mutually_exclusive_group()
 
-  subparser = parser.add_mutually_exclusive_group()
+    parser.add_argument('-d', '--datfile', default="", type=str, required=True,
+          help="input from dat file (Raw DUPC/DUML) of given name")
 
-  parser.add_argument("-d", "--datfile", default="", type=str, required=True,
-          help="Input from dat file (Raw DUPC/DUML) of given name")
-
-  subparser.add_argument("--version", action='version', version="%(prog)s {version} by {author}"
+    subparser.add_argument('--version', action='version', version="%(prog)s {version} by {author}"
             .format(version=__version__, author=__author__),
-          help="Display version information and exit")
+          help="display version information and exit")
 
-  po = parser.parse_args();
+    po = parser.parse_args();
 
-  if po.userdlt > 15:
-      raise ValueError("There are only 15 DLT_USER slots.")
+    if po.userdlt > 15:
+        raise ValueError("There are only 15 DLT_USER slots.")
 
-  po.command = ''
-  if len(po.datfile) > 0:
-      po.command = 'd'
+    po.command = ''
+    if len(po.datfile) > 0:
+        po.command = 'd'
 
-  po.basename = os.path.splitext(os.path.basename(po.datfile))[0]
-  if len(po.datfile) > 0 and len(po.pcapfile) == 0:
-      po.pcapfile = po.basename + ".pcap"
+    po.basename = os.path.splitext(os.path.basename(po.datfile))[0]
+    if len(po.datfile) > 0 and len(po.pcapfile) == 0:
+        po.pcapfile = po.basename + ".pcap"
 
-  if (po.command == 'd'):
+    if (po.command == 'd'):
+        if (po.verbose > 0):
+            print("{}: Opening Raw DUPC/DUML for conversion to PCap".format(po.datfile))
+        with open(po.datfile, 'rb') as datfile:
+            with open(po.pcapfile, 'wb') as pcapfile:
+                do_dat2pcap(po, datfile, pcapfile)
 
-      if (po.verbose > 0):
-         print("{}: Opening Raw DUPC/DUML for conversion to PCap".format(po.datfile))
-      datfile = open(po.datfile, "rb")
-      pcapfile = open(po.pcapfile, "wb")
+    else:
+        raise NotImplementedError("Unsupported command.")
 
-      do_dat2pcap(po,datfile,pcapfile)
 
-      datfile.close();
-      pcapfile.close();
-
-  else:
-
-      raise NotImplementedError('Unsupported command.')
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
         main()
     except Exception as ex:
         eprint("Error: "+str(ex))
-        #raise
+        if 0: raise
         sys.exit(10)
