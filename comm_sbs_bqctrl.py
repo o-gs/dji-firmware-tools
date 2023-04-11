@@ -306,19 +306,19 @@ class SBS_FLAG_SPECIFICATION_INFO(DecoratedEnum):
 class MONITOR_GROUP(DecoratedEnum):
     """ List of groups of commands/offsets.
     """
-    DeviceInfo	= 0x00
-    UsageInfo	= 0x01
-    ComputedInfo= 0x02
-    StatusBits	= 0x03
-    AtRates		= 0x04
-    BQStatusBits	= 0x06
-    BQStatusBitsMA	= 0x07
-    BQCellVoltages	= 0x08
-    BQLifetimeData	= 0x09
-    BQLifetimeDataMA	= 0x0a
-    ImpedanceTrack	= 0x0b
-    ImpedanceTrackMA	= 0x0c
-    BQTurboMode	= 0x0f
+    DeviceInfo       = 0x00
+    UsageInfo        = 0x01
+    ComputedInfo     = 0x02
+    StatusBits       = 0x03
+    AtRates          = 0x04
+    BQStatusBits     = 0x06
+    BQStatusBitsMA   = 0x07
+    BQCellVoltages   = 0x08
+    BQLifetimeData   = 0x09
+    BQLifetimeDataMA = 0x0a
+    ImpedanceTrack   = 0x0b
+    ImpedanceTrackMA = 0x0c
+    BQTurboMode      = 0x0f
 
 
 # Global variables, modified by chip drivers
@@ -1165,7 +1165,7 @@ class ChipMock(object):
     def prep_static(self):
         # Only commands required to chip detection;
         # After detection, imported chip file will replace this
-        self.add_read_sub(0x00, 0x02, bytes.fromhex( \
+        self.add_read_sub(0x00, 0x02, bytes.fromhex(
           "0550 0036 0034 00 0380 0001 0083")) # FirmwareVersion
 
     def add_read(self, register, data):
@@ -1289,11 +1289,11 @@ class SMBusMock(object):
                 is_read = True
         # msg stays assigned from last iteration
         if is_read:
-            data = self.do_mock_read(msg.addr, register, \
+            data = self.do_mock_read(msg.addr, register,
               is_block=self.expect_block)
             msg.buf = data
         else:
-            self.do_mock_write(msg.addr, register, msg.buf[1:], \
+            self.do_mock_write(msg.addr, register, msg.buf[1:],
               is_block=self.expect_block)
 
     def add_mock_read(self, register, data):
@@ -1312,7 +1312,7 @@ class SMBusMock(object):
             resp_type = 'byte[]'
         else:
             resp_type = cmdinf['type']
-        self.expect_block = (resp_type.startswith("byte[") or \
+        self.expect_block = (resp_type.startswith("byte[") or
           resp_type.startswith("string") or resp_type.endswith("_blk"))
 
     def prep_mock_read(self, cmd, subcmd=None):
@@ -1329,7 +1329,7 @@ class SMBusMock(object):
         data = self.mock.do_read(i2c_addr, register)
         if is_block: data = bytes([len(data)]) + data
         if is_block and self.pec:
-            whole_packet = smbus_recreate_read_packet_data(i2c_addr, \
+            whole_packet = smbus_recreate_read_packet_data(i2c_addr,
               register, data)
             pec = crc8_ccitt_compute(whole_packet)
             data = data + bytes([pec])
@@ -1622,7 +1622,7 @@ def smbus_read_block_for_basecmd(bus, dev_addr, cmd, basecmd_name, resp_type, po
         b = bus.read_i2c_block_data(dev_addr, cmd.value, expect_len)
     elif po.api_type == "i2c":
         # 36 = 32 sbs max len +2 subcmd +1 length, +1 PEC
-        expect_len = min(expect_len+ 1 + (1 if bus.pec else 0), 36)
+        expect_len = min(expect_len + 1 + (1 if bus.pec else 0), 36)
         part_write = i2c_msg.write(dev_addr, [cmd.value])
         part_read = i2c_msg.read(dev_addr, expect_len)
         bus.i2c_rdwr(part_write, part_read)
@@ -1662,7 +1662,7 @@ def smbus_read_block_for_basecmd(bus, dev_addr, cmd, basecmd_name, resp_type, po
           .format(po.api_type))
 
     if (po.verbose > 2):
-        print("Raw {} response: {}".format(basecmd_name, \
+        print("Raw {} response: {}".format(basecmd_name,
           " ".join('{:02x}'.format(x) for x in b)))
 
     if len(b) < b[0] + 1:
@@ -1766,7 +1766,7 @@ def smbus_write_block_for_basecmd(bus, dev_addr, cmd, v, basecmd_name, val_type,
     b = v
     if po.api_type == "smbus":
         if (po.verbose > 2):
-            print("Write {}: {:02x} BLOCK={}".format(basecmd_name, \
+            print("Write {}: {:02x} BLOCK={}".format(basecmd_name,
               cmd.value, " ".join('{:02x}'.format(x) for x in b)))
         bus.write_block_data(dev_addr, cmd.value, b)
     elif po.api_type == "i2c":
@@ -2338,7 +2338,7 @@ def print_sbs_command_short_subfields(field_groups, l, fields_info, cell_width, 
             fldt = {}
             if display_mode == 1:
                 fldt['str'] = "{}={}".format(fldinf['tiny_name'],val)
-                fldt['color'] = 34 if ("r" not in fldinf['access']) else 31 if val!=0 else 32
+                fldt['color'] = 34 if ("r" not in fldinf['access']) else 31 if val != 0 else 32
             else:
                 if isinstance(val, list) or isinstance(val, bytes):
                     fldt['str'] = "{}={}".format(fldinf['tiny_name'],"".join('{:02x}'.format(x) for x in val))
