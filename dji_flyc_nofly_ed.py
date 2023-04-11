@@ -388,22 +388,22 @@ def flyc_nofly_update(po, fwmdlfile):
           if (nxparprop is None):
               eprint("{}: Warning: no fly zone not found in fw: area_id={:d}".format(po.mdlfile,pvparprop['area_id']))
               continue
-          update_pos=False
-          update_radius=False
-          update_country=False
-          update_limits=False
-          update_type=False
+          update_pos = False
+          update_radius = False
+          update_country = False
+          update_limits = False
+          update_type = False
           # compare properties to check what we want to update
           if not isclose(nxparprop['lat'], pvparprop['lat']) or not isclose(nxparprop['lng'], pvparprop['lng']):
-              update_pos=True
+              update_pos = True
           if nxparprop['radius'] != pvparprop['radius']:
-              update_radius=True
+              update_radius = True
           if nxparprop['country'] != pvparprop['country']:
-              update_country=True
+              update_country = True
           if nxparprop['begin_at'] != pvparprop['begin_at'] or nxparprop['end_at'] != pvparprop['end_at']:
-              update_limits=True
+              update_limits = True
           if nxparprop['type'] != pvparprop['type']:
-              update_type=True
+              update_type = True
           if (update_pos):
               eprint("{}: pos update not implemented.".format(po.mdlfile)) # TODO
           if (update_radius):
@@ -434,11 +434,11 @@ def flyc_nofly_update(po, fwmdlfile):
           if (nxparprop is None):
               eprint("{}: Warning: no fly coords not found in fw: area_id={:d}".format(po.mdlfile,pvparprop['area_id']))
               continue
-          update_pos=False
+          update_pos = False
           # compare properties to check what we want to update
           # TODO does it really make sense for coord list to first search based on coords, then allow update it? Maybe remove/add from the list instead?
           if not isclose(nxparprop['lat'], pvparprop['lat']) or not isclose(nxparprop['lng'], pvparprop['lng']):
-              update_pos=True
+              update_pos = True
           if (update_pos):
               eprint("{}: Coords update not implemented.".format(po.mdlfile)) # TODO
   raise NotImplementedError('Not implemented - no data was updated.')
