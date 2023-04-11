@@ -3642,7 +3642,7 @@ def armfw_elf_flyc_update(po, elffh):
     # Change section data buffers to bytearrays, so we can change them easily
     for section_name, section in elf_sections.items():
         section['data'] = bytearray(section['data'])
-    update_count = armfw_elf_paramvals_update_list(po, asm_arch, re_general_list, \
+    update_count = armfw_elf_paramvals_update_list(po, asm_arch, re_general_list,
       pub_params_list, glob_params_list, elf_sections, nxparams_list)
     if (po.verbose > 0):
         print("{:s}: Updated {:d} out of {:d} hardcoded values"
