@@ -590,7 +590,7 @@ def armfw_bin2elf(po, fwpartfile):
 def parse_section_param(s):
     """ Parses the section parameter argument.
     """
-    sect={ 'addr': {}, 'len': {}, }
+    sect = {'addr': {}, 'len': {},}
     arg_m = re.search('(?P<name>[0-9A-Za-z._-]+)(@(?P<addr>[Xx0-9A-Fa-f]+))?(:(?P<len>[Xx0-9A-Fa-f]+))?', s)
     # Convert to integer, detect base from prefix
     if arg_m.group('addr') is not None:
