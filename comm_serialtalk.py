@@ -195,8 +195,8 @@ def open_usb(po):
     import usb.core
     import usb.util
     import usb.backend.libusb0 as myusb
-    mybackend=myusb.get_backend()
 
+    mybackend = myusb.get_backend()
     dev = usb.core.find(idVendor=0x2ca3, find_all = True, backend=mybackend)
     intf = find_correct_device(dev)
 

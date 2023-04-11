@@ -72,7 +72,7 @@ def open_fifo(options, name):
         os.mkfifo(name)
     except FileExistsError:
         pass
-    except:
+    except Exception:
         raise
 
     if not options.quiet:
