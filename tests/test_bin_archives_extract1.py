@@ -29,10 +29,12 @@ import logging
 import mmap
 import os
 import re
+import shutil
 import subprocess
 import sys
 import pathlib
 import pytest
+from datetime import datetime
 from unittest.mock import patch
 
 # Import the functions to be tested
@@ -94,6 +96,14 @@ def is_lz4file(inp_fn):
         head = encfh.read(5)
         frame_flg = int.from_bytes(head[4:5], byteorder='little')
         return (head[0:4] == b'\x04\x22\x4D\x18') and ((frame_flg & 0xC0) == 0x40)
+
+
+def is_gzipfile(inp_fn):
+    with open(inp_fn, 'rb') as encfh:
+        head = encfh.read(10)
+        compr_method = head[2]
+        modif_time = datetime.utcfromtimestamp(int.from_bytes(head[4:8], byteorder='little'))
+        return (head[0:2] == b'\x1F\x8B') and (compr_method == 8) and (modif_time.year == 1970 or modif_time.year >= 1996)
 
 
 def is_ext4file(inp_fn):
@@ -168,7 +178,6 @@ def case_bin_archive_extract(modl_inp_fn):
             LOGGER.info(' '.join(command))
             # extracting file
             tar_extractall_overwrite(tarfh, modules_path1)
-
     elif zipfile.is_zipfile(real_inp_fn):
         with zipfile.ZipFile(real_inp_fn) as zipfh:
             command = ["unzip", "-q", "-o", "-d", modules_path1,  real_inp_fn]
@@ -213,6 +222,7 @@ def case_bin_single_decompress(modl_inp_fn):
     """
     LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
 
+    import gzip
     import lzma
     import lz4.frame
 
@@ -221,7 +231,10 @@ def case_bin_single_decompress(modl_inp_fn):
 
     inp_path, inp_filename = os.path.split(modl_inp_fn)
     inp_path = pathlib.Path(inp_path)
-    inp_basename, elf_fileext = os.path.splitext(inp_filename)
+    inp_basename, inp_fileext = os.path.splitext(inp_filename)
+    # do not remove extension if it explains the type
+    if inp_fileext.endswith("ramdisk"):
+        inp_basename += inp_fileext
     if len(inp_path.parts) > 1:
         out_path = os.sep.join(["out"] + list(inp_path.parts[1:]))
     else:
@@ -233,15 +246,19 @@ def case_bin_single_decompress(modl_inp_fn):
             command = ["lzma", "-d ", "-c", modl_inp_fn, ">", modl_out_fn]
             LOGGER.info(' '.join(command))
             with open(modl_out_fn, "wb") as unpfh:
-                while file_content := lzmafh.read(bufsize):
-                    unpfh.write(file_content)
+                shutil.copyfileobj(lzmafh, unpfh)
     elif is_lz4file(modl_inp_fn):
         with lz4.frame.open(modl_inp_fn) as lz4fh:
             command = ["lz4", "-d",  modl_inp_fn, modl_out_fn]
             LOGGER.info(' '.join(command))
             with open(modl_out_fn, "wb") as unpfh:
-                while file_content := lz4fh.read(size=bufsize):
-                    unpfh.write(file_content)
+                shutil.copyfileobj(lz4fh, unpfh)
+    elif is_gzipfile(modl_inp_fn):
+        with gzip.open(modl_inp_fn, 'rb') as gzfh:
+            command = ["gzip", "-d", "-k", "-f", "-c",  modl_inp_fn, ">", modl_out_fn]
+            LOGGER.info(' '.join(command))
+            with open(modl_out_fn, "wb") as unpfh:
+                shutil.copyfileobj(gzfh, unpfh)
     else:
         if not ignore_unknown_format:
             assert False, "Unrecognized compression format of the module file: {:s}".format(modl_inp_fn)
@@ -333,6 +350,38 @@ def test_bin_single_compressed_xv4_extract(capsys, modl_inp_dir, test_nth):
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
         "{}/*/*_m0100.bin".format(modl_inp_dir),
         "{}/*/*_m0107.bin".format(modl_inp_dir),
+      ) ]) if os.path.isfile(fn)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no package files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames:
+        case_bin_single_decompress(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+
+@pytest.mark.order(3) # must be run after test_bin_archives_xv4_extract
+@pytest.mark.fw_xv4
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/ag406-agras_mg-1a',1,),
+    ('out/ag408-agras_mg-unk',1,),
+    ('out/ag410-agras_t16',1,),
+    ('out/ag411-agras_t20',1,),
+    ('out/gl300e-radio_control',1,),
+    ('out/zs600a-crystalsky_5_5inch',1,),
+    ('out/zs600b-crystalsky_7_85in',1,),
+  ] )
+def test_bin_single_compressed_xv4_nested_extract(capsys, modl_inp_dir, test_nth):
+    """ Test if known single compressed files are extracting correctly.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        # the .cpio.gz archives; we extract only gz part
+        "{}/*/*-extr1/*-extr1/*.img-ramdisk".format(modl_inp_dir),
+        "{}/*/*-extr1/Image-out/*-extr1/*.img-ramdisk".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
     if len(modl_inp_filenames) < 1:
@@ -482,6 +531,34 @@ def test_bin_single_compressed_imah_v1_extract(capsys, modl_inp_dir, test_nth):
 
     # Skip the packages which were extracted in encrypted form (need non-public key)
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no package files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames:
+        case_bin_single_decompress(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+
+@pytest.mark.order(3) # must be run after test_bin_archives_imah_v1_extract
+@pytest.mark.fw_imah_v1
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/ag406-agras_mg-1a',1,),
+    ('out/ag408-agras_mg-unk',1,),
+    ('out/ag410-agras_t16',1,),
+    ('out/ag411-agras_t20',1,),
+  ] )
+def test_bin_single_compressed_imah_v1_nested_extract(capsys, modl_inp_dir, test_nth):
+    """ Test if known single compressed files are extracting correctly, and prepare data for tests which use the extracted files.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        # the .cpio.gz archives; we extract only gz part
+        "{}/*/*-extr1/*-extr1/*.img-ramdisk".format(modl_inp_dir),
+      ) ]) if os.path.isfile(fn)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no package files to test in this directory")
