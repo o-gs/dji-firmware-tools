@@ -970,11 +970,11 @@ def parse_module_type(s):
     try:
         if re.search(pat, s):
             return COMM_DEV_TYPE(int(s, 10))
-    except:
+    except Exception:
         raise argparse.ArgumentTypeError("Numeric value out of range")
     try:
         return COMM_DEV_TYPE.from_name(s.upper())
-    except:
+    except Exception:
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
 
@@ -985,11 +985,11 @@ def parse_ack_type(s):
     try:
         if re.search(pat, s):
             return ACK_TYPE(int(s, 10))
-    except:
+    except Exception:
         raise argparse.ArgumentTypeError("Numeric value out of range")
     try:
         return ACK_TYPE.from_name(s.upper())
-    except:
+    except Exception:
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
 
@@ -1000,11 +1000,11 @@ def parse_encrypt_type(s):
     try:
         if re.search(pat, s):
             return ENCRYPT_TYPE(int(s, 10))
-    except:
+    except Exception:
         raise argparse.ArgumentTypeError("Numeric value out of range")
     try:
         return ENCRYPT_TYPE.from_name(s.upper())
-    except:
+    except Exception:
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
 
@@ -1015,11 +1015,11 @@ def parse_packet_type(s):
     try:
         if re.search(pat, s):
             return PACKET_TYPE(int(s, 10))
-    except:
+    except Exception:
         raise argparse.ArgumentTypeError("Numeric value out of range")
     try:
         return PACKET_TYPE.from_name(s.upper())
-    except:
+    except Exception:
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
 
@@ -1030,11 +1030,11 @@ def parse_cmd_set(s):
     try:
         if re.search(pat, s):
             return CMD_SET_TYPE(int(s, 10))
-    except:
+    except Exception:
         raise argparse.ArgumentTypeError("Numeric value out of range")
     try:
         return CMD_SET_TYPE.from_name(s.upper())
-    except:
+    except Exception:
         raise argparse.ArgumentTypeError("Unrecognized name of enum item")
 
 
