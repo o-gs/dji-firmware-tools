@@ -576,8 +576,8 @@ def dji_create(po, fwpkgfile):
   fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
   for hde in pkgmodules:
       if (po.verbose > 2):
-          print("{}: File map: 0x{:08x} FwPkgEntry[m{:02d}{:02d}]".format(po.fwpkg, fwpkgfile.tell(), \
-            getattr(hde, 'target') & 31, (getattr(hde, 'target') >> 5) & 7))
+          print("{}: File map: 0x{:08x} FwPkgEntry[m{:02d}{:02d}]".format(po.fwpkg,
+            fwpkgfile.tell(), getattr(hde, 'target') & 31, (getattr(hde, 'target') >> 5) & 7))
       fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
   fwpkgfile.write((c_ubyte * sizeof(c_ushort))())
   # Write module data
@@ -617,8 +617,8 @@ def dji_create(po, fwpkgfile):
               chksum_enctype = hde.get_encrypt_type()
       # Copy partition data and compute checksum
       if (po.verbose > 2):
-          print("{}: File map: 0x{:08x} FwModuleData[m{:02d}{:02d}]".format(po.fwpkg, epos, \
-            getattr(hde, 'target') & 31, (getattr(hde, 'target') >> 5) & 7))
+          print("{}: File map: 0x{:08x} FwModuleData[m{:02d}{:02d}]".format(po.fwpkg,
+            epos, getattr(hde, 'target') & 31, (getattr(hde, 'target') >> 5) & 7))
       fwitmfile = open(fname, "rb")
       stored_chksum = hashlib.md5()
       decrypted_chksum = hashlib.md5()
