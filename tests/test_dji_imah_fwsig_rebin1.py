@@ -95,6 +95,14 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_cmdopts = "-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding, 3x16 unknown additional
             module_changes_limit = 2 + 256 + 3*16 + 3*16
+        elif (re.match(r'^.*{:s}_2601_[^/]*[.]fw_2601.*$'.format("ag410"), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding, 3x16 unknown additional
+            module_changes_limit = 2 + 256 + 3*16 + 3*16
+        elif (re.match(r'^.*{:s}_2602_[^/]*[.]fw_2602.*$'.format("ag410"), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
+            # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding, 3x16 unknown additional
+            module_changes_limit = 2 + 256 + 3*16 + 3*16
         else: # if first level module
             module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-11 -f" # PUEK not published, forcing extract encrypted
             # allow change of 2 bytes from auth key name, 256 from signature
@@ -570,6 +578,7 @@ def case_dji_imah_fwsig_rebin(modl_inp_fn):
     ignore_inp_end_padding = False
     if (re.match(r'^.*-bootarea_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE) or
      re.match(r'^.*-loader_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE) or
+     re.match(r'^.*-normal_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE) or
      re.match(r'^.*-unpack_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE) or
      re.match(r'^.*-part_p[0-9]+.*[.]img[.]sig$', modl_inp_fn, re.IGNORECASE)):
         ignore_inp_end_padding = True
@@ -722,14 +731,17 @@ def test_dji_imah_fwsig_v1_nested_rebin(capsys, modl_inp_dir, test_nth):
         "{}/*/**/modemdsp_uav.pro.fw".format(modl_inp_dir),
         # output from test_bin_bootimg_imah_v1_extract
         "{}/*/*-bootarea_p*.img.sig".format(modl_inp_dir),
+        "{}/*/*-normal_p*.img.sig".format(modl_inp_dir),
         "{}/*/*-unpack_p*.img.sig".format(modl_inp_dir),
         "{}/*/*-part_p*.img.sig".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
-    # Some neted 'recovery.img' files are standard `ANDROID!` images
+    # Some nested 'recovery.img' files are standard `ANDROID!` images
     modl_filenames = [fn for fn in modl_filenames if not re.match(r'^.*ag408_1401_v[0-9a-z_.-]*_1401-extr1/recovery[.]img$', fn, re.IGNORECASE)]
     modl_filenames = [fn for fn in modl_filenames if not re.match(r'^.*ag410_1401_v[0-9a-z_.-]*_1401-extr1/recovery[.]img$', fn, re.IGNORECASE)]
     modl_filenames = [fn for fn in modl_filenames if not re.match(r'^.*ag411_0205_v[0-9a-z_.-]*_0205-extr1/recovery[.]img$', fn, re.IGNORECASE)]
+    # Some 'normal.img' files consist of several IMaH parts, so only the divided form needs to be tested
+    modl_filenames = [fn for fn in modl_filenames if not re.match(r'^.*_2601_v[0-9a-z_.-]*_2601-extr1/normal[.]img$', fn, re.IGNORECASE)]
 
     if len(modl_filenames) < 1:
         pytest.skip("no package files to test in this directory")
