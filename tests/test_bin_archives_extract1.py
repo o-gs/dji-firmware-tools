@@ -444,6 +444,9 @@ def test_bin_archives_imah_v1_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*_1301.bin".format(modl_inp_dir),
         "{}/*/*_1401.bin".format(modl_inp_dir),
         "{}/*/*_1407.bin".format(modl_inp_dir),
+        "{}/*/*_2403.bin".format(modl_inp_dir),
+        "{}/*/*_2601.bin".format(modl_inp_dir),
+        "{}/*/*_2602.bin".format(modl_inp_dir),
         "{}/*/*_2801.bin".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
@@ -452,6 +455,8 @@ def test_bin_archives_imah_v1_extract(capsys, modl_inp_dir, test_nth):
     # Simple linear uC binary, not an archive
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*ag406_1401_v[0-9a-z_.-]*[.]bin$', fn, re.IGNORECASE)]
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*rc001_1401_v[0-9a-z_.-]*[.]bin$', fn, re.IGNORECASE)]
+    # Double-encrypted FW module
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*xw607_2403_v[0-9a-z_.-]*[.]bin$', fn, re.IGNORECASE)]
 
     # Skip the packages which were extracted in encrypted form (need non-public key)
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]

@@ -170,6 +170,7 @@ def test_bin_bootimg_imah_v1_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*_0101.unpack.bin".format(modl_inp_dir),
         "{}/*/*_0801-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_1301-extr1/bootarea.img".format(modl_inp_dir),
+        "{}/*/*_2601-extr1/normal.img".format(modl_inp_dir), # the normal.img typically is a single IMaH file; except this
         "{}/*/*_2801-extr1/bootarea.img".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
