@@ -39,6 +39,7 @@ from unittest.mock import patch
 
 # Import the functions to be tested
 sys.path.insert(0, './')
+sys.path.insert(0, './ext4')
 
 
 BUFSIZE = 8*1024
@@ -169,16 +170,7 @@ def case_bin_archive_extract(modl_inp_fn):
     if not os.path.exists(modules_path1):
         os.makedirs(modules_path1)
 
-    if tarfile.is_tarfile(real_inp_fn):
-        with tarfile.open(real_inp_fn) as tarfh:
-            if type(tarfh.fileobj).__name__ == "GzipFile":
-                command = ["tar", "-zxf", real_inp_fn, "--directory={}".format(modules_path1)]
-            else:
-                command = ["tar", "-xf", real_inp_fn, "--directory={}".format(modules_path1)]
-            LOGGER.info(' '.join(command))
-            # extracting file
-            tar_extractall_overwrite(tarfh, modules_path1)
-    elif zipfile.is_zipfile(real_inp_fn):
+    if zipfile.is_zipfile(real_inp_fn):
         with zipfile.ZipFile(real_inp_fn) as zipfh:
             command = ["unzip", "-q", "-o", "-d", modules_path1,  real_inp_fn]
             LOGGER.info(' '.join(command))
@@ -203,13 +195,30 @@ def case_bin_archive_extract(modl_inp_fn):
             subprocess.run(command, cwd=modules_path1)
             assert is_android_bootimg_file(os.path.join(modules_path1, "Image-out", "boot.img"))
     elif is_ext4file(real_inp_fn):
-        from ext4.ext4_cp import main as ext4_cp_main
+        from ext4_cp import main as ext4_cp_main
         if True:
+            # The extractor we use makes a numbered copy instead of overwrite; we need to clear the old files
+            command = ["rm -Rf", "{}/*".format(modules_path1)]
+            LOGGER.info(' '.join(command))
+            for d in os.listdir(modules_path1):
+                try:
+                    shutil.rmtree(os.path.join(modules_path1, d))
+                except OSError:
+                    os.remove(os.path.join(modules_path1, d))
             command = ["./ext4/ext4_cp.py", "-R", "-n", "-v", "{:s}:.".format(real_inp_fn), modules_path1]
             LOGGER.info(' '.join(command))
             # extracting file
             with patch.object(sys, 'argv', command):
                 ext4_cp_main()
+    elif tarfile.is_tarfile(real_inp_fn): # testing for tar at the bottom, as it may give false positives
+        with tarfile.open(real_inp_fn) as tarfh:
+            if type(tarfh.fileobj).__name__ == "GzipFile":
+                command = ["tar", "-zxf", real_inp_fn, "--directory={}".format(modules_path1)]
+            else:
+                command = ["tar", "-xf", real_inp_fn, "--directory={}".format(modules_path1)]
+            LOGGER.info(' '.join(command))
+            # extracting file
+            tar_extractall_overwrite(tarfh, modules_path1)
     else:
         if not ignore_unknown_format:
             assert False, "Unrecognized archive format of the module file: {:s}".format(modl_inp_fn)
@@ -323,6 +332,8 @@ def test_bin_archives_xv4_nested_extract(capsys, modl_inp_dir, test_nth):
         # The mkbootimg `ANDROID!` images extracted by `rkunpack`
         "{}/*/*-extr1/Image-out/boot.img".format(modl_inp_dir),
         "{}/*/*-extr1/Image-out/recovery.img".format(modl_inp_dir),
+        # The partition images extracted by `rkunpack`
+        "{}/*/*-extr1/Image-out/system.img".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
     if len(modl_inp_filenames) < 1:
