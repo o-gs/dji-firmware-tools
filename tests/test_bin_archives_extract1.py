@@ -234,6 +234,7 @@ def case_bin_single_decompress(modl_inp_fn):
     import gzip
     import lzma
     import lz4.frame
+    import zlib
 
     bufsize = BUFSIZE
     ignore_unknown_format = False
@@ -263,11 +264,27 @@ def case_bin_single_decompress(modl_inp_fn):
             with open(modl_out_fn, "wb") as unpfh:
                 shutil.copyfileobj(lz4fh, unpfh)
     elif is_gzipfile(modl_inp_fn):
-        with gzip.open(modl_inp_fn, 'rb') as gzfh:
+        truncated_file = (
+            re.match(r'^.*ag408_0801_v[0-9a-z_.-]*_0801-extr1/(normal|recovery)_LRFS[.]bin$', modl_inp_fn, re.IGNORECASE) or
+            re.match(r'^.*ag408_1301_v[0-9a-z_.-]*_1301-extr1/(normal|recovery)_LRFS[.]bin$', modl_inp_fn, re.IGNORECASE) or
+            re.match(r'^.*ag410_0801_v[0-9a-z_.-]*_0801-extr1/(normal|recovery)_LRFS[.]bin$', modl_inp_fn, re.IGNORECASE) or
+            re.match(r'^.*ag410_1301_v[0-9a-z_.-]*_1301-extr1/(normal|recovery)_LRFS[.]bin$', modl_inp_fn, re.IGNORECASE) or
+            re.match(r'^.*ag410_2601_v[0-9a-z_.-]*_2601-extr1/(normal|recovery)_LRFS[.]bin$', modl_inp_fn, re.IGNORECASE) or
+            re.match(r'^.*ag411_1301_v[0-9a-z_.-]*_1301-extr1/(normal|recovery)_LRFS[.]bin$', modl_inp_fn, re.IGNORECASE)
+        )
+        if True:
             command = ["gzip", "-d", "-k", "-f", "-c",  modl_inp_fn, ">", modl_out_fn]
             LOGGER.info(' '.join(command))
-            with open(modl_out_fn, "wb") as unpfh:
-                shutil.copyfileobj(gzfh, unpfh)
+        if (truncated_file): # Extract truncated files with zlib to avoid exceptions
+            with open(modl_inp_fn, 'rb') as gzfh:
+                d = zlib.decompressobj(16+zlib.MAX_WBITS)
+                with open(modl_out_fn, "wb") as unpfh:
+                    while file_content := gzfh.read(bufsize):
+                        unpfh.write(d.decompress(file_content))
+        else:
+            with gzip.open(modl_inp_fn, 'rb') as gzfh:
+                with open(modl_out_fn, "wb") as unpfh:
+                    shutil.copyfileobj(gzfh, unpfh)
     else:
         if not ignore_unknown_format:
             assert False, "Unrecognized compression format of the module file: {:s}".format(modl_inp_fn)
@@ -316,6 +333,9 @@ def test_bin_archives_xv4_extract(capsys, modl_inp_dir, test_nth):
 @pytest.mark.fw_xv4
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/gl300e-radio_control',1,),
+    ('out/osmo_fc350z-osmo_zoom_z3_gimbal',1,),
+    ('out/osmo_action-sport_cam',1,),
+    ('out/ot110-osmo_pocket_gimbal',1,),
     ('out/zs600a-crystalsky_5_5inch',1,),
     ('out/zs600b-crystalsky_7_85in',1,),
   ] )
@@ -334,6 +354,9 @@ def test_bin_archives_xv4_nested_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*-extr1/Image-out/recovery.img".format(modl_inp_dir),
         # The partition images extracted by `rkunpack`
         "{}/*/*-extr1/Image-out/system.img".format(modl_inp_dir),
+        # The partition images extracted by `amba_fwpak`
+        "{}/*/*_m0100-split1/*_part_rfs.a9s".format(modl_inp_dir),
+        "{}/*/*_m0100-split1/*.unpack_part_04.a9s".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
     if len(modl_inp_filenames) < 1:
@@ -574,6 +597,7 @@ def test_bin_single_compressed_imah_v1_nested_extract(capsys, modl_inp_dir, test
     modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
         # the .cpio.gz archives; we extract only gz part
         "{}/*/*-extr1/*-extr1/*.img-ramdisk".format(modl_inp_dir),
+        "{}/*/*-extr1/*_LRFS.bin".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
     if len(modl_inp_filenames) < 1:
