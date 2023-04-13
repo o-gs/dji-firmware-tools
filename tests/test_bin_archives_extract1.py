@@ -115,6 +115,17 @@ def is_ext4file(inp_fn):
         return (s_magic == 0xEF53)
 
 
+def is_ubifsfile(inp_fn):
+    with open(inp_fn, 'rb') as encfh:
+        echead = encfh.read(0x40)
+        vihead_offs = int.from_bytes(echead[0x10:0x14], byteorder='big')
+        if (echead[0:4] != b'UBI#') or (vihead_offs < 0x40) or (vihead_offs > 0x8000):
+            return False;
+        encfh.seek(vihead_offs)
+        vihead = encfh.read(0x40)
+        return (vihead[0:4] == b'UBI!')
+
+
 def tar_extractall_overwrite(tarfh, path='.'):
     for f in tarfh:
         try:
@@ -194,6 +205,9 @@ def case_bin_archive_extract(modl_inp_fn):
             # extracting file level 2
             subprocess.run(command, cwd=modules_path1)
             assert is_android_bootimg_file(os.path.join(modules_path1, "Image-out", "boot.img"))
+    elif is_ubifsfile(real_inp_fn):
+        if True:
+            pass # extraction not supported atm
     elif is_ext4file(real_inp_fn):
         from ext4_cp import main as ext4_cp_main
         if True:
