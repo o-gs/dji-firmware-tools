@@ -116,7 +116,7 @@ def test_bin_sparseimg_imah_v2_solidify(capsys, modl_inp_dir, test_nth):
         pytest.skip("limited scope")
 
     img_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
-        "{}/*/*/*.new.dat".format(modl_inp_dir),
+        "{}/*/*-extr1/*.new.dat".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
     if len(img_inp_filenames) < 1:
