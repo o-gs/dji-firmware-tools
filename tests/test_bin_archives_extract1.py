@@ -126,6 +126,15 @@ def is_ubifsfile(inp_fn):
         return (vihead[0:4] == b'UBI!')
 
 
+def remove_files_only_recursive(path):
+    for d in os.listdir(path):
+        nxpath = os.path.join(path, d)
+        try:
+            os.remove(nxpath)
+        except OSError:
+            remove_files_only_recursive(nxpath)
+
+
 def tar_extractall_overwrite(tarfh, path='.'):
     for f in tarfh:
         try:
@@ -214,12 +223,8 @@ def case_bin_archive_extract(modl_inp_fn):
             # The extractor we use makes a numbered copy instead of overwrite; we need to clear the old files
             command = ["rm -Rf", "{}/*".format(modules_path1)]
             LOGGER.info(' '.join(command))
-            for d in os.listdir(modules_path1):
-                try:
-                    shutil.rmtree(os.path.join(modules_path1, d))
-                except OSError:
-                    os.remove(os.path.join(modules_path1, d))
-            command = ["./ext4/ext4_cp.py", "-R", "-n", "-v", "{:s}:.".format(real_inp_fn), modules_path1]
+            remove_files_only_recursive(modules_path1)
+            command = ["./ext4/ext4_cp.py", "-R", "-n", "--wa-fnames", "-v", "{:s}:.".format(real_inp_fn), modules_path1]
             LOGGER.info(' '.join(command))
             # extracting file
             with patch.object(sys, 'argv', command):
@@ -707,6 +712,78 @@ def test_bin_archives_imah_v2_extract(capsys, modl_inp_dir, test_nth):
 
     # Skip the packages which were extracted in encrypted form (need non-public key)
     modl_inp_filenames = [fn for fn in modl_inp_filenames if not is_module_unsigned_encrypted(fn)]
+
+    if len(modl_inp_filenames) < 1:
+        pytest.skip("no package files to test in this directory")
+
+    for modl_inp_fn in modl_inp_filenames:
+        case_bin_archive_extract(modl_inp_fn)
+        capstdout, _ = capsys.readouterr()
+    pass
+
+
+@pytest.mark.order(4) # must be run after test_bin_sparseimg_imah_v2_solidify
+@pytest.mark.fw_imah_v2
+@pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/ac103-osmo_action_2',1,),
+    ('out/ag500-agras_t10',1,),
+    ('out/ag501-agras_t30',1,),
+    ('out/ag600-agras_t40_gimbal',1,),
+    ('out/ag601-agras_t40',1,),
+    ('out/ag700-agras_t25',1,),
+    ('out/ag701-agras_t50',1,),
+    ('out/asvl001-vid_transmission',1,),
+    ('out/ch320-battery_station',1,),
+    ('out/ec174-hassel_x1d_ii_50c_cam',1,),
+    ('out/gl150-goggles_fpv_v1',1,),
+    ('out/gl170-goggles_fpv_v2',1,),
+    ('out/hg330-ronin_4d',1,),
+    ('out/lt150-caddx_vis_air_unit_lt',1,),
+    ('out/pm320-matrice30',1,),
+    ('out/pm430-matrice300',1,),
+    ('out/rc-n1-wm161b-mini_2n3_rc',1,),
+    ('out/rc-n1-wm260-mavic_pro_3',1,),
+    ('out/rc430-matrice300_rc',1,),
+    ('out/rcjs170-racer_rc',1,),
+    ('out/rcs231-mavic_air_2_rc',1,),
+    ('out/rcss170-racer_rc_motion',1,),
+    ('out/rm330-mini_rc_wth_monitor',1,),
+    ('out/wm150-fpv_system',1,),
+    ('out/wm160-mavic_mini',1,),
+    ('out/wm1605-mini_se',1,),
+    ('out/wm161-mini_2',1,),
+    ('out/wm162-mini_3',1,),
+    ('out/wm169-avata',1,),
+    ('out/wm1695-o3_air_unit',1,),
+    ('out/wm170-fpv_racer',1,),
+    ('out/wm230-mavic_air',1,),
+    ('out/wm231-mavic_air_2',1,),
+    ('out/wm232-mavic_air_2s',1,),
+    ('out/wm240-mavic_2',1,),
+    ('out/wm245-mavic_2_enterpr',1,),
+    ('out/wm246-mavic_2_enterpr_dual',1,),
+    ('out/wm247-mavic_2_enterpr_rtk',1,),
+    ('out/wm260-mavic_pro_3',1,),
+    ('out/wm2605-mavic_3_classic',1,),
+    ('out/wm265e-mavic_pro_3_enterpr',1,),
+    ('out/wm265m-mavic_pro_3_mulspectr',1,),
+    ('out/wm265t-mavic_pro_3_thermal',1,),
+    ('out/zv900-goggles_2',1,),
+  ] )
+def test_bin_archives_imah_v2_nested_extract(capsys, modl_inp_dir, test_nth):
+    """ Test if known archives are extracting correctly, and prepare data for tests which use the extracted files.
+    """
+    if test_nth < 1:
+        pytest.skip("limited scope")
+
+    modl_inp_filenames = [fn for fn in itertools.chain.from_iterable([ glob.glob(e, recursive=True) for e in (
+        # The Android ext4 filesystem partitions
+        "{}/*/*-extr1/system.img".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor.img".format(modl_inp_dir),
+      ) ]) if os.path.isfile(fn)]
+
+    # Remove modules which are in archive format
+    modl_inp_filenames = [fn for fn in modl_inp_filenames if not re.match(r'^.*TODOX_1301_v[0-9a-z_.-]*/[0-9a-z_.-]*[.]img$', fn, re.IGNORECASE)]
 
     if len(modl_inp_filenames) < 1:
         pytest.skip("no package files to test in this directory")
