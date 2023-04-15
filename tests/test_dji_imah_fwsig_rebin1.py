@@ -875,6 +875,9 @@ def test_dji_imah_fwsig_v2_nested_rebin(capsys, modl_inp_dir, test_nth):
         "{}/*/*-part_p*.img.sig".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
 
+    # Some nested 'recovery.img' files are standard `ANDROID!` images
+    modl_filenames = [fn for fn in modl_filenames if not re.match(r'^.*rc430_0205_v[0-9a-z_.-]*_0205-extr1/recovery[.]img$', fn, re.IGNORECASE)]
+
     if len(modl_filenames) < 1:
         pytest.skip("no package files to test in this directory")
 
