@@ -63,7 +63,7 @@ def is_module_unsigned_encrypted(modl_inp_fn):
         return False
 
 
-def case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn):
+def case_dji_mvfc_fwpak_rebin(capsys, cmdargs, modl_inp_fn):
     """ Test case for decryption and re-encryption of FC BIN module files.
     """
     LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
@@ -122,6 +122,8 @@ def case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn):
         # Count byte differences between repackaged file and the original
         nchanges =  filediff.diffcount(modl_inp_fn, modl_out_fn)
         assert nchanges <= expect_file_changes, "Re-created file exceeded differences ({:d}>{:d}): {:s}".format(nchanges, expect_file_changes, modl_inp_fn)
+    if cmdargs.rm_repacks:
+        os.remove(modl_out_fn)
     pass
 
 
@@ -145,7 +147,7 @@ def case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn):
     ('out/wm620-inspire_2',1,),
     #('out/xw607-robomaster_s1',1,), # not currently supported - '12345678' format
   ] )
-def test_dji_mvfc_fwpak_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
+def test_dji_mvfc_fwpak_imah_v1_rebin(capsys, cmdargs, modl_inp_dir, test_nth):
     """ Test decryption and re-encryption of FC BIN module files.
     """
     if test_nth < 1:
@@ -167,7 +169,7 @@ def test_dji_mvfc_fwpak_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
         pytest.skip("no fc module files to test in this directory")
 
     for modl_inp_fn in modl_inp_filenames:
-        case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn)
+        case_dji_mvfc_fwpak_rebin(capsys, cmdargs, modl_inp_fn)
     pass
 
 
@@ -196,7 +198,7 @@ def test_dji_mvfc_fwpak_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
     #('out/wm265m-mavic_pro_3_mulspectr',1,), # not supported - the m120[0-3] has 1st level decryption not public
     #('out/wm265t-mavic_pro_3_thermal',1,), # not supported - the m120[0-3] has 1st level decryption not public
   ] )
-def test_dji_mvfc_fwpak_imah_v2_rebin(capsys, modl_inp_dir, test_nth):
+def test_dji_mvfc_fwpak_imah_v2_rebin(capsys, cmdargs, modl_inp_dir, test_nth):
     """ Test decryption and re-encryption of FC BIN module files.
     """
     if test_nth < 1:
@@ -221,5 +223,5 @@ def test_dji_mvfc_fwpak_imah_v2_rebin(capsys, modl_inp_dir, test_nth):
         pytest.skip("no fc module files to test in this directory")
 
     for modl_inp_fn in modl_inp_filenames:
-        case_dji_mvfc_fwpak_rebin(capsys, modl_inp_fn)
+        case_dji_mvfc_fwpak_rebin(capsys, cmdargs, modl_inp_fn)
     pass
