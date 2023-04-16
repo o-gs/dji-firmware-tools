@@ -108,7 +108,7 @@ jobs:
     - name: Test IMaH v2 format - Run pyTest
       run: |
         # use --durations=0 to get execution time for all unit tests
-        pytest tests -m fw_imah_v2 --log-cli-level=INFO --durations=0
+        pytest tests -m fw_imah_v2 --log-cli-level=INFO --durations=0 --rm-repacks
 
     - name: Test IMaH v2 format - Cleanup
       run: |

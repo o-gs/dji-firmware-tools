@@ -127,7 +127,7 @@ jobs:
     - name: Test xV4 format - Run pyTest
       run: |
         # use --durations=0 to get execution time for all unit tests
-        pytest tests -m fw_xv4 --log-cli-level=INFO --durations=0
+        pytest tests -m fw_xv4 --log-cli-level=INFO --durations=0 --rm-repacks
 
     - name: Test xV4 format - Cleanup
       run: |
