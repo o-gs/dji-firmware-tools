@@ -363,9 +363,10 @@ def amba_read_mod_head(po):
     ver_info_m = re.search('(?P<major>[0-9]+)[.](?P<minor>[0-9]+)[-](?P<svn>[0-9A-Fa-f]+)', ver_info_s)
     modhead.model_name = parser.get("asection", "model_name").encode("utf-8")
     modhead.ver_info = (
-      ((int(ver_info_m.group("major") , 10) & 0xff) << 24) +
+      ((int(ver_info_m.group("major"), 10) & 0xff) << 24) +
       ((int(ver_info_m.group("minor"), 10) % 0xff) << 16) +
-      (int(ver_info_m.group("svn") , 16) % 0xffff) )
+      (int(ver_info_m.group("svn"), 16) % 0xffff)
+    )
     for i, n in enumerate(part_sizes):
         modposthd.part_size[i] = n
     del parser
@@ -395,7 +396,8 @@ def amba_extract_partition_data(po, fwmdlfile, e, i, ptyp, hdcrc):
     if (n < e.dt_len):
         raise_or_warn(po, ValueError("Partition {:d} truncated, {:d} out of {:d} bytes".format(i, n, e.dt_len)))
     if (ptcrc != e.crc32):
-        raise_or_warn(po, ValueError("Entry {:d} data checksum mismatch; got {:08X}, expected {:08X}.".format(i, ptcrc, e.crc32)))
+        raise_or_warn(po, ValueError("Entry {:d} data checksum mismatch; got {:08X}, expected {:08X}."
+          .format(i, ptcrc, e.crc32)))
     elif (po.verbose > 1):
         print("{}: Entry {:2d} data checksum {:08X} matched OK".format(po.fwmdlfile, i, ptcrc))
     return hdcrc
