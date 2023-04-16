@@ -46,7 +46,7 @@ from amba_sys2elf import main as amba_sys2elf_main
 LOGGER = logging.getLogger(__name__)
 
 
-def case_amba_sys2elf_rebin(modl_inp_fn):
+def case_amba_sys2elf_rebin(capsys, cmdargs, modl_inp_fn):
     """ Test case for ELF creation and stripping back to BIN files.
     """
     LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
@@ -89,6 +89,8 @@ def case_amba_sys2elf_rebin(modl_inp_fn):
         assert modl_out_fsize <= int(modl_inp_fsize * 1.05), "Re-stripped file too large: {:s}".format(modl_inp_fn)
     else:
         assert 0, "Not implemented"
+    if cmdargs.rm_repacks:
+        os.remove(modl_out_fn)
     pass
 
 @pytest.mark.order(4) # must be run after test_amba_fwpak_rebin
@@ -108,7 +110,7 @@ def case_amba_sys2elf_rebin(modl_inp_fn):
     ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',1,),
     ('out/wm610-t600_inspire_1_x3_quadcopter',1,),
   ] )
-def test_amba_sys2elf_rebin(capsys, modl_inp_dir, test_nth):
+def test_amba_sys2elf_rebin(capsys, cmdargs, modl_inp_dir, test_nth):
     """ Test for ELF creation and stripping back to BIN files.
     """
     if test_nth < 1:
@@ -122,6 +124,6 @@ def test_amba_sys2elf_rebin(capsys, modl_inp_dir, test_nth):
         pytest.skip("no files to test in this directory")
 
     for modl_inp_fn in modl_inp_filenames[::test_nth]:
-        case_amba_sys2elf_rebin(modl_inp_fn)
+        case_amba_sys2elf_rebin(capsys, cmdargs, modl_inp_fn)
         capstdout, _ = capsys.readouterr()
     pass
