@@ -298,7 +298,7 @@ def get_params_for_arm_bin2elf(modl_inp_fn):
     return file_specific_cmdargs, expect_file_changes, platform
 
 
-def case_arm_bin2elf_rebin(modl_inp_fn):
+def case_arm_bin2elf_rebin(capsys, cmdargs, modl_inp_fn):
     """ Test case for ELF creation and stripping back to BIN files.
     """
     LOGGER.info("Testcase file: {:s}".format(modl_inp_fn))
@@ -339,6 +339,8 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
         assert modl_out_fsize <= int(modl_inp_fsize * 1.05), "Re-stripped file too large: {:s}".format(modl_inp_fn)
     else:
         assert 0, "Not implemented"
+    if cmdargs.rm_repacks:
+        os.remove(modl_out_fn)
     pass
 
 
@@ -380,7 +382,7 @@ def case_arm_bin2elf_rebin(modl_inp_fn):
     ('out/wm610_fc550-t600_inspire_1_pro_x5_quadcopter',1,),
     ('out/zt300-datalink_pro',1,),
   ] )
-def test_arm_bin2elf_xv4_rebin(capsys, modl_inp_dir, test_nth):
+def test_arm_bin2elf_xv4_rebin(capsys, cmdargs, modl_inp_dir, test_nth):
     """ Test for ELF creation and stripping back to BIN files.
     """
     if test_nth < 1:
@@ -397,7 +399,7 @@ def test_arm_bin2elf_xv4_rebin(capsys, modl_inp_dir, test_nth):
         pytest.skip("no files to test in this directory")
 
     for modl_inp_fn in modl_inp_filenames[::test_nth]:
-        case_arm_bin2elf_rebin(modl_inp_fn)
+        case_arm_bin2elf_rebin(capsys, cmdargs, modl_inp_fn)
         capstdout, _ = capsys.readouterr()
     pass
 
@@ -423,7 +425,7 @@ def test_arm_bin2elf_xv4_rebin(capsys, modl_inp_dir, test_nth):
     ('out/wm336-phantom_4_mulspectral',1,),
     ('out/wm620-inspire_2',1,),
   ] )
-def test_arm_bin2elf_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
+def test_arm_bin2elf_imah_v1_rebin(capsys, cmdargs, modl_inp_dir, test_nth):
     """ Test for ELF creation and stripping back to BIN files.
     """
     if test_nth < 1:
@@ -444,7 +446,7 @@ def test_arm_bin2elf_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
         pytest.skip("no files to test in this directory")
 
     for modl_inp_fn in modl_inp_filenames[::test_nth]:
-        case_arm_bin2elf_rebin(modl_inp_fn)
+        case_arm_bin2elf_rebin(capsys, cmdargs, modl_inp_fn)
         capstdout, _ = capsys.readouterr()
     pass
 
@@ -456,7 +458,7 @@ def test_arm_bin2elf_imah_v1_rebin(capsys, modl_inp_dir, test_nth):
     ('out/wm160-mavic_mini',1,),
     ('out/wm161-mini_2',1,),
   ] )
-def test_arm_bin2elf_imah_v2_rebin(capsys, modl_inp_dir, test_nth):
+def test_arm_bin2elf_imah_v2_rebin(capsys, cmdargs, modl_inp_dir, test_nth):
     """ Test for ELF creation and stripping back to BIN files.
     """
     if test_nth < 1:
@@ -470,6 +472,6 @@ def test_arm_bin2elf_imah_v2_rebin(capsys, modl_inp_dir, test_nth):
         pytest.skip("no files to test in this directory")
 
     for modl_inp_fn in modl_inp_filenames[::test_nth]:
-        case_arm_bin2elf_rebin(modl_inp_fn)
+        case_arm_bin2elf_rebin(capsys, cmdargs, modl_inp_fn)
         capstdout, _ = capsys.readouterr()
     pass
