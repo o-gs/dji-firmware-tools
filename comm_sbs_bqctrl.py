@@ -2523,7 +2523,6 @@ def smbus_write_by_writing_word_subcmd_first(bus, dev_addr, cmd, subcmd, subcmdi
             raise ValueError("Cannot apply scaling to non-numeric value of {}.{} command"
               .format(cmd.name,subcmd.name))
 
-
     if (stor_type.startswith("byte[") or stor_type.startswith("string") or
       stor_type.endswith("_blk") or stor_type in ("void",)):
         smbus_write_block_val_by_writing_word_subcmd_first(bus, dev_addr,
@@ -2595,7 +2594,6 @@ def smbus_write_macblk_with_block_subcmd_first(bus, dev_addr, cmd, subcmd, subcm
         else:
             raise ValueError("Cannot apply scaling to non-numeric value of {}.{} command"
               .format(cmd.name,subcmd.name))
-
 
     if (stor_type.startswith("byte[") or stor_type.startswith("string") or
       stor_type.endswith("_blk") or stor_type in ("void",)):
@@ -3493,10 +3491,8 @@ def main():
               .format(version=__version__, author=__author__),
             help="display version information and exit")
 
-
     subparsers = parser.add_subparsers(dest='action', metavar='action',
             help="action to take")
-
 
     subpar_info = subparsers.add_parser('info',
             help=("displays information about specific command; when chip "
@@ -3508,12 +3504,10 @@ def main():
             help=("the command/offset name to show info about; "
               "use 'info-list' action to see supported commands"))
 
-
     subpar_info_list = subparsers.add_parser('info-list',
             help=("lists all commands on which 'info' action can be used; "
               "the list changes with selected chip type; when chip auto-detect "
               "is disabled, this action can be performed without connection"))
-
 
     subpar_read = subparsers.add_parser('read',
             help="read value from a single command/offset of the battery")
@@ -3522,12 +3516,10 @@ def main():
             help=("the command/offset name to read from; "
               "use 'read-list' action to see supported commands"))
 
-
     subpar_read_list = subparsers.add_parser('read-list',
             help=("lists all commands on which 'read' action can be used; "
               "the list changes with selected chip type; when chip auto-detect "
               "is disabled, this action can be performed without connection"))
-
 
     subpar_trigger = subparsers.add_parser('trigger',
             help="write to a trigger, command/offset of the battery which acts as a switch")
@@ -3536,12 +3528,10 @@ def main():
             help=("the command/offset name to trigger; "
               "use 'trigger-list' action to see supported commands"))
 
-
     subpar_trigger_list = subparsers.add_parser('trigger-list',
             help=("lists all commands on which 'trigger' action can be used; "
               "the list changes with selected chip type; when chip auto-detect "
               "is disabled, this action can be performed without connection"))
-
 
     subpar_write = subparsers.add_parser('write',
             help="write value to a single command/offset of the battery")
@@ -3553,12 +3543,10 @@ def main():
     subpar_write.add_argument('newvalue', metavar='value', type=str,
             help="new value to write to the command/offset")
 
-
     subpar_write_list = subparsers.add_parser('write-list',
             help=("lists all commands on which 'write' action can be used; "
               "the list changes with selected chip type; when chip auto-detect "
               "is disabled, this action can be performed without connection"))
-
 
     subpar_raw_read = subparsers.add_parser('raw-read',
             help="read raw value from an address space of the battery")
@@ -3579,7 +3567,6 @@ def main():
               "the list changes with selected chip type; when chip auto-detect "
               "is disabled, this action can be performed without connection"))
 
-
     subpar_raw_write = subparsers.add_parser('raw-write',
             help="write raw value into an address space of the battery")
 
@@ -3596,12 +3583,10 @@ def main():
     subpar_raw_write.add_argument('newvalue', metavar='value', type=str,
             help="new value to write at the address")
 
-
     subpar_raw_write_list = subparsers.add_parser('raw-write-list',
             help=("lists all address spaces on which 'raw-write' action can be used; "
               "the list changes with selected chip type; when chip auto-detect "
               "is disabled, this action can be performed without connection"))
-
 
     subpar_raw_backup = subparsers.add_parser('raw-backup',
             help="read whole raw address space and store it in a file")
@@ -3613,7 +3598,6 @@ def main():
     subpar_raw_backup.add_argument('fname', metavar='filename', type=str,
             help="name of the file to write to")
 
-
     subpar_raw_restore = subparsers.add_parser('raw-restore',
             help="write whole raw address space using values from a file")
 
@@ -3624,7 +3608,6 @@ def main():
     subpar_raw_restore.add_argument('fname', metavar='filename', type=str,
             help="name of the file to read from")
 
-
     subpar_monitor = subparsers.add_parser('monitor',
             help=("monitor value of a group of commands/offsets; "
               "just reads all of the values from a group"))
@@ -3632,7 +3615,6 @@ def main():
     subpar_monitor.add_argument('cmdgroup', metavar='group',
             choices=[i.name for i in MONITOR_GROUP], type=parse_monitor_group,
             help="group of commands/offsets; one of: {:s}".format(', '.join(i.name for i in MONITOR_GROUP)))
-
 
     subpar_sealing = subparsers.add_parser('sealing',
             help="change sealing state of BQ chip")
