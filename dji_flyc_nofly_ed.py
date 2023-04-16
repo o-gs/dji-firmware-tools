@@ -46,14 +46,16 @@ class NoFlyStorage:
 
 class FlycNoFlyZone(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('latitude', c_int), # angular value * 1000000
-              ('longitude', c_int),
-              ('radius', c_ushort),
-              ('country_code', c_ushort),
-              ('class_id', c_ubyte),
-              ('area_id', c_ushort),
-              ('begin_at', c_ubyte),
-              ('end_at', c_ubyte)]
+  _fields_ = [
+        ('latitude', c_int),  # angular value * 1000000
+        ('longitude', c_int),
+        ('radius', c_ushort),
+        ('country_code', c_ushort),
+        ('class_id', c_ubyte),
+        ('area_id', c_ushort),
+        ('begin_at', c_ubyte),
+        ('end_at', c_ubyte),
+  ]
 
   def dict_export(self):
       d = dict()
@@ -69,8 +71,10 @@ class FlycNoFlyZone(LittleEndianStructure):
 
 class FlycNoFlyCoords(LittleEndianStructure):
   _pack_ = 1
-  _fields_ = [('latitude', c_int),
-              ('longitude', c_int)]
+  _fields_ = [
+        ('latitude', c_int),
+        ('longitude', c_int),
+  ]
 
 
 def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
@@ -111,16 +115,19 @@ def flyc_nofly_is_proper_cord_entry(po, fwmdlfile, fwmdlfile_len, enfcord, func_
     if (enfcord.latitude >= -8000000) and (enfcord.latitude <= 4700000):
         if (enfcord.longitude >= -6700000) and (enfcord.longitude <= 5500000):
             if (po.verbose > 2):
-                print("Rejected at {:06x} on low coord ocean check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
+                print("Rejected at {:06x} on low coord ocean check ({:.6f},{:.6f})"
+                  .format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
             return False
     # Check if coords are within valid angular range
     if (enfcord.latitude < -90000000) or (enfcord.latitude > 90000000):
         if (po.verbose > 2):
-            print("Rejected at {:06x} on latitude coord limit check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
+            print("Rejected at {:06x} on latitude coord limit check ({:.6f},{:.6f})"
+              .format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
         return False
     if (enfcord.longitude < -180000000) or (enfcord.longitude > 180000000):
         if (po.verbose > 2):
-            print("Rejected at {:06x} on longitude coord limit check ({:.6f},{:.6f})".format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
+            print("Rejected at {:06x} on longitude coord limit check ({:.6f},{:.6f})"
+              .format(entry_pos,enfcord.latitude/1000000.0,enfcord.longitude/1000000.0))
         return False
     return True
 
@@ -164,7 +171,7 @@ def flyc_nofly_zone_pos_search(po, fwmdlfile, start_pos, func_align, data_align,
         if entry_count >= min_match_accepted:
             pos += entry_count * sizeof(enfzone)
         else:
-            pos += data_align - (pos%data_align)
+            pos += data_align - (pos % data_align)
     if (match_count > 1):
         eprint("{}: Warning: multiple ({:d}) matches found for fly zones array with alignment 0x{:02x}"
           .format(po.mdlfile, match_count, data_align))
@@ -215,7 +222,7 @@ def flyc_nofly_cord_pos_search(po, fwmdlfile, start_pos, func_align, data_align,
         if entry_count >= min_match_accepted:
             pos += entry_count * sizeof(enfcord)
         else:
-            pos += data_align - (pos%data_align)
+            pos += data_align - (pos % data_align)
     if (match_count > 1):
         eprint("{}: Warning: multiple ({:d}) matches found for fly coords array with alignment 0x{:02x}"
           .format(po.mdlfile, match_count, data_align))
@@ -229,7 +236,8 @@ def flyc_nofly_zone_template(po):
     # Set 'level' at 2; definition is: WARNING(0), CAN_UNLIMIT(1), CAN_NOT_UNLIMIT(2, 4), STRONG_WARNING(3)
     parprop = {'area_id':60000,'type':0,'shape':0,'lat':90.0,'lng':0.0,'radius':30,
         'warning':0,'level':2,'disable':0,'updated_at':1447945800,'begin_at':0,'end_at':0,
-        'name':"",'country':0,'city':"",'storage':NoFlyStorage.none,'points':None}
+        'name':"",'country':0,'city':"",'storage':NoFlyStorage.none,'points':None,
+    }
     return parprop
 
 
@@ -238,7 +246,7 @@ def flyc_nofly_zone_get(po, fwmdlfile, index):
   """
   parprop = flyc_nofly_zone_template(po)
   enfzone = FlycNoFlyZone()
-  fwmdlfile.seek(po.nfzone_pos+sizeof(enfzone)*index, os.SEEK_SET)
+  fwmdlfile.seek(po.nfzone_pos + sizeof(enfzone) * index, os.SEEK_SET)
   if fwmdlfile.readinto(enfzone) != sizeof(enfzone):
       raise EOFError("Cannot read nfzone entry.")
   parprop['area_id'] = enfzone.area_id
