@@ -713,7 +713,7 @@ def test_dji_flyc_param_ed_imah_v1_ckmod(capsys, modl_inp_dir, test_nth):
     pass
 
 
-@pytest.mark.order(5) # must be run after test_dji_mvfc_fwpak_imah_v2_rebin and test_dji_imah_fwsig_v2_nested_rebin
+@pytest.mark.order(6) # must be run after test_dji_mvfc_fwpak_imah_v2_rebin and test_dji_imah_fwsig_v2_nested_rebin
 @pytest.mark.fw_imah_v2
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
     ('out/ag500-agras_t10',1,),
