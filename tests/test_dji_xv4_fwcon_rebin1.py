@@ -43,7 +43,7 @@ from dji_xv4_fwcon import main as dji_xv4_fwcon_main
 LOGGER = logging.getLogger(__name__)
 
 
-def case_dji_xv4_fwcon_rebin(pkg_inp_fn):
+def case_dji_xv4_fwcon_rebin(capsys, cmdargs, pkg_inp_fn):
     """ Test case for extraction and re-creation of BIN package files.
     """
     LOGGER.info("Testcase file: {:s}".format(pkg_inp_fn))
@@ -92,6 +92,8 @@ def case_dji_xv4_fwcon_rebin(pkg_inp_fn):
         # Count byte differences between repackaged file and the original
         nchanges =  filediff.diffcount(pkg_inp_fn, pkg_out_fn)
         assert nchanges <= expect_file_changes, "Re-created file exceeded differences ({:d}>{:d}): {:s}".format(nchanges, expect_file_changes, pkg_inp_fn)
+    if cmdargs.rm_repacks:
+        os.remove(pkg_out_fn)
     pass
 
 
@@ -136,7 +138,7 @@ def case_dji_xv4_fwcon_rebin(pkg_inp_fn):
     ('fw_packages/zs600b-crystalsky_7_85in',1,),
     ('fw_packages/zt300-datalink_pro',1,),
   ] )
-def test_dji_xv4_fwcon_rebin(capsys, pkg_inp_dir, test_nth):
+def test_dji_xv4_fwcon_rebin(capsys, cmdargs, pkg_inp_dir, test_nth):
     """ Test extraction and re-creation of BIN package files.
     """
     if test_nth < 1:
@@ -150,6 +152,6 @@ def test_dji_xv4_fwcon_rebin(capsys, pkg_inp_dir, test_nth):
         pytest.skip("no files to test in this directory")
 
     for pkg_inp_fn in pkg_inp_filenames[::test_nth]:
-        case_dji_xv4_fwcon_rebin(pkg_inp_fn)
+        case_dji_xv4_fwcon_rebin(capsys, cmdargs, pkg_inp_fn)
         capstdout, _ = capsys.readouterr()
     pass
