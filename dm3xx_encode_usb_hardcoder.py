@@ -61,13 +61,8 @@ import argparse
 import os
 import re
 import io
-import collections.abc
-import itertools
 import enum
 import json
-
-from ctypes import c_char, c_int, c_ubyte, c_ushort, c_uint, c_ulonglong, c_float
-from ctypes import memmove, addressof, sizeof, Array, LittleEndianStructure
 
 sys.path.insert(0, './')
 from amba_sys_hardcoder import eprint, elf_march_to_asm_config, \
@@ -456,7 +451,8 @@ def armfw_elf_dm3xxvals_list(po, elffh):
 
 
 def armfw_elf_dm3xxvals_mapfile(po, elffh):
-    _, params_list, elf_sections, _, _, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'arm')
+    _, params_list, elf_sections, _, _, asm_arch = \
+      armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'arm')
     armfw_elf_paramvals_export_mapfile(po, params_list, elf_sections, asm_arch, sys.stdout)
 
 
@@ -477,7 +473,8 @@ def armfw_elf_dm3xxvals_extract(po, elffh):
 def armfw_elf_dm3xxvals_update(po, elffh):
     """ Updates all hardcoded values in firmware from JSON format text file.
     """
-    pub_params_list, glob_params_list, elf_sections, cs, elfobj, asm_arch = armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'arm')
+    pub_params_list, glob_params_list, elf_sections, cs, elfobj, asm_arch = \
+      armfw_elf_paramvals_extract_list(po, elffh, re_general_list, 'arm')
     if len(pub_params_list) <= 0:
         raise ValueError("No known values found in ELF file.")
     with open(po.valfile) as valfile:
@@ -487,7 +484,8 @@ def armfw_elf_dm3xxvals_update(po, elffh):
         section['data'] = bytearray(section['data'])
     update_count = armfw_elf_paramvals_update_list(po, asm_arch, re_general_list, pub_params_list, glob_params_list, elf_sections, nxparams_list)
     if (po.verbose > 0):
-        print("{:s}: Updated {:d} out of {:d} hardcoded values".format(po.elffile,update_count,len(pub_params_list)))
+        print("{:s}: Updated {:d} out of {:d} hardcoded values"
+          .format(po.elffile,update_count,len(pub_params_list)))
     # Now update the ELF file
     for section_name, section in elf_sections.items():
         elfsect = elfobj.get_section_by_name(section_name)
