@@ -471,239 +471,241 @@ def dji_read_fwentry_head(po, i, miname):
     return (hde)
 
 def dji_extract(po, fwpkgfile):
-  pkghead = FwPkgHeader()
-  if fwpkgfile.readinto(pkghead) != sizeof(pkghead):
-      raise EOFError("Couldn't read firmware package file header.")
-  pkgformat = pkghead.get_format_version()
-  if pkgformat == 0:
-      if (not po.force_continue):
-          eprint("{}: Error: Unexpected magic value in main header; input file is not a firmware package.".format(po.fwpkg))
-          exit(1)
-      eprint("{}: Warning: Unexpected magic value in main header; will try to extract anyway.".format(po.fwpkg))
-  if (po.verbose > 1):
-      print("{}: Package format version {:d} detected".format(po.fwpkg,pkgformat))
-  if (pkghead.ver_latest_enc == 0 and pkghead.ver_rollbk_enc == 0):
-      eprint("{}: Warning: Unversioned firmware package identified; this format is not fully supported.".format(po.fwpkg))
-      # In this format, versions should be set from file name, and CRC16 of the header should be equal to values hard-coded in updater
-  if (po.verbose > 1):
-      print("{}: Header:".format(po.fwpkg))
-      print(pkghead)
-  curhead_checksum = dji_calculate_crc16_part((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead), 0x3692)
+    pkghead = FwPkgHeader()
+    if fwpkgfile.readinto(pkghead) != sizeof(pkghead):
+        raise EOFError("Could not read firmware package file header.")
+    pkgformat = pkghead.get_format_version()
+    if pkgformat == 0:
+        if (not po.force_continue):
+            eprint("{}: Error: Unexpected magic value in main header; input file is not a firmware package.".format(po.fwpkg))
+            exit(1)
+        eprint("{}: Warning: Unexpected magic value in main header; will try to extract anyway.".format(po.fwpkg))
+    if (po.verbose > 1):
+        print("{}: Package format version {:d} detected".format(po.fwpkg,pkgformat))
+    if (pkghead.ver_latest_enc == 0 and pkghead.ver_rollbk_enc == 0):
+        eprint("{}: Warning: Unversioned firmware package identified; this format is not fully supported.".format(po.fwpkg))
+        # In this format, versions should be set from file name, and CRC16 of the header should be equal to values hard-coded in updater
+    if (po.verbose > 1):
+        print("{}: Header:".format(po.fwpkg))
+        print(pkghead)
+    curhead_checksum = dji_calculate_crc16_part((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead), 0x3692)
 
-  pkgmodules = []
-  for i in range(pkghead.entry_count):
-      hde = FwPkgEntry()
-      if fwpkgfile.readinto(hde) != sizeof(hde):
-          raise EOFError("Couldn't read firmware package file entry.")
-      if (po.verbose > 1):
-          print("{}: Module index {:d}".format(po.fwpkg,i))
-          print(hde)
-      curhead_checksum = dji_calculate_crc16_part((c_ubyte * sizeof(hde)).from_buffer_copy(hde), curhead_checksum)
-      if hde.stored_len != hde.decrypted_len:
-          eprint("{}: Warning: decrypted size differs from stored one, {:d} instead of {:d}; this is not supported."
-            .format(po.fwpkg,hde.decrypted_len,hde.stored_len))
-      chksum_enctype = hde.get_encrypt_type()
-      if (chksum_enctype != 0):
-          if (po.no_crypto):
-              hde.preencrypted = 1
-          elif (chksum_enctype == 1):
-              encrypt_key = encrypt_aes128_key
-              encrypt_iv  = encrypt_aes128_iv
-          else:
-              # Since we cannot decode the encryption, mark the entry as pre-encrypted to extract in encrypted form
-              eprint("{}: Warning: Unknown encryption {:d} in module {:d}, extracting encrypted.".format(po.fwpkg,chksum_enctype,i))
-              hde.preencrypted = 1
-      pkgmodules.append(hde)
+    pkgmodules = []
+    for i in range(pkghead.entry_count):
+        hde = FwPkgEntry()
+        if fwpkgfile.readinto(hde) != sizeof(hde):
+            raise EOFError("Couldn't read firmware package file entry.")
+        if (po.verbose > 1):
+            print("{}: Module index {:d}".format(po.fwpkg,i))
+            print(hde)
+        curhead_checksum = dji_calculate_crc16_part((c_ubyte * sizeof(hde)).from_buffer_copy(hde), curhead_checksum)
+        if hde.stored_len != hde.decrypted_len:
+            eprint("{}: Warning: decrypted size differs from stored one, {:d} instead of {:d}; this is not supported."
+              .format(po.fwpkg,hde.decrypted_len,hde.stored_len))
+        chksum_enctype = hde.get_encrypt_type()
+        if (chksum_enctype != 0):
+            if (po.no_crypto):
+                hde.preencrypted = 1
+            elif (chksum_enctype == 1):
+                encrypt_key = encrypt_aes128_key
+                encrypt_iv  = encrypt_aes128_iv
+            else:
+                # Since we cannot decode the encryption, mark the entry as pre-encrypted to extract in encrypted form
+                eprint("{}: Warning: Unknown encryption {:d} in module {:d}, extracting encrypted."
+                  .format(po.fwpkg,chksum_enctype,i))
+                hde.preencrypted = 1
+        pkgmodules.append(hde)
 
-  pkghead_checksum = c_ushort()
-  if fwpkgfile.readinto(pkghead_checksum) != sizeof(pkghead_checksum):
-      raise EOFError("Couldn't read firmware package file header checksum.")
+    pkghead_checksum = c_ushort()
+    if fwpkgfile.readinto(pkghead_checksum) != sizeof(pkghead_checksum):
+        raise EOFError("Couldn't read firmware package file header checksum.")
 
-  if curhead_checksum != pkghead_checksum.value:
-      eprint("{}: Warning: Firmware package file header checksum did not match; should be {:04X}, found {:04X}."
-        .format(po.fwpkg, pkghead_checksum.value, curhead_checksum))
-  elif (po.verbose > 1):
-      print("{}: Headers checksum {:04X} matches.".format(po.fwpkg,pkghead_checksum.value))
+    if curhead_checksum != pkghead_checksum.value:
+        eprint("{}: Warning: Firmware package file header checksum did not match; should be {:04X}, found {:04X}."
+          .format(po.fwpkg, pkghead_checksum.value, curhead_checksum))
+    elif (po.verbose > 1):
+        print("{}: Headers checksum {:04X} matches.".format(po.fwpkg,pkghead_checksum.value))
 
-  if fwpkgfile.tell() != pkghead.hdrend_offs:
-      eprint("{}: Warning: Header end offset does not match; should end at {}, ends at {}."
-        .format(po.fwpkg,pkghead.hdrend_offs,fwpkgfile.tell()))
+    if fwpkgfile.tell() != pkghead.hdrend_offs:
+        eprint("{}: Warning: Header end offset does not match; should end at {}, ends at {}."
+          .format(po.fwpkg,pkghead.hdrend_offs,fwpkgfile.tell()))
 
-  # Prepare array of names; "0" will mean empty index
-  minames = ["0"]*len(pkgmodules)
-  # Name the modules after target component
-  for i, hde in enumerate(pkgmodules):
-      if hde.stored_len > 0:
-          d = hde.dict_export()
-          minames[i] = "{:s}".format(d['target'])
-  # Rename targets in case of duplicates
-  minames_seen = set()
-  for i in range(len(minames)):
-      miname = minames[i]
-      if miname in minames_seen:
-          # Add suffix a..z to multiple uses of the same module
-          for miname_suffix in range(97,110):
-              if miname+chr(miname_suffix) not in minames_seen:
-                  break
-          # Show warning the first time duplicate is found
-          if (miname_suffix == 97):
-              eprint("{}: Warning: Found multiple modules {:s}; invalid firmware.".format(po.fwpkg,miname))
-          minames[i] = miname+chr(miname_suffix)
-      minames_seen.add(minames[i])
-  minames_seen = None
+    # Prepare array of names; "0" will mean empty index
+    minames = ["0"]*len(pkgmodules)
+    # Name the modules after target component
+    for i, hde in enumerate(pkgmodules):
+        if hde.stored_len > 0:
+            d = hde.dict_export()
+            minames[i] = "{:s}".format(d['target'])
+    # Rename targets in case of duplicates
+    minames_seen = set()
+    for i in range(len(minames)):
+        miname = minames[i]
+        if miname in minames_seen:
+            # Add suffix a..z to multiple uses of the same module
+            for miname_suffix in range(97,110):
+                if miname+chr(miname_suffix) not in minames_seen:
+                    break
+            # Show warning the first time duplicate is found
+            if (miname_suffix == 97):
+                eprint("{}: Warning: Found multiple modules {:s}; invalid firmware.".format(po.fwpkg,miname))
+            minames[i] = miname+chr(miname_suffix)
+        minames_seen.add(minames[i])
+    minames_seen = None
 
-  dji_write_fwpkg_head(po, pkghead, minames)
+    dji_write_fwpkg_head(po, pkghead, minames)
 
-  for i, hde in enumerate(pkgmodules):
-      if minames[i] == "0":
-          if (po.verbose > 0):
-              print("{}: Skipping module index {}, {} bytes".format(po.fwpkg,i,hde.stored_len))
-          continue
-      if (po.verbose > 0):
-          print("{}: Extracting module index {}, {} bytes".format(po.fwpkg,i,hde.stored_len))
-      chksum_enctype = hde.get_encrypt_type()
-      stored_chksum = hashlib.md5()
-      decrypted_chksum = hashlib.md5()
-      dji_write_fwentry_head(po, i, hde, minames[i])
-      fwitmfile = open("{:s}_{:s}.bin".format(po.mdprefix,minames[i]), "wb")
-      fwpkgfile.seek(hde.dt_offs)
-      stored_n = 0
-      decrypted_n = 0
-      while stored_n < hde.stored_len:
-          # read block limit must be a multiplication of encryption block size
-          copy_buffer = fwpkgfile.read(min(1024 * 1024, hde.stored_len - stored_n))
-          if not copy_buffer:
-              break
-          stored_n += len(copy_buffer)
-          stored_chksum.update(copy_buffer)
-          if (chksum_enctype != 0) and (not hde.preencrypted):
-              copy_buffer, encrypt_iv = dji_decrypt_block(copy_buffer, encrypt_key, encrypt_iv)
-          fwitmfile.write(copy_buffer)
-          decrypted_n += len(copy_buffer)
-          decrypted_chksum.update(copy_buffer)
-      fwitmfile.close()
-      if (stored_chksum.hexdigest() != hde.hex_stored_md5()):
-          eprint("{}: Warning: Module index {:d} stored checksum mismatch; got {:s}, expected {:s}."
-            .format(po.fwpkg,i,stored_chksum.hexdigest(),hde.hex_stored_md5()))
-      if (not hde.preencrypted) and (decrypted_chksum.hexdigest() != hde.hex_decrypted_md5()):
-          eprint("{}: Warning: Module index {:d} decrypted checksum mismatch; got {:s}, expected {:s}."
-            .format(po.fwpkg,i,decrypted_chksum.hexdigest(),hde.hex_decrypted_md5()))
-          eprint("{}: Module index {:d} may be damaged due to bad decryption; use no-crypto option to leave it as-is."
-            .format(po.fwpkg,i))
-      if (not hde.preencrypted) and (decrypted_n != hde.decrypted_len):
-          eprint("{}: Warning: decrypted size mismatch, {:d} instead of {:d}."
-            .format(po.fwpkg,decrypted_n,hde.decrypted_len))
-      if (po.verbose > 1):
-          print("{}: Module index {:d} stored checksum {:s}".format(po.fwpkg,i,stored_chksum.hexdigest()))
+    for i, hde in enumerate(pkgmodules):
+        if minames[i] == "0":
+            if (po.verbose > 0):
+                print("{}: Skipping module index {}, {} bytes".format(po.fwpkg,i,hde.stored_len))
+            continue
+        if (po.verbose > 0):
+            print("{}: Extracting module index {}, {} bytes".format(po.fwpkg,i,hde.stored_len))
+        chksum_enctype = hde.get_encrypt_type()
+        stored_chksum = hashlib.md5()
+        decrypted_chksum = hashlib.md5()
+        dji_write_fwentry_head(po, i, hde, minames[i])
+        fwitmfile = open("{:s}_{:s}.bin".format(po.mdprefix,minames[i]), "wb")
+        fwpkgfile.seek(hde.dt_offs)
+        stored_n = 0
+        decrypted_n = 0
+        while stored_n < hde.stored_len:
+            # read block limit must be a multiplication of encryption block size
+            copy_buffer = fwpkgfile.read(min(1024 * 1024, hde.stored_len - stored_n))
+            if not copy_buffer:
+                break
+            stored_n += len(copy_buffer)
+            stored_chksum.update(copy_buffer)
+            if (chksum_enctype != 0) and (not hde.preencrypted):
+                copy_buffer, encrypt_iv = dji_decrypt_block(copy_buffer, encrypt_key, encrypt_iv)
+            fwitmfile.write(copy_buffer)
+            decrypted_n += len(copy_buffer)
+            decrypted_chksum.update(copy_buffer)
+        fwitmfile.close()
+        if (stored_chksum.hexdigest() != hde.hex_stored_md5()):
+            eprint("{}: Warning: Module index {:d} stored checksum mismatch; got {:s}, expected {:s}."
+              .format(po.fwpkg,i,stored_chksum.hexdigest(),hde.hex_stored_md5()))
+        if (not hde.preencrypted) and (decrypted_chksum.hexdigest() != hde.hex_decrypted_md5()):
+            eprint("{}: Warning: Module index {:d} decrypted checksum mismatch; got {:s}, expected {:s}."
+              .format(po.fwpkg,i,decrypted_chksum.hexdigest(),hde.hex_decrypted_md5()))
+            eprint("{}: Module index {:d} may be damaged due to bad decryption; use no-crypto option to leave it as-is."
+              .format(po.fwpkg,i))
+        if (not hde.preencrypted) and (decrypted_n != hde.decrypted_len):
+            eprint("{}: Warning: decrypted size mismatch, {:d} instead of {:d}."
+              .format(po.fwpkg,decrypted_n,hde.decrypted_len))
+        if (po.verbose > 1):
+            print("{}: Module index {:d} stored checksum {:s}".format(po.fwpkg,i,stored_chksum.hexdigest()))
+    return
 
 
 def dji_create(po, fwpkgfile):
-  # Read headers from INI files
-  (pkghead, minames) = dji_read_fwpkg_head(po)
-  pkgmodules = []
-  # Create module entry for each partition
-  for i, miname in enumerate(minames):
-      if miname == "0":
-          hde = FwPkgEntry()
-      else:
-          hde = dji_read_fwentry_head(po, i, miname)
-      pkgmodules.append(hde)
-  # Write the unfinished headers
-  if (po.verbose > 2):
-      print("{}: File map: 0x{:08x} FwPkgHeader".format(po.fwpkg,fwpkgfile.tell()))
-  fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
-  for hde in pkgmodules:
-      if (po.verbose > 2):
-          print("{}: File map: 0x{:08x} FwPkgEntry[m{:02d}{:02d}]".format(po.fwpkg,
-            fwpkgfile.tell(), getattr(hde, 'target') & 31, (getattr(hde, 'target') >> 5) & 7))
-      fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
-  fwpkgfile.write((c_ubyte * sizeof(c_ushort))())
-  # Write module data
-  for i, miname in enumerate(minames):
-      hde = pkgmodules[i]
-      if miname == "0":
-          if (po.verbose > 0):
-              print("{}: Empty module index {:d}".format(po.fwpkg,i))
-          continue
-      if (po.verbose > 0):
-          print("{}: Copying module index {:d}".format(po.fwpkg,i))
-      fname = "{:s}_{:s}.bin".format(po.mdprefix,miname)
-      # Skip unused pkgmodules
-      if (os.stat(fname).st_size < 1):
-          eprint("{}: Warning: module index {:d} empty".format(po.fwpkg,i))
-          continue
-      chksum_enctype = hde.get_encrypt_type()
-      epos = fwpkgfile.tell()
-      # Check for data encryption
-      if (chksum_enctype != 0) and (not hde.preencrypted):
-          if (po.no_crypto):
-              if (not po.force_continue):
-                  eprint("{}: Error: Module {:d} needs encryption {:d}, but crypto is disabled."
-                    .format(po.fwpkg,chksum_enctype,i))
-                  exit(1)
-              eprint("{}: Warning: Module {:d} needs encryption {:d}, but crypto is disabled; switching to unencrypted."
-                .format(po.fwpkg,chksum_enctype,i))
-              hde.set_encrypt_type(0)
-              chksum_enctype = hde.get_encrypt_type()
-          elif (chksum_enctype == 1):
-              encrypt_key = encrypt_aes128_key
-              encrypt_iv  = encrypt_aes128_iv
-          else:
-              if (not po.force_continue):
-                  eprint("{}: Error: Unknown encryption {:d} in module {:d}; cannot encrypt.".format(po.fwpkg,chksum_enctype,i))
-                  exit(1)
-              eprint("{}: Warning: Unknown encryption {:d} in module {:d}; switching to unencrypted.".format(po.fwpkg,chksum_enctype,i))
-              hde.set_encrypt_type(0)
-              chksum_enctype = hde.get_encrypt_type()
-      # Copy partition data and compute checksum
-      if (po.verbose > 2):
-          print("{}: File map: 0x{:08x} FwModuleData[m{:02d}{:02d}]".format(po.fwpkg,
-            epos, getattr(hde, 'target') & 31, (getattr(hde, 'target') >> 5) & 7))
-      fwitmfile = open(fname, "rb")
-      stored_chksum = hashlib.md5()
-      decrypted_chksum = hashlib.md5()
-      decrypted_n = 0
-      while True:
-          # read block limit must be a multiplication of encryption block size
-          copy_buffer = fwitmfile.read(1024 * 1024)
-          if not copy_buffer:
-              break
-          decrypted_chksum.update(copy_buffer)
-          decrypted_n += len(copy_buffer)
-          if (chksum_enctype != 0) and (not hde.preencrypted):
-              copy_buffer, encrypt_iv = dji_encrypt_block(copy_buffer, encrypt_key, encrypt_iv)
-          stored_chksum.update(copy_buffer)
-          fwpkgfile.write(copy_buffer)
-      fwitmfile.close()
-      hde.dt_offs = epos
-      hde.stored_len = fwpkgfile.tell() - epos
-      # We do not support pre-encryption which changes length of data
-      # If we need it at some point, the only way is to store decrypted_len in INI file
-      hde.decrypted_len = decrypted_n
-      hde.stored_md5 = (c_ubyte * 16).from_buffer_copy(stored_chksum.digest())
-      if (hde.preencrypted):
-          # If the file is pre-encrypted, then it has to have encryption type and MD5 set from INI file
-          if (chksum_enctype == 0):
-              eprint("{}: Warning: Module {:d} marked as pre-encrypted, but with no encryption type.".format(po.fwpkg,i))
-          if all([ v == 0 for v in hde.decrypted_md5 ]):
-              eprint("{}: Warning: Module {:d} marked as pre-encrypted, but decrypted MD5 is zeros.".format(po.fwpkg,i))
-          else:
-              print("{}: Module {:d} marked as pre-encrypted; decrypted MD5 accepted w/o verification.".format(po.fwpkg,i))
-      else:
-          # If the file is not pre-encrypted, then we should just use the MD5 we've computed
-          hde.decrypted_md5 = (c_ubyte * 16).from_buffer_copy(decrypted_chksum.digest())
-      pkgmodules[i] = hde
-  if (po.verbose > 2):
-      print("{}: File map: 0x{:08x} FwDataEnd".format(po.fwpkg, fwpkgfile.tell()))
-  # Write all headers again
-  fwpkgfile.seek(0,os.SEEK_SET)
-  fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
-  curhead_checksum = dji_calculate_crc16_part((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead), 0x3692)
-  for hde in pkgmodules:
-      fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
-      curhead_checksum = dji_calculate_crc16_part((c_ubyte * sizeof(hde)).from_buffer_copy(hde), curhead_checksum)
-  pkghead_checksum = c_ushort(curhead_checksum)
-  fwpkgfile.write((c_ubyte * sizeof(c_ushort)).from_buffer_copy(pkghead_checksum))
+    # Read headers from INI files
+    (pkghead, minames) = dji_read_fwpkg_head(po)
+    pkgmodules = []
+    # Create module entry for each partition
+    for i, miname in enumerate(minames):
+        if miname == "0":
+            hde = FwPkgEntry()
+        else:
+            hde = dji_read_fwentry_head(po, i, miname)
+        pkgmodules.append(hde)
+    # Write the unfinished headers
+    if (po.verbose > 2):
+        print("{}: File map: 0x{:08x} FwPkgHeader".format(po.fwpkg,fwpkgfile.tell()))
+    fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+    for hde in pkgmodules:
+        if (po.verbose > 2):
+            print("{}: File map: 0x{:08x} FwPkgEntry[m{:02d}{:02d}]".format(po.fwpkg,
+              fwpkgfile.tell(), getattr(hde, 'target') & 31, (getattr(hde, 'target') >> 5) & 7))
+        fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
+    fwpkgfile.write((c_ubyte * sizeof(c_ushort))())
+    # Write module data
+    for i, miname in enumerate(minames):
+        hde = pkgmodules[i]
+        if miname == "0":
+            if (po.verbose > 0):
+                print("{}: Empty module index {:d}".format(po.fwpkg,i))
+            continue
+        if (po.verbose > 0):
+            print("{}: Copying module index {:d}".format(po.fwpkg,i))
+        fname = "{:s}_{:s}.bin".format(po.mdprefix,miname)
+        # Skip unused pkgmodules
+        if (os.stat(fname).st_size < 1):
+            eprint("{}: Warning: module index {:d} empty".format(po.fwpkg,i))
+            continue
+        chksum_enctype = hde.get_encrypt_type()
+        epos = fwpkgfile.tell()
+        # Check for data encryption
+        if (chksum_enctype != 0) and (not hde.preencrypted):
+            if (po.no_crypto):
+                if (not po.force_continue):
+                    eprint("{}: Error: Module {:d} needs encryption {:d}, but crypto is disabled."
+                      .format(po.fwpkg,chksum_enctype,i))
+                    exit(1)
+                eprint("{}: Warning: Module {:d} needs encryption {:d}, but crypto is disabled; switching to unencrypted."
+                  .format(po.fwpkg,chksum_enctype,i))
+                hde.set_encrypt_type(0)
+                chksum_enctype = hde.get_encrypt_type()
+            elif (chksum_enctype == 1):
+                encrypt_key = encrypt_aes128_key
+                encrypt_iv  = encrypt_aes128_iv
+            else:
+                if (not po.force_continue):
+                    eprint("{}: Error: Unknown encryption {:d} in module {:d}; cannot encrypt.".format(po.fwpkg,chksum_enctype,i))
+                    exit(1)
+                eprint("{}: Warning: Unknown encryption {:d} in module {:d}; switching to unencrypted.".format(po.fwpkg,chksum_enctype,i))
+                hde.set_encrypt_type(0)
+                chksum_enctype = hde.get_encrypt_type()
+        # Copy partition data and compute checksum
+        if (po.verbose > 2):
+            print("{}: File map: 0x{:08x} FwModuleData[m{:02d}{:02d}]".format(po.fwpkg,
+              epos, getattr(hde, 'target') & 31, (getattr(hde, 'target') >> 5) & 7))
+        fwitmfile = open(fname, "rb")
+        stored_chksum = hashlib.md5()
+        decrypted_chksum = hashlib.md5()
+        decrypted_n = 0
+        while True:
+            # read block limit must be a multiplication of encryption block size
+            copy_buffer = fwitmfile.read(1024 * 1024)
+            if not copy_buffer:
+                break
+            decrypted_chksum.update(copy_buffer)
+            decrypted_n += len(copy_buffer)
+            if (chksum_enctype != 0) and (not hde.preencrypted):
+                copy_buffer, encrypt_iv = dji_encrypt_block(copy_buffer, encrypt_key, encrypt_iv)
+            stored_chksum.update(copy_buffer)
+            fwpkgfile.write(copy_buffer)
+        fwitmfile.close()
+        hde.dt_offs = epos
+        hde.stored_len = fwpkgfile.tell() - epos
+        # We do not support pre-encryption which changes length of data
+        # If we need it at some point, the only way is to store decrypted_len in INI file
+        hde.decrypted_len = decrypted_n
+        hde.stored_md5 = (c_ubyte * 16).from_buffer_copy(stored_chksum.digest())
+        if (hde.preencrypted):
+            # If the file is pre-encrypted, then it has to have encryption type and MD5 set from INI file
+            if (chksum_enctype == 0):
+                eprint("{}: Warning: Module {:d} marked as pre-encrypted, but with no encryption type.".format(po.fwpkg,i))
+            if all([ v == 0 for v in hde.decrypted_md5 ]):
+                eprint("{}: Warning: Module {:d} marked as pre-encrypted, but decrypted MD5 is zeros.".format(po.fwpkg,i))
+            else:
+                print("{}: Module {:d} marked as pre-encrypted; decrypted MD5 accepted w/o verification.".format(po.fwpkg,i))
+        else:
+            # If the file is not pre-encrypted, then we should just use the MD5 we've computed
+            hde.decrypted_md5 = (c_ubyte * 16).from_buffer_copy(decrypted_chksum.digest())
+        pkgmodules[i] = hde
+    if (po.verbose > 2):
+        print("{}: File map: 0x{:08x} FwDataEnd".format(po.fwpkg, fwpkgfile.tell()))
+    # Write all headers again
+    fwpkgfile.seek(0,os.SEEK_SET)
+    fwpkgfile.write((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead))
+    curhead_checksum = dji_calculate_crc16_part((c_ubyte * sizeof(pkghead)).from_buffer_copy(pkghead), 0x3692)
+    for hde in pkgmodules:
+        fwpkgfile.write((c_ubyte * sizeof(hde)).from_buffer_copy(hde))
+        curhead_checksum = dji_calculate_crc16_part((c_ubyte * sizeof(hde)).from_buffer_copy(hde), curhead_checksum)
+    pkghead_checksum = c_ushort(curhead_checksum)
+    fwpkgfile.write((c_ubyte * sizeof(c_ushort)).from_buffer_copy(pkghead_checksum))
 
 
 def main():
@@ -750,13 +752,13 @@ def main():
         if (po.verbose > 0):
             print("{}: Opening for extraction".format(po.fwpkg))
         with open(po.fwpkg, 'rb') as fwpkgfile:
-            dji_extract(po,fwpkgfile)
+            dji_extract(po, fwpkgfile)
 
     elif po.add:
         if (po.verbose > 0):
             print("{}: Opening for creation".format(po.fwpkg))
         with open(po.fwpkg, 'wb') as fwpkgfile:
-            dji_create(po,fwpkgfile)
+            dji_create(po, fwpkgfile)
 
     else:
         raise NotImplementedError("Unsupported command.")
