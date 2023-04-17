@@ -193,6 +193,7 @@ def unpack(args):
 
     return
 
+
 def pack(args):
     header = EncHeader()
 
@@ -273,7 +274,8 @@ def pack(args):
 
     args.output.close()
 
-    print("{}: Encrypted file to '{}'".format(args.input.name,args.output.name))
+    print("{}: Encrypted file to '{}'".format(args.input.name, args.output.name))
+
 
 def main():
     """ Main executable function.
