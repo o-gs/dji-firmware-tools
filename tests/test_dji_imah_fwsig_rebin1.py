@@ -329,7 +329,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_cmdopts = "-k PRAK-2017-01 -k PUEK-2017-09 -f" # PUEK not published, forcing extract encrypted
             # allow change of 2 bytes from auth key name, 256 from signature
             module_changes_limit = 2 + 256
-    elif (m := re.match(r'^.*/(wm620|rc001)([._].*)?[.](bin|enc|fw|img|sig|ta|txt)$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*[/-](wm620|rc001)([._].*)?[.](bin|enc|fw|img|sig|ta|txt)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
         if (re.match(r'^.*{:s}_0801_[^/]*[.]fw_0801.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2017-01 -k RREK-2017-01 -k IAEK-2017-01 -f" # IAEK not published, forcing extract encrypted
@@ -875,6 +875,54 @@ def test_dji_imah_fwsig_v2_nested_rebin(capsys, cmdargs, modl_inp_dir, test_nth)
         "{}/*/*-loader_p*.img.sig".format(modl_inp_dir),
         "{}/*/*-unpack_p*.img.sig".format(modl_inp_dir),
         "{}/*/*-part_p*.img.sig".format(modl_inp_dir),
+        # output from test_bin_archives_imah_v2_nested_extract
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*0.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*1.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*2.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*3.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*4.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*5.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*6.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*7.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*8.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*9.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*a.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*b.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*c.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*d.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*e.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/ta/*-*-*f.ta".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/nfz/nfz.fw".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/nfz/nfz.fw.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/modem_firmware/**/ap.img".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/modem_firmware/**/cp.img".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/modem_firmware/**/info.img".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/modem_firmware/**/normal.img".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/firmware/camera/**/*.fw.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/firmware/navigation/**/*.fw.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/firmware/perception/**/*.fw.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/ml/**/*.eng.enc".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/navigation/**/*.eng.enc".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*_0.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*_1.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*_2.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*_3.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*_4.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*_5.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*_6.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*_7.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*_8.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*_9.bin".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*_0.txt".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*bits.txt".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*cfg.txt".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*info.txt".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*len.txt".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*mapping.txt".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*offset.txt".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*pairs.txt".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*pair.txt".format(modl_inp_dir),
+        "{}/*/*-extr1/vendor-extr1/model/perception/**/*tag.txt".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn) and os.path.getsize(fn) > 0]
 
     # Some nested 'recovery.img' files are standard `ANDROID!` images
@@ -884,6 +932,7 @@ def test_dji_imah_fwsig_v2_nested_rebin(capsys, cmdargs, modl_inp_dir, test_nth)
     modl_filenames = [fn for fn in modl_filenames if not re.match(r'^.*-extr1/model/perception/.*/test_img[.]bin$', fn, re.IGNORECASE)]
     # Some vendor files in specific folders are not encrypted
     modl_filenames = [fn for fn in modl_filenames if not re.match(r'^.*pm320_.*-extr1/vendor-extr1/model/perception/pm320_rear_left_propeller_parsing.*$', fn, re.IGNORECASE)]
+    modl_filenames = [fn for fn in modl_filenames if not re.match(r'^.*pm430_0[78]01_v10[.]01[.]03[.]18.*_0[78]01-extr1/vendor-extr1/model/.*$', fn, re.IGNORECASE)]
 
     if len(modl_filenames) < 1:
         pytest.skip("no package files to test in this directory")
