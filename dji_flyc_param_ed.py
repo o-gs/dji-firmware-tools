@@ -350,36 +350,36 @@ def address_is_pointer_to_bss(po, fwmdlfile, fwmdlfile_len, ptraddr):
 
 
 def flyc_parameter_entry_type_matches_size(po, eexpar):
-  if (eexpar.type_id == ParamType.ushort):
-     if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
-        if (po.verbose > 3):
-           print("{}: Rejection on bad ushort ({:d}) size ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
-        return False
-  elif (eexpar.type_id == ParamType.ulong):
-     if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
-        if (po.verbose > 3):
-           print("{}: Rejection on bad ulong ({:d}) size ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
-        return False
-  elif (eexpar.type_id == ParamType.bool):
-     if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4):
-        if (po.verbose > 3):
-           print("{}: Rejection on bad bool ({:d}) size ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
-        return False
-  elif (eexpar.type_id <= ParamType.double):
-     if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
-        if (po.verbose > 3):
-           print("{}: Rejection on bad type ({:d}) size ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
-        return False
-  elif (eexpar.type_id == ParamType.array):
-     # array needs to have multiple elements
-     if (eexpar.valsize < 2):
-        if (po.verbose > 3):
-           print("{}: Rejection on bad array ({:d}) size ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
-        return False
-  else:
-     # unrecognized type
-     return False
-  return True
+    if (eexpar.type_id == ParamType.ushort):
+       if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
+          if (po.verbose > 3):
+             print("{}: Rejection on bad ushort ({:d}) size ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
+          return False
+    elif (eexpar.type_id == ParamType.ulong):
+       if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
+          if (po.verbose > 3):
+             print("{}: Rejection on bad ulong ({:d}) size ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
+          return False
+    elif (eexpar.type_id == ParamType.bool):
+       if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4):
+          if (po.verbose > 3):
+             print("{}: Rejection on bad bool ({:d}) size ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
+          return False
+    elif (eexpar.type_id <= ParamType.double):
+       if (eexpar.valsize != 1) and (eexpar.valsize != 2) and (eexpar.valsize != 4) and (eexpar.valsize != 8):
+          if (po.verbose > 3):
+             print("{}: Rejection on bad type ({:d}) size ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
+          return False
+    elif (eexpar.type_id == ParamType.array):
+       # array needs to have multiple elements
+       if (eexpar.valsize < 2):
+          if (po.verbose > 3):
+             print("{}: Rejection on bad array ({:d}) size ({:d})".format(po.mdlfile,eexpar.type_id,eexpar.valsize))
+          return False
+    else:
+       # unrecognized type
+       return False
+    return True
 
 
 def flyc_parameter_limits_check_int_values_match_float_values(po, ver, eexpar):
@@ -582,197 +582,197 @@ def flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len, eexpar, func_al
 
 
 def flyc_is_proper_parameter_block(po, fwmdlfile, fwmdlfile_len, eparblk, func_align, data_align, pos):
-  """ Checks whether given FlycParamBlock object stores a proper entry of
-      flight controller parameter block.
-  """
-  # Address to const string
-  if not address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, eparblk.nameptr):
-     return False
-
-  # Address to cmds array
-  if not address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, eparblk.cmds):
-     if (eparblk.cmds != 0): # Cmds pointer can be NULL
+    """ Checks whether given FlycParamBlock object stores a proper entry of
+        flight controller parameter block.
+    """
+    # Address to const string
+    if not address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, eparblk.nameptr):
         return False
 
-  # Address to callback func
-  if not address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, eparblk.callback):
-     if (eparblk.callback != 0): # Callback pointer can be NULL
+    # Address to cmds array
+    if not address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, eparblk.cmds):
+        if (eparblk.cmds != 0): # Cmds pointer can be NULL
+            return False
+
+    # Address to callback func
+    if not address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, eparblk.callback):
+        if (eparblk.callback != 0): # Callback pointer can be NULL
+            return False
+
+    if (eparblk.cmd_count == 0) and (eparblk.cmds != 0):
+        return False
+    if (eparblk.cmd_count > 0) and (eparblk.cmds == 0):
         return False
 
-  if (eparblk.cmd_count == 0) and (eparblk.cmds != 0):
-        return False
-  if (eparblk.cmd_count > 0) and (eparblk.cmds == 0):
+    if (eparblk.param_count == 0):
         return False
 
-  if (eparblk.param_count == 0):
+    # Address to params array
+    if not address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, eparblk.params):
         return False
 
-  # Address to params array
-  if not address_is_pointer_to_initialized(po, fwmdlfile, fwmdlfile_len, eparblk.params):
-        return False
-
-  return True
+    return True
 
 
 def flyc_check_parameter_array_at(po, fwmdlfile, fwmdlfile_len, start_pos, func_align, data_align, ver):
-  """ Assuming given position is a parameter array, this function will return how many
-      proper entries it has.
-  """
-  eexpar = FlycExportParamFactory(ver)
-  entry_count = 0
-  entry_pos = start_pos
-  while (True):
-      # Read possible struct
-      fwmdlfile.seek(entry_pos, os.SEEK_SET)
-      if fwmdlfile.readinto(eexpar) != sizeof(eexpar):
-          break
-      # Check if struct is valid
-      if not flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len,
-        eexpar, func_align, data_align, start_pos, entry_pos):
-          break
-      # If struct seem correct, check for its name string
-      fwmdlfile.seek(eexpar.nameptr - po.baseaddr, os.SEEK_SET)
-      eexpar_name_btarr = fwmdlfile.read(256).split(b'\0',1)[0]
-      if (len(eexpar_name_btarr) < 2):
-          if (po.verbose > 3):
-              print("{}: At 0x{:08x}, rejected type {:d} on name len check ({:d})"
-                .format(po.mdlfile, entry_pos, eexpar.type_id, len(eexpar_name_btarr)))
-          break
-      if not re.match(b'^[0-9a-zA-z\[\]\(\)\{\} .,:*#_-]+$', eexpar_name_btarr):
-          if (po.verbose > 3):
-              print("{}: At 0x{:08x}, rejected type {:d} on name regex check"
-                .format(po.mdlfile, entry_pos, eexpar.type_id))
-          break
-      if (po.verbose > 2):
-          print("{}: Found entry '{:s}'".format(po.mdlfile,eexpar_name_btarr.decode('UTF-8')))
-      # All correct
-      entry_count += 1
-      entry_pos += sizeof(eexpar)
-  return entry_count
+    """ Assuming given position is a parameter array, this function will return how many
+        proper entries it has.
+    """
+    eexpar = FlycExportParamFactory(ver)
+    entry_count = 0
+    entry_pos = start_pos
+    while (True):
+        # Read possible struct
+        fwmdlfile.seek(entry_pos, os.SEEK_SET)
+        if fwmdlfile.readinto(eexpar) != sizeof(eexpar):
+            break
+        # Check if struct is valid
+        if not flyc_is_proper_parameter_entry(po, fwmdlfile, fwmdlfile_len,
+          eexpar, func_align, data_align, start_pos, entry_pos):
+            break
+        # If struct seem correct, check for its name string
+        fwmdlfile.seek(eexpar.nameptr - po.baseaddr, os.SEEK_SET)
+        eexpar_name_btarr = fwmdlfile.read(256).split(b'\0',1)[0]
+        if (len(eexpar_name_btarr) < 2):
+            if (po.verbose > 3):
+                print("{}: At 0x{:08x}, rejected type {:d} on name len check ({:d})"
+                  .format(po.mdlfile, entry_pos, eexpar.type_id, len(eexpar_name_btarr)))
+            break
+        if not re.match(b'^[0-9a-zA-z\[\]\(\)\{\} .,:*#_-]+$', eexpar_name_btarr):
+            if (po.verbose > 3):
+                print("{}: At 0x{:08x}, rejected type {:d} on name regex check"
+                  .format(po.mdlfile, entry_pos, eexpar.type_id))
+            break
+        if (po.verbose > 2):
+            print("{}: Found entry '{:s}'".format(po.mdlfile,eexpar_name_btarr.decode('UTF-8')))
+        # All correct
+        entry_count += 1
+        entry_pos += sizeof(eexpar)
+    return entry_count
 
 
 def flyc_parameter_array_pos_search(po, fwmdlfile, start_pos, func_align, data_align, ver):
-  """ Finds position of flight controller parameters in the binary.
-      Searches only for specific version of the parameters format.
-  """
-  fwmdlfile.seek(0, os.SEEK_END)
-  fwmdlfile_len = fwmdlfile.tell()
-  eexpar = FlycExportParamFactory(ver)
-  match_count = 0
-  match_pos = -1
-  match_entries = 0
-  pos = start_pos
-  while (True):
-      # Check how many correct parameter entries we have
-      entry_count = flyc_check_parameter_array_at(po, fwmdlfile, fwmdlfile_len, pos, func_align, data_align, ver)
-      # If entry is ok, consider it a match
-      if entry_count > 0:
-          if (po.verbose > 1):
-              print("{}: Matching parameters array at 0x{:08x}: {:d} entries, format {:d}"
-                .format(po.mdlfile, pos, entry_count, ver))
-          if (entry_count > match_entries):
-              match_pos = pos
-              match_entries = entry_count
-          match_count += 1
-      # Set position to search for next entry
-      if entry_count > 0:
-          pos += entry_count * sizeof(eexpar)
-      else:
-          pos += data_align
-      # Stop if we're at EOF
-      if (pos + sizeof(eexpar) > fwmdlfile_len):
-          break
-  if (match_count > 1):
-      eprint("{}: Warning: multiple ({:d}) matches found for parameters array with alignment 0x{:02x}"
-        .format(po.mdlfile, match_count, data_align))
-  if (match_count < 1):
-      return {}, 0
-  return {match_pos: match_entries}, match_entries
+    """ Finds position of flight controller parameters in the binary.
+        Searches only for specific version of the parameters format.
+    """
+    fwmdlfile.seek(0, os.SEEK_END)
+    fwmdlfile_len = fwmdlfile.tell()
+    eexpar = FlycExportParamFactory(ver)
+    match_count = 0
+    match_pos = -1
+    match_entries = 0
+    pos = start_pos
+    while (True):
+        # Check how many correct parameter entries we have
+        entry_count = flyc_check_parameter_array_at(po, fwmdlfile, fwmdlfile_len, pos, func_align, data_align, ver)
+        # If entry is ok, consider it a match
+        if entry_count > 0:
+            if (po.verbose > 1):
+                print("{}: Matching parameters array at 0x{:08x}: {:d} entries, format {:d}"
+                  .format(po.mdlfile, pos, entry_count, ver))
+            if (entry_count > match_entries):
+                match_pos = pos
+                match_entries = entry_count
+            match_count += 1
+        # Set position to search for next entry
+        if entry_count > 0:
+            pos += entry_count * sizeof(eexpar)
+        else:
+            pos += data_align
+        # Stop if we're at EOF
+        if (pos + sizeof(eexpar) > fwmdlfile_len):
+            break
+    if (match_count > 1):
+        eprint("{}: Warning: multiple ({:d}) matches found for parameters array with alignment 0x{:02x}"
+          .format(po.mdlfile, match_count, data_align))
+    if (match_count < 1):
+        return {}, 0
+    return {match_pos: match_entries}, match_entries
 
 
 def flyc_check_parameter_block_at(po, fwmdlfile, fwmdlfile_len, start_pos, func_align, data_align, ver):
-  """ Assuming given position is a parameter block, this function will read it and verify content.
-  """
-  eparblk = FlycParamBlock2018()
-  fwmdlfile.seek(start_pos, os.SEEK_SET)
-  if fwmdlfile.readinto(eparblk) != sizeof(eparblk):
-      eparblk.param_count = 0
-      return eparblk
-  # Check if struct is valid
-  if not flyc_is_proper_parameter_block(po, fwmdlfile, fwmdlfile_len, eparblk, func_align, data_align, start_pos):
-      eparblk.param_count = 0
-      return eparblk
-  # If struct seem correct, check for its name string
-  fwmdlfile.seek(eparblk.nameptr - po.baseaddr, os.SEEK_SET)
-  eparblk_name_btarr = fwmdlfile.read(256).split(b'\0',1)[0]
-  if (len(eparblk_name_btarr) < 2):
-      eparblk.param_count = 0
-      return eparblk
-  if not re.match(b'^[0-9a-zA-z\[\]\(\)\{\} .,:*#_-]+$', eparblk_name_btarr):
-      eparblk.param_count = 0
-      return eparblk
-  if (po.verbose > 2):
-      print("{}: Found entry '{:s}'".format(po.mdlfile,eparblk_name_btarr.decode('UTF-8')))
-  return eparblk
+    """ Assuming given position is a parameter block, this function will read it and verify content.
+    """
+    eparblk = FlycParamBlock2018()
+    fwmdlfile.seek(start_pos, os.SEEK_SET)
+    if fwmdlfile.readinto(eparblk) != sizeof(eparblk):
+        eparblk.param_count = 0
+        return eparblk
+    # Check if struct is valid
+    if not flyc_is_proper_parameter_block(po, fwmdlfile, fwmdlfile_len, eparblk, func_align, data_align, start_pos):
+        eparblk.param_count = 0
+        return eparblk
+    # If struct seem correct, check for its name string
+    fwmdlfile.seek(eparblk.nameptr - po.baseaddr, os.SEEK_SET)
+    eparblk_name_btarr = fwmdlfile.read(256).split(b'\0',1)[0]
+    if (len(eparblk_name_btarr) < 2):
+        eparblk.param_count = 0
+        return eparblk
+    if not re.match(b'^[0-9a-zA-z\[\]\(\)\{\} .,:*#_-]+$', eparblk_name_btarr):
+        eparblk.param_count = 0
+        return eparblk
+    if (po.verbose > 2):
+        print("{}: Found entry '{:s}'".format(po.mdlfile,eparblk_name_btarr.decode('UTF-8')))
+    return eparblk
 
 
 def flyc_parameter_blocks_pos_search(po, fwmdlfile, start_pos, func_align, data_align, ver):
-  """ Finds position of flight controller parameter blocks in the binary.
-      Searches only for specific version of the parameters format.
-  """
-  fwmdlfile.seek(0, os.SEEK_END)
-  fwmdlfile_len = fwmdlfile.tell()
-  matches = dict()
-  match_entries = 0
-  pos = start_pos
-  while (True):
-      entry_count = 0
-      eparblk = flyc_check_parameter_block_at(po, fwmdlfile, fwmdlfile_len, pos, func_align, data_align, ver)
-      if (eparblk.param_count > 0):
-          # Check how many correct parameter entries we have
-          match_pos = eparblk.params - po.baseaddr
-          entry_count = flyc_check_parameter_array_at(po, fwmdlfile, fwmdlfile_len, match_pos, func_align, data_align, ver)
-          # If entry is ok, add it to the list
-          if entry_count >= eparblk.param_count:
-              if (po.verbose > 1):
-                  print("{}: Matching parameter block at 0x{:08x}: {:d} entries, format {:d}"
-                    .format(po.mdlfile, pos, entry_count, ver))
-              matches[match_pos] = entry_count
-              match_entries += entry_count
-          elif entry_count > 0:
-              if (po.verbose > 1):
-                  print("{}: Skipped parameter block at 0x{:08x} which was close to matching, format {:d}"
-                    .format(po.mdlfile, pos, ver))
-              entry_count = 0
-      # Set position to search for next entry
-      if entry_count > 0:
-          pos += sizeof(eparblk)
-      else:
-          pos += data_align
-      # Stop if we're at EOF
-      if (pos + sizeof(eparblk) > fwmdlfile_len):
-          break
-  if (len(matches) > 1):
-      eprint("{}: Found {:d} parameter blocks with alignment 0x{:02x}".format(po.mdlfile,len(matches),data_align))
-  return matches, match_entries
+    """ Finds position of flight controller parameter blocks in the binary.
+        Searches only for specific version of the parameters format.
+    """
+    fwmdlfile.seek(0, os.SEEK_END)
+    fwmdlfile_len = fwmdlfile.tell()
+    matches = dict()
+    match_entries = 0
+    pos = start_pos
+    while (True):
+        entry_count = 0
+        eparblk = flyc_check_parameter_block_at(po, fwmdlfile, fwmdlfile_len, pos, func_align, data_align, ver)
+        if (eparblk.param_count > 0):
+            # Check how many correct parameter entries we have
+            match_pos = eparblk.params - po.baseaddr
+            entry_count = flyc_check_parameter_array_at(po, fwmdlfile, fwmdlfile_len, match_pos, func_align, data_align, ver)
+            # If entry is ok, add it to the list
+            if entry_count >= eparblk.param_count:
+                if (po.verbose > 1):
+                    print("{}: Matching parameter block at 0x{:08x}: {:d} entries, format {:d}"
+                      .format(po.mdlfile, pos, entry_count, ver))
+                matches[match_pos] = entry_count
+                match_entries += entry_count
+            elif entry_count > 0:
+                if (po.verbose > 1):
+                    print("{}: Skipped parameter block at 0x{:08x} which was close to matching, format {:d}"
+                      .format(po.mdlfile, pos, ver))
+                entry_count = 0
+        # Set position to search for next entry
+        if entry_count > 0:
+            pos += sizeof(eparblk)
+        else:
+            pos += data_align
+        # Stop if we're at EOF
+        if (pos + sizeof(eparblk) > fwmdlfile_len):
+            break
+    if (len(matches) > 1):
+        eprint("{}: Found {:d} parameter blocks with alignment 0x{:02x}".format(po.mdlfile,len(matches),data_align))
+    return matches, match_entries
 
 
 def flyc_parameter_array_pos_search_any(po, fwmdlfile, start_pos, func_align, data_align):
-  """ Finds position of flight controller parameters in the binary, in any version.
-  """
-  (poslist, count) = flyc_parameter_array_pos_search(po, fwmdlfile, start_pos, func_align, data_align, 2015)
-  ver = 2015
-  (poslist_2017, count_2017) = flyc_parameter_array_pos_search(po, fwmdlfile, start_pos, func_align, data_align, 2017)
-  if count < count_2017:
-      ver = 2017
-      poslist = poslist_2017
-      count = count_2017
-  (poslist_2018, count_2018) = flyc_parameter_blocks_pos_search(po, fwmdlfile, start_pos, func_align, data_align, 2018)
-  if count < count_2018:
-      ver = 2018
-      poslist = poslist_2018
-      count = count_2018
-  return poslist, ver
+    """ Finds position of flight controller parameters in the binary, in any version.
+    """
+    (poslist, count) = flyc_parameter_array_pos_search(po, fwmdlfile, start_pos, func_align, data_align, 2015)
+    ver = 2015
+    (poslist_2017, count_2017) = flyc_parameter_array_pos_search(po, fwmdlfile, start_pos, func_align, data_align, 2017)
+    if count < count_2017:
+        ver = 2017
+        poslist = poslist_2017
+        count = count_2017
+    (poslist_2018, count_2018) = flyc_parameter_blocks_pos_search(po, fwmdlfile, start_pos, func_align, data_align, 2018)
+    if count < count_2018:
+        ver = 2018
+        poslist = poslist_2018
+        count = count_2018
+    return poslist, ver
 
 
 def flyc_param_get(po, fwmdlfile, param_pos, index, ver):
