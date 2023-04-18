@@ -143,8 +143,10 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_changes_limit = 2 + 4 + 4 + 256 + 2*16 + 32
     elif (m := re.match(r'^.*/(asvl01)([._].*)?[.](bin|enc|fw|img|sig|ta|txt)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
-        if False:
-            pass # no quirks
+        if (re.match(r'^.*{:s}_1502_[^/]*[.]fw_1502.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2020-01 -k TBIE-2020-02 -f" # TBIE not published, forcing extract encrypted
+            # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 9x16 chunk padding, 32 payload digest, 6x16 unknown additional
+            module_changes_limit = 2 + 4 + 4 + 256 + 9*16 + 32 + 6*16
         else: # if first level module
             module_cmdopts = "-k PRAK-2020-01 -k UFIE-2020-04"
             # allow change of 2 bytes from auth key name, 256 from signature, up to 3x16 chunk padding
@@ -377,8 +379,10 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_changes_limit = 2 + 256
     elif (m := re.match(r'^.*/(wm160)([._].*)?[.](bin|enc|fw|img|sig|ta|txt)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
-        if False:
-            pass # no quirks
+        if (re.match(r'^.*{:s}_0100_[^/]*[.]fw_0100.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2019-09 -k TBIE-2019-11 -k TKIE-2019-11"
+            # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 9x16 chunk padding, 32 payload digest, 6x16 unknown additional
+            module_changes_limit = 2 + 4 + 4 + 256 + 9*16 + 32 + 6*16
         else: # if first level module
             module_cmdopts = "-k PRAK-2019-09 -k UFIE-2019-11"
             # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 1x16 chunk padding, 32 payload digest
@@ -395,8 +399,10 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_changes_limit = 2 + 4 + 4 + 256 + 32+16
     elif (m := re.match(r'^.*/(wm161)([._].*)?[.](bin|enc|fw|img|sig|ta|txt)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
-        if False:
-            pass # no quirks
+        if (re.match(r'^.*{:s}_0100_[^/]*[.]fw_0100.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2019-09 -k TBIE-2019-11 -k TKIE-2019-11"
+            # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 9x16 chunk padding, 32 payload digest, 6x16 unknown additional
+            module_changes_limit = 2 + 4 + 4 + 256 + 9*16 + 32 + 6*16
         else: # if first level module
             module_cmdopts = "-k PRAK-2019-09 -k UFIE-2019-11"
             # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 16 chunk padding, 32 payload digest
@@ -528,8 +534,13 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_changes_limit = 2 + 256 + 16
     elif (m := re.match(r'^.*/(wm260|wm2605)([._].*)?[.](bin|enc|fw|img|sig|ta|txt)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
+        # specific nested modules
+        if (re.match(r'^.*{:s}_1502_[^/]*[.]fw_1502.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
+            module_cmdopts = "-k PRAK-2020-01 -k TBIE-2020-02 -f" # TBIE not published, forcing extract encrypted
+            # allow change of 2 bytes from auth key name, 4+4 from enc+dec checksum, 256 from signature, up to 9x16 chunk padding, 32 payload digest, 6x16 unknown additional
+            module_changes_limit = 2 + 4 + 4 + 256 + 9*16 + 32 + 6*16
         # specific first level modules with unsupported signature_size=384
-        if (re.match(r'^.*/(wm260|wm2605)_0802_v[0-9a-z_.-]*[.]pro[.]fw[.]sig$', modl_inp_fn, re.IGNORECASE)):
+        elif (re.match(r'^.*/(wm260|wm2605)_0802_v[0-9a-z_.-]*[.]pro[.]fw[.]sig$', modl_inp_fn, re.IGNORECASE)):
             module_cmdopts = "-k PRAK-2020-01 -k UFIE-2020-04 -f"
             module_changes_limit = 999999 # we can not re-create signature
         # specific first level modules with encrypted data checksum verification issues
@@ -830,21 +841,36 @@ def test_dji_imah_fwsig_v2_rebin(capsys, cmdargs, pkg_inp_dir, test_nth):
 @pytest.mark.order(5) # must be run after test_bin_archives_imah_v2_extract, test_bin_bootimg_imah_v2_extract, test_bin_archives_imah_v2_nested_extract
 @pytest.mark.fw_imah_v2
 @pytest.mark.parametrize("modl_inp_dir,test_nth", [
+    ('out/ac103-osmo_action_2',1,),
     ('out/ag500-agras_t10',1,),
     ('out/ag501-agras_t30',1,),
     ('out/ag600-agras_t40_gimbal',1,),
     ('out/ag601-agras_t40',1,),
+    ('out/ag700-agras_t25',1,),
+    ('out/ag701-agras_t50',1,),
+    ('out/asvl001-vid_transmission',1,),
+    ('out/ch320-battery_station',1,),
+    ('out/ec174-hassel_x1d_ii_50c_cam',1,),
     ('out/gl150-goggles_fpv_v1',1,),
+    ('out/gl170-goggles_fpv_v2',1,),
+    ('out/hg330-ronin_4d',1,),
     ('out/lt150-caddx_vis_air_unit_lt',1,),
     ('out/pm320-matrice30',1,),
     ('out/pm430-matrice300',1,),
-    ('out/rc430-matrice300_rc',1,),
-    ('out/rcjs170-racer_rc',1,),
     ('out/rc-n1-wm161b-mini_2n3_rc',1,),
     ('out/rc-n1-wm260-mavic_pro_3',1,),
+    ('out/rc430-matrice300_rc',1,),
+    ('out/rcjs170-racer_rc',1,),
     ('out/rcs231-mavic_air_2_rc',1,),
     ('out/rcss170-racer_rc_motion',1,),
+    ('out/rm330-mini_rc_wth_monitor',1,),
     ('out/wm150-fpv_system',1,),
+    ('out/wm160-mavic_mini',1,),
+    ('out/wm1605-mini_se',1,),
+    ('out/wm161-mini_2',1,),
+    ('out/wm162-mini_3',1,),
+    ('out/wm169-avata',1,),
+    ('out/wm1695-o3_air_unit',1,),
     ('out/wm170-fpv_racer',1,),
     ('out/wm230-mavic_air',1,),
     ('out/wm231-mavic_air_2',1,),
@@ -853,6 +879,12 @@ def test_dji_imah_fwsig_v2_rebin(capsys, cmdargs, pkg_inp_dir, test_nth):
     ('out/wm245-mavic_2_enterpr',1,),
     ('out/wm246-mavic_2_enterpr_dual',1,),
     ('out/wm247-mavic_2_enterpr_rtk',1,),
+    ('out/wm260-mavic_pro_3',1,),
+    ('out/wm2605-mavic_3_classic',1,),
+    ('out/wm265e-mavic_pro_3_enterpr',1,),
+    ('out/wm265m-mavic_pro_3_mulspectr',1,),
+    ('out/wm265t-mavic_pro_3_thermal',1,),
+    ('out/zv900-goggles_2',1,),
   ] )
 def test_dji_imah_fwsig_v2_nested_rebin(capsys, cmdargs, modl_inp_dir, test_nth):
     """ Test extraction and re-creation of signed IMaH v2 images nested within other modules.
