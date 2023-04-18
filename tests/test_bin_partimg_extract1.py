@@ -224,8 +224,10 @@ def test_bin_bootimg_imah_v2_extract(capsys, modl_inp_dir, test_nth):
         "{}/*/*_0100.unpack.bin".format(modl_inp_dir),
         "{}/*/*_0801-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_0802-extr1/bootarea.img".format(modl_inp_dir),
+        "{}/*/*_0901-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_1301-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_1301-extr1/loader.img".format(modl_inp_dir),
+        "{}/*/*_1502-extr1/bootarea.img".format(modl_inp_dir),
         "{}/*/*_2607.bin".format(modl_inp_dir), # in ag500 and ag501, this module is a bootarea.img as well
         "{}/*/*_2801-extr1/bootarea.img".format(modl_inp_dir),
       ) ]) if os.path.isfile(fn)]
