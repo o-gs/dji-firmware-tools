@@ -532,7 +532,7 @@ def get_params_for_dji_imah_fwsig(modl_inp_fn):
             module_cmdopts = "-k PRAK-2020-01 -k UFIE-2020-04"
             # allow change of 2 bytes from auth key name, 256 from signature, up to 16 chunk padding
             module_changes_limit = 2 + 256 + 16
-    elif (m := re.match(r'^.*/(wm260|wm2605)([._].*)?[.](bin|enc|fw|img|sig|ta|txt)$', modl_inp_fn, re.IGNORECASE)):
+    elif (m := re.match(r'^.*/(wm260|wm2605)([._][0-9]{4}.*)?[.](bin|enc|fw|img|sig|ta|txt)$', modl_inp_fn, re.IGNORECASE)):
         platform = m.group(1)
         # specific nested modules
         if (re.match(r'^.*{:s}_1502_[^/]*[.]fw_1502.*$'.format(platform), modl_inp_fn, re.IGNORECASE)):
