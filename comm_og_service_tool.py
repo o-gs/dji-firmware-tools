@@ -1632,7 +1632,7 @@ def main():
               .format(version=__version__, author=__author__),
             help="display version information and exit")
 
-    subparsers = parser.add_subparsers(dest='svcmd', metavar='command',
+    subparsers = parser.add_subparsers(dest='svcmd', metavar='command', required=True,
             help="service command")
 
     subpar_flycpar = subparsers.add_parser('FlycParam',
@@ -1676,7 +1676,7 @@ def main():
     subpar_gimbcal = subparsers.add_parser('GimbalCalib',
             help="gimbal calibration options")
 
-    subpar_gimbcal_subcmd = subpar_gimbcal.add_subparsers(dest='subcmd',
+    subpar_gimbcal_subcmd = subpar_gimbcal.add_subparsers(dest='subcmd', required=True,
             help="gimbal calibration command")
 
     subpar_gimbcal_coarse = subpar_gimbcal_subcmd.add_parser('JointCoarse',
