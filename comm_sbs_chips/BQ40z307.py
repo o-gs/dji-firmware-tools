@@ -2580,7 +2580,10 @@ SBS_PF_STATUS_INFO = {
         'value_names'	: ["Inactive","Active"],
         'access'	: "r",
         'tiny_name'	: "FUSE",
-        'desc'	: ("Chemical Fuse Failure."),
+        'desc'	: ("Chemical Fuse Failure. The FUSE pin is designed to "
+          "ignite the chemical fuse if one of the various safety criteria "
+          "is violated. Can also be triggered via SBS for manufacturing "
+          "test. If not used, it should be pulled down."),
     },
     SBS_FLAG_PF_STATUS.AFE_REGISTER : {
         'type'	: "named_bitfield",
@@ -4024,7 +4027,8 @@ MANUFACTURER_ACCESS_CMD_BQ40_INFO = {
         'type'	: "void",
         'unit'	: {'scale':None,'name':None},
         'access_per_seal'	: ("w","w","w",),
-        'desc'	: ("Resets the device."),
+        'desc'	: ("Resets the device. This counts as Full Device Reset as "
+          "well as AFE Reset, the terms used in chip reference doc."),
     },
     MANUFACTURER_ACCESS_CMD_BQ40.SafetyAlert : {
         'type'	: "uint32_blk",
