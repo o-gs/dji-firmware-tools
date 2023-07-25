@@ -3496,7 +3496,7 @@ def main(argv=sys.argv[1:]):
             help="display version information and exit")
 
     subparsers = parser.add_subparsers(dest='action', metavar='action',
-            help="action to take")
+            help="action to take", required=True)
 
     subpar_info = subparsers.add_parser('info',
             help=("displays information about specific command; when chip "
@@ -3658,7 +3658,7 @@ def main(argv=sys.argv[1:]):
     if po.chip == CHIP_TYPE.AUTO:
         po.chip = smart_battery_detect(vals, po)
 
-    if(po.chip in driver_cache):
+    if po.chip in driver_cache:
         chip_file_code = driver_cache[po.chip]
         exec(chip_file_code)
     else:
@@ -3681,10 +3681,6 @@ def main(argv=sys.argv[1:]):
                 driver_cache[po.chip] = chip_file_code
             except IOError:
                 print("Warning: Could not open chip definition file '{}'".format(fname))
-            # end try
-        #end for()
-
-    #end if(po.chip in driver_cache)
 
     if po.action == 'info':
         smart_battery_system_info(po.command, vals, po)
