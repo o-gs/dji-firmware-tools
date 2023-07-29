@@ -45,14 +45,14 @@ def test_comm_sbs_bqctrl_chip_detect(capsys):
     command = [os.path.join(".", "comm_sbs_bqctrl.py"), "-v", "--chip", "BQ30z55", "read-list"]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
-        comm_sbs_bqctrl_main()
+        comm_sbs_bqctrl_main(command[1:])
     capstdout, _ = capsys.readouterr()
 
     # Do not provide chip - test auto-detect
     command = [os.path.join(".", "comm_sbs_bqctrl.py"), "-v", "--dry-run", "info-list"]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
-        comm_sbs_bqctrl_main()
+        comm_sbs_bqctrl_main(command[1:])
     capstdout, _ = capsys.readouterr()
     pass
 
@@ -73,7 +73,7 @@ def test_comm_sbs_bqctrl_chip_info_commands(capsys, chip_name, test_nth):
     command = [os.path.join(".", "comm_sbs_bqctrl.py"), "--dry-run", "--chip", chip_name, "info-list"]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
-        comm_sbs_bqctrl_main()
+        comm_sbs_bqctrl_main(command[1:])
     capstdout, _ = capsys.readouterr()
     info_commands = list(capstdout.splitlines())
     LOGGER.info("List of info commands: {}".format(', '.join(info_commands)))
@@ -85,7 +85,7 @@ def test_comm_sbs_bqctrl_chip_info_commands(capsys, chip_name, test_nth):
         command = [os.path.join(".", "comm_sbs_bqctrl.py"), "-v", "--dry-run", "--chip", chip_name, "info", info_cmd]
         LOGGER.info(' '.join(command))
         with patch.object(sys, 'argv', command):
-            comm_sbs_bqctrl_main()
+            comm_sbs_bqctrl_main(command[1:])
         capstdout, _ = capsys.readouterr()
         assert "Type:" in capstdout
         assert "Description:" in capstdout
@@ -108,7 +108,7 @@ def test_comm_sbs_bqctrl_chip_read_commands(capsys, chip_name, test_nth):
     command = [os.path.join(".", "comm_sbs_bqctrl.py"), "--dry-run", "--chip", chip_name, "read-list"]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
-        comm_sbs_bqctrl_main()
+        comm_sbs_bqctrl_main(command[1:])
     capstdout, _ = capsys.readouterr()
     read_commands = list(capstdout.splitlines())
     LOGGER.info("List of read commands: {}".format(', '.join(read_commands)))
@@ -125,7 +125,7 @@ def test_comm_sbs_bqctrl_chip_read_commands(capsys, chip_name, test_nth):
         command = [os.path.join(".", "comm_sbs_bqctrl.py"), "-vv", "--dry-run", "--chip", chip_name, "read", read_cmd]
         LOGGER.info(' '.join(command))
         with patch.object(sys, 'argv', command):
-            comm_sbs_bqctrl_main()
+            comm_sbs_bqctrl_main(command[1:])
         capstdout, _ = capsys.readouterr()
     pass
 
@@ -146,7 +146,7 @@ def test_comm_sbs_bqctrl_chip_write_commands(capsys, chip_name, test_nth):
     command = [os.path.join(".", "comm_sbs_bqctrl.py"), "--dry-run", "--chip", chip_name, "write-list"]
     LOGGER.info(' '.join(command))
     with patch.object(sys, 'argv', command):
-        comm_sbs_bqctrl_main()
+        comm_sbs_bqctrl_main(command[1:])
     capstdout, _ = capsys.readouterr()
     write_commands = list(capstdout.splitlines())
     pytest.skip("no tests for write command as the command is unfinished")
@@ -176,7 +176,7 @@ def test_comm_sbs_bqctrl_chip_monitor_commands(capsys, chip_name, test_nth):
         command = [os.path.join(".", "comm_sbs_bqctrl.py"), "-vvv", "--dry-run", "--chip", chip_name, "--short", "monitor", monitor_cmd]
         LOGGER.info(' '.join(command))
         with patch.object(sys, 'argv', command):
-            comm_sbs_bqctrl_main()
+            comm_sbs_bqctrl_main(command[1:])
         capstdout, _ = capsys.readouterr()
     pass
 
@@ -207,7 +207,7 @@ def test_comm_sbs_bqctrl_chip_sealing_commands(capsys, chip_name, test_nth):
         command = [os.path.join(".", "comm_sbs_bqctrl.py"), "-vvv", "--dry-run", "--chip", chip_name, "--short", "sealing", sealing_cmd]
         LOGGER.info(' '.join(command))
         with patch.object(sys, 'argv', command):
-            comm_sbs_bqctrl_main()
+            comm_sbs_bqctrl_main(command[1:])
         capstdout, _ = capsys.readouterr()
         assert ".OperationStatus:" in capstdout
         # TODO maybe check status value, ie assert " SEC=1" in capstdout
@@ -228,6 +228,6 @@ def test_comm_sbs_bqctrl_data_flash(capsys, chip_name, flash_start, flash_end, f
         command = [os.path.join(".", "comm_sbs_bqctrl.py"), "-v", "--dry-run", "--chip", chip_name, "raw-read", "DataFlash", "0x{:X}".format(flash_offset), "string[32]"]
         LOGGER.info(' '.join(command))
         with patch.object(sys, 'argv', command):
-            comm_sbs_bqctrl_main()
+            comm_sbs_bqctrl_main(command[1:])
         capstdout, _ = capsys.readouterr()
     pass

@@ -3448,12 +3448,16 @@ def parse_monitor_group(s):
     """
     return s
 
+driver_cache = dict()
 
-def main():
+def main(argv=sys.argv[1:]):
     """ Main executable function.
 
       Its task is to parse command line options and call a function which performs sniffing.
     """
+
+    global driver_cache
+
     addrspace_datatypes = [ "int8", "uint8", "int16", "uint16", "int32", "uint32", "float", 'string[n]', 'byte[n]']
 
     parser = argparse.ArgumentParser(description=__doc__.split('.')[0])
@@ -3492,7 +3496,7 @@ def main():
             help="display version information and exit")
 
     subparsers = parser.add_subparsers(dest='action', metavar='action',
-            help="action to take")
+            help="action to take", required=True)
 
     subpar_info = subparsers.add_parser('info',
             help=("displays information about specific command; when chip "
@@ -3631,7 +3635,7 @@ def main():
               "(defaults to 0x{:08x} for FullAccess, otherwise to 0x{:08x})"
               ).format(0xffffffff,0x36720414))
 
-    po = parser.parse_args()
+    po = parser.parse_args(argv)
 
     vals = {}
 
@@ -3649,26 +3653,34 @@ def main():
             print("Opening {}".format(po.bus))
         smbus_open(po.bus, po)
 
+    # Re-init global variables; then they are modified by specific chip driver, do it before detection
+    reset_default_driver(po)
     if po.chip == CHIP_TYPE.AUTO:
         po.chip = smart_battery_detect(vals, po)
 
-    # Re-init global variables; then they are modified by specific chip driver
-    reset_default_driver(po)
-    if po.chip in (CHIP_TYPE.BQ30z50, CHIP_TYPE.BQ30z55, CHIP_TYPE.BQ30z554,):
-        fnames = ["comm_sbs_chips/{}.py".format("BQ30z554")]
-    elif po.chip in (CHIP_TYPE.BQ40z50,):
-        fnames = ["comm_sbs_chips/{}.py".format("BQ40z50")]
+    if po.chip in driver_cache:
+        chip_file_code = driver_cache[po.chip]
+        exec(chip_file_code)
     else:
-        fnames = ["comm_sbs_chips/{}.py".format(po.chip.name)]
-    for fname in fnames:
-        try:
-            with open(fname, "rb") as source_file:
-                chip_file_code = compile(source_file.read(), fname, "exec")
-            if (po.verbose > 0):
-                print("Importing {}".format(fname))
-            exec(chip_file_code)
-        except IOError:
-            print("Warning: Could not open chip definition file '{}'".format(fname))
+        if po.chip in (CHIP_TYPE.BQ30z50, CHIP_TYPE.BQ30z55, CHIP_TYPE.BQ30z554,):
+            fnames = ["comm_sbs_chips/{}.py".format("BQ30z554")]
+        elif po.chip in (CHIP_TYPE.BQ40z50,):
+            fnames = ["comm_sbs_chips/{}.py".format("BQ40z50")]
+        elif po.chip in ("SBS",):    # default
+            pass # do nothing, already loaded with reset_default_driver(po)
+        else:
+            fnames = ["comm_sbs_chips/{}.py".format(po.chip.name)]
+        driver_cache[po.chip] = list()
+        for fname in fnames:
+            try:
+                with open(fname, "rb") as source_file:
+                    chip_file_code = compile(source_file.read(), fname, "exec")
+                if (po.verbose > 0):
+                    print("Importing {}".format(fname))
+                exec(chip_file_code)
+                driver_cache[po.chip] = chip_file_code
+            except IOError:
+                print("Warning: Could not open chip definition file '{}'".format(fname))
 
     if po.action == 'info':
         smart_battery_system_info(po.command, vals, po)
@@ -3728,7 +3740,7 @@ def main():
                 po.i32key = 0x36720414
         smart_battery_system_sealing(po.sealstate, vals, po)
     else:
-        raise NotImplementedError("Unsupported command.")
+        raise NotImplementedError("Unsupported or missing command.")
 
     if not po.offline_mode:
         smbus_close()
