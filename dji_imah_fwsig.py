@@ -146,7 +146,8 @@ keys = {
     ]),
     "UFIE-2019-11":  bytes([ # Update Firmware Image Encryption key; published 2021-03-26 by Felix Domke
         # first use on 2019-11-07; used for:
-        # WM160 FW V01.00.0200-V01.00.0500, WM161 FW V01.00.0000-V01.02.0300
+        # WM160 FW V01.00.0200-V01.00.0500, WM161 FW V01.00.0000-V01.02.0300,
+        # WM1615 FW V01.00.0360 
         0xad, 0x45, 0xcd, 0x82, 0x13, 0xfb, 0x7e, 0x25, 0x5d, 0xbe, 0x45, 0x41, 0x70, 0xbc, 0x11, 0xa0
     ]),
     "UFIE-2018-07":  bytes([ # Update Firmware Image Encryption key; published 2021-06-20 by OGs
@@ -217,6 +218,7 @@ keys = {
     "PRAK-2019-09":  bytes.fromhex(( # Provisioning RSA Auth Key v5; published 2021-04-02 by Felix Domke
         # first use on 2020-06-09; used for:
         # WM161 FW V01.00.0000
+        # WM1615 FW V01.00.0360
         "40000000a1f987bf9fd539732277b64b32f178d7a62106d20336f2888292ee28"
         "3790524565232831d245919a3a88d92a754cafbb1b8ccaed67dec3a29e0f425b"
         "28cda10838a170227343eec744f78f3b5d19e9823a08fe6ee539fa7c0538e498"
