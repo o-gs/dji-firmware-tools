@@ -106,7 +106,7 @@ class FwModA9Header(LittleEndianStructure):
         fp.write("# Ambarella Firmware Packer module header file. Loosly based on AFT format.\n")
         fp.write(strftime("# Generated on %Y-%m-%d %H:%M:%S\n", gmtime()))
         varkey = 'model_name'
-        fp.write("{:s}={:s}\n".format(varkey, d[varkey].decode("utf-8")))
+        fp.write("{:s}={:s}\n".format(varkey, d[varkey].decode(encoding='utf-8', errors='ignore')));
         varkey = 'ver_info'
         fp.write("{:s}={:s}\n".format(varkey, d[varkey]))
 
