@@ -1638,7 +1638,7 @@ def main():
     subpar_flycpar = subparsers.add_parser('FlycParam',
             help="flight controller parameters handling")
 
-    subpar_flycpar_subcmd = subpar_flycpar.add_subparsers(dest='subcmd',
+    subpar_flycpar_subcmd = subpar_flycpar.add_subparsers(dest='subcmd', required=True,
             help="Flyc Param Command")
 
     subpar_flycpar_list = subpar_flycpar_subcmd.add_parser('list',
@@ -1690,7 +1690,7 @@ def main():
     subpar_camcal = subparsers.add_parser('CameraCalib',
             help="camera calibration options")
 
-    subpar_camcal_subcmd = subpar_camcal.add_subparsers(dest='subcmd',
+    subpar_camcal_subcmd = subpar_camcal.add_subparsers(dest='subcmd', required=True,
             help="camera calibration Command")
 
     subpar_camcal_encryptcheck = subpar_camcal_subcmd.add_parser('EncryptCheck',
