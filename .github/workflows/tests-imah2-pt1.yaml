@@ -25,6 +25,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, ubuntu-latest]
         python-version: ["3.8", "3.10"]
+        firmwares-bundle: ["bundle1", "bundle2"]
         # No need to test any python version on multiple Ubuntu versions, the Ubuntu version is
         # only to provide best matching environment for the Python.
         exclude:
@@ -81,17 +82,23 @@ jobs:
         pip install pytest pytest-cov pytest-order
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: Test IMaH v2 format - Download firmware package files [1/2]
-      # Instead of the usual actions/download-artifact, we are downloading from Mega
-      uses: Difegue/action-megacmd@master
-      with:
-        args: get https://mega.nz/file/Id9xiQAR#lUD13ML9_7gbwZvNnjvqLPlvnsQNqtQjCL8zeDP5ZPk ${{ env.GITHUB_WORKSPACE }}
+    - name: Select firmware packages bundle 1
+      if: ${{ matrix.firmwares-bundle == 'bundle1' }}
+      run: |
+        echo "fw_bundle_download_link=https://mega.nz/file/Id9xiQAR#lUD13ML9_7gbwZvNnjvqLPlvnsQNqtQjCL8zeDP5ZPk" >> $GITHUB_ENV
+        echo "fw_bundle_download_fname=fw_packages-imah2-selected-ci-p1-v1.zip" >> $GITHUB_ENV
 
-    - name: Test IMaH v2 format - Download firmware package files [2/2]
+    - name: Select firmware packages bundle 2
+      if: ${{ matrix.firmwares-bundle == 'bundle2' }}
+      run: |
+        echo "fw_bundle_download_link=https://mega.nz/file/lNkV0bTL#b1bDE69jlUzw7SnMAAOjbmE6Q2FuYotePz2el5TNk3E" >> $GITHUB_ENV
+        echo "fw_bundle_download_fname=fw_packages-imah2-selected-ci-p2-v1.zip" >> $GITHUB_ENV
+
+    - name: Test IMaH v2 format - Download firmware package files
       # Instead of the usual actions/download-artifact, we are downloading from Mega
       uses: Difegue/action-megacmd@master
       with:
-        args: get https://mega.nz/file/lNkV0bTL#b1bDE69jlUzw7SnMAAOjbmE6Q2FuYotePz2el5TNk3E ${{ env.GITHUB_WORKSPACE }}
+        args: get ${fw_bundle_download_link} ${{ env.GITHUB_WORKSPACE }}
 
     - name: Test IMaH v2 format - Set ownership for downloaded files
       # downloaded files are owned by root; unzip has no permission
@@ -101,8 +108,7 @@ jobs:
     - name: Test IMaH v2 format - Extract downloaded files
       run: |
         mkdir -p fw_packages
-        unzip -q ../fw_packages-imah2-selected-ci-p1-v1.zip -d fw_packages
-        unzip -q ../fw_packages-imah2-selected-ci-p2-v1.zip -d fw_packages
+        unzip -q ../${fw_bundle_download_fname} -d fw_packages
         rm ../fw_packages-*.zip
 
     - name: Test IMaH v2 format - Run pyTest
