@@ -2061,7 +2061,7 @@ def smbus_write_macblock_val_adding_block_subcmd_first(bus, dev_addr, cmd, subcm
         print("Store {}: {:02x} WORD=0x{:x}".format(basecmd_name, cmd.value, subcmd.value))
 
     b = type_str_to_bytes(v, stor_type, "le")
-    v = type_str_to_bytes(subcmd.value, "uint16", "le") + b[1:]
+    v = type_str_to_bytes(subcmd.value, "uint16", "le") + b
     full_stor_type = "byte[{}]".format(len(v))
 
     for nretry in reversed(range(1)):
@@ -2736,6 +2736,10 @@ def smbus_write(bus, dev_addr, cmd, v, opts, vals, po):
         if len(subcmdinf) <= 0:
             raise ValueError("Command {}.{} missing definition".format(cmd.name,subcmd.name))
 
+        # If writing to array-like sub-command, hand-craft our own which includes the shift
+        if 'subcmd_shift' in opts:
+            subcmd = sbs_command_add_shift(subcmd, subcmdinf, opts['subcmd_shift'], po)
+
         if cmdinf['getter'] == "write_word_subcommand":
             if ('resp_location' in subcmdinf) or (subcmdinf['type'] == "void"):
                 # do write request with subcmd, then do actual data write at specific location
@@ -3258,6 +3262,8 @@ def smart_battery_system_raw_restore(knd_str, fname, vals, po):
             opts = {'subcmd': subcmd, 'subcmd_shift': subcmd_shift}
             u, s = smbus_write(bus, po.dev_address, cmd, v, opts, vals, po)
             addr += len(v)
+            # writing too fast causes block to be missaligned
+            time.sleep(0.1)
 
     print("Raw write {}: done".format(knd.name,))
 
