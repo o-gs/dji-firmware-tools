@@ -1624,7 +1624,7 @@ def armfw_elf_data_definition_from_bytes(po, asm_arch, bt_data, bt_addr, pat_lin
     """ Converts bytes into data definition, keeping format given in pattern line.
 
     @asm_arch - Assembly architecture definition list.
-    @bt_data - bytes storing data for the definition; its length may exceed the definiton
+    @bt_data - bytes storing data for the definition; its length may exceed the definition
     @bt_addr - address of the definition in memory
     @pat_line - regex pattern line containing the definition
     @var_defs - definitions of variables which may be used in the pattern
