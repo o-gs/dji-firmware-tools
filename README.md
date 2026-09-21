@@ -484,6 +484,20 @@ OGs Service Tool for Dji products.
 The script allows to trigger a few service functions of Dji drones. It talks to the drone
 like `comm_serialtalk.py`, but provides easier interface for some important functions.
 
+Gimbal calibration monitoring accepts one-byte acknowledgements on ZENMUSE
+`0x08` and asynchronous two-byte reports on `0x30`, including reports without
+the response bit set. On the tested Air 3, JointCoarse completed in about 14.7
+seconds and LinearHall in about 54.7 seconds, both ending with payload `64 00`.
+Other report values are not treated as a universal percentage. LinearHall has
+a conservative 120-second monitoring ceiling; a timeout or loss of progress
+reports leaves completion unconfirmed (`UNSURE`). These host limits do not
+send a command to stop a calibration already running on the aircraft.
+
+These observations establish protocol compatibility, not an official Air 3
+product code or a fix for every post-repair camera/gimbal fault. The hardware
+experiments used `WM260` only to select the existing modern calibration path.
+See [the Air 3 product-code discussion](https://github.com/o-gs/dji-firmware-tools/issues/477).
+
 Example of listing Flight Controller Parameters 200-300 on Ph3 Pro to CSV format:
 
 ```./comm_og_service_tool.py --port /dev/ttyUSB0 P3X FlycParam list --start=200 --count=100 --fmt=csv```

@@ -934,7 +934,7 @@ def get_known_payload(pkthead, payload):
             if len(payload) >= sizeof(DJIPayload_FlyController_WriteParamValByHash2015Re)-DJIPayload_FlyController_ParamMaxLen+1:
                 return DJIPayload_FlyController_WriteParamValByHash2015Re.from_buffer_copy(payload.ljust(sizeof(DJIPayload_FlyController_WriteParamValByHash2015Re), b'\0'))
 
-    if pkthead.cmd_set == CMD_SET_TYPE.ZENMUSE.value and pkthead.packet_type == 0:
+    if pkthead.cmd_set == CMD_SET_TYPE.ZENMUSE.value:
         if (pkthead.cmd_id == 0x08):
             # Response for this packet often lacks type flag
             if len(payload) >= sizeof(DJIPayload_Gimbal_CalibRe):
@@ -942,14 +942,9 @@ def get_known_payload(pkthead, payload):
             elif len(payload) >= sizeof(DJIPayload_Gimbal_CalibRq):
                 return DJIPayload_Gimbal_CalibRq.from_buffer_copy(payload)
 
-    if pkthead.cmd_set == CMD_SET_TYPE.ZENMUSE.value and pkthead.packet_type == 1:
-        if (pkthead.cmd_id == 0x08):
-            if len(payload) >= sizeof(DJIPayload_Gimbal_CalibRe):
-                return DJIPayload_Gimbal_CalibRe.from_buffer_copy(payload)
-            elif len(payload) >= sizeof(DJIPayload_Gimbal_CalibRq):
-                # Newer platforms may echo the one-byte request as the ACK.
-                return DJIPayload_Gimbal_CalibRq.from_buffer_copy(payload)
         if (pkthead.cmd_id == 0x30):
+            # Air 3 asynchronous reports have been observed without the
+            # RESPONSE bit. Accept the payload with either flag value.
             if len(payload) >= sizeof(DJIPayload_Gimbal_CalibProgressRe):
                 return DJIPayload_Gimbal_CalibProgressRe.from_buffer_copy(payload)
 

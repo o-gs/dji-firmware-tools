@@ -1092,8 +1092,8 @@ def gimbal_calib_request_spark(po, ser, cmd):
         raise ConnectionError("Unrecognized response to calibration command {:s} request.".format(cmd.name))
 
     if isinstance(rplpayload, dupc.DJIPayload_Gimbal_CalibRq):
-        # Newer platforms may echo the one-byte request before sending
-        # asynchronous progress reports.
+        # A one-byte acknowledgement precedes asynchronous progress reports
+        # on the tested Air 3; it does not indicate calibration completion.
         if (po.verbose > 2):
             print("Parsed one-byte calibration ACK:")
             print(rplpayload)
@@ -1167,7 +1167,7 @@ def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload,
             ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 89 b0 00 04 08 28 01 0d 50"))
 
     rplpayload = first_rplpayload
-    curr_time = time.time()
+    curr_time = time.monotonic()
     # Preserve the historical timeout unless the caller supplies a larger
     # safety limit for a calibration that is known to take longer.
     if max_duration is None:
@@ -1189,11 +1189,11 @@ def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload,
                 break
 
         if curr_time > timeout_time:
-            print("Calibration time exceeded; calibration must have ended.")
+            print("Calibration monitoring timed out; completion unconfirmed.")
             break
 
         if curr_time > last_tick_time + expect_duration / 4000:
-            print("Progress reports stopped; calibration must have ended.")
+            print("Progress reports stopped; completion unconfirmed.")
             break
 
         if curr_time > report_time + expect_duration / 10000:
@@ -1202,7 +1202,7 @@ def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload,
 
         rplpayload = gimbal_calib_request_spark_receive_progress(po, ser, pktreq)
 
-        curr_time = time.time()
+        curr_time = time.monotonic()
 
     print("Summary: took {:0.1f} sec; received {:d} reports; result: {:s}.".format(curr_time-start_time,ticks_received,result))
 
@@ -1232,12 +1232,13 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
         NONE
     """
 
-    print("\nInfo: The Gimbal will slowly move through all positions in all axes, several times. It will take around 30 seconds.\n")
+    print("\nInfo: The Gimbal will slowly move through all positions in all axes, several times. Duration varies by model; about 55 seconds was observed on Air 3.\n")
 
     rplpayload, pktreq = gimbal_calib_request_spark(po, ser, dupc.DJIPayload_Gimbal_CalibCmd.LinearHall)
 
     print("Calibration process started; monitoring progress.")
 
+    # Conservative host monitoring ceiling, not a measured device limit.
     gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq,
       30000, [40, 1], max_duration=120000)
 

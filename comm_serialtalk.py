@@ -32,6 +32,7 @@ import io
 import os
 import sys
 import time
+from collections import deque
 from ctypes import sizeof, c_void_p
 
 sys.path.insert(0, './')
@@ -118,8 +119,13 @@ class SerialBulkWrap():
         self.ep_out.write(btarr)
 
     def read( self, n=1):
-        btarr = self.ep_in.read(self.ep_in.wMaxPacketSize,self.timeout)
-        return btarr
+        import usb.core
+        try:
+            return self.ep_in.read(self.ep_in.wMaxPacketSize, self.timeout)
+        except usb.core.USBTimeoutError:
+            # An idle read is not a disconnected device. Let the receive and
+            # calibration deadlines decide when to stop waiting.
+            return b''
 
     def close(self):
         import usb.util
@@ -348,50 +354,63 @@ def do_send_request(po, ser, pktprop):
     if (po.verbose > 0):
         print("Sending packet...")
 
+    # Start a new transaction before writing: flushing after the write can
+    # discard an immediate ACK. Subsequent progress receives must not flush.
+    ser.reset_input_buffer()
+    ser._dupc_receiver = ReplyReceiver(po, ser)
     ser.write(pktreq)
 
     return pktreq
 
 
+class ReplyReceiver:
+    """Parser state and unread packets for one connection's current request."""
+
+    def __init__(self, po, ser):
+        self.info = PktInfo()
+        self.state = PktState()
+        self.state.packet = bytearray()
+        self.state.verbose = po.verbose
+        self.state.pname = ser.port
+        self.pending = deque()
+
+
 def do_receive_reply(po, ser, pktreq, seqnum_check=True, extra_cmd_ids=()):
     """ Receive reply after sending packet pktreq to interface ser.
     """
-    ser.reset_input_buffer()
     if (po.verbose > 1):
         print("Waiting for reply...")
 
-    info = PktInfo()
-
-    state = PktState()
-    state.verbose = po.verbose
-    state.pname = ser.port
+    receiver = getattr(ser, '_dupc_receiver', None)
+    if receiver is None:
+        receiver = ReplyReceiver(po, ser)
+        ser._dupc_receiver = receiver
     pktrpl = None
-    show_stats = False
-    loop_end = False
-    timeout_time = time.time() + po.timeout / 1000
+    timeout_time = time.monotonic() + po.timeout / 1000
 
-    while not loop_end:
-        # Wait for something to do
-        if time.time() > timeout_time:
+    while True:
+        # Consume complete packets before reading again. Preserve everything
+        # after the matched packet, including any partially parsed next frame.
+        while receiver.pending:
+            packet = receiver.pending.popleft()
+            pktrpl = find_reply_for_request(po, [packet], pktreq,
+              seqnum_check=seqnum_check, extra_cmd_ids=extra_cmd_ids)
+            if pktrpl is not None:
+                break
+        if pktrpl is not None:
+            break
+        if time.monotonic() >= timeout_time:
             if (po.verbose > 0):
                 print("Timeout while waiting for reply.")
-            show_stats = True
-            loop_end = True
+            break
+        receiver.state, pktlist, receiver.info = do_read_packets(
+          ser, receiver.state, receiver.info)
+        receiver.pending.extend(pktlist)
 
-        if True:
-            state, pktlist, info = do_read_packets(ser, state, info)
-            pktrpl = find_reply_for_request(po, pktlist, pktreq,
-              seqnum_check=seqnum_check, extra_cmd_ids=extra_cmd_ids)
-
-        if pktrpl is not None:
-            show_stats = True
-            loop_end = True
-
-        if (show_stats):
-            if (po.verbose > 0):
-                print("Retrieved {:d} packets ({:d}b), dropped {:d} fragments ({:d}b)".format(
-                    info.count_ok, info.bytes_ok, info.count_bad, info.bytes_bad))
-            show_stats = False
+    if (po.verbose > 0):
+        info = receiver.info
+        print("Retrieved {:d} packets ({:d}b), dropped {:d} fragments ({:d}b) since request".format(
+          info.count_ok, info.bytes_ok, info.count_bad, info.bytes_bad))
 
     return pktrpl
 
