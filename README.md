@@ -457,8 +457,11 @@ Example of asking Flight Controller for hardware and firmware version data (Mavi
 ```./comm_serialtalk.py --bulk -vv --timeout=5000 --receiver_type=FlyController --seq_num=65280 --ack_type=ACK_After_Exec --cmd_set=General --cmd_id=1```
 
 USB bulk mode uses a libusb-0.1 compatible backend. If the library cannot be
-discovered automatically, its path can be supplied explicitly, for example on
-Windows: `--libusb-path C:\path\to\libusb0.dll`.
+discovered automatically, the tools also look for `libusb0.dll` in the project
+root. Its path can instead be supplied explicitly, for example on Windows:
+`--libusb-path C:\path\to\libusb0.dll`. Windows binaries are available from the
+[official libusb-win32 1.4.0.2 release](https://sourceforge.net/projects/libusb-win32/files/libusb-win32-releases/1.4.0.2/).
+Use the DLL matching the architecture of the Python interpreter.
 
 ### comm_og_service_tool.py
 

@@ -29,6 +29,7 @@ __license__ = "GPL"
 
 import argparse
 import io
+import os
 import sys
 import time
 from ctypes import sizeof
@@ -191,17 +192,40 @@ def find_correct_device(dev):
     return None
 
 
+LIBUSB_WIN32_DOWNLOAD_URL = (
+  "https://sourceforge.net/projects/libusb-win32/files/"
+  "libusb-win32-releases/1.4.0.2/"
+)
+
+
+def get_libusb_backend(myusb, libusb_path=None):
+    """Load libusb-0.1, optionally using an explicit or script-local DLL."""
+    if libusb_path:
+        mybackend = myusb.get_backend(
+          find_library=lambda _: os.path.abspath(libusb_path))
+    else:
+        mybackend = myusb.get_backend()
+        local_path = os.path.join(
+          os.path.dirname(os.path.abspath(__file__)), 'libusb0.dll')
+        if mybackend is None and os.path.isfile(local_path):
+            mybackend = myusb.get_backend(
+              find_library=lambda _: local_path)
+
+    if mybackend is None:
+        raise RuntimeError(
+          "No backend available for USB bulk mode. Install libusb-win32, "
+          "place libusb0.dll in the project root, or pass --libusb-path. "
+          "Official binaries: {}".format(LIBUSB_WIN32_DOWNLOAD_URL))
+    return mybackend
+
+
 def open_usb(po):
     import usb.core
     import usb.util
     import usb.backend.libusb0 as myusb
 
-    libusb_path = getattr(po, 'libusb_path', None)
-    if libusb_path:
-        mybackend = myusb.get_backend(find_library=lambda _: libusb_path)
-    else:
-        mybackend = myusb.get_backend()
-    assert mybackend is not None, "Could not load the libusb-0.1 backend"
+    mybackend = get_libusb_backend(
+      myusb, getattr(po, 'libusb_path', None))
 
     devices = usb.core.find(idVendor=0x2ca3, find_all=True, backend=mybackend)
     intf = find_correct_device(devices)
