@@ -231,13 +231,14 @@ def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_t
     return pktrpl, pktreq
 
 
-def receive_reply_for_request(po, ser, pktreq, seqnum_check=True):
+def receive_reply_for_request(po, ser, pktreq, seqnum_check=True, extra_cmd_ids=()):
     """ Receives and returns response for given request packet.
 
         Does not send the request, just waits for response.
         To be used in cases when a packet triggers multiple responses.
     """
-    pktrpl = do_receive_reply(po, ser, pktreq, seqnum_check=seqnum_check)
+    pktrpl = do_receive_reply(po, ser, pktreq,
+      seqnum_check=seqnum_check, extra_cmd_ids=extra_cmd_ids)
 
     if (po.verbose > 1):
         if pktrpl is not None:
@@ -1090,6 +1091,14 @@ def gimbal_calib_request_spark(po, ser, cmd):
     if (rplpayload is None):
         raise ConnectionError("Unrecognized response to calibration command {:s} request.".format(cmd.name))
 
+    if isinstance(rplpayload, dupc.DJIPayload_Gimbal_CalibRq):
+        # Newer platforms may echo the one-byte request before sending
+        # asynchronous progress reports.
+        if (po.verbose > 2):
+            print("Parsed one-byte calibration ACK:")
+            print(rplpayload)
+        return None, pktreq
+
     if (po.verbose > 2):
         print("Parsed response - {:s}:".format(type(rplpayload).__name__))
         print(rplpayload)
@@ -1098,10 +1107,13 @@ def gimbal_calib_request_spark(po, ser, cmd):
 
 def gimbal_calib_request_spark_receive_progress(po, ser, pktreq):
 
-    pktrpl = receive_reply_for_request(po, ser, pktreq, seqnum_check=False)
+    # Newer gimbals send asynchronous calibration reports on ZENMUSE 0x30
+    # after accepting the calibration request on ZENMUSE 0x08.
+    pktrpl = receive_reply_for_request(po, ser, pktreq,
+      seqnum_check=False, extra_cmd_ids=(0x30,))
 
     if pktrpl is None:
-        raise ConnectionError("No progress tick on calibration request.")
+        return None
 
     rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
     rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
@@ -1116,7 +1128,19 @@ def gimbal_calib_request_spark_receive_progress(po, ser, pktreq):
     return rplpayload
 
 
-def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload, pktreq, expect_duration, pass_values):
+def gimbal_calib_report_is_success(rplpayload, pass_values):
+    if isinstance(rplpayload, dupc.DJIPayload_Gimbal_CalibProgressRe):
+        # This is the only terminal tuple confirmed on newer hardware.
+        return rplpayload.value == 0x64 and rplpayload.state == 0x00
+    if isinstance(rplpayload, dupc.DJIPayload_Gimbal_CalibRe):
+        return (rplpayload.status1 == pass_values[0]
+          and rplpayload.status2 == pass_values[1])
+    return False
+
+
+def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload,
+                                               pktreq, expect_duration,
+                                               pass_values, max_duration=None):
     if po.dry_test:
         # use to test the code without a drone; packets are different for each calibration
         if pass_values[0] == 16:
@@ -1144,9 +1168,12 @@ def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload, pktre
 
     rplpayload = first_rplpayload
     curr_time = time.time()
-    # As timeout, use expected time + 50%
+    # Preserve the historical timeout unless the caller supplies a larger
+    # safety limit for a calibration that is known to take longer.
+    if max_duration is None:
+        max_duration = expect_duration * 1.5
     start_time = curr_time
-    timeout_time = curr_time + expect_duration * 1.5 / 1000
+    timeout_time = curr_time + max_duration / 1000
     report_time = curr_time + expect_duration / 10000 # Aim at 10 reports in the run
     ticks_received = 0
     last_tick_time = curr_time
@@ -1156,7 +1183,7 @@ def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload, pktre
         if rplpayload is not None:
             ticks_received = ticks_received + 1
             last_tick_time = curr_time
-            if rplpayload.status1 == pass_values[0] and rplpayload.status2 == pass_values[1]:
+            if gimbal_calib_report_is_success(rplpayload, pass_values):
                 print("Concluding report received; calibration finished.")
                 result = "PASS"
                 break
@@ -1211,7 +1238,8 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
 
     print("Calibration process started; monitoring progress.")
 
-    gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq, 30000, [40, 1])
+    gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq,
+      30000, [40, 1], max_duration=120000)
 
 
 def gimbal_calib_request_p3x(po, ser):
@@ -1609,6 +1637,9 @@ def main():
 
     subparser.add_argument('--bulk', action='store_true',
             help="use usb bulk instead of serial connection")
+
+    parser.add_argument('--libusb-path', type=str,
+            help="path to a libusb-0.1 compatible library for USB bulk mode")
 
     parser.add_argument('product', metavar='product',
             choices=[i.name for i in PRODUCT_CODE], type=parse_product_code,
