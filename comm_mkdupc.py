@@ -730,6 +730,19 @@ class DJIPayload_Gimbal_CalibRe(DJIPayload_Base):
   ]
 
 
+class DJIPayload_Gimbal_CalibProgressRe(DJIPayload_Base):
+  """Asynchronous calibration report used by newer gimbals.
+
+  Only the observed completion tuple, value=0x64 and state=0x00, is
+  currently understood. Other values appear to describe progress or an
+  internal phase and should not be interpreted as a percentage.
+  """
+  _fields_ = [
+        ('value', c_ubyte),
+        ('state', c_ubyte),
+  ]
+
+
 class DJIPayload_HDLink_WriteHardwareRegisterRq(DJIPayload_Base):
   _fields_ = [
         ('reg_address', c_ushort),
@@ -933,6 +946,12 @@ def get_known_payload(pkthead, payload):
         if (pkthead.cmd_id == 0x08):
             if len(payload) >= sizeof(DJIPayload_Gimbal_CalibRe):
                 return DJIPayload_Gimbal_CalibRe.from_buffer_copy(payload)
+            elif len(payload) >= sizeof(DJIPayload_Gimbal_CalibRq):
+                # Newer platforms may echo the one-byte request as the ACK.
+                return DJIPayload_Gimbal_CalibRq.from_buffer_copy(payload)
+        if (pkthead.cmd_id == 0x30):
+            if len(payload) >= sizeof(DJIPayload_Gimbal_CalibProgressRe):
+                return DJIPayload_Gimbal_CalibProgressRe.from_buffer_copy(payload)
 
     if pkthead.cmd_set == CMD_SET_TYPE.OFDM.value and pkthead.packet_type == 0:
         if (pkthead.cmd_id == 0x06):
