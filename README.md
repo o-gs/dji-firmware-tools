@@ -456,12 +456,26 @@ Example of asking Flight Controller for hardware and firmware version data (Mavi
 
 ```./comm_serialtalk.py --bulk -vv --timeout=5000 --receiver_type=FlyController --seq_num=65280 --ack_type=ACK_After_Exec --cmd_set=General --cmd_id=1```
 
-USB bulk mode uses a libusb-0.1 compatible backend. If the library cannot be
-discovered automatically, the tools also look for `libusb0.dll` in the project
-root. Its path can instead be supplied explicitly, for example on Windows:
-`--libusb-path C:\path\to\libusb0.dll`. Windows binaries are available from the
+USB bulk mode requires PyUSB and a native USB backend. The tools retain the
+existing preference for libusb-0.1, followed by PyUSB's automatic backend
+selection. On Windows, if no system backend can be loaded, they also try
+`libusb0.dll` beside `comm_serialtalk.py` in the project root, regardless of the
+current working directory. The DLL is a local dependency and is not bundled.
+
+Both communication tools accept an explicit libusb-0.1 library override, for
+example `--libusb-path C:\path\to\libusb0.dll`. An invalid override reports an
+error rather than silently selecting a different backend. This override can
+also select the local DLL when an installed backend loads but cannot access
+the device.
+
+Windows communication with an Air 3 was tested using the x64 DLL from the
 [official libusb-win32 1.4.0.2 release](https://sourceforge.net/projects/libusb-win32/files/libusb-win32-releases/1.4.0.2/).
-Use the DLL matching the architecture of the Python interpreter.
+This is a tested version, not an enforced minimum. Match the DLL to the Python
+interpreter's architecture (32/64-bit). The user-space DLL and Windows USB
+device driver are separate: copying the DLL does not install a device driver.
+The tested Air 3 already had working libusb-win32 interface bindings.
+On other operating systems, install a native libusb library through the system
+package manager. Serial-port mode does not require a USB backend.
 
 ### comm_og_service_tool.py
 
