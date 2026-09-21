@@ -196,9 +196,15 @@ def open_usb(po):
     import usb.util
     import usb.backend.libusb0 as myusb
 
-    mybackend = myusb.get_backend()
-    dev = usb.core.find(idVendor=0x2ca3, find_all = True, backend=mybackend)
-    intf = find_correct_device(dev)
+    libusb_path = getattr(po, 'libusb_path', None)
+    if libusb_path:
+        mybackend = myusb.get_backend(find_library=lambda _: libusb_path)
+    else:
+        mybackend = myusb.get_backend()
+    assert mybackend is not None, "Could not load the libusb-0.1 backend"
+
+    devices = usb.core.find(idVendor=0x2ca3, find_all=True, backend=mybackend)
+    intf = find_correct_device(devices)
 
     assert intf is not None, "Could not find any DJI BULK device"
 
@@ -218,8 +224,8 @@ def open_usb(po):
             usb.util.endpoint_direction(e.bEndpointAddress) == \
             usb.util.ENDPOINT_IN)
 
-    if dev and ep_in and ep_out:
-        return SerialBulkWrap(dev,ep_in,ep_out, po.timeout)
+    if intf.device and ep_in and ep_out:
+        return SerialBulkWrap(intf.device, ep_in, ep_out, po.timeout)
     else:
         assert False, "Could not find endpoints for bulk interface"
 
@@ -245,12 +251,13 @@ def do_read_packets(ser, state, info):
     return state, out.pktlist, info
 
 
-def packet_header_is_reply_for_request(rplhdr, reqhdr, responsebit_check=False, seqnum_check=True):
+def packet_header_is_reply_for_request(rplhdr, reqhdr, responsebit_check=False,
+                                       seqnum_check=True, extra_cmd_ids=()):
     if (rplhdr.version != 1):
         return False
     if (rplhdr.cmd_set != reqhdr.cmd_set):
         return False
-    if (rplhdr.cmd_id != reqhdr.cmd_id):
+    if (rplhdr.cmd_id != reqhdr.cmd_id) and (rplhdr.cmd_id not in extra_cmd_ids):
         return False
     if (rplhdr.sender_info != reqhdr.receiver_info):
         return False
@@ -267,13 +274,14 @@ def packet_header_is_reply_for_request(rplhdr, reqhdr, responsebit_check=False, 
     return True
 
 
-def find_reply_for_request(po, pktlist, pktreq, seqnum_check=True):
+def find_reply_for_request(po, pktlist, pktreq, seqnum_check=True, extra_cmd_ids=()):
     if len(pktlist) == 0:
         return None
     reqhdr = DJICmdV1Header.from_buffer_copy(pktreq)
     for pktrpl in pktlist:
         rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
-        if packet_header_is_reply_for_request(rplhdr, reqhdr, seqnum_check=seqnum_check):
+        if packet_header_is_reply_for_request(rplhdr, reqhdr,
+          seqnum_check=seqnum_check, extra_cmd_ids=extra_cmd_ids):
             return pktrpl
         if (po.verbose > 2):
             print("Received unrelated packet:")
@@ -298,7 +306,7 @@ def do_send_request(po, ser, pktprop):
     return pktreq
 
 
-def do_receive_reply(po, ser, pktreq, seqnum_check=True):
+def do_receive_reply(po, ser, pktreq, seqnum_check=True, extra_cmd_ids=()):
     """ Receive reply after sending packet pktreq to interface ser.
     """
     ser.reset_input_buffer()
@@ -325,7 +333,8 @@ def do_receive_reply(po, ser, pktreq, seqnum_check=True):
 
         if True:
             state, pktlist, info = do_read_packets(ser, state, info)
-            pktrpl = find_reply_for_request(po, pktlist, pktreq, seqnum_check=seqnum_check)
+            pktrpl = find_reply_for_request(po, pktlist, pktreq,
+              seqnum_check=seqnum_check, extra_cmd_ids=extra_cmd_ids)
 
         if pktrpl is not None:
             show_stats = True
@@ -386,6 +395,9 @@ def main():
 
     subparser.add_argument('--bulk', action='store_true',
             help="use usb bulk instead of serial connection")
+
+    parser.add_argument('--libusb-path', type=str,
+            help="path to a libusb-0.1 compatible library for USB bulk mode")
 
     parser.add_argument('-b', '--baudrate', default=9600, type=int,
             help="the baudrate to use for the serial port (default is %(default)s)")

@@ -456,6 +456,10 @@ Example of asking Flight Controller for hardware and firmware version data (Mavi
 
 ```./comm_serialtalk.py --bulk -vv --timeout=5000 --receiver_type=FlyController --seq_num=65280 --ack_type=ACK_After_Exec --cmd_set=General --cmd_id=1```
 
+USB bulk mode uses a libusb-0.1 compatible backend. If the library cannot be
+discovered automatically, its path can be supplied explicitly, for example on
+Windows: `--libusb-path C:\path\to\libusb0.dll`.
+
 ### comm_og_service_tool.py
 
 OGs Service Tool for Dji products.
