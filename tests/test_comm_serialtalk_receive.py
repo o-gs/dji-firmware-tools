@@ -2,8 +2,8 @@
 
 """Exercise framed DUML streams with combined and fragmented USB reads.
 
-Packets are synthesized using observed header/payload variants; these are not
-captures from a new hardware test of the cleaned implementation.
+Most packets are synthetic. The captured-packet test uses ACK and terminal
+frames from Air 3 firmware V01.00.1500 hardware retesting on 2026-09-22.
 """
 
 from collections import deque
@@ -154,3 +154,27 @@ def test_bulk_timeout_is_idle_but_other_usb_errors_propagate():
     with pytest.raises(core.USBError) as caught:
         stream.read()
     assert caught.value is error
+
+
+@pytest.mark.parametrize('command,ack_hex,terminal_hex', [
+    (m.DJIPayload_Gimbal_CalibCmd.JointCoarse,
+     '55 0e 04 66 04 0a 04 f7 80 04 08 01 9d 80',
+     '55 0f 04 a2 04 0a 97 60 00 04 30 64 00 05 98'),
+    (m.DJIPayload_Gimbal_CalibCmd.LinearHall,
+     '55 0e 04 66 04 0a c4 4c 80 04 08 01 86 9e',
+     '55 0f 04 a2 04 0a 6c 32 00 04 30 64 00 e1 31'),
+])
+def test_captured_air3_ack_and_terminal(
+        options, command, ack_hex, terminal_hex, capsys):
+    # From air3-jointcoarse.log / air3-linearhall.log. Combining delivery into
+    # one read is a regression scenario, not a claim about USB read boundaries
+    # in those logs. LinearHall's ACK is 01, not an echo 02.
+    stream = Stream(on_write=[bytes.fromhex(ack_hex + ' ' + terminal_hex)])
+    first, request = service.gimbal_calib_request_spark(
+        options, stream, command)
+    assert first is None
+    service.gimbal_calib_request_spark_monitor_progress(
+        options, stream, first, request, 30000, [40, 1], max_duration=120000)
+    assert 'result: PASS' in capsys.readouterr().out
+    assert stream._dupc_receiver.info.count_ok == 2
+    assert stream._dupc_receiver.info.count_bad == 0

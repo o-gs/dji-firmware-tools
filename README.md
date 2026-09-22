@@ -486,8 +486,19 @@ like `comm_serialtalk.py`, but provides easier interface for some important func
 
 Gimbal calibration monitoring accepts one-byte acknowledgements on ZENMUSE
 `0x08` and asynchronous two-byte reports on `0x30`, including reports without
-the response bit set. On the tested Air 3, JointCoarse completed in about 14.7
-seconds and LinearHall in about 54.7 seconds, both ending with payload `64 00`.
+the response bit set. Hardware retesting on Air 3 firmware `V01.00.1500`
+produced these results (Windows, 64-bit Python):
+
+| Routine | Duration | Progress reports | Terminal payload | Result |
+| --- | --- | --- | --- | --- |
+| JointCoarse | 14.8 seconds | 150 | `64 00` | PASS |
+| LinearHall | 54.4 seconds | 549 | `64 00` | PASS |
+
+Both logs reported zero dropped fragments. All 699 captured progress reports
+had the response bit unset. Both initial acknowledgements contained `01`,
+including LinearHall whose request payload was `02`; the acknowledgement
+therefore should not be interpreted as an echo of the requested command.
+
 Other report values are not treated as a universal percentage. LinearHall has
 a conservative 120-second monitoring ceiling; a timeout or loss of progress
 reports leaves completion unconfirmed (`UNSURE`). These host limits do not
