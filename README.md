@@ -474,6 +474,18 @@ This is a tested version, not an enforced minimum. Match the DLL to the Python
 interpreter's architecture (32/64-bit). The user-space DLL and Windows USB
 device driver are separate: copying the DLL does not install a device driver.
 The tested Air 3 already had working libusb-win32 interface bindings.
+
+A libusb-1.0-only setup using the Python `libusb-package` package was also
+evaluated on the same Windows/Air 3 host. libusb-1.0 successfully enumerated
+the Air 3 composite device and its bulk endpoints, but configuration-string
+access failed with a missing-langid error and the first DUML bulk OUT transfer
+failed with `Entity not found` while the DJI interfaces remained bound to the
+existing libusb-win32 driver. Because the libusb-0.1 path is the configuration
+that was validated end-to-end for this hardware, this change intentionally
+retains libusb0 as the tested Windows backend instead of requiring a driver
+migration to WinUSB/libusbK. This limitation may be driver-stack-specific and
+does not imply that libusb-1.0 cannot work with other Windows USB bindings.
+
 On other operating systems, install a native libusb library through the system
 package manager. Serial-port mode does not require a USB backend.
 
