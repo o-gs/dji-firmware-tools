@@ -81,6 +81,7 @@ class PRODUCT_CODE(DecoratedEnum):
     WM232  = 28 # Released 2021-04-15 (MAVIC) AIR 2S
     WM260  = 29 # Released 2021-11-05 (MAVIC) 3
     WM247  = 30 # Released 2020-12-15 Mavic 2 Enterprise Advanced
+    AIR3   = 31 # Tool model selector; official DJI product code is unverified.
 
 
 ALT_PRODUCT_CODE = {
@@ -1214,6 +1215,7 @@ def do_gimbal_calib_request_spark_joint_coarse(po, ser):
         WM100_FW_V01.00.0900 (2018-07-27)
         WM230_FW_unknown (2019-03-31, report from bunchofbradys@github)
         WM240_FW_V01.00.0200 (2020-02-28, report from Andris8888@slack)
+        Air 3 V01.00.1500 (Windows USB bulk, 64-bit Python)
     """
 
     print("\nInfo: The Gimbal will move through its boundary positions, then it will fine-tune its central position. It will take around 15 seconds.\n")
@@ -1229,10 +1231,11 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
     """ Initiates Spark Gimbal Linear Hall calibration.
 
         Tested on the following platforms and FW versions:
-        NONE
+        Air 3 V01.00.1500 (Windows USB bulk, 64-bit Python)
     """
 
-    print("\nInfo: The Gimbal will slowly move through all positions in all axes, several times. Duration varies by model; about 55 seconds was observed on Air 3.\n")
+    expect_duration = 55000 if po.product == PRODUCT_CODE.AIR3 else 30000
+    print("\nInfo: The Gimbal will slowly move through all positions in all axes, several times. It will take around {:d} seconds.\n".format(expect_duration // 1000))
 
     rplpayload, pktreq = gimbal_calib_request_spark(po, ser, dupc.DJIPayload_Gimbal_CalibCmd.LinearHall)
 
@@ -1240,7 +1243,7 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
 
     # Conservative host monitoring ceiling, not a measured device limit.
     gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq,
-      30000, [40, 1], max_duration=120000)
+      expect_duration, [40, 1], max_duration=120000)
 
 
 def gimbal_calib_request_p3x(po, ser):
@@ -1745,6 +1748,9 @@ def main():
 
     po.product = PRODUCT_CODE.from_name(po.product)
     po.svcmd = SERVICE_CMD.from_name(po.svcmd)
+
+    if po.product == PRODUCT_CODE.AIR3 and po.svcmd != SERVICE_CMD.GimbalCalib:
+        parser.error("AIR3 supports only GimbalCalib JointCoarse and LinearHall.")
 
     if po.svcmd == SERVICE_CMD.FlycParam:
         po.subcmd = FLYC_PARAM_CMD.from_name(po.subcmd.upper())
