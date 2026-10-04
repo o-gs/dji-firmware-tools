@@ -81,6 +81,7 @@ class PRODUCT_CODE(DecoratedEnum):
     WM232  = 28 # Released 2021-04-15 (MAVIC) AIR 2S
     WM260  = 29 # Released 2021-11-05 (MAVIC) 3
     WM247  = 30 # Released 2020-12-15 Mavic 2 Enterprise Advanced
+    AIR3   = 31 # Tool model selector; official DJI product code is unverified.
 
 
 ALT_PRODUCT_CODE = {
@@ -157,7 +158,10 @@ def detect_serial_port(po):
 
 def open_serial_port(po):
     ser = None
-    if po.bulk:
+    if po.dry_test:
+        # Dry runs must never enumerate or open hardware, including USB bulk.
+        ser = SerialMock(po.port, baudrate=po.baudrate, timeout=0)
+    elif po.bulk:
         ser = open_usb(po)
     else:
         # Open serial port
@@ -166,10 +170,7 @@ def open_serial_port(po):
             port_name = detect_serial_port(po)
         else:
             port_name = po.port
-        if not po.dry_test:
-            ser = serial.Serial(port_name, baudrate=po.baudrate, timeout=0)
-        else:
-            ser = SerialMock(port_name, baudrate=po.baudrate, timeout=0)
+        ser = serial.Serial(port_name, baudrate=po.baudrate, timeout=0)
         if (po.verbose > 0):
             print("Opened {} at {}".format(ser.port, ser.baudrate))
     return ser
@@ -231,13 +232,14 @@ def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_t
     return pktrpl, pktreq
 
 
-def receive_reply_for_request(po, ser, pktreq, seqnum_check=True):
+def receive_reply_for_request(po, ser, pktreq, seqnum_check=True, extra_cmd_ids=()):
     """ Receives and returns response for given request packet.
 
         Does not send the request, just waits for response.
         To be used in cases when a packet triggers multiple responses.
     """
-    pktrpl = do_receive_reply(po, ser, pktreq, seqnum_check=seqnum_check)
+    pktrpl = do_receive_reply(po, ser, pktreq,
+      seqnum_check=seqnum_check, extra_cmd_ids=extra_cmd_ids)
 
     if (po.verbose > 1):
         if pktrpl is not None:
@@ -1063,6 +1065,27 @@ def do_flyc_param_request(po):
     ser.close()
 
 
+# Representative raw frames from Air 3 V01.00.1500 hardware captures.
+# Each sequence contains the initial ACK, sampled asynchronous reports, and
+# the terminal 64 00 report. These are shortened dry tests, not timing replays.
+AIR3_GIMBAL_CALIB_MOCK_PACKETS = {
+    dupc.DJIPayload_Gimbal_CalibCmd.JointCoarse: (
+        "55 0e 04 66 04 0a 04 f7 80 04 08 01 9d 80",
+        "55 0f 04 a2 04 0a 15 4b 00 04 30 52 01 1d 72",
+        "55 0f 04 a2 04 0a d0 53 00 04 30 53 01 95 b9",
+        "55 0f 04 a2 04 0a 45 5a 00 04 30 54 01 99 12",
+        "55 0f 04 a2 04 0a 97 60 00 04 30 64 00 05 98",
+    ),
+    dupc.DJIPayload_Gimbal_CalibCmd.LinearHall: (
+        "55 0e 04 66 04 0a c4 4c 80 04 08 01 86 9e",
+        "55 0f 04 a2 04 0a 3e ce 00 04 30 12 01 5f 30",
+        "55 0f 04 a2 04 0a b5 ef 00 04 30 16 01 eb 26",
+        "55 0f 04 a2 04 0a 2f 11 00 04 30 16 01 69 05",
+        "55 0f 04 a2 04 0a 6c 32 00 04 30 64 00 e1 31",
+    ),
+}
+
+
 def gimbal_calib_request_spark(po, ser, cmd):
     payload = dupc.DJIPayload_Gimbal_CalibRq()
     payload.command = cmd.value
@@ -1072,8 +1095,12 @@ def gimbal_calib_request_spark(po, ser, cmd):
         print(payload)
 
     if po.dry_test:
-        # use to test the code without a drone
-        ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"))
+        # Queue the ACK only; progress is queued by the monitor below.
+        if po.product == PRODUCT_CODE.AIR3:
+            packet = AIR3_GIMBAL_CALIB_MOCK_PACKETS[cmd][0]
+        else:
+            packet = "55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"
+        ser.mock_data_for_read(bytes.fromhex(packet))
 
     pktrpl, pktreq = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.GIMBAL, 0,
@@ -1090,6 +1117,14 @@ def gimbal_calib_request_spark(po, ser, cmd):
     if (rplpayload is None):
         raise ConnectionError("Unrecognized response to calibration command {:s} request.".format(cmd.name))
 
+    if isinstance(rplpayload, dupc.DJIPayload_Gimbal_CalibRq):
+        # A one-byte acknowledgement precedes asynchronous progress reports
+        # on the tested Air 3; it does not indicate calibration completion.
+        if (po.verbose > 2):
+            print("Parsed one-byte calibration ACK:")
+            print(rplpayload)
+        return None, pktreq
+
     if (po.verbose > 2):
         print("Parsed response - {:s}:".format(type(rplpayload).__name__))
         print(rplpayload)
@@ -1098,10 +1133,13 @@ def gimbal_calib_request_spark(po, ser, cmd):
 
 def gimbal_calib_request_spark_receive_progress(po, ser, pktreq):
 
-    pktrpl = receive_reply_for_request(po, ser, pktreq, seqnum_check=False)
+    # Newer gimbals send asynchronous calibration reports on ZENMUSE 0x30
+    # after accepting the calibration request on ZENMUSE 0x08.
+    pktrpl = receive_reply_for_request(po, ser, pktreq,
+      seqnum_check=False, extra_cmd_ids=(0x30,))
 
     if pktrpl is None:
-        raise ConnectionError("No progress tick on calibration request.")
+        return None
 
     rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
     rplpayload = get_known_payload(rplhdr, pktrpl[sizeof(DJICmdV1Header):-2])
@@ -1116,10 +1154,27 @@ def gimbal_calib_request_spark_receive_progress(po, ser, pktreq):
     return rplpayload
 
 
-def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload, pktreq, expect_duration, pass_values):
+def gimbal_calib_report_is_success(rplpayload, pass_values):
+    if isinstance(rplpayload, dupc.DJIPayload_Gimbal_CalibProgressRe):
+        # This is the only terminal tuple confirmed on newer hardware.
+        return rplpayload.value == 0x64 and rplpayload.state == 0x00
+    if isinstance(rplpayload, dupc.DJIPayload_Gimbal_CalibRe):
+        return (rplpayload.status1 == pass_values[0]
+          and rplpayload.status2 == pass_values[1])
+    return False
+
+
+def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload,
+                                               pktreq, expect_duration,
+                                               pass_values, max_duration=None):
     if po.dry_test:
         # use to test the code without a drone; packets are different for each calibration
-        if pass_values[0] == 16:
+        if po.product == PRODUCT_CODE.AIR3:
+            cmd = (dupc.DJIPayload_Gimbal_CalibCmd.JointCoarse
+                   if pass_values[0] == 16 else dupc.DJIPayload_Gimbal_CalibCmd.LinearHall)
+            for packet in AIR3_GIMBAL_CALIB_MOCK_PACKETS[cmd][1:]:
+                ser.mock_data_for_read(bytes.fromhex(packet))
+        elif pass_values[0] == 16:
             for x in range(4):
                 ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"))
             for x in range(4):
@@ -1143,10 +1198,13 @@ def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload, pktre
             ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 89 b0 00 04 08 28 01 0d 50"))
 
     rplpayload = first_rplpayload
-    curr_time = time.time()
-    # As timeout, use expected time + 50%
+    curr_time = time.monotonic()
+    # Preserve the historical timeout unless the caller supplies a larger
+    # safety limit for a calibration that is known to take longer.
+    if max_duration is None:
+        max_duration = expect_duration * 1.5
     start_time = curr_time
-    timeout_time = curr_time + expect_duration * 1.5 / 1000
+    timeout_time = curr_time + max_duration / 1000
     report_time = curr_time + expect_duration / 10000 # Aim at 10 reports in the run
     ticks_received = 0
     last_tick_time = curr_time
@@ -1156,17 +1214,17 @@ def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload, pktre
         if rplpayload is not None:
             ticks_received = ticks_received + 1
             last_tick_time = curr_time
-            if rplpayload.status1 == pass_values[0] and rplpayload.status2 == pass_values[1]:
+            if gimbal_calib_report_is_success(rplpayload, pass_values):
                 print("Concluding report received; calibration finished.")
                 result = "PASS"
                 break
 
         if curr_time > timeout_time:
-            print("Calibration time exceeded; calibration must have ended.")
+            print("Calibration monitoring timed out; completion unconfirmed.")
             break
 
         if curr_time > last_tick_time + expect_duration / 4000:
-            print("Progress reports stopped; calibration must have ended.")
+            print("Progress reports stopped; completion unconfirmed.")
             break
 
         if curr_time > report_time + expect_duration / 10000:
@@ -1175,7 +1233,7 @@ def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload, pktre
 
         rplpayload = gimbal_calib_request_spark_receive_progress(po, ser, pktreq)
 
-        curr_time = time.time()
+        curr_time = time.monotonic()
 
     print("Summary: took {:0.1f} sec; received {:d} reports; result: {:s}.".format(curr_time-start_time,ticks_received,result))
 
@@ -1187,6 +1245,7 @@ def do_gimbal_calib_request_spark_joint_coarse(po, ser):
         WM100_FW_V01.00.0900 (2018-07-27)
         WM230_FW_unknown (2019-03-31, report from bunchofbradys@github)
         WM240_FW_V01.00.0200 (2020-02-28, report from Andris8888@slack)
+        Air 3 V01.00.1500 (Windows USB bulk, 64-bit Python)
     """
 
     print("\nInfo: The Gimbal will move through its boundary positions, then it will fine-tune its central position. It will take around 15 seconds.\n")
@@ -1202,16 +1261,20 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
     """ Initiates Spark Gimbal Linear Hall calibration.
 
         Tested on the following platforms and FW versions:
-        NONE
+        Air 3 V01.00.1500 (Windows USB bulk, 64-bit Python)
     """
 
-    print("\nInfo: The Gimbal will slowly move through all positions in all axes, several times. It will take around 30 seconds.\n")
+    expect_duration = 55000 if po.product == PRODUCT_CODE.AIR3 else 30000
+    print("\nInfo: The Gimbal will slowly move through all positions in all axes, several times. It will take around {:d} seconds.\n".format(expect_duration // 1000))
 
     rplpayload, pktreq = gimbal_calib_request_spark(po, ser, dupc.DJIPayload_Gimbal_CalibCmd.LinearHall)
 
     print("Calibration process started; monitoring progress.")
 
-    gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq, 30000, [40, 1])
+    # Conservative host monitoring ceiling, not a measured device limit.
+    gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq,
+      expect_duration, [40, 1],
+      max_duration=120000 if po.product == PRODUCT_CODE.AIR3 else None)
 
 
 def gimbal_calib_request_p3x(po, ser):
@@ -1610,6 +1673,9 @@ def main():
     subparser.add_argument('--bulk', action='store_true',
             help="use usb bulk instead of serial connection")
 
+    parser.add_argument('--libusb-path', type=str,
+            help="path to a libusb-0.1 compatible library for USB bulk mode")
+
     parser.add_argument('product', metavar='product',
             choices=[i.name for i in PRODUCT_CODE], type=parse_product_code,
             help="target product code name; one of: {:s}"
@@ -1713,6 +1779,9 @@ def main():
 
     po.product = PRODUCT_CODE.from_name(po.product)
     po.svcmd = SERVICE_CMD.from_name(po.svcmd)
+
+    if po.product == PRODUCT_CODE.AIR3 and po.svcmd != SERVICE_CMD.GimbalCalib:
+        parser.error("AIR3 supports only GimbalCalib JointCoarse and LinearHall.")
 
     if po.svcmd == SERVICE_CMD.FlycParam:
         po.subcmd = FLYC_PARAM_CMD.from_name(po.subcmd.upper())

@@ -29,9 +29,11 @@ __license__ = "GPL"
 
 import argparse
 import io
+import os
 import sys
 import time
-from ctypes import sizeof
+from collections import deque
+from ctypes import sizeof, c_void_p
 
 sys.path.insert(0, './')
 from comm_dat2pcap import (
@@ -117,8 +119,13 @@ class SerialBulkWrap():
         self.ep_out.write(btarr)
 
     def read( self, n=1):
-        btarr = self.ep_in.read(self.ep_in.wMaxPacketSize,self.timeout)
-        return btarr
+        import usb.core
+        try:
+            return self.ep_in.read(self.ep_in.wMaxPacketSize, self.timeout)
+        except usb.core.USBTimeoutError:
+            # An idle read is not a disconnected device. Let the receive and
+            # calibration deadlines decide when to stop waiting.
+            return b''
 
     def close(self):
         import usb.util
@@ -191,14 +198,66 @@ def find_correct_device(dev):
     return None
 
 
+LIBUSB_WIN32_DOWNLOAD_URL = (
+  "https://sourceforge.net/projects/libusb-win32/files/"
+  "libusb-win32-releases/1.4.0.2/"
+)
+
+
+def find_usb_devices(libusb_path=None):
+    """Preserve system backend selection, with an optional local Windows DLL."""
+    import usb.core
+    import usb.backend.libusb0 as myusb
+
+    attempted_path = None
+    if libusb_path:
+        attempted_path = os.path.abspath(libusb_path)
+        mybackend = myusb.get_backend(
+          find_library=lambda _: attempted_path)
+        if mybackend is not None:
+            return usb.core.find(idVendor=0x2ca3, find_all=True, backend=mybackend)
+    else:
+        # Upstream prefers libusb0, but backend=None lets PyUSB select another
+        # available backend. Do not turn a missing libusb0 into a fatal error.
+        mybackend = myusb.get_backend()
+        try:
+            return usb.core.find(idVendor=0x2ca3, find_all=True, backend=mybackend)
+        except usb.core.NoBackendError:
+            pass
+
+        if sys.platform == 'win32':
+            attempted_path = os.path.join(
+              os.path.dirname(os.path.abspath(__file__)), 'libusb0.dll')
+            if os.path.isfile(attempted_path):
+                mybackend = myusb.get_backend(
+                  find_library=lambda _: attempted_path)
+                if mybackend is not None:
+                    return usb.core.find(
+                      idVendor=0x2ca3, find_all=True, backend=mybackend)
+
+    message = "No backend available for USB bulk mode."
+    if attempted_path:
+        message += "\nCould not load '{}'; Python is {}-bit.".format(
+          attempted_path, sizeof(c_void_p) * 8)
+    if sys.platform == 'win32':
+        message += (
+          "\nInstall a compatible USB backend, or place libusb0.dll matching "
+          "Python's architecture beside comm_serialtalk.py (project root). "
+          "Use --libusb-path to select a libusb-0.1 library explicitly."
+          "\nTested Windows binaries: {}".format(LIBUSB_WIN32_DOWNLOAD_URL))
+    else:
+        message += (
+          "\nInstall a PyUSB-compatible native libusb library using your "
+          "system package manager, or select a libusb-0.1 library with "
+          "--libusb-path.")
+    raise usb.core.NoBackendError(message)
+
+
 def open_usb(po):
     import usb.core
     import usb.util
-    import usb.backend.libusb0 as myusb
-
-    mybackend = myusb.get_backend()
-    dev = usb.core.find(idVendor=0x2ca3, find_all = True, backend=mybackend)
-    intf = find_correct_device(dev)
+    devices = find_usb_devices(getattr(po, 'libusb_path', None))
+    intf = find_correct_device(devices)
 
     assert intf is not None, "Could not find any DJI BULK device"
 
@@ -218,8 +277,8 @@ def open_usb(po):
             usb.util.endpoint_direction(e.bEndpointAddress) == \
             usb.util.ENDPOINT_IN)
 
-    if dev and ep_in and ep_out:
-        return SerialBulkWrap(dev,ep_in,ep_out, po.timeout)
+    if intf.device and ep_in and ep_out:
+        return SerialBulkWrap(intf.device, ep_in, ep_out, po.timeout)
     else:
         assert False, "Could not find endpoints for bulk interface"
 
@@ -245,12 +304,13 @@ def do_read_packets(ser, state, info):
     return state, out.pktlist, info
 
 
-def packet_header_is_reply_for_request(rplhdr, reqhdr, responsebit_check=False, seqnum_check=True):
+def packet_header_is_reply_for_request(rplhdr, reqhdr, responsebit_check=False,
+                                       seqnum_check=True, extra_cmd_ids=()):
     if (rplhdr.version != 1):
         return False
     if (rplhdr.cmd_set != reqhdr.cmd_set):
         return False
-    if (rplhdr.cmd_id != reqhdr.cmd_id):
+    if (rplhdr.cmd_id != reqhdr.cmd_id) and (rplhdr.cmd_id not in extra_cmd_ids):
         return False
     if (rplhdr.sender_info != reqhdr.receiver_info):
         return False
@@ -267,13 +327,14 @@ def packet_header_is_reply_for_request(rplhdr, reqhdr, responsebit_check=False, 
     return True
 
 
-def find_reply_for_request(po, pktlist, pktreq, seqnum_check=True):
+def find_reply_for_request(po, pktlist, pktreq, seqnum_check=True, extra_cmd_ids=()):
     if len(pktlist) == 0:
         return None
     reqhdr = DJICmdV1Header.from_buffer_copy(pktreq)
     for pktrpl in pktlist:
         rplhdr = DJICmdV1Header.from_buffer_copy(pktrpl)
-        if packet_header_is_reply_for_request(rplhdr, reqhdr, seqnum_check=seqnum_check):
+        if packet_header_is_reply_for_request(rplhdr, reqhdr,
+          seqnum_check=seqnum_check, extra_cmd_ids=extra_cmd_ids):
             return pktrpl
         if (po.verbose > 2):
             print("Received unrelated packet:")
@@ -293,49 +354,63 @@ def do_send_request(po, ser, pktprop):
     if (po.verbose > 0):
         print("Sending packet...")
 
+    # Start a new transaction before writing: flushing after the write can
+    # discard an immediate ACK. Subsequent progress receives must not flush.
+    ser.reset_input_buffer()
+    ser._dupc_receiver = ReplyReceiver(po, ser)
     ser.write(pktreq)
 
     return pktreq
 
 
-def do_receive_reply(po, ser, pktreq, seqnum_check=True):
+class ReplyReceiver:
+    """Parser state and unread packets for one connection's current request."""
+
+    def __init__(self, po, ser):
+        self.info = PktInfo()
+        self.state = PktState()
+        self.state.packet = bytearray()
+        self.state.verbose = po.verbose
+        self.state.pname = ser.port
+        self.pending = deque()
+
+
+def do_receive_reply(po, ser, pktreq, seqnum_check=True, extra_cmd_ids=()):
     """ Receive reply after sending packet pktreq to interface ser.
     """
-    ser.reset_input_buffer()
     if (po.verbose > 1):
         print("Waiting for reply...")
 
-    info = PktInfo()
-
-    state = PktState()
-    state.verbose = po.verbose
-    state.pname = ser.port
+    receiver = getattr(ser, '_dupc_receiver', None)
+    if receiver is None:
+        receiver = ReplyReceiver(po, ser)
+        ser._dupc_receiver = receiver
     pktrpl = None
-    show_stats = False
-    loop_end = False
-    timeout_time = time.time() + po.timeout / 1000
+    timeout_time = time.monotonic() + po.timeout / 1000
 
-    while not loop_end:
-        # Wait for something to do
-        if time.time() > timeout_time:
+    while True:
+        # Consume complete packets before reading again. Preserve everything
+        # after the matched packet, including any partially parsed next frame.
+        while receiver.pending:
+            packet = receiver.pending.popleft()
+            pktrpl = find_reply_for_request(po, [packet], pktreq,
+              seqnum_check=seqnum_check, extra_cmd_ids=extra_cmd_ids)
+            if pktrpl is not None:
+                break
+        if pktrpl is not None:
+            break
+        if time.monotonic() >= timeout_time:
             if (po.verbose > 0):
                 print("Timeout while waiting for reply.")
-            show_stats = True
-            loop_end = True
+            break
+        receiver.state, pktlist, receiver.info = do_read_packets(
+          ser, receiver.state, receiver.info)
+        receiver.pending.extend(pktlist)
 
-        if True:
-            state, pktlist, info = do_read_packets(ser, state, info)
-            pktrpl = find_reply_for_request(po, pktlist, pktreq, seqnum_check=seqnum_check)
-
-        if pktrpl is not None:
-            show_stats = True
-            loop_end = True
-
-        if (show_stats):
-            if (po.verbose > 0):
-                print("Retrieved {:d} packets ({:d}b), dropped {:d} fragments ({:d}b)".format(
-                    info.count_ok, info.bytes_ok, info.count_bad, info.bytes_bad))
-            show_stats = False
+    if (po.verbose > 0):
+        info = receiver.info
+        print("Retrieved {:d} packets ({:d}b), dropped {:d} fragments ({:d}b) since request".format(
+          info.count_ok, info.bytes_ok, info.count_bad, info.bytes_bad))
 
     return pktrpl
 
@@ -386,6 +461,9 @@ def main():
 
     subparser.add_argument('--bulk', action='store_true',
             help="use usb bulk instead of serial connection")
+
+    parser.add_argument('--libusb-path', type=str,
+            help="path to a libusb-0.1 compatible library for USB bulk mode")
 
     parser.add_argument('-b', '--baudrate', default=9600, type=int,
             help="the baudrate to use for the serial port (default is %(default)s)")
