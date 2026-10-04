@@ -31,8 +31,10 @@ def make_calibration_header(packet_type, cmd_id):
     return header
 
 
-def test_one_byte_calibration_response_is_parsed_as_ack():
-    header = make_calibration_header(PACKET_TYPE.RESPONSE, 0x08)
+@pytest.mark.parametrize(
+    'packet_type', [PACKET_TYPE.REQUEST, PACKET_TYPE.RESPONSE])
+def test_one_byte_calibration_response_is_parsed_as_ack(packet_type):
+    header = make_calibration_header(packet_type, 0x08)
 
     payload = get_known_payload(header, bytes([0x01]))
 
@@ -100,8 +102,10 @@ def test_alternate_command_does_not_bypass_other_header_checks(field):
 
 
 @pytest.mark.parametrize('pass_values', [[16, 1], [40, 1]])
-def test_legacy_completion_remains_supported(pass_values):
-    header = make_calibration_header(PACKET_TYPE.REQUEST, 0x08)
+@pytest.mark.parametrize(
+    'packet_type', [PACKET_TYPE.REQUEST, PACKET_TYPE.RESPONSE])
+def test_legacy_completion_remains_supported(pass_values, packet_type):
+    header = make_calibration_header(packet_type, 0x08)
     payload = get_known_payload(header, bytes(pass_values))
     assert gimbal_calib_report_is_success(payload, pass_values)
 
@@ -151,7 +155,8 @@ def test_linear_hall_monitor_deadlines(monkeypatch, capsys, mode):
     ('SPARK', 'JointCoarse', 15), ('SPARK', 'LinearHall', 30),
     ('AIR3', 'JointCoarse', 15), ('AIR3', 'LinearHall', 55),
 ])
-def test_model_calibration_dry_run(monkeypatch, capsys, model, routine, seconds):
+def test_model_calibration_dry_run(
+        monkeypatch, capsys, model, routine, seconds):
     import sys
     import comm_og_service_tool as service
 
