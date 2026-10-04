@@ -131,7 +131,8 @@ def test_linear_hall_monitor_deadlines(monkeypatch, capsys, mode):
     monkeypatch.setattr(service, 'gimbal_calib_request_spark_receive_progress',
                         next_report)
     service.do_gimbal_calib_request_spark_linear_hall(
-        SimpleNamespace(verbose=0, dry_test=False), None)
+        SimpleNamespace(verbose=0, dry_test=False,
+                        product=service.PRODUCT_CODE.AIR3), None)
     output = capsys.readouterr().out
     if mode == 'complete':
         assert 'took 54.7 sec' in output
@@ -141,6 +142,6 @@ def test_linear_hall_monitor_deadlines(monkeypatch, capsys, mode):
         assert 'result: UNSURE' in output
         assert 'must have ended' not in output
         if mode == 'stall':
-            assert elapsed[0] == 8
+            assert elapsed[0] == 14
         else:
             assert elapsed[0] == 121
