@@ -475,17 +475,6 @@ interpreter's architecture (32/64-bit). The user-space DLL and Windows USB
 device driver are separate: copying the DLL does not install a device driver.
 The tested Air 3 already had working libusb-win32 interface bindings.
 
-A libusb-1.0-only setup using the Python `libusb-package` package was also
-evaluated on the same Windows/Air 3 host. libusb-1.0 successfully enumerated
-the Air 3 composite device and its bulk endpoints, but configuration-string
-access failed with a missing-langid error and the first DUML bulk OUT transfer
-failed with `Entity not found` while the DJI interfaces remained bound to the
-existing libusb-win32 driver. Because the libusb-0.1 path is the configuration
-that was validated end-to-end for this hardware, this change intentionally
-retains libusb0 as the tested Windows backend instead of requiring a driver
-migration to WinUSB/libusbK. This limitation may be driver-stack-specific and
-does not imply that libusb-1.0 cannot work with other Windows USB bindings.
-
 On other operating systems, install a native libusb library through the system
 package manager. Serial-port mode does not require a USB backend.
 
@@ -496,30 +485,21 @@ OGs Service Tool for Dji products.
 The script allows to trigger a few service functions of Dji drones. It talks to the drone
 like `comm_serialtalk.py`, but provides easier interface for some important functions.
 
-Gimbal calibration monitoring accepts one-byte acknowledgements on ZENMUSE
-`0x08` and asynchronous two-byte reports on `0x30`, including reports without
-the response bit set. Hardware retesting on Air 3 firmware `V01.00.1500`
-produced these results (Windows, 64-bit Python):
+For Air 3 gimbal calibration, select `AIR3` with `GimbalCalib JointCoarse`
+or `GimbalCalib LinearHall`. For example:
 
-| Routine | Duration | Progress reports | Terminal payload | Result |
-| --- | --- | --- | --- | --- |
-| JointCoarse | 14.8 seconds | 150 | `64 00` | PASS |
-| LinearHall | 54.4 seconds | 549 | `64 00` | PASS |
+```python3 comm_og_service_tool.py --bulk -vv AIR3 GimbalCalib LinearHall```
 
-Both logs reported zero dropped fragments. All 699 captured progress reports
-had the response bit unset. Both initial acknowledgements contained `01`,
-including LinearHall whose request payload was `02`; the acknowledgement
-therefore should not be interpreted as an echo of the requested command.
+JointCoarse takes approximately 15 seconds; LinearHall takes approximately
+55 seconds on the tested Air 3. Monitoring waits for a concluding report;
+timeout or loss of progress leaves completion unconfirmed (`UNSURE`) and
+does not stop the aircraft's calibration. Add `--dry-test` to exercise the
+captured Air 3 response sequence without hardware.
 
-Other report values are not treated as a universal percentage. LinearHall has
-a conservative 120-second monitoring ceiling; a timeout or loss of progress
-reports leaves completion unconfirmed (`UNSURE`). These host limits do not
-send a command to stop a calibration already running on the aircraft.
-
-These observations establish protocol compatibility, not an official Air 3
-product code or a fix for every post-repair camera/gimbal fault. The hardware
-experiments used `WM260` only to select the existing modern calibration path.
-See [the Air 3 product-code discussion](https://github.com/o-gs/dji-firmware-tools/issues/477).
+`AIR3` is a tool model selector, not an official DJI product code. Only the
+two gimbal routines above are supported for this selector. Successful service
+calibration does not establish that all post-repair camera/gimbal faults
+have cleared.
 
 Example of listing Flight Controller Parameters 200-300 on Ph3 Pro to CSV format:
 
