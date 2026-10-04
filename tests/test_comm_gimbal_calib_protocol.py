@@ -151,18 +151,28 @@ def test_linear_hall_monitor_deadlines(monkeypatch, capsys, mode):
             assert elapsed[0] == 121
 
 
+@pytest.mark.parametrize('transport', ['--bulk', '--port'])
 @pytest.mark.parametrize('model,routine,seconds', [
     ('SPARK', 'JointCoarse', 15), ('SPARK', 'LinearHall', 30),
     ('AIR3', 'JointCoarse', 15), ('AIR3', 'LinearHall', 55),
 ])
 def test_model_calibration_dry_run(
-        monkeypatch, capsys, model, routine, seconds):
+        monkeypatch, capsys, model, routine, seconds, transport):
     import sys
     import comm_og_service_tool as service
 
+    import serial
+
+    def unexpected_open(*args, **kwargs):
+        pytest.fail('dry test attempted to open hardware')
+
+    monkeypatch.setattr(service, 'open_usb', unexpected_open)
+    monkeypatch.setattr(service, 'detect_serial_port', unexpected_open)
+    monkeypatch.setattr(serial, 'Serial', unexpected_open)
+    connection = ['--bulk'] if transport == '--bulk' else ['--port', 'auto']
     monkeypatch.setattr(sys, 'argv', [
-        'comm_og_service_tool.py', '-vvv', '--dry-test', '--port',
-        '/dev/ttyUSB1', model, 'GimbalCalib', routine])
+        'comm_og_service_tool.py', '-vvv', '--dry-test', *connection,
+        model, 'GimbalCalib', routine])
     service.main()
     output = capsys.readouterr().out
     assert 'around {:d} seconds'.format(seconds) in output
@@ -192,3 +202,22 @@ def test_air3_selector_rejects_unvalidated_services(monkeypatch, service_args):
     with pytest.raises(SystemExit) as exc:
         service.main()
     assert exc.value.code == 2
+
+
+@pytest.mark.parametrize('model,expected,ceiling', [
+    ('WM100', 30000, None), ('WM260', 30000, None), ('AIR3', 55000, 120000),
+])
+def test_linear_hall_model_deadlines(monkeypatch, model, expected, ceiling):
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+    import comm_og_service_tool as service
+
+    monkeypatch.setattr(service, 'gimbal_calib_request_spark',
+                        lambda *args: (None, b''))
+    monitor = Mock()
+    monkeypatch.setattr(service, 'gimbal_calib_request_spark_monitor_progress',
+                        monitor)
+    service.do_gimbal_calib_request_spark_linear_hall(
+        SimpleNamespace(product=service.PRODUCT_CODE[model]), None)
+    assert monitor.call_args.args[4] == expected
+    assert monitor.call_args.kwargs['max_duration'] == ceiling

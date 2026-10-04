@@ -158,7 +158,10 @@ def detect_serial_port(po):
 
 def open_serial_port(po):
     ser = None
-    if po.bulk:
+    if po.dry_test:
+        # Dry runs must never enumerate or open hardware, including USB bulk.
+        ser = SerialMock(po.port, baudrate=po.baudrate, timeout=0)
+    elif po.bulk:
         ser = open_usb(po)
     else:
         # Open serial port
@@ -167,10 +170,7 @@ def open_serial_port(po):
             port_name = detect_serial_port(po)
         else:
             port_name = po.port
-        if not po.dry_test:
-            ser = serial.Serial(port_name, baudrate=po.baudrate, timeout=0)
-        else:
-            ser = SerialMock(port_name, baudrate=po.baudrate, timeout=0)
+        ser = serial.Serial(port_name, baudrate=po.baudrate, timeout=0)
         if (po.verbose > 0):
             print("Opened {} at {}".format(ser.port, ser.baudrate))
     return ser
@@ -1273,7 +1273,8 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
 
     # Conservative host monitoring ceiling, not a measured device limit.
     gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq,
-      expect_duration, [40, 1], max_duration=120000)
+      expect_duration, [40, 1],
+      max_duration=120000 if po.product == PRODUCT_CODE.AIR3 else None)
 
 
 def gimbal_calib_request_p3x(po, ser):
