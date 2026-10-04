@@ -145,3 +145,45 @@ def test_linear_hall_monitor_deadlines(monkeypatch, capsys, mode):
             assert elapsed[0] == 14
         else:
             assert elapsed[0] == 121
+
+
+@pytest.mark.parametrize('model,routine,seconds', [
+    ('SPARK', 'JointCoarse', 15), ('SPARK', 'LinearHall', 30),
+    ('AIR3', 'JointCoarse', 15), ('AIR3', 'LinearHall', 55),
+])
+def test_model_calibration_dry_run(monkeypatch, capsys, model, routine, seconds):
+    import sys
+    import comm_og_service_tool as service
+
+    monkeypatch.setattr(sys, 'argv', [
+        'comm_og_service_tool.py', '-vvv', '--dry-test', '--port',
+        '/dev/ttyUSB1', model, 'GimbalCalib', routine])
+    service.main()
+    output = capsys.readouterr().out
+    assert 'around {:d} seconds'.format(seconds) in output
+    assert 'result: PASS' in output
+    if model == 'AIR3':
+        assert 'Parsed one-byte calibration ACK' in output
+        assert 'DJIPayload_Gimbal_CalibProgressRe' in output
+        assert 'received 4 reports' in output
+    else:
+        assert 'DJIPayload_Gimbal_CalibRe' in output
+
+
+@pytest.mark.parametrize('service_args', [
+    ['CameraCalib', 'EncryptPair'], ['FlycParam', 'list'],
+])
+def test_air3_selector_rejects_unvalidated_services(monkeypatch, service_args):
+    import sys
+    import comm_og_service_tool as service
+
+    def unexpected_open(*args):
+        pytest.fail('unsupported Air 3 service opened the connection')
+
+    monkeypatch.setattr(service, 'open_serial_port', unexpected_open)
+    monkeypatch.setattr(sys, 'argv', [
+        'comm_og_service_tool.py', '--port', '/dev/ttyUSB1', 'AIR3',
+        *service_args])
+    with pytest.raises(SystemExit) as exc:
+        service.main()
+    assert exc.value.code == 2

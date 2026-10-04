@@ -1065,6 +1065,27 @@ def do_flyc_param_request(po):
     ser.close()
 
 
+# Representative raw frames from Air 3 V01.00.1500 hardware captures.
+# Each sequence contains the initial ACK, sampled asynchronous reports, and
+# the terminal 64 00 report. These are shortened dry tests, not timing replays.
+AIR3_GIMBAL_CALIB_MOCK_PACKETS = {
+    dupc.DJIPayload_Gimbal_CalibCmd.JointCoarse: (
+        "55 0e 04 66 04 0a 04 f7 80 04 08 01 9d 80",
+        "55 0f 04 a2 04 0a 15 4b 00 04 30 52 01 1d 72",
+        "55 0f 04 a2 04 0a d0 53 00 04 30 53 01 95 b9",
+        "55 0f 04 a2 04 0a 45 5a 00 04 30 54 01 99 12",
+        "55 0f 04 a2 04 0a 97 60 00 04 30 64 00 05 98",
+    ),
+    dupc.DJIPayload_Gimbal_CalibCmd.LinearHall: (
+        "55 0e 04 66 04 0a c4 4c 80 04 08 01 86 9e",
+        "55 0f 04 a2 04 0a 3e ce 00 04 30 12 01 5f 30",
+        "55 0f 04 a2 04 0a b5 ef 00 04 30 16 01 eb 26",
+        "55 0f 04 a2 04 0a 2f 11 00 04 30 16 01 69 05",
+        "55 0f 04 a2 04 0a 6c 32 00 04 30 64 00 e1 31",
+    ),
+}
+
+
 def gimbal_calib_request_spark(po, ser, cmd):
     payload = dupc.DJIPayload_Gimbal_CalibRq()
     payload.command = cmd.value
@@ -1074,8 +1095,12 @@ def gimbal_calib_request_spark(po, ser, cmd):
         print(payload)
 
     if po.dry_test:
-        # use to test the code without a drone
-        ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"))
+        # Queue the ACK only; progress is queued by the monitor below.
+        if po.product == PRODUCT_CODE.AIR3:
+            packet = AIR3_GIMBAL_CALIB_MOCK_PACKETS[cmd][0]
+        else:
+            packet = "55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"
+        ser.mock_data_for_read(bytes.fromhex(packet))
 
     pktrpl, pktreq = send_request_and_receive_reply(po, ser,
       COMM_DEV_TYPE.GIMBAL, 0,
@@ -1144,7 +1169,12 @@ def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload,
                                                pass_values, max_duration=None):
     if po.dry_test:
         # use to test the code without a drone; packets are different for each calibration
-        if pass_values[0] == 16:
+        if po.product == PRODUCT_CODE.AIR3:
+            cmd = (dupc.DJIPayload_Gimbal_CalibCmd.JointCoarse
+                   if pass_values[0] == 16 else dupc.DJIPayload_Gimbal_CalibCmd.LinearHall)
+            for packet in AIR3_GIMBAL_CALIB_MOCK_PACKETS[cmd][1:]:
+                ser.mock_data_for_read(bytes.fromhex(packet))
+        elif pass_values[0] == 16:
             for x in range(4):
                 ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"))
             for x in range(4):
