@@ -416,7 +416,7 @@ local MBINO_UART_CMD_TEXT = {
     [0x19] = 'Eye Flat Check',
     [0x1d] = 'Eye Fixed Wing Ctrl',
     [0x1e] = 'Eye Fixed Wing Status Push',
-    [0x20] = 'Eye Marquee Push',
+    [0x20] = 'Eye Tracking Select / Marquee',
     [0x21] = 'Eye Tracking Cnf Cancel',
     [0x22] = 'Eye Move Marquee Push',
     [0x23] = 'Eye Tracking Status Push',
@@ -439,6 +439,10 @@ local MBINO_UART_CMD_TEXT = {
     [0x46] = 'Eye RC Packet',
     [0x47] = 'Eye Set Buffer Config',
     [0x48] = 'Eye Get Buffer Config',
+    [0x94] = 'Eye Multi Tracking Start',
+    [0x95] = 'Eye Multi Tracking Targets Push',
+    [0x96] = 'Eye Multi Tracking State Push',
+    [0x97] = 'Eye Multi Tracking Stop',
     [0xa3] = 'Eye Enable SDK Func',
     [0xa4] = 'Eye Detection Msg Push',
     [0xa5] = 'Eye Get SDK Func',
@@ -1902,6 +1906,37 @@ local function mbino_flat_check_dissector(pkt_length, buffer, pinfo, subtree)
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Flat Check: Payload size different than expected") end
 end
 
+-- Mono/Binocular - Eye Tracking Select - 0x20
+-- Observed on a Mavic 2 Zoom: mode, normalized center/size, reserved byte,
+-- uint16 LE selection session ID, and a final flag. The session ID is not
+-- the target index later reported by 0x95 and sent to 0x94.
+
+f.mbino_track_select_mode = ProtoField.uint8 ("dji_dumlv1.mbino_track_select_mode", "Track Mode", base.DEC)
+f.mbino_track_select_center_x = ProtoField.float ("dji_dumlv1.mbino_track_select_center_x", "Center X", base.DEC)
+f.mbino_track_select_center_y = ProtoField.float ("dji_dumlv1.mbino_track_select_center_y", "Center Y", base.DEC)
+f.mbino_track_select_width = ProtoField.float ("dji_dumlv1.mbino_track_select_width", "Width", base.DEC)
+f.mbino_track_select_height = ProtoField.float ("dji_dumlv1.mbino_track_select_height", "Height", base.DEC)
+f.mbino_track_select_reserved = ProtoField.uint8 ("dji_dumlv1.mbino_track_select_reserved", "Reserved", base.HEX)
+f.mbino_track_select_session_id = ProtoField.uint16 ("dji_dumlv1.mbino_track_select_session_id", "Selection Session ID", base.DEC)
+f.mbino_track_select_flag = ProtoField.uint8 ("dji_dumlv1.mbino_track_select_flag", "Selection Flag", base.HEX)
+
+local function mbino_track_select_dissector(pkt_length, buffer, pinfo, subtree)
+    local payload = buffer(11, pkt_length - 13)
+    if bit32.band(buffer(8, 1):uint(), 0x80) ~= 0 then return end -- ACK
+    if payload:len() ~= 21 then
+        subtree:add_expert_info(PI_PROTOCOL, PI_WARN, "Eye Tracking Select: Expected 21-byte request")
+        return
+    end
+    subtree:add(f.mbino_track_select_mode, payload(0, 1))
+    subtree:add_le(f.mbino_track_select_center_x, payload(1, 4))
+    subtree:add_le(f.mbino_track_select_center_y, payload(5, 4))
+    subtree:add_le(f.mbino_track_select_width, payload(9, 4))
+    subtree:add_le(f.mbino_track_select_height, payload(13, 4))
+    subtree:add(f.mbino_track_select_reserved, payload(17, 1))
+    subtree:add_le(f.mbino_track_select_session_id, payload(18, 2))
+    subtree:add(f.mbino_track_select_flag, payload(20, 1))
+end
+
 -- Mono/Binocular - Eye Tracking Status Push - 0x23
 
 enums.MBINO_TRACK_STATUS_RECT_MODE_TRACK_MODE_ENUM = {
@@ -2549,6 +2584,81 @@ local function mbino_precise_landing_energy_dissector(pkt_length, buffer, pinfo,
     if (payload:len() ~= offset) then subtree:add_expert_info(PI_PROTOCOL,PI_WARN,"Eye Precise Landing Energy: Payload size different than expected") end
 end
 
+-- Mavic 2 multi-target ActiveTrack push. Each 0x95 entry is 19 bytes:
+-- target index, mode, four normalized float32 values, and target type.
+-- The mode values 5 before GO and 3 during GO were observed, but their
+-- general meaning is not established; display the raw number.
+
+f.mbino_multi_targets_count = ProtoField.uint8 ("dji_dumlv1.mbino_multi_targets_count", "Target Count", base.DEC)
+f.mbino_multi_target_index = ProtoField.uint8 ("dji_dumlv1.mbino_multi_target_index", "Target Index", base.DEC)
+f.mbino_multi_target_mode = ProtoField.uint8 ("dji_dumlv1.mbino_multi_target_mode", "Target Mode", base.DEC)
+f.mbino_multi_target_center_x = ProtoField.float ("dji_dumlv1.mbino_multi_target_center_x", "Center X", base.DEC)
+f.mbino_multi_target_center_y = ProtoField.float ("dji_dumlv1.mbino_multi_target_center_y", "Center Y", base.DEC)
+f.mbino_multi_target_width = ProtoField.float ("dji_dumlv1.mbino_multi_target_width", "Width", base.DEC)
+f.mbino_multi_target_height = ProtoField.float ("dji_dumlv1.mbino_multi_target_height", "Height", base.DEC)
+f.mbino_multi_target_type = ProtoField.uint8 ("dji_dumlv1.mbino_multi_target_type", "Target Type", base.DEC, enums.MBINO_TRACK_STATUS_TARGET_TYPE_TARGET_OBJ_TYPE_ENUM)
+
+local function mbino_multi_targets_dissector(pkt_length, buffer, pinfo, subtree)
+    if bit32.band(buffer(8, 1):uint(), 0x80) ~= 0 then return end -- ACK
+    local payload = buffer(11, pkt_length - 13)
+    if payload:len() < 1 then return end
+    local count = payload(0, 1):uint()
+    subtree:add(f.mbino_multi_targets_count, payload(0, 1))
+    if payload:len() < 1 + 19 * count then
+        subtree:add_expert_info(PI_PROTOCOL, PI_WARN, "Eye Multi Tracking Targets: Truncated target list")
+        return
+    end
+    for i = 0, count - 1 do
+        local pos = 1 + 19 * i
+        local target = subtree:add(payload(pos, 19), "Target " .. i)
+        target:add(f.mbino_multi_target_index, payload(pos, 1))
+        target:add(f.mbino_multi_target_mode, payload(pos + 1, 1))
+        target:add_le(f.mbino_multi_target_center_x, payload(pos + 2, 4))
+        target:add_le(f.mbino_multi_target_center_y, payload(pos + 6, 4))
+        target:add_le(f.mbino_multi_target_width, payload(pos + 10, 4))
+        target:add_le(f.mbino_multi_target_height, payload(pos + 14, 4))
+        target:add(f.mbino_multi_target_type, payload(pos + 18, 1))
+    end
+end
+
+-- 0x96 was observed at state 0 before selection, 1 after selecting a
+-- correlated target, and 2 after GO. These labels are observational, not a
+-- complete state-machine specification for all aircraft or firmware versions.
+enums.MBINO_MULTI_STATE_ENUM = {
+    [0] = 'Idle / no selected target',
+    [1] = 'Target selected (observed)',
+    [2] = 'Tracking after GO (observed)',
+}
+f.mbino_multi_state = ProtoField.uint8 ("dji_dumlv1.mbino_multi_state", "Multi Tracking State", base.DEC, enums.MBINO_MULTI_STATE_ENUM)
+f.mbino_multi_state_count = ProtoField.uint8 ("dji_dumlv1.mbino_multi_state_count", "Target Count", base.DEC)
+f.mbino_multi_state_overall = ProtoField.uint8 ("dji_dumlv1.mbino_multi_state_overall", "Overall Tracking State", base.HEX)
+f.mbino_multi_state_mode = ProtoField.uint8 ("dji_dumlv1.mbino_multi_state_mode", "Tracking Mode", base.DEC)
+f.mbino_multi_state_max_speed = ProtoField.uint8 ("dji_dumlv1.mbino_multi_state_max_speed", "Maximum Speed", base.DEC)
+f.mbino_multi_state_speed_threshold = ProtoField.uint8 ("dji_dumlv1.mbino_multi_state_speed_threshold", "Speed Threshold", base.DEC)
+f.mbino_multi_state_exception = ProtoField.int8 ("dji_dumlv1.mbino_multi_state_exception", "Exception Code", base.DEC)
+f.mbino_multi_state_gps_used = ProtoField.uint8 ("dji_dumlv1.mbino_multi_state_gps_used", "GPS Used", base.DEC)
+f.mbino_multi_state_control_error = ProtoField.uint8 ("dji_dumlv1.mbino_multi_state_control_error", "Take Control Error", base.HEX)
+f.mbino_multi_state_high_speed = ProtoField.uint8 ("dji_dumlv1.mbino_multi_state_high_speed", "High Speed Flags", base.HEX)
+
+local function mbino_multi_state_dissector(pkt_length, buffer, pinfo, subtree)
+    if bit32.band(buffer(8, 1):uint(), 0x80) ~= 0 then return end -- ACK
+    local payload = buffer(11, pkt_length - 13)
+    if payload:len() < 7 then
+        subtree:add_expert_info(PI_PROTOCOL, PI_WARN, "Eye Multi Tracking State: Expected at least 7 bytes")
+        return
+    end
+    subtree:add(f.mbino_multi_state, payload(0, 1))
+    subtree:add(f.mbino_multi_state_count, payload(1, 1))
+    subtree:add(f.mbino_multi_state_overall, payload(2, 1))
+    subtree:add(f.mbino_multi_state_mode, payload(3, 1))
+    subtree:add(f.mbino_multi_state_max_speed, payload(4, 1))
+    subtree:add(f.mbino_multi_state_speed_threshold, payload(5, 1))
+    subtree:add_le(f.mbino_multi_state_exception, payload(6, 1))
+    if payload:len() > 7 then subtree:add(f.mbino_multi_state_gps_used, payload(7, 1)) end
+    if payload:len() > 8 then subtree:add(f.mbino_multi_state_control_error, payload(8, 1)) end
+    if payload:len() > 9 then subtree:add(f.mbino_multi_state_high_speed, payload(9, 1)) end
+end
+
 local MBINO_UART_CMD_DISSECT = {
     [0x01] = mbino_bino_info_dissector,
     [0x06] = mbino_avoidance_param_dissector,
@@ -2557,6 +2667,7 @@ local MBINO_UART_CMD_DISSECT = {
     [0x0d] = mbino_track_log_dissector,
     [0x0e] = mbino_point_log_dissector,
     [0x19] = mbino_flat_check_dissector,
+    [0x20] = mbino_track_select_dissector,
     [0x23] = mbino_tracking_status_push_dissector,
     [0x26] = mbino_tapgo_status_push_dissector,
     [0x2a] = mbino_com_status_update_dissector,
@@ -2565,6 +2676,8 @@ local MBINO_UART_CMD_DISSECT = {
     [0x32] = mbino_easy_self_calib_state_dissector,
     [0x39] = mbino_vision_tip_dissector,
     [0x3a] = mbino_precise_landing_energy_dissector,
+    [0x95] = mbino_multi_targets_dissector,
+    [0x96] = mbino_multi_state_dissector,
 }
 
 -- Simulation - Simu Connect Heart Packet - 0x01
