@@ -82,6 +82,7 @@ class PRODUCT_CODE(DecoratedEnum):
     WM260  = 29 # Released 2021-11-05 (MAVIC) 3
     WM247  = 30 # Released 2020-12-15 Mavic 2 Enterprise Advanced
     AIR3   = 31 # Tool model selector; official DJI product code is unverified.
+    WM163  = 32 # Mini 3; code as reported by the aircraft camera and main module
 
 
 ALT_PRODUCT_CODE = {
@@ -108,7 +109,11 @@ ALT_PRODUCT_CODE = {
     'MAVAIR2': 'WM231',
     'MAVAIR2S': 'WM232',
     'MAV3': 'WM260',
+    'MINI3': 'WM163',
 }
+
+# Products whose gimbals send asynchronous ZENMUSE 0x30 calibration reports.
+NEWER_GIMBAL_CALIB_PRODUCTS = (PRODUCT_CODE.AIR3, PRODUCT_CODE.WM163)
 
 
 class SERVICE_CMD(DecoratedEnum):
@@ -156,8 +161,99 @@ def detect_serial_port(po):
     return ''
 
 
+# Mini 3 exposes its DUML serial port only while it boots; about 9.5 seconds
+# after USB enumeration it re-enumerates as camera mass storage, unless it
+# detects DJI Assistant. On the tested Mini 3, the switch was avoided only when
+# the main module (type 31) answered a request from PC index 1; requests from
+# PC index 0 were answered, but did not prevent the switch. On about half of
+# the cold starts, the main module did not answer a PC index 1 request on the
+# first opening of the port, even if repeated; it answered within 0.1-2.6 sec
+# after the port was closed and opened again. Line states (DTR off, RTS on)
+# and starting sequence number match DJI Assistant.
+MINI3_KEEP_SERIAL_SEQ_NUM = 0x2710
+MINI3_KEEP_SERIAL_WINDOW = 8.5 # seconds to keep asking, within the switch time
+MINI3_KEEP_SERIAL_REOPEN = 3.5 # seconds without answer before reopening the port
+MINI3_PORT_WAIT_TIMEOUT = 120 # seconds the user has to power on and connect the aircraft
+# Conservative host delay after connecting, so that the mass storage switch
+# point and the gimbal start-up check have passed; not a measured device limit.
+MINI3_STARTUP_SETTLE = 15
+
+# Main module version reply captured from Mini 3 during DJI Assistant session.
+MINI3_MAIN_MODULE_VERSION_MOCK = (
+    "55 2b 04 58 1f 2a 10 27 80 00 01 00 12 57 4d 31 36 33 20 55 41 56 20 56 65 72 2e 41 "
+    "00 03 02 01 00 00 00 05 04 00 00 00 c0 41 e9")
+
+
+def open_serial_port_wait(po, port_name, timeout):
+    """ Opens serial port with DTR off and RTS on, waiting for it to appear.
+
+        Returns the port, and whether it had to be waited for.
+    """
+    import serial
+    ser = serial.Serial()
+    ser.port = port_name
+    ser.baudrate = po.baudrate
+    ser.timeout = 0
+    # Line states are applied on open
+    ser.dtr = False
+    ser.rts = True
+    deadline = time.monotonic() + timeout
+    waited = False
+    while True:
+        try:
+            ser.open()
+            return ser, waited
+        except serial.SerialException:
+            if time.monotonic() > deadline:
+                raise
+            if not waited:
+                print("Waiting for {:s}; power on the aircraft and connect USB right away.".format(port_name))
+                waited = True
+            time.sleep(0.02)
+
+
+def mini3_keep_serial_mode_request(po, ser):
+    """ Sends the request which keeps Mini 3 USB in DUML serial mode.
+
+        Tested on the following platforms and FW versions:
+        Mini 3 (FC V03.04.11.34, Linux CDC-ACM serial)
+    """
+    if po.dry_test:
+        ser.mock_data_for_read(bytes.fromhex(MINI3_MAIN_MODULE_VERSION_MOCK))
+
+    start_time = time.monotonic()
+    reopened = False
+    seq_num = MINI3_KEEP_SERIAL_SEQ_NUM
+    while True:
+        # Version inquiry with empty payload, as DJI Assistant sends it;
+        # each attempt waits po.timeout for the reply
+        pktrpl, _ = send_request_and_receive_reply(po, ser,
+          COMM_DEV_TYPE.WM330_OR_WM220, 0, # type 31; on Mini 3 it is the main module
+          ACK_TYPE.ACK_AFTER_EXEC,
+          CMD_SET_TYPE.GENERAL, 0x01,
+          bytes(), retry_num=1,
+          sender_index=1, seq_num=seq_num)
+        if pktrpl is not None:
+            break
+        seq_num += 1
+
+        elapsed = time.monotonic() - start_time
+        if elapsed > MINI3_KEEP_SERIAL_WINDOW:
+            raise ConnectionError("No response from main module; the aircraft "
+              "will likely switch USB to mass storage. Power it off, then power "
+              "on and connect USB right away while this tool waits.")
+        if not reopened and elapsed > MINI3_KEEP_SERIAL_REOPEN:
+            if (po.verbose > 0):
+                print("No response from main module; reopening the port.")
+            ser.close()
+            time.sleep(0.1)
+            ser.open()
+            reopened = True
+
+
 def open_serial_port(po):
     ser = None
+    waited = False
     if po.dry_test:
         # Dry runs must never enumerate or open hardware, including USB bulk.
         ser = SerialMock(po.port, baudrate=po.baudrate, timeout=0)
@@ -170,9 +266,19 @@ def open_serial_port(po):
             port_name = detect_serial_port(po)
         else:
             port_name = po.port
-        ser = serial.Serial(port_name, baudrate=po.baudrate, timeout=0)
+        if po.product == PRODUCT_CODE.WM163:
+            ser, waited = open_serial_port_wait(po, port_name, MINI3_PORT_WAIT_TIMEOUT)
+        else:
+            ser = serial.Serial(port_name, baudrate=po.baudrate, timeout=0)
         if (po.verbose > 0):
             print("Opened {} at {}".format(ser.port, ser.baudrate))
+    if po.product == PRODUCT_CODE.WM163 and not po.bulk:
+        open_time = time.monotonic()
+        mini3_keep_serial_mode_request(po, ser)
+        if waited:
+            settle = MINI3_STARTUP_SETTLE - (time.monotonic() - open_time)
+            print("Aircraft connected; waiting {:.0f} seconds for start-up to finish.".format(settle))
+            time.sleep(max(settle, 0))
     return ser
 
 
@@ -183,17 +289,19 @@ def get_unique_sequence_number(po):
     return int(time.time()*100) & 0xffff
 
 
-def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_type, cmd_set, cmd_id, payload, seqnum_check=True, retry_num=3):
+def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_type, cmd_set, cmd_id, payload, seqnum_check=True, retry_num=3, sender_index=0, seq_num=None):
     global last_seq_num
     if 'last_seq_num' not in globals():
         last_seq_num = get_unique_sequence_number(po)
 
     pktprop = PacketProperties()
     pktprop.sender_type = COMM_DEV_TYPE.PC
-    pktprop.sender_index = 0
+    pktprop.sender_index = sender_index
     pktprop.receiver_type = receiver_type
     pktprop.receiver_index = receiver_index
-    pktprop.seq_num = last_seq_num
+    # A fixed sequence number does not advance the shared one, as receivers
+    # may ignore a request repeating the number of a recent one
+    pktprop.seq_num = last_seq_num if seq_num is None else seq_num
     pktprop.pack_type = PACKET_TYPE.REQUEST
     pktprop.ack_type = ack_type
     pktprop.encrypt_type = ENCRYPT_TYPE.NO_ENC
@@ -217,7 +325,8 @@ def send_request_and_receive_reply(po, ser, receiver_type, receiver_index, ack_t
         if pktrpl is not None:
             break
 
-    last_seq_num += 1
+    if seq_num is None:
+        last_seq_num += 1
 
     if (po.verbose > 1):
         if pktrpl is not None:
@@ -1085,6 +1194,30 @@ AIR3_GIMBAL_CALIB_MOCK_PACKETS = {
     ),
 }
 
+# Representative raw frames from Mini 3 hardware captures (FC V03.04.11.34),
+# shortened the same way as the Air 3 ones.
+MINI3_GIMBAL_CALIB_MOCK_PACKETS = {
+    dupc.DJIPayload_Gimbal_CalibCmd.JointCoarse: (
+        "55 0e 04 66 04 0a 11 27 80 04 08 01 9d 29",
+        "55 0f 04 a2 04 0a b1 55 00 04 30 51 01 8f a9",
+        "55 0f 04 a2 04 0a 90 69 00 04 30 51 01 fd a3",
+        "55 0f 04 a2 04 0a fb 73 00 04 30 51 01 44 1a",
+        "55 0f 04 a2 04 0a c5 7d 00 04 30 64 00 1e aa",
+    ),
+    dupc.DJIPayload_Gimbal_CalibCmd.LinearHall: (
+        "55 0e 04 66 04 0a 4f 3c 80 04 08 01 f2 a3",
+        "55 0f 04 a2 04 0a 39 6e 00 04 30 12 01 85 77",
+        "55 0f 04 a2 04 0a a7 8c 00 04 30 16 01 55 2f",
+        "55 0f 04 a2 04 0a 8a 20 00 04 30 01 01 36 0b",
+        "55 0f 04 a2 04 0a 0e 54 00 04 30 64 00 94 3d",
+    ),
+}
+
+NEWER_GIMBAL_CALIB_MOCK_PACKETS = {
+    PRODUCT_CODE.AIR3: AIR3_GIMBAL_CALIB_MOCK_PACKETS,
+    PRODUCT_CODE.WM163: MINI3_GIMBAL_CALIB_MOCK_PACKETS,
+}
+
 
 def gimbal_calib_request_spark(po, ser, cmd):
     payload = dupc.DJIPayload_Gimbal_CalibRq()
@@ -1096,8 +1229,8 @@ def gimbal_calib_request_spark(po, ser, cmd):
 
     if po.dry_test:
         # Queue the ACK only; progress is queued by the monitor below.
-        if po.product == PRODUCT_CODE.AIR3:
-            packet = AIR3_GIMBAL_CALIB_MOCK_PACKETS[cmd][0]
+        if po.product in NEWER_GIMBAL_CALIB_MOCK_PACKETS:
+            packet = NEWER_GIMBAL_CALIB_MOCK_PACKETS[po.product][cmd][0]
         else:
             packet = "55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"
         ser.mock_data_for_read(bytes.fromhex(packet))
@@ -1169,10 +1302,10 @@ def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload,
                                                pass_values, max_duration=None):
     if po.dry_test:
         # use to test the code without a drone; packets are different for each calibration
-        if po.product == PRODUCT_CODE.AIR3:
+        if po.product in NEWER_GIMBAL_CALIB_MOCK_PACKETS:
             cmd = (dupc.DJIPayload_Gimbal_CalibCmd.JointCoarse
                    if pass_values[0] == 16 else dupc.DJIPayload_Gimbal_CalibCmd.LinearHall)
-            for packet in AIR3_GIMBAL_CALIB_MOCK_PACKETS[cmd][1:]:
+            for packet in NEWER_GIMBAL_CALIB_MOCK_PACKETS[po.product][cmd][1:]:
                 ser.mock_data_for_read(bytes.fromhex(packet))
         elif pass_values[0] == 16:
             for x in range(4):
@@ -1246,6 +1379,7 @@ def do_gimbal_calib_request_spark_joint_coarse(po, ser):
         WM230_FW_unknown (2019-03-31, report from bunchofbradys@github)
         WM240_FW_V01.00.0200 (2020-02-28, report from Andris8888@slack)
         Air 3 V01.00.1500 (Windows USB bulk, 64-bit Python)
+        Mini 3 FC V03.04.11.34 (Linux CDC-ACM serial)
     """
 
     print("\nInfo: The Gimbal will move through its boundary positions, then it will fine-tune its central position. It will take around 15 seconds.\n")
@@ -1262,9 +1396,10 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
 
         Tested on the following platforms and FW versions:
         Air 3 V01.00.1500 (Windows USB bulk, 64-bit Python)
+        Mini 3 FC V03.04.11.34 (Linux CDC-ACM serial)
     """
 
-    expect_duration = 55000 if po.product == PRODUCT_CODE.AIR3 else 30000
+    expect_duration = 55000 if po.product in NEWER_GIMBAL_CALIB_PRODUCTS else 30000
     print("\nInfo: The Gimbal will slowly move through all positions in all axes, several times. It will take around {:d} seconds.\n".format(expect_duration // 1000))
 
     rplpayload, pktreq = gimbal_calib_request_spark(po, ser, dupc.DJIPayload_Gimbal_CalibCmd.LinearHall)
@@ -1274,7 +1409,7 @@ def do_gimbal_calib_request_spark_linear_hall(po, ser):
     # Conservative host monitoring ceiling, not a measured device limit.
     gimbal_calib_request_spark_monitor_progress(po, ser, rplpayload, pktreq,
       expect_duration, [40, 1],
-      max_duration=120000 if po.product == PRODUCT_CODE.AIR3 else None)
+      max_duration=120000 if po.product in NEWER_GIMBAL_CALIB_PRODUCTS else None)
 
 
 def gimbal_calib_request_p3x(po, ser):
@@ -1780,8 +1915,8 @@ def main():
     po.product = PRODUCT_CODE.from_name(po.product)
     po.svcmd = SERVICE_CMD.from_name(po.svcmd)
 
-    if po.product == PRODUCT_CODE.AIR3 and po.svcmd != SERVICE_CMD.GimbalCalib:
-        parser.error("AIR3 supports only GimbalCalib JointCoarse and LinearHall.")
+    if po.product in NEWER_GIMBAL_CALIB_PRODUCTS and po.svcmd != SERVICE_CMD.GimbalCalib:
+        parser.error("{:s} supports only GimbalCalib JointCoarse and LinearHall.".format(po.product.name))
 
     if po.svcmd == SERVICE_CMD.FlycParam:
         po.subcmd = FLYC_PARAM_CMD.from_name(po.subcmd.upper())
