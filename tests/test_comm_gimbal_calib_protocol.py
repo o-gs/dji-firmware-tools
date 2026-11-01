@@ -155,6 +155,7 @@ def test_linear_hall_monitor_deadlines(monkeypatch, capsys, mode):
 @pytest.mark.parametrize('model,routine,seconds', [
     ('SPARK', 'JointCoarse', 15), ('SPARK', 'LinearHall', 30),
     ('AIR3', 'JointCoarse', 15), ('AIR3', 'LinearHall', 55),
+    ('MINI3', 'JointCoarse', 15), ('MINI3', 'LinearHall', 55),
 ])
 def test_model_calibration_dry_run(
         monkeypatch, capsys, model, routine, seconds, transport):
@@ -177,7 +178,7 @@ def test_model_calibration_dry_run(
     output = capsys.readouterr().out
     assert 'around {:d} seconds'.format(seconds) in output
     assert 'result: PASS' in output
-    if model == 'AIR3':
+    if model in ('AIR3', 'MINI3'):
         assert 'Parsed one-byte calibration ACK' in output
         assert 'DJIPayload_Gimbal_CalibProgressRe' in output
         assert 'received 4 reports' in output
@@ -185,19 +186,21 @@ def test_model_calibration_dry_run(
         assert 'DJIPayload_Gimbal_CalibRe' in output
 
 
+@pytest.mark.parametrize('model', ['AIR3', 'MINI3'])
 @pytest.mark.parametrize('service_args', [
     ['CameraCalib', 'EncryptPair'], ['FlycParam', 'list'],
 ])
-def test_air3_selector_rejects_unvalidated_services(monkeypatch, service_args):
+def test_newer_gimbal_selector_rejects_unvalidated_services(
+        monkeypatch, model, service_args):
     import sys
     import comm_og_service_tool as service
 
     def unexpected_open(*args):
-        pytest.fail('unsupported Air 3 service opened the connection')
+        pytest.fail('unsupported {:s} service opened the connection'.format(model))
 
     monkeypatch.setattr(service, 'open_serial_port', unexpected_open)
     monkeypatch.setattr(sys, 'argv', [
-        'comm_og_service_tool.py', '--port', '/dev/ttyUSB1', 'AIR3',
+        'comm_og_service_tool.py', '--port', '/dev/ttyUSB1', model,
         *service_args])
     with pytest.raises(SystemExit) as exc:
         service.main()
@@ -206,6 +209,7 @@ def test_air3_selector_rejects_unvalidated_services(monkeypatch, service_args):
 
 @pytest.mark.parametrize('model,expected,ceiling', [
     ('WM100', 30000, None), ('WM260', 30000, None), ('AIR3', 55000, 120000),
+    ('WM163', 55000, 120000),
 ])
 def test_linear_hall_model_deadlines(monkeypatch, model, expected, ceiling):
     from types import SimpleNamespace
@@ -221,3 +225,109 @@ def test_linear_hall_model_deadlines(monkeypatch, model, expected, ceiling):
         SimpleNamespace(product=service.PRODUCT_CODE[model]), None)
     assert monitor.call_args.args[4] == expected
     assert monitor.call_args.kwargs['max_duration'] == ceiling
+
+
+def make_mini3_options(**kwargs):
+    from types import SimpleNamespace
+    import comm_og_service_tool as service
+
+    options = dict(verbose=0, timeout=10, dry_test=True, bulk=False,
+                   port='/dev/ttyACM0', baudrate=9600,
+                   product=service.PRODUCT_CODE.WM163)
+    options.update(kwargs)
+    return SimpleNamespace(**options)
+
+
+def test_mini3_keep_serial_mode_request_matches_dji_assistant():
+    import comm_og_service_tool as service
+    from comm_serialtalk import SerialMock
+
+    service.last_seq_num = 0x1234
+    po = make_mini3_options()
+    ser = SerialMock(po.port, baudrate=po.baudrate, timeout=0)
+    service.mini3_keep_serial_mode_request(po, ser)
+    # Request captured from DJI Assistant: PC index 1 to type 31, seq 0x2710
+    assert [bytes(pkt) for pkt in ser._txData] == [
+        bytes.fromhex("55 0d 04 33 2a 1f 10 27 40 00 01 c2 4a")]
+    # The fixed number must not leak into following requests
+    assert service.last_seq_num == 0x1234
+
+
+class FakeMini3Link:
+    """Main module which answers only after a given number of requests."""
+
+    def __init__(self, monkeypatch, answer_after=None):
+        import comm_og_service_tool as service
+
+        self.now = 0.0
+        self.answer_after = answer_after
+        self.events = []
+        monkeypatch.setattr(service.time, 'monotonic', lambda: self.now)
+        monkeypatch.setattr(service.time, 'sleep', self.sleep)
+        monkeypatch.setattr(service, 'send_request_and_receive_reply', self.request)
+
+    def sleep(self, seconds):
+        self.now += seconds
+
+    def request(self, po, ser, *args, **kwargs):
+        self.events.append(('request', kwargs['seq_num'], kwargs['sender_index']))
+        self.now += po.timeout / 1000
+        requests = sum(1 for e in self.events if e[0] == 'request')
+        if self.answer_after is not None and requests > self.answer_after:
+            return b'reply', b''
+        return None, b''
+
+    def close(self):
+        self.events.append(('close',))
+
+    def open(self):
+        self.events.append(('open',))
+
+
+def test_mini3_keep_serial_mode_request_reopens_once_then_fails(monkeypatch):
+    import comm_og_service_tool as service
+
+    link = FakeMini3Link(monkeypatch)
+    po = make_mini3_options(dry_test=False, timeout=500)
+    with pytest.raises(ConnectionError):
+        service.mini3_keep_serial_mode_request(po, link)
+    requests = [e for e in link.events if e[0] == 'request']
+    assert [e[1] for e in requests] == list(range(0x2710, 0x2710 + len(requests)))
+    assert all(e[2] == 1 for e in requests)
+    assert link.events.count(('close',)) == 1
+    # Reopened after 3.5 sec without answer, i.e. after the 8th request
+    assert link.events.index(('close',)) == 8
+    assert link.now <= service.MINI3_KEEP_SERIAL_WINDOW + 0.5 + 0.1
+
+
+def test_mini3_keep_serial_mode_request_answered_after_reopen(monkeypatch):
+    import comm_og_service_tool as service
+
+    link = FakeMini3Link(monkeypatch, answer_after=9)
+    po = make_mini3_options(dry_test=False, timeout=500)
+    service.mini3_keep_serial_mode_request(po, link)
+    assert link.events[8:10] == [('close',), ('open',)]
+    assert link.events[-1] == ('request', 0x2710 + 9, 1)
+
+
+def test_mini3_port_is_waited_for_and_opened_like_dji_assistant(monkeypatch):
+    import serial
+    import comm_og_service_tool as service
+
+    opened = []
+
+    class FakeSerial:
+        attempts = 0
+
+        def open(self):
+            FakeSerial.attempts += 1
+            if FakeSerial.attempts < 3:
+                raise serial.SerialException("port not present yet")
+            opened.append((self.port, self.dtr, self.rts))
+
+    monkeypatch.setattr(serial, 'Serial', FakeSerial)
+    monkeypatch.setattr(service.time, 'sleep', lambda s: None)
+    po = make_mini3_options(dry_test=False)
+    ser, waited = service.open_serial_port_wait(po, '/dev/ttyACM0', 5)
+    assert waited
+    assert opened == [('/dev/ttyACM0', False, True)]
