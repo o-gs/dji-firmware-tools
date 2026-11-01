@@ -501,6 +501,25 @@ two gimbal routines above are supported for this selector. Successful service
 calibration does not establish that all post-repair camera/gimbal faults
 have cleared.
 
+For Mini 3 gimbal calibration, select `MINI3` (product code `WM163`) with the
+same two routines, using the serial port of the aircraft (not `--bulk`).
+For example, on Linux:
+
+```python3 comm_og_service_tool.py --port /dev/ttyACM0 -vv MINI3 GimbalCalib JointCoarse```
+
+The Mini 3 offers its serial port only while it boots: about 10 seconds after
+being connected, it switches USB to camera mass storage, unless it detects
+DJI Assistant. If the aircraft is already on and connected as mass storage,
+power it off first. Start the command, then power on the aircraft and connect
+USB right away; the tool waits for the port, sends the request DJI Assistant
+uses to keep the serial port, and waits for start-up to finish before
+calibrating. The aircraft then stays in serial mode, so the second routine can
+be run without repeating this. On 2 of 12 cold starts during testing, the
+aircraft did not answer that request and switched to mass storage anyway;
+the tool then stops before calibrating, and the procedure can be repeated. JointCoarse took approximately 8 seconds and
+LinearHall approximately 49 seconds on the tested Mini 3 (FC V03.04.11.34,
+Linux). As with `AIR3`, only the two gimbal routines are supported.
+
 Example of listing Flight Controller Parameters 200-300 on Ph3 Pro to CSV format:
 
 ```./comm_og_service_tool.py --port /dev/ttyUSB0 P3X FlycParam list --start=200 --count=100 --fmt=csv```
