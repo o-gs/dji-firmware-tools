@@ -38,7 +38,7 @@ The tools can be used as command line version of DJI Assistant software,
 which also allows to change parameters for platforms which lacks such
 OEM software or where it has the advanced functions locked.
 
-Flight Controllers from DJI define hunderds of parameters which affect their
+Flight Controllers from DJI define hundreds of parameters which affect their
 behavior. These can be modified by just sending a command to the drone,
 as long as the new value is within limits accepted by FC firmware.
 
@@ -207,7 +207,7 @@ Example of mounting Root Filesystem partition from Ambarella firmware for *Phant
 
 ### arm_bin2elf.py
 
-Tool which wrapps binary executable ARM images with ELF header. If a firmware
+Tool which wraps binary executable ARM images with ELF header. If a firmware
 contains binary image of executable file, this tool can rebuild ELF header for it.
 The ELF format can be then easily disassembled, as most debuggers can read ELF files.
 Note that using this tool on encrypted firmwares will not result in useable ELF.
@@ -592,10 +592,10 @@ The tests are prepared to be used with `pytest`. Example of executing all tests:
 ```pytest tests -rsx --full-scope --log-cli-level=INFO```
 
 The `--full-scope` option makes the tests execute on all known binaries, rather
-that on a selection used for continous integration. The CI tests are selective
+that on a selection used for continuous integration. The CI tests are selective
 to make sure the automatic testing ends in reasonable time.
 
-Remeber that the tests will only run on binaries placed in proper sub-folder
+Remember that the tests will only run on binaries placed in proper sub-folder
 of the `fw_packages` folder. Valid names of sub-folders can be easily found
 within the test scripts. If no firmware binaries are put to the folder,
 all firmware extraction tests will be skipped.
