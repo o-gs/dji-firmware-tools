@@ -81,8 +81,8 @@ class PRODUCT_CODE(DecoratedEnum):
     WM232  = 28 # Released 2021-04-15 (MAVIC) AIR 2S
     WM260  = 29 # Released 2021-11-05 (MAVIC) 3
     WM247  = 30 # Released 2020-12-15 Mavic 2 Enterprise Advanced
-    AIR3   = 31 # Tool model selector; official DJI product code is unverified.
-    WM163  = 32 # Mini 3; code as reported by the aircraft camera and main module
+    WM163  = 31 # Released 2022-12-09 Mini 3
+    WA233  = 32 # Released 2023-07-25 Air 3
 
 
 ALT_PRODUCT_CODE = {
@@ -110,10 +110,11 @@ ALT_PRODUCT_CODE = {
     'MAVAIR2S': 'WM232',
     'MAV3': 'WM260',
     'MINI3': 'WM163',
+    'AIR3': 'WA233',
 }
 
 # Products whose gimbals send asynchronous ZENMUSE 0x30 calibration reports.
-NEWER_GIMBAL_CALIB_PRODUCTS = (PRODUCT_CODE.AIR3, PRODUCT_CODE.WM163)
+NEWER_GIMBAL_CALIB_PRODUCTS = (PRODUCT_CODE.WA233, PRODUCT_CODE.WM163)
 
 
 class SERVICE_CMD(DecoratedEnum):
@@ -1173,7 +1174,6 @@ def do_flyc_param_request(po):
 
     ser.close()
 
-
 # Representative raw frames from Air 3 V01.00.1500 hardware captures.
 # Each sequence contains the initial ACK, sampled asynchronous reports, and
 # the terminal 64 00 report. These are shortened dry tests, not timing replays.
@@ -1194,8 +1194,8 @@ AIR3_GIMBAL_CALIB_MOCK_PACKETS = {
     ),
 }
 
-# Representative raw frames from Mini 3 hardware captures (FC V03.04.11.34),
-# shortened the same way as the Air 3 ones.
+# Representative raw frames from Mini 3 hardware captures (FC V03.04.11.34).
+# These are shortened dry tests, not timing replays.
 MINI3_GIMBAL_CALIB_MOCK_PACKETS = {
     dupc.DJIPayload_Gimbal_CalibCmd.JointCoarse: (
         "55 0e 04 66 04 0a 11 27 80 04 08 01 9d 29",
@@ -1214,7 +1214,7 @@ MINI3_GIMBAL_CALIB_MOCK_PACKETS = {
 }
 
 NEWER_GIMBAL_CALIB_MOCK_PACKETS = {
-    PRODUCT_CODE.AIR3: AIR3_GIMBAL_CALIB_MOCK_PACKETS,
+    PRODUCT_CODE.WA233: AIR3_GIMBAL_CALIB_MOCK_PACKETS,
     PRODUCT_CODE.WM163: MINI3_GIMBAL_CALIB_MOCK_PACKETS,
 }
 
