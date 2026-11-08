@@ -1174,6 +1174,30 @@ def do_flyc_param_request(po):
 
     ser.close()
 
+
+# Representative raw frames from Spark hardware captures.
+# Sequence contains the initial ACK, sampled asynchronous reports, and the terminal report.
+# These are shortened dry tests, not timing replays.
+SPARK_GIMBAL_CALIB_MOCK_PACKETS = {
+    dupc.DJIPayload_Gimbal_CalibCmd.JointCoarse: (
+        "55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70",
+        "55 0f 04 a2 04 0a 01 a3 00 04 08 10 07 65 5b",
+        "55 0f 04 a2 04 0a 19 6d 00 04 08 01 11 6f f7",
+        "55 0f 04 a2 04 0a 01 a3 00 04 08 10 07 65 5b",
+        # Final packet marking end of calibration
+        "55 0f 04 a2 04 0a f9 e0 00 04 08 10 01 42 79",
+    ),
+    dupc.DJIPayload_Gimbal_CalibCmd.LinearHall: (
+        "55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70",
+        "55 0f 04 a2 04 0a f1 df 00 04 08 14 0a 44 84",
+        "55 0f 04 a2 04 0a f9 ff 00 04 08 19 0c 86 0a",
+        "55 0f 04 a2 04 0a a9 1d 00 04 08 1b 0f 27 f3",
+        "55 0f 04 a2 04 0a e1 80 00 04 08 28 0d d8 27",
+        # Final packet marking end of calibration
+        "55 0f 04 a2 04 0a 89 b0 00 04 08 28 01 0d 50",
+    ),
+}
+
 # Representative raw frames from Air 3 V01.00.1500 hardware captures.
 # Each sequence contains the initial ACK, sampled asynchronous reports, and
 # the terminal 64 00 report. These are shortened dry tests, not timing replays.
@@ -1232,7 +1256,7 @@ def gimbal_calib_request_spark(po, ser, cmd):
         if po.product in NEWER_GIMBAL_CALIB_MOCK_PACKETS:
             packet = NEWER_GIMBAL_CALIB_MOCK_PACKETS[po.product][cmd][0]
         else:
-            packet = "55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"
+            packet = SPARK_GIMBAL_CALIB_MOCK_PACKETS[cmd][0]
         ser.mock_data_for_read(bytes.fromhex(packet))
 
     pktrpl, pktreq = send_request_and_receive_reply(po, ser,
@@ -1301,34 +1325,18 @@ def gimbal_calib_request_spark_monitor_progress(po, ser, first_rplpayload,
                                                pktreq, expect_duration,
                                                pass_values, max_duration=None):
     if po.dry_test:
-        # use to test the code without a drone; packets are different for each calibration
+        # use to test the code without a drone; packets are different for each calibration command
+        cmd = (dupc.DJIPayload_Gimbal_CalibCmd.JointCoarse
+               if pass_values[0] == 16 else dupc.DJIPayload_Gimbal_CalibCmd.LinearHall)
         if po.product in NEWER_GIMBAL_CALIB_MOCK_PACKETS:
-            cmd = (dupc.DJIPayload_Gimbal_CalibCmd.JointCoarse
-                   if pass_values[0] == 16 else dupc.DJIPayload_Gimbal_CalibCmd.LinearHall)
             for packet in NEWER_GIMBAL_CALIB_MOCK_PACKETS[po.product][cmd][1:]:
                 ser.mock_data_for_read(bytes.fromhex(packet))
-        elif pass_values[0] == 16:
-            for x in range(4):
-                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 71 92 00 04 08 01 11 2c 70"))
-            for x in range(4):
-                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 01 a3 00 04 08 10 07 65 5b"))
-            for x in range(4):
-                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 19 6d 00 04 08 01 11 6f f7"))
-            for x in range(4):
-                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 01 a3 00 04 08 10 07 65 5b"))
-            # Final packet marking end of calibration
-            ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a f9 e0 00 04 08 10 01 42 79"))
-        else: # pass_values[0] == 40
-            for x in range(4):
-                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a f1 df 00 04 08 14 0a 44 84"))
-            for x in range(4):
-                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a f9 ff 00 04 08 19 0c 86 0a"))
-            for x in range(4):
-                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a a9 1d 00 04 08 1b 0f 27 f3"))
-            for x in range(4):
-                ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a e1 80 00 04 08 28 0d d8 27"))
-            # Final packet marking end of calibration
-            ser.mock_data_for_read(bytes.fromhex("55 0f 04 a2 04 0a 89 b0 00 04 08 28 01 0d 50"))
+        else:
+            for packet in SPARK_GIMBAL_CALIB_MOCK_PACKETS[cmd][1:-1]:
+                for x in range(4):
+                    ser.mock_data_for_read(bytes.fromhex(packet))
+            packet = SPARK_GIMBAL_CALIB_MOCK_PACKETS[cmd][-1]
+            ser.mock_data_for_read(bytes.fromhex(packet))
 
     rplpayload = first_rplpayload
     curr_time = time.monotonic()
