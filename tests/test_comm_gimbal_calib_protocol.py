@@ -136,7 +136,7 @@ def test_linear_hall_monitor_deadlines(monkeypatch, capsys, mode):
                         next_report)
     service.do_gimbal_calib_request_spark_linear_hall(
         SimpleNamespace(verbose=0, dry_test=False,
-                        product=service.PRODUCT_CODE.AIR3), None)
+                        product=service.PRODUCT_CODE.WA233), None)
     output = capsys.readouterr().out
     if mode == 'complete':
         assert 'took 54.7 sec' in output
@@ -208,7 +208,7 @@ def test_newer_gimbal_selector_rejects_unvalidated_services(
 
 
 @pytest.mark.parametrize('model,expected,ceiling', [
-    ('WM100', 30000, None), ('WM260', 30000, None), ('AIR3', 55000, 120000),
+    ('WM100', 30000, None), ('WM260', 30000, None), ('WA233', 55000, 120000),
     ('WM163', 55000, 120000),
 ])
 def test_linear_hall_model_deadlines(monkeypatch, model, expected, ceiling):
