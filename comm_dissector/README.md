@@ -15,6 +15,24 @@ What these dissectors can do:
 * Show fields within packets stored in binary Flight Record DAT files
 * Export KML file for visualizing the flight
 
+### Mavic 2 Zoom ActiveTrack observation
+
+The DUMLv1 Eye (command set `0x0a`) dissector decodes a 21-byte tracking
+selection request (`0x20`), the multi-target list (`0x95`), and the multi-target
+state (`0x96`). It also names the observed GO (`0x94`) and stop (`0x97`)
+commands. The selection's little-endian session ID is different from the
+target index in `0x95`; the latter is used in the GO request.
+
+This layout was checked against a single Mavic 2 Zoom / RC240 native-link
+flight on 2026-10-17. After selection, `0x96` changed from 0 to 1 with a
+matching person in `0x95`; after GO it changed to 2 for ten seconds; stop
+returned the aircraft to GPS flight state. The test established a short
+Spotlight session with a nearly stationary person. It did not establish
+translation following, the meaning of target-mode values 5 and 3, or support
+on other aircraft or firmware versions. A command ACK alone did not prove
+target lock in one failed selection attempt. No flight captures or location
+telemetry are included here.
+
 Installing the dissectors to Wireshark allows analyzing the protocol commands in:
 * PCap files created from pure DUML streams, ie UART communication between chips
 * PCap files with dumps of USB/Ethernet communication with embedded DUML payloads, ie. WiFi connection between RC and a drone (for platforms which use that protocol)
